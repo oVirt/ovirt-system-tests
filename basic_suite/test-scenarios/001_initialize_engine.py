@@ -20,7 +20,6 @@
 import os
 
 from ovirttestenv import testlib
-from ovirttestenv import constants
 
 
 @testlib.with_ovirt_prefix
@@ -29,8 +28,8 @@ def test_initialize_engine(prefix):
 
     engine.copy_to(
         os.path.join(
-            constants.ANSWER_FILES_DIR,
-            'el7_master.conf',
+            os.environ.get('SUITE'),
+            'engine-answer-file.conf',
         ),
         '/tmp/answer-file',
     )

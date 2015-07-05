@@ -43,8 +43,8 @@ testenv_collect () {
 	$TESTENVCLI ovirt collect --output $1
 }
 
-SUITE=$(realpath $1);
-PREFIX=$PWD/deployment-$(basename $SUITE)
+export SUITE=$(realpath $1);
+export PREFIX=$PWD/deployment-$(basename $SUITE)
 shift 1;
 
 TEMP=$(getopt -o ho:v:e: --long help,output:,vdsm:,engine: -n 'run_suite.sh' -- "$@")

@@ -8,7 +8,7 @@ run_suite () {
 	testenv_start
 	testenv_deploy
 
-	for script in $(ls -1 $SUITE/test_scenarios); do
+	for script in $(ls -1 $SUITE/test-scenarios); do
 		echo "Running script " $script
 		testenv_run_test $script
 		testenv_collect $PREFIX/test_logs/post-$(basename $script)

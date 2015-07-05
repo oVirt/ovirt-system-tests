@@ -12,7 +12,6 @@ testenv_init () {
 		$PREFIX			\
 		$SUITE/init.json	\
 		--template-repo-path $SUITE/template-repo.json
-	mkdir ${PREFIX}
 }
 
 testenv_repo_setup () {

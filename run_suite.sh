@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-TESTENVCLI="echo testenvcli"
+TESTENVCLI="testenvcli"
 
 usage () {
 	echo "Usage:"

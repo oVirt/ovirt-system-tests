@@ -10,7 +10,7 @@ run_suite () {
 
 	for script in $(ls -1 $SUITE/test-scenarios); do
 		echo "Running script " $script
-		testenv_run_test $script
+		testenv_run_test $SUITE/$script
 		testenv_collect $PREFIX/test_logs/post-$(basename $script)
 	done
 }

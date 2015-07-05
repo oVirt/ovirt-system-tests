@@ -18,9 +18,9 @@ testenv_repo_setup () {
 	cd $PREFIX
 	$TESTENVCLI ovirt reposetup 	\
 		--reposync-yum-config $SUITE/reposync-config.repo \
-		--engine-dir $ENGINE_DIR \
+		--engine-dir=$ENGINE_DIR \
 		--engine-with-gwt 	\
-		--vdsm-dir $VDSM_DIR
+		--vdsm-dir=$VDSM_DIR
 }
 
 testenv_start () {

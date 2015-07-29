@@ -44,6 +44,11 @@
           "source": "in-office-minidell", 
           "handle": "centos7/engine/v3.qcow2", 
           "timestamp": 1434299492
+        },
+        "v4": {
+          "source": "in-office-minidell", 
+          "handle": "centos7/engine/v4.qcow2", 
+          "timestamp": 1438152752
         }
       }
     },
@@ -63,6 +68,11 @@
           "source": "in-office-minidell", 
           "handle": "centos7/host/v3.qcow2", 
           "timestamp": 1434299492
+        },
+        "v4": {
+          "source": "in-office-minidell", 
+          "handle": "centos7/host/v4.qcow2", 
+          "timestamp": 1438152752
         }
       }
     },

@@ -2,6 +2,11 @@
 
 TESTENVCLI="testenvcli"
 
+if [[ ! -z "ENGINE_BUILD_GWT" ]];
+then
+	ENGINE_WITH_GWT="--engine-with-gwt"
+fi
+
 usage () {
 	echo "Usage:"
 	echo "$0 SUITE [-o|--output path] [-e|--engine path] [-v|--vdsm path]"
@@ -19,7 +24,7 @@ testenv_repo_setup () {
 	$TESTENVCLI ovirt reposetup 	\
 		--reposync-yum-config $SUITE/reposync-config.repo \
 		--engine-dir=$ENGINE_DIR \
-		--engine-with-gwt 	\
+		$ENGINE_WITH_GWT \
 		--vdsm-dir=$VDSM_DIR
 }
 

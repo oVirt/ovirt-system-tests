@@ -190,15 +190,22 @@ def vm_run(prefix):
 def vm_migrate(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
+    dest_host = api.hosts.get(sorted(host_names)[1])
 
     migrate_params = params.Action(
         host=params.Host(
-            name=sorted(host_names)[1]
+            id=dest_host.id
         ),
     )
-    api.vms.get(VM1_NAME).migrate(migrate_params)
+
+    vm = api.vms.get(VM1_NAME)
+    vm.migrate(migrate_params)
+
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM1_NAME).status.state == 'up',
+        lambda: api.vms.get(id=vm.id).get_host().id == dest_host.id,
+    )
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(id=vm.id).status.state == 'up',
     )
 
 

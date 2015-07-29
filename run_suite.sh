@@ -2,7 +2,7 @@
 
 TESTENVCLI="testenvcli"
 
-if [[ ! -z "ENGINE_BUILD_GWT" ]];
+if [[ ! -z "$ENGINE_BUILD_GWT" ]];
 then
 	ENGINE_WITH_GWT="--engine-with-gwt"
 fi

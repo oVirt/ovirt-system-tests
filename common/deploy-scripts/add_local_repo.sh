@@ -1,8 +1,7 @@
 DIST=$(uname -r | sed -r  's/^.*\.([^\.]+)\.[^\.]+$/\1/')
 ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}')
 
-# FIXME
-# yum-config-manager --disable '*' &> /dev/null
+yum-config-manager --disable '*' &> /dev/null
 
 cat > /etc/yum.repos.d/local-ovirt.repo <<EOF
 [localsync]

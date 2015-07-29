@@ -43,6 +43,12 @@ testenv_collect () {
 	$TESTENVCLI ovirt collect --output $1
 }
 
+if [ $# -lt 1 ];
+then
+	usage
+	exit 1
+fi
+
 export SUITE=$(realpath $1);
 export PREFIX=$PWD/deployment-$(basename $SUITE)
 shift 1;

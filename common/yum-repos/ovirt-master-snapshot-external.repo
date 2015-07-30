@@ -15,9 +15,16 @@ exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 
-[ovirt-master-snapshot-fc20]
+[ovirt-master-snapshot-fc21]
 name=oVirt Master Nightly Test Releases
-baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/fc20/
+baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/fc21/
+exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
+enabled=1
+gpgcheck=0
+
+[ovirt-master-snapshot-fc22]
+name=oVirt Master Nightly Test Releases
+baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/fc22/
 exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
 enabled=1
 gpgcheck=0
@@ -36,9 +43,16 @@ exclude=jasperreports-server
 enabled=1
 gpgcheck=0
 
-[ovirt-master-snapshot-static-fc20]
+[ovirt-master-snapshot-static-fc21]
 name=oVirt Master Nightly Statics
-baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/fc20/
+baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/fc21/
+exclude=jasperreports-server
+enabled=1
+gpgcheck=0
+
+[ovirt-master-snapshot-static-fc22]
+name=oVirt Master Nightly Statics
+baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/fc22/
 exclude=jasperreports-server
 enabled=1
 gpgcheck=0
@@ -55,9 +69,15 @@ baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/ep
 enabled=1
 gpgcheck=0
 
-[ovirt-master-dependencies-fc20]
+[ovirt-master-dependencies-fc21]
 name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-20-x86_64/
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-21-x86_64/
+enabled=1
+gpgcheck=0
+
+[ovirt-master-dependencies-fc22]
+name=oVirt dependencies
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-22-x86_64/
 enabled=1
 gpgcheck=0
 
@@ -75,9 +95,16 @@ enabled=1
 gpgcheck=0
 includepkgs=ioprocess python-ioprocess userspace-rcu safelease
 
-[updates-fc20]
+[updates-fc21]
 name=Fedora updates repo
-baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/20/x86_64
+baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/21/x86_64
+enabled=1
+gpgcheck=0
+includepkgs=ioprocess python-ioprocess
+
+[updates-fc22]
+name=Fedora updates repo
+baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/22/x86_64
 enabled=1
 gpgcheck=0
 includepkgs=ioprocess python-ioprocess

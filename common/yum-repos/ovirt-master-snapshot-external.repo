@@ -95,13 +95,6 @@ enabled=1
 gpgcheck=0
 includepkgs=ioprocess python-ioprocess userspace-rcu safelease
 
-[updates-fc21]
-name=Fedora updates repo
-baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/21/x86_64
-enabled=1
-gpgcheck=0
-includepkgs=ioprocess python-ioprocess
-
 [updates-fc22]
 name=Fedora updates repo
 baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/22/x86_64
@@ -112,5 +105,11 @@ includepkgs=ioprocess python-ioprocess
 [glusterfs-el7]
 name=GlusterFS repo
 baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/epel-7-x86_64/
+enabled=1
+gpgcheck=0
+
+[glusterfs-fc21]
+name=GlusterFS repo
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/fedora-21-x86_64/
 enabled=1
 gpgcheck=0

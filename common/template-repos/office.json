@@ -134,7 +134,7 @@
   "sources": {
     "in-office-minidell": {
       "args": {
-        "baseurl": "http://10.35.1.12/repo/"
+        "baseurl": "http://10.35.18.63/repo/"
       },
       "type": "http"
     }

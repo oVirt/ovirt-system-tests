@@ -112,6 +112,15 @@
         }
       }
     },
+    "fedora22_host": {
+      "versions": {
+        "v1": {
+          "source": "in-office-minidell",
+          "handle": "fedora22/host/v1.qcow2",
+          "timestamp": 1438263325
+        }
+      }
+    },
     "storage-iscsi": {
       "versions": {
         "v1": {

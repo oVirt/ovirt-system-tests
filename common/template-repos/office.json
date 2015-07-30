@@ -103,6 +103,15 @@
         }
       }
     },
+    "fedora21_host": {
+      "versions": {
+        "v1": {
+          "source": "in-office-minidell",
+          "handle": "fedora21/host/v1.qcow2",
+          "timestamp": 1438263858
+        }
+      }
+    },
     "storage-iscsi": {
       "versions": {
         "v1": {

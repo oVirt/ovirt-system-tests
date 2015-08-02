@@ -107,7 +107,7 @@ baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/fedo
 enabled=1
 gpgcheck=0
 
-[glusterfs-fc21]
+[glusterfs-fc22]
 name=GlusterFS repo
 baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/fedora-22-x86_64/
 enabled=1

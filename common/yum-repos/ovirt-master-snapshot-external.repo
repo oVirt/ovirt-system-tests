@@ -112,3 +112,24 @@ name=GlusterFS repo
 baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/fedora-22-x86_64/
 enabled=1
 gpgcheck=0
+
+[fedora-updates-fc21]
+name=Fedora - Updates
+baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/21/x86_64/
+enabled=1
+gpgcheck=0
+includepkgs=python-nose
+
+[fedora-updates-fc22]
+name=Fedora - Updates
+baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/22/x86_64/
+enabled=1
+gpgcheck=0
+includepkgs=python-nose
+
+[centos-base-el7]
+name=CentOS base
+baseurl=http://mirror.centos.org/centos/7/os/x86_64/
+enabled=1
+gpgcheck=0
+includepkgs=python-nose

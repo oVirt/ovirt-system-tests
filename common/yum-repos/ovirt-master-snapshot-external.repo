@@ -32,28 +32,28 @@ gpgcheck=0
 [ovirt-master-snapshot-static-el6]
 name=oVirt Master Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el6/
-exclude=jasperreports-server
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 
 [ovirt-master-snapshot-static-el7]
 name=oVirt Master Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
-exclude=jasperreports-server
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 
 [ovirt-master-snapshot-static-fc21]
 name=oVirt Master Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/fc21/
-exclude=jasperreports-server
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 
 [ovirt-master-snapshot-static-fc22]
 name=oVirt Master Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/fc22/
-exclude=jasperreports-server
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 

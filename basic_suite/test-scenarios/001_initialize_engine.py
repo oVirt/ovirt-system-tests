@@ -24,19 +24,9 @@ from ovirttestenv import testlib
 
 @testlib.with_ovirt_prefix
 def test_initialize_engine(prefix):
-    engine = prefix.virt_env.engine_vm()
-
-    engine.copy_to(
-        os.path.join(
+    prefix.virt_env.engine_vm().engine_setup(
+        config=os.path.join(
             os.environ.get('SUITE'),
             'engine-answer-file.conf',
         ),
-        '/tmp/answer-file',
-    )
-
-    engine.ssh(
-        [
-            'engine-setup',
-            '--config=/tmp/answer-file',
-        ],
     )

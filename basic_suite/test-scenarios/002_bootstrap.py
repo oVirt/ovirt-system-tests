@@ -28,7 +28,7 @@ from ovirttestenv import testlib
 # DC/Cluster
 DC_NAME = 'test-dc'
 DC_VER_MAJ = '3'
-DC_VER_MIN = '5'
+DC_VER_MIN = '6'
 CLUSTER_NAME = 'test-cluster'
 CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
 

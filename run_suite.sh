@@ -9,7 +9,7 @@ fi
 
 usage () {
 	echo "Usage:"
-	echo "$0 SUITE [-o|--output path] [-e|--engine path] [-v|--vdsm path]"
+	echo "$0 SUITE [-o|--output path] [-e|--engine path] [-v|--vdsm path] [-i|--ioprocess path]"
 }
 
 testenv_init () {
@@ -25,7 +25,8 @@ testenv_repo_setup () {
 		--reposync-yum-config $SUITE/reposync-config.repo \
 		--engine-dir=$ENGINE_DIR \
 		$ENGINE_WITH_GWT \
-		--vdsm-dir=$VDSM_DIR
+		--vdsm-dir=$VDSM_DIR \
+		--ioprocess-dir=$IOPROCESS_DIR
 }
 
 testenv_start () {
@@ -58,7 +59,7 @@ export SUITE=$(realpath $1);
 export PREFIX=$PWD/deployment-$(basename $SUITE)
 shift 1;
 
-TEMP=$(getopt -o ho:v:e: --long help,output:,vdsm:,engine: -n 'run_suite.sh' -- "$@")
+TEMP=$(getopt -o ho:v:e:i: --long help,output:,vdsm:,engine:,ioprocess: -n 'run_suite.sh' -- "$@")
 eval set -- "$TEMP"
 
 while true ; do
@@ -73,6 +74,10 @@ while true ; do
 			;;
 		-e|--engine)
 			ENGINE_DIR=$(realpath $2)
+			shift 2
+			;;
+		-i|--ioprocess)
+			IOPROCESS_DIR=$(realpath $2)
 			shift 2
 			;;
 		-h|--help)

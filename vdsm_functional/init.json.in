@@ -3,7 +3,7 @@
         "host-el7": {
             "nics": [
                 {
-                    "net": "testenv"
+                    "net": "lago"
                 }
             ], 
             "disks": [
@@ -29,7 +29,7 @@
         "host-fc21": {
             "nics": [
                 {
-                    "net": "testenv"
+                    "net": "lago"
                 }
             ],
             "disks": [
@@ -55,7 +55,7 @@
         "host-fc22": {
             "nics": [
                 {
-                    "net": "testenv"
+                    "net": "lago"
                 }
             ],
             "disks": [
@@ -81,7 +81,7 @@
 
     }, 
     "nets": {
-        "testenv": {
+        "lago": {
             "type": "nat",
             "dhcp": {
                 "start": 100, 

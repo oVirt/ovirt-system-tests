@@ -3,15 +3,15 @@ prep_suite () {
 }
 
 run_suite () {
-	testenv_init
-	testenv_repo_setup
-	testenv_start
-	testenv_deploy
+	env_init
+	env_repo_setup
+	env_start
+	env_deploy
 
-        for HOST in host-el7 host-fc21 host-fc22
-        do
-           testenvcli shell $HOST -c "pushd /usr/share/vdsm/tests && \
-           ./run_tests.sh --with-xunit --xunit-file=/tmp/nosetests-${HOST}.xml -s functional/*Tests.py && \
-           popd" > ../$HOST
-        done
+    for HOST in host-el7 host-fc21 host-fc22
+    do
+       lagocli shell $HOST -c "pushd /usr/share/vdsm/tests && \
+       ./run_tests.sh --with-xunit --xunit-file=/tmp/nosetests-${HOST}.xml -s functional/*Tests.py && \
+       popd" > ../$HOST
+    done
 }

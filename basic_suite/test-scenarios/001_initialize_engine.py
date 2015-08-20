@@ -19,7 +19,7 @@
 #
 import os
 
-from ovirttestenv import testlib
+from ovirtlago import testlib
 
 
 @testlib.with_ovirt_prefix

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-TESTENVCLI="testenvcli"
+CLI="lagocli"
 
 if [[ ! -z "$ENGINE_BUILD_GWT" ]];
 then
@@ -34,16 +34,16 @@ Optional arguments:
 "
 }
 
-testenv_init () {
-	$TESTENVCLI init 		\
+env_init () {
+	$CLI init 		\
 		$PREFIX			\
 		$SUITE/init.json	\
 		--template-repo-path $SUITE/template-repo.json
 }
 
-testenv_repo_setup () {
+env_repo_setup () {
 	cd $PREFIX
-	$TESTENVCLI ovirt reposetup 	\
+	$CLI ovirt reposetup 	\
 		--reposync-yum-config $SUITE/reposync-config.repo \
 		--engine-dir=$ENGINE_DIR \
 		$ENGINE_WITH_GWT \
@@ -51,24 +51,24 @@ testenv_repo_setup () {
 		--ioprocess-dir=$IOPROCESS_DIR
 }
 
-testenv_start () {
+env_start () {
 	cd $PREFIX
-	$TESTENVCLI start
+	$CLI start
 }
 
-testenv_deploy () {
+env_deploy () {
 	cd $PREFIX
-	$TESTENVCLI ovirt deploy
+	$CLI ovirt deploy
 }
 
-testenv_run_test () {
+env_run_test () {
 	cd $PREFIX
-	$TESTENVCLI ovirt runtest $1
+	$CLI ovirt runtest $1
 }
 
-testenv_collect () {
+env_collect () {
 	cd $PREFIX
-	$TESTENVCLI ovirt collect --output $1
+	$CLI ovirt collect --output $1
 }
 
 if [ $# -lt 1 ];

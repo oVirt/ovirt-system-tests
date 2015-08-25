@@ -8,8 +8,30 @@ then
 fi
 
 usage () {
-	echo "Usage:"
-	echo "$0 SUITE [-o|--output path] [-e|--engine path] [-v|--vdsm path] [-i|--ioprocess path]"
+	echo "
+Usage:
+
+$0 SUITE [-o|--output path] [-e|--engine path] [-v|--vdsm path] [-i|--ioprocess path]
+
+This script runs a single suite of tests (a directory of tests repo)
+
+Positional arguments:
+	SUITE
+		Path to directory that contains the suite to be executed
+
+Optional arguments:
+	-o,--output PATH
+		Path where the new environment will be deployed.
+
+	-e,--engine PATH
+		Path to ovirt-engine source that will be available in the environment
+
+	-v,--vdsm PATH
+		Path to vdsm source that will be available in the environment
+
+	-i,--ioprocess PATH
+		Path to ioprocess source that will be available in the environment
+"
 }
 
 testenv_init () {

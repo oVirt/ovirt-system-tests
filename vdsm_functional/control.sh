@@ -13,5 +13,6 @@ run_suite () {
        lagocli shell $HOST -c "pushd /usr/share/vdsm/tests && \
        ./run_tests.sh --with-xunit --xunit-file=/tmp/nosetests-${HOST}.xml -s functional/*Tests.py && \
        popd" > ../$HOST
+       lagocli copy-from-vm $HOST /tmp/nosetests-${HOST}.xml ../nosetests-${HOST}.xml
     done
 }

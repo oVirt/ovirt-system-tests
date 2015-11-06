@@ -1,5 +1,6 @@
 #!/bin/bash -e
 CLI="lagocli"
+DO_CLEANUP=false
 
 if [[ -n "$ENGINE_BUILD_GWT" ]]; then
     ENGINE_WITH_GWT="--engine-with-gwt"
@@ -76,10 +77,55 @@ env_collect () {
     $CLI ovirt collect --output $1
 }
 
+
+env_cleanup() {
+    local res=0
+    echo "======== Cleaning up"
+    if [[ -d "$PREFIX" ]]; then
+        cd $PREFIX
+        echo "----------- Cleaning with lago"
+        $CLI cleanup &>/dev/null \
+        || res=$?
+        echo "----------- Cleaning with lago done"
+    else
+        res=1
+    fi
+    if [[ "$res" != "0" ]]; then
+        echo "Lago cleanup did not work (that is ok), forcing libvirt"
+        env_libvirt_cleanup "${SUITE##*/}"
+    fi
+    echo "======== Cleanup done"
+}
+
+
+env_libvirt_cleanup() {
+    local suite="${1?}"
+    local domain
+    local net
+    local domains=($( \
+        virsh -c qemu:///system list --all --name \
+        | egrep "[[:alnum:]]*-lago_${suite}_" \
+    ))
+    local nets=($( \
+        virsh -c qemu:///system net-list --all \
+        | egrep "[[:alnum:]]*-lago_${suite}_" \
+        | awk '{print $1;}' \
+    ))
+    echo "----------- Cleaning libvirt"
+    for domain in "${domains[@]}"; do
+        virsh -c qemu:///system destroy "$domain"
+    done
+    for net in "${nets[@]}"; do
+        virsh -c qemu:///system net-destroy "$net"
+    done
+    echo "----------- Cleaning libvirt Done"
+}
+
+
 options=$( \
     getopt \
-        -o ho:v:e:i: \
-        --long help,output:,vdsm:,engine:,ioprocess: \
+        -o ho:v:e:i:c \
+        --long help,output:,vdsm:,engine:,ioprocess:,cleanup \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -110,6 +156,10 @@ while true; do
             usage
             exit 0
             ;;
+        -c|--cleanup)
+            DO_CLEANUP=true
+            shift
+            ;;
         --)
             shift
             break
@@ -126,8 +176,21 @@ fi
 export SUITE="$(realpath "$1")"
 export PREFIX="$PWD/deployment-${SUITE##*/}"
 
+if "$DO_CLEANUP"; then
+    env_cleanup
+    exit $?
+fi
+
+[[ -d "$SUITE" ]] \
+|| {
+    echo "Suite $SUITE not found or is not a dir"
+    exit 1
+}
+
 echo "Running suite found in ${SUITE}"
 echo "Environment will be deployed at ${PREFIX}"
+
+rm -rf "${PREFIX}"
 
 source "${SUITE}/control.sh"
 

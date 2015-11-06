@@ -18,12 +18,25 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
+import os
 
 import nose.tools as nt
 from ovirtsdk.xml import params
 
 from lago import utils
 from ovirtlago import testlib
+
+
+# TODO: remove once lago can gracefully handle on-demand prefixes
+# https://bugzilla.redhat.com/show_bug.cgi?id=1278536
+def _get_prefixed_name(entity_name):
+    suite = os.environ.get('SUITE')
+    return (
+        'lago_'
+        + os.path.basename(suite).replace('.', '_')
+        + '_' + entity_name
+    )
+
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -34,22 +47,26 @@ CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
 
 # Storage
 SD_NFS_NAME = 'nfs'
-SD_NFS_ADDRESS = 'storage-nfs'
+SD_NFS_HOST_NAME = _get_prefixed_name('storage-nfs')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_ADDRESS = 'storage-iscsi'
+SD_ISCSI_HOST_NAME = _get_prefixed_name('storage-iscsi')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 
 SD_ISO_NAME = 'iso'
-SD_ISO_ADDRESS = 'storage-nfs'
+SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
 SD_ISO_PATH = '/exports/iso'
 
 SD_TEMPLATES_NAME = 'templates'
-SD_TEMPLATES_ADDRESS = 'storage-nfs'
+SD_TEMPLATES_HOST_NAME = SD_ISO_HOST_NAME
 SD_TEMPLATES_PATH = '/exports/nfs_exported/share'
+
+
+def _get_host_ip(prefix, host_name):
+    return prefix.virt_env.get_vm(host_name).ip()
 
 
 @testlib.with_ovirt_api
@@ -90,7 +107,7 @@ def add_hosts(prefix):
     def _add_host(vm):
         p = params.Host(
             name=vm.name(),
-            address=vm.name(),
+            address=vm.ip(),
             cluster=params.Cluster(
                 name=CLUSTER_NAME,
             ),
@@ -133,8 +150,9 @@ def _add_storage_domain(api, p):
         )
 
 
-@testlib.with_ovirt_api
-def add_master_storage_domain(api):
+@testlib.with_ovirt_prefix
+def add_master_storage_domain(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=SD_NFS_NAME,
         data_center=params.DataCenter(
@@ -147,7 +165,7 @@ def add_master_storage_domain(api):
         ),
         storage=params.Storage(
             type_='nfs',
-            address=SD_NFS_ADDRESS,
+            address=_get_host_ip(prefix, SD_NFS_HOST_NAME),
             path=SD_NFS_PATH,
         ),
     )
@@ -156,12 +174,11 @@ def add_master_storage_domain(api):
 
 @testlib.with_ovirt_prefix
 def add_secondary_storage_domains(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
     vt = utils.VectorThread(
         [
             functools.partial(add_iscsi_storage_domain, prefix),
-            functools.partial(add_iso_storage_domain, api),
-            functools.partial(add_templates_storage_domain, api),
+            functools.partial(add_iso_storage_domain, prefix),
+            functools.partial(add_templates_storage_domain, prefix),
         ],
     )
     vt.start_all()
@@ -172,7 +189,7 @@ def add_iscsi_storage_domain(prefix):
     api = prefix.virt_env.engine_vm().get_api()
 
     # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm('storage-iscsi').ssh(['multipath', '-ll'])
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['multipath', '-ll'])
     nt.assert_equals(ret.code, 0)
 
     lun_guids = [
@@ -199,7 +216,10 @@ def add_iscsi_storage_domain(prefix):
                 logical_unit=[
                     params.LogicalUnit(
                         id=lun_id,
-                        address=SD_ISCSI_ADDRESS,
+                        address=_get_host_ip(
+                            prefix,
+                            SD_ISCSI_HOST_NAME,
+                        ),
                         port=SD_ISCSI_PORT,
                         target=SD_ISCSI_TARGET,
                     ) for lun_id in lun_guids
@@ -211,7 +231,8 @@ def add_iscsi_storage_domain(prefix):
     _add_storage_domain(api, p)
 
 
-def add_iso_storage_domain(api):
+def add_iso_storage_domain(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=SD_ISO_NAME,
         data_center=params.DataCenter(
@@ -223,14 +244,15 @@ def add_iso_storage_domain(api):
         ),
         storage=params.Storage(
             type_='nfs',
-            address=SD_ISO_ADDRESS,
+            address=_get_host_ip(prefix, SD_ISO_HOST_NAME),
             path=SD_ISO_PATH,
         ),
     )
     _add_storage_domain(api, p)
 
 
-def add_templates_storage_domain(api):
+def add_templates_storage_domain(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=SD_TEMPLATES_NAME,
         data_center=params.DataCenter(
@@ -243,7 +265,7 @@ def add_templates_storage_domain(api):
         ),
         storage=params.Storage(
             type_='nfs',
-            address=SD_TEMPLATES_ADDRESS,
+            address=_get_host_ip(prefix, SD_TEMPLATES_HOST_NAME),
             path=SD_TEMPLATES_PATH,
         ),
     )

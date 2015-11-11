@@ -110,12 +110,12 @@
     "fedora22_host": {
       "versions": {
         "v1": {
-          "source": "in-office-minidell",
+          "source": "ci-templates-vm",
           "handle": "fedora22/host/v1.qcow2",
           "timestamp": 1438263325
         },
         "v2": {
-          "source": "in-office-minidell",
+          "source": "ci-templates-vm",
           "handle": "fedora22/host/v2.qcow2",
           "timestamp": 1438699227
         }

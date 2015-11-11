@@ -8,8 +8,8 @@
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "in-office-minidell", 
-          "handle": "centos6/engine/v2.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos6/engine/v2.qcow2",
           "timestamp": 1432217222
         }
       }
@@ -22,8 +22,8 @@
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "in-office-minidell", 
-          "handle": "centos6/host/v2.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos6/host/v2.qcow2",
           "timestamp": 1432217222
         }
       }
@@ -36,23 +36,23 @@
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/engine/v2.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/engine/v2.qcow2",
           "timestamp": 1432217222
         },
         "v3": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/engine/v3.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/engine/v3.qcow2",
           "timestamp": 1434299492
         },
         "v4": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/engine/v4.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/engine/v4.qcow2",
           "timestamp": 1438152752
         },
         "v5": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/engine/v5.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/engine/v5.qcow2",
           "timestamp": 1439117576
         }
       }
@@ -65,23 +65,23 @@
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/host/v2.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/host/v2.qcow2",
           "timestamp": 1432217222
         },
         "v3": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/host/v3.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/host/v3.qcow2",
           "timestamp": 1434299492
         },
         "v4": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/host/v4.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/host/v4.qcow2",
           "timestamp": 1438152752
         },
         "v5": {
-          "source": "in-office-minidell", 
-          "handle": "centos7/host/v5.qcow2", 
+          "source": "in-office-minidell",
+          "handle": "centos7/host/v5.qcow2",
           "timestamp": 1438699227
         }
       }

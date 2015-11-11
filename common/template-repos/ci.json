@@ -3,13 +3,13 @@
     "centos6_engine": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "centos6/engine/v1.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos6/engine/v1.qcow2",
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "ci-templates-vm", 
-          "handle": "centos6/engine/v2.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos6/engine/v2.qcow2",
           "timestamp": 1432217222
         }
       }
@@ -17,13 +17,13 @@
     "centos6_host": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "centos6/host/v1.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos6/host/v1.qcow2",
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "ci-templates-vm", 
-          "handle": "centos6/host/v2.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos6/host/v2.qcow2",
           "timestamp": 1432217222
         }
       }
@@ -31,18 +31,18 @@
     "centos7_engine": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "centos7/engine/v1.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos7/engine/v1.qcow2",
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "ci-templates-vm", 
-          "handle": "centos7/engine/v2.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos7/engine/v2.qcow2",
           "timestamp": 1432217222
         },
         "v4": {
-          "source": "ci-templates-vm", 
-          "handle": "centos7/engine/v4.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos7/engine/v4.qcow2",
           "timestamp": 1438179094
         }
       }
@@ -50,18 +50,18 @@
     "centos7_host": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "centos7/host/v1.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos7/host/v1.qcow2",
           "timestamp": 1428328144
         },
         "v2": {
-          "source": "ci-templates-vm", 
-          "handle": "centos7/host/v2.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos7/host/v2.qcow2",
           "timestamp": 1432217222
         },
         "v4": {
-          "source": "ci-templates-vm", 
-          "handle": "centos7/host/v4.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "centos7/host/v4.qcow2",
           "timestamp": 1438179094
         }
       }
@@ -78,8 +78,8 @@
     "rhel7_engine": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "rhel7/engine/v1.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "rhel7/engine/v1.qcow2",
           "timestamp": 1428328144
         }
       }
@@ -87,8 +87,8 @@
     "rhel7_host": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "rhel7/host/v1.qcow2", 
+          "source": "ci-templates-vm",
+          "handle": "rhel7/host/v1.qcow2",
           "timestamp": 1428328144
         }
       }
@@ -153,9 +153,9 @@
     "ci-templates-vm": {
       "args": {
         "baseurl": "http://66.187.230.22/repo/"
-      }, 
+      },
       "type": "http"
     }
-  }, 
+  },
   "name": "phx_repo"
 }

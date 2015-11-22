@@ -144,7 +144,7 @@ def snapshot_merge(api):
 def add_vm_template(api):
     vm_params = params.VM(
         name=VM1_NAME,
-        memory=4 * GB,
+        memory=1 * GB,
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),

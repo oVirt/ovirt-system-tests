@@ -90,62 +90,6 @@
                 ]
             }
         },
-        "host3": {
-            "memory": "2047",
-            "nics": [
-                {
-                    "net": "lago"
-                }
-            ],
-            "disks": [
-                {
-                    "template_name": "centos7_host",
-                    "type": "template",
-                    "name": "root",
-                    "dev": "vda",
-                    "format": "qcow2"
-                }
-            ],
-            "metadata": {
-                "ovirt-role": "host",
-                "ovirt-capabilities": [
-                    "snapshot-live-merge"
-                ],
-                "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/bz_1195882_libvirt_workaround.sh"
-                ]
-            }
-        },
-        "host2": {
-            "memory": "2047",
-            "nics": [
-                {
-                    "net": "lago"
-                }
-            ],
-            "disks": [
-                {
-                    "template_name": "centos7_host",
-                    "type": "template",
-                    "name": "root",
-                    "dev": "vda",
-                    "format": "qcow2"
-                }
-            ],
-            "metadata": {
-                "ovirt-role": "host",
-                "ovirt-capabilities": [
-                    "snapshot-live-merge"
-                ],
-                "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/bz_1195882_libvirt_workaround.sh"
-                ]
-            }
-        },
         "host1": {
             "memory": "2047",
             "nics": [

@@ -39,7 +39,7 @@ DISK1_NAME = '%s_disk1' % VM1_NAME
 def add_vm_blank(api):
     vm_params = params.VM(
         name=VM0_NAME,
-        memory=1 * GB,
+        memory=512 * MB,
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),
@@ -144,7 +144,7 @@ def snapshot_merge(api):
 def add_vm_template(api):
     vm_params = params.VM(
         name=VM1_NAME,
-        memory=4 * GB,
+        memory=512 * MB,
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),

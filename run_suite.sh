@@ -174,7 +174,9 @@ if [[ -z "$1" ]]; then
 fi
 
 export SUITE="$(realpath "$1")"
-export PREFIX="$PWD/deployment-${SUITE##*/}"
+if [ -z "$PREFIX" ]; then
+    export PREFIX="$PWD/deployment-${SUITE##*/}"
+fi
 
 if "$DO_CLEANUP"; then
     env_cleanup

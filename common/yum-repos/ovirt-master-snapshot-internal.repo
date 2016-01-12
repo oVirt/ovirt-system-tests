@@ -1,13 +1,6 @@
 [main]
 reposdir=/etc/reposync.repos.d
 
-[ovirt-master-snapshot-el6]
-name=oVirt Master Nightly Test Releases
-baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/el6/
-exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
-enabled=1
-gpgcheck=0
-
 [ovirt-master-snapshot-el7]
 name=oVirt Master Nightly Test Releases
 baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/el7/
@@ -15,37 +8,38 @@ exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 
-[ovirt-master-snapshot-fc20]
+[ovirt-master-snapshot-fc22]
 name=oVirt Master Nightly Test Releases
-baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/fc20/
+baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/fc22/
 exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 
-[ovirt-master-snapshot-static-el6]
-name=oVirt Master Nightly Statics
-baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/el6/
-exclude=jasperreports-server
+[ovirt-master-snapshot-fc23]
+name=oVirt Master Nightly Test Releases
+baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/fc23/
+exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 
 [ovirt-master-snapshot-static-el7]
 name=oVirt Master Nightly Statics
 baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/el7/
-exclude=jasperreports-server
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 
-[ovirt-master-snapshot-static-fc20]
+[ovirt-master-snapshot-static-fc22]
 name=oVirt Master Nightly Statics
-baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/fc20/
-exclude=jasperreports-server
+baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/fc22/
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 
-[ovirt-master-dependencies-el6]
-name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-6-x86_64/
+[ovirt-master-snapshot-static-fc23]
+name=oVirt Master Nightly Statics
+baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/fc23/
+exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
 
@@ -55,35 +49,113 @@ baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/ep
 enabled=1
 gpgcheck=0
 
-[ovirt-master-dependencies-fc20]
+[ovirt-master-dependencies-fc22]
 name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-20-x86_64/
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-22-x86_64/
 enabled=1
 gpgcheck=0
 
-[epel-el6]
-name=EPEL repo
-baseurl=https://dl.fedoraproject.org/pub/epel/6/x86_64/
+[ovirt-master-dependencies-fc23]
+name=oVirt dependencies
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-23-x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess
 
-[epel-el7]
-name=EPEL repo
-baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
+[ovirt-master-glusterfs-epel-el7]
+name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/$basearch/
 enabled=1
+skip_if_unavailable=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess userspace-rcu safelease
 
-[updates-fc20]
-name=Fedora updates repo
-baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/20/x86_64
+[ovirt-master-glusterfs-fedora-fc22]
+name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-22/$basearch/
 enabled=1
+skip_if_unavailable=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess
 
-[glusterfs-el7]
-name=GlusterFS repo
-baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/epel-7-x86_64/
+[ovirt-master-glusterfs-fedora-fc23]
+name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-23/$basearch/
 enabled=1
+skip_if_unavailable=1
 gpgcheck=0
+
+[ovirt-master-glusterfs-noarch-epel-el7]
+name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/noarch
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[ovirt-master-glusterfs-noarch-fedora-fc22]
+name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-22/noarch
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[ovirt-master-glusterfs-noarch-fedora-fc23]
+name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-23/noarch
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[ovirt-master-patternfly1-noarch-epel-el7]
+name=Copr repo for patternfly1 owned by patternfly
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[ovirt-master-patternfly1-fc22]
+name=Copr repo for patternfly1 owned by patternfly
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-22-$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[ovirt-master-patternfly1-fc23]
+name=Copr repo for patternfly1 owned by patternfly
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-23-$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[virtio-win-stable-el7]
+name=virtio-win builds roughly matching what was shipped in latest RHEL
+baseurl=http://fedorapeople.org/groups/virt/virtio-win/repo/stable
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[virtio-win-stable-fc22]
+name=virtio-win builds roughly matching what was shipped in latest RHEL
+baseurl=http://fedorapeople.org/groups/virt/virtio-win/repo/stable
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[virtio-win-stable-fc23]
+name=virtio-win builds roughly matching what was shipped in latest RHEL
+baseurl=http://fedorapeople.org/groups/virt/virtio-win/repo/stable
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[ovirt-master-epel-el7]
+name=Extra Packages for Enterprise Linux 7 - $basearch
+baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+enabled=1
+includepkgs=epel-release,python-uinput,puppet,python-lockfile,python-cpopen,python-ordereddict,python-pthreading,python-inotify,python-argparse,novnc,python-ply,python-kitchen,python-daemon,python-websockify,livecd-tools,spice-html5,mom,python-IPy,python-ioprocess,ioprocess,safelease,python-paramiko,python-crypto,python-cheetah,python-ecdsa,python-markdown,rubygem-rgen,ovirt-guest-agent*,userspace-rcu,protobuf-java,objenesis
+gpgcheck=0
+
+[centos-ovirt-master-el7]
+name=CentOS-$releasever - oVirt master
+baseurl=http://mirror.centos.org/centos/7/virt/$basearch/ovirt-3.6/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+

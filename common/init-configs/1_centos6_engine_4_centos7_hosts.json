@@ -113,8 +113,7 @@
                 ],
                 "ovirt-scripts": [
                     "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/bz_1195882_libvirt_workaround.sh"
+                    "@SUITE@/deploy-scripts/setup_host.sh"
                 ]
             }
         },
@@ -141,8 +140,7 @@
                 ],
                 "ovirt-scripts": [
                     "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/bz_1195882_libvirt_workaround.sh"
+                    "@SUITE@/deploy-scripts/setup_host.sh"
                 ]
             }
         },
@@ -169,8 +167,7 @@
                 ],
                 "ovirt-scripts": [
                     "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/bz_1195882_libvirt_workaround.sh"
+                    "@SUITE@/deploy-scripts/setup_host.sh"
                 ]
             }
         },
@@ -197,8 +194,7 @@
                 ],
                 "ovirt-scripts": [
                     "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/bz_1195882_libvirt_workaround.sh"
+                    "@SUITE@/deploy-scripts/setup_host.sh"
                 ]
             }
         }

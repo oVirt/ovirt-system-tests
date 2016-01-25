@@ -8,13 +8,6 @@ exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 
-[ovirt-master-snapshot-fc22]
-name=oVirt Master Nightly Test Releases
-baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/fc22/
-exclude=ovirt-node-* *-debuginfo ovirt-engine-appliance
-enabled=1
-gpgcheck=0
-
 [ovirt-master-snapshot-fc23]
 name=oVirt Master Nightly Test Releases
 baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot/rpm/fc23/
@@ -25,13 +18,6 @@ gpgcheck=0
 [ovirt-master-snapshot-static-el7]
 name=oVirt Master Nightly Statics
 baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/el7/
-exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
-enabled=1
-gpgcheck=0
-
-[ovirt-master-snapshot-static-fc22]
-name=oVirt Master Nightly Statics
-baseurl=http://ovirt-mirror.eng.lab.tlv.redhat.com/pub/ovirt-master-snapshot-static/rpm/fc22/
 exclude=jasperreports-server ovirt-guest-tools-iso ovirt-engine-jboss-as
 enabled=1
 gpgcheck=0
@@ -49,12 +35,6 @@ baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/ep
 enabled=1
 gpgcheck=0
 
-[ovirt-master-dependencies-fc22]
-name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-22-x86_64/
-enabled=1
-gpgcheck=0
-
 [ovirt-master-dependencies-fc23]
 name=oVirt dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-23-x86_64/
@@ -64,13 +44,6 @@ gpgcheck=0
 [ovirt-master-glusterfs-epel-el7]
 name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
 baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/$basearch/
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
-
-[ovirt-master-glusterfs-fedora-fc22]
-name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
-baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-22/$basearch/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -89,13 +62,6 @@ enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
-[ovirt-master-glusterfs-noarch-fedora-fc22]
-name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
-baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-22/noarch
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
-
 [ovirt-master-glusterfs-noarch-fedora-fc23]
 name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
 baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-23/noarch
@@ -110,13 +76,6 @@ enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
-[ovirt-master-patternfly1-fc22]
-name=Copr repo for patternfly1 owned by patternfly
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-22-$basearch/
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
-
 [ovirt-master-patternfly1-fc23]
 name=Copr repo for patternfly1 owned by patternfly
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-23-$basearch/
@@ -125,13 +84,6 @@ skip_if_unavailable=1
 gpgcheck=0
 
 [virtio-win-stable-el7]
-name=virtio-win builds roughly matching what was shipped in latest RHEL
-baseurl=http://fedorapeople.org/groups/virt/virtio-win/repo/stable
-enabled=1
-skip_if_unavailable=1
-gpgcheck=0
-
-[virtio-win-stable-fc22]
 name=virtio-win builds roughly matching what was shipped in latest RHEL
 baseurl=http://fedorapeople.org/groups/virt/virtio-win/repo/stable
 enabled=1

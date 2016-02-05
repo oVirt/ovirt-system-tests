@@ -9,7 +9,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "centos6_engine",
+                    "template_name": "el6-base",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",
@@ -20,8 +20,8 @@
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_engine.sh"
+                    "../common/deploy-scripts/add_local_repo.sh",
+                    "../common/deploy-scripts/setup_engine.sh"
                 ]
             }
         },
@@ -34,7 +34,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "storage-iscsi",
+                    "template_name": "el7-base",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",
@@ -50,7 +50,7 @@
             ],
             "metadata": {
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_storage_iscsi.sh"
+                    "../common/deploy-scripts/setup_storage_iscsi_el7.sh"
                 ]
             }
         },
@@ -63,7 +63,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "storage-nfs",
+                    "template_name": "el7-base",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",
@@ -74,11 +74,12 @@
                     "type": "empty",
                     "name": "extra1",
                     "dev": "vdb",
-                    "format": "raw"
+                    "format": "qcow2"
                 },
                 {
-                    "template_name": "storage-nfs-export",
-                    "type": "template",
+                    "comment": "Not used yet, for future export domain tests",
+                    "size": "10G",
+                    "type": "empty",
                     "name": "export",
                     "dev": "vdc",
                     "format": "qcow2"
@@ -86,7 +87,7 @@
             ],
             "metadata": {
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_storage_nfs.sh"
+                    "../common/deploy-scripts/setup_storage_nfs_el7.sh"
                 ]
             }
         },
@@ -99,7 +100,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "centos7_host",
+                    "template_name": "el7-base",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",
@@ -112,8 +113,8 @@
                     "snapshot-live-merge"
                 ],
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh"
+                    "../common/deploy-scripts/add_local_repo.sh",
+                    "../common/deploy-scripts/setup_host_el7.sh"
                 ]
             }
         },
@@ -126,7 +127,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "centos7_host",
+                    "template_name": "el7-base",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",
@@ -139,8 +140,8 @@
                     "snapshot-live-merge"
                 ],
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh"
+                    "../common/deploy-scripts/add_local_repo.sh",
+                    "../common/deploy-scripts/setup_host_el7.sh"
                 ]
             }
         }

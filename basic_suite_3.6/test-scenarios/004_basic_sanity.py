@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from nose import SkipTest
+
 from ovirtsdk.xml import params
 
 from ovirtlago import testlib
@@ -37,9 +39,10 @@ DISK1_NAME = '%s_disk1' % VM1_NAME
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
+    vm_memory = 512 * MB
     vm_params = params.VM(
         name=VM0_NAME,
-        memory=512 * MB,
+        memory=vm_memory,
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),
@@ -48,6 +51,9 @@ def add_vm_blank(api):
         ),
         display=params.Display(
             type_='spice',
+        ),
+        memory_policy=params.MemoryPolicy(
+            guaranteed=vm_memory / 2,
         ),
     )
     api.vms.add(vm_params)
@@ -142,6 +148,8 @@ def snapshot_merge(api):
 
 @testlib.with_ovirt_api
 def add_vm_template(api):
+    #TODO: Fix the exported domain generation
+    raise SkipTest('Exported domain generation not supported yet')
     vm_params = params.VM(
         name=VM1_NAME,
         memory=512 * MB,
@@ -180,9 +188,9 @@ def vm_run(prefix):
             ),
         ),
     )
-    api.vms.get(VM1_NAME).start(start_params)
+    api.vms.get(VM0_NAME).start(start_params)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM1_NAME).status.state == 'up',
+        lambda: api.vms.get(VM0_NAME).status.state == 'up',
     )
 
 
@@ -196,16 +204,16 @@ def vm_migrate(prefix):
             name=sorted(host_names)[1]
         ),
     )
-    api.vms.get(VM1_NAME).migrate(migrate_params)
+    api.vms.get(VM0_NAME).migrate(migrate_params)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM1_NAME).status.state == 'up',
+        lambda: api.vms.get(VM0_NAME).status.state == 'up',
     )
 
 
 @testlib.host_capability(['snapshot-live-merge'])
 @testlib.with_ovirt_api
 def snapshot_live_merge(api):
-    disk = api.vms.get(VM1_NAME).disks.list()[0]
+    disk = api.vms.get(VM0_NAME).disks.list()[0]
     disk_id = disk.id
     disk_name = disk.name
 
@@ -220,10 +228,10 @@ def snapshot_live_merge(api):
             ],
         ),
     )
-    api.vms.get(VM1_NAME).snapshots.add(live_snap1_params)
+    api.vms.get(VM0_NAME).snapshots.add(live_snap1_params)
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
     )
 
     live_snap2_params = params.Snapshot(
@@ -237,33 +245,33 @@ def snapshot_live_merge(api):
             ],
         ),
     )
-    api.vms.get(VM1_NAME).snapshots.add(live_snap2_params)
-    for i, _ in enumerate(api.vms.get(VM1_NAME).snapshots.list()):
+    api.vms.get(VM0_NAME).snapshots.add(live_snap2_params)
+    for i, _ in enumerate(api.vms.get(VM0_NAME).snapshots.list()):
         testlib.assert_true_within_short(
             lambda:
-            (api.vms.get(VM1_NAME).snapshots.list()[i].snapshot_status
+            (api.vms.get(VM0_NAME).snapshots.list()[i].snapshot_status
              == 'ok')
         )
 
-    api.vms.get(VM1_NAME).snapshots.list()[-2].delete()
+    api.vms.get(VM0_NAME).snapshots.list()[-2].delete()
 
     testlib.assert_true_within_long(
-        lambda: len(api.vms.get(VM1_NAME).snapshots.list()) == 2,
+        lambda: len(api.vms.get(VM0_NAME).snapshots.list()) == 2,
     )
 
-    for i, _ in enumerate(api.vms.get(VM1_NAME).snapshots.list()):
+    for i, _ in enumerate(api.vms.get(VM0_NAME).snapshots.list()):
         testlib.assert_true_within_long(
             lambda:
-            (api.vms.get(VM1_NAME).snapshots.list()[i].snapshot_status
+            (api.vms.get(VM0_NAME).snapshots.list()[i].snapshot_status
              == 'ok'),
         )
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM1_NAME).status.state == 'up'
+        lambda: api.vms.get(VM0_NAME).status.state == 'up'
     )
 
     testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM1_NAME).disks.get(disk_name).status.state == 'ok'
+        api.vms.get(VM0_NAME).disks.get(disk_name).status.state == 'ok'
     )
 
 
@@ -276,7 +284,7 @@ def hotplug_nic(api):
         ),
         interface='virtio',
     )
-    api.vms.get(VM1_NAME).nics.add(nic2_params)
+    api.vms.get(VM0_NAME).nics.add(nic2_params)
 
 
 @testlib.with_ovirt_api
@@ -298,10 +306,10 @@ def hotplug_disk(api):
         sparse=True,
         bootable=False,
     )
-    api.vms.get(VM1_NAME).disks.add(disk2_params)
+    api.vms.get(VM0_NAME).disks.add(disk2_params)
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
+        api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
 
 _TEST_LIST = [

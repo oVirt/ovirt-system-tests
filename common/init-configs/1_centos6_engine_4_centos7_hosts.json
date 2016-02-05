@@ -34,7 +34,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "storage-iscsi",
+                    "template_name": "el7-iscsi",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",
@@ -63,7 +63,7 @@
             ],
             "disks": [
                 {
-                    "template_name": "storage-nfs",
+                    "template_name": "el7-nfs",
                     "type": "template",
                     "name": "root",
                     "dev": "vda",

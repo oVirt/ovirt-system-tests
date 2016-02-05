@@ -121,6 +121,15 @@
         }
       }
     },
+    "fedora23_host": {
+      "versions": {
+        "v1": {
+          "source": "ci-templates-vm",
+          "handle": "fedora23/host/v1.qcow2",
+          "timestamp": 1438263325
+        }
+      }
+    },
     "storage-iscsi": {
       "versions": {
         "v1": {
@@ -145,6 +154,38 @@
           "source": "ci-templates-vm",
           "handle": "fedora20/storage-nfs-export/v1.qcow2",
           "timestamp": 1428328144
+        },
+        "v2": {
+          "source": "ci-templates-vm",
+          "handle": "fedora20/storage-nfs-export/v2.qcow2",
+          "timestamp": 1428328144
+        }
+      }
+    },
+    "fc23-base": {
+      "versions": {
+        "latest": {
+          "source": "ci-templates-vm",
+          "handle": "fc23-base",
+          "timestamp": 1428328144
+        }
+      }
+    },
+    "el6-base": {
+      "versions": {
+        "latest": {
+          "source": "ci-templates-vm",
+          "handle": "el6-base",
+          "timestamp": 1428328144
+        }
+      }
+    },
+    "el7-base": {
+      "versions": {
+        "latest": {
+          "source": "ci-templates-vm",
+          "handle": "el7-base",
+          "timestamp": 1428328144
         }
       }
     }
@@ -152,7 +193,7 @@
   "sources": {
     "ci-templates-vm": {
       "args": {
-        "baseurl": "http://66.187.230.22/repo/"
+        "baseurl": "http://templates.ovirt.org/repo/"
       },
       "type": "http"
     }

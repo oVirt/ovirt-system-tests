@@ -1,8 +1,8 @@
-set -e
+#!/bin/bash -xe
 
-cp /etc/sysconfig/network-scripts/ifcfg-eth0 /tmp/tmp
-cat /tmp/tmp | grep -v HWADDR > /etc/sysconfig/network-scripts/ifcfg-eth0
-rm -f /tmp/tmp
+sed \
+    -i /etc/sysconfig/network-scripts/ifcfg-eth0 \
+    -e '/.*HWADDR.*/d'
 
 yum install -y deltarpm
 #workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1258868

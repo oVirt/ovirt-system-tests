@@ -10,6 +10,14 @@
 #
 
 cleanup() {
+    rm -rf exported-artifacts
+    mkdir -p exported-artifacts
+    [[ -d deployment-basic_suite_3.6/current/logs ]] \
+    && mv deployment-basic_suite_3.6/current/logs exported-artifacts/lago_logs
+    find deployment-basic_suite_3.6 \
+        -iname nose\*.xml \
+        -exec mv {} exported-artifacts/ \;
+    [[ -d test_logs ]] && mv test_logs exported-artifacts/
     ./run_suite.sh --cleanup basic_suite_3.6
     exit
 }

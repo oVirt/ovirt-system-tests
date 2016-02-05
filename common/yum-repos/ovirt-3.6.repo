@@ -11,7 +11,7 @@ gpgcheck=0
 [ovirt-3.6-el7]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF* ipxe-bootimgs-*
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess
 enabled=1
 gpgcheck=0
 
@@ -32,14 +32,14 @@ name=EPEL repo
 baseurl=https://dl.fedoraproject.org/pub/epel/6/x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess python-websockify
+includepkgs=ioprocess python-ioprocess python-websockify novnc spice-html5 python-daemon python-ply python-kitchen python-lockfile
 
 [epel-el7]
 name=EPEL repo
 baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess userspace-rcu python-websockify safelease
+includepkgs=ioprocess python-ioprocess userspace-rcu python-websockify safelease python-cpopen python-pthreading
 
 [glusterfs-el7]
 name=GlusterFS repo

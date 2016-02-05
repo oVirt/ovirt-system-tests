@@ -17,14 +17,14 @@ prep_suite () {
 }
 
 run_suite () {
-    env_init
+    env_init "http://templates.ovirt.org/repo/repo.metadata"
     env_repo_setup
     env_start
     env_deploy
 
     for script in $(find $SUITE/test-scenarios -type f -name '*.py' | sort); do
-        echo "Running script " $(basename $script)
-        env_run_test $script
-        env_collect $PREFIX/test_logs/post-$(basename $script)
+        echo "Running script ${script##*/}"
+        env_run_test "$script"
+        env_collect "$PWD/test_logs/${SUITE##*/}/post-${script##*/}"
     done
 }

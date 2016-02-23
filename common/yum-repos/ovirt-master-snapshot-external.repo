@@ -43,14 +43,14 @@ gpgcheck=0
 
 [ovirt-master-glusterfs-epel-el7]
 name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
-baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/$basearch/
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-7/x86_64/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
 [ovirt-master-glusterfs-fedora-fc23]
 name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
-baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-23/$basearch/
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/Fedora/fedora-23/x86_64/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -71,14 +71,14 @@ gpgcheck=0
 
 [ovirt-master-patternfly1-noarch-epel-el7]
 name=Copr repo for patternfly1 owned by patternfly
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-$basearch/
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
 [ovirt-master-patternfly1-fc23]
 name=Copr repo for patternfly1 owned by patternfly
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-23-$basearch/
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-23-x86_64/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
@@ -98,15 +98,15 @@ skip_if_unavailable=1
 gpgcheck=0
 
 [ovirt-master-epel-el7]
-name=Extra Packages for Enterprise Linux 7 - $basearch
-baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+name=Extra Packages for Enterprise Linux 7 - x86_64
+baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
 includepkgs=epel-release,python-uinput,puppet,python-lockfile,python-cpopen,python-ordereddict,python-pthreading,python-inotify,python-argparse,novnc,python-ply,python-kitchen,python-daemon,python-websockify,livecd-tools,spice-html5,mom,python-IPy,python-ioprocess,ioprocess,safelease,python-paramiko,python-crypto,python-cheetah,python-ecdsa,python-markdown,rubygem-rgen,ovirt-guest-agent*,userspace-rcu,protobuf-java,objenesis
 gpgcheck=0
 
 [centos-ovirt-master-el7]
 name=CentOS-$releasever - oVirt master
-baseurl=http://mirror.centos.org/centos/7/virt/$basearch/ovirt-3.6/
+baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-3.6/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

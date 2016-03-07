@@ -1,0 +1,166 @@
+{
+    "domains": {
+        "engine": {
+            "type": "ova",
+            "cpu": 4,
+            "boot_time_sec" : 500,
+            "root-password": "12345",
+            "url": "file://@SUITE@/images/ovirt-appliance.ova",
+            "disks": [
+                {
+                    "type": "file",
+                    "path": "@SUITE@/utils/seed.iso",
+                    "dev": "sda",
+                    "format": "iso",
+                    "name":"cloud-init"
+                }
+            ],
+            "metadata": {
+                "ovirt-engine-password": "123",
+                "ovirt-role": "engine",
+                "ovirt-scripts": [
+                    "@SUITE@/deploy-scripts/setup_engine.sh"
+                ]
+            },
+            "nics": [
+                {
+                    "net": "lago",
+                    "ip": "192,168.200.3"
+                }
+            ]
+        },
+        "storage-iscsi": {
+            "memory": "2047",
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ],
+            "disks": [
+                {
+                    "template_name": "storage-iscsi",
+                    "type": "template",
+                    "name": "root",
+                    "dev": "vda",
+                    "format": "qcow2"
+                },
+                {
+                    "size": "60G",
+                    "type": "empty",
+                    "name": "extra1",
+                    "dev": "vdb",
+                    "format": "raw"
+                }
+            ],
+            "metadata": {
+                "ovirt-scripts": [
+                    "@SUITE@/deploy-scripts/setup_storage_iscsi.sh"
+                ]
+            }
+        },
+        "storage-nfs": {
+            "memory": "2047",
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ],
+            "disks": [
+                {
+                    "template_name": "storage-nfs",
+                    "type": "template",
+                    "name": "root",
+                    "dev": "vda",
+                    "format": "qcow2"
+                },
+                {
+                    "size": "60G",
+                    "type": "empty",
+                    "name": "extra1",
+                    "dev": "vdb",
+                    "format": "raw"
+                },
+                {
+                    "template_name": "storage-nfs-export",
+                    "type": "template",
+                    "name": "export",
+                    "dev": "vdc",
+                    "format": "qcow2"
+                }
+            ],
+            "metadata": {
+                "ovirt-scripts": [
+                    "@SUITE@/deploy-scripts/setup_storage_nfs.sh"
+                ]
+            }
+        },
+        "node1": {
+            "memory": "2047",
+            "disks": [
+                {
+                    "type": "empty",
+                    "dev": "vda",
+                    "format": "qcow2",
+                    "name": "node",
+                    "size" : "30G"
+
+
+                },
+                {
+                    "type": "file",
+                    "url": "file://@SUITE@/images/ovirt_node1.iso",
+                    "dev": "sda",
+                    "format": "iso",
+                    "name":"src"
+                }
+            ],
+            "metadata": {
+                "ovirt-role": "node"
+            },
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ]
+        },
+        "node2": {
+            "memory": "2047",
+            "disks": [
+                {
+                    "type": "empty",
+                    "dev": "vda",
+                    "format": "qcow2",
+                    "name": "node",
+                    "size" : "30G"
+
+
+                },
+                {
+                    "type": "file",
+                    "url": "file://@SUITE@/images/ovirt_node2.iso",
+                    "dev": "sda",
+                    "format": "iso",
+                    "name":"src"
+                }
+            ],
+            "metadata": {
+                "ovirt-role": "node"
+            },
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ]
+        }
+    },
+    "nets": {
+        "lago": {
+            "type": "nat",
+            "dhcp": {
+                "start": 100,
+                "end": 254
+            },
+            "management": true
+        }
+    }
+}

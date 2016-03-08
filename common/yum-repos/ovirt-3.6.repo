@@ -15,13 +15,6 @@ exclude=ovirt-node-iso *-debuginfo
 enabled=1
 gpgcheck=0
 
-[ovirt-3.6-fc21]
-name=oVirt 3.6
-baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/fc21/
-exclude=ovirt-node-iso *-debuginfo
-enabled=1
-gpgcheck=0
-
 [ovirt-3.6-dependencies-el6]
 name=oVirt dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-6-x86_64/
@@ -31,12 +24,6 @@ gpgcheck=0
 [ovirt-3.6-dependencies-el7]
 name=oVirt dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
-enabled=1
-gpgcheck=0
-
-[ovirt-3.6-dependencies-fc21]
-name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fedora-21-x86_64/
 enabled=1
 gpgcheck=0
 
@@ -53,13 +40,6 @@ baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
 enabled=1
 gpgcheck=0
 includepkgs=ioprocess python-ioprocess userspace-rcu
-
-[updates-fc21]
-name=Fedora updates repo
-baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/21/x86_64
-enabled=1
-gpgcheck=0
-includepkgs=ioprocess python-ioprocess
 
 [glusterfs-el7]
 name=GlusterFS repo

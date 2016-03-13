@@ -11,4 +11,5 @@ EOF
 ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}')
 echo "$ADDR engine" >> /etc/hosts
 
+yum install -y deltarpm
 yum install --nogpgcheck -y ovirt-engine

@@ -9,7 +9,4 @@ rm -f /tmp/tmp
 # that were just installed via RPM. Workaround: restart dbus.
 # Cuts 2 minutes from host installation
 yum update -y tuned && systemctl restart dbus
-
 yum install -y deltarpm
-yum install --nogpgcheck -y vdsm
-

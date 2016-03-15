@@ -4,14 +4,14 @@ reposdir=/etc/reposync.repos.d
 [ovirt-3.6-el6]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el6/
-exclude=ovirt-node-iso *-debuginfo
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
 enabled=1
 gpgcheck=0
 
 [ovirt-3.6-el7]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF* ipxe-bootimgs-*
 enabled=1
 gpgcheck=0
 
@@ -32,17 +32,26 @@ name=EPEL repo
 baseurl=https://dl.fedoraproject.org/pub/epel/6/x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess
+includepkgs=ioprocess python-ioprocess python-websockify
 
 [epel-el7]
 name=EPEL repo
 baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=ioprocess python-ioprocess userspace-rcu
+includepkgs=ioprocess python-ioprocess userspace-rcu python-websockify safelease
 
 [glusterfs-el7]
 name=GlusterFS repo
 baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/epel-7-x86_64/
 enabled=1
 gpgcheck=0
+exclude= *-debuginfo glusterfs-regression-tests
+
+[centos-updates-el7]
+name=CentOS7 Updates
+baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
+enabled=1
+gpgcheck=0
+includepkgs=libvirt libvirt-client libvirt-python libvirt-daemon-driver-qemu libvirt-daemon device-mapper device-mapper-libs device-mapper-multipath-libs device-mapper-persistent-data dmidecode dracut libvirt-daemon-driver-network libvirt-daemon-driver-storage lvm2 lvm2-libs m2crypto systemd-libs tuned device-mapper-event device-mapper-event-libs dracut-config-rescue dracut-network libgudev1 libunwind libvirt-daemon-driver-interface libvirt-daemon-driver-nodedev libvirt-daemon-driver-nwfilter libvirt-daemon-driver-secret libvirt-daemon-kvm libvirt-lock-sanlock python-perf sos systemd systemd-sysv 
+exclude= *i686.rpm

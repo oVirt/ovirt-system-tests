@@ -46,6 +46,8 @@ CLUSTER_NAME = 'test-cluster'
 CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
 
 # Storage
+MASTER_SD_TYPE = 'iscsi'
+
 SD_NFS_NAME = 'nfs'
 SD_NFS_HOST_NAME = _get_prefixed_name('storage-nfs')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
@@ -153,21 +155,32 @@ def _add_storage_domain(api, p):
 
 @testlib.with_ovirt_prefix
 def add_master_storage_domain(prefix):
+    if MASTER_SD_TYPE == 'iscsi':
+        add_iscsi_storage_domain(prefix)
+    else:
+        add_nfs_storage_domain(prefix)
+
+
+def add_nfs_storage_domain(prefix):
+    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
+
+
+def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v3'):
     api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
-        name=SD_NFS_NAME,
+        name=sd_nfs_name,
         data_center=params.DataCenter(
             name=DC_NAME,
         ),
         type_='data',
-        storage_format='v3',
+        storage_format=sd_format,
         host=params.Host(
             name=api.hosts.list().pop().name,
         ),
         storage=params.Storage(
             type_='nfs',
-            address=_get_host_ip(prefix, SD_NFS_HOST_NAME),
-            path=SD_NFS_PATH,
+            address=_get_host_ip(prefix, nfs_host_name),
+            path=mount_path,
         ),
     )
     _add_storage_domain(api, p)
@@ -175,13 +188,22 @@ def add_master_storage_domain(prefix):
 
 @testlib.with_ovirt_prefix
 def add_secondary_storage_domains(prefix):
-    vt = utils.VectorThread(
-        [
-            functools.partial(add_iscsi_storage_domain, prefix),
-            functools.partial(add_iso_storage_domain, prefix),
-            functools.partial(add_templates_storage_domain, prefix),
-        ],
-    )
+    if MASTER_SD_TYPE == 'iscsi':
+        vt = utils.VectorThread(
+            [
+                functools.partial(add_nfs_storage_domain, prefix),
+                functools.partial(add_iso_storage_domain, prefix),
+                functools.partial(add_templates_storage_domain, prefix),
+            ],
+        )
+    else:
+        vt = utils.VectorThread(
+            [
+                functools.partial(add_iscsi_storage_domain, prefix),
+                functools.partial(add_iso_storage_domain, prefix),
+                functools.partial(add_templates_storage_domain, prefix),
+            ],
+        )
     vt.start_all()
     vt.join_all()
 
@@ -253,26 +275,7 @@ def add_iso_storage_domain(prefix):
 
 
 def add_templates_storage_domain(prefix):
-    #TODO: Fix the exported domain generation
-    return
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.StorageDomain(
-        name=SD_TEMPLATES_NAME,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_='data',
-        storage_format='v3',
-        host=params.Host(
-            name=api.hosts.list().pop().name
-        ),
-        storage=params.Storage(
-            type_='nfs',
-            address=_get_host_ip(prefix, SD_TEMPLATES_HOST_NAME),
-            path=SD_TEMPLATES_PATH,
-        ),
-    )
-    _add_storage_domain(api, p)
+    add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH)
 
 
 @testlib.with_ovirt_api

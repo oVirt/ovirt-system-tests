@@ -22,9 +22,11 @@ run_suite () {
     env_start
     env_deploy
 
-    for script in $(find $SUITE/test-scenarios -type f -name '*.py' | sort); do
-        echo "Running script ${script##*/}"
-        env_run_test "$script"
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-${script##*/}"
+    test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
+
+    for scenario in "${test_scenarios[@]}"; do
+        echo "Running test scenario ${scenario##*/}"
+        env_run_test "$scenario"
+        env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
     done
 }

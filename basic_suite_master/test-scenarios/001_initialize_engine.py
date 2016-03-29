@@ -35,9 +35,15 @@ def test_initialize_engine(prefix):
         '/tmp/answer-file',
     )
 
-    engine.ssh(
+    result = engine.ssh(
         [
             'engine-setup',
             '--config-append=/tmp/answer-file',
         ],
+    )
+    if result.code != 0:
+        return result.code
+
+    testlib.assert_true_within_long(
+        lambda: engine.service('ovirt-engine').alive()
     )

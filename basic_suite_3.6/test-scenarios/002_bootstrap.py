@@ -44,6 +44,7 @@ DC_VER_MAJ = 3
 DC_VER_MIN = 6
 CLUSTER_NAME = 'test-cluster'
 CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
+DC_QUOTA_NAME = 'DC-QUOTA'
 
 # Storage
 MASTER_SD_TYPE = 'iscsi'
@@ -82,6 +83,18 @@ def add_dc(api):
         ),
     )
     nt.assert_true(api.datacenters.add(p))
+
+
+@testlib.with_ovirt_api
+def add_dc_quota(api):
+        dc = api.datacenters.get(name=DC_NAME)
+        quota = params.Quota(
+            name=DC_QUOTA_NAME,
+            description='DC-QUOTA-DESCRIPTION',
+            data_center=dc,
+            cluster_soft_limit_pct=99,
+        )
+        nt.assert_true(dc.quotas.add(quota))
 
 
 @testlib.with_ovirt_api
@@ -302,13 +315,47 @@ def import_templates(api):
             lambda: api.templates.get(template.name).status.state == 'ok',
         )
 
+
+@testlib.with_ovirt_api
+def set_dc_quota_audit(api):
+    dc = api.datacenters.get(name=DC_NAME)
+    dc.set_quota_mode('audit')
+    nt.assert_true(
+        dc.update()
+    )
+
+
+@testlib.with_ovirt_api
+def add_quota_storage_limits(api):
+    dc = api.datacenters.get(DC_NAME)
+    quota = dc.quotas.get(name=DC_QUOTA_NAME)
+    quota_storage = params.QuotaStorageLimit(limit=500)
+    nt.assert_true(
+        quota.quotastoragelimits.add(quota_storage)
+    )
+
+
+@testlib.with_ovirt_api
+def add_quota_cluster_limits(api):
+    dc = api.datacenters.get(DC_NAME)
+    quota = dc.quotas.get(name=DC_QUOTA_NAME)
+    quota_cluster = params.QuotaClusterLimit(vcpu_limit=20, memory_limit=10000)
+    nt.assert_true(
+        quota.quotaclusterlimits.add(quota_cluster)
+    )
+
+
 _TEST_LIST = [
     add_dc,
+    add_dc_quota,
     add_cluster,
     add_hosts,
     add_master_storage_domain,
     add_secondary_storage_domains,
     import_templates,
+    add_quota_storage_limits,
+    add_quota_cluster_limits,
+    set_dc_quota_audit,
 ]
 
 

@@ -1,7 +1,9 @@
 #!/bin/bash -e
 set -xe
 
-NUM_LUNS=10
+NUM_LUNS=5
+
+yum install -y deltarpm
 
 yum install -y \
     qemu-guest-agent lvm2 targetcli iscsi-initiator-utils \
@@ -101,10 +103,5 @@ sed -i /etc/lvm/lvm.conf \
 
 systemctl start multipathd
 systemctl enable multipathd
-
-firewall-cmd --permanent --add-port=860/tcp
-firewall-cmd --permanent --add-port=3260/tcp
-firewall-cmd --reload
-
-# we have to reboot the machine for the changes to take effect
-shutdown -r 1
+systemctl stop firewalld
+systemctl disable firewalld

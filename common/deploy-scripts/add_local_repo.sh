@@ -5,7 +5,7 @@ ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "."
 # yum-config-manager --disable '*' &> /dev/null
 
 cat > /etc/yum.repos.d/local-ovirt.repo <<EOF
-[localsync]
+[alocalsync]
 name=Latest oVirt nightly
 baseurl=http://$ADDR:8585/$DIST/
 enabled=1

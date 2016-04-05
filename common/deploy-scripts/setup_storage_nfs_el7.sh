@@ -2,7 +2,6 @@
 set -xe
 EXPORTED_DEV="/dev/vdc"
 MAIN_NFS_DEV="/dev/vdb"
-NFS_PORTS=(111 54302 20048 33200 35450 45683 2049 46666 42955 875)
 
 init_disk() {
     local disk_dev="${1?}"
@@ -33,14 +32,15 @@ setup_export() {
     init_disk "$device" \
     || exit 1
     sleep 5
-    mkfs.ext4 "${device}1"
-    echo "${device}1 /exports/nfs_exported ext4 defaults 0 0" \
+    mkfs.xfs -r extsize=1m "${device}1"
+    echo "${device}1 /exports/nfs_exported xfs defaults,nodiscard 0 0" \
     >> /etc/fstab
 }
 
 
 
 install_deps() {
+    yum install -y deltarpm
     yum install -y nfs-utils lvm2
 }
 
@@ -58,11 +58,11 @@ setup_main_nfs() {
     extents=$(vgdisplay vg1_storage | grep 'Total PE' | awk '{print $NF;}')
     lvcreate -l $(($extents - 50)) -T "$volume_group"/thinpool
     lvcreate "$volume_group" -V100G --thinpool "$volume_group"/thinpool  -n nfs
-    mkfs.xfs /dev/mapper/"$volume_group"-nfs
+    mkfs.xfs -r extsize=1m /dev/mapper/"$volume_group"-nfs
     mkdir -p \
         /exports/nfs_clean/ \
         /exports/nfs_exported/
-    echo "/dev/mapper/${volume_group}-nfs /exports/nfs_clean xfs defaults 0 0" \
+    echo "/dev/mapper/${volume_group}-nfs /exports/nfs_clean xfs defaults,nodiscard 0 0" \
     >> /etc/fstab
 
     mount -a
@@ -87,6 +87,8 @@ setup_main_nfs() {
 }
 
 setup_services() {
+    systemctl stop firewalld
+    systemctl disable firewalld
     systemctl start rpcbind.service
     systemctl start nfs-server.service
     systemctl start nfs-lock.service
@@ -94,20 +96,6 @@ setup_services() {
     systemctl enable rpcbind.service
     systemctl enable nfs-server.service
 }
-
-add_ports() {
-    for port in "$@"; do
-        firewall-cmd --permanent --add-port="$port"/tcp
-        firewall-cmd --permanent --add-port="$port"/udp
-    done
-}
-
-setup_firewall() {
-    ## Make sure the ports are open
-    add_ports "${NFS_PORTS[@]}"
-    firewall-cmd --reload
-}
-
 
 main() {
     local main_dev="${1?}"
@@ -118,7 +106,6 @@ main() {
         setup_export "$exported_dev"
     fi
     setup_services
-    setup_firewall
 }
 
 

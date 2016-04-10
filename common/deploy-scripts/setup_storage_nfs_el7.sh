@@ -1,42 +1,14 @@
 #!/bin/bash -xe
 set -xe
-EXPORTED_DEV="/dev/vdc"
-MAIN_NFS_DEV="/dev/vdb"
-
-init_disk() {
-    local disk_dev="${1?}"
-    local cyls i
-    parted -s "$disk_dev" mktable msdos
-    cyls=$(\
-        parted -s "$disk_dev" unit cyl print \
-        | grep 'Disk /' \
-        | sed -r 's/.*: ([0-9]+)cyl/\1/' \
-    )
-    parted -s -a optimal "$disk_dev" mkpart primary 0cyl ${cyls}cyl
-    for i in {1..10}; do
-        partprobe \
-        && break \
-        || sleep 2
-        i=$(($i + 1))
-    done
-    if [[ "$i" == "11" ]]; then
-        echo "Failed to run partprobe"
-        return 1
-    fi
-    return 0
-}
-
+EXPORTED_DEV="vdc"
+MAIN_NFS_DEV="vdb"
 
 setup_export() {
-    local device="${1?}"
-    init_disk "$device" \
-    || exit 1
-    sleep 5
-    mkfs.xfs -r extsize=1m "${device}1"
-    echo "${device}1 /exports/nfs_exported xfs defaults,nodiscard 0 0" \
+    echo noop > /sys/block/${EXPORTED_DEV}/queue/scheduler
+    mkfs.xfs -K -r extsize=1m /dev/"${EXPORTED_DEV}"
+    echo "/dev/${EXPORTED_DEV} /exports/nfs_exported xfs defaults 0 0" \
     >> /etc/fstab
 }
-
 
 
 install_deps() {
@@ -46,23 +18,12 @@ install_deps() {
 
 
 setup_main_nfs() {
-    local device="${1?}"
-    local volume_group="vg1_storage"
-    local extents partition
-    init_disk "$device" \
-    || exit 1
-    partition="${device}1"
-
-    pvcreate "$partition"
-    vgcreate "$volume_group" "$partition"
-    extents=$(vgdisplay vg1_storage | grep 'Total PE' | awk '{print $NF;}')
-    lvcreate -l $(($extents - 50)) -T "$volume_group"/thinpool
-    lvcreate "$volume_group" -V100G --thinpool "$volume_group"/thinpool  -n nfs
-    mkfs.xfs -r extsize=1m /dev/mapper/"$volume_group"-nfs
     mkdir -p \
         /exports/nfs_clean/ \
         /exports/nfs_exported/
-    echo "/dev/mapper/${volume_group}-nfs /exports/nfs_clean xfs defaults,nodiscard 0 0" \
+    echo noop > /sys/block/${MAIN_NFS_DEV}/queue/scheduler
+    mkfs.xfs -K -r extsize=1m /dev/${MAIN_NFS_DEV}
+    echo "/dev/${MAIN_NFS_DEV} /exports/nfs_clean xfs defaults 0 0" \
     >> /etc/fstab
 
     mount -a
@@ -97,13 +58,14 @@ setup_services() {
     systemctl enable nfs-server.service
 }
 
+
 main() {
     local main_dev="${1?}"
     local exported_dev="${2:-no exported}"
     install_deps
-    setup_main_nfs "$main_dev"
+    setup_main_nfs
     if [[ "$exported_dev" != "no exported" ]]; then
-        setup_export "$exported_dev"
+        setup_export
     fi
     setup_services
 }

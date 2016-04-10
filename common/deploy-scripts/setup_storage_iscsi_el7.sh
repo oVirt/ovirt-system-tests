@@ -9,29 +9,13 @@ yum install -y \
     qemu-guest-agent lvm2 targetcli iscsi-initiator-utils \
     device-mapper-multipath
 
-parted -s /dev/vdb mktable msdos
-cyls=$(\
-    parted -s /dev/vdb unit cyl print \
-    | grep 'Disk /' \
-    | sed -r 's/.*: ([0-9]+)cyl/\1/'\
-)
-parted -s -a optimal /dev/vdb mkpart primary 0cyl ${cyls}cyl
-for i in seq 10; do
-    partprobe \
-    && break \
-    || sleep 2
-    i=$(($i + 1))
-done
-if [[ "$i" == "11" ]]; then
-    echo "Failed to run partprobe"
-    exit 1
-fi
-
-pvcreate /dev/vdb1
-vgcreate vg1_storage /dev/vdb1
+echo noop > /sys/block/vdb/queue/scheduler
+pvcreate /dev/vdb
+vgcreate vg1_storage /dev/vdb
 extents=$(vgdisplay vg1_storage | grep 'Total PE' | awk '{print $NF;}')
-lvcreate -l$(($extents - 50)) -T vg1_storage/thinpool
+lvcreate -Zn -l$(($extents - 50)) -T vg1_storage/thinpool
 
+targetcli /iscsi create iqn.2014-07.org.ovirt:storage
 
 create_lun () {
     local ID=$1
@@ -46,22 +30,13 @@ create_lun () {
 }
 
 
-targetcli /iscsi create iqn.2014-07.org.ovirt:storage
-
-
 for I in $(seq $NUM_LUNS);
 do
     create_lun $(($I - 1));
 done;
 
 targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
-    set attribute authentication=0
-targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
-    set attribute demo_mode_write_protect=0
-targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
-    set attribute generate_node_acls=1
-targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
-    set attribute cache_dynamic_acls=1
+    set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
 targetcli saveconfig
 
 systemctl enable target

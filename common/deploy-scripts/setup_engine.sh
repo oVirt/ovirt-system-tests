@@ -8,7 +8,7 @@ engine=localhost:443
 EOF
 
 # engine 4 resolves its FQDN
-ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}')
+ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1}')
 echo "$ADDR engine" >> /etc/hosts
 
 yum install -y deltarpm

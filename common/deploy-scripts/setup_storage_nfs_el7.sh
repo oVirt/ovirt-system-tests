@@ -3,49 +3,45 @@ set -xe
 EXPORTED_DEV="vdc"
 MAIN_NFS_DEV="vdb"
 
+setup_device() {
+    local device=$1
+    local mountpath=$2
+    local exportpath=$3
+    mkdir -p ${mountpath}
+    echo noop > /sys/block/${device}/queue/scheduler
+    mkfs.xfs -K -r extsize=1m /dev/${device}
+    echo "/dev/${device} ${mountpath} xfs defaults 0 0" >> /etc/fstab
+    mount /dev/${device} ${mountpath}
+    mkdir -p ${exportpath}
+    chmod a+rwx ${exportpath}
+    echo "${exportpath} *(rw,sync,no_root_squash,no_all_squash)" >> /etc/exports
+    exportfs -a
+}
+
+setup_main_nfs() {
+    setup_device ${MAIN_NFS_DEV} /exports/nfs_clean /exports/nfs_clean/share1
+}
+
+
 setup_export() {
-    echo noop > /sys/block/${EXPORTED_DEV}/queue/scheduler
-    mkfs.xfs -K -r extsize=1m /dev/"${EXPORTED_DEV}"
-    echo "/dev/${EXPORTED_DEV} /exports/nfs_exported xfs defaults 0 0" \
-    >> /etc/fstab
+    setup_device ${EXPORTED_DEV} /exports/nfs_exported /exports/nfs_exported
 }
 
 
 install_deps() {
     yum install -y deltarpm
-    yum install -y nfs-utils lvm2
+    yum install -y nfs-utils
 }
 
 
-setup_main_nfs() {
-    mkdir -p \
-        /exports/nfs_clean/ \
-        /exports/nfs_exported/
-    echo noop > /sys/block/${MAIN_NFS_DEV}/queue/scheduler
-    mkfs.xfs -K -r extsize=1m /dev/${MAIN_NFS_DEV}
-    echo "/dev/${MAIN_NFS_DEV} /exports/nfs_clean xfs defaults 0 0" \
-    >> /etc/fstab
-
-    mount -a
-    mkdir -p \
-        /exports/nfs_clean/share1/ \
-        /exports/nfs_clean/iso/ \
-        /exports/iso/
-
-    chmod a+rwx \
-        /exports/nfs_clean/share1/ \
-        /exports/nfs_clean/iso/ \
-        /exports/iso/
-
-    echo '/exports/nfs_clean/share1 *(rw,sync,no_root_squash,no_all_squash)' \
-    >> /etc/exports
-    echo '/exports/nfs_exported/ *(rw,sync,no_root_squash,no_all_squash)' \
-    >> /etc/exports
+setup_iso() {
+    mkdir -p /exports/iso
+    chmod a+rwx /exports/iso
     echo '/exports/iso/ *(rw,sync,no_root_squash,no_all_squash)' \
     >> /etc/exports
-
     exportfs -a
 }
+
 
 setup_services() {
     systemctl stop firewalld
@@ -58,17 +54,13 @@ setup_services() {
     systemctl enable nfs-server.service
 }
 
-
 main() {
-    local main_dev="${1?}"
-    local exported_dev="${2:-no exported}"
     install_deps
-    setup_main_nfs
-    if [[ "$exported_dev" != "no exported" ]]; then
-        setup_export
-    fi
     setup_services
+    setup_main_nfs
+    setup_export
+    setup_iso
 }
 
 
-main "$MAIN_NFS_DEV"
+main

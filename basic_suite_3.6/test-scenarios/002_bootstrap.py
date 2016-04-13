@@ -64,7 +64,7 @@ SD_ISO_PATH = '/exports/iso'
 
 SD_TEMPLATES_NAME = 'templates'
 SD_TEMPLATES_HOST_NAME = SD_ISO_HOST_NAME
-SD_TEMPLATES_PATH = '/exports/nfs_exported/share'
+SD_TEMPLATES_PATH = '/exports/nfs_exported'
 
 
 def _get_host_ip(prefix, host_name):

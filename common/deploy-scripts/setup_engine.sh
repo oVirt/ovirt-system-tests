@@ -1,4 +1,4 @@
-set -e
+set -xe
 
 cat > /root/iso-uploader.conf << EOF
 [ISOUploader]
@@ -13,3 +13,10 @@ echo "$ADDR engine" >> /etc/hosts
 
 yum install -y deltarpm
 yum install --nogpgcheck -y ovirt-engine
+
+
+# Enable debug logs on the engine
+sed -i \
+    -e '/.*logger category="org.ovirt"/{ n; s/INFO/DEBUG/ }' \
+    -e '/.*<root-logger>/{ n; s/INFO/DEBUG/ }' \
+    /usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in

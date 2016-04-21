@@ -19,7 +19,7 @@
             "metadata": {
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
-                "ovirt-scripts": [
+                "deploy-scripts": [
                     "../common/deploy-scripts/add_local_repo.sh",
                     "../common/deploy-scripts/setup_engine.sh"
                 ]
@@ -49,7 +49,7 @@
                 }
             ],
             "metadata": {
-                "ovirt-scripts": [
+                "deploy-scripts": [
                     "../common/deploy-scripts/setup_storage_iscsi_el7.sh"
                 ]
             }
@@ -86,7 +86,7 @@
                 }
             ],
             "metadata": {
-                "ovirt-scripts": [
+                "deploy-scripts": [
                     "../common/deploy-scripts/setup_storage_nfs_el7.sh"
                 ]
             }
@@ -112,7 +112,7 @@
                 "ovirt-capabilities": [
                     "snapshot-live-merge"
                 ],
-                "ovirt-scripts": [
+                "deploy-scripts": [
                     "../common/deploy-scripts/add_local_repo.sh",
                     "../common/deploy-scripts/setup_host_el7.sh"
                 ]
@@ -139,7 +139,7 @@
                 "ovirt-capabilities": [
                     "snapshot-live-merge"
                 ],
-                "ovirt-scripts": [
+                "deploy-scripts": [
                     "../common/deploy-scripts/add_local_repo.sh",
                     "../common/deploy-scripts/setup_host_el7.sh"
                 ]

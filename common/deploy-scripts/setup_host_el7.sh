@@ -3,6 +3,7 @@
 sed \
     -i /etc/sysconfig/network-scripts/ifcfg-eth0 \
     -e '/.*HWADDR.*/d'
+echo -e "\nDEVICE=eth0" >> /etc/sysconfig/network-scripts/ifcfg-eth0
 
 yum install -y deltarpm pm-utils
 #workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1258868

@@ -330,7 +330,3 @@ def test_gen():
     for t in testlib.test_sequence_gen(_TEST_LIST):
         test_gen.__name__ = t.description
         yield t
-
-
-def setup_module():
-    testlib.get_test_prefix().revert_snapshots('ovirt-clean')

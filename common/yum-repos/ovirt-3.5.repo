@@ -76,6 +76,6 @@ includepkgs=ioprocess python-ioprocess
 
 [glusterfs-el7]
 name=GlusterFS repo
-baseurl=http://download.gluster.org/pub/gluster/glusterfs/nightly/glusterfs/epel-7-x86_64/
+baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.7/
 enabled=1
 gpgcheck=0

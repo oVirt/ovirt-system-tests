@@ -50,11 +50,11 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
-SD_NFS_HOST_NAME = _get_prefixed_name('storage-nfs')
+SD_NFS_HOST_NAME = _get_prefixed_name('storage')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage-iscsi')
+SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
@@ -296,7 +296,7 @@ def import_templates(api):
     #TODO: Fix the exported domain generation
     raise SkipTest('Exported domain generation not supported yet')
     templates = api.storagedomains.get(
-        'templates',
+        SD_TEMPLATES_NAME,
     ).templates.list(
         unregistered=True,
     )

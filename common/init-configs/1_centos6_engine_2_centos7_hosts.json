@@ -19,13 +19,13 @@
             "metadata": {
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
-                "ovirt-scripts": [
-                    "../common/deploy-scripts/add_local_repo.sh",
-                    "../common/deploy-scripts/setup_engine.sh"
+                "deploy-scripts": [
+                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
+                    "@SUITE@/../common/deploy-scripts/setup_engine.sh"
                 ]
             }
         },
-        "storage-iscsi": {
+        "storage": {
             "memory": "2047",
             "nics": [
                 {
@@ -41,53 +41,34 @@
                     "format": "qcow2"
                 },
                 {
-                    "size": "60G",
+                    "comment": "Main NFS device",
+                    "size": "101G",
                     "type": "empty",
-                    "name": "extra1",
-                    "dev": "vdb",
-                    "format": "raw"
-                }
-            ],
-            "metadata": {
-                "ovirt-scripts": [
-                    "../common/deploy-scripts/setup_storage_iscsi_el7.sh"
-                ]
-            }
-        },
-        "storage-nfs": {
-            "memory": "2047",
-            "nics": [
-                {
-                    "net": "lago"
-                }
-            ],
-            "disks": [
-                {
-                    "template_name": "el7-base",
-                    "type": "template",
-                    "name": "root",
-                    "dev": "vda",
-                    "format": "qcow2"
-                },
-                {
-                    "size": "60G",
-                    "type": "empty",
-                    "name": "extra1",
+                    "name": "nfs",
                     "dev": "vdb",
                     "format": "qcow2"
                 },
                 {
                     "comment": "Not used yet, for future export domain tests",
-                    "size": "10G",
+                    "size": "20G",
                     "type": "empty",
                     "name": "export",
                     "dev": "vdc",
                     "format": "qcow2"
+                },
+                {
+                    "comment": "Main iSCSI device",
+                    "size": "101G",
+                    "type": "empty",
+                    "name": "iscsi",
+                    "dev": "vdd",
+                    "format": "qcow2"
                 }
             ],
             "metadata": {
-                "ovirt-scripts": [
-                    "../common/deploy-scripts/setup_storage_nfs_el7.sh"
+                "deploy-scripts": [
+                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
+                    "@SUITE@/../common/deploy-scripts/setup_storage_unified_el7.sh"
                 ]
             }
         },
@@ -112,9 +93,9 @@
                 "ovirt-capabilities": [
                     "snapshot-live-merge"
                 ],
-                "ovirt-scripts": [
-                    "../common/deploy-scripts/add_local_repo.sh",
-                    "../common/deploy-scripts/setup_host_el7.sh"
+                "deploy-scripts": [
+                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
+                    "@SUITE@/../common/deploy-scripts/setup_host_el7.sh"
                 ]
             }
         },
@@ -139,9 +120,9 @@
                 "ovirt-capabilities": [
                     "snapshot-live-merge"
                 ],
-                "ovirt-scripts": [
-                    "../common/deploy-scripts/add_local_repo.sh",
-                    "../common/deploy-scripts/setup_host_el7.sh"
+                "deploy-scripts": [
+                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
+                    "@SUITE@/../common/deploy-scripts/setup_host_el7.sh"
                 ]
             }
         }

@@ -1,0 +1,157 @@
+{
+    "domains": {
+        "engine": {
+	        "nics": [
+                {
+                    "net": "lago",
+                    "ip": "192,168.200.3"
+                }
+            ],
+            "type": "ova",
+            "cpu": 4,
+            "boot_time_sec" : 500,
+            "root-password": "12345",
+            "url": "file://@SUITE@/images/ovirt-appliance.ova",
+            "disks": [
+                {
+                    "type": "file",
+                    "path": "@SUITE@/utils/seed.iso",
+                    "dev": "sda",
+                    "format": "iso",
+                    "name":"cloud-init"
+                }
+            ],
+            "metadata": {
+                "ovirt-engine-password": "123",
+                "ovirt-role": "engine",
+                "deploy-scripts": [
+                    "../common/deploy-scripts/setup_engine.sh"
+                ]
+            }
+        },
+        "storage-iscsi": {
+            "memory": "2047",
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ],
+            "disks": [
+                {
+                    "template_name": "el7-base",
+                    "type": "template",
+                    "name": "root",
+                    "dev": "vda",
+                    "format": "qcow2"
+                },
+                {
+                    "size": "60G",
+                    "type": "empty",
+                    "name": "extra1",
+                    "dev": "vdb",
+                    "format": "raw"
+                }
+            ],
+            "metadata": {
+                "deploy-scripts": [
+                    "../common/deploy-scripts/setup_storage_iscsi_el7.sh"
+                ]
+            }
+        },
+        "storage-nfs": {
+            "memory": "2047",
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ],
+            "disks": [
+                {
+                    "template_name": "el7-base",
+                    "type": "template",
+                    "name": "root",
+                    "dev": "vda",
+                    "format": "qcow2"
+                },
+                {
+                    "size": "60G",
+                    "type": "empty",
+                    "name": "extra1",
+                    "dev": "vdb",
+                    "format": "qcow2"
+                },
+                {
+                    "comment": "Not used yet, for future export domain tests",
+                    "size": "10G",
+                    "type": "empty",
+                    "name": "export",
+                    "dev": "vdc",
+                    "format": "qcow2"
+                }
+            ],
+            "metadata": {
+                "deploy-scripts": [
+                    "../common/deploy-scripts/setup_storage_nfs_el7.sh"
+                ]
+            }
+        },
+        "node1": {
+            "memory": "2047",
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ],
+            "disks": [
+                {
+                    "type": "template",
+                    "template_type": "qcow2",
+                    "path": "@SUITE@/images/ovirt-node-ng-image.installed.qcow2",
+                    "dev": "sda",
+                    "format": "qcow2",
+                    "name":"src"
+                }
+            ],
+            "metadata": {
+                "ovirt-role": "node",
+                "ovirt-capabilities": [
+                    "snapshot-live-merge"
+                ]
+            }
+        },
+        "node2": {
+            "memory": "2047",
+            "nics": [
+                {
+                    "net": "lago"
+                }
+            ],
+            "disks": [
+                {
+                    "type": "template",
+                    "template_type": "qcow2",
+                    "path": "@SUITE@/images/ovirt-node-ng-image.installed.qcow2",
+                    "dev": "sda",
+                    "format": "qcow2",
+                    "name":"src"
+                }
+            ],
+            "metadata": {
+                "ovirt-role": "node",
+                "ovirt-capabilities": [
+                    "snapshot-live-merge"
+                ]
+            }
+        }
+    },
+    "nets": {
+        "lago": {
+            "type": "nat",
+            "dhcp": {
+                "start": 100,
+                "end": 254
+            },
+            "management": true
+        }
+    }
+}

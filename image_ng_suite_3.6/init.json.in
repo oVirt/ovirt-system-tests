@@ -25,7 +25,7 @@
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
                 "deploy-scripts": [
-                    "../common/deploy-scripts/setup_engine.sh"
+                    "@SUITE@/deploy-scripts/setup_engine.sh"
                 ]
             }
         },

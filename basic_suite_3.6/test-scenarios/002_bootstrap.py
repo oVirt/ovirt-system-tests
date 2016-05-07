@@ -67,6 +67,8 @@ SD_TEMPLATES_NAME = 'templates'
 SD_TEMPLATES_HOST_NAME = SD_ISO_HOST_NAME
 SD_TEMPLATES_PATH = '/exports/nfs_exported'
 
+SD_GLANCE_NAME = 'ovirt-image-repository'
+GLANCE_AVAIL = False
 
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
@@ -207,6 +209,8 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_nfs_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
+                functools.partial(import_non_template_from_glance, prefix),
+                functools.partial(import_template_from_glance, prefix),
             ],
         )
     else:
@@ -215,6 +219,8 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_iscsi_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
+                functools.partial(import_non_template_from_glance, prefix),
+                functools.partial(import_template_from_glance, prefix),
             ],
         )
     vt.start_all()
@@ -316,6 +322,59 @@ def import_templates(api):
         )
 
 
+def generic_import_from_glance(api, image_name='CirrOS 0.3.1', as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+    glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
+    target_image = glance_provider.images.get(name=image_name)
+    disk_name = image_name.replace(" ", "_") + image_ext
+    template_name = image_name.replace(" ", "_") + template_ext
+    import_action = params.Action(
+        storage_domain=params.StorageDomain(
+            name=dest_storage_domain,
+        ),
+        cluster=params.Cluster(
+            name=dest_cluster,
+        ),
+        import_as_template=as_template,
+        disk=params.Disk(
+            name=disk_name,
+        ),
+        template=params.Template(
+            name=template_name,
+        ),
+    )
+
+    nt.assert_true(
+        target_image.import_image(import_action)
+    )
+
+    testlib.assert_true_within_long(
+        lambda: api.disks.get(disk_name).status.state == 'ok',
+    )
+
+
+@testlib.with_ovirt_api
+def list_glance_images(api):
+    global GLANCE_AVAIL
+    glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
+    all_images = glance_provider.images.list()
+    if len(all_images):
+        GLANCE_AVAIL = True
+
+
+def import_non_template_from_glance(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
+    if not GLANCE_AVAIL:
+        raise SkipTest('%s: GLANCE is not available.' % import_from_glance.__name__ )
+    generic_import_from_glance(api)
+
+
+def import_template_from_glance(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
+    if not GLANCE_AVAIL:
+        raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
+    generic_import_from_glance(api, image_name='CirrOS 0.3.1', image_ext='_glance_template', as_template=True)
+
+
 @testlib.with_ovirt_api
 def set_dc_quota_audit(api):
     dc = api.datacenters.get(name=DC_NAME)
@@ -351,6 +410,7 @@ _TEST_LIST = [
     add_cluster,
     add_hosts,
     add_master_storage_domain,
+    list_glance_images,
     add_secondary_storage_domains,
     import_templates,
     add_quota_storage_limits,

@@ -19,7 +19,7 @@
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_engine.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine_image.sh"
                 ]
             },
             "nics": [
@@ -54,7 +54,7 @@
             ],
             "metadata": {
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_storage_iscsi.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_iscsi.sh"
                 ]
             }
         },
@@ -90,7 +90,7 @@
             ],
             "metadata": {
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_storage_nfs.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_nfs.sh"
                 ]
             }
         },

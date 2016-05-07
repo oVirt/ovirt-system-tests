@@ -20,8 +20,8 @@
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
                 "deploy-scripts": [
-                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/../common/deploy-scripts/setup_engine.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh"
                 ]
             }
         },
@@ -67,8 +67,8 @@
             ],
             "metadata": {
                 "deploy-scripts": [
-                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/../common/deploy-scripts/setup_storage_unified_el7.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh"
                 ]
             }
         },
@@ -94,8 +94,8 @@
                     "snapshot-live-merge"
                 ],
                 "deploy-scripts": [
-                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/../common/deploy-scripts/setup_host_el7.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh"
                 ]
             }
         },
@@ -121,8 +121,8 @@
                     "snapshot-live-merge"
                 ],
                 "deploy-scripts": [
-                    "@SUITE@/../common/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/../common/deploy-scripts/setup_host_el7.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh"
                 ]
             }
         }

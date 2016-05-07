@@ -1,7 +1,7 @@
 {
     "domains": {
         "engine": {
-	        "nics": [
+            "nics": [
                 {
                     "net": "lago",
                     "ip": "192,168.200.3"
@@ -25,7 +25,7 @@
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
                 "deploy-scripts": [
-                    "@SUITE@/deploy-scripts/setup_engine.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine_image_ng.sh"
                 ]
             }
         },
@@ -54,7 +54,7 @@
             ],
             "metadata": {
                 "deploy-scripts": [
-                    "../common/deploy-scripts/setup_storage_iscsi_el7.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_iscsi_el7.sh"
                 ]
             }
         },
@@ -91,7 +91,7 @@
             ],
             "metadata": {
                 "deploy-scripts": [
-                    "../common/deploy-scripts/setup_storage_nfs_el7.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_nfs_el7.sh"
                 ]
             }
         },

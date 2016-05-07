@@ -21,8 +21,8 @@
                     "snapshot-live-merge"
                 ],
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host.sh"
                 ]
             }
         }
@@ -47,8 +47,8 @@
                 "ovirt-engine-password": "123",
                 "ovirt-role": "engine",
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_engine.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh"
                 ]
             }
         },
@@ -76,7 +76,7 @@
             ],
             "metadata": {
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_storage_iscsi.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_iscsi.sh"
                 ]
             }
         },
@@ -111,7 +111,7 @@
             ],
             "metadata": {
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/setup_storage_nfs.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_nfs.sh"
                 ]
             }
         },

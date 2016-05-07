@@ -18,10 +18,10 @@
             "metadata": {
                 "ovirt-role": "host",
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/setup_vdsm_tests.sh",
-                    "@SUITE@/deploy-scripts/start_vdsm.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_vdsm_tests.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/start_vdsm.sh"
                 ]
             }
         },
@@ -43,10 +43,10 @@
             "metadata": {
                 "ovirt-role": "host",
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/setup_vdsm_tests.sh",
-                    "@SUITE@/deploy-scripts/start_vdsm.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_vdsm_tests.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/start_vdsm.sh"
                 ]
             }
         },
@@ -68,10 +68,10 @@
             "metadata": {
                 "ovirt-role": "host",
                 "ovirt-scripts": [
-                    "@SUITE@/deploy-scripts/add_local_repo.sh",
-                    "@SUITE@/deploy-scripts/setup_host.sh",
-                    "@SUITE@/deploy-scripts/setup_vdsm_tests.sh",
-                    "@SUITE@/deploy-scripts/start_vdsm.sh"
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/setup_vdsm_tests.sh",
+                    "$LAGO_INITFILE_PATH/../common/deploy-scripts/start_vdsm.sh"
                 ]
             }
         }

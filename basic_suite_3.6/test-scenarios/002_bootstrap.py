@@ -134,6 +134,15 @@ def add_hosts(prefix):
 
         return api.hosts.add(p)
 
+    def _host_is_up():
+        cur_state = api.hosts.get(host.name()).status.state
+
+        if cur_state == 'up':
+            return True
+
+        if cur_state == 'install_failed':
+            raise RuntimeError('Host %s failed to install' % host.name())
+
     hosts = prefix.virt_env.host_vms()
     vec = utils.func_vector(_add_host, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
@@ -141,10 +150,7 @@ def add_hosts(prefix):
     nt.assert_true(all(vt.join_all()))
 
     for host in hosts:
-        testlib.assert_true_within(
-            lambda: api.hosts.get(host.name()).status.state == 'up',
-            timeout=15 * 60,
-        )
+        testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
 
 def _add_storage_domain(api, p):

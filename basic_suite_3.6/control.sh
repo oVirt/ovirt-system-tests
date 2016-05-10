@@ -22,11 +22,16 @@ run_suite () {
     env_start
     env_deploy
 
-    test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
+    declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
+    declare failed=false
 
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"
-        env_run_test "$scenario"
+        env_run_test "$scenario" || failed=true
         env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
+        if $failed; then
+            echo "@@@@ ERROR: Failed running $scenario"
+            break
+        fi
     done
 }

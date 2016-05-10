@@ -76,9 +76,11 @@ env_deploy () {
 
 env_run_test () {
     echo "#########################"
+    local res=0
     cd $PREFIX
-    $CLI ovirt runtest $1
+    $CLI ovirt runtest $1 || res=$?
     cd -
+    return "$res"
 }
 
 

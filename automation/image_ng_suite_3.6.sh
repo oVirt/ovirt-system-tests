@@ -10,7 +10,7 @@
 #
 
 cleanup() {
-	rm -rf exported-artifacts
+    rm -rf exported-artifacts
     mkdir -p exported-artifacts
     [[ -d deployment-image_ng_suite_3.6/current/logs ]] \
     && mv deployment-image_ng_suite_3.6/current/logs exported-artifacts/lago_logs
@@ -36,28 +36,13 @@ sed -i -e 's/Defaults    requiretty.*/ #Defaults    requiretty/g' /etc/sudoers
 trap cleanup SIGTERM EXIT
 res=0
 
-engine="$(find "images/exported-artifacts" -mindepth 1 -maxdepth 3 -type f -name '*.ova' -print -quit)"
-node="$(find "images/exported-artifacts" -mindepth 1 -maxdepth 3 -type f -name '*.squashfs.img' -print -quit)"
+shopt -s nullglob
 
-rm -rf ovirt-node-ng || true
-git clone https://gerrit.ovirt.org/ovirt-node-ng
-pushd ovirt-node-ng
-git checkout ovirt-3.6
-#remove this line when node_ng get patched
-sed -i 's/--extra-args "/--wait=-1 --graphics none --extra-args "console=ttyS0 /' Makefile.am
-#build installed qcow
-./autogen.sh
-make boot.iso
-mv ../$node ./ovirt-node-ng-image.squashfs.img
-touch ovirt-node-ng-image.squashfs.img
-#use script to cheat the TTY
-script -e -c "sudo 	make installed-squashfs"
+node=(images/exported-artifacts/*squashfs.img)
+engine=(images/exported-artifacts/*.ova)
 
-#give it a chance to finish installing
-sleep 10
-while [ "$(virsh list | grep node | wc -l)" -ne "0" ]; do sleep 1 ; echo "waiting" ; done
-popd
-
-./run_image_suite.sh image_ng_suite_3.6 -n ovirt-node-ng/ovirt-node-ng-image.installed.qcow2 -e $engine \
+./run_suite.sh image_ng_suite_3.6 \
+    -n "$node" \
+    -e "$engine" \
 || res=$?
 exit $res

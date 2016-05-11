@@ -1,11 +1,6 @@
 #!/bin/bash -e
-CLI="lagocli"
+CLI="lago"
 DO_CLEANUP=false
-
-if [[ -n "$ENGINE_BUILD_GWT" ]]; then
-    ENGINE_WITH_GWT="--engine-with-gwt"
-fi
-
 
 usage () {
     echo "
@@ -24,13 +19,11 @@ Optional arguments:
         Path where the new environment will be deployed.
 
     -e,--engine PATH
-        Path to ovirt-engine source that will be available in the environment
+        Path to ovirt-engine appliance iso image
 
-    -v,--vdsm PATH
-        Path to vdsm source that will be available in the environment
+    -n,--node PATH
+        Path to the ovirt node squashfs iso image
 
-    -i,--ioprocess PATH
-        Path to ioprocess source that will be available in the environment
 "
 }
 
@@ -160,8 +153,8 @@ env_libvirt_cleanup() {
 
 options=$( \
     getopt \
-        -o ho:v:e:i:c \
-        --long help,output:,vdsm:,engine:,ioprocess:,cleanup \
+        -o ho:e:n:c \
+        --long help,output:,engine:,node:,cleanup \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -176,16 +169,12 @@ while true; do
             PREFIX=$(realpath $2)
             shift 2
             ;;
-        -v|--vdsm)
-            VDSM_DIR=$(realpath $2)
+        -n|--node)
+            NODE_ISO=$(realpath $2)
             shift 2
             ;;
         -e|--engine)
-            ENGINE_DIR=$(realpath $2)
-            shift 2
-            ;;
-        -i|--ioprocess)
-            IOPROCESS_DIR=$(realpath $2)
+            ENGINE_OVA=$(realpath $2)
             shift 2
             ;;
         -h|--help)
@@ -232,5 +221,5 @@ rm -rf "${PREFIX}"
 
 source "${SUITE}/control.sh"
 
-prep_suite
+prep_suite "$ENGINE_OVA" "$NODE_ISO"
 run_suite

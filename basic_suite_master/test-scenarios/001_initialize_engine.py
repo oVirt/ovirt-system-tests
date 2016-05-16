@@ -19,6 +19,7 @@
 #
 import os
 
+import nose.tools as nt
 from ovirtlago import testlib
 
 
@@ -41,8 +42,9 @@ def test_initialize_engine(prefix):
             '--config-append=/tmp/answer-file',
         ],
     )
-    if result.code != 0:
-        return result.code
+    nt.eq_(
+        result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
+    )
 
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()
@@ -57,8 +59,9 @@ def test_initialize_engine(prefix):
             'vdsConnectionTimeout=20',
         ],
     )
-    if result.code != 0:
-        return result.code
+    nt.eq_(
+        result.code, 0, 'engine-config failed. Exit code is %s' % result.code
+    )
 
     result = engine.ssh(
         [
@@ -69,8 +72,9 @@ def test_initialize_engine(prefix):
             'where option_name=\'SetupNetworksPollingTimeout\';\\\""',
         ],
     )
-    if result.code != 0:
-        return result.code
+    nt.eq_(
+        result.code, 0, 'DB change failed. Exit code is %s' % result.code
+    )
 
     engine.service('ovirt-engine')._request_stop()
     testlib.assert_true_within_long(

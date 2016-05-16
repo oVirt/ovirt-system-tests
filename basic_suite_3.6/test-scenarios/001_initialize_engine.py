@@ -19,6 +19,7 @@
 #
 import os
 
+import nose.tools as nt
 from ovirtlago import testlib
 
 
@@ -41,8 +42,9 @@ def test_initialize_engine(prefix):
             '--config-append=/tmp/answer-file',
         ],
     )
-    if result.code != 0:
-        return result.code
+    nt.eq_(
+        result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
+    )
 
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()

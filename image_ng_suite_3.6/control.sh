@@ -133,20 +133,23 @@ prep_suite(){
     mv -f "${node_image}" "${suite}/images/ovirt-node-ng-image.installed.qcow2"
     sed \
         -e "s,@SUITE@,$suite,g" \
-        -e "s,\(^[[:space:]]*\)\"\(engine\)\",\1\"lago_${suite_name}_\2\",g" \
-        -e "s,\(^[[:space:]]*\)\"\(host[[:digit:]]\+\)\",\1\"lago_${suite_name}_\2\",g" \
-        -e "s,\(^[[:space:]]*\)\"\(lago\)\",\1\"lago_${suite_name}_\2\",g" \
-        -e "s,\(^[[:space:]]*\)\"\(storage[^\"]*\)\",\1\"lago_${suite_name}_\2\",g" \
-        -e "s,\"net\": \"lago\",\"net\": \"lago_${suite_name}_lago\",g" \
-    < "${suite}/init.json.in" \
-    > "${suite}/init.json"
+        -e "s,\(^[[:space:]]*\)\(engine:\),\1lago_${suite_name}_\2,g" \
+        -e "s,\(^[[:space:]]*\)\(node[[:digit:]]\+:\),\1lago_${suite_name}_\2,g" \
+        -e "s,\(^[[:space:]]*\)\(lago:\),\1lago_${suite_name}_\2,g" \
+        -e "s,\(^[[:space:]]*\)\(storage[^:]*:\),\1lago_${suite_name}_\2,g" \
+        -e "s,- lago:,- lago_${suite_name}_lago:,g" \
+        -e "s,net: lago,net: lago_${suite_name}_lago,g" \
+    < "${suite}/LagoInitFile.in" \
+    > "${suite}/LagoInitFile"
 }
 
 
 run_suite(){
     local suite="${SUITE?}"
     local curdir="${PWD?}"
-    env_init "http://templates.ovirt.org/repo/repo.metadata"
+    env_init \
+        "http://templates.ovirt.org/repo/repo.metadata" \
+        "$suite/LagoInitFile"
     env_start
     env_deploy
 

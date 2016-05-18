@@ -131,15 +131,6 @@ prep_suite(){
     mkdir -p "${suite}/images"
     mv -f "${appliance_image}" "${suite}/images/ovirt-appliance.ova"
     mv -f "${node_image}" "${suite}/images/ovirt-node-ng-image.installed.qcow2"
-    sed \
-        -e "s,\(^[[:space:]]*\)\(engine:\),\1lago_${suite_name}_\2,g" \
-        -e "s,\(^[[:space:]]*\)\(node[[:digit:]]\+:\),\1lago_${suite_name}_\2,g" \
-        -e "s,\(^[[:space:]]*\)\(lago:\),\1lago_${suite_name}_\2,g" \
-        -e "s,\(^[[:space:]]*\)\(storage[^:]*:\),\1lago_${suite_name}_\2,g" \
-        -e "s,- lago:,- lago_${suite_name}_lago:,g" \
-        -e "s,net: lago,net: lago_${suite_name}_lago,g" \
-    < "${suite}/LagoInitFile.in" \
-    > "${suite}/LagoInitFile"
 }
 
 

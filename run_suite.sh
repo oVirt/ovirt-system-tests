@@ -31,9 +31,10 @@ Optional arguments:
 env_init () {
     echo "#########################"
     local template_repo="${1:-$SUITE/template-repo.json}"
+    local initfile="${2:-$SUITE/init.json}"
     $CLI init \
         $PREFIX \
-        $SUITE/init.json \
+        "$initfile" \
         --template-repo-path "$template_repo"
 }
 

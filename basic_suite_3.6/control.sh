@@ -4,7 +4,6 @@ prep_suite () {
     local suite_name="${SUITE##*/}"
     suite_name="${suite_name//./_}"
     sed \
-        -e "s,@SUITE@,${SUITE},g" \
         -e "s,\(^[[:space:]]*\)\(engine\):,\1lago_${suite_name}_\2:,g" \
         -e "s,\(^[[:space:]]*\)\(host[[:digit:]]\+\):,\1lago_${suite_name}_\2:,g" \
         -e "s,\(^[[:space:]]*\)\(lago\):,\1lago_${suite_name}_\2:,g" \

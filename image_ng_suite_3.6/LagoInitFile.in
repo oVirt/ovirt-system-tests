@@ -7,10 +7,10 @@ domains:
     cpu: 4
     boot_time_sec : 500
     root-password: 12345
-    url: file://@SUITE@/images/ovirt-appliance.ova
+    url: file://$LAGO_INITFILE_PATH/images/ovirt-appliance.ova
     disks:
       - type: file
-        path: @SUITE@/utils/seed.iso
+        path: $LAGO_INITFILE_PATH/utils/seed.iso
         dev: sda
         format: iso
         name: cloud-init
@@ -71,7 +71,7 @@ domains:
     disks:
       - type: template
         template_type: qcow2
-        path: @SUITE@/images/ovirt-node-ng-image.installed.qcow2
+        path: $LAGO_INITFILE_PATH/images/ovirt-node-ng-image.installed.qcow2
         dev: sda
         format: qcow2
         name: src
@@ -87,7 +87,7 @@ domains:
     disks:
       - type: template
         template_type: qcow2
-        path: @SUITE@/images/ovirt-node-ng-image.installed.qcow2
+        path: $LAGO_INITFILE_PATH/images/ovirt-node-ng-image.installed.qcow2
         dev: sda
         format: qcow2
         name: src

@@ -132,7 +132,6 @@ prep_suite(){
     mv -f "${appliance_image}" "${suite}/images/ovirt-appliance.ova"
     mv -f "${node_image}" "${suite}/images/ovirt-node-ng-image.installed.qcow2"
     sed \
-        -e "s,@SUITE@,$suite,g" \
         -e "s,\(^[[:space:]]*\)\(engine:\),\1lago_${suite_name}_\2,g" \
         -e "s,\(^[[:space:]]*\)\(node[[:digit:]]\+:\),\1lago_${suite_name}_\2,g" \
         -e "s,\(^[[:space:]]*\)\(lago:\),\1lago_${suite_name}_\2,g" \

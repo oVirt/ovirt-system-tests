@@ -7,7 +7,7 @@ usage () {
     echo "
 Usage:
 
-$0 SUITE [-o|--output path] [-e|--engine path] [-v|--vdsm path] [-i|--ioprocess path]
+$0 [options] SUITE
 
 This script runs a single suite of tests (a directory of tests repo)
 
@@ -24,6 +24,11 @@ Optional arguments:
 
     -n,--node PATH
         Path to the ovirt node squashfs iso image
+
+    -c,--cleanup
+        Clean up any generated lago workdirs for the given suite, it will
+        remove also from libvirt any domains if the current lago workdir fails
+        to be destroyed
 
 "
 }

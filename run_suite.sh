@@ -1,6 +1,7 @@
 #!/bin/bash -e
 CLI="lago"
 DO_CLEANUP=false
+RECOMMENDED_RAM_IN_MB=8196
 
 usage () {
     echo "
@@ -154,6 +155,18 @@ env_libvirt_cleanup() {
 }
 
 
+check_ram() {
+    local recommended="${1:-$RECOMMENDED_RAM_IN_MB}"
+    local cur_ram="$(free -m | grep Mem | awk '{print $2}')"
+    if [[ "$cur_ram" -lt "$recommended" ]]; then
+        echo "It's recommended to have at least ${recommended}MB of RAM" \
+            "installed on the system to run the system tests, if you find" \
+            "issues while running them, consider upgrading your system." \
+            "(only detected ${cur_ram}MB installed)"
+    fi
+}
+
+
 options=$( \
     getopt \
         -o ho:e:n:c \
@@ -220,6 +233,7 @@ fi
 echo "################# lago version"
 lago --version
 echo "#################"
+check_ram "$RECOMMENDED_RAM_IN_MB"
 echo "Running suite found in ${SUITE}"
 echo "Environment will be deployed at ${PREFIX}"
 

@@ -216,6 +216,9 @@ fi
     exit 1
 }
 
+echo "################# lago version"
+lago --version
+echo "#################"
 echo "Running suite found in ${SUITE}"
 echo "Environment will be deployed at ${PREFIX}"
 

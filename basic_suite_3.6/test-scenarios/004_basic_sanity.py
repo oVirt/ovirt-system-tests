@@ -17,11 +17,23 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import os
+import nose.tools as nt
 from nose import SkipTest
 
 from ovirtsdk.xml import params
 
 from ovirtlago import testlib
+
+# TODO: remove once lago can gracefully handle on-demand prefixes
+def _get_prefixed_name(entity_name):
+    suite = os.environ.get('SUITE')
+    return (
+        'lago_'
+        + os.path.basename(suite).replace('.', '_')
+        + '_' + entity_name
+    )
+
 
 MB = 2 ** 20
 GB = 2 ** 30
@@ -36,6 +48,11 @@ VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 
+SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
+SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
+SD_ISCSI_PORT = 3260
+SD_ISCSI_NR_LUNS = 2
+DLUN_DISK_NAME = 'DirectLunDisk'
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
@@ -98,6 +115,41 @@ def add_disk(api):
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+    )
+
+
+@testlib.with_ovirt_prefix
+def add_directlun(prefix):
+    # Find LUN GUIDs
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['multipath', '-ll', '-v1', '|sort'])
+    nt.assert_equals(ret.code, 0)
+
+    all_guids = ret.out.splitlines()
+    lun_guid = all_guids[SD_ISCSI_NR_LUNS] #Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
+
+    dlun_params = params.Disk(
+        name=DLUN_DISK_NAME,
+        interface='virtio_scsi',
+        format='raw',
+        lun_storage=params.Storage(
+            type_='iscsi',
+            logical_unit=[
+                params.LogicalUnit(
+                    id=lun_guid,
+                    address=prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ip(),
+                    port=SD_ISCSI_PORT,
+                    target=SD_ISCSI_TARGET,
+                )
+            ]
+        ),
+    )
+
+    api = prefix.virt_env.engine_vm().get_api()
+    api.vms.get(VM0_NAME).disks.add(dlun_params)
+    nt.assert_not_equal(
+        api.vms.get(VM0_NAME).disks.get(DLUN_DISK_NAME),
+        None,
+        'Direct LUN disk not attached'
     )
 
 
@@ -312,12 +364,14 @@ def hotplug_disk(api):
         api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
 
+
 _TEST_LIST = [
     add_vm_blank,
     add_nic,
     add_disk,
     snapshot_merge,
     add_vm_template,
+    add_directlun,
     vm_run,
     vm_migrate,
     snapshot_live_merge,

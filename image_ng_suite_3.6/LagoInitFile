@@ -1,5 +1,6 @@
 domains:
   lago_image_ng_suite_3_6_engine:
+    vm-type: ovirt-engine
     nics:
       - net: lago_image_ng_suite_3_6
         ip: 192,168.200.3
@@ -16,7 +17,6 @@ domains:
         name: cloud-init
     metadata:
       ovirt-engine-password: 123
-      ovirt-role: engine
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine_image_ng.sh
 
@@ -65,6 +65,7 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_nfs_el7.sh
 
   lago_image_ng_suite_3_6_node1:
+    vm-type: ovirt-node
     memory: 2047
     nics:
       - net: lago_image_ng_suite_3_6
@@ -76,11 +77,11 @@ domains:
         format: qcow2
         name: src
     metadata:
-      ovirt-role: node
       ovirt-capabilities:
         - snapshot-live-merge
 
   lago_image_ng_suite_3_6_node2:
+    vm-type: ovirt-node
     memory: 2047
     nics:
       - net: lago_image_ng_suite_3_6
@@ -92,7 +93,6 @@ domains:
         format: qcow2
         name: src
     metadata:
-      ovirt-role: node
       ovirt-capabilities:
         -  snapshot-live-merge
 

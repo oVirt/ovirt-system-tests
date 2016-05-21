@@ -1,5 +1,6 @@
 domains:
   engine:
+    vm-type: ovirt-engine
     memory: 4096
     nics:
       - net: lago
@@ -11,7 +12,6 @@ domains:
         format: qcow2
     metadata:
       ovirt-engine-password: 123
-      ovirt-role: engine
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
@@ -50,6 +50,7 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
 
   host1:
+    vm-type: ovirt-host
     memory: 2047
     nics:
       - net: lago
@@ -60,7 +61,6 @@ domains:
         dev: vda
         format: qcow2
     metadata:
-      ovirt-role: host
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:
@@ -68,6 +68,7 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
 
   host0:
+    vm-type: ovirt-host
     memory: 2047
     nics:
       - net: lago
@@ -78,7 +79,6 @@ domains:
         dev: vda
         format: qcow2
     metadata:
-      ovirt-role: host
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:

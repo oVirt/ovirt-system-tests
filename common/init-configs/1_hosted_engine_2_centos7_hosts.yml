@@ -1,0 +1,111 @@
+domains:
+  engine:
+    vm-provider: ssh
+    vm-type: ovirt-engine
+    distro: el7
+    nics:
+      - net: lago
+        ip: 192.168.200.99
+    metadata:
+      ovirt-engine-password: 123
+
+  storage:
+    memory: 2047
+    distro: el7
+    nics:
+      - net: lago
+    disks:
+      - template_name: el7-base
+        type: template
+        name: root
+        dev: vda
+        format: qcow2
+      - comment: Main NFS device
+        size: 101G
+        type: empty
+        name: nfs
+        dev: vdb
+        format: qcow2
+      - comment: Not used yet, for future export domain tests
+        size: 20G
+        type: empty
+        name: export
+        dev: vdc
+        format: qcow2
+      - comment: Main iSCSI device
+        size: 101G
+        type: empty
+        name: iscsi
+        dev: vdd
+        format: qcow2
+      - comment: Hosted engine storage
+        size: 60G
+        type: empty
+        name: he
+        dev: vde
+        format: qcow2
+    metadata:
+      deploy-scripts:
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_he_extra_el7.sh
+
+  host1:
+    vm-type: ovirt-host
+    distro: el7
+    memory: 5120
+    nics:
+      - net: lago
+    disks:
+      - template_name: el7-base
+        type: template
+        name: root
+        dev: vda
+        format: qcow2
+      - name: tmp
+        size: 30G
+        type: empty
+        dev: vdb
+        format: qcow2
+    metadata:
+      ovirt-capabilities:
+        - snapshot-live-merge
+      deploy-scripts:
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/install_he.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
+
+  host0:
+    vm-type: ovirt-host
+    distro: el7
+    memory: 5120
+    nics:
+      - net: lago
+    disks:
+      - template_name: el7-base
+        type: template
+        name: root
+        dev: vda
+        format: qcow2
+      - name: tmp
+        size: 60G
+        type: empty
+        dev: vdb
+        format: qcow2
+    metadata:
+      ovirt-capabilities:
+        - snapshot-live-merge
+      deploy-scripts:
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/install_he.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
+
+nets:
+  lago:
+    type: nat
+    dhcp:
+      start: 100
+      end: 254
+    management: true

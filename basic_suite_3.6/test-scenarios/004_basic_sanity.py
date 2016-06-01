@@ -42,6 +42,7 @@ TEST_DC = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
+TEMPLATE_CIRROS = 'CirrOS_0.3.1_glance_template'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -200,19 +201,42 @@ def snapshot_merge(api):
 
 @testlib.with_ovirt_api
 def add_vm_template(api):
-    #TODO: Fix the exported domain generation
-    raise SkipTest('Exported domain generation not supported yet')
+    #TODO: Fix the exported domain generation.
+    #For the time being, add VM from Glance imported template.
+    vm_memory = 512 * MB
     vm_params = params.VM(
         name=VM1_NAME,
-        memory=512 * MB,
+        description='CirrOS imported from Glance as Template',
+        memory=vm_memory,
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),
         template=params.Template(
-            name=TEMPLATE_CENTOS7,
+            name=TEMPLATE_CIRROS,
         ),
         display=params.Display(
-            type_='spice',
+            type_='vnc',
+        ),
+        memory_policy=params.MemoryPolicy(
+            guaranteed=vm_memory / 2,
+            ballooning=False,
+        ),
+        os=params.OperatingSystem(
+            type_='other_linux',
+        ),
+        timezone='Etc/GMT',
+        type_='server',
+        serial_number=params.SerialNumber(
+            policy='custom',
+            value='12345678',
+        ),
+        cpu=params.CPU(
+            architecture='X86_64',
+            topology=params.CpuTopology(
+                cores=1,
+                threads=2,
+                sockets=1,
+            ),
         ),
     )
     api.vms.add(vm_params)

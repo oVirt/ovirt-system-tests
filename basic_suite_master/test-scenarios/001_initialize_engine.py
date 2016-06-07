@@ -84,3 +84,6 @@ def test_initialize_engine(prefix):
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()
     )
+    testlib.assert_true_within_short(
+        lambda: engine.service('ovirt-engine-dwhd').alive()
+    )

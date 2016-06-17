@@ -4,9 +4,9 @@
 # mock_runner.sh or chrooter, from the root of the repository:
 #
 # $ cd repository/root
-# $ mock_runner.sh -e automation/basic_suite_master.sh
+# $ mock_runner.sh -e automation/basic_suite_4.0.sh
 # or
-# $ chrooter -s automation/basic_suite_master.sh
+# $ chrooter -s automation/basic_suite_4.0.sh
 #
 
 cleanup() {
@@ -28,6 +28,14 @@ export LIBGUESTFS_BACKEND=direct
 #export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
 trap cleanup SIGTERM EXIT
 res=0
-./run_suite.sh basic_suite_4.0 \
+
+# This is used to test external sources
+# it's done by putting them one by line in the ./extra_sources file
+extra_sources_cmd=''
+if [[ -e ./extra_sources ]]; then
+    extra_sources_cmd+="-s \"conf:$PWD/extra_sources\""
+fi
+
+./run_suite.sh $extra_sources_cmd basic_suite_4.0 \
 || res=$?
 exit $res

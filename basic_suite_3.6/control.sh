@@ -31,7 +31,7 @@ run_suite () {
         env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
         if $failed; then
             echo "@@@@ ERROR: Failed running $scenario"
-            break
+            return 1
         fi
     done
 }

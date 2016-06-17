@@ -62,6 +62,7 @@ env_repo_setup () {\
     cd $PREFIX
     for extrasrc in "${EXTRA_SOURCES[@]}"; do
         extrasrcs+=("--custom-source=$extrasrc")
+        echo "Adding extra source: $extrasrc"
     done
     $CLI ovirt reposetup \
         --reposync-yum-config $SUITE/reposync-config.repo \

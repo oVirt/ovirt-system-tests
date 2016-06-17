@@ -28,6 +28,14 @@ export LIBGUESTFS_BACKEND=direct
 #export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
 trap cleanup SIGTERM EXIT
 res=0
-./run_suite.sh basic_suite_master \
+
+# This is used to test external sources
+# it's done by putting them one by line in the ./extra_sources file
+extra_sources_cmd=''
+if [[ -e ./extra_sources ]]; then
+    extra_sources_cmd+="-s \"conf:$PWD/extra_sources\""
+fi
+
+./run_suite.sh $extra_sources_cmd basic_suite_master \
 || res=$?
 exit $res

@@ -14,19 +14,24 @@ TESTS_MASTER_PATH="basic_suite_master"
 # notice that multiple versions can be updated
 # on the same patch
 VERSIONS_TO_RUN=()
-if git show --pretty="format:" --name-only | egrep \
-    "(${TESTS_36_PATH} | ${COMMONS})"; then
+if git show --pretty='format:' --name-only | grep -E \
+    "$TESTS_36_PATH" ; then
     VERSIONS_TO_RUN+=('3.6')
 fi
 
-if git show --pretty="format:" --name-only | egrep \
-    "(${TESTS_40_PATH} | ${COMMONS})"; then
+if git show --pretty='format:' --name-only | grep -E \
+    "$TESTS_40_PATH"; then
     VERSIONS_TO_RUN+=('4.0')
 fi
 
-if git show --pretty="format:" --name-only | egrep \
-    "(${TESTS_MASTER_PATH} | ${COMMONS})"; then
+if git show --pretty='format:' --name-only | grep -E \
+    "$TESTS_MASTER_PATH"; then
     VERSIONS_TO_RUN+=('master')
+fi
+
+if git show --pretty='format:' --name-only | grep -E \
+    "$COMMONS"; then
+    VERSIONS_TO_RUN+=('3.6','4.0','master')
 fi
 
 pwd

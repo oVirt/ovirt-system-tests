@@ -70,6 +70,10 @@ SD_TEMPLATES_PATH = '/exports/nfs_exported'
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
 
+#Network
+VLAN200_NET = 'VLAN200_Network'
+VLAN100_NET = 'VLAN100_Network'
+
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
@@ -404,11 +408,59 @@ def add_quota_cluster_limits(api):
     )
 
 
+@testlib.with_ovirt_api
+def add_vm_network(api):
+    dc = api.datacenters.get(DC_NAME)
+    VLAN100 = params.Network(
+        name=VLAN100_NET,
+        data_center=params.DataCenter(
+            name=DC_NAME,
+        ),
+        description='VM Network on VLAN 100',
+        vlan=params.VLAN(
+            id='100',
+        ),
+    )
+
+    nt.assert_true(
+        api.networks.add(VLAN100)
+    )
+    nt.assert_true(
+        api.clusters.get(CLUSTER_NAME).networks.add(VLAN100)
+    )
+
+
+@testlib.with_ovirt_api
+def add_non_vm_network(api):
+    dc = api.datacenters.get(DC_NAME)
+    VLAN200 = params.Network(
+        name=VLAN200_NET,
+        data_center=params.DataCenter(
+            name=DC_NAME,
+        ),
+        description='Non VM Network on VLAN 200, MTU 9000',
+        vlan=params.VLAN(
+            id='200',
+        ),
+        usages=params.Usages(),
+        mtu=9000,
+    )
+
+    nt.assert_true(
+        api.networks.add(VLAN200)
+    )
+    nt.assert_true(
+        api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+    )
+
+
 _TEST_LIST = [
     add_dc,
     add_dc_quota,
     add_cluster,
     add_hosts,
+    add_non_vm_network,
+    add_vm_network,
     add_master_storage_domain,
     list_glance_images,
     add_secondary_storage_domains,

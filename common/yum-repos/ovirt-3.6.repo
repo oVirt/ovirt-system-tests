@@ -4,28 +4,28 @@ reposdir=/etc/reposync.repos.d
 [ovirt-3.6-pre-el6]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6-pre/rpm/el6/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
 enabled=1
 gpgcheck=0
 
 [ovirt-3.6-pre-el7]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6-pre/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess ovirt-engine-appliance
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 
 [ovirt-3.6-el6]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el6/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
 enabled=1
 gpgcheck=0
 
 [ovirt-3.6-el7]
 name=oVirt 3.6
 baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* unboundid-ldapsdk-* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess ovirt-engine-appliance
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess ovirt-engine-appliance
 enabled=1
 gpgcheck=0
 

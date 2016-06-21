@@ -1,0 +1,1 @@
+../../basic_suite_3.6/test-scenarios/005_aaa-ldap.py

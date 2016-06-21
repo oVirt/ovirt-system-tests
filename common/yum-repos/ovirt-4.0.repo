@@ -5,13 +5,13 @@ reposdir=/etc/reposync.repos.d
 name=oVirt 4.0 Nightly Test Releases
 baseurl=http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/el7/
 enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* unboundid-ldapsdk* libguestfs* httpcomponents* ovirt-live-artwork ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs
 gpgcheck=0
 
 [ovirt-4.0-snapshot-static-el7]
 name=oVirt 4.0 Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-4.0-snapshot-static/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist* *javadoc* unboundid-ldapsdk* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents* ovirt-live-artwork ovirt-engine ovirt-engine ovirt-engine-backend ovirt-engine-dbscripts ovirt-engine-extensions-api-impl ovirt-engine-extensions-api-impl-javadoc ovirt-engine-lib ovirt-engine-restapi ovirt-engine-setup ovirt-engine-setup-base ovirt-engine-setup-plugin-dockerc ovirt-engine-setup-plugin-ovirt-engine ovirt-engine-setup-plugin-ovirt-engine-common ovirt-engine-setup-plugin-vmconsole-proxy-helper ovirt-engine-setup-plugin-websocket-proxy ovirt-engine-tools ovirt-engine-tools-backup ovirt-engine-userportal ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper ovirt-engine-webadmin-portal ovirt-engine-webadmin-portal-debuginfo ovirt-engine-websocket-proxy ovirt-engine-appliance ovirt-engine-nodejs
+exclude=ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist* *javadoc* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents* ovirt-live-artwork ovirt-engine ovirt-engine ovirt-engine-backend ovirt-engine-dbscripts ovirt-engine-extensions-api-impl ovirt-engine-extensions-api-impl-javadoc ovirt-engine-lib ovirt-engine-restapi ovirt-engine-setup ovirt-engine-setup-base ovirt-engine-setup-plugin-dockerc ovirt-engine-setup-plugin-ovirt-engine ovirt-engine-setup-plugin-ovirt-engine-common ovirt-engine-setup-plugin-vmconsole-proxy-helper ovirt-engine-setup-plugin-websocket-proxy ovirt-engine-tools ovirt-engine-tools-backup ovirt-engine-userportal ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper ovirt-engine-webadmin-portal ovirt-engine-webadmin-portal-debuginfo ovirt-engine-websocket-proxy ovirt-engine-appliance ovirt-engine-nodejs
 enabled=1
 gpgcheck=0
 

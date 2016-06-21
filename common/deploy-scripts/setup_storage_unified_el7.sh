@@ -145,8 +145,29 @@ enable_multipath() {
     systemctl start multipathd
 }
 
+ipa_install_deps() {
+    yum --enablerepo=base install -y deltarpm pm-utils
+    yum --enablerepo=base --enablerepo=updates install -y ipa-server
+}
+
+ipa_setup_freeipa() {
+    DOMAIN=lago.local
+    PASSWORD=12345678
+    HOSTNAME=$(hostname | sed s/_/-/g)."$DOMAIN"
+    REALM=$(echo $DOMAIN | awk '{print toupper($0)}')
+    ADDR=$(\
+      /sbin/ip -4 -o addr show dev eth0 \
+      | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
+      | awk -F/ '{print $1}'\
+    )
+
+    hostname $HOSTNAME
+    echo "$ADDR $HOSTNAME" >> /etc/hosts
+    ipa-server-install -a $PASSWORD --hostname=$HOSTNAME -r $REALM -p $PASSWORD -n $DOMAIN -U
+}
 
 main() {
+    # Prepare storage
     install_deps
     setup_services
     setup_main_nfs
@@ -154,6 +175,10 @@ main() {
     setup_iso
     setup_iscsi
     enable_multipath
+
+    # Prepare FreeIPA
+    ipa_install_deps
+    ipa_setup_freeipa
 }
 
 

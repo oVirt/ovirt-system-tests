@@ -13,6 +13,7 @@ echo "$ADDR engine" >> /etc/hosts
 
 yum install -y deltarpm
 yum install --nogpgcheck -y ovirt-engine
+yum install --enablerepo=base --nogpgcheck -y ovirt-engine-extension-aaa-ldap*
 
 
 # Enable debug logs on the engine

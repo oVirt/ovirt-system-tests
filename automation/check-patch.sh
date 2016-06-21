@@ -31,7 +31,7 @@ fi
 
 if git show --pretty='format:' --name-only | grep -E \
     "$COMMONS"; then
-    VERSIONS_TO_RUN+=('3.6','4.0','master')
+    VERSIONS_TO_RUN+=('3.6' '4.0' 'master')
 fi
 
 pwd

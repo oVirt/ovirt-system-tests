@@ -38,7 +38,7 @@ pwd
 for VER in "${VERSIONS_TO_RUN[@]}"
 do
 	# we need a specific SDK for each oVirt version
-	/usr/bin/dnf install -y lago-ovirt ovirt-engine-sdk-python --disablerepo=ovirt* --enablerepo=ovirt-$VER-snapshot
+	/usr/bin/dnf install -y lago-ovirt ovirt-engine-sdk-python --disablerepo=ovirt* --enablerepo=ovirt-$VER*
 	TEST_SUITE_PREFIX="basic_suite_"
 	echo "running tests for version $VER"
 	RUN_SCRIPT=$TEST_SUITE_PREFIX$VER".sh"

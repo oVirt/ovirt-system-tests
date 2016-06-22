@@ -40,8 +40,8 @@ def _get_prefixed_name(entity_name):
 
 # DC/Cluster
 DC_NAME = 'test-dc'
-DC_VER_MAJ = 3
-DC_VER_MIN = 6
+DC_VER_MAJ = 4
+DC_VER_MIN = 1
 CLUSTER_NAME = 'test-cluster'
 CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
 DC_QUOTA_NAME = 'DC-QUOTA'

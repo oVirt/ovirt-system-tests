@@ -1,1 +1,1 @@
-../../basic_suite_3.6/test-scenarios/002_bootstrap.py
+../../basic_suite_master/test-scenarios/002_bootstrap.py

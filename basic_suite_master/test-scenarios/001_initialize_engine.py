@@ -50,40 +50,6 @@ def test_initialize_engine(prefix):
         lambda: engine.service('ovirt-engine').alive()
     )
 
-# Change the timeout, requires engine restart
-
-    result = engine.ssh(
-        [
-            'engine-config',
-            '--set',
-            'vdsConnectionTimeout=20',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'engine-config failed. Exit code is %s' % result.code
-    )
-
-    result = engine.ssh(
-        [
-            "su",
-            "postgres",
-            "-c",
-            '"psql engine -c \\\"update vdc_options set option_value=15 '
-            'where option_name=\'SetupNetworksPollingTimeout\';\\\""',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'DB change failed. Exit code is %s' % result.code
-    )
-
-    engine.service('ovirt-engine')._request_stop()
-    testlib.assert_true_within_long(
-        lambda: not engine.service('ovirt-engine').alive()
-    )
-    engine.service('ovirt-engine')._request_start()
-    testlib.assert_true_within_long(
-        lambda: engine.service('ovirt-engine').alive()
-    )
     testlib.assert_true_within_short(
         lambda: engine.service('ovirt-engine-dwhd').alive()
     )

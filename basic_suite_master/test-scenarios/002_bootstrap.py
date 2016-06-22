@@ -92,6 +92,16 @@ def add_dc(api):
 
 
 @testlib.with_ovirt_api
+def remove_default_dc(api):
+    nt.assert_true(api.datacenters.get(name='Default').delete())
+
+
+@testlib.with_ovirt_api
+def remove_default_cluster(api):
+    nt.assert_true(api.clusters.get(name='Default').delete())
+
+
+@testlib.with_ovirt_api
 def add_dc_quota(api):
         dc = api.datacenters.get(name=DC_NAME)
         quota = params.Quota(
@@ -470,8 +480,10 @@ def add_non_vm_network(api):
 
 _TEST_LIST = [
     add_dc,
+    remove_default_dc,
     add_dc_quota,
     add_cluster,
+    remove_default_cluster,
     add_hosts,
     add_non_vm_network,
     add_vm_network,

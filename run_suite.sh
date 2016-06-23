@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 CLI="lago"
 DO_CLEANUP=false
 RECOMMENDED_RAM_IN_MB=8196

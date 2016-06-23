@@ -15,23 +15,24 @@ TESTS_MASTER_PATH="basic_suite_master"
 # on the same patch
 VERSIONS_TO_RUN=()
 if git show --pretty='format:' --name-only | grep -E \
-    "$TESTS_36_PATH" ; then
-    VERSIONS_TO_RUN+=('3.6')
-fi
-
-if git show --pretty='format:' --name-only | grep -E \
-    "$TESTS_40_PATH"; then
-    VERSIONS_TO_RUN+=('4.0')
-fi
-
-if git show --pretty='format:' --name-only | grep -E \
-    "$TESTS_MASTER_PATH"; then
-    VERSIONS_TO_RUN+=('master')
-fi
-
-if git show --pretty='format:' --name-only | grep -E \
     "$COMMONS"; then
     VERSIONS_TO_RUN+=('3.6' '4.0' 'master')
+
+else
+  if git show --pretty='format:' --name-only | grep -E \
+      "$TESTS_36_PATH" ; then
+      VERSIONS_TO_RUN+=('3.6')
+  fi
+
+  if git show --pretty='format:' --name-only | grep -E \
+      "$TESTS_40_PATH"; then
+      VERSIONS_TO_RUN+=('4.0')
+  fi
+
+  if git show --pretty='format:' --name-only | grep -E \
+      "$TESTS_MASTER_PATH"; then
+      VERSIONS_TO_RUN+=('master')
+  fi
 fi
 
 pwd

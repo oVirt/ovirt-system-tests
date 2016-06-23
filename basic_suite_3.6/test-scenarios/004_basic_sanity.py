@@ -54,6 +54,7 @@ SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
+SD_TEMPLATES_NAME = 'templates'
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
@@ -286,6 +287,19 @@ def vm_migrate(prefix):
     )
 
 
+@testlib.with_ovirt_api
+def template_export(api):
+    api.templates.get(TEMPLATE_CIRROS).export(
+        params.Action(
+            storage_domain=api.storagedomains.get(SD_TEMPLATES_NAME)
+        ),
+    )
+
+    testlib.assert_true_within_long(
+        lambda: api.templates.get(TEMPLATE_CIRROS).status.state == 'ok',
+    )
+
+
 @testlib.host_capability(['snapshot-live-merge'])
 @testlib.with_ovirt_api
 def snapshot_live_merge(api):
@@ -397,6 +411,7 @@ _TEST_LIST = [
     add_vm_template,
     add_directlun,
     vm_run,
+    template_export,
     vm_migrate,
     snapshot_live_merge,
     hotplug_nic,

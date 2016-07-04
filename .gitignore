@@ -7,3 +7,16 @@ basic_suite_master/init.json
 deployment-basic_suite_3.5
 deployment-basic_suite_3.6
 deployment-basic_suite_master
+
+#IDE files
+##########
+.settings
+.project
+.factorypath
+.externalToolBuilders
+.pmd
+*.ipr
+*.iml
+.idea
+.pydevproject
+

@@ -1,43 +1,29 @@
 [main]
 reposdir=/etc/reposync.repos.d
 
-[ovirt-3.6-pre-el6]
-name=oVirt 3.6
-baseurl=http://resources.ovirt.org/pub/ovirt-3.6-pre/rpm/el6/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
+[ovirt-3.6-snapshot-el6]
+name=oVirt 3.6 Nightly Test Releases
+baseurl=http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/el6/
+enabled=1
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork ovirt-node-ng* ovirt-engine-appliance
+gpgcheck=0
+
+[ovirt-3.6-snapshot-static-el6]
+name=oVirt 3.6 Nightly Test Releases
+baseurl=http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/el6/
 enabled=1
 gpgcheck=0
 
-[ovirt-3.6-pre-el7]
-name=oVirt 3.6
-baseurl=http://resources.ovirt.org/pub/ovirt-3.6-pre/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess ovirt-engine-appliance
+[ovirt-3.6-snapshot-el7]
+name=oVirt 3.6 Nightly Test Releases
+baseurl=http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/el7/
 enabled=1
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork ovirt-node-ng* ovirt-engine-appliance
 gpgcheck=0
 
-[ovirt-3.6-el6]
-name=oVirt 3.6
-baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el6/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork
-enabled=1
-gpgcheck=0
-
-[ovirt-3.6-el7]
-name=oVirt 3.6
-baseurl=http://resources.ovirt.org/pub/ovirt-3.6/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-engine-dwh ovirt-engine-reports virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist-* *javadoc* ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents-* ovirt-live-artwork OVMF ipxe-bootimgs-* python-ioprocess ioprocess ovirt-engine-appliance
-enabled=1
-gpgcheck=0
-
-[ovirt-3.6-dependencies-el6]
-name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-6-x86_64/
-enabled=1
-gpgcheck=0
-
-[ovirt-3.6-dependencies-el7]
-name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
+[ovirt-3.6-snapshot-static-el7]
+name=oVirt 3.6 Nightly Test Releases
+baseurl=http://resources.ovirt.org/pub/ovirt-3.6-snapshot-static/rpm/el7/
 enabled=1
 gpgcheck=0
 
@@ -105,3 +91,9 @@ enabled=1
 gpgcheck=0
 includepkgs=cockpit cockpit-bridge cockpit-docker cockpit-networkmanager cockpit-shell cockpit-storaged cockpit-ws docker docker-common docker-forward-journald docker-selinux libssh libstoraged storaged storaged-lvm2 oci-register-machine oci-systemd-hook
 exclude= *i686
+
+[ovirt-3.6-patternfly1-noarch-epel-el6]
+name=Copr repo for patternfly1 owned by patternfly
+baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-6-x86_64/
+enabled=1
+gpgcheck=0

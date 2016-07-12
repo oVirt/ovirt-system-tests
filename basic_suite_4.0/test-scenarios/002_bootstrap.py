@@ -69,6 +69,7 @@ SD_TEMPLATES_PATH = '/exports/nfs_exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
+CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
 
 #Network
 VLAN200_NET = 'VLAN200_Network'
@@ -340,7 +341,7 @@ def import_templates(api):
         )
 
 
-def generic_import_from_glance(api, image_name='CirrOS 0.3.1', as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     target_image = glance_provider.images.get(name=image_name)
     disk_name = image_name.replace(" ", "_") + image_ext
@@ -374,15 +375,16 @@ def generic_import_from_glance(api, image_name='CirrOS 0.3.1', as_template=False
 def list_glance_images(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-    all_images = glance_provider.images.list()
-    if len(all_images):
-        GLANCE_AVAIL = True
+    if glance_provider is not None:
+        all_images = glance_provider.images.list()
+        if len(all_images):
+            GLANCE_AVAIL = True
 
 
 def import_non_template_from_glance(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_from_glance.__name__ )
+        raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
     generic_import_from_glance(api)
 
 
@@ -390,7 +392,7 @@ def import_template_from_glance(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(api, image_name='CirrOS 0.3.1', image_ext='_glance_template', as_template=True)
+    generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
 
 
 @testlib.with_ovirt_api

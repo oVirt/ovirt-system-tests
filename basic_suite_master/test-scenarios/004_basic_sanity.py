@@ -42,7 +42,7 @@ TEST_DC = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
-TEMPLATE_CIRROS = 'CirrOS_0.3.1_glance_template'
+TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -204,6 +204,9 @@ def snapshot_merge(api):
 def add_vm_template(api):
     #TODO: Fix the exported domain generation.
     #For the time being, add VM from Glance imported template.
+    if api.templates.get(name=TEMPLATE_CIRROS) is None:
+        raise SkipTest('%s: template %s not available.' % (add_vm_template.__name__, TEMPLATE_CIRROS))
+
     vm_memory = 512 * MB
     vm_params = params.VM(
         name=VM1_NAME,

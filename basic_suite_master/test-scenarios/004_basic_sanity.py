@@ -406,7 +406,23 @@ def hotplug_disk(api):
     )
 
 
+@testlib.with_ovirt_api
+def add_event(api):
+    event_params = params.Event(
+        description='ovirt-system-tests description',
+        custom_id=int('01234567890'),
+        severity='NORMAL',
+        origin='ovirt-system-tests',
+        cluster=params.Cluster(
+            name=TEST_CLUSTER,
+        ),
+    )
+
+    nt.assert_true(api.events.add(event_params))
+
+
 _TEST_LIST = [
+    add_event,
     add_vm_blank,
     add_nic,
     add_disk,

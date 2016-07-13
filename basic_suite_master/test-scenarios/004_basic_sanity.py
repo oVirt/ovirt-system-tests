@@ -69,7 +69,10 @@ def add_vm_blank(api):
             name=TEMPLATE_BLANK,
         ),
         display=params.Display(
-            type_='spice',
+            smartcard_enabled=True,
+            keyboard_layout='en-us',
+            file_transfer_enabled=True,
+            copy_paste_enabled=True,
         ),
         memory_policy=params.MemoryPolicy(
             guaranteed=vm_memory / 2,
@@ -117,6 +120,20 @@ def add_disk(api):
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+    )
+
+
+@testlib.with_ovirt_api
+def add_console(api):
+    vm = api.vms.get(VM0_NAME)
+    vm.graphicsconsoles.add(
+        params.GraphicsConsole(
+            protocol='vnc',
+        )
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        len(api.vms.get(VM0_NAME).graphicsconsoles.list()) == 2
     )
 
 
@@ -429,6 +446,7 @@ _TEST_LIST = [
     add_vm_blank,
     add_nic,
     add_disk,
+    add_console,
     snapshot_merge,
     add_vm_template,
     add_directlun,

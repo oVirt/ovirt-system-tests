@@ -246,6 +246,7 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
+                functools.partial(log_collector, prefix),
             ],
         )
     else:
@@ -256,6 +257,7 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
+                functools.partial(log_collector, prefix),
             ],
         )
     vt.start_all()
@@ -477,6 +479,19 @@ def add_non_vm_network(api):
     )
     nt.assert_true(
         api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+    )
+
+
+def log_collector(prefix):
+    engine = prefix.virt_env.engine_vm()
+    result = engine.ssh(
+        [
+            'ovirt-log-collector',
+            '--conf-file=/root/ovirt-log-collector.conf',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'log collector failed. Exit code is %s' % result.code
     )
 
 

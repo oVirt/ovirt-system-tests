@@ -4,7 +4,10 @@
 
 # Which tests suites to run
 
-COMMONS=common
+#TODO: update commons with valid paths that are relevant
+#to ALL tests, right now its hard to understand exactly
+#which suite is using what
+COMMONS=
 TESTS_36_PATH="basic_suite_3.6"
 TESTS_40_PATH="basic_suite_4.0"
 TESTS_MASTER_PATH="basic_suite_master"

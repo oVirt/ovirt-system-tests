@@ -145,25 +145,65 @@ enable_multipath() {
     systemctl start multipathd
 }
 
-ipa_install_deps() {
-    yum --enablerepo=base install -y deltarpm pm-utils
-    yum --enablerepo=base --enablerepo=updates install -y ipa-server
+install_deps_389ds() {
+    yum install -y 389-ds-base
 }
 
-ipa_setup_freeipa() {
+setup_389ds() {
     DOMAIN=lago.local
     PASSWORD=12345678
     HOSTNAME=$(hostname | sed s/_/-/g)."$DOMAIN"
-    REALM=$(echo $DOMAIN | awk '{print toupper($0)}')
     ADDR=$(\
       /sbin/ip -4 -o addr show dev eth0 \
       | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
       | awk -F/ '{print $1}'\
     )
+    cat >> answer_file.inf <<EOC
+[General]
+FullMachineName= @HOSTNAME@
+SuiteSpotUserID= root
+SuiteSpotGroup= root
+ConfigDirectoryLdapURL= ldap://@HOSTNAME@:389/o=NetscapeRoot
+ConfigDirectoryAdminID= admin
+ConfigDirectoryAdminPwd= @PASSWORD@
+AdminDomain= @DOMAIN@
+
+[slapd]
+ServerIdentifier= lago
+ServerPort= 389
+Suffix= dc=lago, dc=local
+RootDN= cn=Directory Manager
+RootDNPwd= @PASSWORD@
+
+[admin]
+ServerAdminID= admin
+ServerAdminPwd= @PASSWORD@
+SysUser= dirsrv
+EOC
+
+    sed -i 's/@HOSTNAME@/'"$HOSTNAME"'/g' answer_file.inf
+    sed -i 's/@PASSWORD@/'"$PASSWORD"'/g' answer_file.inf
+    sed -i 's/@DOMAIN@/'"$DOMAIN"'/g' answer_file.inf
+
+    cat >> add_user.ldif <<EOC
+dn: uid=user1,ou=People,dc=lago,dc=local
+uid: user1
+givenName: user1
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetorgperson
+objectclass: inetuser
+sn: user1
+cn: user1 user1
+userPassword: {SSHA}1e/GY7pCEhoL5yMR8HvjI7+3me6PQtxZ
+# Password is 123456
+EOC
 
     hostname $HOSTNAME
     echo "$ADDR $HOSTNAME" >> /etc/hosts
-    ipa-server-install -a $PASSWORD --hostname=$HOSTNAME -r $REALM -p $PASSWORD -n $DOMAIN -U
+    /usr/sbin/setup-ds.pl --silent --file=answer_file.inf
+    ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_user.ldif
 }
 
 main() {
@@ -176,9 +216,9 @@ main() {
     setup_iscsi
     enable_multipath
 
-    # Prepare FreeIPA
-    ipa_install_deps
-    ipa_setup_freeipa
+    # Prepare 389ds
+    install_deps_389ds
+    setup_389ds
 }
 
 

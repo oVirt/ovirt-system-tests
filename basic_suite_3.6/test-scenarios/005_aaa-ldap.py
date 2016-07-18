@@ -37,15 +37,15 @@ def _get_prefixed_name(entity_name):
 
 
 # AAA
-AAA_LDAP_USER = 'admin'
+AAA_LDAP_USER = 'user1'
 AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
-IPA_HOSTNAME = _get_prefixed_name('storage')
+HOSTNAME_389DS = _get_prefixed_name('storage')
 
 
 @testlib.with_ovirt_prefix
 def add_ldap_provider(prefix):
     engine = prefix.virt_env.engine_vm()
-    ipa = prefix.virt_env.get_vm(IPA_HOSTNAME)
+    machine_389ds = prefix.virt_env.get_vm(HOSTNAME_389DS)
 
     answer_file_src = os.path.join(
         os.environ.get('SUITE'),
@@ -54,7 +54,7 @@ def add_ldap_provider(prefix):
 
     with open(answer_file_src, 'r') as f:
         content = f.read()
-        content = content.replace('@IPA_IP@', ipa.ip())
+        content = content.replace('@389DS_IP@', machine_389ds.ip())
 
     with tempfile.NamedTemporaryFile(delete=False) as temp:
         temp.write(content)

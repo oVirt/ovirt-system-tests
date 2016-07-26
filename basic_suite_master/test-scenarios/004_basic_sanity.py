@@ -47,7 +47,7 @@ TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
-DISK1_NAME = '%s_disk1' % VM1_NAME
+DISK1_NAME = '%s_disk1' % VM0_NAME
 
 SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
@@ -384,26 +384,29 @@ def hotplug_nic(api):
 def hotplug_disk(api):
     disk2_params = params.Disk(
         name=DISK1_NAME,
-        size=10 * GB,
-        provisioned_size=1,
+        size=9 * GB,
+        provisioned_size=2,
         interface='virtio',
         format='cow',
         storage_domains=params.StorageDomains(
             storage_domain=[
                 params.StorageDomain(
-                    name='nfs',
+                    name='iscsi',
                 ),
             ],
         ),
         status=None,
         sparse=True,
         bootable=False,
+        active=True,
     )
     api.vms.get(VM0_NAME).disks.add(disk2_params)
+
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
+    nt.assert_true(api.vms.get(VM0_NAME).disks.get(DISK1_NAME).active)
 
 
 @testlib.with_ovirt_api

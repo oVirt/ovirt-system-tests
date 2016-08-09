@@ -16,7 +16,7 @@ prep_suite () {
 
 run_suite () {
     env_init \
-        "http://templates.ovirt.org/repo/repo.metadata" \
+        "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
     env_start

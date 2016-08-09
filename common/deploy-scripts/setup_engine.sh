@@ -1,5 +1,26 @@
 set -xe
 
+# if needed, install and configure firewalld
+EL7="release 7\.[0-9]"
+function install_firewalld() {
+    if grep "$EL7" /etc/redhat-release > /dev/null; then
+        if  ! rpm -q firewalld > /dev/null; then
+            {
+                yum install -y firewalld && \
+                {
+                systemctl start firewalld
+                systemctl enable firewalld
+                firewall-cmd --permanent --zone=public --add-interface=eth0
+                systemctl restart firewalld;
+                }
+            }
+        else
+            systemctl start firewalld
+            systemctl enable firewalld
+        fi
+    fi
+}
+
 cat > /root/iso-uploader.conf << EOF
 [ISOUploader]
 user=admin@internal
@@ -19,6 +40,7 @@ ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "."
 echo "$ADDR engine" >> /etc/hosts
 
 yum install -y deltarpm
+install_firewalld
 yum install --nogpgcheck -y ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
 
 

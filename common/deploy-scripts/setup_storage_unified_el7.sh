@@ -35,10 +35,8 @@ setup_export() {
 install_deps() {
     systemctl stop kdump.service
     systemctl disable kdump.service
-    yum install -y --disablerepo=base --disablerepo=updates --disablerepo=extras \
-                   deltarpm
-    yum install -y --disablerepo=base --disablerepo=updates --disablerepo=extras \
-                   device-mapper-multipath \
+    yum install -y deltarpm
+    yum install -y device-mapper-multipath \
                    nfs-utils \
                    lvm2 \
                    targetcli \
@@ -122,6 +120,14 @@ EOC
     #    -e 's/^\s*# global_filter.*/global_filter = \["r\|\/dev\/vg1_storage\/\*\|" \]/'
 }
 
+disable_firewalld() {
+    if rpm -q firewalld > /dev/null; then
+        {
+            systemctl disable firewalld
+            systemctl stop firewalld
+        }
+    fi
+}
 
 setup_services() {
     systemctl stop postfix
@@ -129,8 +135,7 @@ setup_services() {
     systemctl stop wpa_supplicant
     systemctl disable wpa_supplicant
     modprobe dm_multipath
-    systemctl disable firewalld
-    systemctl stop firewalld
+    disable_firewalld
     systemctl start rpcbind.service
     systemctl start nfs-server.service
     systemctl start nfs-lock.service

@@ -167,7 +167,6 @@ def add_hosts(prefix):
     for host in hosts:
         testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
-#KEEPING THE TEST for future usage when cockpit will be available for 4.0
 @testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):
@@ -502,6 +501,7 @@ _TEST_LIST = [
     add_cluster,
     remove_default_cluster,
     add_hosts,
+    install_cockpit_ovirt,
     add_non_vm_network,
     add_vm_network,
     add_master_storage_domain,

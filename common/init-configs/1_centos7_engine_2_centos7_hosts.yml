@@ -10,22 +10,6 @@ domains:
         name: root
         dev: vda
         format: qcow2
-    metadata:
-      ovirt-engine-password: 123
-      deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
-
-  storage:
-    memory: 2047
-    nics:
-      - net: lago
-    disks:
-      - template_name: el7-base
-        type: template
-        name: root
-        dev: vda
-        format: qcow2
       - comment: Main NFS device
         size: 101G
         type: empty
@@ -45,10 +29,12 @@ domains:
         dev: vdd
         format: qcow2
     metadata:
+      ovirt-engine-password: 123
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
-
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
+  
   host1:
     vm-type: ovirt-host
     memory: 2047

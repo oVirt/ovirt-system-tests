@@ -50,11 +50,11 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
-SD_NFS_HOST_NAME = _get_prefixed_name('storage')
+SD_NFS_HOST_NAME = _get_prefixed_name('engine')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
+SD_ISCSI_HOST_NAME = _get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2

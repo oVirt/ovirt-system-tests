@@ -49,7 +49,7 @@ VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM0_NAME
 
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
+SD_ISCSI_HOST_NAME = _get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2

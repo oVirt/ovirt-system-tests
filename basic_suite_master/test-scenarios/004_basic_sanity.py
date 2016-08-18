@@ -309,12 +309,20 @@ def vm_migrate(prefix):
 
 @testlib.with_ovirt_api
 def template_export(api):
-    api.templates.get(TEMPLATE_CIRROS).export(
-        params.Action(
-           storage_domain=api.storagedomains.get(SD_TEMPLATES_NAME)
-        ),
-    )
+    template_cirros = api.templates.get(TEMPLATE_CIRROS)
 
+    if template_cirros is None:
+        raise SkipTest('{0}: template {1} is missing'.format(
+            template_export.__name__,
+            TEMPLATE_CIRROS
+            )
+        )
+
+    template_cirros.export(
+        params.Action(
+            storage_domain=api.storagedomains.get(SD_TEMPLATES_NAME)
+         )
+    )
     testlib.assert_true_within_long(
         lambda: api.templates.get(TEMPLATE_CIRROS).status.state == 'ok',
     )

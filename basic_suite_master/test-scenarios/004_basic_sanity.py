@@ -277,10 +277,44 @@ def vm_run(prefix):
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
 
     start_params = params.Action(
+        use_cloud_init=True,
         vm=params.VM(
             placement_policy=params.VmPlacementPolicy(
                 host=params.Host(
                     name=sorted(host_names)[0]
+                ),
+            ),
+            initialization=params.Initialization(
+                domain=params.Domain(
+                    name='lago.example.com'
+                ),
+                cloud_init=params.CloudInit(
+                    host=params.Host(
+                        address='VM0'
+                    ),
+                    users=params.Users(
+                        active=True,
+                        user=[params.User(
+                            user_name='root',
+                            password='secret'
+                        )]
+                    ),
+                    network_configuration=params.NetworkConfiguration(
+                        nics=params.Nics(
+                            nic=[params.NIC(
+                                name='eth0',
+                                boot_protocol='STATIC',
+                                on_boot='True',
+                                network=params.Network(
+                                    ip=params.IP(
+                                        address='192.168.1.2.',
+                                        netmask='255.255.255.0',
+                                        gateway='192.168.1.1',
+                                    ),
+                                ),
+                            )]
+                        ),
+                    ),
                 ),
             ),
         ),

@@ -3,7 +3,7 @@ set -o pipefail
 
 
 download_appliance(){
-    local appliance_version="${1:-ovirt-3.6}"
+    local appliance_version="${1:-ovirt-4.0}"
     local appliance_distro="${2:-el7}"
     local appliance_dst_file="${3:-oVirt-Engine-Appliance-$appliance_version-$appliance_distro.ova}"
     local job_url='http://jenkins.ovirt.org/job'
@@ -22,7 +22,7 @@ download_appliance(){
 
 
 download_node_ng(){
-    local node_version="${1:-ovirt-3.6}"
+    local node_version="${1:-ovirt-4.0}"
     local node_distro="${2:-el7}"
     local node_squashfs_image="${3:-oVirt-Node-$version-$engine_distro.squashfs.img}"
     local job_url='http://jenkins.ovirt.org/job'
@@ -50,7 +50,7 @@ install_host_image() {
     git clone https://gerrit.ovirt.org/ovirt-node-ng
     mv "$node_squashfs_image" ovirt-node-ng/ovirt-node-ng-image.squashfs.img
     pushd ovirt-node-ng
-    git checkout ovirt-3.6
+    git checkout ovirt-4.0
     #remove this line when node_ng get patched
     sed -i 's/--extra-args "/--wait=-1 --graphics none --extra-args "console=ttyS0 /' Makefile.am
     #build installed qcow
@@ -72,7 +72,7 @@ install_host_image() {
 
 
 generate_host_image(){
-    local node_version="${1:-ovirt-3.6}"
+    local node_version="${1:-ovirt-4.0}"
     local node_distro="${2:-el7}"
     local node_squashfs_image="${3:-oVirt-Node-$version-$engine_distro.squashfs.img}"
     local node_image="${4:-oVirt-Node-$version-$engine_distro.qcow2}"
@@ -83,7 +83,7 @@ generate_host_image(){
 
 
 generate_images(){
-    local version="${1:-ovirt-3.6}"
+    local version="${1:-ovirt-4.0}"
     local appliance_distro="${2:-el7}"
     local appliance_image="${3:-oVirt-Engine-Appliance-$version-$appliance_distro.ova}"
     local node_distro="${4:-el7}"
@@ -113,7 +113,7 @@ generate_iso_seed(){
 
 
 prep_suite(){
-    local version="ovirt-3.6"
+    local version="ovirt-4.0"
     local engine_distro="el7"
     local host_distro="el7"
     local appliance_image="${1:-oVirt-Engine-Appliance-$version-$engine_distro.ova}"

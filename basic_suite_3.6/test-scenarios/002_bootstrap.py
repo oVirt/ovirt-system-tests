@@ -167,6 +167,7 @@ def add_hosts(prefix):
     for host in hosts:
         testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
+# This test is currently disabled, It's still here just in case we will need it in the future.
 @testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):
@@ -488,7 +489,6 @@ _TEST_LIST = [
     add_hosts,
     add_non_vm_network,
     add_vm_network,
-    install_cockpit_ovirt,
     add_master_storage_domain,
     list_glance_images,
     add_secondary_storage_domains,

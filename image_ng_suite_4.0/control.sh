@@ -44,9 +44,8 @@ download_node_ng(){
 
 install_host_image() {
     local node_squashfs_image="${1?}"
-    local boot_iso="${2?}"
-    local node_version="${3?}"
-    local node_image="${4?}"
+    local node_version="${2?}"
+    local node_image="${3?}"
     rm -rf ovirt-node-ng || true
     git clone https://gerrit.ovirt.org/ovirt-node-ng
     mv "$node_squashfs_image" ovirt-node-ng/ovirt-node-ng-image.squashfs.img
@@ -55,13 +54,8 @@ install_host_image() {
     #remove this line when node_ng get patched
     sed -i 's/--extra-args "/--wait=-1 --graphics none --extra-args "console=ttyS0 /' Makefile.am
     #build installed qcow
-    if [[ -e "$boot_iso" ]]
-        then
-        ./autogen.sh --with-bootiso=$boot_iso
-    else
-        ./autogen.sh
-        make boot.iso
-    fi
+    ./autogen.sh
+    make boot.iso
     touch ovirt-node-ng-image.squashfs.img
     #use script to cheat the TTY
     script -e -c "sudo make installed-squashfs"
@@ -81,11 +75,10 @@ generate_host_image(){
     local node_version="${1:-ovirt-4.0}"
     local node_distro="${2:-el7}"
     local node_squashfs_image="${3:-oVirt-Node-$version-$engine_distro.squashfs.img}"
-    local boot_iso="${4:-boot.iso}"
-    local node_image="${5:-oVirt-Node-$version-$engine_distro.qcow2}"
+    local node_image="${4:-oVirt-Node-$version-$engine_distro.qcow2}"
     [[ -e "$node_squashfs_image" ]] \
     || download_node_ng "$node_version" "$node_distro" "$node_squashfs_image"
-    install_host_image "$node_squashfs_image" "$boot_iso" "$node_version" "$node_image"
+    install_host_image "$node_squashfs_image" "$node_version" "$node_image"
 }
 
 
@@ -95,15 +88,13 @@ generate_images(){
     local appliance_image="${3:-oVirt-Engine-Appliance-$version-$appliance_distro.ova}"
     local node_distro="${4:-el7}"
     local node_squashfs_image="${5:-oVirt-Node-$version-$engine_distro.squashfs.img}"
-    local boot_iso="${6:-boot.iso}"
-    local node_image="${7:-oVirt-Node-$version-$engine_distro.qcow2}"
+    local node_image="${6:-oVirt-Node-$version-$engine_distro.qcow2}"
     [[ -e "$appliance_image" ]] \
     || download_appliance "$version" "$appliance_distro" "$appliance_image"
     generate_host_image \
         "$version" \
         "$host_distro" \
         "$node_squashfs_image" \
-        "$boot_iso" \
         "$node_image"
 }
 
@@ -127,15 +118,14 @@ prep_suite(){
     local host_distro="el7"
     local appliance_image="${1:-oVirt-Engine-Appliance-$version-$engine_distro.ova}"
     local node_squashfs_image="${2:-oVirt-Node-$version-$engine_distro.squashfs.img}"
-    local boot_iso="${3:-boot.iso}"
-    local node_image="${4:-oVirt-Node-$version-$engine_distro.qcow2}"
+    local node_image="${3:-oVirt-Node-$version-$engine_distro.qcow2}"
     local suite="${SUITE?}"
     local suite_name="${suite##*/}"
     suite_name="${suite_name//./_}"
     generate_images \
         "$version" \
         "$engine_distro" "$appliance_image" \
-        "$host_distro" "$node_squashfs_image" "$boot_iso" "$node_image"
+        "$host_distro" "$node_squashfs_image" "$node_image"
     generate_iso_seed
     rm -rf "${suite}/images"
     mkdir -p "${suite}/images"

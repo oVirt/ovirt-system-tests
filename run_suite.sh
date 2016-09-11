@@ -26,6 +26,9 @@ Optional arguments:
     -n,--node PATH
         Path to the ovirt node squashfs iso image
 
+    -b,--boot-iso PATH
+        Path to the boot iso for node creation
+
     -c,--cleanup
         Clean up any generated lago workdirs for the given suite, it will
         remove also from libvirt any domains if the current lago workdir fails
@@ -187,8 +190,8 @@ check_ram() {
 
 options=$( \
     getopt \
-        -o ho:e:n:cs: \
-        --long help,output:,engine:,node:,cleanup,extra-rpm-source \
+        -o ho:e:n:b:cs: \
+        --long help,output:,engine:,node:,boot-iso:,cleanup,extra-rpm-source \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -209,6 +212,10 @@ while true; do
             ;;
         -e|--engine)
             ENGINE_OVA=$(realpath $2)
+            shift 2
+            ;;
+        -b|--boot-iso)
+            BOOT_ISO=$(realpath $2)
             shift 2
             ;;
         -h|--help)
@@ -263,5 +270,5 @@ rm -rf "${PREFIX}"
 
 source "${SUITE}/control.sh"
 
-prep_suite "$ENGINE_OVA" "$NODE_ISO"
+prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"
 run_suite

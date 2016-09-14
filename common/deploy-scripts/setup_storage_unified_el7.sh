@@ -36,7 +36,7 @@ install_deps() {
     systemctl stop kdump.service
     systemctl disable kdump.service
     yum install -y deltarpm
-    yum install -y device-mapper-multipath \
+    yum install -y --downloaddir=/dev/shm device-mapper-multipath \
                    nfs-utils \
                    lvm2 \
                    targetcli \
@@ -99,7 +99,10 @@ defaults {
     max_fds                     4096
 }
 blacklist {
-    devnode "^vd[a-z]"
+    device {
+        vendor "QEMU"
+        product "*"
+   }
 }
 # Remove devices entries when overrides section is available.
 devices {
@@ -151,7 +154,7 @@ enable_multipath() {
 }
 
 install_deps_389ds() {
-    yum install -y 389-ds-base
+    yum install -y --downloaddir=/dev/shm 389-ds-base
 }
 
 setup_389ds() {

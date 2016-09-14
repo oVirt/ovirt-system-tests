@@ -41,7 +41,7 @@ echo "$ADDR engine" >> /etc/hosts
 
 yum install -y deltarpm
 install_firewalld
-yum install --nogpgcheck -y ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
+yum install --nogpgcheck -y --downloaddir=/dev/shm ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
 
 
 # Enable debug logs on the engine

@@ -102,7 +102,7 @@ blacklist {
     device {
         vendor "QEMU"
         product "*"
-   }
+    }
 }
 # Remove devices entries when overrides section is available.
 devices {

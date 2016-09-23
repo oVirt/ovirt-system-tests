@@ -366,6 +366,23 @@ def vm_run(prefix):
     )
 
 
+@testlib.with_ovirt_prefix
+def vdsm_recovery(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
+    host_id = api.vms.get(VM0_NAME).host.id
+    vm_host_name = api.hosts.get(id=host_id).name
+    hosts = prefix.virt_env.host_vms()
+    vm_host = next(h for h in hosts if h.name() == vm_host_name)
+    vm_host.service('vdsmd').stop()
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(VM0_NAME).status.state == 'unknown',
+    )
+    vm_host.service('vdsmd').start()
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+    )
+
+
 @testlib.with_ovirt_api
 def template_export(api):
     template_cirros = api.templates.get(TEMPLATE_CIRROS)
@@ -549,6 +566,7 @@ _TEST_LIST = [
     hotplug_nic,
     hotplug_disk,
     add_event,
+    vdsm_recovery,
 ]
 
 

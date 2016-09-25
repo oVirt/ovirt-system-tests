@@ -43,7 +43,6 @@ DC_NAME = 'test-dc'
 DC_VER_MAJ = 4
 DC_VER_MIN = 1
 CLUSTER_NAME = 'test-cluster'
-CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
 DC_QUOTA_NAME = 'DC-QUOTA'
 
 # Storage
@@ -114,12 +113,14 @@ def add_dc_quota(api):
         nt.assert_true(dc.quotas.add(quota))
 
 
-@testlib.with_ovirt_api
-def add_cluster(api):
+@testlib.with_ovirt_prefix
+def add_cluster(prefix):
+    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
+    api = prefix.virt_env.engine_vm().get_api()
     p = params.Cluster(
         name=CLUSTER_NAME,
         cpu=params.CPU(
-            id=CLUSTER_CPU_FAMILY,
+            id=cpu_family,
         ),
         version=params.Version(
             major=DC_VER_MAJ,

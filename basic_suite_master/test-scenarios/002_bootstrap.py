@@ -129,6 +129,7 @@ def add_cluster(prefix):
         data_center=params.DataCenter(
             name=DC_NAME,
         ),
+        ballooning_enabled=True,
     )
     nt.assert_true(api.clusters.add(p))
 

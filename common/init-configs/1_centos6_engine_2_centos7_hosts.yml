@@ -31,20 +31,20 @@ domains:
         size: 101G
         type: empty
         name: nfs
-        dev: vdb
-        format: qcow2
+        dev: sda
+        format: raw
       - comment: Not used yet, for future export domain tests
         size: 20G
         type: empty
         name: export
-        dev: vdc
-        format: qcow2
+        dev: sdb
+        format: raw
       - comment: Main iSCSI device
         size: 101G
         type: empty
         name: iscsi
-        dev: vdd
-        format: qcow2
+        dev: sdc
+        format: raw
     metadata:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh

@@ -47,10 +47,12 @@ sed \
     > /root/hosted-engine-deploy-answers-file.conf
 
 systemctl restart network
-hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 
+hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine additional host setup failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
+
+fstrim -va

@@ -1,8 +1,8 @@
 #!/bin/bash -xe
 set -xe
-MAIN_NFS_DEV="vdb"
-EXPORTED_DEV="vdc"
-ISCSI_DEV="vdd"
+MAIN_NFS_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_2"
+EXPORTED_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_3"
+ISCSI_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_4"
 NUM_LUNS=5
 
 
@@ -11,8 +11,7 @@ setup_device() {
     local mountpath=$2
     local exportpath=$3
     mkdir -p ${mountpath}
-    echo noop > /sys/block/${device}/queue/scheduler
-    mkfs.xfs -K -r extsize=1m /dev/${device}
+    mkfs.xfs -K /dev/${device}
     echo "/dev/${device} ${mountpath} xfs defaults 0 0" >> /etc/fstab
     mount /dev/${device} ${mountpath}
     mkdir -p ${exportpath}
@@ -55,7 +54,6 @@ setup_iso() {
 
 
 setup_iscsi() {
-    echo noop > /sys/block/${ISCSI_DEV}/queue/scheduler
     pvcreate /dev/${ISCSI_DEV}
     vgcreate vg1_storage /dev/${ISCSI_DEV}
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage
@@ -227,6 +225,8 @@ main() {
     # Prepare 389ds
     install_deps_389ds
     setup_389ds
+
+    fstrim -va
 }
 
 

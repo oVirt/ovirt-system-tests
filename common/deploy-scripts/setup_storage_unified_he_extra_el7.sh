@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 set -xe
-HE_DEV="vde"
+HE_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_5"
 
 
 setup_device() {
@@ -8,8 +8,7 @@ setup_device() {
     local mountpath=$2
     local exportpath=$3
     mkdir -p "${mountpath}"
-    echo noop > "/sys/block/${device}/queue/scheduler"
-    mkfs.xfs -K -r extsize=1m "/dev/${device}"
+    mkfs.xfs -K "/dev/${device}"
     echo "/dev/${device} ${mountpath} xfs defaults 0 0" >> /etc/fstab
     mount "/dev/${device}" "${mountpath}"
     mkdir -p "${exportpath}"

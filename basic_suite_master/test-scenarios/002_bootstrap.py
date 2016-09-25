@@ -159,6 +159,8 @@ def add_hosts(prefix):
 
         if cur_state == 'install_failed':
             raise RuntimeError('Host %s failed to install' % host.name())
+        if cur_state == 'non_operational':
+            raise RuntimeError('Host %s is in non operational state' % host.name())
 
     hosts = prefix.virt_env.host_vms()
     vec = utils.func_vector(_add_host, [(h,) for h in hosts])

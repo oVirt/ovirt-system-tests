@@ -28,20 +28,10 @@ from lago import utils
 from ovirtlago import testlib
 
 
-# TODO: remove once lago can gracefully handle on-demand prefixes
-def _get_prefixed_name(entity_name):
-    suite = os.environ.get('SUITE')
-    return (
-        'lago_'
-        + os.path.basename(suite).replace('.', '_')
-        + '_' + entity_name
-    )
-
-
 # DC/Cluster
 DC_NAME = 'test-dc'
-DC_VER_MAJ = 3
-DC_VER_MIN = 6
+DC_VER_MAJ = 4
+DC_VER_MIN = 0
 CLUSTER_NAME = 'test-cluster'
 CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
 DC_QUOTA_NAME = 'DC-QUOTA'
@@ -50,11 +40,11 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
-SD_NFS_HOST_NAME = _get_prefixed_name('storage')
+SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
+SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
@@ -102,16 +92,6 @@ def add_dc_quota(api):
             cluster_soft_limit_pct=99,
         )
         nt.assert_true(dc.quotas.add(quota))
-
-
-@testlib.with_ovirt_api
-def remove_default_dc(api):
-    nt.assert_true(api.datacenters.get(name='Default').delete())
-
-
-@testlib.with_ovirt_api
-def remove_default_cluster(api):
-    nt.assert_true(api.clusters.get(name='Default').delete())
 
 
 @testlib.with_ovirt_api
@@ -167,7 +147,7 @@ def add_hosts(prefix):
     for host in hosts:
         testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
-# This test is currently disabled, It's still here just in case we will need it in the future.
+#KEEPING THE TEST for future usage when cockpit will be available for 4.0
 @testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):
@@ -482,10 +462,8 @@ def add_non_vm_network(api):
 
 _TEST_LIST = [
     add_dc,
-    remove_default_dc,
     add_dc_quota,
     add_cluster,
-    remove_default_cluster,
     add_hosts,
     add_non_vm_network,
     add_vm_network,

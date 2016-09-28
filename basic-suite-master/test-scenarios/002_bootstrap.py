@@ -28,33 +28,22 @@ from lago import utils
 from ovirtlago import testlib
 
 
-# TODO: remove once lago can gracefully handle on-demand prefixes
-def _get_prefixed_name(entity_name):
-    suite = os.environ.get('SUITE')
-    return (
-        'lago_'
-        + os.path.basename(suite).replace('.', '_')
-        + '_' + entity_name
-    )
-
-
 # DC/Cluster
-DC_NAME = 'Default'
-DC_VER_MAJ = 3
-DC_VER_MIN = 6
-CLUSTER_NAME = 'Default'
-CLUSTER_CPU_FAMILY = 'Intel Conroe Family'
+DC_NAME = 'test-dc'
+DC_VER_MAJ = 4
+DC_VER_MIN = 1
+CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'
 
 # Storage
 MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
-SD_NFS_HOST_NAME = _get_prefixed_name('storage')
+SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
+SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
@@ -69,6 +58,11 @@ SD_TEMPLATES_PATH = '/exports/nfs_exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
+CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
+
+#Network
+VLAN200_NET = 'VLAN200_Network'
+VLAN100_NET = 'VLAN100_Network'
 
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
@@ -88,6 +82,16 @@ def add_dc(api):
 
 
 @testlib.with_ovirt_api
+def remove_default_dc(api):
+    nt.assert_true(api.datacenters.get(name='Default').delete())
+
+
+@testlib.with_ovirt_api
+def remove_default_cluster(api):
+    nt.assert_true(api.clusters.get(name='Default').delete())
+
+
+@testlib.with_ovirt_api
 def add_dc_quota(api):
         dc = api.datacenters.get(name=DC_NAME)
         quota = params.Quota(
@@ -99,12 +103,14 @@ def add_dc_quota(api):
         nt.assert_true(dc.quotas.add(quota))
 
 
-@testlib.with_ovirt_api
-def add_cluster(api):
+@testlib.with_ovirt_prefix
+def add_cluster(prefix):
+    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
+    api = prefix.virt_env.engine_vm().get_api()
     p = params.Cluster(
         name=CLUSTER_NAME,
         cpu=params.CPU(
-            id=CLUSTER_CPU_FAMILY,
+            id=cpu_family,
         ),
         version=params.Version(
             major=DC_VER_MAJ,
@@ -113,8 +119,60 @@ def add_cluster(api):
         data_center=params.DataCenter(
             name=DC_NAME,
         ),
+        ballooning_enabled=True,
     )
     nt.assert_true(api.clusters.add(p))
+
+
+@testlib.with_ovirt_prefix
+def add_hosts(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
+
+    def _add_host(vm):
+        p = params.Host(
+            name=vm.name(),
+            address=vm.ip(),
+            cluster=params.Cluster(
+                name=CLUSTER_NAME,
+            ),
+            root_password=vm.root_password(),
+            override_iptables=True,
+        )
+
+        return api.hosts.add(p)
+
+    def _host_is_up():
+        cur_state = api.hosts.get(host.name()).status.state
+
+        if cur_state == 'up':
+            return True
+
+        if cur_state == 'install_failed':
+            raise RuntimeError('Host %s failed to install' % host.name())
+        if cur_state == 'non_operational':
+            raise RuntimeError('Host %s is in non operational state' % host.name())
+
+    hosts = prefix.virt_env.host_vms()
+    vec = utils.func_vector(_add_host, [(h,) for h in hosts])
+    vt = utils.VectorThread(vec)
+    vt.start_all()
+    nt.assert_true(all(vt.join_all()))
+
+    for host in hosts:
+        testlib.assert_true_within(_host_is_up, timeout=15 * 60)
+
+@testlib.with_ovirt_prefix
+def install_cockpit_ovirt(prefix):
+    def _install_cockpit_ovirt_on_host(host):
+        ret = host.ssh(['yum', '-y', 'install', 'cockpit-ovirt-dashboard'])
+        nt.assert_equals(ret.code, 0, '_install_cockpit_ovirt_on_host(): failed to install cockpit-ovirt-dashboard on host %s' % host)
+        return True
+
+    hosts = prefix.virt_env.host_vms()
+    vec = utils.func_vector(_install_cockpit_ovirt_on_host, [(h,) for h in hosts])
+    vt = utils.VectorThread(vec)
+    vt.start_all()
+    nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
 
 
 def _add_storage_domain(api, p):
@@ -181,6 +239,7 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
+                functools.partial(log_collector, prefix),
             ],
         )
     else:
@@ -191,6 +250,7 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
+                functools.partial(log_collector, prefix),
             ],
         )
     vt.start_all()
@@ -201,16 +261,10 @@ def add_iscsi_storage_domain(prefix):
     api = prefix.virt_env.engine_vm().get_api()
 
     # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['multipath', '-ll'])
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['multipath', '-ll', '-v1', '|sort'])
     nt.assert_equals(ret.code, 0)
 
-    lun_guids = [
-        line.split()[0]
-        for line in ret.out.split('\n')
-        if line.find('LIO-ORG') != -1
-    ]
-
-    lun_guids = lun_guids[:SD_ISCSI_NR_LUNS]
+    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
 
     p = params.StorageDomain(
         name=SD_ISCSI_NAME,
@@ -292,7 +346,7 @@ def import_templates(api):
         )
 
 
-def generic_import_from_glance(api, image_name='CirrOS 0.3.1', as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     target_image = glance_provider.images.get(name=image_name)
     disk_name = image_name.replace(" ", "_") + image_ext
@@ -326,6 +380,9 @@ def generic_import_from_glance(api, image_name='CirrOS 0.3.1', as_template=False
 def list_glance_images(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
+    if glance_provider is None:
+        raise SkipTest('%s: GLANCE is not available.' % list_glance_images.__name__ )
+
     all_images = glance_provider.images.list()
     if len(all_images):
         GLANCE_AVAIL = True
@@ -334,7 +391,7 @@ def list_glance_images(api):
 def import_non_template_from_glance(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_from_glance.__name__ )
+        raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
     generic_import_from_glance(api)
 
 
@@ -342,7 +399,7 @@ def import_template_from_glance(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(api, image_name='CirrOS 0.3.1', image_ext='_glance_template', as_template=True)
+    generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
 
 
 @testlib.with_ovirt_api
@@ -374,8 +431,75 @@ def add_quota_cluster_limits(api):
     )
 
 
+@testlib.with_ovirt_api
+def add_vm_network(api):
+    dc = api.datacenters.get(DC_NAME)
+    VLAN100 = params.Network(
+        name=VLAN100_NET,
+        data_center=params.DataCenter(
+            name=DC_NAME,
+        ),
+        description='VM Network on VLAN 100',
+        vlan=params.VLAN(
+            id='100',
+        ),
+    )
+
+    nt.assert_true(
+        api.networks.add(VLAN100)
+    )
+    nt.assert_true(
+        api.clusters.get(CLUSTER_NAME).networks.add(VLAN100)
+    )
+
+
+@testlib.with_ovirt_api
+def add_non_vm_network(api):
+    dc = api.datacenters.get(DC_NAME)
+    VLAN200 = params.Network(
+        name=VLAN200_NET,
+        data_center=params.DataCenter(
+            name=DC_NAME,
+        ),
+        description='Non VM Network on VLAN 200, MTU 9000',
+        vlan=params.VLAN(
+            id='200',
+        ),
+        usages=params.Usages(),
+        mtu=9000,
+    )
+
+    nt.assert_true(
+        api.networks.add(VLAN200)
+    )
+    nt.assert_true(
+        api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+    )
+
+
+def log_collector(prefix):
+    engine = prefix.virt_env.engine_vm()
+    result = engine.ssh(
+        [
+            'ovirt-log-collector',
+            '--conf-file=/root/ovirt-log-collector.conf',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'log collector failed. Exit code is %s' % result.code
+    )
+
+
 _TEST_LIST = [
+    add_dc,
+    remove_default_dc,
     add_dc_quota,
+    add_cluster,
+    remove_default_cluster,
+    add_hosts,
+    install_cockpit_ovirt,
+    add_non_vm_network,
+    add_vm_network,
     add_master_storage_domain,
     list_glance_images,
     add_secondary_storage_domains,

@@ -27,19 +27,10 @@ from ovirtsdk.xml import params
 from ovirtlago import testlib
 
 
-# TODO: remove once lago can gracefully handle on-demand prefixes
-def _get_prefixed_name(entity_name):
-    suite = os.environ.get('SUITE')
-    return 'lago_%s_%s' % (
-        os.path.basename(suite).replace('.', '_'),
-        entity_name
-    )
-
-
 # AAA
 AAA_LDAP_USER = 'user1'
 AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
-HOSTNAME_389DS = _get_prefixed_name('storage')
+HOSTNAME_389DS = testlib.get_prefixed_name('storage')
 
 
 @testlib.with_ovirt_prefix

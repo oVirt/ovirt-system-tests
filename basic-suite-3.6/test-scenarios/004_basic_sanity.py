@@ -26,35 +26,26 @@ from ovirtsdk.xml import params
 from ovirtlago import testlib
 
 
-# TODO: remove once lago can gracefully handle on-demand prefixes
-def _get_prefixed_name(entity_name):
-    suite = os.environ.get('SUITE')
-    return (
-        'lago_'
-        + os.path.basename(suite).replace('.', '_')
-        + '_' + entity_name
-    )
-
-
 MB = 2 ** 20
 GB = 2 ** 30
 
-TEST_DC = 'Default'
-TEST_CLUSTER = 'Default'
+TEST_DC = 'test-dc'
+TEST_CLUSTER = 'test-cluster'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
+TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
+SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('storage')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
-
+SD_TEMPLATES_NAME = 'templates'
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
@@ -123,14 +114,11 @@ def add_disk(api):
 @testlib.with_ovirt_prefix
 def add_directlun(prefix):
     # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(
-        ['multipath', '-ll', '-v1', '|sort']
-    )
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['multipath', '-ll', '-v1', '|sort'])
     nt.assert_equals(ret.code, 0)
 
     all_guids = ret.out.splitlines()
-    # Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
-    lun_guid = all_guids[SD_ISCSI_NR_LUNS]
+    lun_guid = all_guids[SD_ISCSI_NR_LUNS] #Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
 
     dlun_params = params.Disk(
         name=DLUN_DISK_NAME,
@@ -205,19 +193,45 @@ def snapshot_merge(api):
 
 @testlib.with_ovirt_api
 def add_vm_template(api):
-    #TODO: Fix the exported domain generation
-    raise SkipTest('Exported domain generation not supported yet')
+    #TODO: Fix the exported domain generation.
+    #For the time being, add VM from Glance imported template.
+    if api.templates.get(name=TEMPLATE_CIRROS) is None:
+        raise SkipTest('%s: template %s not available.' % (add_vm_template.__name__, TEMPLATE_CIRROS))
+
+    vm_memory = 512 * MB
     vm_params = params.VM(
         name=VM1_NAME,
-        memory=512 * MB,
+        description='CirrOS imported from Glance as Template',
+        memory=vm_memory,
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),
         template=params.Template(
-            name=TEMPLATE_CENTOS7,
+            name=TEMPLATE_CIRROS,
         ),
         display=params.Display(
-            type_='spice',
+            type_='vnc',
+        ),
+        memory_policy=params.MemoryPolicy(
+            guaranteed=vm_memory / 2,
+            ballooning=False,
+        ),
+        os=params.OperatingSystem(
+            type_='other_linux',
+        ),
+        timezone='Etc/GMT',
+        type_='server',
+        serial_number=params.SerialNumber(
+            policy='custom',
+            value='12345678',
+        ),
+        cpu=params.CPU(
+            architecture='X86_64',
+            topology=params.CpuTopology(
+                cores=1,
+                threads=2,
+                sockets=1,
+            ),
         ),
     )
     api.vms.add(vm_params)
@@ -264,6 +278,27 @@ def vm_migrate(prefix):
     api.vms.get(VM0_NAME).migrate(migrate_params)
     testlib.assert_true_within_short(
         lambda: api.vms.get(VM0_NAME).status.state == 'up',
+    )
+
+
+@testlib.with_ovirt_api
+def template_export(api):
+    template_cirros = api.templates.get(TEMPLATE_CIRROS)
+
+    if template_cirros is None:
+        raise SkipTest('{0}: template {1} is missing'.format(
+            template_export.__name__,
+            TEMPLATE_CIRROS
+            )
+        )
+
+    template_cirros.export(
+        params.Action(
+            storage_domain=api.storagedomains.get(SD_TEMPLATES_NAME)
+         )
+    )
+    testlib.assert_true_within_long(
+        lambda: api.templates.get(TEMPLATE_CIRROS).status.state == 'ok',
     )
 
 
@@ -370,7 +405,23 @@ def hotplug_disk(api):
     )
 
 
+@testlib.with_ovirt_api
+def add_event(api):
+    event_params = params.Event(
+        description='ovirt-system-tests description',
+        custom_id=int('01234567890'),
+        severity='NORMAL',
+        origin='ovirt-system-tests',
+        cluster=params.Cluster(
+            id=api.clusters.get(name=TEST_CLUSTER).id,
+        ),
+    )
+
+    nt.assert_true(api.events.add(event_params))
+
+
 _TEST_LIST = [
+    add_event,
     add_vm_blank,
     add_nic,
     add_disk,
@@ -378,6 +429,7 @@ _TEST_LIST = [
     add_vm_template,
     add_directlun,
     vm_run,
+    template_export,
     vm_migrate,
     snapshot_live_merge,
     hotplug_nic,

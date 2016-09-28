@@ -93,3 +93,4 @@ nets:
       start: 100
       end: 254
     management: true
+    dns_domain_name: lago.local

@@ -25,15 +25,6 @@ from ovirtsdk.xml import params
 
 from ovirtlago import testlib
 
-# TODO: remove once lago can gracefully handle on-demand prefixes
-def _get_prefixed_name(entity_name):
-    suite = os.environ.get('SUITE')
-    return (
-        'lago_'
-        + os.path.basename(suite).replace('.', '_')
-        + '_' + entity_name
-    )
-
 
 MB = 2 ** 20
 GB = 2 ** 30
@@ -47,9 +38,9 @@ TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
-DISK1_NAME = '%s_disk1' % VM1_NAME
+DISK1_NAME = '%s_disk1' % VM0_NAME
 
-SD_ISCSI_HOST_NAME = _get_prefixed_name('engine')
+SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
@@ -69,7 +60,10 @@ def add_vm_blank(api):
             name=TEMPLATE_BLANK,
         ),
         display=params.Display(
-            type_='spice',
+            smartcard_enabled=True,
+            keyboard_layout='en-us',
+            file_transfer_enabled=True,
+            copy_paste_enabled=True,
         ),
         memory_policy=params.MemoryPolicy(
             guaranteed=vm_memory / 2,
@@ -117,6 +111,20 @@ def add_disk(api):
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+    )
+
+
+@testlib.with_ovirt_api
+def add_console(api):
+    vm = api.vms.get(VM0_NAME)
+    vm.graphicsconsoles.add(
+        params.GraphicsConsole(
+            protocol='vnc',
+        )
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        len(api.vms.get(VM0_NAME).graphicsconsoles.list()) == 2
     )
 
 
@@ -260,10 +268,44 @@ def vm_run(prefix):
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
 
     start_params = params.Action(
+        use_cloud_init=True,
         vm=params.VM(
             placement_policy=params.VmPlacementPolicy(
                 host=params.Host(
                     name=sorted(host_names)[0]
+                ),
+            ),
+            initialization=params.Initialization(
+                domain=params.Domain(
+                    name='lago.example.com'
+                ),
+                cloud_init=params.CloudInit(
+                    host=params.Host(
+                        address='VM0'
+                    ),
+                    users=params.Users(
+                        active=True,
+                        user=[params.User(
+                            user_name='root',
+                            password='secret'
+                        )]
+                    ),
+                    network_configuration=params.NetworkConfiguration(
+                        nics=params.Nics(
+                            nic=[params.NIC(
+                                name='eth0',
+                                boot_protocol='STATIC',
+                                on_boot='True',
+                                network=params.Network(
+                                    ip=params.IP(
+                                        address='192.168.1.2.',
+                                        netmask='255.255.255.0',
+                                        gateway='192.168.1.1',
+                                    ),
+                                ),
+                            )]
+                        ),
+                    ),
                 ),
             ),
         ),
@@ -392,26 +434,29 @@ def hotplug_nic(api):
 def hotplug_disk(api):
     disk2_params = params.Disk(
         name=DISK1_NAME,
-        size=10 * GB,
-        provisioned_size=1,
+        size=9 * GB,
+        provisioned_size=2,
         interface='virtio',
         format='cow',
         storage_domains=params.StorageDomains(
             storage_domain=[
                 params.StorageDomain(
-                    name='nfs',
+                    name='iscsi',
                 ),
             ],
         ),
         status=None,
         sparse=True,
         bootable=False,
+        active=True,
     )
     api.vms.get(VM0_NAME).disks.add(disk2_params)
+
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
+    nt.assert_true(api.vms.get(VM0_NAME).disks.get(DISK1_NAME).active)
 
 
 @testlib.with_ovirt_api
@@ -422,7 +467,7 @@ def add_event(api):
         severity='NORMAL',
         origin='ovirt-system-tests',
         cluster=params.Cluster(
-            id=api.clusters.get(name=TEST_CLUSTER).id,
+            name=TEST_CLUSTER,
         ),
     )
 
@@ -434,6 +479,7 @@ _TEST_LIST = [
     add_vm_blank,
     add_nic,
     add_disk,
+    add_console,
     snapshot_merge,
     add_vm_template,
     add_directlun,

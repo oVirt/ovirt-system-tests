@@ -7,6 +7,7 @@
 #TODO: update commons with valid paths that are relevant
 #to ALL tests, right now its hard to understand exactly
 #which suite is using what
+WORKSPACE="$PWD"
 COMMONS=
 TESTS_36_PATH="basic_suite_3.6"
 TESTS_40_PATH="basic_suite_4.0"
@@ -39,6 +40,12 @@ else
 fi
 
 pwd
+
+# clean old logs
+rm -rf "$WORKSPACE/exported-artifacts"
+mkdir -p "$WORKSPACE/exported-artifacts"
+
+# run on each version + collect its logs
 for VER in "${VERSIONS_TO_RUN[@]}"
 do
 	# we need a specific SDK for each oVirt version
@@ -48,6 +55,13 @@ do
 	RUN_SCRIPT=$TEST_SUITE_PREFIX$VER".sh"
 	echo "running $RUN_SCRIPT"
 	automation/${RUN_SCRIPT}
-	# we need to remove the sdk in case another test will run and need a different version
+
+	# cleanup: we need to remove the sdk in case another test will run and need a different version
 	/usr/bin/dnf remove -y ovirt-engine-sdk-python
+
+    # collecting logs
+    TESTS_LOGS="$WORKSPACE/ovirt-system-tests/exported-artifacts"
+    if [[ -d "$TESTS_LOGS" ]]; then
+        mv "$TESTS_LOGS/"* "$WORKSPACE/exported-artifacts/"
+    fi
 done

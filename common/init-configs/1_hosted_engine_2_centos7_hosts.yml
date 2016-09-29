@@ -10,7 +10,7 @@ domains:
       ovirt-engine-password: 123
 
   storage:
-    memory: 2047
+    memory: 1047
     distro: el7
     nics:
       - net: lago
@@ -24,26 +24,26 @@ domains:
         size: 101G
         type: empty
         name: nfs
-        dev: vdb
-        format: qcow2
+        dev: sda
+        format: raw
       - comment: Not used yet, for future export domain tests
         size: 20G
         type: empty
         name: export
-        dev: vdc
-        format: qcow2
+        dev: sdb
+        format: raw
       - comment: Main iSCSI device
         size: 101G
         type: empty
         name: iscsi
-        dev: vdd
-        format: qcow2
+        dev: sdc
+        format: raw
       - comment: Hosted engine storage
         size: 60G
         type: empty
         name: he
-        dev: vde
-        format: qcow2
+        dev: sdd
+        format: raw
     metadata:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
@@ -53,7 +53,7 @@ domains:
   host1:
     vm-type: ovirt-host
     distro: el7
-    memory: 5120
+    memory: 4720
     nics:
       - net: lago
     disks:
@@ -65,21 +65,21 @@ domains:
       - name: tmp
         size: 30G
         type: empty
-        dev: vdb
-        format: qcow2
+        dev: sda
+        format: raw
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/install_he.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
 
   host0:
     vm-type: ovirt-host
     distro: el7
-    memory: 5120
+    memory: 4720
     nics:
       - net: lago
     disks:
@@ -91,16 +91,16 @@ domains:
       - name: tmp
         size: 60G
         type: empty
-        dev: vdb
-        format: qcow2
+        dev: sda
+        format: raw
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/install_he.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
 
 nets:
   lago:

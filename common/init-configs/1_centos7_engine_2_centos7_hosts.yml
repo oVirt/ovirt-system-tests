@@ -1,9 +1,9 @@
 domains:
-  engine:
+  __ENGINE__:
     vm-type: ovirt-engine
     memory: 4096
     nics:
-      - net: lago
+      - net: __LAGO_NET__
     disks:
       - template_name: el7-base
         type: template
@@ -35,11 +35,11 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
 
-  host0:
+  __HOST0__:
     vm-type: ovirt-host
     memory: 2047
     nics:
-      - net: lago
+      - net: __LAGO_NET__
     disks:
       - template_name: el7-base
         type: template
@@ -53,11 +53,11 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
 
-  host1:
+  __HOST1__:
     vm-type: ovirt-host
     memory: 2047
     nics:
-      - net: lago
+      - net: __LAGO_NET__
     disks:
       - template_name: el7-base
         type: template
@@ -72,7 +72,7 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
 
 nets:
-  lago:
+  __LAGO_NET__:
     type: nat
     dhcp:
       start: 100

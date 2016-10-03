@@ -3,13 +3,11 @@
 prep_suite () {
     local suite_name="${SUITE##*/}"
     suite_name="${suite_name//./_}"
-    sed \
-        -e "s,\(^[[:space:]]*\)\(engine\):,\1lago_${suite_name}_\2:,g" \
-        -e "s,\(^[[:space:]]*\)\(host[[:digit:]]\+\):,\1lago_${suite_name}_\2:,g" \
-        -e "s,\(^[[:space:]]*\)\(lago\):,\1lago_${suite_name}_\2:,g" \
-        -e "s,\(^[[:space:]]*\)\(storage[^:]*\):,\1lago_${suite_name}_\2:,g" \
-        -e "s,- lago:,- lago_${suite_name}_lago:,g" \
-        -e "s,- net: lago,- net: lago_${suite_name}_lago,g" \
+    sed -r \
+        -e "s,__ENGINE__,lago_${suite_name}_engine,g" \
+        -e "s,__HOST([0-9]+)__,lago_${suite_name}_host\1,g" \
+        -e "s,__LAGO_NET__,lago_${suite_name}_lago,g" \
+        -e "s,__STORAGE__,lago_${suite_name}_storage,g" \
     < ${SUITE}/LagoInitFile.in \
     > ${SUITE}/LagoInitFile
 }

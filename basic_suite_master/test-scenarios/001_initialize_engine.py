@@ -65,3 +65,14 @@ def test_initialize_engine(prefix):
     nt.eq_(
         result.code, 0, 'firwalld not stopped. Exit code is %s' % result.code
     )
+
+    # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
+    engine.ssh(
+        [
+            'rm',
+            '-rf',
+            '/dev/shm/*.rpm',
+            '/dev/shm/yumdb',
+            '/dev/shm/yum',
+        ]
+    )

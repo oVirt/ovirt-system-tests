@@ -7,11 +7,44 @@
 #TODO: update commons with valid paths that are relevant
 #to ALL tests, right now its hard to understand exactly
 #which suite is using what
-WORKSPACE="$PWD"
+
+# Project's root
+PROJECT="$PWD"
 COMMONS=
 TESTS_36_PATH="basic_suite_3.6"
 TESTS_40_PATH="basic_suite_4.0"
 TESTS_MASTER_PATH="basic_suite_master"
+
+# This function will collect the logs
+# of each suite to a different directory
+collect_suite_logs() {
+  local test_logs="$PROJECT"/exported-artifacts
+  if [[ -d "$test_logs" ]]; then
+      suite_logs="$PROJECT"/"$TEST_SUITE_PREFIX$VER"__logs
+      # Rename the logs
+      mv "$test_logs" "$suite_logs"
+  fi
+}
+
+# This function will collect the logs from
+# all the suites and store them in exported-artifacts,
+# which later will be collected by jenkins
+collect_all_logs() {
+  if ! [[ -d logs ]]; then
+    mkdir logs
+  fi
+  # mock_cleanup.sh collects the logs from ./logs, ./*/logs
+  # The root directory is jenkins' workspace
+  mv *__logs logs
+}
+
+# collect the logs  on failure
+on_error() {
+  collect_suite_logs
+  collect_all_logs
+}
+
+trap on_error SIGTERM ERR
 
 # for now all tests are on master branch
 # so we have to check which tests were changed
@@ -42,8 +75,7 @@ fi
 pwd
 
 # clean old logs
-rm -rf "$WORKSPACE/exported-artifacts"
-mkdir -p "$WORKSPACE/exported-artifacts"
+rm -rf "$PROJECT/exported-artifacts"
 
 # run on each version + collect its logs
 for VER in "${VERSIONS_TO_RUN[@]}"
@@ -59,9 +91,9 @@ do
 	# cleanup: we need to remove the sdk in case another test will run and need a different version
 	/usr/bin/dnf remove -y ovirt-engine-sdk-python
 
-    # collecting logs
-    TESTS_LOGS="$WORKSPACE/ovirt-system-tests/exported-artifacts"
-    if [[ -d "$TESTS_LOGS" ]]; then
-        mv "$TESTS_LOGS/"* "$WORKSPACE/exported-artifacts/"
-    fi
+  # collect the logs for the current suite
+  collect_suite_logs
 done
+
+# collect all the suit's logs to exported-artifacts
+collect_all_logs

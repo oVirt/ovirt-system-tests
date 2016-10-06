@@ -6,7 +6,7 @@ prep_suite () {
     sed -r \
         -e "s,__ENGINE__,lago-${suite_name}-engine,g" \
         -e "s,__HOST([0-9]+)__,lago-${suite_name}-host\1,g" \
-        -e "s,__LAGO_NET__,lago-${suite_name}-lago,g" \
+        -e "s,__LAGO_NET_([A-Za-z0-9]*)__,lago-${suite_name}-net-\L\1,g" \
         -e "s,__STORAGE__,lago-${suite_name}-storage,g" \
     < ${SUITE}/LagoInitFile.in \
     > ${SUITE}/LagoInitFile

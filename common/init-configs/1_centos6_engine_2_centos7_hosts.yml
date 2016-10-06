@@ -3,7 +3,7 @@ domains:
     vm-type: ovirt-engine
     memory: 4096
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
     disks:
       - template_name: el6-base
         type: template
@@ -21,7 +21,7 @@ domains:
     cpus: 1
     service_provider: systemd
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
     disks:
       - template_name: el7-base
         type: template
@@ -57,7 +57,7 @@ domains:
     service_provider: systemd
     root-password: 123456
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
     disks:
       - template_name: el7-base
         type: template
@@ -77,7 +77,7 @@ domains:
     service_provider: systemd
     root-password: 123456
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
     disks:
       - template_name: el7-base
         type: template
@@ -92,7 +92,7 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
 
 nets:
-  __LAGO_NET__:
+  __LAGO_NET_MANAGEMENT__:
     type: nat
     dhcp:
       start: 100

@@ -4,7 +4,8 @@ domains:
     memory: 4096
     service_provider: systemd
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
+      - net: __LAGO_NET_STORAGE__
     disks:
       - template_name: el7-base
         type: template
@@ -41,7 +42,10 @@ domains:
     memory: 2047
     service_provider: systemd
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
+      - net: __LAGO_NET_BONDING__
+      - net: __LAGO_NET_BONDING__
+      - net: __LAGO_NET_STORAGE__
     disks:
       - template_name: el7-base
         type: template
@@ -60,7 +64,10 @@ domains:
     memory: 2047
     service_provider: systemd
     nics:
-      - net: __LAGO_NET__
+      - net: __LAGO_NET_MANAGEMENT__
+      - net: __LAGO_NET_BONDING__
+      - net: __LAGO_NET_BONDING__
+      - net: __LAGO_NET_STORAGE__
     disks:
       - template_name: el7-base
         type: template
@@ -75,10 +82,22 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
 
 nets:
-  __LAGO_NET__:
+  __LAGO_NET_MANAGEMENT__:
     type: nat
     dhcp:
       start: 100
       end: 254
     management: true
     dns_domain_name: lago.local
+  __LAGO_NET_BONDING__:
+    type: nat
+    dhcp:
+      start: 100
+      end: 254
+    management: false
+  __LAGO_NET_STORAGE__:
+    type: nat
+    dhcp:
+      start: 100
+      end: 254
+    management: false

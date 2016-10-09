@@ -25,6 +25,15 @@ import nose.tools as nt
 from nose import SkipTest
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
+try:
+    import ovirtsdk4 as sdk4
+    API_V3_ONLY = os.getenv('API_V3_ONLY', False)
+    if API_V3_ONLY:
+        API_V4 = False
+    else:
+        API_V4 = True
+except ImportError:
+    API_V4 = False
 
 from lago import utils
 from ovirtlago import testlib
@@ -69,18 +78,41 @@ CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
 VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
 
+
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
 def _hosts_in_dc(api, dc_name=DC_NAME):
-    hosts = api.hosts.list(query='datacenter={}'.format(dc_name))
-    return sorted(hosts, key=lambda host: host.name)
+    hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
+    if hosts:
+        return sorted(hosts, key=lambda host: host.name)
+    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
+
+def _hosts_in_dc_4(api, dc_name=DC_NAME):
+    hosts_service = api.system_service().hosts_service()
+    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
+    if hosts:
+        return sorted(hosts, key=lambda host: host.name)
+    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc(api, dc_name))
 
-@testlib.with_ovirt_api
-def add_dc(api):
+def _random_host_from_dc_4(api, dc_name=DC_NAME):
+    return random.choice(_hosts_in_dc_4(api, dc_name))
+
+
+@testlib.with_ovirt_prefix
+def add_dc(prefix):
+    if API_V4:
+        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+        add_dc_4(api)
+    else:
+        api = prefix.virt_env.engine_vm().get_api()
+        add_dc_3(api)
+
+
+def add_dc_3(api):
     p = params.DataCenter(
         name=DC_NAME,
         local=False,
@@ -92,18 +124,76 @@ def add_dc(api):
     nt.assert_true(api.datacenters.add(p))
 
 
-@testlib.with_ovirt_api
-def remove_default_dc(api):
+def add_dc_4(api):
+    dcs_service = api.system_service().data_centers_service()
+    nt.assert_true(
+         dcs_service.add(
+            sdk4.types.DataCenter(
+                name=DC_NAME,
+                description='APIv4 DC',
+                local=False,
+                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_prefix
+def remove_default_dc(prefix):
+    if API_V4:
+        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+        remove_default_dc_4(api)
+    else:
+        api = prefix.virt_env.engine_vm().get_api()
+        remove_default_dc_3(api)
+
+
+def remove_default_dc_3(api):
     nt.assert_true(api.datacenters.get(name='Default').delete())
 
 
-@testlib.with_ovirt_api
-def remove_default_cluster(api):
+def remove_default_dc_4(api):
+    dcs_service = api.system_service().data_centers_service()
+    search_query='name=Default'
+    dc = dcs_service.list(search=search_query)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
+    dc_service.remove()
+
+
+@testlib.with_ovirt_prefix
+def remove_default_cluster(prefix):
+    if API_V4:
+        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+        remove_default_cluster_4(api)
+    else:
+        api = prefix.virt_env.engine_vm().get_api()
+        remove_default_cluster_3(api)
+
+
+def remove_default_cluster_3(api):
     nt.assert_true(api.clusters.get(name='Default').delete())
 
 
-@testlib.with_ovirt_api
-def add_dc_quota(api):
+def remove_default_cluster_4(api):
+    clusters_services = api.system_service().clusters_service()
+    search_query='name=Default'
+    cluster=clusters_services.list(search=search_query)[0]
+    cl_service = clusters_services.cluster_service(cluster.id)
+    cl_service.remove()
+
+
+@testlib.with_ovirt_prefix
+def add_dc_quota(prefix):
+    if API_V4:
+#FIXME - add API_v4 add_dc_quota_4() function
+        api = prefix.virt_env.engine_vm().get_api()
+        add_dc_quota_3(api)
+    else:
+        api = prefix.virt_env.engine_vm().get_api()
+        add_dc_quota_3(api)
+
+
+def add_dc_quota_3(api):
         dc = api.datacenters.get(name=DC_NAME)
         quota = params.Quota(
             name=DC_QUOTA_NAME,
@@ -116,6 +206,13 @@ def add_dc_quota(api):
 
 @testlib.with_ovirt_prefix
 def add_cluster(prefix):
+    if API_V4:
+        add_cluster_4(prefix)
+    else:
+        add_cluster_3(prefix)
+
+
+def add_cluster_3(prefix):
     cpu_family = prefix.virt_env.get_ovirt_cpu_family()
     api = prefix.virt_env.engine_vm().get_api()
     p = params.Cluster(
@@ -135,8 +232,38 @@ def add_cluster(prefix):
     nt.assert_true(api.clusters.add(p))
 
 
+def add_cluster_4(prefix):
+    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
+    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    clusters_service = api.system_service().clusters_service()
+    nt.assert_true(
+        clusters_service.add(
+            sdk4.types.Cluster(
+                name=CLUSTER_NAME,
+                description='APIv4 Cluster',
+                cpu=sdk4.types.Cpu(
+                    architecture=sdk4.types.Architecture.X86_64,
+                    type=cpu_family,
+                ),
+                data_center=sdk4.types.DataCenter(
+                    name=DC_NAME,
+                ),
+                ballooning_enabled=True,
+            ),
+        )
+    )
+
+
 @testlib.with_ovirt_prefix
 def add_hosts(prefix):
+    if API_V4:
+# FIXME add_hosts_4(prefix)
+        add_hosts_3(prefix)
+    else:
+        add_hosts_3(prefix)
+
+
+def add_hosts_3(prefix):
     api = prefix.virt_env.engine_vm().get_api()
 
     def _add_host(vm):
@@ -176,6 +303,52 @@ def add_hosts(prefix):
     for host in hosts:
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
+
+def add_hosts_4(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    hosts_service = api.system_service().hosts_service()
+
+    def _add_host_4(vm):
+        return hosts_service.add(
+            sdk4.types.Host(
+                name=vm.name(),
+                description='host %s' % vm.name(),
+                address=vm.name(),
+                root_password=str(vm.root_password()),
+                cluster=sdk4.types.Cluster(
+                    name=CLUSTER_NAME,
+                ),
+            ),
+        )
+
+    def _host_is_up_4():
+        host_service = hosts_service.host_service(api_host.id)
+        host_obj = host_service.get()
+        if host_obj.status == sdk4.types.HostStatus.UP:
+            return True
+
+        if host_obj.status == sdk4.types.HostStatus.NON_OPERATIONAL:
+            raise RuntimeError('Host %s is in non operational state' % api_host.name)
+        if host_obj.status == sdk4.types.HostStatus.INSTALL_FAILED:
+            raise RuntimeError('Host %s installation failed' % api_host.name)
+        if host_obj.status == sdk4.types.HostStatus.NON_RESPONSIVE:
+            raise RuntimeError('Host %s is in non responsive state' % api_host.name)
+
+
+    hosts = prefix.virt_env.host_vms()
+    vec = utils.func_vector(_add_host_4, [(h,) for h in hosts])
+    vt = utils.VectorThread(vec)
+    vt.start_all()
+    nt.assert_true(all(vt.join_all()))
+
+    api_hosts = hosts_service.list()
+    for api_host in api_hosts:
+        testlib.assert_true_within(_host_is_up_4, timeout=15*60)
+
+    for host in hosts:
+        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+
+
 @testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):
@@ -190,7 +363,7 @@ def install_cockpit_ovirt(prefix):
     nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
 
 
-def _add_storage_domain(api, p):
+def _add_storage_domain_3(api, p):
     dc = api.datacenters.get(DC_NAME)
     sd = api.storagedomains.add(p)
     nt.assert_true(sd)
@@ -211,6 +384,43 @@ def _add_storage_domain(api, p):
         )
 
 
+def _add_storage_domain_4(api, p):
+    sds_service = api.system_service().storage_domains_service()
+    sd = sds_service.add(p)
+
+    sd_service = sds_service.storage_domain_service(sd.id)
+
+    def _is_sd_unattached():
+        usd = sd_service.get()
+        if usd.status == sdk4.types.StorageDomainStatus.UNATTACHED:
+            return True
+
+    testlib.assert_true_within_long(
+        _is_sd_unattached
+    )
+
+    dcs_service = api.system_service().data_centers_service()
+    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
+    attached_sds_service = dc_service.storage_domains_service()
+    attached_sds_service.add(
+        sdk4.types.StorageDomain(
+            id=sd.id,
+        ),
+    )
+
+    attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
+
+    def _is_sd_active():
+        asd = attached_sd_service.get()
+        if asd.status == sdk4.types.StorageDomainStatus.ACTIVE:
+            return True
+
+    testlib.assert_true_within_long(
+        _is_sd_active
+    )
+
+
 @testlib.with_ovirt_prefix
 def add_master_storage_domain(prefix):
     if MASTER_SD_TYPE == 'iscsi':
@@ -224,6 +434,13 @@ def add_nfs_storage_domain(prefix):
 
 
 def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
+    if API_V4:
+        add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
+    else:
+        add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
+
+
+def add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
     api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=sd_nfs_name,
@@ -240,8 +457,41 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
             nfs_version=nfs_version,
         ),
     )
-    _add_storage_domain(api, p)
+    _add_storage_domain_3(api, p)
 
+
+def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_1'):
+    if sd_type == 'data':
+        dom_type = sdk4.types.StorageDomainType.DATA
+    elif sd_type == 'iso':
+        dom_type = sdk4.types.StorageDomainType.ISO
+    elif sd_type == 'export':
+        dom_type = sdk4.types.StorageDomainType.EXPORT
+
+    if nfs_version == 'v3':
+        nfs_vers = sdk4.types.NfsVersion.V3
+    elif nfs_version == 'v4':
+        nfs_vers = sdk4.types.NfsVersion.V4
+    elif nfs_version == 'v4_1':
+        nfs_vers = sdk4.types.NfsVersion.V4_1
+    else:
+        nfs_vers = sdk4.types.NfsVersion.AUTO
+
+    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    p = sdk4.types.StorageDomain(
+        name=sd_nfs_name,
+        description='APIv4 NFS storage domain',
+        type=dom_type,
+        host=_random_host_from_dc_4(api, DC_NAME),
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.NFS,
+            address=_get_host_ip(prefix, nfs_host_name),
+            path=mount_path,
+            nfs_version=nfs_vers,
+        ),
+    )
+
+    _add_storage_domain_4(api, p)
 
 @testlib.with_ovirt_prefix
 def add_secondary_storage_domains(prefix):
@@ -270,6 +520,10 @@ def add_secondary_storage_domains(prefix):
 
 
 def add_iscsi_storage_domain(prefix):
+    # FIXME
+    # if API_V4:
+    #    return add_iscsi_storage_domain_4(prefix)
+
     api = prefix.virt_env.engine_vm().get_api()
 
     # Find LUN GUIDs
@@ -306,7 +560,16 @@ def add_iscsi_storage_domain(prefix):
             ),
         ),
     )
-    _add_storage_domain(api, p)
+    _add_storage_domain_3(api, p)
+
+
+def add_iscsi_storage_domain_4(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
+    nt.assert_equals(ret.code, 0)
+
+    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
+    #FIXME
 
 
 def add_iso_storage_domain(prefix):
@@ -371,20 +634,44 @@ def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=Fa
         lambda: api.disks.get(disk_name).status.state == 'ok',
     )
 
+@testlib.with_ovirt_prefix
+def list_glance_images(prefix):
+    if API_V4:
+        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+        list_glance_images_4(api)
+    else:
+        api = prefix.virt_env.engine_vm().get_api()
+        list_glance_images_3(api)
 
-@testlib.with_ovirt_api
-def list_glance_images(api):
+
+def list_glance_images_3(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     if glance_provider is None:
-        raise SkipTest('%s: GLANCE is not available.' % list_glance_images.__name__ )
+        raise SkipTest('%s: GLANCE storage domain is not available.' % list_glance_images_3.__name__ )
 
     try:
         all_images = glance_provider.images.list()
         if len(all_images):
             GLANCE_AVAIL = True
     except errors.RequestError:
-        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images.__name__ )
+        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_3.__name__ )
+
+
+def list_glance_images_4(api):
+    global GLANCE_AVAIL
+    search_query='name={}'.format(SD_GLANCE_NAME)
+    glance_domain = api.system_service().storage_domains_service().list(search=search_query)[0]
+    if glance_domain is None:
+        raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
+
+    glance_domain_service = api.system_service().storage_domains_service().storage_domain_service(glance_domain.id)
+    try:
+        all_images = glance_domain_service.images_service().list()
+        if len(all_images):
+            GLANCE_AVAIL = True
+    except errors.RequestError:
+        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_4.__name__ )
 
 
 def import_non_template_from_glance(prefix):
@@ -503,9 +790,9 @@ _TEST_LIST = [
     run_log_collector,
     add_non_vm_network,
     add_vm_network,
+    add_dc_quota,
     remove_default_dc,
     remove_default_cluster,
-    add_dc_quota,
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,

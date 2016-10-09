@@ -23,6 +23,15 @@ import os
 import nose.tools as nt
 from nose import SkipTest
 from ovirtsdk.xml import params
+try:
+    import ovirtsdk4 as sdk4
+    API_V3_ONLY = os.getenv('API_V3_ONLY', False)
+    if API_V3_ONLY:
+        API_V4 = False
+    else:
+        API_V4 = True
+except ImportError:
+    API_V4 = False
 
 from lago import utils
 from ovirtlago import testlib
@@ -40,9 +49,11 @@ def _get_prefixed_name(entity_name):
 
 # DC/Cluster
 DC_NAME = 'test-dc'
+DC_NAME4 = 'test-dc4'
 DC_VER_MAJ = 4
 DC_VER_MIN = 1
 CLUSTER_NAME = 'test-cluster'
+CLUSTER_NAME4 = 'test-cluster4'
 DC_QUOTA_NAME = 'DC-QUOTA'
 
 # Storage
@@ -70,9 +81,10 @@ SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
 CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
 
-#Network
+# Network
 VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
+
 
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
@@ -91,9 +103,48 @@ def add_dc(api):
     nt.assert_true(api.datacenters.add(p))
 
 
+@testlib.with_ovirt_api4
+def add_dc_4(api):
+    dcs_service = api.system_service().data_centers_service()
+    nt.assert_true(
+         dcs_service.add(
+            sdk4.types.DataCenter(
+                name=DC_NAME4,
+                description='APIv4 DC',
+                local=False,
+                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
+            ),
+        )
+    )
+
+
 @testlib.with_ovirt_api
 def remove_default_dc(api):
     nt.assert_true(api.datacenters.get(name='Default').delete())
+
+
+@testlib.with_ovirt_api4
+def remove_dc_4(api):
+    dcs_service = api.system_service().data_centers_service()
+    search_query='name={}'.format(DC_NAME)
+    dc = dcs_service.list(search=search_query)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
+    nt.assert_true(dc_service.remove())
+
+
+@testlib.with_ovirt_api4
+def update_dc_4(api):
+    dcs_service = api.system_service().data_centers_service()
+    search_query='name={}'.format(DC_NAME4)
+    dc = dcs_service.list(search=search_query)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
+    nt.assert_true(
+        dc_service.update(
+            sdk4.types.DataCenter(
+                name=DC_NAME,
+            ),
+        )
+    )
 
 
 @testlib.with_ovirt_api
@@ -132,6 +183,52 @@ def add_cluster(prefix):
         ballooning_enabled=True,
     )
     nt.assert_true(api.clusters.add(p))
+
+
+@testlib.with_ovirt_prefix
+def add_cluster_4(prefix):
+    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
+    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    clusters_service = connection.system_service().clusters_service()
+    nt.assert_true(
+        clusters_service.add(
+            sdk4.types.Cluster(
+                name=CLUSTER_NAME4,
+                description='APIv4 Cluster',
+                cpu=sdk4.types.Cpu(
+                    architecture=types.Architecture.X86_64,
+                    type=cpu_family,
+                ),
+                data_center=sdk4.types.DataCenter(
+                    name=DC_NAME,
+                ),
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def remove_cluster_4(api):
+    clusters_service = connection.system_service().clusters_service()
+    search_query='name={}'.format(CLUSTER_NAME)
+    cluster = clusters_service.list(search=search_query)[0]
+    cluster_service = clusters_service.cluster_service(cluster.id)
+    nt.assert_true(cluster_service.remove())
+
+
+@testlib.with_ovirt_api4
+def update_cluster_4(api):
+    clusters_service = connection.system_service().clusters_service()
+    search_query='name={}'.format(CLUSTER_NAME4)
+    cluster = clusters_service.list(search=search_query)[0]
+    cluster_service = clusters_service.cluster_service(cluster.id)
+    nt.assert_true(
+        cluster_service.update(
+            sdk4.types.Cluster(
+                name=CLUSTER_NAME,
+            ),
+        )
+    )
 
 
 @testlib.with_ovirt_prefix
@@ -501,10 +598,16 @@ def log_collector(prefix):
 
 
 _TEST_LIST = [
+    add_dc_4 if API_V4 else None,
     add_dc,
+    remove_dc_4 if API_V4 else None,
+    update_dc_4 if API_V4 else None,
     remove_default_dc,
     add_dc_quota,
+    add_cluster_4 if API_V4 else None,
     add_cluster,
+    remove_cluster_4 if API_V4 else None,
+    update_cluster_4 if API_V4 else None,
     remove_default_cluster,
     add_hosts,
     install_cockpit_ovirt,

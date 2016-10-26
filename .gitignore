@@ -1,12 +1,11 @@
 *.pyc
 .*.swp
-basic_suite/init.json
-basic_suite_3.5/init.json
-basic_suite_3.6/init.json
-basic_suite_master/init.json
-deployment-basic_suite_3.5
-deployment-basic_suite_3.6
-deployment-basic_suite_master
+.bash_history
+deployment-*
+**/LagoInitFile
+logs*
+test_logs/
+mocker-*
 
 #IDE files
 ##########

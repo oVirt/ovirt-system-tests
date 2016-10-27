@@ -43,6 +43,9 @@ Optional arguments:
         any that would come from the reposync-config.repo file. For more
         examples visit repoman.readthedocs.io
 
+    -r,--reposync-config
+        Use a custom reposync-config file, the default is SUITE/reposync-config.repo
+
 "
 }
 
@@ -59,16 +62,21 @@ env_init () {
 
 
 env_repo_setup () {\
+    echo "#########################"
     local extrasrc
     declare -a extrasrcs
-    echo "#########################"
     cd $PREFIX
     for extrasrc in "${EXTRA_SOURCES[@]}"; do
         extrasrcs+=("--custom-source=$extrasrc")
         echo "Adding extra source: $extrasrc"
     done
+    local reposync_conf="$SUITE/reposync-config.repo"
+    if [[ -e "$CUSTOM_REPOSYNC" ]]; then
+        reposync_conf="$CUSTOM_REPOSYNC"
+    fi
+    echo "using reposync config file: $reposync_conf"
     $CLI ovirt reposetup \
-        --reposync-yum-config $SUITE/reposync-config.repo \
+        --reposync-yum-config "$reposync_conf" \
         "${extrasrcs[@]}"
     cd -
 }
@@ -190,8 +198,9 @@ check_ram() {
 
 options=$( \
     getopt \
-        -o ho:e:n:b:cs: \
-        --long help,output:,engine:,node:,boot-iso:,cleanup,extra-rpm-source \
+        -o ho:e:n:b:cs:r: \
+        --long help,output:,engine:,node:,boot-iso:,cleanup \
+        --long extra-rpm-source,reposync-config: \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -230,6 +239,10 @@ while true; do
             EXTRA_SOURCES+=("$2")
             shift 2
             ;;
+	-r|--reposync-config)
+	    readonly CUSTOM_REPOSYNC=$(realpath "$2")
+	    shift 2
+	    ;;
         --)
             shift
             break

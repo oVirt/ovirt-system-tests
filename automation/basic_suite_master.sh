@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xe
 
 # This script is meant to be run within a mock environment, using
 # mock_runner.sh or chrooter, from the root of the repository:
@@ -8,17 +8,19 @@
 # or
 # $ chrooter -s automation/basic_suite_master.sh
 #
+SUITE="basic-suite-master"
+SUITE_REAL_PATH=$(realpath $SUITE)
 
 cleanup() {
     rm -rf exported-artifacts
     mkdir -p exported-artifacts
-    [[ -d deployment-basic_suite_master/current/logs ]] \
-    && mv deployment-basic_suite_master/current/logs exported-artifacts/lago_logs
-    find deployment-basic_suite_master \
+    [[ -d deployment-$SUITE/current/logs ]] \
+    && mv deployment-$SUITE/current/logs exported-artifacts/lago_logs
+    find deployment-$SUITE \
         -iname nose\*.xml \
         -exec mv {} exported-artifacts/ \;
     [[ -d test_logs ]] && mv test_logs exported-artifacts/
-    ./run_suite.sh --cleanup basic_suite_master
+    ./run_suite.sh --cleanup $SUITE
     exit
 }
 
@@ -30,12 +32,12 @@ trap cleanup SIGTERM EXIT
 res=0
 
 # This is used to test external sources
-# it's done by putting them one by line in the ./extra_sources file
+# it's done by putting them one per line in $SUITE/extra-sources file
 extra_sources_cmd=''
-if [[ -e ./extra_sources ]]; then
-    extra_sources_cmd+="-s \"conf:$PWD/extra_sources\""
+if [[ -e $SUITE/extra-sources ]]; then
+    extra_sources_cmd+="-s \"conf:$SUITE_REAL_PATH/extra-sources\""
 fi
 
-./run_suite.sh $extra_sources_cmd basic_suite_master \
+./run_suite.sh $extra_sources_cmd $SUITE \
 || res=$?
 exit $res

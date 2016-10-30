@@ -239,7 +239,6 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
-                functools.partial(log_collector, prefix),
             ],
         )
     else:
@@ -250,7 +249,6 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
-                functools.partial(log_collector, prefix),
             ],
         )
     vt.start_all()
@@ -477,7 +475,8 @@ def add_non_vm_network(api):
     )
 
 
-def log_collector(prefix):
+@testlib.with_ovirt_prefix
+def run_log_collector(prefix):
     engine = prefix.virt_env.engine_vm()
     result = engine.ssh(
         [
@@ -507,6 +506,7 @@ _TEST_LIST = [
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,
+    run_log_collector,
 ]
 
 

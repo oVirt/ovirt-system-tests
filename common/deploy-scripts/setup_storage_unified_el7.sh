@@ -35,7 +35,7 @@ install_deps() {
     systemctl stop kdump.service
     systemctl disable kdump.service
     yum install -y deltarpm
-    yum install -y --downloaddir=/dev/shm device-mapper-multipath \
+    yum install -y --downloaddir=/dev/shm \
                    nfs-utils \
                    lvm2 \
                    targetcli \
@@ -57,6 +57,10 @@ setup_iscsi() {
     pvcreate /dev/${ISCSI_DEV}
     vgcreate vg1_storage /dev/${ISCSI_DEV}
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage
+    targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
+        delete 0.0.0.0 3260
+    targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
+        create ::0
 
     create_lun () {
        local ID=$1
@@ -76,49 +80,29 @@ setup_iscsi() {
     done;
 
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
-        set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
+        set auth userid=username password=password
+    targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
+        set attribute demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1 default_cmdsn_depth=64
     targetcli saveconfig
 
     systemctl enable target
     systemctl start target
+    sed -i 's/#node.session.auth.authmethod = CHAP/node.session.auth.authmethod = CHAP/g' /etc/iscsi/iscsid.conf
+    sed -i 's/#node.session.auth.username = username/node.session.auth.username = username/g' /etc/iscsi/iscsid.conf
+    sed -i 's/#node.session.auth.password = password/node.session.auth.password = password/g' /etc/iscsi/iscsid.conf
 
     iscsiadm -m discovery -t sendtargets -p 127.0.0.1
     iscsiadm -m node -L all
-
-    cat >> /etc/multipath.conf <<EOC
-### Based on vdsm configuration
-defaults {
-    polling_interval            5
-    no_path_retry               fail
-    user_friendly_names         no
-    flush_on_last_del           yes
-    fast_io_fail_tmo            5
-    dev_loss_tmo                30
-    max_fds                     4096
-}
-blacklist {
-    device {
-        vendor "QEMU"
-        product "*"
-    }
-}
-# Remove devices entries when overrides section is available.
-devices {
-    device {
-        # These settings overrides built-in devices settings. It does not apply
-        # to devices without built-in settings (these use the settings in the
-        # "defaults" section), or to devices defined in the "devices" section.
-        # Note: This is not available yet on Fedora 21. For more info see
-        # https://bugzilla.redhat.com/1253799
-        all_devs                yes
-        no_path_retry           fail
-    }
-}
-EOC
+    rescan-scsi-bus.sh
+    lsscsi -i |grep 36 |awk '{print $NF}' |sort > /root/multipath.txt
+    iscsiadm -m node -U all
+    iscsiadm -m node -o delete
+    systemctl stop iscsi.service
+    systemctl disable iscsi.service
 
     # this is needed so lvm does not use the iscsi volumes
     #sed -i /etc/lvm/lvm.conf \
-    #    -e 's/^\s*# global_filter.*/global_filter = \["r\|\/dev\/vg1_storage\/\*\|" \]/'
+    #    -e 's/^\s*# global_filter.*/global_filter = \["r|\/dev\/vg1_storage\/\*" \]/'
 }
 
 disable_firewalld() {
@@ -135,7 +119,6 @@ setup_services() {
     systemctl disable postfix
     systemctl stop wpa_supplicant
     systemctl disable wpa_supplicant
-    modprobe dm_multipath
     disable_firewalld
     systemctl start rpcbind.service
     systemctl start nfs-server.service
@@ -145,11 +128,6 @@ setup_services() {
     systemctl enable nfs-server.service
 }
 
-
-enable_multipath() {
-    systemctl enable multipathd
-    systemctl start multipathd
-}
 
 install_deps_389ds() {
     yum install -y --downloaddir=/dev/shm 389-ds-base
@@ -220,7 +198,6 @@ main() {
     setup_export
     setup_iso
     setup_iscsi
-    enable_multipath
 
     # Prepare 389ds
     install_deps_389ds

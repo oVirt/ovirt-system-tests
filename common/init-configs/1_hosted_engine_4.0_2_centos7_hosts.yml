@@ -57,8 +57,8 @@ domains:
   __HOST0__:
     vm-type: ovirt-host
     distro: el7
-    memory: 4720
     service_provider: systemd
+    memory: 4720
     nics:
       - net: __LAGO_NET__
     disks:
@@ -84,8 +84,8 @@ domains:
   __HOST1__:
     vm-type: ovirt-host
     distro: el7
-    memory: 4720
     service_provider: systemd
+    memory: 4720
     nics:
       - net: __LAGO_NET__
     disks:

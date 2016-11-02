@@ -25,7 +25,7 @@ run any of the suites available:
 
 ```
     $ cd ovirt-system-tests
-    $ ./run_suite.sh basic_suite_4.0
+    $ ./run_suite.sh basic-suite-4.0
 ```
 
 **NOTE**: this will download a lot of vm images the first time it runs, check<br>

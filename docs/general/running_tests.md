@@ -1,7 +1,7 @@
 Run oVirt system tests
 ======================
 oVirt system tests has multiple 'testing suites', each targeted at a different version<br>
-of oVirt or a different product, for e.g, the 'basic_suite_4.0' will run basic sanity<br>
+of oVirt or a different product, for e.g, the 'basic-suite-4.0' will run basic sanity<br>
 tests for the 4.0 version, which includes: installing engine, adding hosts, adding storage, installing VMs, etc..
 
 For simplicity we chose the 'basic suite 4.0' in this example, but you can choose any other suite<br>
@@ -25,7 +25,7 @@ run any of the suites available:
 
 ```
     $ cd ovirt-system-tests
-    $ ./run_suite.sh basic_suite_4.0
+    $ ./run_suite.sh basic-suite-4.0
 ```
 
 **NOTE**: this will download a lot of vm images the first time it runs, check<br>
@@ -41,7 +41,7 @@ If you are still worried that its stuck, please refer to the [FAQ](docs/general/
 to see if the issue you're seeing is documented.
 
 Once it is done, you will get the results in the directory<br>
-`deployment-basic_suite_4.0`, that will include an initialized prefix with a<br>
+`deployment-basic-suite-4.0`, that will include an initialized prefix with a<br>
 4.0 engine vm with all the hosts and storages added.
 
 To access it, log in to the web-ui at:
@@ -71,7 +71,7 @@ Poke around in the env
 
 You can now open a shell to any of the vms, start/stop them all, etc.:
 ```
-    $ cd deployment-basic_suite_4.0
+    $ cd deployment-basic-suite-4.0
     $ lagocli shell engine
     [root@engine ~]# exit
 
@@ -101,7 +101,7 @@ Cleanup
 
 Once you're done with the environment, run:
 ```
-    $ cd deployment-basic_suite_4.0
+    $ cd deployment-basic-suite-4.0
     $ lagocli cleanup
 ```
 That will stop any running vms and remove the lago metadata in the prefix, it<br>

@@ -61,7 +61,7 @@ SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
 CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
 
-#Network
+# Network
 VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
 

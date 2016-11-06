@@ -110,7 +110,6 @@ setup_iscsi() {
     iscsiadm -m node -U all
     iscsiadm -m node -o delete
     systemctl disable --now iscsi.service
-
 }
 
 install_firewalld() {
@@ -236,6 +235,17 @@ EOC
     systemctl stop dirsrv@lago
 }
 
+setup_lvm_filter() {
+    cat > /etc/lvm/lvmlocal.conf <<EOC
+
+devices {
+        # Either sdb or sdc devices can include VG, from which we slice out logical volumes
+        global_filter = [ "a|/dev/sdb|", "a|/dev/sdc|", "r|.*|" ]
+}
+
+EOC
+}
+
 main() {
     # Prepare storage
     install_deps
@@ -245,6 +255,7 @@ main() {
     setup_iso
     setup_second_nfs
     set_selinux_on_nfs
+    setup_lvm_filter
     setup_iscsi
 
     # Prepare 389ds

@@ -19,6 +19,7 @@ domains:
   __STORAGE__:
     memory: 512
     cpus: 1
+    service_provider: systemd
     nics:
       - net: __LAGO_NET__
     disks:
@@ -53,6 +54,7 @@ domains:
   __HOST1__:
     vm-type: ovirt-host
     memory: 2047
+    service_provider: systemd
     nics:
       - net: __LAGO_NET__
     disks:
@@ -71,6 +73,7 @@ domains:
   __HOST0__:
     vm-type: ovirt-host
     memory: 2047
+    service_provider: systemd
     nics:
       - net: __LAGO_NET__
     disks:

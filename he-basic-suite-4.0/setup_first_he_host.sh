@@ -1,33 +1,33 @@
-#!/bin/bash -e
-HOSTEDENGINE="hosted-engine.lago.local"
-
+#!/bin/bash -x
+HOSTEDENGINE="lago-he-basic-suite-4-0-engine"
+DOMAIN=`dnsdomainname`
 MYADDR=$(\
     /sbin/ip -4 -o addr show dev eth0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
-    | awk -F/ '{print $1}'\
+    | awk -F/ '{print $1}' \
 )
-MYHOSTNAME=$(hostname | sed s/_/-/g).lago.local
+MYHOSTNAME="$(hostname | sed s/_/-/g)"
 
-echo "${MYADDR} ${MYHOSTNAME}$DOMAIN" >> /etc/hosts
+echo "${MYADDR} ${MYHOSTNAME} ${MYHOSTNAME}.${DOMAIN}" >> /etc/hosts
 
 HEGW=$(\
     /sbin/ip -4 -o addr show dev eth0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}'\
-    | awk -F/ '{print $1}'\
+    | awk -F/ '{print $1}' \
 )
 HEADDR=$(\
     /sbin/ip -4 -o addr show dev eth0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".99"}'\
-    | awk -F/ '{print $1}'\
+    | awk -F/ '{print $1}' \
 )
-echo "${HEADDR} ${HOSTEDENGINE}" >> /etc/hosts
+echo "${HEADDR} ${HOSTEDENGINE} ${HOSTEDENGINE}.${DOMAIN}" >> /etc/hosts
+VMPASS=123456
+ENGINEPASS=123
 
 OVAIMAGE=$(\
     ls /usr/share/ovirt-engine-appliance/ovirt-engine-appliance-*.ova \
     | tail -11\
 )
-VMPASS=123456
-ENGINEPASS=123
 
 sed \
     -e "s,@GW@,${HEGW},g" \
@@ -35,6 +35,9 @@ sed \
     -e "s,@OVAIMAGE@,${OVAIMAGE},g" \
     -e "s,@VMPASS@,${VMPASS},g" \
     -e "s,@ENGINEPASS@,${ENGINEPASS},g" \
+    -e "s,@DOMAIN@,${DOMAIN},g" \
+    -e "s,@MYHOSTNAME@,${MYHOSTNAME},g" \
+    -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
     < /root/hosted-engine-deploy-answers-file.conf.in \
     > /root/hosted-engine-deploy-answers-file.conf
 
@@ -43,8 +46,8 @@ fstrim -va
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
-    echo "hosted-engine first host setup failed with status ${RET_CODE}."
+    echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
-
+rm -rf /dev/shm/yum /dev/shm/*.rpm
 fstrim -va

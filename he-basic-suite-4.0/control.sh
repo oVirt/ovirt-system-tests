@@ -4,9 +4,9 @@ set -o pipefail
 
 prep_suite () {
     local suite_name="${SUITE##*/}"
-    suite_name="${suite_name//./_}"
+    suite_name="${suite_name//./-}"
     sed -r \
-        -e "s,__ENGINE__,lago_${suite_name}-engine,g" \
+        -e "s,__ENGINE__,lago-${suite_name}-engine,g" \
         -e "s,__HOST([0-9]+)__,lago-${suite_name}-host\1,g" \
         -e "s,__LAGO_NET__,lago-${suite_name}-lago,g" \
         -e "s,__STORAGE__,lago-${suite_name}-storage,g" \
@@ -18,38 +18,51 @@ prep_suite () {
 he_deploy() {
     local suite="${SUITE?}"
     local curdir="${PWD?}"
+    local suite_name="${SUITE##*/}"
+    suite_name="${suite_name//./-}"
+    HOST=lago-${suite_name}-host
     cd $PREFIX
     echo "#########################"
-    echo "Deploying on host0"
+    echo "Deploying on ${HOST}0"
     lago copy-to-vm \
-        lago-he-basic-suite-4-0-host0 \
+        ${HOST}0 \
         "${SUITE}/answers.conf.in" \
         /root/hosted-engine-deploy-answers-file.conf.in
 
     lago copy-to-vm \
-        lago-he-basic-suite-4-0-host0 \
+        ${HOST}0 \
         "${SUITE}/setup_first_he_host.sh" \
         /root/
 
     lago shell \
-        lago-he-basic-suite-4-0-host0 \
+        ${HOST}0 \
         /root/setup_first_he_host.sh
+    RET_CODE=$?
+    if [ ${RET_CODE} -ne 0 ]; then
+        echo "hosted-engine setup on ${HOST}0 failed with status ${RET_CODE}."
+        exit ${RET_CODE}
+    fi
 
     echo "#########################"
-    echo "Deploying on host1"
+    echo "Deploying on ${HOST}1"
     lago copy-to-vm \
-        lago-he-basic-suite-4-0-host1 \
+        ${HOST}1 \
         "${SUITE}/answers-additional.conf.in" \
         /root/hosted-engine-deploy-answers-file.conf.in
 
     lago copy-to-vm \
-        lago-he-basic-suite-4-0-host1 \
+        ${HOST}1 \
         "${SUITE}/setup_additional_he_host.sh" \
         /root/
 
     lago shell \
-        lago-he-basic-suite-4-0-host1 \
+        ${HOST}1 \
         /root/setup_additional_he_host.sh
+    RET_CODE=$?
+    if [ ${RET_CODE} -ne 0 ]; then
+        echo "hosted-engine setup on ${HOST}1 failed with status ${RET_CODE}."
+        exit ${RET_CODE}
+    fi
     cd -
 }
 

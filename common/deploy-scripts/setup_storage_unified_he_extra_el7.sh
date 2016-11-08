@@ -24,6 +24,7 @@ setup_he() {
 
 main() {
     setup_he
+    rm -rf /dev/shm/*.rpm
 }
 
 main

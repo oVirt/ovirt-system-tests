@@ -42,6 +42,8 @@ echo "$ADDR engine" >> /etc/hosts
 yum install -y deltarpm
 install_firewalld
 yum install --nogpgcheck -y --downloaddir=/dev/shm ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
+rm -rf /dev/shm/yum /dev/shm/*.rpm
+
 if grep "$EL7" /etc/redhat-release > /dev/null; then
     fstrim -va
 fi

@@ -67,7 +67,7 @@ def _get_mgmt_attachment(api, host):
     return mgmt_attachment
 
 
-def _create_ip_configuration():
+def _create_static_ip_configuration():
     ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
         params.IpAddressAssignment(
             assignment_method='static',
@@ -80,6 +80,18 @@ def _create_ip_configuration():
                 address=VLAN100_NET_IPv6_ADDR,
                 netmask=VLAN100_NET_IPv6_MASK,
                 version='v6'))
+    ])
+
+    return ip_configuration
+
+
+def _create_dhcp_ip_configuration():
+    ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
+        params.IpAddressAssignment(
+            assignment_method='dhcp'),
+        params.IpAddressAssignment(
+            assignment_method='dhcp',
+            ip=params.IP(version='v6'))
     ])
 
     return ip_configuration
@@ -103,13 +115,26 @@ def _attach_vlan_to_host(api, host, ip_configuration):
     host.setupnetworks(attachment_action)
 
 
+def _modify_ip_config(api, host, ip_configuration):
+    network_id = api.networks.get(name=VLAN100_NET).id
+    attachment = _get_networkattachment_by_network_id(host, network_id)
+    attachment.set_ip_address_assignments(ip_configuration)
+
+    attachment_action = params.Action(
+        modified_network_attachments=params.NetworkAttachments(
+            network_attachment=[attachment]),
+        check_connectivity=True)
+
+    nt.assert_true(host.setupnetworks(attachment_action))
+
+
 #
 
 
 @testlib.with_ovirt_api
-def attach_vlan_to_host(api):
+def attach_vlan_to_host_static_config(api):
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
-    ip_configuration = _create_ip_configuration()
+    ip_configuration = _create_static_ip_configuration()
     _attach_vlan_to_host(api, host, ip_configuration)
 
     # TODO: currently ost uses v3 SDK that doesn't report ipv6. once available,
@@ -117,6 +142,17 @@ def attach_vlan_to_host(api):
     nt.assert_equals(
         host.nics.list(name='eth0.100')[0].ip.address,
         VLAN100_NET_IPv4_ADDR)
+
+
+@testlib.with_ovirt_api
+def modify_host_ip_to_dhcp(api):
+    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    ip_configuration = _create_dhcp_ip_configuration()
+    _modify_ip_config(api, host, ip_configuration)
+
+    # TODO: once the VLANs/dnsmasq issue is resolved,
+    # (https://github.com/lago-project/lago/issues/375)
+    # verify ip configuration.
 
 
 @testlib.with_ovirt_api
@@ -146,7 +182,8 @@ def detach_vlan_from_host(api):
 
 
 _TEST_LIST = [
-    attach_vlan_to_host,
+    attach_vlan_to_host_static_config,
+    modify_host_ip_to_dhcp,
     detach_vlan_from_host
 ]
 

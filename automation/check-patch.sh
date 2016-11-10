@@ -11,9 +11,9 @@
 # Project's root
 PROJECT="$PWD"
 COMMONS=
-TESTS_36_PATH="basic_suite_3.6"
-TESTS_40_PATH="basic_suite_4.0"
-TESTS_MASTER_PATH="basic_suite_master"
+TESTS_36_PATH="basic-suite-3.6"
+TESTS_40_PATH="basic-suite-4.0"
+TESTS_MASTER_PATH="basic-suite-master"
 
 # This function will collect the logs
 # of each suite to a different directory

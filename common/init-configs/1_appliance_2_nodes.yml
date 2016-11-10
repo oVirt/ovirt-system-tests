@@ -1,8 +1,8 @@
 domains:
-  lago_image_ng_suite_4_0_engine:
+  __ENGINE__:
     vm-type: ovirt-engine
     nics:
-      - net: lago_image_ng_suite_4_0
+      - net: __LAGO_NET__
         ip: 192,168.200.3
     type: ova
     cpu: 4
@@ -20,10 +20,10 @@ domains:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine_image_ng.sh
 
-  lago_image_ng_suite_4_0_storage-iscsi:
+  __ENGINE_ISCSI__:
     memory: 2047
     nics:
-      - net: lago_image_ng_suite_4_0
+      - net: __LAGO_NET__
     disks:
       - template_name: el7-base
         type: template
@@ -39,10 +39,10 @@ domains:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_iscsi_el7.sh
 
-  lago_image_ng_suite_4_0_storage-nfs:
+  __ENGINE_NFS__:
     memory: 2047
     nics:
-      - net: lago_image_ng_suite_4_0
+      - net: __LAGO_NET__
     disks:
       - template_name: el7-base
         type: template
@@ -64,11 +64,11 @@ domains:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_nfs_el7.sh
 
-  lago_image_ng_suite_4_0_node1:
+  __NODE1__:
     vm-type: ovirt-node
     memory: 2047
     nics:
-      - net: lago_image_ng_suite_4_0
+      - net: __LAGO_NET__
     disks:
       - type: template
         template_type: qcow2
@@ -80,11 +80,11 @@ domains:
       ovirt-capabilities:
         - snapshot-live-merge
 
-  lago_image_ng_suite_4_0_node2:
+  __NODE2__:
     vm-type: ovirt-node
     memory: 2047
     nics:
-      - net: lago_image_ng_suite_4_0
+      - net: __LAGO_NET__
     disks:
       - type: template
         template_type: qcow2
@@ -97,7 +97,7 @@ domains:
         -  snapshot-live-merge
 
 nets:
-  lago_image_ng_suite_4_0:
+  __LAGO_NET__:
     type: nat
     dhcp:
       start: 100

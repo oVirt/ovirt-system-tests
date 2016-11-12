@@ -22,6 +22,7 @@ import os
 
 import nose.tools as nt
 from nose import SkipTest
+from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
 
 from lago import utils
@@ -365,10 +366,15 @@ def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=Fa
 def list_glance_images(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-    if glance_provider is not None:
+    if glance_provider is None:
+        raise SkipTest('%s: GLANCE is not available.' % list_glance_images.__name__ )
+
+    try:
         all_images = glance_provider.images.list()
         if len(all_images):
             GLANCE_AVAIL = True
+    except errors.RequestError:
+        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images.__name__ )
 
 
 def import_non_template_from_glance(prefix):

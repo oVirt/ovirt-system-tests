@@ -100,6 +100,7 @@ generate_images(){
 
 
 generate_iso_seed(){
+    local suite="${SUITE?}"
     pushd "${suite}/utils"
     rm -rf seed.iso
     genisoimage \
@@ -119,9 +120,19 @@ prep_suite(){
     local appliance_image="${1:-oVirt-Engine-Appliance-$version-$engine_distro.ova}"
     local node_squashfs_image="${2:-oVirt-Node-$version-$engine_distro.squashfs.img}"
     local node_image="${3:-oVirt-Node-$version-$engine_distro.qcow2}"
+    local suite_name="${SUITE##*/}"
     local suite="${SUITE?}"
-    local suite_name="${suite##*/}"
-    suite_name="${suite_name//./_}"
+    suite_name="${suite_name//./-}"
+
+    sed -r \
+        -e "s,__ENGINE__,lago-${suite_name}-engine,g" \
+        -e "s,__NODE([0-9]+)__,lago-${suite_name}-node\1,g" \
+        -e "s,__LAGO_NET__,lago-${suite_name}-lago,g" \
+        -e "s,__ENGINE_ISCSI__,lago-${suite_name}-storage-iscsi,g" \
+        -e "s,__ENGINE_NFS__,lago-${suite_name}-storage-nfs,g" \
+    < ${SUITE}/LagoInitFile.in \
+    > ${SUITE}/LagoInitFile
+
     generate_images \
         "$version" \
         "$engine_distro" "$appliance_image" \

@@ -27,17 +27,6 @@ from ovirtsdk.xml import params
 from lago import utils
 from ovirtlago import testlib
 
-
-# TODO: remove once lago can gracefully handle on-demand prefixes
-def _get_prefixed_name(entity_name):
-    suite = os.environ.get('SUITE')
-    return (
-        'lago_'
-        + os.path.basename(suite).replace('.', '_')
-        + '_' + entity_name
-    )
-
-
 # DC/Cluster
 DC_NAME = 'test-dc'
 DC_VER_MAJ = 3
@@ -50,11 +39,11 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
-SD_NFS_HOST_NAME = _get_prefixed_name('storage-nfs')
+SD_NFS_HOST_NAME = testlib.get_prefixed_name('storage-nfs')
 SD_NFS_PATH = '/exports/nfs_clean/share1'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = _get_prefixed_name('storage-iscsi')
+SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('storage-iscsi')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2

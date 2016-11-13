@@ -9,7 +9,7 @@ MYADDR=$(\
 MYHOSTNAME="$(hostname | sed s/_/-/g)"
 DOMAIN=".lago.local"
 HOSTNUM="${MYHOSTNAME: -1}"
-APPHOSTNAME="${MYHOSTNAME//[.-]/_}"
+APPHOSTNAME="${MYHOSTNAME}"
 
 echo "${MYADDR} ${MYHOSTNAME}$DOMAIN" >> /etc/hosts
 

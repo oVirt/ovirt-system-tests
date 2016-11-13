@@ -46,6 +46,17 @@ def test_initialize_engine(prefix):
         result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
     )
 
+    # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
+    result = engine.ssh(
+        [
+            'rm',
+            '-rf',
+            '/dev/shm/yum',
+            '/dev/shm/yumdb',
+            '/dev/shm/*.rpm',
+        ]
+    )
+
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()
     )

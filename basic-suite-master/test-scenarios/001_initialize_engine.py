@@ -46,12 +46,15 @@ def test_initialize_engine(prefix):
         result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
     )
 
-    testlib.assert_true_within_long(
-        lambda: engine.service('ovirt-engine').alive()
-    )
-
-    testlib.assert_true_within_short(
-        lambda: engine.service('ovirt-engine-dwhd').alive()
+    # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
+    result = engine.ssh(
+        [
+            'rm',
+            '-rf',
+            '/dev/shm/yum',
+            '/dev/shm/yumdb',
+            '/dev/shm/*.rpm',
+        ]
     )
 
     #TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
@@ -64,4 +67,12 @@ def test_initialize_engine(prefix):
     )
     nt.eq_(
         result.code, 0, 'firwalld not stopped. Exit code is %s' % result.code
+    )
+
+    testlib.assert_true_within_long(
+        lambda: engine.service('ovirt-engine').alive()
+    )
+
+    testlib.assert_true_within_short(
+        lambda: engine.service('ovirt-engine-dwhd').alive()
     )

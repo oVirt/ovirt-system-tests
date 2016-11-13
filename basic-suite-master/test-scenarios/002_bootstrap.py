@@ -162,6 +162,9 @@ def add_hosts(prefix):
     for host in hosts:
         testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
+    for host in hosts:
+        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+
 @testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):

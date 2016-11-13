@@ -319,11 +319,12 @@ def vm_run(prefix):
 @testlib.with_ovirt_prefix
 def vm_migrate(prefix):
     api = prefix.virt_env.engine_vm().get_api()
-    host_names = [h.name() for h in prefix.virt_env.host_vms()]
+    running_host = api.hosts.get(id=api.vms.get(VM0_NAME).get_host().get_id()).get_name()
+    host_names = [h.name() for h in prefix.virt_env.host_vms() if h.name() != running_host]
 
     migrate_params = params.Action(
         host=params.Host(
-            name=sorted(host_names)[1]
+            name=sorted(host_names)[0]
         ),
     )
     api.vms.get(VM0_NAME).migrate(migrate_params)
@@ -460,6 +461,23 @@ def hotplug_disk(api):
 
 
 @testlib.with_ovirt_api
+def suspend_resume_vm(api):
+    nt.assert_true(api.vms.get(VM0_NAME).suspend())
+
+    testlib.assert_true_within_short(
+        lambda:
+        api.vms.get(VM0_NAME).status.state == 'suspended'
+    )
+
+    nt.assert_true(api.vms.get(VM0_NAME).start())
+
+    testlib.assert_true_within_short(
+        lambda:
+        api.vms.get(VM0_NAME).status.state == 'up'
+    )
+
+
+@testlib.with_ovirt_api
 def add_event(api):
     event_params = params.Event(
         description='ovirt-system-tests description',
@@ -485,6 +503,7 @@ _TEST_LIST = [
     add_directlun,
     vm_run,
     template_export,
+    suspend_resume_vm,
     vm_migrate,
     snapshot_live_merge,
     hotplug_nic,

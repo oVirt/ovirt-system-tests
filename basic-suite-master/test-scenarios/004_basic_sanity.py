@@ -39,6 +39,7 @@ VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM0_NAME
+GLANCE_DISK_NAME = 'CirrOS_0.3.4_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
@@ -53,6 +54,13 @@ def add_vm_blank(api):
     vm_params = params.VM(
         name=VM0_NAME,
         memory=vm_memory,
+        os=params.OperatingSystem(
+            type_='other_linux',
+        ),
+        type_='server',
+        high_availability=params.HighAvailability(
+            enabled=True,
+        ),
         cluster=params.Cluster(
             name=TEST_CLUSTER,
         ),
@@ -90,6 +98,20 @@ def add_nic(api):
 
 @testlib.with_ovirt_api
 def add_disk(api):
+    glance_disk = api.disks.get(GLANCE_DISK_NAME)
+    if glance_disk:
+        disk = api.vms.get(VM0_NAME).disks.add(
+            params.Disk(
+                id = glance_disk.get_id(),
+                active=True,
+                bootable=True,
+            )
+        )
+        testlib.assert_true_within_short(
+            lambda:
+            api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
+        )
+
     disk_params = params.Disk(
         name=DISK0_NAME,
         size=10 * GB,
@@ -105,7 +127,7 @@ def add_disk(api):
         ),
         status=None,
         sparse=True,
-        bootable=True,
+        bootable=True if glance_disk is None else False,
     )
     api.vms.get(VM0_NAME).disks.add(disk_params)
     testlib.assert_true_within_short(
@@ -298,9 +320,9 @@ def vm_run(prefix):
                                 on_boot='True',
                                 network=params.Network(
                                     ip=params.IP(
-                                        address='192.168.1.2.',
+                                        address='192.168.200.200.',
                                         netmask='255.255.255.0',
-                                        gateway='192.168.1.1',
+                                        gateway='192.168.200.1',
                                     ),
                                 ),
                             )]

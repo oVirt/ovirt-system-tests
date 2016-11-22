@@ -28,7 +28,7 @@ run the basic suite.
 Please run the following script on your testing env to install all prerequisits:
 
 ```
-wget https://github.com/lago-project/lago-demo/blob/master/install_scripts/install_lago.sh
+wget https://raw.githubusercontent.com/lago-project/lago-demo/master/install_scripts/install_lago.sh
 ./install_lago.sh
 ```
 

@@ -53,12 +53,12 @@ trap on_error SIGTERM ERR
 VERSIONS_TO_RUN=()
 if git show --pretty='format:' --name-only | grep -E \
     "$COMMONS"; then
-    VERSIONS_TO_RUN+=('3.6' '4.0' 'master')
+    VERSIONS_TO_RUN+=('master' '4.0' '3.6')
 
 else
   if git show --pretty='format:' --name-only | grep -E \
-      "$TESTS_36_PATH" ; then
-      VERSIONS_TO_RUN+=('3.6')
+      "$TESTS_MASTER_PATH" ; then
+      VERSIONS_TO_RUN+=('master')
   fi
 
   if git show --pretty='format:' --name-only | grep -E \
@@ -67,8 +67,8 @@ else
   fi
 
   if git show --pretty='format:' --name-only | grep -E \
-      "$TESTS_MASTER_PATH"; then
-      VERSIONS_TO_RUN+=('master')
+      "$TESTS_36_PATH"; then
+      VERSIONS_TO_RUN+=('3.6')
   fi
 fi
 

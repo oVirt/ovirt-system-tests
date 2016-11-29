@@ -28,6 +28,7 @@ cleanup() {
         -iname nose\*.xml \
         -exec mv {} exported-artifacts/ \;
     [[ -d test_logs ]] && mv test_logs exported-artifacts/
+    [[ -e failure_msg.txt ]] && mv failure_msg.txt exported-artifacts/
     ./run_suite.sh --cleanup "$SUITE"
     exit
 }

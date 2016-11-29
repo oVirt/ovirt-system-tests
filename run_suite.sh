@@ -49,8 +49,26 @@ Optional arguments:
 "
 }
 
+ci_msg_if_fails() {
+    msg_if_fails "Failed to prepare environment on step ${1}, please contact the CI team."
+}
+
+msg_if_fails() {
+  # This text file will be passed back to gerrit
+    local repo_root_dir=$(dirname $SUITE)
+    echo "$1" > "${repo_root_dir}/failure_msg.txt"
+}
+
+
+del_failure_msg() {
+    local repo_root_dir=$(dirname $SUITE)
+    local msg_path="${repo_root_dir}/failure_msg.txt"
+    [[ -e "$msg_path" ]] && rm "$msg_path"
+}
+
 
 env_init () {
+    ci_msg_if_fails $FUNCNAME
     echo "#########################"
     local template_repo="${1:-$SUITE/template-repo.json}"
     local initfile="${2:-$SUITE/init.json}"
@@ -61,7 +79,8 @@ env_init () {
 }
 
 
-env_repo_setup () {\
+env_repo_setup () {
+    ci_msg_if_fails $FUNCNAME
     echo "#########################"
     local extrasrc
     declare -a extrasrcs
@@ -83,6 +102,7 @@ env_repo_setup () {\
 
 
 env_start () {
+    ci_msg_if_fails $FUNCNAME
     echo "#########################"
     cd $PREFIX
     $CLI start
@@ -91,6 +111,7 @@ env_start () {
 
 
 env_deploy () {
+    ci_msg_if_fails $FUNCNAME
     echo "#########################"
     cd $PREFIX
     $CLI ovirt deploy
@@ -99,6 +120,7 @@ env_deploy () {
 
 
 env_run_test () {
+    msg_if_fails "Test ${1##*/} failed."
     echo "#########################"
     local res=0
     cd $PREFIX
@@ -285,3 +307,5 @@ source "${SUITE}/control.sh"
 
 prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"
 run_suite
+# No error has occurred, we can delete the error msg.
+del_failure_msg

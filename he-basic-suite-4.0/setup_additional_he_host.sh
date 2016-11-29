@@ -53,7 +53,7 @@ do
 done
 if [ ${counter} -eq 0 ]; then
     echo "Could not verify HE health"
-    exit ${code}
+    exit 1
 fi
 
 sshpass -p "${VMPASS}" \

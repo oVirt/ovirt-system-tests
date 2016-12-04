@@ -34,7 +34,6 @@ setup_export() {
 install_deps() {
     systemctl stop kdump.service
     systemctl disable kdump.service
-    yum install -y deltarpm
     yum install -y --downloaddir=/dev/shm \
                    nfs-utils \
                    lvm2 \
@@ -100,9 +99,6 @@ setup_iscsi() {
     systemctl stop iscsi.service
     systemctl disable iscsi.service
 
-    # this is needed so lvm does not use the iscsi volumes
-    #sed -i /etc/lvm/lvm.conf \
-    #    -e 's/^\s*# global_filter.*/global_filter = \["r|\/dev\/vg1_storage\/\*" \]/'
 }
 
 disable_firewalld() {
@@ -184,10 +180,9 @@ userPassword: {SSHA}1e/GY7pCEhoL5yMR8HvjI7+3me6PQtxZ
 # Password is 123456
 EOC
 
-    hostname $HOSTNAME
-    echo "$ADDR $HOSTNAME" >> /etc/hosts
     /usr/sbin/setup-ds.pl --silent --file=answer_file.inf
     ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_user.ldif
+    systemctl stop dirsrv@lago
 }
 
 main() {

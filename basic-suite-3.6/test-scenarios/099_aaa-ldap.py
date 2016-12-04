@@ -52,6 +52,17 @@ def add_ldap_provider(prefix):
     engine.copy_to(temp.name, temp.name)
     os.unlink(temp.name)
 
+    result = machine_389ds.ssh(
+        [
+            'systemctl',
+            'start',
+            'dirsrv@lago',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'Failed to start LDAP server. Exit code %s' % result.code
+    )
+
     result = engine.ssh(
         [
             'ovirt-engine-extension-aaa-ldap-setup',

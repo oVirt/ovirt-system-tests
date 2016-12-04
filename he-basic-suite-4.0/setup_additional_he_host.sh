@@ -41,7 +41,7 @@ sed \
 
 fstrim -va
 
-counter=200
+counter=100
 while [ $counter -gt 0 ]
 do
     code=`curl --insecure --silent --output /dev/null --write-out '%{http_code}' https://${HOSTEDENGINE}.${DOMAIN}/ovirt-engine/services/health`
@@ -55,10 +55,6 @@ if [ ${counter} -eq 0 ]; then
     echo "Could not verify HE health"
     exit 1
 fi
-
-sshpass -p "${VMPASS}" \
-    ssh -o StrictHostKeyChecking=no -o CheckHostIP=no -o ConnectionAttempts=200 \
-    root@${HOSTEDENGINE}.${DOMAIN} "echo ${MYADDR} ${MYHOSTNAME} ${MYHOSTNAME}.${DOMAIN} >> /etc/hosts"
 
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?

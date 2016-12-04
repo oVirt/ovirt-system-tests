@@ -517,21 +517,21 @@ def add_event(api):
 
 
 _TEST_LIST = [
-    add_event,
     add_vm_blank,
     add_nic,
     add_disk,
     add_console,
     snapshot_merge,
-    add_vm_template,
     add_directlun,
     vm_run,
-    template_export,
+    add_vm_template,
     suspend_resume_vm,
     vm_migrate,
     snapshot_live_merge,
+    template_export,
     hotplug_nic,
     hotplug_disk,
+    add_event,
 ]
 
 

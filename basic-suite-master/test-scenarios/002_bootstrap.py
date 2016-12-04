@@ -32,7 +32,7 @@ from ovirtlago import testlib
 # DC/Cluster
 DC_NAME = 'test-dc'
 DC_VER_MAJ = 4
-DC_VER_MIN = 1
+DC_VER_MIN = 0
 CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'
 

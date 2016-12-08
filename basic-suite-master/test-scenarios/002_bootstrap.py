@@ -501,6 +501,14 @@ def run_log_collector(prefix):
         result.code, 0, 'log collector failed. Exit code is %s' % result.code
     )
 
+    engine.ssh(
+        [
+            'rm',
+            '-rf',
+            '/dev/shm/sosreport-LogCollector-*',
+        ],
+    )
+
 
 _TEST_LIST = [
     add_dc,

@@ -33,6 +33,8 @@ cat > /root/ovirt-log-collector.conf << EOF
 user=admin@internal
 passwd=123
 engine=engine:443
+local-tmp=/dev/shm/log
+output=/dev/shm
 EOF
 
 # engine 4 resolves its FQDN

@@ -42,6 +42,11 @@ echo "$ADDR engine" >> /etc/hosts
 yum install -y deltarpm
 install_firewalld
 yum install --nogpgcheck -y --downloaddir=/dev/shm ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
+RET_CODE=$?
+if [ ${RET_CODE} -ne 0 ]; then
+    echo "yum install failed with status ${RET_CODE}."
+    exit ${RET_CODE}
+fi
 rm -rf /dev/shm/yum /dev/shm/*.rpm
 
 if grep "$EL7" /etc/redhat-release > /dev/null; then

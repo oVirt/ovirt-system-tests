@@ -17,12 +17,14 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import functools
 import os
 import nose.tools as nt
 from nose import SkipTest
 
 from ovirtsdk.xml import params
 
+from lago import utils
 from ovirtlago import testlib
 
 
@@ -38,7 +40,7 @@ TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
-DISK1_NAME = '%s_disk1' % VM0_NAME
+DISK1_NAME = '%s_disk1' % VM1_NAME
 GLANCE_DISK_NAME = 'CirrOS_0.3.4_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
@@ -113,7 +115,7 @@ def add_disk(api):
         )
 
     disk_params = params.Disk(
-        name=DISK0_NAME,
+        name=DISK1_NAME,
         size=10 * GB,
         provisioned_size=1,
         interface='virtio',
@@ -127,12 +129,13 @@ def add_disk(api):
         ),
         status=None,
         sparse=True,
-        bootable=True if glance_disk is None else False,
+        active=True,
+        bootable=True,
     )
-    api.vms.get(VM0_NAME).disks.add(disk_params)
+    api.vms.get(VM1_NAME).disks.add(disk_params)
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+        api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
 
 
@@ -176,6 +179,7 @@ def add_directlun(prefix):
                 )
             ]
         ),
+        sgio='unfiltered',
     )
 
     api = prefix.virt_env.engine_vm().get_api()
@@ -187,24 +191,22 @@ def add_directlun(prefix):
     )
 
 
-@testlib.with_ovirt_api
-def snapshot_merge(api):
-    raise SkipTest("[19/12/16] skipping due to failure and we will continue to debug offline")
+def snapshot_cold_merge(api):
     dead_snap1_params = params.Snapshot(
         description='dead_snap1',
         persist_memorystate=False,
         disks=params.Disks(
             disk=[
                 params.Disk(
-                    id=api.vms.get(VM0_NAME).disks.get(DISK0_NAME).id,
+                    id=api.vms.get(VM1_NAME).disks.get(DISK1_NAME).id,
                 ),
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(dead_snap1_params)
-    testlib.assert_true_within_short(
+    api.vms.get(VM1_NAME).snapshots.add(dead_snap1_params)
+    testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
     )
 
     dead_snap2_params = params.Snapshot(
@@ -213,22 +215,22 @@ def snapshot_merge(api):
         disks=params.Disks(
             disk=[
                 params.Disk(
-                    id=api.vms.get(VM0_NAME).disks.get(DISK0_NAME).id,
+                    id=api.vms.get(VM1_NAME).disks.get(DISK1_NAME).id,
                 ),
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(dead_snap2_params)
-    testlib.assert_true_within_short(
+    api.vms.get(VM1_NAME).snapshots.add(dead_snap2_params)
+    testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
     )
 
-    api.vms.get(VM0_NAME).snapshots.list()[-2].delete()
-    testlib.assert_true_within_short(
+    api.vms.get(VM1_NAME).snapshots.list()[-2].delete()
+    testlib.assert_true_within_long(
         lambda:
-        (len(api.vms.get(VM0_NAME).snapshots.list()) == 2) and
-        (api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status
+        (len(api.vms.get(VM1_NAME).snapshots.list()) == 2) and
+        (api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status
          == 'ok'),
     )
 
@@ -379,8 +381,6 @@ def template_export(api):
     )
 
 
-@testlib.host_capability(['snapshot-live-merge'])
-@testlib.with_ovirt_api
 def snapshot_live_merge(api):
     disk = api.vms.get(VM0_NAME).disks.list()[0]
     disk_id = disk.id
@@ -397,7 +397,7 @@ def snapshot_live_merge(api):
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(live_snap1_params)
+    nt.assert_true(api.vms.get(VM0_NAME).snapshots.add(live_snap1_params))
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
@@ -414,7 +414,7 @@ def snapshot_live_merge(api):
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(live_snap2_params)
+    nt.assert_true(api.vms.get(VM0_NAME).snapshots.add(live_snap2_params))
     for i, _ in enumerate(api.vms.get(VM0_NAME).snapshots.list()):
         testlib.assert_true_within_short(
             lambda:
@@ -422,7 +422,7 @@ def snapshot_live_merge(api):
              == 'ok')
         )
 
-    api.vms.get(VM0_NAME).snapshots.list()[-2].delete()
+    nt.assert_true(api.vms.get(VM0_NAME).snapshots.list()[-2].delete())
 
     testlib.assert_true_within_long(
         lambda: len(api.vms.get(VM0_NAME).snapshots.list()) == 2,
@@ -442,6 +442,18 @@ def snapshot_live_merge(api):
         lambda:
         api.vms.get(VM0_NAME).disks.get(disk_name).status.state == 'ok'
     )
+
+
+@testlib.with_ovirt_api
+def snapshots_merge(api):
+    vt= utils.VectorThread(
+        [
+            functools.partial(snapshot_live_merge, api),
+            functools.partial(snapshot_cold_merge, api),
+        ],
+    )
+    vt.start_all()
+    vt.join_all()
 
 
 @testlib.with_ovirt_api
@@ -489,14 +501,14 @@ def hotplug_disk(api):
 def suspend_resume_vm(api):
     nt.assert_true(api.vms.get(VM0_NAME).suspend())
 
-    testlib.assert_true_within_short(
+    testlib.assert_true_within_long(
         lambda:
         api.vms.get(VM0_NAME).status.state == 'suspended'
     )
 
     nt.assert_true(api.vms.get(VM0_NAME).start())
 
-    testlib.assert_true_within_short(
+    testlib.assert_true_within_long(
         lambda:
         api.vms.get(VM0_NAME).status.state == 'up'
     )
@@ -519,16 +531,15 @@ def add_event(api):
 
 _TEST_LIST = [
     add_vm_blank,
+    add_vm_template,
     add_nic,
     add_disk,
     add_console,
-    snapshot_merge,
     add_directlun,
     vm_run,
-    add_vm_template,
+    snapshots_merge,
     suspend_resume_vm,
     vm_migrate,
-    snapshot_live_merge,
     template_export,
     hotplug_nic,
     hotplug_disk,

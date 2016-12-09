@@ -40,6 +40,7 @@ domains:
   __HOST0__:
     vm-type: ovirt-host
     memory: 2047
+    root-password: 123456
     service_provider: systemd
     nics:
       - net: __LAGO_NET_MANAGEMENT__
@@ -62,6 +63,7 @@ domains:
   __HOST1__:
     vm-type: ovirt-host
     memory: 2047
+    root-password: 123456
     service_provider: systemd
     nics:
       - net: __LAGO_NET_MANAGEMENT__

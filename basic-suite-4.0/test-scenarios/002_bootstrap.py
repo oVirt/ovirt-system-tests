@@ -462,15 +462,15 @@ def add_non_vm_network(api):
 
 _TEST_LIST = [
     add_dc,
-    add_dc_quota,
     add_cluster,
     add_hosts,
-    add_non_vm_network,
-    add_vm_network,
     add_master_storage_domain,
     list_glance_images,
     add_secondary_storage_domains,
     import_templates,
+    add_non_vm_network,
+    add_vm_network,
+    add_dc_quota,
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,

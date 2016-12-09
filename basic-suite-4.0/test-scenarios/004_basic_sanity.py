@@ -39,6 +39,7 @@ VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
+GLANCE_DISK_NAME = 'CirrOS_0.3.4_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
@@ -87,8 +88,22 @@ def add_nic(api):
 
 @testlib.with_ovirt_api
 def add_disk(api):
+    glance_disk = api.disks.get(GLANCE_DISK_NAME)
+    if glance_disk:
+        disk = api.vms.get(VM0_NAME).disks.add(
+            params.Disk(
+                id = glance_disk.get_id(),
+                active=True,
+                bootable=True,
+            )
+        )
+        testlib.assert_true_within_short(
+            lambda:
+            api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
+        )
+
     disk_params = params.Disk(
-        name=DISK0_NAME,
+        name=DISK1_NAME,
         size=10 * GB,
         provisioned_size=1,
         interface='virtio',
@@ -102,12 +117,13 @@ def add_disk(api):
         ),
         status=None,
         sparse=True,
+        active=True,
         bootable=True,
     )
-    api.vms.get(VM0_NAME).disks.add(disk_params)
+    api.vms.get(VM1_NAME).disks.add(disk_params)
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+        api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
 
 
@@ -137,6 +153,7 @@ def add_directlun(prefix):
                 )
             ]
         ),
+        sgio='unfiltered',
     )
 
     api = prefix.virt_env.engine_vm().get_api()
@@ -149,22 +166,22 @@ def add_directlun(prefix):
 
 
 @testlib.with_ovirt_api
-def snapshot_merge(api):
+def snapshot_cold_merge(api):
     dead_snap1_params = params.Snapshot(
         description='dead_snap1',
         persist_memorystate=False,
         disks=params.Disks(
             disk=[
                 params.Disk(
-                    id=api.vms.get(VM0_NAME).disks.get(DISK0_NAME).id,
+                    id=api.vms.get(VM1_NAME).disks.get(DISK1_NAME).id,
                 ),
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(dead_snap1_params)
-    testlib.assert_true_within_short(
+    api.vms.get(VM1_NAME).snapshots.add(dead_snap1_params)
+    testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
     )
 
     dead_snap2_params = params.Snapshot(
@@ -173,22 +190,22 @@ def snapshot_merge(api):
         disks=params.Disks(
             disk=[
                 params.Disk(
-                    id=api.vms.get(VM0_NAME).disks.get(DISK0_NAME).id,
+                    id=api.vms.get(VM1_NAME).disks.get(DISK1_NAME).id,
                 ),
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(dead_snap2_params)
-    testlib.assert_true_within_short(
+    api.vms.get(VM1_NAME).snapshots.add(dead_snap2_params)
+    testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
     )
 
-    api.vms.get(VM0_NAME).snapshots.list()[-2].delete()
-    testlib.assert_true_within_short(
+    api.vms.get(VM1_NAME).snapshots.list()[-2].delete()
+    testlib.assert_true_within_long(
         lambda:
-        (len(api.vms.get(VM0_NAME).snapshots.list()) == 2) and
-        (api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status
+        (len(api.vms.get(VM1_NAME).snapshots.list()) == 2) and
+        (api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status
          == 'ok'),
     )
 
@@ -304,7 +321,6 @@ def template_export(api):
     )
 
 
-@testlib.host_capability(['snapshot-live-merge'])
 @testlib.with_ovirt_api
 def snapshot_live_merge(api):
     disk = api.vms.get(VM0_NAME).disks.list()[0]
@@ -322,7 +338,7 @@ def snapshot_live_merge(api):
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(live_snap1_params)
+    nt.assert_true(api.vms.get(VM0_NAME).snapshots.add(live_snap1_params))
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
@@ -339,7 +355,7 @@ def snapshot_live_merge(api):
             ],
         ),
     )
-    api.vms.get(VM0_NAME).snapshots.add(live_snap2_params)
+    nt.assert_true(api.vms.get(VM0_NAME).snapshots.add(live_snap2_params))
     for i, _ in enumerate(api.vms.get(VM0_NAME).snapshots.list()):
         testlib.assert_true_within_short(
             lambda:
@@ -347,7 +363,7 @@ def snapshot_live_merge(api):
              == 'ok')
         )
 
-    api.vms.get(VM0_NAME).snapshots.list()[-2].delete()
+    nt.assert_true(api.vms.get(VM0_NAME).snapshots.list()[-2].delete())
 
     testlib.assert_true_within_long(
         lambda: len(api.vms.get(VM0_NAME).snapshots.list()) == 2,
@@ -399,8 +415,10 @@ def hotplug_disk(api):
         status=None,
         sparse=True,
         bootable=False,
+        active=True,
     )
     api.vms.get(VM0_NAME).disks.add(disk2_params)
+
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
@@ -423,19 +441,19 @@ def add_event(api):
 
 
 _TEST_LIST = [
-    add_event,
     add_vm_blank,
+    add_vm_template,
     add_nic,
     add_disk,
-    snapshot_merge,
-    add_vm_template,
+    snapshot_cold_merge,
     add_directlun,
     vm_run,
-    template_export,
-    vm_migrate,
     snapshot_live_merge,
+    vm_migrate,
+    template_export,
     hotplug_nic,
     hotplug_disk,
+    add_event,
 ]
 
 

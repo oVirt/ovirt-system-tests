@@ -36,6 +36,7 @@ install_deps() {
     systemctl disable kdump.service
     yum install -y --downloaddir=/dev/shm \
                    nfs-utils \
+                   rpcbind \
                    lvm2 \
                    targetcli \
                    sg3_utils \

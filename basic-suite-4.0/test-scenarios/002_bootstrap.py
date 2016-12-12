@@ -140,6 +140,9 @@ def add_hosts(prefix):
             raise RuntimeError('Host %s failed to install' % host.name())
 
     hosts = prefix.virt_env.host_vms()
+    for host in hosts:
+        host.ssh(['yum', 'install', '-y', 'iptables'])
+
     vec = utils.func_vector(_add_host, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()
@@ -150,20 +153,6 @@ def add_hosts(prefix):
 
     for host in hosts:
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
-
-#KEEPING THE TEST for future usage when cockpit will be available for 4.0
-@testlib.with_ovirt_prefix
-def install_cockpit_ovirt(prefix):
-    def _install_cockpit_ovirt_on_host(host):
-        ret = host.ssh(['yum', '-y', 'install', 'cockpit-ovirt-dashboard'])
-        nt.assert_equals(ret.code, 0, '_install_cockpit_ovirt_on_host(): failed to install cockpit-ovirt-dashboard on host %s' % host)
-        return True
-
-    hosts = prefix.virt_env.host_vms()
-    vec = utils.func_vector(_install_cockpit_ovirt_on_host, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
 
 
 def _add_storage_domain(api, p):

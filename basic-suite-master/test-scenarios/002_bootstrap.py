@@ -154,6 +154,10 @@ def add_hosts(prefix):
             raise RuntimeError('Host %s is in non operational state' % host.name())
 
     hosts = prefix.virt_env.host_vms()
+
+    for host in hosts:
+        host.ssh(['yum', 'install', '-y', 'iptables'])
+
     vec = utils.func_vector(_add_host, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()

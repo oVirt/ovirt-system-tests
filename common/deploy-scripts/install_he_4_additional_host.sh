@@ -1,4 +1,5 @@
 fstrim -va
+yum install -y iptables
 yum install -y ovirt-hosted-engine-setup
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then

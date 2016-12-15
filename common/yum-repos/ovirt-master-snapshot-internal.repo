@@ -90,3 +90,9 @@ enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
+[centos-opstools-testing-el7]
+name=CentOS-7 - OpsTools - testing repo
+baseurl=http://buildlogs.centos.org/centos/7/opstools/$basearch/
+gpgcheck=0
+enabled=1
+includepkgs=collectd,collectd-netlink,collectd-virt,collectd-write_http

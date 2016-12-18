@@ -1,26 +1,52 @@
 #!/bin/bash -xe
-
+#trap read debug
 # install common deps
-
-# Which tests suites to run
-
-#TODO: update commons with valid paths that are relevant
-#to ALL tests, right now its hard to understand exactly
-#which suite is using what
 
 # Project's root
 PROJECT="$PWD"
-COMMONS=
-TESTS_36_PATH="basic-suite-3.6"
-TESTS_40_PATH="basic-suite-4.0"
-TESTS_MASTER_PATH="basic-suite-master"
+
+#All the common folders
+COMMONS=(common automation run\_suite\.sh)
+
+#Please note: This script will work with
+#any suite matching the 'standard' naming:
+#must end with *-<version>
+ALL_SUITES=($(ls | grep suite\-))
+
+SUITES_TO_RUN=()
+
+GIT=$(git show --pretty='format:' --name-only)
+
+common_flag=0
+#Check if any common file was changed
+for COM in "${COMMONS[@]}"
+do
+	if grep -E "$COM" <<< "$GIT"; then
+		SUITES_TO_RUN=(${ALL_SUITES[@]})
+		common_flag=1
+		break
+	fi
+done
+
+#Check if any suite was changed
+#Skip this part if common change was found
+if [[ $common_flag -eq 0 ]]; then
+	for SNAME in "${ALL_SUITES[@]}"
+	do
+   		if grep -E "$SNAME" <<< "$GIT"; then
+        		SUITES_TO_RUN+=($SNAME)
+    		fi
+	done
+fi
+
+echo "Versions to run: ${SUITES_TO_RUN[@]}"
 
 # This function will collect the logs
 # of each suite to a different directory
 collect_suite_logs() {
   local test_logs="$PROJECT"/exported-artifacts
   if [[ -d "$test_logs" ]]; then
-      suite_logs="$PROJECT"/"$TEST_SUITE_PREFIX$VER"__logs
+      suite_logs="$PROJECT"/"$SUITE"__logs
       # Rename the logs
       mv "$test_logs" "$suite_logs"
   fi
@@ -30,69 +56,41 @@ collect_suite_logs() {
 # all the suites and store them in exported-artifacts,
 # which later will be collected by jenkins
 collect_all_logs() {
-  if ! [[ -d logs ]]; then
-    mkdir logs
-  fi
-  # mock_cleanup.sh collects the logs from ./logs, ./*/logs
-  # The root directory is jenkins' workspace
-  mv *__logs logs
+    local logs=logs
+    [[ -d "$logs" ]] || mkdir $logs
+    # mock_cleanup.sh collects the logs from ./logs, ./*/logs
+    # The root directory is jenkins' workspace
+    mv *__logs logs
 }
 
 # collect the logs  on failure
 on_error() {
+  echo "Error on line: $1"
   collect_suite_logs
   collect_all_logs
 }
 
-trap on_error SIGTERM ERR
-
-# for now all tests are on master branch
-# so we have to check which tests were changed
-# notice that multiple versions can be updated
-# on the same patch
-VERSIONS_TO_RUN=()
-if git show --pretty='format:' --name-only | grep -E \
-    "$COMMONS"; then
-    VERSIONS_TO_RUN+=('master' '4.0' '3.6')
-
-else
-  if git show --pretty='format:' --name-only | grep -E \
-      "$TESTS_MASTER_PATH" ; then
-      VERSIONS_TO_RUN+=('master')
-  fi
-
-  if git show --pretty='format:' --name-only | grep -E \
-      "$TESTS_40_PATH"; then
-      VERSIONS_TO_RUN+=('4.0')
-  fi
-
-  if git show --pretty='format:' --name-only | grep -E \
-      "$TESTS_36_PATH"; then
-      VERSIONS_TO_RUN+=('3.6')
-  fi
-fi
 
 pwd
 
 # clean old logs
-rm -rf "$PROJECT/exported-artifacts"
+if [[ -d "$PROJECT/exported-artifacts" ]]; then
+    rm -rf "$PROJECT/exported-artifacts"
+fi
+
+#Trap any errors and print the line number
+trap 'on_error $LINENO' SIGTERM ERR
 
 # run on each version + collect its logs
-for VER in "${VERSIONS_TO_RUN[@]}"
+for SUITE in "${SUITES_TO_RUN[@]}"
 do
-	# we need a specific SDK for each oVirt version
-	/usr/bin/dnf install -y lago-ovirt ovirt-engine-sdk-python --disablerepo=ovirt* --enablerepo=ovirt-$VER*
-	TEST_SUITE_PREFIX="basic_suite_"
-	echo "running tests for version $VER"
-	RUN_SCRIPT=$TEST_SUITE_PREFIX$VER".sh"
-	echo "running $RUN_SCRIPT"
-	automation/${RUN_SCRIPT}
+    echo "running tests for version $VER"
+    RUN_SCRIPT=$(echo "$SUITE" | sed 's/-/_/g')
+    echo "running $RUN_SCRIPT.sh"
+    automation/${RUN_SCRIPT}.sh
 
-	# cleanup: we need to remove the sdk in case another test will run and need a different version
-	/usr/bin/dnf remove -y ovirt-engine-sdk-python
-
-  # collect the logs for the current suite
-  collect_suite_logs
+    # collect the logs for the current suite
+    collect_suite_logs
 done
 
 # collect all the suit's logs to exported-artifacts

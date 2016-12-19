@@ -10,7 +10,7 @@ domains:
       ovirt-engine-password: 123
 
   __STORAGE__:
-    memory: 1047
+    memory: 647
     distro: el7
     nics:
       - net: __LAGO_NET__
@@ -47,7 +47,7 @@ domains:
   __HOST1__:
     vm-type: ovirt-host
     distro: el7
-    memory: 4720
+    memory: 4520
     nics:
       - net: __LAGO_NET__
     disks:
@@ -73,7 +73,7 @@ domains:
   __HOST0__:
     vm-type: ovirt-host
     distro: el7
-    memory: 4720
+    memory: 4520
     nics:
       - net: __LAGO_NET__
     disks:
@@ -103,3 +103,4 @@ nets:
       start: 100
       end: 254
     management: true
+    dns_domain_name: lago.local

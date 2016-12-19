@@ -112,13 +112,10 @@ def add_disk(api):
 @testlib.with_ovirt_prefix
 def add_directlun(prefix):
     # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(
-        ['multipath', '-ll', '-v1', '|sort']
-    )
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
     nt.assert_equals(ret.code, 0)
 
     all_guids = ret.out.splitlines()
-    # Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
     lun_guid = all_guids[SD_ISCSI_NR_LUNS]
 
     dlun_params = params.Disk(

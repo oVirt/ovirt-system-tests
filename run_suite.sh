@@ -303,6 +303,7 @@ echo "Environment will be deployed at ${PREFIX}"
 
 rm -rf "${PREFIX}"
 
+export PYTHONPATH="${PYTHONPATH}:${SUITE}"
 source "${SUITE}/control.sh"
 
 prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"

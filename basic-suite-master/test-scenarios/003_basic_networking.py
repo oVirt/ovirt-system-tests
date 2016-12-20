@@ -22,6 +22,8 @@ from ovirtsdk.xml import params
 
 from ovirtlago import testlib
 
+from test_utils import network_utils
+
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -29,6 +31,8 @@ CLUSTER_NAME = 'test-cluster'
 
 # Network
 MANAGEMENT_NET = 'ovirtmgmt'
+NIC_NAME = 'eth0'
+VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
 
 VLAN100_NET = 'VLAN100_Network'
 VLAN100_NET_IPv4_ADDR = '192.0.2.1'
@@ -42,113 +46,34 @@ def _hosts_in_cluster(api, cluster_name):
     return sorted(hosts, key=lambda host: host.name)
 
 
-def _get_networkattachment_by_network_id(host, network_id):
-    # ovirtsdk requires '.' as a separator in multi-level filtering, we cannot
-    # use kwargs directly
-    # caveat: filtering by network.name is not supported by design (RH 1382341)
-    # as only 'id' and 'href' properties are resolved for nested objects
-    filter_args = {'network.id': network_id}
-    attachment = host.networkattachments.list(**filter_args)[0]
-    return attachment
-
-
-def _set_network_required_in_cluster(api, network_name, cluster_name,
-                                     required):
-    network = api.clusters.get(cluster_name).networks.get(name=network_name)
-    network.set_required(required)
-    network.update()
-
-
-def _get_mgmt_attachment(api, host):
-    dc = api.datacenters.get(name=DC_NAME)
-    mgmt_network_id = dc.networks.get(name=MANAGEMENT_NET).id
-    mgmt_attachment = _get_networkattachment_by_network_id(
-        host, mgmt_network_id)
-    return mgmt_attachment
-
-
-def _create_static_ip_configuration():
-    ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
-        params.IpAddressAssignment(
-            assignment_method='static',
-            ip=params.IP(
-                address=VLAN100_NET_IPv4_ADDR,
-                netmask=VLAN100_NET_IPv4_MASK)),
-        params.IpAddressAssignment(
-            assignment_method='static',
-            ip=params.IP(
-                address=VLAN100_NET_IPv6_ADDR,
-                netmask=VLAN100_NET_IPv6_MASK,
-                version='v6'))
-    ])
-
-    return ip_configuration
-
-
-def _create_dhcp_ip_configuration():
-    ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
-        params.IpAddressAssignment(
-            assignment_method='dhcp'),
-        params.IpAddressAssignment(
-            assignment_method='dhcp',
-            ip=params.IP(version='v6'))
-    ])
-
-    return ip_configuration
-
-
-def _attach_vlan_to_host(api, host, ip_configuration):
-    mgmt_attachment = _get_mgmt_attachment(api, host)
-    mgmt_nic_id = mgmt_attachment.get_host_nic().id
-    mgmt_nic_name = host.nics.get(id=mgmt_nic_id).name
-
-    vlan_network_attachment = params.NetworkAttachment(
-        network=params.Network(name=VLAN100_NET),
-        host_nic=params.HostNIC(name=mgmt_nic_name),
-        ip_address_assignments=ip_configuration)
-
-    attachment_action = params.Action(
-        modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[vlan_network_attachment]),
-        check_connectivity=True)
-
-    host.setupnetworks(attachment_action)
-
-
-def _modify_ip_config(api, host, ip_configuration):
-    network_id = api.networks.get(name=VLAN100_NET).id
-    attachment = _get_networkattachment_by_network_id(host, network_id)
-    attachment.set_ip_address_assignments(ip_configuration)
-
-    attachment_action = params.Action(
-        modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[attachment]),
-        check_connectivity=True)
-
-    nt.assert_true(host.setupnetworks(attachment_action))
-
-
-#
-
-
 @testlib.with_ovirt_api
 def attach_vlan_to_host_static_config(api):
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
-    ip_configuration = _create_static_ip_configuration()
-    _attach_vlan_to_host(api, host, ip_configuration)
+    ip_configuration = network_utils.create_static_ip_configuration(
+        VLAN100_NET_IPv4_ADDR,
+        VLAN100_NET_IPv4_MASK,
+        VLAN100_NET_IPv6_ADDR,
+        VLAN100_NET_IPv6_MASK)
+
+    network_utils.attach_vlan_to_host(
+        api,
+        host,
+        NIC_NAME,
+        VLAN100_NET,
+        ip_configuration)
 
     # TODO: currently ost uses v3 SDK that doesn't report ipv6. once available,
     # verify ipv6 as well.
     nt.assert_equals(
-        host.nics.list(name='eth0.100')[0].ip.address,
+        host.nics.list(name=VLAN_IF_NAME)[0].ip.address,
         VLAN100_NET_IPv4_ADDR)
 
 
 @testlib.with_ovirt_api
 def modify_host_ip_to_dhcp(api):
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
-    ip_configuration = _create_dhcp_ip_configuration()
-    _modify_ip_config(api, host, ip_configuration)
+    ip_configuration = network_utils.create_dhcp_ip_configuration()
+    network_utils.modify_ip_config(api, host, VLAN100_NET, ip_configuration)
 
     # TODO: once the VLANs/dnsmasq issue is resolved,
     # (https://github.com/lago-project/lago/issues/375)
@@ -160,23 +85,15 @@ def detach_vlan_from_host(api):
     network_id = api.networks.get(name=VLAN100_NET).id
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
 
-    def _detach_vlan_from_host():
-        attachment = _get_networkattachment_by_network_id(host, network_id)
-
-        removal_action = params.Action(
-            removed_network_attachments=params.NetworkAttachments(
-                network_attachment=[params.NetworkAttachment(
-                    id=attachment.id)]))
-
-        host.setupnetworks(removal_action)
-
     def _host_is_detached_from_vlan_network():
         with nt.assert_raises(IndexError):
-            _get_networkattachment_by_network_id(host, network_id)
+            attachment = network_utils.get_network_attachment(
+                api, host, VLAN100_NET, DC_NAME)
         return True
 
-    _set_network_required_in_cluster(api, VLAN100_NET, CLUSTER_NAME, False)
-    _detach_vlan_from_host()
+    network_utils.set_network_required_in_cluster(
+        api, VLAN100_NET, CLUSTER_NAME, False)
+    network_utils.detach_vlan_from_host(api, host, NIC_NAME, VLAN100_NET)
 
     nt.assert_true(_host_is_detached_from_vlan_network())
 

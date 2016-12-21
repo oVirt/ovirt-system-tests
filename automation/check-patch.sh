@@ -68,6 +68,7 @@ on_error() {
   echo "Error on line: $1"
   collect_suite_logs
   collect_all_logs
+  clean_symlink
 }
 
 
@@ -85,6 +86,13 @@ trap 'on_error $LINENO' SIGTERM ERR
 for SUITE in "${SUITES_TO_RUN[@]}"
 do
     echo "running tests for version $VER"
+
+    #Extract version:
+    VER=$(echo "$SUITE" | rev | cut -d"-" -f1 | rev)
+
+    #Copy the file to suite's dir
+    cp "$PROJECT""/common/latest-tested-src/$VER-latest-tested" "$PROJECT/$SUITE/extra_sources"
+
     RUN_SCRIPT=$(echo "$SUITE" | sed 's/-/_/g')
     echo "running $RUN_SCRIPT.sh"
     automation/${RUN_SCRIPT}.sh

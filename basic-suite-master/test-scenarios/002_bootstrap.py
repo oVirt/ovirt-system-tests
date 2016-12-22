@@ -433,7 +433,6 @@ def add_quota_cluster_limits(api):
 
 @testlib.with_ovirt_api
 def add_vm_network(api):
-    dc = api.datacenters.get(DC_NAME)
     VLAN100 = params.Network(
         name=VLAN100_NET,
         data_center=params.DataCenter(
@@ -455,7 +454,6 @@ def add_vm_network(api):
 
 @testlib.with_ovirt_api
 def add_non_vm_network(api):
-    dc = api.datacenters.get(DC_NAME)
     VLAN200 = params.Network(
         name=VLAN200_NET,
         data_center=params.DataCenter(

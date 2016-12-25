@@ -29,6 +29,8 @@ from ovirtsdk.xml import params
 from lago import utils
 from ovirtlago import testlib
 
+from test_utils import network_utils
+
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -433,11 +435,9 @@ def add_quota_cluster_limits(api):
 
 @testlib.with_ovirt_api
 def add_vm_network(api):
-    VLAN100 = params.Network(
-        name=VLAN100_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
+    VLAN100 = network_utils.create_network_params(
+        VLAN100_NET,
+        DC_NAME,
         description='VM Network on VLAN 100',
         vlan=params.VLAN(
             id='100',
@@ -454,11 +454,9 @@ def add_vm_network(api):
 
 @testlib.with_ovirt_api
 def add_non_vm_network(api):
-    VLAN200 = params.Network(
-        name=VLAN200_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
+    VLAN200 = network_utils.create_network_params(
+        VLAN200_NET,
+        DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
         vlan=params.VLAN(
             id='200',

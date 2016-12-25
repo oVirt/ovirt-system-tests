@@ -141,6 +141,14 @@ def set_network_usages_in_cluster(api,
     return cluster_network.update()
 
 
+def get_network_usages_in_cluster(api,
+                                  network_name,
+                                  cluster_name):
+    cluster = api.clusters.get(cluster_name)
+    cluster_network = cluster.networks.get(network_name)
+    return cluster_network.get_usages().usage
+
+
 def set_network_required_in_cluster(api,
                                     network_name,
                                     cluster_name,

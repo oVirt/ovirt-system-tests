@@ -55,7 +55,7 @@ def attach_vlan_to_host_static_config(api):
         VLAN100_NET_IPv6_ADDR,
         VLAN100_NET_IPv6_MASK)
 
-    network_utils.attach_vlan_to_host(
+    network_utils.attach_network_to_host(
         api,
         host,
         NIC_NAME,
@@ -93,7 +93,8 @@ def detach_vlan_from_host(api):
 
     network_utils.set_network_required_in_cluster(
         api, VLAN100_NET, CLUSTER_NAME, False)
-    network_utils.detach_vlan_from_host(api, host, NIC_NAME, VLAN100_NET)
+    network_utils.detach_network_from_host(
+        api, host, NIC_NAME, VLAN100_NET)
 
     nt.assert_true(_host_is_detached_from_vlan_network())
 

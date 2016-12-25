@@ -30,28 +30,28 @@ def _get_attachment_by_id(host, network_id):
     return attachment
 
 
-def attach_vlan_to_host(api,
-                        host,
-                        nic_name,
-                        network_name,
-                        ip_configuration):
-    vlan_network_attachment = params.NetworkAttachment(
+def attach_network_to_host(api,
+                           host,
+                           nic_name,
+                           network_name,
+                           ip_configuration):
+    network_attachment = params.NetworkAttachment(
         network=params.Network(name=network_name),
         host_nic=params.HostNIC(name=nic_name),
         ip_address_assignments=ip_configuration)
 
     attachment_action = params.Action(
         modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[vlan_network_attachment]),
+            network_attachment=[network_attachment]),
         check_connectivity=True)
 
     return host.setupnetworks(attachment_action)
 
 
-def detach_vlan_from_host(api,
-                          host,
-                          nic_name,
-                          network_name):
+def detach_network_from_host(api,
+                             host,
+                             nic_name,
+                             network_name):
     network_id = api.networks.get(name=network_name).id
     attachment = _get_attachment_by_id(host, network_id)
 

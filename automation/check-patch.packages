@@ -1,4 +1,11 @@
-lago
+autoconf
+automake
 grubby
+lago
 lago-ovirt
+libselinux-python
 ovirt-engine-sdk-python
+script
+virt-install
+wget
+

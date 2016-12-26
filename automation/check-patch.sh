@@ -5,50 +5,57 @@
 # Project's root
 PROJECT="$PWD"
 
-#All the common folders
-COMMONS=(common automation run\_suite\.sh)
+#Constant regex
+COMMONS_REGEX=(common automation run\_suite\.sh)
+BASIC_SUITES_REGEX=($(find . -maxdepth 1 -name "basic-suite*" -exec basename \{} \;))
+ALL_SUITES_REGEX=(*-suite-*)
 
-#Please note: This script will work with
-#any suite matching the 'standard' naming:
-#must end with *-<version>
-ALL_SUITES=($(ls | grep suite\-))
+#Array to hold all the suites
+#which will be executed
+SUITES_ARR=()
 
-SUITES_TO_RUN=()
+NEW_CHANGES=$(
+    git show --pretty='format:' --name-only \
+    | sed '/^\s*$/d' \
+    | cut -d'/' -f1 \
+    | sort \
+    | uniq
+)
 
-GIT=$(git show --pretty='format:' --name-only)
-
-common_flag=0
 #Check if any common file was changed
-for COM in "${COMMONS[@]}"
+#and run all basic suites
+for change in "${COMMONS_REGEX[@]}"
 do
-	if grep -E "$COM" <<< "$GIT"; then
-		SUITES_TO_RUN=(${ALL_SUITES[@]})
-		common_flag=1
-		break
-	fi
+  if grep -E "$change" <<< "${NEW_CHANGES[@]}"; then
+    SUITES_ARR=(${BASIC_SUITES_REGEX[@]})
+    break
+  fi
 done
 
 #Check if any suite was changed
-#Skip this part if common change was found
-if [[ $common_flag -eq 0 ]]; then
-	for SNAME in "${ALL_SUITES[@]}"
-	do
-   		if grep -E "$SNAME" <<< "$GIT"; then
-        		SUITES_TO_RUN+=($SNAME)
-    		fi
-	done
-fi
+for suite in "${ALL_SUITES_REGEX[@]}"
+do
+  if grep -E "$suite" <<< "${NEW_CHANGES[@]}"; then
+    SUITES_ARR+=($suite)
+  fi
+done
 
-echo "Versions to run: ${SUITES_TO_RUN[@]}"
+#Remove duplicates and sort the suites
+SUITES_TO_RUN=($(
+  printf '%s\n' "${SUITES_ARR[@]}" \
+  | awk -F- '{print $NF","$0}' \
+  | sort -t"," -k1 -r -u \
+  | cut -d"," -f2
+))
 
 # This function will collect the logs
 # of each suite to a different directory
 collect_suite_logs() {
   local test_logs="$PROJECT"/exported-artifacts
   if [[ -d "$test_logs" ]]; then
-      suite_logs="$PROJECT"/"$SUITE"__logs
-      # Rename the logs
-      mv "$test_logs" "$suite_logs"
+    suite_logs="$PROJECT/$suite""__logs"
+    # Rename the logs
+    mv "$test_logs" "$suite_logs"
   fi
 }
 
@@ -68,7 +75,6 @@ on_error() {
   echo "Error on line: $1"
   collect_suite_logs
   collect_all_logs
-  clean_symlink
 }
 
 
@@ -82,20 +88,21 @@ fi
 #Trap any errors and print the line number
 trap 'on_error $LINENO' SIGTERM ERR
 
+echo "Suites to run:"
+echo "${SUITES_TO_RUN[@]}"
+
 # run on each version + collect its logs
-for SUITE in "${SUITES_TO_RUN[@]}"
+for suite in "${SUITES_TO_RUN[@]}"
 do
-    echo "running tests for version $VER"
-
     #Extract version:
-    VER=$(echo "$SUITE" | rev | cut -d"-" -f1 | rev)
+    ver=$(echo "$suite" | rev | cut -d"-" -f1 | rev)
 
-    #Copy the file to suite's dir
-    cp "$PROJECT""/common/latest-tested-src/$VER-latest-tested" "$PROJECT/$SUITE/extra_sources"
-
-    RUN_SCRIPT=$(echo "$SUITE" | sed 's/-/_/g')
-    echo "running $RUN_SCRIPT.sh"
-    automation/${RUN_SCRIPT}.sh
+    #Copy the exta_sources file to suite's dir
+    cp "$PROJECT""/common/latest-tested-src/$ver-latest-tested" "$PROJECT/$suite/""extra_sources"
+    #Match the suite's name to the execution script's name
+    exec_suite=$(sed 's/-/_/g' <<< "$suite")
+    echo "running $exec_suite.sh"
+    automation/"${exec_suite}.sh"
 
     # collect the logs for the current suite
     collect_suite_logs

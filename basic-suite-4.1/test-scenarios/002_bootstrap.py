@@ -19,6 +19,7 @@
 #
 import functools
 import os
+import random
 
 import nose.tools as nt
 from nose import SkipTest
@@ -32,7 +33,8 @@ from ovirtlago import testlib
 # DC/Cluster
 DC_NAME = 'test-dc'
 DC_VER_MAJ = 4
-DC_VER_MIN = 0
+DC_VER_MIN = 1
+SD_FORMAT = 'v4'
 CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'
 
@@ -68,6 +70,12 @@ VLAN100_NET = 'VLAN100_Network'
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
+def _hosts_in_dc(api, dc_name=DC_NAME):
+    hosts = api.hosts.list(query='datacenter={}'.format(dc_name))
+    return sorted(hosts, key=lambda host: host.name)
+
+def _random_host_from_dc(api, dc_name=DC_NAME):
+    return random.choice(_hosts_in_dc(api, dc_name))
 
 @testlib.with_ovirt_api
 def add_dc(api):
@@ -216,7 +224,7 @@ def add_nfs_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v3', sd_type='data'):
+def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4'):
     api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=sd_nfs_name,
@@ -225,13 +233,12 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
         ),
         type_=sd_type,
         storage_format=sd_format,
-        host=params.Host(
-            name=api.hosts.list().pop().name,
-        ),
+        host=_random_host_from_dc(api, DC_NAME),
         storage=params.Storage(
             type_='nfs',
             address=_get_host_ip(prefix, nfs_host_name),
             path=mount_path,
+            nfs_version=nfs_version,
         ),
     )
     _add_storage_domain(api, p)
@@ -242,21 +249,21 @@ def add_secondary_storage_domains(prefix):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
+                functools.partial(import_non_template_from_glance, prefix),
+                functools.partial(import_template_from_glance, prefix),
                 functools.partial(add_nfs_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
-                functools.partial(import_non_template_from_glance, prefix),
-                functools.partial(import_template_from_glance, prefix),
             ],
         )
     else:
         vt = utils.VectorThread(
             [
+                functools.partial(import_non_template_from_glance, prefix),
+                functools.partial(import_template_from_glance, prefix),
                 functools.partial(add_iscsi_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
-                functools.partial(import_non_template_from_glance, prefix),
-                functools.partial(import_template_from_glance, prefix),
             ],
         )
     vt.start_all()
@@ -278,10 +285,8 @@ def add_iscsi_storage_domain(prefix):
             name=DC_NAME,
         ),
         type_='data',
-        storage_format='v3',
-        host=params.Host(
-            name=api.hosts.list().pop().name,
-        ),
+        storage_format=SD_FORMAT,
+        host=_random_host_from_dc(api, DC_NAME),
         storage=params.Storage(
             type_='iscsi',
             volume_group=params.VolumeGroup(
@@ -306,23 +311,7 @@ def add_iscsi_storage_domain(prefix):
 
 
 def add_iso_storage_domain(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.StorageDomain(
-        name=SD_ISO_NAME,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_='iso',
-        host=params.Host(
-            name=api.hosts.list().pop().name,
-        ),
-        storage=params.Storage(
-            type_='nfs',
-            address=_get_host_ip(prefix, SD_ISO_HOST_NAME),
-            path=SD_ISO_PATH,
-        ),
-    )
-    _add_storage_domain(api, p)
+    add_generic_nfs_storage_domain(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
 
 
 def add_templates_storage_domain(prefix):
@@ -512,22 +501,22 @@ def run_log_collector(prefix):
 
 _TEST_LIST = [
     add_dc,
-    remove_default_dc,
-    add_dc_quota,
     add_cluster,
     add_hosts,
     add_master_storage_domain,
     list_glance_images,
     add_secondary_storage_domains,
-    remove_default_cluster,
-    install_cockpit_ovirt,
+    import_templates,
+    run_log_collector,
     add_non_vm_network,
     add_vm_network,
-    import_templates,
+    remove_default_dc,
+    remove_default_cluster,
+    add_dc_quota,
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,
-    run_log_collector,
+    install_cockpit_ovirt,
 ]
 
 

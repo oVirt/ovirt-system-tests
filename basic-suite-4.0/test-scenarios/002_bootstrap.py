@@ -188,7 +188,7 @@ def add_nfs_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v3', sd_type='data'):
+def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v3', sd_type='data', nfs_version='v4'):
     api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=sd_nfs_name,
@@ -204,6 +204,7 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
             type_='nfs',
             address=_get_host_ip(prefix, nfs_host_name),
             path=mount_path,
+            nfs_version=nfs_version,
         ),
     )
     _add_storage_domain(api, p)
@@ -278,23 +279,7 @@ def add_iscsi_storage_domain(prefix):
 
 
 def add_iso_storage_domain(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.StorageDomain(
-        name=SD_ISO_NAME,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_='iso',
-        host=params.Host(
-            name=api.hosts.list().pop().name,
-        ),
-        storage=params.Storage(
-            type_='nfs',
-            address=_get_host_ip(prefix, SD_ISO_HOST_NAME),
-            path=SD_ISO_PATH,
-        ),
-    )
-    _add_storage_domain(api, p)
+    add_generic_nfs_storage_domain(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
 
 
 def add_templates_storage_domain(prefix):

@@ -90,16 +90,14 @@ def add_nic(api):
 def add_disk(api):
     glance_disk = api.disks.get(GLANCE_DISK_NAME)
     if glance_disk:
-        disk = api.vms.get(VM0_NAME).disks.add(
-            params.Disk(
-                id = glance_disk.get_id(),
-                active=True,
-                bootable=True,
+        nt.assert_true(
+            api.vms.get(VM0_NAME).disks.add(
+                params.Disk(
+                    id = glance_disk.get_id(),
+                    active=True,
+                    bootable=True,
+                )
             )
-        )
-        testlib.assert_true_within_short(
-            lambda:
-            api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
         )
 
     disk_params = params.Disk(
@@ -120,7 +118,15 @@ def add_disk(api):
         active=True,
         bootable=True,
     )
-    api.vms.get(VM1_NAME).disks.add(disk_params)
+    nt.assert_true(
+        api.vms.get(VM1_NAME).disks.add(disk_params)
+    )
+
+    if glance_disk:
+        testlib.assert_true_within_short(
+            lambda:
+            api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
+    )
     testlib.assert_true_within_short(
         lambda:
         api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
@@ -400,7 +406,7 @@ def hotplug_nic(api):
 @testlib.with_ovirt_api
 def hotplug_disk(api):
     disk2_params = params.Disk(
-        name=DISK1_NAME,
+        name=DISK0_NAME,
         size=10 * GB,
         provisioned_size=1,
         interface='virtio',
@@ -421,7 +427,7 @@ def hotplug_disk(api):
 
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
+        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
     )
 
 

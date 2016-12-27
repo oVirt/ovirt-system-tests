@@ -135,7 +135,7 @@ env_collect () {
     echo "#########################"
     [[ -e "${tests_out_dir%/*}" ]] || mkdir -p "${tests_out_dir%/*}"
     cd "$PREFIX/current"
-    $CLI ovirt collect --output "$tests_out_dir"
+    $CLI collect --output "$tests_out_dir"
     cp -a "logs" "$tests_out_dir/lago_logs"
     cd -
 }

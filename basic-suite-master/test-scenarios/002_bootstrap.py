@@ -43,7 +43,7 @@ MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
 SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
-SD_NFS_PATH = '/exports/nfs_clean/share1'
+SD_NFS_PATH = '/exports/nfs/share1'
 
 SD_ISCSI_NAME = 'iscsi'
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
@@ -53,11 +53,11 @@ SD_ISCSI_NR_LUNS = 2
 
 SD_ISO_NAME = 'iso'
 SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
-SD_ISO_PATH = '/exports/iso'
+SD_ISO_PATH = '/exports/nfs/iso'
 
 SD_TEMPLATES_NAME = 'templates'
-SD_TEMPLATES_HOST_NAME = SD_ISO_HOST_NAME
-SD_TEMPLATES_PATH = '/exports/nfs_exported'
+SD_TEMPLATES_HOST_NAME = SD_NFS_HOST_NAME
+SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
@@ -224,7 +224,7 @@ def add_nfs_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4'):
+def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
     api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
         name=sd_nfs_name,

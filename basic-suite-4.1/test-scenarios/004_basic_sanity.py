@@ -485,7 +485,7 @@ def hotplug_disk(api):
         storage_domains=params.StorageDomains(
             storage_domain=[
                 params.StorageDomain(
-                    name='iscsi',
+                    name='nfs',
                 ),
             ],
         ),

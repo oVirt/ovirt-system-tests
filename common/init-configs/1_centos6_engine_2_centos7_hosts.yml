@@ -34,12 +34,6 @@ domains:
         name: nfs
         dev: sda
         format: raw
-      - comment: Not used yet, for future export domain tests
-        size: 20G
-        type: empty
-        name: export
-        dev: sdb
-        format: raw
       - comment: Main iSCSI device
         size: 101G
         type: empty

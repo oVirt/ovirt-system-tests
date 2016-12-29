@@ -42,7 +42,7 @@ sed \
     > /root/hosted-engine-deploy-answers-file.conf
 
 fstrim -va
-
+rm -rf /dev/shm/yum
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then

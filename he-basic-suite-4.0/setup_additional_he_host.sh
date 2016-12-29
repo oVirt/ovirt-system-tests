@@ -40,7 +40,7 @@ sed \
     > /root/hosted-engine-deploy-answers-file.conf
 
 fstrim -va
-
+rm -rf /dev/shm/yum
 counter=100
 while [ $counter -gt 0 ]
 do

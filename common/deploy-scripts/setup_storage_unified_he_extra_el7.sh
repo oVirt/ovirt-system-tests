@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 set -xe
-HE_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_5"
+HE_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_4"
 
 
 setup_device() {
@@ -9,7 +9,7 @@ setup_device() {
     local exportpath=$3
     mkdir -p "${mountpath}"
     mkfs.xfs -K "/dev/${device}"
-    echo "/dev/${device} ${mountpath} xfs defaults 0 0" >> /etc/fstab
+    echo "/dev/${device} ${mountpath} xfs defaults,discard 0 0" >> /etc/fstab
     mount "/dev/${device}" "${mountpath}"
     mkdir -p "${exportpath}"
     chmod a+rwx "${exportpath}"

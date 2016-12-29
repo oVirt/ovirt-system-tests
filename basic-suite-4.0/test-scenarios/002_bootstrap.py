@@ -42,7 +42,7 @@ MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
 SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
-SD_NFS_PATH = '/exports/nfs_clean/share1'
+SD_NFS_PATH = '/exports/nfs/share1'
 
 SD_ISCSI_NAME = 'iscsi'
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
@@ -52,11 +52,11 @@ SD_ISCSI_NR_LUNS = 2
 
 SD_ISO_NAME = 'iso'
 SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
-SD_ISO_PATH = '/exports/iso'
+SD_ISO_PATH = '/exports/nfs/iso'
 
 SD_TEMPLATES_NAME = 'templates'
-SD_TEMPLATES_HOST_NAME = SD_ISO_HOST_NAME
-SD_TEMPLATES_PATH = '/exports/nfs_exported'
+SD_TEMPLATES_HOST_NAME = SD_NFS_HOST_NAME
+SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False

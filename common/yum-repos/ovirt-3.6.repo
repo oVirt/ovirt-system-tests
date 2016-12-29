@@ -48,7 +48,7 @@ enabled=1
 gpgcheck=0
 includepkgs=userspace-rcu python-websockify safelease python-cpopen python-pthreading
 
-[glusterfs-el7]
+[glusterfs-3.7-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.7/
 enabled=1

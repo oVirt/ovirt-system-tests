@@ -24,9 +24,9 @@ baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/ep
 enabled=1
 gpgcheck=0
 
-[glusterfs-el7]
+[glusterfs-3.7-el7]
 name=GlusterFS repo
-baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
+baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.7/
 enabled=1
 gpgcheck=0
 exclude=*-debuginfo *-devel glusterfs-regression-tests glusterfs-server-* glusterfs-api-devel heketi* userspace-rcu* nfs-ganesha-* gluster-ganesha* gluster-rdma glusterfs-extra-xlators glusterfs-resource-agents python-gluster

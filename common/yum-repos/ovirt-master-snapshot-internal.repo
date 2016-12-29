@@ -41,9 +41,9 @@ baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/fe
 enabled=1
 gpgcheck=0
 
-[ovirt-master-glusterfs-centos-el7]
+[glusterfs-3.8-el7]
 name=GlusterFS is a clustered file-system capable of scaling to several petabytes.
-baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.7/
+baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

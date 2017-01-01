@@ -12,12 +12,12 @@ download_appliance(){
     job_url+="/lastSuccessfulBuild/artifact/exported-artifacts"
 
     local appliance_image_url="$(\
-        wget -O - --quiet "$job_url/" \
+        curl --silent "$job_url/" \
         | grep -o -e 'oVirt-Engine[^[:space:]"]*\.ova' \
         | head -n 1\
     )"
     echo "Downloading latest appliance image $appliance_image"
-    wget -O "$appliance_dst_file" "$job_url/$appliance_image_url"
+    curl -o "$appliance_dst_file" "$job_url/$appliance_image_url"
 }
 
 
@@ -32,13 +32,13 @@ download_node_ng(){
     job_url+="/lastSuccessfulBuild/artifact/exported-artifacts"
 
     squashfs_image="$(\
-        wget -O - --quiet "$job_url/" \
+        curl --silent "$job_url/" \
         | grep -o -e 'ovirt-node-ng[^[:space:]"]*\.squashfs\.img' \
         | sort \
         | head -n 1 \
     )"
     echo "Downloading latest squashfs image $squashfs_image"
-    wget -O "$node_squashfs_image" "$job_url/$squashfs_image"
+    curl -o "$node_squashfs_image" "$job_url/$squashfs_image"
 }
 
 

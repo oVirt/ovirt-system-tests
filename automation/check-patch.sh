@@ -40,6 +40,16 @@ do
   fi
 done
 
+#Check if no changes were found
+if [[ -z $SUITES_ARR ]]; then
+    echo "*********************\n
+    NO CHANGES WERE FOUND\n
+    *********************"
+
+    exit 0;
+fi
+
+
 #Remove duplicates and sort the suites
 SUITES_TO_RUN=($(
   printf '%s\n' "${SUITES_ARR[@]}" \
@@ -68,6 +78,7 @@ collect_all_logs() {
     # mock_cleanup.sh collects the logs from ./logs, ./*/logs
     # The root directory is jenkins' workspace
     mv *__logs logs
+    mv logs exported-artifacts
 }
 
 # collect the logs  on failure

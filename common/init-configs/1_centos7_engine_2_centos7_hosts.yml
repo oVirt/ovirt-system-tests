@@ -7,7 +7,7 @@ domains:
       - net: __LAGO_NET_MANAGEMENT__
       - net: __LAGO_NET_STORAGE__
     disks:
-      - template_name: el7.3-base
+      - template_name: __ENGINE_TEMPLATE__
         type: template
         name: root
         dev: vda
@@ -42,7 +42,7 @@ domains:
       - net: __LAGO_NET_BONDING__
       - net: __LAGO_NET_STORAGE__
     disks:
-      - template_name: el7.3-base
+      - template_name: __HOSTS_TEMPLATE__
         type: template
         name: root
         dev: vda
@@ -65,7 +65,7 @@ domains:
       - net: __LAGO_NET_BONDING__
       - net: __LAGO_NET_STORAGE__
     disks:
-      - template_name: el7.3-base
+      - template_name: __HOSTS_TEMPLATE__
         type: template
         name: root
         dev: vda

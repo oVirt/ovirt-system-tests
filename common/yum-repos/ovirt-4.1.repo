@@ -2,9 +2,9 @@
 reposdir=/etc/reposync.repos.d
 max_connections=50
 
-[ovirt-4.1-snapshot-el7]
+[ovirt-4.1-pre-el7]
 name=oVirt 4.1 Nightly Test Releases
-baseurl=http://resources.ovirt.org/pub/ovirt-4.1-snapshot/rpm/el7/
+baseurl=http://resources.ovirt.org/pub/ovirt-4.1-pre/rpm/el7/
 enabled=1
 exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows
 gpgcheck=0
@@ -18,9 +18,8 @@ enabled=1
 gpgcheck=0
 max_connections=10
 
-#TODO: move this to ovirt static repo
-[patternfly-el7]
-name=oVirt 4.1 dependencies
+[ovirt-master-dependencies-el7]
+name=oVirt dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
 enabled=1
 gpgcheck=0
@@ -62,15 +61,15 @@ exclude= *i686
 max_connections=5
 
 
-[centos-ovirt-4.1-el7]
-name=CentOS-$releasever - oVirt 4.1
-baseurl=https://cbs.centos.org/repos/virt7-ovirt-41-candidate/
+[centos-ovirt-master-el7]
+name=CentOS-$releasever - oVirt master
+baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs userspace-rcu
 
-[epel-el7]
+[ovirt-master-epel-el7]
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1

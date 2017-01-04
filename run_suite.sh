@@ -148,7 +148,7 @@ env_cleanup() {
     echo "======== Cleaning up"
     if [[ -e "$PREFIX" ]]; then
         echo "----------- Cleaning with lago"
-        $CLI --workdir "$PREFIX" destroy --yes --all-prefixes &>/dev/null \
+        $CLI --workdir "$PREFIX" destroy --yes --all-prefixes \
         || res=$?
         echo "----------- Cleaning with lago done"
     elif [[ -e "$PREFIX/uuid" ]]; then

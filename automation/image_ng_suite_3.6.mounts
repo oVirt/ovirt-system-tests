@@ -3,3 +3,4 @@
 /var/lib/libvirt/boot
 /boot
 /lib/modules
+/dev/shm

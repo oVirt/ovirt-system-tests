@@ -15,21 +15,36 @@ SUITE=$(echo "$SUITE" | tr '_' '-')
 SUITE=${SUITE##*/}
 # Remove file extension
 SUITE=${SUITE%.*}
+
 echo "Running suite: $SUITE"
 
 SUITE_REAL_PATH=$(realpath "$SUITE")
 
+# if above RAM_THRESHOLD KBs are available in /dev/shm, run there
+RAM_THRESHOLD=15000000
+
+get_run_path() {
+    local avail_shm
+    avail_shm=$(df --output=avail /dev/shm | sed 1d)
+    [[ "$avail_shm" -ge "$RAM_THRESHOLD" ]] && \
+        mkdir -p "/dev/shm/ost" && \
+        echo "/dev/shm/ost/deployment-$SUITE" || \
+        echo "$PWD/deployment-$SUITE"
+}
+
 cleanup() {
+    local run_path="$1"
+    echo "suite.sh: moving artifacts"
     rm -rf exported-artifacts
     mkdir -p exported-artifacts
-    [[ -d deployment-$SUITE/current/logs ]] \
-    && mv "deployment-$SUITE/current/logs" exported-artifacts/lago_logs
-    find "deployment-$SUITE" \
+    [[ -d "$run_path/current/logs" ]] \
+    && mv "$run_path/current/logs" exported-artifacts/lago_logs
+    find "$run_path" \
         -iname nose\*.xml \
         -exec mv {} exported-artifacts/ \;
-    [[ -d test_logs ]] && mv test_logs exported-artifacts/
-    [[ -e failure_msg.txt ]] && mv failure_msg.txt exported-artifacts/
-    ./run_suite.sh --cleanup "$SUITE"
+    [[ -d "test_logs" ]] && mv test_logs exported-artifacts/
+    [[ -e "failure_msg.txt" ]] && mv failure_msg.txt exported-artifacts/
+    ./run_suite.sh -o "$run_path" --cleanup "$SUITE"
     exit
 }
 
@@ -41,9 +56,10 @@ export LIBGUESTFS_BACKEND=direct
 ! [[ -c "/dev/kvm" ]] && mknod /dev/kvm c 10 232
 # uncomment the next lines for extra verbose output
 #export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
-trap cleanup SIGTERM EXIT
-res=0
 
+run_path=$(get_run_path)
+trap 'cleanup "$run_path"' SIGTERM SIGINT SIGQUIT EXIT
+res=0
 # This is used to test external sources
 # it's done by putting them one per line in $SUITE/extra-sources file, the
 # It will look for:
@@ -63,8 +79,8 @@ elif [[ -e "$PWD/extra_sources" ]]; then
 fi
 
 if [[ -z "$extra_sources_cmd" ]]; then
-    ./run_suite.sh "$SUITE" || res=$?
+    ./run_suite.sh -o "$run_path" "$SUITE" || res=$?
 else
-    ./run_suite.sh "$extra_sources_cmd" "$SUITE" || res=$?
+    ./run_suite.sh -o "$run_path" "$extra_sources_cmd" "$SUITE" || res=$?
 fi
 exit $res

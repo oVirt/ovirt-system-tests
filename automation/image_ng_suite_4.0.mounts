@@ -1,5 +1,1 @@
-/var/run/libvirt
-/var/lib/lago
-/var/lib/libvirt/boot
-/boot
-/lib/modules
+image_ng_suite_3.6.mounts

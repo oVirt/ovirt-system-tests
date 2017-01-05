@@ -48,6 +48,10 @@ sed \
 
 fstrim -va
 
+systemctl stop NetworkManager
+systemctl disable NetworkManager
+systemctl start network
+systemctl enable network
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then

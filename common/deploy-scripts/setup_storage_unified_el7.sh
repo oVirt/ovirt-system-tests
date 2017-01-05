@@ -68,6 +68,9 @@ setup_iscsi() {
             /backstores/block \
             create name=lun${ID}_bdev dev=/dev/vg1_storage/lun${ID}_bdev
         targetcli \
+            /backstores/block/lun${ID}_bdev \
+            set attribute emulate_tpu=1
+        targetcli \
             /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/luns/ \
             create /backstores/block/lun${ID}_bdev
     }

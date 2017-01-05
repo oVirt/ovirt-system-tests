@@ -22,11 +22,12 @@ import os
 
 import nose.tools as nt
 from nose import SkipTest
+from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
 
 from lago import utils
 from ovirtlago import testlib
-from ovirtsdk.infrastructure import errors
+
 
 # DC/Cluster
 DC_NAME = 'Default'
@@ -41,7 +42,7 @@ MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
 SD_NFS_HOST_NAME = testlib.get_prefixed_name('storage')
-SD_NFS_PATH = '/exports/nfs_clean/share1'
+SD_NFS_PATH = '/exports/nfs/share1'
 
 SD_ISCSI_NAME = 'iscsi'
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('storage')
@@ -51,11 +52,11 @@ SD_ISCSI_NR_LUNS = 2
 
 SD_ISO_NAME = 'iso'
 SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
-SD_ISO_PATH = '/exports/iso'
+SD_ISO_PATH = '/exports/nfs/iso'
 
 SD_TEMPLATES_NAME = 'templates'
-SD_TEMPLATES_HOST_NAME = SD_ISO_HOST_NAME
-SD_TEMPLATES_PATH = '/exports/nfs_exported'
+SD_TEMPLATES_HOST_NAME = SD_NFS_HOST_NAME
+SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
@@ -219,6 +220,8 @@ def add_iscsi_storage_domain(prefix):
                         ),
                         port=SD_ISCSI_PORT,
                         target=SD_ISCSI_TARGET,
+                        username='username',
+                        password='password',
                     ) for lun_id in lun_guids
                 ]
 
@@ -325,7 +328,7 @@ def list_glance_images(api):
 def import_non_template_from_glance(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_from_glance.__name__ )
+        raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
     generic_import_from_glance(api)
 
 

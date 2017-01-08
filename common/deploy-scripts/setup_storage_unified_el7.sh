@@ -48,7 +48,8 @@ install_deps() {
                    lvm2 \
                    targetcli \
                    sg3_utils \
-                   iscsi-initiator-utils
+                   iscsi-initiator-utils \
+                   lsscsi
 }
 
 

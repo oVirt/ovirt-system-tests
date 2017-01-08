@@ -1,8 +1,39 @@
+nat-settings: &nat-settings
+    type: nat
+    dhcp:
+      start: 100
+      end: 254
+    management: False
+
+vm-common-settings: &vm-common-settings
+    root-password: 123456
+    service_provider: systemd
+
+vdsm-host-settings: &vdsm-host-settings
+    <<: *vm-common-settings
+    vm-type: ovirt-host
+    memory: 2047
+    nics:
+      - net: __LAGO_NET_MANAGEMENT__
+      - net: __LAGO_NET_STORAGE__
+      - net: __LAGO_NET_BONDING__
+      - net: __LAGO_NET_BONDING__
+    disks:
+      - template_name: __HOSTS_TEMPLATE__
+        type: template
+        name: root
+        dev: vda
+        format: qcow2
+    metadata:
+      deploy-scripts:
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+
 domains:
   __ENGINE__:
+    <<: *vm-common-settings
     vm-type: ovirt-engine
     memory: 4096
-    service_provider: systemd
     nics:
       - net: __LAGO_NET_MANAGEMENT__
       - net: __LAGO_NET_STORAGE__
@@ -32,68 +63,17 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
 
   __HOST0__:
-    vm-type: ovirt-host
-    memory: 2047
-    root-password: 123456
-    service_provider: systemd
-    nics:
-      - net: __LAGO_NET_MANAGEMENT__
-      - net: __LAGO_NET_BONDING__
-      - net: __LAGO_NET_BONDING__
-      - net: __LAGO_NET_STORAGE__
-    disks:
-      - template_name: __HOSTS_TEMPLATE__
-        type: template
-        name: root
-        dev: vda
-        format: qcow2
-    metadata:
-      ovirt-capabilities:
-        - snapshot-live-merge
-      deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+    <<: *vdsm-host-settings
 
   __HOST1__:
-    vm-type: ovirt-host
-    memory: 2047
-    root-password: 123456
-    service_provider: systemd
-    nics:
-      - net: __LAGO_NET_MANAGEMENT__
-      - net: __LAGO_NET_BONDING__
-      - net: __LAGO_NET_BONDING__
-      - net: __LAGO_NET_STORAGE__
-    disks:
-      - template_name: __HOSTS_TEMPLATE__
-        type: template
-        name: root
-        dev: vda
-        format: qcow2
-    metadata:
-      ovirt-capabilities:
-        - snapshot-live-merge
-      deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+    <<: *vdsm-host-settings
 
 nets:
   __LAGO_NET_MANAGEMENT__:
-    type: nat
-    dhcp:
-      start: 100
-      end: 254
+    <<: *nat-settings
     management: true
     dns_domain_name: lago.local
   __LAGO_NET_BONDING__:
-    type: nat
-    dhcp:
-      start: 100
-      end: 254
-    management: false
+    <<: *nat-settings
   __LAGO_NET_STORAGE__:
-    type: nat
-    dhcp:
-      start: 100
-      end: 254
-    management: false
+    <<: *nat-settings

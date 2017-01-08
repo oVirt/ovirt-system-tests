@@ -185,7 +185,7 @@ env_libvirt_cleanup() {
     else
         local domains=($( \
             virsh -c qemu:///system list --all --name \
-            | egrep "[[:alnum:]]*-lago_${suite}_" \
+            | egrep "[[:alnum:]]*-lago-${suite}-" \
             | egrep -v "vdsm-ovirtmgmt" \
         ))
         local nets=($( \

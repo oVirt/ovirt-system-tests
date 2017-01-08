@@ -49,7 +49,7 @@ sed \
 fstrim -va
 
 systemctl stop NetworkManager
-systemctl disable NetworkManager
+systemctl mask NetworkManager
 systemctl start network
 systemctl enable network
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf

@@ -187,8 +187,9 @@ cn: user1 user1
 userPassword: {SSHA}1e/GY7pCEhoL5yMR8HvjI7+3me6PQtxZ
 # Password is 123456
 EOC
+    /usr/sbin/setup-ds.pl -dd --silent --file=answer_file.inf \
+     --logfile=/var/log/setup-ds.log
 
-    /usr/sbin/setup-ds.pl --silent --file=answer_file.inf
     ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_user.ldif
     systemctl stop dirsrv@lago
 }

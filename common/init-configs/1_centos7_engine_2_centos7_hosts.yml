@@ -8,6 +8,8 @@ nat-settings: &nat-settings
 vm-common-settings: &vm-common-settings
     root-password: 123456
     service_provider: systemd
+    artifacts:
+      - /var/log
 
 vdsm-host-settings: &vdsm-host-settings
     <<: *vm-common-settings

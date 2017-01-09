@@ -111,11 +111,13 @@ env_start () {
 
 
 env_deploy () {
-    ci_msg_if_fails $FUNCNAME
+    ci_msg_if_fails "$FUNCNAME"
     echo "#########################"
-    cd $PREFIX
-    $CLI ovirt deploy
+    local res=0
+    cd "$PREFIX"
+    $CLI ovirt deploy || res=$?
     cd -
+    return "$res"
 }
 
 env_status () {

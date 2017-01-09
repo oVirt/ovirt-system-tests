@@ -23,11 +23,13 @@ run_suite () {
     env_repo_setup
     env_start
     env_status
-    env_deploy
-
+    if ! env_deploy; then
+        env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
+        echo "@@@ ERROR: Failed in deploy stage"
+        return 1
+    fi
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
-
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"
         env_run_test "$scenario" || failed=true

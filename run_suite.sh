@@ -118,6 +118,14 @@ env_deploy () {
     cd -
 }
 
+env_status () {
+    ci_msg_if_fails $FUNCNAME
+    echo "#########################"
+    cd $PREFIX
+    $CLI status
+    cd -
+}
+
 
 env_run_test () {
     msg_if_fails "Test ${1##*/} failed."

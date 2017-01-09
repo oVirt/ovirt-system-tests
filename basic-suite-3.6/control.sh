@@ -22,6 +22,7 @@ run_suite () {
         "$SUITE/LagoInitFile"
     env_repo_setup
     env_start
+    env_status
     env_deploy
 
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))

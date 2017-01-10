@@ -49,7 +49,7 @@ def add_ldap_provider(prefix):
 
     with tempfile.NamedTemporaryFile(delete=False) as temp:
         temp.write(content)
-    engine.copy_to(temp.name, temp.name)
+    engine.copy_to(temp.name, '/root/aaa-ldap-answer-file.conf')
     os.unlink(temp.name)
 
     result = machine_389ds.ssh(
@@ -66,7 +66,7 @@ def add_ldap_provider(prefix):
     result = engine.ssh(
         [
             'ovirt-engine-extension-aaa-ldap-setup',
-            '--config-append=%s' % temp.name,
+            '--config-append=/root/aaa-ldap-answer-file.conf',
         ],
     )
     nt.eq_(

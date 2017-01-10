@@ -34,13 +34,15 @@ def attach_network_to_host(api,
                            host,
                            nic_name,
                            network_name,
-                           ip_configuration):
+                           ip_configuration,
+                           bonds=[]):
     network_attachment = params.NetworkAttachment(
         network=params.Network(name=network_name),
         host_nic=params.HostNIC(name=nic_name),
         ip_address_assignments=ip_configuration)
 
     attachment_action = params.Action(
+        modified_bonds=params.HostNics(host_nic=bonds),
         modified_network_attachments=params.NetworkAttachments(
             network_attachment=[network_attachment]),
         check_connectivity=True)
@@ -50,12 +52,15 @@ def attach_network_to_host(api,
 
 def detach_network_from_host(api,
                              host,
-                             nic_name,
-                             network_name):
+                             network_name,
+                             bond_name=None):
     network_id = api.networks.get(name=network_name).id
     attachment = _get_attachment_by_id(host, network_id)
+    bonds = [nic for nic in host.nics.list() if bond_name and
+             nic.name == bond_name]  # there is no more than one bond
 
     removal_action = params.Action(
+        removed_bonds=params.HostNics(host_nic=bonds),
         removed_network_attachments=params.NetworkAttachments(
             network_attachment=[params.NetworkAttachment(
                 id=attachment.id)]))

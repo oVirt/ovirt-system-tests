@@ -25,11 +25,14 @@ from ovirtlago import testlib
 from test_utils import network_utils
 
 
+# Environment (see control.sh and LagoInitFile.in)
+LIBVIRT_NETWORK_FOR_BONDING = testlib.get_prefixed_name('net-bonding')
+
 # DC/Cluster
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
-# Network
+# Networks
 MANAGEMENT_NET = 'ovirtmgmt'
 NIC_NAME = 'eth0'
 VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
@@ -40,10 +43,40 @@ VLAN100_NET_IPv4_MASK = '255.255.255.0'
 VLAN100_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
 VLAN100_NET_IPv6_MASK = '64'
 
+VLAN200_NET = 'VLAN200_Network'  # MTU 9000
+BOND_NAME = 'bond0'
+VLAN200_NET_IPv4_ADDR = '192.0.3.1'
+VLAN200_NET_IPv4_MASK = '255.255.255.0'
+
+
+def _nics_to_bond(prefix, host_name):
+    """
+    Return names of NICs (from a Lago host VM) to be bonded,
+    just like do_status in site-packages/lago/cmd.py:446
+
+    TODO: move 'eth{0}' magic to site-packages/ovirtlago/testlib.py?
+    """
+    lago_host_vm = prefix.get_vms()[host_name]
+    return ['eth{0}'.format(i) for i, nic in enumerate(lago_host_vm.nics())
+            if nic['net'] == LIBVIRT_NETWORK_FOR_BONDING]
+
 
 def _hosts_in_cluster(api, cluster_name):
     hosts = api.hosts.list(query='cluster={}'.format(cluster_name))
     return sorted(hosts, key=lambda host: host.name)
+
+
+def _host_is_attached_to_network(api, host, network_name, nic_name=None):
+    try:
+        attachment = network_utils.get_network_attachment(
+            api, host, network_name, DC_NAME)
+    except IndexError:  # there is no attachment of the network to the host
+        return False
+
+    if nic_name:
+        host_nic = host.nics.get(id=attachment.host_nic.id)
+        nt.assert_equals(nic_name, host_nic.name)
+    return attachment
 
 
 @testlib.with_ovirt_api
@@ -82,27 +115,60 @@ def modify_host_ip_to_dhcp(api):
 
 @testlib.with_ovirt_api
 def detach_vlan_from_host(api):
-    network_id = api.networks.get(name=VLAN100_NET).id
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
-
-    def _host_is_detached_from_vlan_network():
-        with nt.assert_raises(IndexError):
-            attachment = network_utils.get_network_attachment(
-                api, host, VLAN100_NET, DC_NAME)
-        return True
 
     network_utils.set_network_required_in_cluster(
         api, VLAN100_NET, CLUSTER_NAME, False)
-    network_utils.detach_network_from_host(
-        api, host, NIC_NAME, VLAN100_NET)
+    network_utils.detach_network_from_host(api, host, VLAN100_NET)
 
-    nt.assert_true(_host_is_detached_from_vlan_network())
+    nt.assert_false(_host_is_attached_to_network(api, host, VLAN100_NET))
+
+
+@testlib.with_ovirt_api
+@testlib.with_ovirt_prefix
+def bond_nics(prefix, api):
+    # use host0, like the rest of 003 tests
+    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+
+    slaves = params.Slaves(host_nic=[
+        params.HostNIC(name=nic) for nic in _nics_to_bond(prefix, host.name)])
+
+    options = params.Options(option=[
+        params.Option(name='mode', value='active-backup'),
+        params.Option(name='miimon', value='200'),
+        ])
+
+    bond = params.HostNIC(
+        name=BOND_NAME,
+        bonding=params.Bonding(slaves=slaves, options=options))
+
+    ip_configuration = network_utils.create_static_ip_configuration(
+        VLAN200_NET_IPv4_ADDR, VLAN200_NET_IPv4_MASK)
+
+    network_utils.attach_network_to_host(
+        api, host, BOND_NAME, VLAN200_NET, ip_configuration, [bond])
+
+    nt.assert_true(_host_is_attached_to_network(api, host, VLAN200_NET,
+                                                nic_name=BOND_NAME))
+
+
+@testlib.with_ovirt_api
+def remove_bonding(api):
+    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+
+    network_utils.set_network_required_in_cluster(api, VLAN200_NET,
+                                                  CLUSTER_NAME, False)
+    network_utils.detach_network_from_host(api, host, VLAN200_NET, BOND_NAME)
+
+    nt.assert_false(_host_is_attached_to_network(api, host, VLAN200_NET))
 
 
 _TEST_LIST = [
     attach_vlan_to_host_static_config,
     modify_host_ip_to_dhcp,
-    detach_vlan_from_host
+    detach_vlan_from_host,
+    bond_nics,
+    remove_bonding,
 ]
 
 

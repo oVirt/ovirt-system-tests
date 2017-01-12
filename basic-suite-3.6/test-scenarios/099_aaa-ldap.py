@@ -67,6 +67,7 @@ def add_ldap_provider(prefix):
         [
             'ovirt-engine-extension-aaa-ldap-setup',
             '--config-append=/root/aaa-ldap-answer-file.conf',
+            '--log=/var/log/ovirt-engine-extension-aaa-ldap-setup.log',
         ],
     )
     nt.eq_(

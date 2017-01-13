@@ -40,7 +40,7 @@ ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "."
 echo "$ADDR engine" >> /etc/hosts
 
 install_firewalld
-yum install --nogpgcheck -y --downloaddir=/dev/shm ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
+yum install --nogpgcheck -y --downloaddir=/dev/shm ntp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "yum install failed with status ${RET_CODE}."
@@ -50,6 +50,13 @@ rm -rf /dev/shm/yum /dev/shm/*.rpm
 
 if grep "$EL7" /etc/redhat-release > /dev/null; then
     fstrim -va
+    
+    #Configure ntpd only on EL7 - will be used in 4.0, 4.1, Master suites.
+    echo "restrict 192.168.0.0 netmask 255.255.0.0 nomodify notrap" >> /etc/ntp.conf
+    systemctl enable ntpd
+    systemctl start ntpd
+    firewall-cmd --add-service=ntp --permanent
+    firewall-cmd --reload
 fi
 
 # Enable debug logs on the engine

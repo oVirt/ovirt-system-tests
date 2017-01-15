@@ -54,6 +54,7 @@ domains:
     distro: el7
     service_provider: systemd
     memory: 4720
+    cpu_model: SandyBridge
     nics:
       - net: __LAGO_NET__
     disks:
@@ -81,6 +82,7 @@ domains:
     distro: el7
     service_provider: systemd
     memory: 4720
+    cpu_model: SandyBridge
     nics:
       - net: __LAGO_NET__
     disks:

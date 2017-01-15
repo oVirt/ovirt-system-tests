@@ -54,6 +54,7 @@ domains:
     vm-type: ovirt-host
     distro: el7
     memory: 5120
+    cpu_model: SandyBridge
     nics:
       - net: __LAGO_NET__
     disks:
@@ -80,6 +81,7 @@ domains:
     vm-type: ovirt-host
     distro: el7
     memory: 5120
+    cpu_model: SandyBridge
     nics:
       - net: __LAGO_NET__
     disks:

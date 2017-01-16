@@ -19,3 +19,8 @@ mocker-*
 .idea
 .pydevproject
 
+# Ansible files
+###############
+*.retry
+failure_msg.txt
+**/ovirt-deploy/library

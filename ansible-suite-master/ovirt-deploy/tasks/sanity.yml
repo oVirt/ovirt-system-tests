@@ -1,0 +1,123 @@
+---
+- name: Add VM from Blank template
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    state: stopped
+    name: "{{ vm_name0 }}"
+    cluster: "{{ cluster_name }}"
+    memory: 512MiB
+    memory_guaranteed: 256MiB
+    operating_system: other_linux
+    type: server
+    high_availability: true
+    nics:
+      - name: nic1
+        interface: virtio
+        profile_name: ovirtmgmt
+
+- name: Add disk to VM
+  ovirt_disks:
+    auth: "{{ ovirt_auth }}"
+    vm_name: "{{ vm_name0 }}"
+    name: "{{ vm_disk_name0 }}"
+    size: 10GiB
+    format: cow
+    storage_domain: "{{ nfs_name }}"
+    interface: virtio
+    bootable: true
+
+- name: Attach logical unit to VM
+  ovirt_disks:
+    auth: "{{ ovirt_auth }}"
+    vm_name: "{{ vm_name0 }}"
+    name: "{{ disk_lun_name }}"
+    format: raw
+    logical_unit:
+      address: "{{ engine_ip }}"
+      target: "{{ iscsi_target }}"
+      id: "{{ vm_lun_id }}"
+    interface: virtio
+
+- name: Add VM from template
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    state: stopped
+    name: "{{ vm_name1 }}"
+    cluster: "{{ cluster_name }}"
+    template: "{{ template_name }}"
+    memory: 512MiB
+    memory_guaranteed: 256MiB
+    operating_system: other_linux
+    type: server
+    cpu_sockets: 1
+    cpu_cores: 1
+    cpu_shares: 1024
+
+- name: Run VM with cloud-init
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    state: running
+    name: "{{ vm_name1 }}"
+    host: "{{ host_names[0] }}"
+    cloud_init:
+      nic_boot_protocol: static
+      nic_ip_address: 192.168.200.200
+      nic_netmask: 255.255.255.0
+      nic_gateway: 192.168.200.1
+      nic_name: eth0
+      nic_on_boot: true
+      host_name: "{{ vm_name0 }}"
+      custom_script: |
+        write_files:
+         - content: |
+             Hello, world!
+           path: /tmp/greeting.txt
+           permissions: '0644'
+      user_name: root
+      root_password: secret
+
+- name: Migrate VM
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    state: running
+    name: "{{ vm_name1 }}"
+    host: "{{ host_names[1] }}"
+
+- name: Export template
+  ovirt_templates:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ template_name }}"
+    state: exported
+    export_domain: "{{ export_name }}"
+    cluster: "{{ cluster_name }}"
+
+- name: Hotplug NIC
+  ovirt_nics:
+    auth: "{{ ovirt_auth }}"
+    state: present
+    vm: "{{ vm_name1 }}"
+    name: nic1
+    interface: e1000
+    profile: ovirtmgmt
+    network: ovirtmgmt
+
+- name: Hotplug disk to VM
+  ovirt_disks:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ disk_hotplug_name }}"
+    vm_name: "{{ vm_name1 }}"
+    size: 1GiB
+    format: cow
+    interface: virtio
+    storage_domain: "{{ nfs_name }}"
+
+- name: Create vm pool
+  ovirt_vmpools:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ vmpool_name }}"
+    cluster: "{{ cluster_name }}"
+    template: "{{ template_name }}"
+    vm_count: 1
+    vm_per_user: 1
+    prestarted: 1
+    type: automatic

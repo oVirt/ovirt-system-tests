@@ -1,0 +1,49 @@
+---
+- name: Fetch host names
+  setup:
+    filter: ansible_fqdn
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['ovirt-host'] }}"
+  register: tmp_host_names
+
+- name: Fetch host IP addresses
+  setup:
+    filter: ansible_default_ipv4
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['ovirt-host'] }}"
+  register: tmp_host_ips
+
+- name: Fetch engine IP address
+  setup:
+    filter: ansible_default_ipv4
+  register: tmp_engine_ip
+
+- name: Get LUN id for storage
+  shell: cat /root/multipath.txt | head -n 1
+  register: tmp_sd_lun_id
+  changed_when: false
+
+- name: Get LUN id for direct VM disk
+  shell: cat /root/multipath.txt | head -n 2
+  register: tmp_vm_lun_id
+  changed_when: false
+
+- name: Set engine_ip fact
+  set_fact:
+    engine_ip: "{{ tmp_engine_ip.ansible_facts.ansible_default_ipv4.address }}"
+
+- name: Set host_names fact
+  set_fact:
+    host_names: "{{ tmp_host_names.results | map(attribute='ansible_facts.ansible_fqdn') | list }}"
+
+- name: Set host_ips fact
+  set_fact:
+    host_ips: "{{ tmp_host_ips.results | map(attribute='ansible_facts.ansible_default_ipv4.address') | list }}"
+
+- name: Set VM LUN id fact
+  set_fact:
+    vm_lun_id: "{{ tmp_vm_lun_id.stdout }}"
+
+- name: Set storage LUN id fact
+  set_fact:
+    sd_lun_id: "{{ tmp_sd_lun_id.stdout }}"

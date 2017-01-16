@@ -1,0 +1,182 @@
+---
+- name: Add test datacenter
+  ovirt_datacenters:
+    auth: "{{ ovirt_auth }}"
+    state: present
+    name: "{{ dc_name }}"
+    local: false
+    compatibility_version: "{{ compatibility_version }}"
+
+- name: Remove default datacenter
+  ovirt_datacenters:
+    auth: "{{ ovirt_auth }}"
+    state: absent
+    name: Default
+
+- name: Remove default cluster
+  ovirt_clusters:
+    auth: "{{ ovirt_auth }}"
+    state: absent
+    name: Default
+
+- name: Add datacenter quota
+  ovirt_quotas:
+    auth: "{{ ovirt_auth }}"
+    state: present
+    name: "{{ quota_name }}"
+    datacenter: "{{ dc_name }}"
+    storage_grace: 70
+    storage_threshold: 90
+    cluster_grace: 70
+    cluster_threshold: 90
+    clusters:
+      - memory: 10
+        cpu: 20
+    storages:
+      - size: 500
+
+- name: Add cluster
+  ovirt_clusters:
+    auth: "{{ ovirt_auth }}"
+    state: present
+    name: "{{ cluster_name }}"
+    datacenter: "{{ dc_name }}"
+    cpu_type: "{{ cpu_type }}"
+    compatibility_version: "{{ compatibility_version }}"
+    ballooning: true
+
+- name: Add hosts to oVirt engine
+  ovirt_hosts:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ item.0 }}"
+    address: "{{ item.1 }}"
+    password: "{{ host_password }}"
+    cluster: "{{ cluster_name }}"
+    override_iptables: true
+    timeout: 300
+    poll_interval: 10
+  with_together:
+    - "{{ host_names}}"
+    - "{{ host_ips }}"
+
+- name: Install cockpit on hosts
+  yum:
+    state: present
+    name: cockpit-ovirt-dashboard
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['ovirt-host']}}"
+
+- name: Remove temporary RPM files
+  file:
+    state: absent
+    path: "/dev/shm/*rpm"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['ovirt-host']}}"
+
+- name: Add NFS storage
+  ovirt_storage_domains:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ nfs_name }}"
+    host: "{{ host_names[0] }}"
+    data_center: "{{ dc_name }}"
+    nfs:
+      address: "{{ engine_ip }}"
+      path: "{{ nfs_path }}"
+      version: v4
+      timeout: 100
+      retrans: 10
+
+- name: Add iSCSI storage
+  ovirt_storage_domains:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ iscsi_name }}"
+    host: "{{ host_names[0] }}"
+    data_center: "{{ dc_name }}"
+    iscsi:
+      address: "{{ engine_ip }}"
+      target: "{{ iscsi_target }}"
+      port: "{{ iscsi_port }}"
+      lun_id: "{{ sd_lun_id }}"
+      username: "{{ iscsi_username }}"
+      password: "{{ iscsi_password }}"
+  async: 120
+  poll: 0
+  register: data_iscsi
+
+- name: Add export storage
+  ovirt_storage_domains:
+    auth: "{{ ovirt_auth }}"
+    host: "{{ host_names[0] }}"
+    name: "{{ export_name }}"
+    data_center: "{{ dc_name }}"
+    domain_function: export
+    nfs:
+      address: "{{ engine_ip }}"
+      path: "{{ export_path }}"
+  async: 120
+  poll: 0
+  register: export_nfs
+
+- name: Add iso storage
+  ovirt_storage_domains:
+    auth: "{{ ovirt_auth }}"
+    host: "{{ host_names[0] }}"
+    name: "{{ iso_name }}"
+    data_center: "{{ dc_name }}"
+    domain_function: iso
+    nfs:
+      address: "{{ engine_ip }}"
+      path: "{{ iso_path }}"
+  async: 120
+  poll: 0
+  register: iso_nfs
+
+- name: Wait for storages to be added
+  async_status: "jid={{ item.ansible_job_id }}"
+  register: job_result
+  with_items:
+    - "{{ data_iscsi }}"
+    - "{{ iso_nfs }}"
+    - "{{ export_nfs }}"
+  until: job_result.finished
+  retries: 40
+  delay: 5
+
+- name: Import template from glance
+  ovirt_templates:
+    auth: "{{ ovirt_auth }}"
+    state: imported
+    name: "{{ template_name }}"
+    image_provider:  "{{ glance_name }}"
+    image_disk: "{{ glance_disk }}"
+    storage_domain: "{{ nfs_name }}"
+    cluster: "{{ cluster_name }}"
+
+- name: Update quota mode of dacenter
+  ovirt_datacenters:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ dc_name }}"
+    quota_mode: audit
+
+- name: Create new vlan and assign it to cluster
+  ovirt_networks:
+    auth: "{{ ovirt_auth }}"
+    datacenter: "{{ dc_name }}"
+    name: "{{ network1_name}}"
+    vlan_tag: 100
+    vm_network: true
+    description: VM Network on VLAN 100
+    clusters:
+      - name: "{{ cluster_name }}"
+        assigned: true
+        required: false
+
+- name: Add non VM network
+  ovirt_networks:
+    auth: "{{ ovirt_auth }}"
+    datacenter: "{{ dc_name }}"
+    name: "{{ network2_name }}"
+    vlan_tag: 200
+    vm_network: false
+    description: Non VM Network on VLAN 200, MTU 9000
+    mtu: 9000

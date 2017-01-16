@@ -1,0 +1,55 @@
+---
+# REST API variables:
+engine_url: https://engine/ovirt-engine/api
+engine_user: admin@internal
+engine_password: 123
+engine_cafile: /etc/pki/ovirt-engine/ca.pem
+
+# Datacenters:
+dc_name: test-dc
+compatibility_version: 4.2
+quota_name: DC-QUOTA
+
+# Clusters:
+cluster_name: test-cluster
+cpu_type: Intel Conroe Family
+
+# Hosts:
+host_password: 123456
+
+# Storages:
+## NFS
+nfs_name: nfs
+nfs_path: /exports/nfs/share1
+## ISCSi
+iscsi_name: iscsi
+iscsi_target: iqn.2014-07.org.ovirt:storage
+iscsi_port: 3260
+iscsi_username: username
+iscsi_password: password
+## Export
+export_name: templates
+export_path: /exports/nfs/exported
+## ISO
+iso_name: iso
+iso_path: /exports/nfs/iso
+## Glance
+glance_name: ovirt-image-repository
+glance_disk: "CirrOS 0.3.4 for x86_64"
+
+# Templates:
+template_name: "{{ glance_disk | replace(' ', '_') }}_glance_template"
+
+# Vms:
+vm_name0: vm0
+vm_name1: vm1
+vm_disk_name0: "{{ vm_name0 }}_disk0"
+disk_hotplug_name: hotplugged_disk
+disk_lun_name: lun_disk
+
+# VM pools
+vmpool_name: vmpool0
+
+# Networks:
+network1_name: VLAN100_Network
+network2_name: VLAN200_Network

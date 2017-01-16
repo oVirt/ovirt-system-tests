@@ -1,0 +1,12 @@
+---
+- name: Run lago log collect
+  shell: "{{ lago_cmd }} collect --output={{ log_dir }}/post-{{ task_name }}/"
+  args:
+    chdir: "{{ prefix }}"
+  delegate_to: localhost
+
+- name: Copy logs
+  shell: "cp -a logs {{ log_dir }}/post-{{ task_name }}/lago_logs"
+  args:
+    chdir: "{{ prefix }}"
+  delegate_to: localhost

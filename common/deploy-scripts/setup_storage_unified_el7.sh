@@ -122,7 +122,6 @@ setup_services() {
     systemctl start nfs-idmap.service
 }
 
-
 install_deps_389ds() {
     yum install -y --downloaddir=/dev/shm 389-ds-base
 }

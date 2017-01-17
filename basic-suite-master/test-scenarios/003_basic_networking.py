@@ -21,6 +21,7 @@ import nose.tools as nt
 from ovirtsdk.xml import params
 
 from ovirtlago import testlib
+from lago import utils
 
 from test_utils import network_utils
 
@@ -45,8 +46,10 @@ VLAN100_NET_IPv6_MASK = '64'
 
 VLAN200_NET = 'VLAN200_Network'  # MTU 9000
 BOND_NAME = 'bond0'
-VLAN200_NET_IPv4_ADDR = '192.0.3.1'
+VLAN200_NET_IPv4_ADDR = '192.0.3.%d'
 VLAN200_NET_IPv4_MASK = '255.255.255.0'
+VLAN200_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0%d'
+VLAN200_NET_IPv6_MASK = '64'
 
 
 def _nics_to_bond(prefix, host_name):
@@ -59,6 +62,20 @@ def _nics_to_bond(prefix, host_name):
     lago_host_vm = prefix.get_vms()[host_name]
     return ['eth{0}'.format(i) for i, nic in enumerate(lago_host_vm.nics())
             if nic['net'] == LIBVIRT_NETWORK_FOR_BONDING]
+
+
+def _ping(host, ip_address):
+    """
+    Ping a given address (IPv4/6) from a host.
+    """
+    cmd = ['ping', '-c', '1']
+    # TODO: support pinging by host names?
+    if ':' in ip_address:
+        cmd += ['-6']
+
+    ret = host.ssh(cmd + [ip_address])
+    nt.assert_equals(ret.code, 0, 'Cannot ping {} from {}: {}'.format(
+        ip_address, host.name(), ret))
 
 
 def _hosts_in_cluster(api, cluster_name):
@@ -127,40 +144,60 @@ def detach_vlan_from_host(api):
 @testlib.with_ovirt_api
 @testlib.with_ovirt_prefix
 def bond_nics(prefix, api):
-    # use host0, like the rest of 003 tests
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    def _bond_nics(number, host):
+        slaves = params.Slaves(host_nic=[
+            params.HostNIC(name=nic) for nic in _nics_to_bond(
+                prefix, host.name)])
 
-    slaves = params.Slaves(host_nic=[
-        params.HostNIC(name=nic) for nic in _nics_to_bond(prefix, host.name)])
+        options = params.Options(option=[
+            params.Option(name='mode', value='active-backup'),
+            params.Option(name='miimon', value='200'),
+            ])
 
-    options = params.Options(option=[
-        params.Option(name='mode', value='active-backup'),
-        params.Option(name='miimon', value='200'),
-        ])
+        bond = params.HostNIC(
+            name=BOND_NAME,
+            bonding=params.Bonding(slaves=slaves, options=options))
 
-    bond = params.HostNIC(
-        name=BOND_NAME,
-        bonding=params.Bonding(slaves=slaves, options=options))
+        ip_configuration = network_utils.create_static_ip_configuration(
+            VLAN200_NET_IPv4_ADDR % number, VLAN200_NET_IPv4_MASK,
+            VLAN200_NET_IPv6_ADDR % number, VLAN200_NET_IPv6_MASK)
 
-    ip_configuration = network_utils.create_static_ip_configuration(
-        VLAN200_NET_IPv4_ADDR, VLAN200_NET_IPv4_MASK)
+        network_utils.attach_network_to_host(
+            api, host, BOND_NAME, VLAN200_NET, ip_configuration, [bond])
 
-    network_utils.attach_network_to_host(
-        api, host, BOND_NAME, VLAN200_NET, ip_configuration, [bond])
+    hosts = _hosts_in_cluster(api, CLUSTER_NAME)
+    utils.invoke_in_parallel(_bond_nics, range(1, len(hosts) + 1), hosts)
 
-    nt.assert_true(_host_is_attached_to_network(api, host, VLAN200_NET,
-                                                nic_name=BOND_NAME))
+    for host in _hosts_in_cluster(api, CLUSTER_NAME):
+        nt.assert_true(_host_is_attached_to_network(api, host, VLAN200_NET,
+                                                    nic_name=BOND_NAME))
+
+
+@testlib.with_ovirt_prefix
+def verify_interhost_connectivity_ipv4(prefix):
+    first_host = prefix.virt_env.host_vms()[0]
+    _ping(first_host, VLAN200_NET_IPv4_ADDR % 2)
+
+
+@testlib.with_ovirt_prefix
+def verify_interhost_connectivity_ipv6(prefix):
+    first_host = prefix.virt_env.host_vms()[0]
+    _ping(first_host, VLAN200_NET_IPv6_ADDR % 2)
 
 
 @testlib.with_ovirt_api
 def remove_bonding(api):
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    def _remove_bonding(host):
+        network_utils.detach_network_from_host(api, host, VLAN200_NET,
+                                               BOND_NAME)
 
     network_utils.set_network_required_in_cluster(api, VLAN200_NET,
                                                   CLUSTER_NAME, False)
-    network_utils.detach_network_from_host(api, host, VLAN200_NET, BOND_NAME)
+    utils.invoke_in_parallel(_remove_bonding,
+                             _hosts_in_cluster(api, CLUSTER_NAME))
 
-    nt.assert_false(_host_is_attached_to_network(api, host, VLAN200_NET))
+    for host in _hosts_in_cluster(api, CLUSTER_NAME):
+        nt.assert_false(_host_is_attached_to_network(api, host, VLAN200_NET))
 
 
 _TEST_LIST = [
@@ -168,6 +205,8 @@ _TEST_LIST = [
     modify_host_ip_to_dhcp,
     detach_vlan_from_host,
     bond_nics,
+    verify_interhost_connectivity_ipv4,
+    verify_interhost_connectivity_ipv6,
     remove_bonding,
 ]
 

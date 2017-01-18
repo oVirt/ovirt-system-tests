@@ -16,7 +16,7 @@ baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/ep
 enabled=1
 gpgcheck=0
 
-[glusterfs-el7]
+[glusterfs-3.7-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.7/
 enabled=1
@@ -42,24 +42,15 @@ includepkgs=ant antlr-tool aopalliance apache-commons-beanutils apache-commons-c
 exclude= *i686
 max_connections=10
 
-#[centos-extras-el7]
-#name=CentOS7 Extras
-#baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
-#enabled=1
-#gpgcheck=0
-#includepkgs=cockpit cockpit-bridge cockpit-docker cockpit-networkmanager cockpit-shell cockpit-storaged cockpit-ws docker docker-common docker-forward-journald docker-selinux libssh #libstoraged storaged storaged-lvm2 storaged-iscsi
-#exclude= *i686
-#max_connections=5
-
-[centos-ovirt-master-el7]
-name=CentOS-$releasever - oVirt master
+[centos-ovirt-4.0-el7]
+name=CentOS-7 - oVirt master
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs userspace-rcu python-cpopen rxjava hystrix* ioprocess safelease
 
-[ovirt-master-epel-el7]
+[epel-el7]
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1

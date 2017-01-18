@@ -24,7 +24,7 @@ max_connections=5
 #enabled=1
 #gpgcheck=0
 
-[glusterfs-el7]
+[glusterfs-3.8-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
 enabled=0

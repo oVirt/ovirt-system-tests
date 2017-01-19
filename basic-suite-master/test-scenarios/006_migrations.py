@@ -110,8 +110,8 @@ def prepare_mig_attachments_ipv4(api):
                                              VLAN100_NET,
                                              ip_configuration)
 
-        nt.assert_equals(
-            host.nics.list(name=VLAN_IF_NAME)[0].ip.address,
+        testlib.assert_equals_within_short(
+            lambda: host.nics.list(name=VLAN_IF_NAME)[0].ip.address,
             ip_address)
 
 

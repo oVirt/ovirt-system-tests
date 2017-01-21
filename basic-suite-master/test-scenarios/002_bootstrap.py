@@ -352,8 +352,9 @@ def add_hosts_4(prefix):
 @testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):
-        ret = host.ssh(['yum', '-y', 'install', 'cockpit-ovirt-dashboard'])
+        ret = host.ssh(['yum', '-y', 'install', '--downloaddir=/dev/shm', 'cockpit-ovirt-dashboard'])
         nt.assert_equals(ret.code, 0, '_install_cockpit_ovirt_on_host(): failed to install cockpit-ovirt-dashboard on host %s' % host)
+        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
         return True
 
     hosts = prefix.virt_env.host_vms()

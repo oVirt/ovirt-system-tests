@@ -8,15 +8,13 @@ function install_firewalld() {
             {
                 yum install -y firewalld && \
                 {
-                systemctl start firewalld
-                systemctl enable firewalld
+                systemctl enable --now firewalld
                 firewall-cmd --permanent --zone=public --add-interface=eth0
                 systemctl restart firewalld;
                 }
             }
         else
-            systemctl start firewalld
-            systemctl enable firewalld
+            systemctl enable --now firewalld
         fi
     fi
 }

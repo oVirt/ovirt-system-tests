@@ -40,8 +40,7 @@ setup_iso() {
 
 
 install_deps() {
-    systemctl stop kdump.service
-    systemctl disable kdump.service
+    systemctl disable --now kdump.service
     yum install -y --downloaddir=/dev/shm \
                    nfs-utils \
                    rpcbind \
@@ -88,8 +87,7 @@ setup_iscsi() {
         set attribute demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1 default_cmdsn_depth=64
     targetcli saveconfig
 
-    systemctl enable target
-    systemctl start target
+    systemctl enable --now target
     sed -i 's/#node.session.auth.authmethod = CHAP/node.session.auth.authmethod = CHAP/g' /etc/iscsi/iscsid.conf
     sed -i 's/#node.session.auth.username = username/node.session.auth.username = username/g' /etc/iscsi/iscsid.conf
     sed -i 's/#node.session.auth.password = password/node.session.auth.password = password/g' /etc/iscsi/iscsid.conf
@@ -100,36 +98,28 @@ setup_iscsi() {
     lsscsi -i |grep 36 |awk '{print $NF}' |sort > /root/multipath.txt
     iscsiadm -m node -U all
     iscsiadm -m node -o delete
-    systemctl stop iscsi.service
-    systemctl disable iscsi.service
+    systemctl disable --now iscsi.service
 
 }
 
 disable_firewalld() {
     if rpm -q firewalld > /dev/null; then
-        {
-            systemctl disable firewalld
-            systemctl stop firewalld
-        }
+            systemctl disable --now firewalld || true
     fi
 }
 
 setup_services() {
-    systemctl stop postfix
-    systemctl disable postfix
-    systemctl stop wpa_supplicant
-    systemctl disable wpa_supplicant
+    systemctl disable --now postfix
+    systemctl disable --now wpa_supplicant
     disable_firewalld
 
     # Allow use of NFS v4.2. oVirt still uses 4.1 though
     sed -i "s/RPCNFSDARGS=\"\"/RPCNFSDARGS=\"-V 4.2\"/g" /etc/sysconfig/nfs
 
-    systemctl start rpcbind.service
-    systemctl start nfs-server.service
+    systemctl enable --now rpcbind.service
+    systemctl enable --now  nfs-server.service
     systemctl start nfs-lock.service
     systemctl start nfs-idmap.service
-    systemctl enable rpcbind.service
-    systemctl enable nfs-server.service
 }
 
 

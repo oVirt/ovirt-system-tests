@@ -781,7 +781,15 @@ def run_log_collector(prefix):
     )
 
 
+def print_api_ver():
+    if API_V4:
+        print 'Using api version 4'
+    else:
+        print 'Using api version 3'
+
+
 _TEST_LIST = [
+    print_api_ver,
     add_dc,
     add_cluster,
     add_hosts,

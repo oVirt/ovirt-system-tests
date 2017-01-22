@@ -1,1 +1,5 @@
-check-patch.packages
+grubby
+lago
+lago-ovirt
+ovirt-engine-sdk-python
+python-ovirt-engine-sdk4

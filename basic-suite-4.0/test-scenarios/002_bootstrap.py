@@ -61,6 +61,7 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
 CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
+GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 #Network
 VLAN200_NET = 'VLAN200_Network'
@@ -344,7 +345,10 @@ def list_glance_images(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     if glance_provider is None:
-        raise SkipTest('%s: GLANCE is not available.' % list_glance_images.__name__ )
+        openstack_glance = add_glance(api)
+        if openstack_glance is None:
+            raise SkipTest('%s: GLANCE storage domain is not available.' % list_glance_images.__name__ )
+        glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
 
     try:
         all_images = glance_provider.images.list()
@@ -352,6 +356,32 @@ def list_glance_images(api):
             GLANCE_AVAIL = True
     except errors.RequestError:
         raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images.__name__ )
+
+
+def add_glance(api):
+    target_server = params.OpenStackImageProvider(
+        name=SD_GLANCE_NAME,
+        url=GLANCE_SERVER_URL
+    )
+    try:
+        provider = api.openstackimageproviders.add(target_server)
+        glance = []
+
+        def get():
+            instance = api.openstackimageproviders.get(id=provider.get_id())
+            if instance:
+                glance.append(instance)
+                return True
+            else:
+                return False
+
+        testlib.assert_true_within_short(func=get, allowed_exceptions=[errors.RequestError])
+    except (AssertionError, errors.RequestError):
+        # RequestError if add method was failed.
+        # AssertionError if add method succeed but we couldn't verify that glance was actually added
+        return None
+
+    return glance.pop()
 
 
 def import_non_template_from_glance(prefix):

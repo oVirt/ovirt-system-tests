@@ -74,6 +74,7 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
 CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
+GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
 VLAN200_NET = 'VLAN200_Network'
@@ -703,7 +704,13 @@ def list_glance_images_3(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     if glance_provider is None:
-        raise SkipTest('%s: GLANCE storage domain is not available.' % list_glance_images_3.__name__ )
+        openstack_glance = add_glance_3(api)
+        if openstack_glance is None:
+            raise SkipTest('%s: GLANCE storage domain is not available.' % list_glance_images_3.__name__ )
+        glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
+
+    if not check_glance_connectivity_3(api):
+        raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_3.__name__ )
 
     try:
         all_images = glance_provider.images.list()
@@ -715,11 +722,19 @@ def list_glance_images_3(api):
 
 def list_glance_images_4(api):
     global GLANCE_AVAIL
-    search_query='name={}'.format(SD_GLANCE_NAME)
-    glance_domain = api.system_service().storage_domains_service().list(search=search_query)[0]
-    if glance_domain is None:
-        raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
+    search_query = 'name={}'.format(SD_GLANCE_NAME)
+    glance_domain_list = api.system_service().storage_domains_service().list(search=search_query)
 
+    if not glance_domain_list:
+        openstack_glance = add_glance_4(api)
+        if not openstack_glance:
+            raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
+        glance_domain_list = api.system_service().storage_domains_service().list(search=search_query)
+
+    if not check_glance_connectivity_4(api):
+        raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_4.__name__ )
+
+    glance_domain = glance_domain_list.pop()
     glance_domain_service = api.system_service().storage_domains_service().storage_domain_service(glance_domain.id)
 
     try:
@@ -728,6 +743,98 @@ def list_glance_images_4(api):
             GLANCE_AVAIL = True
     except errors.RequestError:
         raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_4.__name__ )
+
+
+def add_glance_3(api):
+    target_server = params.OpenStackImageProvider(
+        name=SD_GLANCE_NAME,
+        url=GLANCE_SERVER_URL
+    )
+    try:
+        provider = api.openstackimageproviders.add(target_server)
+        glance = []
+
+        def get():
+            instance = api.openstackimageproviders.get(id=provider.get_id())
+            if instance:
+                glance.append(instance)
+                return True
+            else:
+                return False
+
+        testlib.assert_true_within_short(func=get, allowed_exceptions=[errors.RequestError])
+    except (AssertionError, errors.RequestError):
+        # RequestError if add method was failed.
+        # AssertionError if add method succeed but we couldn't verify that glance was actually added
+        return None
+
+    return glance.pop()
+
+
+def add_glance_4(api):
+    target_server = sdk4.types.OpenStackImageProvider(
+        name=SD_GLANCE_NAME,
+        description=SD_GLANCE_NAME,
+        url=GLANCE_SERVER_URL,
+        requires_authentication=False
+    )
+
+    try:
+        providers_service = api.system_service().openstack_image_providers_service()
+        providers_service.add(target_server)
+        glance = []
+
+        def get():
+            providers = [
+                provider for provider in providers_service.list()
+                if provider.name == SD_GLANCE_NAME
+            ]
+            if not providers:
+                return False
+            instance = providers_service.provider_service(providers.pop().id)
+            if instance:
+                glance.append(instance)
+                return True
+            else:
+                return False
+
+        testlib.assert_true_within_short(func=get, allowed_exceptions=[errors.RequestError])
+    except (AssertionError, errors.RequestError):
+        # RequestError if add method was failed.
+        # AssertionError if add method succeed but we couldn't verify that glance was actually added
+        return None
+
+    return glance.pop()
+
+
+def check_glance_connectivity_3(api):
+    avail = False
+    try:
+        glance = api.openstackimageproviders.get(name=SD_GLANCE_NAME)
+        glance.testconnectivity()
+        avail = True
+    except errors.RequestError:
+        pass
+
+    return avail
+
+
+def check_glance_connectivity_4(api):
+    avail = False
+    providers_service = api.system_service().openstack_image_providers_service()
+    providers = [
+        provider for provider in providers_service.list()
+        if provider.name == SD_GLANCE_NAME
+    ]
+    if providers:
+        glance = providers_service.provider_service(providers.pop().id)
+        try:
+            glance.test_connectivity()
+            avail = True
+        except errors.RequestError:
+            pass
+
+    return avail
 
 
 def import_non_template_from_glance(prefix):

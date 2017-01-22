@@ -164,6 +164,16 @@ def set_network_required_in_cluster(api,
     return cluster_network.update()
 
 
+def set_network_mtu(api,
+                    network_name,
+                    dc_name,
+                    mtu):
+    dc = api.datacenters.get(dc_name)
+    network = dc.networks.get(network_name)
+    network.set_mtu(mtu)
+    return network.update()
+
+
 def create_network_params(network_name,
                           dc_name,
                           **net_params):

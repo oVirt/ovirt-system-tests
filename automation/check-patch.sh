@@ -7,8 +7,8 @@ PROJECT="$PWD"
 
 #Constant regex
 COMMONS_REGEX=(common automation run\_suite\.sh)
-BASIC_SUITES_REGEX=($(find . -maxdepth 1 -name "basic-suite*" -exec basename \{} \;))
-ALL_SUITES_REGEX=(*-suite-*)
+BASIC_SUITES_REGEX=($(ls automation | grep -Po "^basic_suite_.*(?=.sh)"))
+ALL_SUITES_REGEX=($(ls automation | grep -Po ".*_suite_.*(?=.sh)"))
 
 #Array to hold all the suites
 #which will be executed
@@ -26,7 +26,8 @@ NEW_CHANGES=$(
 #and run all basic suites
 for change in "${COMMONS_REGEX[@]}"
 do
-  if grep -E "$change" <<< "${NEW_CHANGES[@]}"; then
+  change_tr=$(tr '_' '-' <<< "$change")
+  if grep -E "$change_tr" <<< "${NEW_CHANGES[@]}"; then
     SUITES_ARR=(${BASIC_SUITES_REGEX[@]})
     break
   fi
@@ -35,8 +36,9 @@ done
 #Check if any suite was changed
 for suite in "${ALL_SUITES_REGEX[@]}"
 do
-  if grep -E "$suite" <<< "${NEW_CHANGES[@]}"; then
-    SUITES_ARR+=($suite)
+  suite_tr=$(tr '_' '-' <<< "$suite")
+  if grep -E "$suite_tr" <<< "${NEW_CHANGES[@]}"; then
+    SUITES_ARR+=($suite_tr)
   fi
 done
 
@@ -106,14 +108,14 @@ echo "${SUITES_TO_RUN[@]}"
 for suite in "${SUITES_TO_RUN[@]}"
 do
     #Extract version:
-    ver=$(echo "$suite" | rev | cut -d"-" -f1 | rev)
+    ver=$(echo "$suite" | rev | cut -d"_" -f1 | rev)
+    suite_tr=$(tr '_' '-' <<< "$suite")
 
     #Copy the exta_sources file to suite's dir
-    cp "$PROJECT""/common/latest-tested-src/$ver-latest-tested" "$PROJECT/$suite/""extra_sources"
-    #Match the suite's name to the execution script's name
-    exec_suite=$(sed 's/-/_/g' <<< "$suite")
-    echo "running $exec_suite.sh"
-    automation/"${exec_suite}.sh"
+    cp "$PROJECT""/common/latest-tested-src/$ver-latest-tested" "$PROJECT/$suite_tr/""extra_sources"
+
+    echo "running $suite\.sh"
+    automation/"${suite}.sh"
 
     # collect the logs for the current suite
     collect_suite_logs

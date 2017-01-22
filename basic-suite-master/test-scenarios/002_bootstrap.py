@@ -44,7 +44,7 @@ from test_utils import network_utils
 # DC/Cluster
 DC_NAME = 'test-dc'
 DC_VER_MAJ = 4
-DC_VER_MIN = 1
+DC_VER_MIN = 2
 SD_FORMAT = 'v4'
 CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'

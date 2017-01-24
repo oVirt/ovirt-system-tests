@@ -6,28 +6,25 @@
 PROJECT="$PWD"
 
 #Constant regex
-COMMONS_REGEX=(common automation run\_suite\.sh)
+COMMONS_REGEX=(common check-patch.sh suite.sh run_suite.sh)
 BASIC_SUITES_REGEX=($(ls automation | grep -Po "^basic_suite_.*(?=.sh)"))
-ALL_SUITES_REGEX=($(ls automation | grep -Po ".*_suite_.*(?=.sh)"))
+ALL_SUITES_REGEX=($(ls automation |grep -Po ".*_suite_.*(?=\.)" | sort | uniq))
 
 #Array to hold all the suites
 #which will be executed
 SUITES_ARR=()
 
-NEW_CHANGES=$(
-    git show --pretty='format:' --name-only \
-    | sed '/^\s*$/d' \
-    | cut -d'/' -f1 \
-    | sort \
-    | uniq
-)
+IFS='/' read -r -a git_show <<< $(git show --pretty='format:' --name-only)
+NEW_CHANGES=$( \
+for i in ${git_show[@]}; do
+    echo $i
+done | sort | uniq )
 
 #Check if any common file was changed
 #and run all basic suites
-for change in "${COMMONS_REGEX[@]}"
+for common_change in "${COMMONS_REGEX[@]}"
 do
-  change_tr=$(tr '_' '-' <<< "$change")
-  if grep -E "$change_tr" <<< "${NEW_CHANGES[@]}"; then
+  if grep -E "$common_change" <<< "${NEW_CHANGES[@]}"; then
     SUITES_ARR=(${BASIC_SUITES_REGEX[@]})
     break
   fi
@@ -37,8 +34,10 @@ done
 for suite in "${ALL_SUITES_REGEX[@]}"
 do
   suite_tr=$(tr '_' '-' <<< "$suite")
-  if grep -E "$suite_tr" <<< "${NEW_CHANGES[@]}"; then
-    SUITES_ARR+=($suite_tr)
+  if grep -E "$suite" <<< "${NEW_CHANGES[@]}"; then
+    SUITES_ARR+=($suite)
+  elif grep -E "$suite_tr" <<< "${NEW_CHANGES[@]}"; then
+    SUITES_ARR+=($suite)
   fi
 done
 
@@ -114,8 +113,12 @@ do
     #Copy the exta_sources file to suite's dir
     cp "$PROJECT""/common/latest-tested-src/$ver-latest-tested" "$PROJECT/$suite_tr/""extra_sources"
 
-    echo "running $suite\.sh"
-    automation/"${suite}.sh"
+    if [[ -e automation/"${suite}.sh" ]]; then
+        echo "running $suite\.sh"
+        automation/"${suite}.sh"
+    else
+        tput setaf 1; echo "!!! Could not find execution script for $suite"
+    fi
 
     # collect the logs for the current suite
     collect_suite_logs

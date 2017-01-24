@@ -2,23 +2,13 @@
 reposdir=/etc/reposync.repos.d
 max_connections=50
 
-[ovirt-4.1-pre-el7]
-name=oVirt 4.1 Nightly Test Releases
-baseurl=http://resources.ovirt.org/pub/ovirt-4.1-pre/rpm/el7/
-enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows
-gpgcheck=0
-max_connections=5
-
 [ovirt-4.1-el7]
-name=oVirt 4.1 Official Release
+name=oVirt 4.1 Official release
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled=1
-skip_if_unavailable=1
 exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows
 gpgcheck=0
 max_connections=5
-
 
 [ovirt-4.1-snapshot-static-el7]
 name=oVirt 4.1 Nightly Statics

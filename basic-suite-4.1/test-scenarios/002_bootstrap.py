@@ -255,8 +255,7 @@ def add_cluster_4(prefix):
 @testlib.with_ovirt_prefix
 def add_hosts(prefix):
     if API_V4:
-# FIXME add_hosts_4(prefix)
-        add_hosts_3(prefix)
+        add_hosts_4(prefix)
     else:
         add_hosts_3(prefix)
 

@@ -257,8 +257,7 @@ def add_cluster_4(prefix):
 @testlib.with_ovirt_prefix
 def add_hosts(prefix):
     if API_V4:
-# FIXME add_hosts_4(prefix)
-        add_hosts_3(prefix)
+        add_hosts_4(prefix)
     else:
         add_hosts_3(prefix)
 
@@ -318,6 +317,7 @@ def add_hosts_4(prefix):
                 description='host %s' % vm.name(),
                 address=vm.name(),
                 root_password=str(vm.root_password()),
+                override_iptables=True,
                 cluster=sdk4.types.Cluster(
                     name=CLUSTER_NAME,
                 ),

@@ -108,8 +108,8 @@ echo "${SUITES_TO_RUN[@]}"
 for suite in "${SUITES_TO_RUN[@]}"
 do
     #Extract version:
-    ver=$(echo "$suite" | rev | cut -d"_" -f1 | rev)
     suite_tr=$(tr '_' '-' <<< "$suite")
+    ver=$(echo "$suite_tr" | rev | cut -d"-" -f1 | rev)
 
     #Copy the exta_sources file to suite's dir
     cp "$PROJECT""/common/latest-tested-src/$ver-latest-tested" "$PROJECT/$suite_tr/""extra_sources"

@@ -8,13 +8,15 @@ function install_firewalld() {
             {
                 yum install -y firewalld && \
                 {
-                systemctl enable --now firewalld
+                systemctl enable firewalld
+                systemctl start firewalld
                 firewall-cmd --permanent --zone=public --add-interface=eth0
                 systemctl restart firewalld;
                 }
             }
         else
-            systemctl enable --now firewalld
+            systemctl enable firewalld
+            systemctl start firewalld
         fi
     fi
 }
@@ -50,7 +52,7 @@ rm -rf /dev/shm/yum /dev/shm/*.rpm
 
 if grep "$EL7" /etc/redhat-release > /dev/null; then
     fstrim -va
-    
+
     #Configure ntpd only on EL7 - will be used in 4.0, 4.1, Master suites.
     echo "restrict 192.168.0.0 netmask 255.255.0.0 nomodify notrap" >> /etc/ntp.conf
     systemctl enable ntpd

@@ -94,7 +94,7 @@ env_repo_setup () {
         reposync_conf="$CUSTOM_REPOSYNC"
     fi
     echo "using reposync config file: $reposync_conf"
-    $CLI ovirt reposetup \
+    http_proxy="" $CLI ovirt reposetup \
         --reposync-yum-config "$reposync_conf" \
         "${extrasrcs[@]}"
     cd -

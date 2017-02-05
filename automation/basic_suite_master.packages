@@ -1,4 +1,5 @@
 grubby
+--exclude=python2-crypto-2.6.1-13*
 lago
 lago-ovirt
 ovirt-engine-sdk-python

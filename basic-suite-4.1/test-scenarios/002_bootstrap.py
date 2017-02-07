@@ -313,6 +313,7 @@ def add_hosts_4(prefix):
                 description='host %s' % vm.name(),
                 address=vm.name(),
                 root_password=str(vm.root_password()),
+                override_iptables=True,
                 cluster=sdk4.types.Cluster(
                     name=CLUSTER_NAME,
                 ),

@@ -57,6 +57,7 @@ def test_initialize_engine(prefix):
         [
             'engine-setup',
             '--config-append=/tmp/answer-file-post',
+            '--accept-defaults',
         ],
     )
 

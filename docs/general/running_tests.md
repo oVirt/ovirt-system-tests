@@ -40,15 +40,24 @@ like downloading OS templates, where each one takes at least 1G of data.<br>
 If you are still worried that its stuck, please refer to the [FAQ](docs/general/faq.html)
 to see if the issue you're seeing is documented.
 
-Once it is done, you will get the results in the directory<br>
-`deployment-basic-suite-4.0`, that will include an initialized prefix with a<br>
-4.0 engine vm with all the hosts and storages added.
+Once it is done, you will get an initialized prefix with a 4.0 engine VM,<br>
+with added hosts and storages.<br>
+You can find the results in `deployment-basic-suite-4.0` directory.<br>
 
-To access it, log in to the web-ui at:
+In order to log in the web-UI, first you should find the engine VM's IP address:<br>
+* From the `deployment-basic-suite-4.0` directory, run `lago status`.<br>
+* Under `[VMs]` find `[lago-basic-suite-4-0-engine]`. The IP address of <br>
+`network: lago-basic-suite-4-0-net-management` is the relevant one.<br>
 
-* URL: `https://192.168.200.2/`
-* Username: `admin@internal`
+Once you've located the engine VM's IP, add it to `/etc/hosts` followed by the name `engine`.<br>
+**NOTE**: any other name than `engine` will **not** work.
+
+Now, log in to the web-UI at:
+
+* URL: `https://engine/ovirt-engine/webadmin/`
+* Username: `admin`
 * Password: `123`
+* Profile: `internal`
 
 If you're running the framework on a remote machine, you can tunnel a local<br>
 port directly to the destination machine::

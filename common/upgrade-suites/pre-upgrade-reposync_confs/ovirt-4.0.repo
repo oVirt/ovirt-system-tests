@@ -1,0 +1,11 @@
+[main]
+reposdir=/etc/reposync.repos.d
+max_connections=50
+
+[ovirt-4.0_resources-el7]
+name=oVirt 4.0 el7 stable
+baseurl=http://resources.ovirt.org/pub/ovirt-4.0/rpm/el7/
+enabled=1
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows ovirt-optimizer*
+gpgcheck=0
+max_connections=5

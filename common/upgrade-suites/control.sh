@@ -37,6 +37,7 @@ env_repo_setup_post_upgrade () {
     cd $PREFIX
     echo "using extra_sources: $extrasrc"
     $CLI ovirt reposetup \
+        --reposync-yum-config "$SUITE/post-reposync.config" \
         --custom-source "conf:$extrasrc"
     cd -
 }

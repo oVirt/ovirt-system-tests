@@ -28,7 +28,7 @@ run any of the suites available:
     $ ./run_suite.sh basic-suite-4.0
 ```
 
-**NOTE**: this will download a lot of vm images the first time it runs, check<br>
+**NOTE**: this will download a lot of VM images the first time it runs, check<br>
 the section "`template-repo.json: Sources for templates`_" on how to use local<br>
 mirrors if available.
 
@@ -62,7 +62,7 @@ Now, log in to the web-UI at:
 If you're running the framework on a remote machine, you can tunnel a local<br>
 port directly to the destination machine::
 ```
-    $ ssh -L 8443:192.168.200.2:443 remote-user@remote-ip
+    $ ssh -L 8443:192.168.200.2:443 remote-user@remote-IP
             ---- =================             ~~~~~~~~~
             (*)   (**)                         (***)
 
@@ -72,13 +72,13 @@ port directly to the destination machine::
     (***) - Remote machine through which we'll connect to the remote end of the
             tunnel.
 ```
-After creating the tunnel, web-ui will be available at `https://localhost:8443/`
+After creating the tunnel, web-UI will be available at `https://localhost:8443/`
 
 
 Poke around in the env
 ------------------------
 
-You can now open a shell to any of the vms, start/stop them all, etc.:
+You can now open a shell to any of the VMs, start/stop them all, etc.:
 ```
     $ cd deployment-basic-suite-4.0
     $ lagocli shell engine
@@ -113,7 +113,7 @@ Once you're done with the environment, run:
     $ cd deployment-basic-suite-4.0
     $ lagocli cleanup
 ```
-That will stop any running vms and remove the lago metadata in the prefix, it<br>
+That will stop any running VMs and remove the lago metadata in the prefix, it<br>
 will not remove any other files (like disk images) or anything though, so you<br>
 can play with them for further investigation if needed, but once executed, it's<br>
 safe to fully remove the prefix dir if you want to.

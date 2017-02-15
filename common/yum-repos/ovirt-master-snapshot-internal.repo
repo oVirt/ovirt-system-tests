@@ -95,4 +95,4 @@ name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/$basearch/
 gpgcheck=0
 enabled=1
-includepkgs=collectd,collectd-netlink,collectd-virt,collectd-write_http,collectd-disk,fluentd,rubygem-fluent-plugin-secure-forward,rubygem-cool.io,rubygem-http_parser.rb,rubygem-msgpack,rubygem-proxifier,rubygem-resolve-hostname,rubygem-sigdump,rubygem-string-scrub,rubygem-thread_safe,rubygem-tzinfo,rubygem-tzinfo-data,rubygem-yajl-ruby
+includepkgs=collectd,collectd-netlink,collectd-virt,collectd-write_http,collectd-disk,collectd-postgresql,fluentd,rubygem-fluent-plugin-secure-forward,rubygem-cool.io,rubygem-http_parser.rb,rubygem-msgpack,rubygem-proxifier,rubygem-resolve-hostname,rubygem-sigdump,rubygem-string-scrub,rubygem-thread_safe,rubygem-tzinfo,rubygem-tzinfo-data,rubygem-yajl-ruby

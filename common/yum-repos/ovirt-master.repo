@@ -19,12 +19,6 @@ enabled=1
 gpgcheck=0
 max_connections=10
 
-[ovirt-master-dependencies-el7]
-name=oVirt dependencies
-baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
-enabled=1
-gpgcheck=0
-
 [glusterfs-3.8-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/

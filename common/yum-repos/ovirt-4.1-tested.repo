@@ -2,9 +2,9 @@
 reposdir=/etc/reposync.repos.d
 max_connections=50
 
-[ovirt-4.1-experimental-el7]
-name=oVirt 4.1 Experimental 
-baseurl=http://resources.ovirt.org/repos/ovirt/experimental/4.1/latest.tested/rpm/el7
+[ovirt-4.1-tested-el7]
+name=oVirt 4.1 Tested
+baseurl=http://resources.ovirt.org/repos/ovirt/tested/4.1/rpm/el7
 enabled=1
 exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows
 gpgcheck=0
@@ -18,7 +18,7 @@ enabled=1
 gpgcheck=0
 max_connections=10
 
-#TODO: move this to ovirt static repo
+#TODO: remove once ovirt-js-dependencies is backported to 4.1
 [patternfly-el7]
 name=oVirt 4.1 dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/

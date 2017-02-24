@@ -1,6 +1,6 @@
 #!/bin/bash -x
-HOSTEDENGINE="lago-he-basic-suite-4-1-engine"
-DOMAIN=`dnsdomainname`
+HOSTEDENGINE=$1
+DOMAIN=$2
 MYADDR=$(\
     /sbin/ip -4 -o addr show dev eth0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
@@ -20,7 +20,7 @@ HEADDR=$(\
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".99"}'\
     | awk -F/ '{print $1}' \
 )
-echo "${HEADDR} ${HOSTEDENGINE} ${HOSTEDENGINE}.${DOMAIN}" >> /etc/hosts
+echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 VMPASS=123456
 ENGINEPASS=123
 

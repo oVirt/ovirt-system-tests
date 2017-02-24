@@ -89,7 +89,7 @@ def remove_default_cluster(api):
 
 
 @testlib.with_ovirt_prefix
-def edit_cluster(prefix):
+def wait_engine(prefix):
 
     def _engine_is_up():
         engine = prefix.virt_env.engine_vm()
@@ -99,10 +99,11 @@ def edit_cluster(prefix):
         except:
             return
 
-    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
-    # TBD: HE takes time to be online,
-    # remove this when we figure out why
     testlib.assert_true_within(_engine_is_up, timeout=10 * 60)
+
+
+@testlib.with_ovirt_prefix
+def edit_cluster(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     cluster = api.clusters.get(name='Default')
     cluster.gluster_service = True
@@ -502,6 +503,7 @@ def run_log_collector(prefix):
 
 
 _TEST_LIST = [
+    wait_engine,
     edit_cluster,
     add_hosts,
     add_master_storage_domain,

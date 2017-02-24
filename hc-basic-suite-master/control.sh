@@ -19,6 +19,8 @@ he_deploy() {
     local suite_name="${SUITE##*/}"
     suite_name="${suite_name//./-}"
     HOST=lago-${suite_name}-host
+    HOSTEDENGINE="hc-engine"
+    DOMAIN="lago.local"
     VMPASS=123456
     cd $PREFIX
 
@@ -27,7 +29,7 @@ he_deploy() {
     lago shell \
         ${HOST}0 \
         ssh-keygen -t rsa -f /root/.ssh/id_rsa -N \"\"
-    
+
     lago shell \
         ${HOST}0 \
         sshpass \
@@ -70,7 +72,7 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        /root/gdeploy.sh ${HOST}0 ${HOST}1 ${HOST}2
+        /root/gdeploy.sh ${HOST}0 ${HOST}1 ${HOST}2 ${HOSTEDENGINE} ${DOMAIN}
 
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then

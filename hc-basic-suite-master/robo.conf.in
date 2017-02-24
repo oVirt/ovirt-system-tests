@@ -160,7 +160,7 @@ brick_dirs=/rhs/brick3/data
 
 [script:@HOST0@]
 action=execute
-file=/root/generate-hc-answerfile.sh @HOST0@ @HOST1@ @HOST2@
+file=/root/generate-hc-answerfile.sh @HOST0@ @HOST1@ @HOST2@ @HOSTEDENGINE@ @DOMAIN@
 
 [shell2:@HOST0@]
 action=execute

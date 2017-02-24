@@ -2,16 +2,17 @@
 HOST1IP=$1
 HOST2IP=$2
 HOST3IP=$3
-HOSTEDENGINE="hc-engine.lago.local"
+HOSTEDENGINE=$4
+DOMAIN=$5
 
 MYADDR=$(\
     /sbin/ip -4 -o addr show dev eth0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
     | awk -F/ '{print $1}'\
 )
-MYHOSTNAME=$(hostname | sed s/_/-/g).lago.local
+MYHOSTNAME=$(hostname | sed s/_/-/g)
 
-echo "${MYADDR} ${MYHOSTNAME}$DOMAIN" >> /etc/hosts
+echo "${MYADDR} ${MYHOSTNAME}.${DOMAIN} ${MYHOSTNAME}" >> /etc/hosts
 
 HEGW=$(\
     /sbin/ip -4 -o addr show dev eth0 \
@@ -23,7 +24,7 @@ HEADDR=$(\
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".99"}'\
     | awk -F/ '{print $1}'\
 )
-echo "${HEADDR} ${HOSTEDENGINE}" >> /etc/hosts
+echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 
 OVAIMAGE=$(\
     ls /usr/share/ovirt-engine-appliance/ovirt-engine-appliance-*.ova \
@@ -39,6 +40,7 @@ sed \
     -e "s,@VMPASS@,${VMPASS},g" \
     -e "s,@ENGINEPASS@,${ENGINEPASS},g" \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
+    -e "s,@DOMAIN@,${DOMAIN},g" \
     -e "s,@HOST1-IP@,${HOST1IP},g" \
     -e "s,@HOST2-IP@,${HOST2IP},g" \
     -e "s,@HOST3-IP@,${HOST3IP},g" \

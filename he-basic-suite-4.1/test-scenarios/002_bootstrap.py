@@ -700,6 +700,20 @@ def list_glance_images(prefix):
         list_glance_images_3(api)
 
 
+@testlib.with_ovirt_prefix
+def wait_engine(prefix):
+
+    def _engine_is_up():
+        engine = prefix.virt_env.engine_vm()
+        try:
+            if engine and engine.get_api():
+                return True
+        except:
+            return
+
+    testlib.assert_true_within(_engine_is_up, timeout=10 * 60)
+
+
 def list_glance_images_3(api):
     global GLANCE_AVAIL
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
@@ -951,6 +965,7 @@ def sleep(prefix):
 
 
 _TEST_LIST = [
+    wait_engine,
 #    add_dc,
 #    add_cluster,
     add_master_storage_domain,

@@ -2,11 +2,15 @@
 HOST0ADDR=$1
 HOST1ADDR=$2
 HOST2ADDR=$3
+HOSTEDENGINE=$4
+DOMAIN=$5
 
 sed \
     -e "s,@HOST0@,${HOST0ADDR},g" \
     -e "s,@HOST1@,${HOST1ADDR},g" \
     -e "s,@HOST2@,${HOST2ADDR},g" \
+    -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
+    -e "s,@DOMAIN@,${DOMAIN},g" \
     < /root/robo.conf.in \
     > /root/robo.conf
 

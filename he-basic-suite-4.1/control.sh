@@ -21,6 +21,8 @@ he_deploy() {
     local suite_name="${SUITE##*/}"
     suite_name="${suite_name//./-}"
     HOST=lago-${suite_name}-host
+    HOSTEDENGINE="lago-he-basic-suite-4-1-engine"
+    DOMAIN=`dnsdomainname`
     cd $PREFIX
     echo "#########################"
     echo "Deploying on ${HOST}0"
@@ -36,27 +38,10 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        /root/setup_first_he_host.sh
+        /root/setup_first_he_host.sh $HOSTEDENGINE $DOMAIN
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then
         echo "hosted-engine setup on ${HOST}0 failed with status ${RET_CODE}."
-        exit ${RET_CODE}
-    fi
-
-    echo "#########################"
-    echo "Deploying on ${HOST}1"
-
-    lago copy-to-vm \
-        ${HOST}1 \
-        "${SUITE}/setup_additional_he_host.sh" \
-        /root/
-
-    lago shell \
-        ${HOST}1 \
-        /root/setup_additional_he_host.sh
-    RET_CODE=$?
-    if [ ${RET_CODE} -ne 0 ]; then
-        echo "hosted-engine setup on ${HOST}1 failed with status ${RET_CODE}."
         exit ${RET_CODE}
     fi
     cd -

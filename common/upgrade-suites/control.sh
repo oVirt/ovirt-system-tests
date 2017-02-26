@@ -12,41 +12,39 @@ prep_suite () {
     > ${SUITE}/LagoInitFile
 }
 
-env_repo_setup_pre_upgrade () {
+
+env_repo_setup_base_version () {
+    ci_msg_if_fails $FUNCNAME
     #This function is setting up the env with stable release repo
-    echo "#####Setting up repos (pre upgrade)...#####"
+    echo "######## Setting up repos (init)"
     cd $PREFIX #PREFIX is the dir for the lago env
     #Set the repository for the pre-upgrade deploy
-    local reposync_conf="$SUITE/reposync-config.repo"
+    local reposync_conf="$SUITE/pre-reposync-config.repo"
     echo "using reposync config file: $reposync_conf"
     $CLI ovirt reposetup \
         --reposync-yum-config "$reposync_conf"
     cd -
 }
 
-env_repo_setup_post_upgrade () {
-    echo "Setting up repos (post upgrade)..."
 
-    #Set the correct extra_sources file
-    if [[ -e "$SUITE/extra_sources" ]]; then
-      local extrasrc="$SUITE/extra_sources"
-    else
-      local extrasrc="$SUITE/extra_sources.in"
-    fi
-
-    cd $PREFIX
-    echo "using extra_sources: $extrasrc"
-    $CLI ovirt reposetup \
-        --reposync-yum-config "$SUITE/post-reposync.config" \
-        --custom-source "conf:$extrasrc"
-    cd -
+env_repo_setup_destination_version () {
+    #The env_repo_setup serves this control
+    #This function is for readability purpose only
+    env_repo_setup
 }
+
+
+clean_internal_repo () {
+    echo "Cleaning internal repo"
+    rm -rf "$PREFIX"/default/internal_repo
+}
+
 
 run_suite () {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
-    env_repo_setup_pre_upgrade
+    env_repo_setup_base_version
     env_start
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
@@ -69,9 +67,10 @@ run_suite () {
         fi
     done
 
-    #Apply extra_sources
-    env_repo_setup_post_upgrade
-
+    #Clean internal repo
+    clean_internal_repo
+    #Prepare env for upgrade
+    env_repo_setup_destination_version
     #This loop runs the engine upgrade and the tests following it
     for scenario_a in "${test_scenarios_after[@]}"; do
         echo "Running test scenario ${scenario_a##*/}"

@@ -39,6 +39,10 @@ setup_iso() {
 }
 
 
+setup_second_nfs() {
+    setup_nfs /exports/nfs/share2
+}
+
 install_deps() {
     systemctl disable --now kdump.service
     yum install -y --downloaddir=/dev/shm \
@@ -190,6 +194,7 @@ main() {
     setup_main_nfs
     setup_export
     setup_iso
+    setup_second_nfs
     setup_iscsi
 
     # Prepare 389ds

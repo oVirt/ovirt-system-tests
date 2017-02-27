@@ -53,8 +53,10 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
+SD_SECOND_NFS_NAME = 'second-nfs'
 SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_NFS_PATH = '/exports/nfs/share1'
+SD_SECOND_NFS_PATH = '/exports/nfs/share2'
 
 SD_ISCSI_NAME = 'iscsi'
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
@@ -80,6 +82,7 @@ VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
 
 
+# TODO: support resolving hosts over IPv6 and arbitrary network
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
@@ -423,6 +426,12 @@ def add_nfs_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
 
 
+# TODO: add this over the storage network and with IPv6
+def add_second_nfs_storage_domain(prefix):
+    add_generic_nfs_storage_domain(prefix, SD_SECOND_NFS_NAME,
+                                   SD_NFS_HOST_NAME, SD_SECOND_NFS_PATH)
+
+
 def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
     if API_V4:
         add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
@@ -493,6 +502,7 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_nfs_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
+                functools.partial(add_second_nfs_storage_domain, prefix),
             ],
         )
     else:
@@ -503,6 +513,7 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(add_iscsi_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
+                functools.partial(add_second_nfs_storage_domain, prefix),
             ],
         )
     vt.start_all()

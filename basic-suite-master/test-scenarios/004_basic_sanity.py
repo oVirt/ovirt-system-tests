@@ -30,6 +30,8 @@ from ovirtlago import testlib
 
 MB = 2 ** 20
 GB = 2 ** 30
+# the default MAC pool has addresses like 00:1a:4a:16:01:51
+UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
 TEST_DC = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
@@ -37,10 +39,15 @@ TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
 TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 
+SD_NFS_NAME = 'nfs'
+SD_SECOND_NFS_NAME = 'second-nfs'
+
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
+VM2_NAME = 'vm2'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
+DISK2_NAME = '%s_disk2' % VM2_NAME
 GLANCE_DISK_NAME = 'CirrOS_0.3.4_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
@@ -54,7 +61,6 @@ SD_TEMPLATES_NAME = 'templates'
 def add_vm_blank(api):
     vm_memory = 512 * MB
     vm_params = params.VM(
-        name=VM0_NAME,
         memory=vm_memory,
         os=params.OperatingSystem(
             type_='other_linux',
@@ -79,10 +85,13 @@ def add_vm_blank(api):
             guaranteed=vm_memory / 2,
         ),
     )
-    api.vms.add(vm_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'down',
-    )
+
+    for vm_name in (VM0_NAME, VM2_NAME):
+        vm_params.name = vm_name
+        api.vms.add(vm_params)
+        testlib.assert_true_within_short(
+            lambda: api.vms.get(vm_name).status.state == 'down',
+        )
 
 
 @testlib.with_ovirt_api
@@ -96,6 +105,9 @@ def add_nic(api):
         ),
     )
     api.vms.get(VM0_NAME).nics.add(nic_params)
+
+    nic_params.mac = params.MAC(address=UNICAST_MAC_OUTSIDE_POOL)
+    api.vms.get(VM2_NAME).nics.add(nic_params)
 
 
 @testlib.with_ovirt_api
@@ -113,36 +125,41 @@ def add_disk(api):
         )
 
     disk_params = params.Disk(
-        name=DISK1_NAME,
         size=10 * GB,
         provisioned_size=1,
         interface='virtio',
         format='cow',
-        storage_domains=params.StorageDomains(
-            storage_domain=[
-                params.StorageDomain(
-                    name='nfs',
-                ),
-            ],
-        ),
         status=None,
         sparse=True,
         active=True,
         bootable=True,
     )
-    nt.assert_true(
-        api.vms.get(VM1_NAME).disks.add(disk_params)
-    )
+
+    for vm_name, disk_name, sd_name in (
+            (VM1_NAME, DISK1_NAME, SD_NFS_NAME),
+            (VM2_NAME, DISK2_NAME, SD_SECOND_NFS_NAME)):
+        disk_params.name = disk_name
+        disk_params.storage_domains = params.StorageDomains(
+            storage_domain=[
+                params.StorageDomain(
+                    name=sd_name,
+                ),
+            ])
+        nt.assert_true(
+            api.vms.get(vm_name).disks.add(disk_params)
+        )
 
     if glance_disk:
         testlib.assert_true_within_short(
             lambda:
             api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
         )
-    testlib.assert_true_within_short(
-        lambda:
-        api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
-    )
+    for vm_name, disk_name in ((VM1_NAME, DISK1_NAME),
+                               (VM2_NAME, DISK2_NAME)):
+        testlib.assert_true_within_short(
+            lambda:
+            api.vms.get(vm_name).disks.get(disk_name).status.state == 'ok'
+        )
 
 
 @testlib.with_ovirt_api
@@ -468,7 +485,7 @@ def hotplug_disk(api):
         storage_domains=params.StorageDomains(
             storage_domain=[
                 params.StorageDomain(
-                    name='nfs',
+                    name=SD_NFS_NAME,
                 ),
             ],
         ),

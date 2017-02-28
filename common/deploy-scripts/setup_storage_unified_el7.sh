@@ -106,6 +106,17 @@ setup_iscsi() {
 
 }
 
+configure_firewalld() {
+    if rpm -q firewalld > /dev/null; then
+        if ! systemctl status firewalld > /dev/null; then
+            systemctl start firewalld
+        fi
+
+        firewall-cmd --add-service=iscsi-target --add-service=ldap
+        firewall-cmd --add-service=iscsi-target --add-service=ldap --permanent
+    fi
+}
+
 disable_firewalld() {
     if rpm -q firewalld > /dev/null; then
             systemctl disable --now firewalld || true
@@ -115,6 +126,7 @@ disable_firewalld() {
 setup_services() {
     systemctl disable --now postfix
     systemctl disable --now wpa_supplicant
+    configure_firewalld
     disable_firewalld
 
     # Allow use of NFS v4.2. oVirt still uses 4.1 though

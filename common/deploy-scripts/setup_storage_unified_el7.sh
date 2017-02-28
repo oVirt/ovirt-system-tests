@@ -120,6 +120,15 @@ setup_services() {
     # Allow use of NFS v4.2. oVirt still uses 4.1 though
     sed -i "s/RPCNFSDARGS=\"\"/RPCNFSDARGS=\"-V 4.2\"/g" /etc/sysconfig/nfs
 
+    # Configure rpc.mountd to use port 892
+    sed -i "s/RPCMOUNTDOPTS=\"\"/RPCMOUNTDOPTS=\"-p 892\"/g" /etc/sysconfig/nfs
+
+    # Configure rpc.statd to use port 662
+    sed -i "s/STATDARG=\"\"/STATDARG=\"-p 662\"/g" /etc/sysconfig/nfs
+
+    # Configure lockd to use ports 32803/tcp and 32769/udp
+    echo -e "\noptions lockd nlm_tcpport=32803 nlm_udpport=32769\n" >> /etc/modprobe.d/lockd.conf
+
     systemctl enable --now rpcbind.service
     systemctl enable --now  nfs-server.service
     systemctl start nfs-lock.service

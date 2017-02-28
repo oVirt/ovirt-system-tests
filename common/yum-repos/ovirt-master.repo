@@ -6,7 +6,6 @@ max_connections=50
 name=oVirt Master Latest Tested
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
 enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows ovirt-optimizer-* ovirt-engine-yarn ovirt-js-dependencies java-ovirt-engine-sdk4 ovirt-engine-nodejs-modules
 gpgcheck=0
 max_connections=5
 proxy=_none_

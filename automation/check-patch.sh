@@ -110,9 +110,6 @@ do
     suite_tr=$(tr '_' '-' <<< "$suite")
     ver=$(echo "$suite_tr" | rev | cut -d"-" -f1 | rev)
 
-    #Copy the exta_sources file to suite's dir
-    cp "$PROJECT""/common/latest-tested-src/$ver-latest-tested" "$PROJECT/$suite_tr/""extra_sources"
-
     if [[ -e automation/"${suite}.sh" ]]; then
         echo "running $suite\.sh"
         automation/"${suite}.sh"

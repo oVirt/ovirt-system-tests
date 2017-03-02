@@ -353,21 +353,6 @@ def add_hosts_4(prefix):
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
-@testlib.with_ovirt_prefix
-def install_cockpit_ovirt(prefix):
-    def _install_cockpit_ovirt_on_host(host):
-        ret = host.ssh(['yum', '-y', 'install', '--downloaddir=/dev/shm', 'cockpit-ovirt-dashboard'])
-        nt.assert_equals(ret.code, 0, '_install_cockpit_ovirt_on_host(): failed to install cockpit-ovirt-dashboard on host %s' % host)
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
-        return True
-
-    hosts = prefix.virt_env.host_vms()
-    vec = utils.func_vector(_install_cockpit_ovirt_on_host, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
-
-
 def _add_storage_domain_3(api, p):
     dc = api.datacenters.get(DC_NAME)
     sd = api.storagedomains.add(p)
@@ -909,7 +894,6 @@ _TEST_LIST = [
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,
-    install_cockpit_ovirt,
 ]
 
 

@@ -116,7 +116,7 @@ name=CentOS7 Extras
 baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=cockpit cockpit-bridge cockpit-docker cockpit-networkmanager cockpit-shell cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
+includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
 exclude= *i686
 max_connections=5
 

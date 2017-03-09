@@ -6,7 +6,9 @@ max_connections=50
 name=oVirt 4.1 Official release
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows openvswitch-test openvswitch-devel
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance
+ ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows openvswitch-test openvswitch-devel ovirt-engine-nodejs
+ *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows openvswitch-test
 gpgcheck=0
 max_connections=5
 
@@ -55,7 +57,7 @@ name=CentOS7 Extras
 baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 enabled=1
 gpgcheck=0
-includepkgs=cockpit cockpit-bridge cockpit-docker cockpit-networkmanager cockpit-shell cockpit-storaged cockpit-ws docker docker-common docker-forward-journald docker-selinux libssh libstoraged storaged storaged-lvm2 storaged-iscsi
+includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
 exclude= *i686
 max_connections=5
 

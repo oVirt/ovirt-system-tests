@@ -43,6 +43,11 @@ setup_second_nfs() {
     setup_nfs /exports/nfs/share2
 }
 
+set_selinux_on_nfs() {
+    semanage fcontext -a -t nfs_t '/exports/nfs(/.*)?'
+    restorecon -Rv /exports/nfs
+}
+
 install_deps() {
     systemctl disable --now kdump.service
     yum install -y --downloaddir=/dev/shm \
@@ -52,7 +57,8 @@ install_deps() {
                    targetcli \
                    sg3_utils \
                    iscsi-initiator-utils \
-                   lsscsi
+                   lsscsi \
+                   policycoreutils-python
 }
 
 
@@ -216,6 +222,7 @@ main() {
     setup_export
     setup_iso
     setup_second_nfs
+    set_selinux_on_nfs
     setup_iscsi
 
     # Prepare 389ds

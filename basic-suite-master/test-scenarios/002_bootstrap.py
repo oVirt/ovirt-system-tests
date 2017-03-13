@@ -423,7 +423,11 @@ def add_master_storage_domain(prefix):
 
 
 def add_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
+    if API_V4:
+        add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
+    else:
+        add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_1')
+
 
 
 # TODO: add this over the storage network and with IPv6
@@ -459,7 +463,7 @@ def add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_p
     _add_storage_domain_3(api, p)
 
 
-def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_1'):
+def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_2'):
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':
@@ -473,6 +477,8 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         nfs_vers = sdk4.types.NfsVersion.V4
     elif nfs_version == 'v4_1':
         nfs_vers = sdk4.types.NfsVersion.V4_1
+    elif nfs_version == 'v4_2':
+        nfs_vers = sdk4.types.NfsVersion.V4_2
     else:
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
@@ -578,7 +584,7 @@ def add_iso_storage_domain(prefix):
 
 
 def add_templates_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export')
+    add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
 
 
 @testlib.with_ovirt_api

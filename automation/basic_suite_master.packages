@@ -2,4 +2,5 @@ grubby
 lago
 lago-ovirt
 ovirt-engine-sdk-python
+python-netaddr
 python-ovirt-engine-sdk4

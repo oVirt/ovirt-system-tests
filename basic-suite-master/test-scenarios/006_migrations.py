@@ -17,13 +17,15 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+from netaddr.ip import IPAddress
 import nose.tools as nt
 
 from ovirtsdk.xml import params
 
 from ovirtlago import testlib
 
-from test_utils import network_utils
+from test_utils import network_utils, network_utils_v4
 
 
 DC_NAME = 'test-dc'
@@ -49,6 +51,11 @@ VM0_NAME = 'vm0'
 # should consider moving if/when a general utils module is ever introruced
 def _hosts_in_cluster(api, cluster_name):
     hosts = api.hosts.list(query='cluster={}'.format(cluster_name))
+    return sorted(hosts, key=lambda host: host.name)
+
+
+def _hosts_in_cluster_v4(root, cluster_name):
+    hosts = root.hosts_service().list(search='cluster={}'.format(cluster_name))
     return sorted(hosts, key=lambda host: host.name)
 
 
@@ -124,23 +131,28 @@ def prepare_migration_attachments_ipv4(api):
             ip_address)
 
 
-@testlib.with_ovirt_api
-def prepare_migration_attachments_ipv6(api):
-    for index, host in enumerate(_hosts_in_cluster(api, CLUSTER_NAME),
+@testlib.with_ovirt_api4
+def prepare_migration_attachments_ipv6(api_v4_connection):
+    engine = api_v4_connection.system_service()
+
+    for index, host in enumerate(_hosts_in_cluster_v4(engine, CLUSTER_NAME),
                                  start=1):
+        host_service = engine.hosts_service().host_service(id=host.id)
+
         ip_address = VLAN200_NET_IPv6_ADDR.format(index)
 
-        ip_configuration = network_utils.create_static_ip_configuration(
+        ip_configuration = network_utils_v4.create_static_ip_configuration(
             ipv6_addr=ip_address,
             ipv6_mask=VLAN200_NET_IPv6_MASK)
 
-        network_utils.modify_ip_config(api,
-                                       host,
-                                       VLAN200_NET,
-                                       ip_configuration)
+        network_utils_v4.modify_ip_config(engine,
+                                          host_service,
+                                          VLAN200_NET,
+                                          ip_configuration)
 
-        # TODO: currently ost uses v3 SDK that doesn't report ipv6.
-        # once available, verify address.
+        actual_address = next(nic for nic in host_service.nics_service().list()
+                              if nic.name == VLAN200_IF_NAME).ipv6.address
+        nt.assert_equals(IPAddress(actual_address), IPAddress(ip_address))
 
 
 _TEST_LIST = [
@@ -149,13 +161,10 @@ _TEST_LIST = [
     prepare_migration_attachments_ipv4,
     migrate_vm,
 
-    # TODO:
-    # IPv6 migration is currently not working due to missing host ip6tables rules.
-    # (https://bugzilla.redhat.com/1414524)
-    # once resolved, uncomment the tests.
-
-    # prepare_migration_attachments_ipv6,
-    # migrate_vm,
+    # NOTE: IPv6 migration now trivially works, as ip6tables replace firewalld
+    #       and leave ports open. See https://bugzilla.redhat.com/1414524
+    prepare_migration_attachments_ipv6,
+    migrate_vm,
 ]
 
 

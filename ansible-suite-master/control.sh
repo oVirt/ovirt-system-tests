@@ -18,8 +18,10 @@ prep_suite () {
 }
 
 cleanup_run() {
+    lago_serve_pid=$!
     rm -f /tmp/ansible.cfg
     kill $lago_serve_pid
+    cd -
 }
 
 run_suite () {
@@ -55,8 +57,6 @@ run_suite () {
     # which in jenkins is 105 chars
     mkdir -p /tmp/.ansible/cp/
     echo -e "[ssh_connection]\ncontrol_path=None" > /tmp/ansible.cfg
-    trap cleanup_run EXIT
+    trap cleanup_run EXIT SIGHUP SIGTERM
     $CLI ovirt serve & ANSIBLE_CONFIG=/tmp/ansible.cfg ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $ANSIBLE_HOSTS_FILE $SUITE/engine.yml --extra-vars='lago_cmd=$CLI prefix=$PREFIX/current log_dir=$PWD/test_logs/${SUITE##*/}/'
-    lago_serve_pid=$!
-    cd -
 }

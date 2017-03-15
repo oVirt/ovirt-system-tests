@@ -24,7 +24,7 @@
     auth: "{{ ovirt_auth }}"
     state: present
     name: "{{ quota_name }}"
-    datacenter: "{{ dc_name }}"
+    data_center: "{{ dc_name }}"
     storage_grace: 70
     storage_threshold: 90
     cluster_grace: 70
@@ -40,7 +40,7 @@
     auth: "{{ ovirt_auth }}"
     state: present
     name: "{{ cluster_name }}"
-    datacenter: "{{ dc_name }}"
+    data_center: "{{ dc_name }}"
     cpu_type: "{{ cpu_type }}"
     compatibility_version: "{{ compatibility_version }}"
     ballooning: true
@@ -161,7 +161,7 @@
 - name: Create new vlan and assign it to cluster
   ovirt_networks:
     auth: "{{ ovirt_auth }}"
-    datacenter: "{{ dc_name }}"
+    data_center: "{{ dc_name }}"
     name: "{{ network1_name}}"
     vlan_tag: 100
     vm_network: true
@@ -174,7 +174,7 @@
 - name: Add non VM network
   ovirt_networks:
     auth: "{{ ovirt_auth }}"
-    datacenter: "{{ dc_name }}"
+    data_center: "{{ dc_name }}"
     name: "{{ network2_name }}"
     vlan_tag: 200
     vm_network: false

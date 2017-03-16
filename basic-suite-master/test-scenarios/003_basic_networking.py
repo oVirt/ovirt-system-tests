@@ -35,13 +35,13 @@ CLUSTER_NAME = 'test-cluster'
 
 # Networks
 NIC_NAME = 'eth0'
-VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
 
-VLAN100_NET = 'VLAN100_Network'
-VLAN100_NET_IPv4_ADDR = '192.0.2.1'
-VLAN100_NET_IPv4_MASK = '255.255.255.0'
-VLAN100_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
-VLAN100_NET_IPv6_MASK = '64'
+VM_NETWORK = 'VM_Network'
+VM_NETWORK_IPv4_ADDR = '192.0.2.1'
+VM_NETWORK_IPv4_MASK = '255.255.255.0'
+VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
+VM_NETWORK_IPv6_MASK = '64'
+VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
 
 VLAN200_NET = 'VLAN200_Network'  # MTU 9000
 BOND_NAME = 'bond0'
@@ -96,33 +96,33 @@ def _host_is_attached_to_network(api, host, network_name, nic_name=None):
 
 
 @testlib.with_ovirt_api
-def attach_vlan_to_host_static_config(api):
+def attach_vm_network_to_host_static_config(api):
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
     ip_configuration = network_utils.create_static_ip_configuration(
-        VLAN100_NET_IPv4_ADDR,
-        VLAN100_NET_IPv4_MASK,
-        VLAN100_NET_IPv6_ADDR,
-        VLAN100_NET_IPv6_MASK)
+        VM_NETWORK_IPv4_ADDR,
+        VM_NETWORK_IPv4_MASK,
+        VM_NETWORK_IPv6_ADDR,
+        VM_NETWORK_IPv6_MASK)
 
     network_utils.attach_network_to_host(
         api,
         host,
         NIC_NAME,
-        VLAN100_NET,
+        VM_NETWORK,
         ip_configuration)
 
     # TODO: currently ost uses v3 SDK that doesn't report ipv6. once available,
     # verify ipv6 as well.
     nt.assert_equals(
         host.nics.list(name=VLAN_IF_NAME)[0].ip.address,
-        VLAN100_NET_IPv4_ADDR)
+        VM_NETWORK_IPv4_ADDR)
 
 
 @testlib.with_ovirt_api
 def modify_host_ip_to_dhcp(api):
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
     ip_configuration = network_utils.create_dhcp_ip_configuration()
-    network_utils.modify_ip_config(api, host, VLAN100_NET, ip_configuration)
+    network_utils.modify_ip_config(api, host, VM_NETWORK, ip_configuration)
 
     # TODO: once the VLANs/dnsmasq issue is resolved,
     # (https://github.com/lago-project/lago/issues/375)
@@ -130,14 +130,14 @@ def modify_host_ip_to_dhcp(api):
 
 
 @testlib.with_ovirt_api
-def detach_vlan_from_host(api):
+def detach_vm_network_from_host(api):
     host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
 
     network_utils.set_network_required_in_cluster(
-        api, VLAN100_NET, CLUSTER_NAME, False)
-    network_utils.detach_network_from_host(api, host, VLAN100_NET)
+        api, VM_NETWORK, CLUSTER_NAME, False)
+    network_utils.detach_network_from_host(api, host, VM_NETWORK)
 
-    nt.assert_false(_host_is_attached_to_network(api, host, VLAN100_NET))
+    nt.assert_false(_host_is_attached_to_network(api, host, VM_NETWORK))
 
 
 @testlib.with_ovirt_api
@@ -200,9 +200,9 @@ def remove_bonding(api):
 
 
 _TEST_LIST = [
-    attach_vlan_to_host_static_config,
+    attach_vm_network_to_host_static_config,
     modify_host_ip_to_dhcp,
-    detach_vlan_from_host,
+    detach_vm_network_from_host,
     bond_nics,
     verify_interhost_connectivity_ipv4,
     verify_interhost_connectivity_ipv6,

@@ -78,8 +78,8 @@ CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
+VM_NETWORK = 'VM_Network'
 VLAN200_NET = 'VLAN200_Network'
-VLAN100_NET = 'VLAN100_Network'
 
 
 # TODO: support resolving hosts over IPv6 and arbitrary network
@@ -828,20 +828,20 @@ def add_quota_cluster_limits(api):
 
 @testlib.with_ovirt_api
 def add_vm_network(api):
-    VLAN100 = network_utils.create_network_params(
-        VLAN100_NET,
+    network = network_utils.create_network_params(
+        VM_NETWORK,
         DC_NAME,
-        description='VM Network on VLAN 100',
+        description='VM Network (originally on VLAN 100)',
         vlan=params.VLAN(
             id='100',
         ),
     )
 
     nt.assert_true(
-        api.networks.add(VLAN100)
+        api.networks.add(network)
     )
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN100)
+        api.clusters.get(CLUSTER_NAME).networks.add(network)
     )
 
 

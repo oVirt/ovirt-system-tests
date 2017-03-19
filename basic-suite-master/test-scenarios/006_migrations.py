@@ -31,8 +31,6 @@ from test_utils import network_utils, network_utils_v4
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
-MANAGEMENT_NET = 'ovirtmgmt'
-
 NIC_NAME = 'eth0'
 VLAN200_IF_NAME = '{}.200'.format(NIC_NAME)
 

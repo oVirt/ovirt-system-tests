@@ -34,7 +34,6 @@ DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
 # Networks
-MANAGEMENT_NET = 'ovirtmgmt'
 NIC_NAME = 'eth0'
 VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
 

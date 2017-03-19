@@ -21,6 +21,8 @@ import nose.tools as nt
 from ovirtlago import testlib
 import ovirtsdk4
 
+import test_utils
+
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
@@ -30,12 +32,6 @@ VM2_NAME = 'vm2'
 
 def _mac_value(mac):
     return int(mac.replace(':', ''), base=16)
-
-
-def _get_data_center_service(root, name):
-    data_centers = root.data_centers_service()
-    dc = data_centers.list(search='name={}'.format(name))[0]
-    return data_centers.data_center_service(dc.id)
 
 
 def _get_storage_domain(root, name, service=False):
@@ -58,7 +54,7 @@ def _get_vm_service(root, name, unregistered=None):
 @testlib.with_ovirt_api4
 def deactivate_storage_domain(connection):
     engine = connection.system_service()
-    dc = _get_data_center_service(engine, DC_NAME)
+    dc = test_utils.data_center_service(engine, DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).deactivate()
 
@@ -70,7 +66,7 @@ def deactivate_storage_domain(connection):
 @testlib.with_ovirt_api4
 def detach_storage_domain(connection):
     engine = connection.system_service()
-    dc = _get_data_center_service(engine, DC_NAME)
+    dc = test_utils.data_center_service(engine, DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).remove()
 
@@ -82,7 +78,7 @@ def detach_storage_domain(connection):
 @testlib.with_ovirt_api4
 def reattach_storage_domain(connection):
     engine = connection.system_service()
-    dc = _get_data_center_service(engine, DC_NAME)
+    dc = test_utils.data_center_service(engine, DC_NAME)
     sd = _get_storage_domain(engine, SD_SECOND_NFS_NAME)
 
     dc.storage_domains_service().add(sd)

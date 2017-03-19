@@ -23,6 +23,7 @@ from ovirtsdk.xml import params
 from ovirtlago import testlib
 from lago import utils
 
+import test_utils
 from test_utils import network_utils
 
 
@@ -77,11 +78,6 @@ def _ping(host, ip_address):
         ip_address, host.name(), ret))
 
 
-def _hosts_in_cluster(api, cluster_name):
-    hosts = api.hosts.list(query='cluster={}'.format(cluster_name))
-    return sorted(hosts, key=lambda host: host.name)
-
-
 def _host_is_attached_to_network(api, host, network_name, nic_name=None):
     try:
         attachment = network_utils.get_network_attachment(
@@ -97,7 +93,7 @@ def _host_is_attached_to_network(api, host, network_name, nic_name=None):
 
 @testlib.with_ovirt_api
 def attach_vm_network_to_host_static_config(api):
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
     ip_configuration = network_utils.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR,
         VM_NETWORK_IPv4_MASK,
@@ -120,7 +116,7 @@ def attach_vm_network_to_host_static_config(api):
 
 @testlib.with_ovirt_api
 def modify_host_ip_to_dhcp(api):
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
     ip_configuration = network_utils.create_dhcp_ip_configuration()
     network_utils.modify_ip_config(api, host, VM_NETWORK, ip_configuration)
 
@@ -131,7 +127,7 @@ def modify_host_ip_to_dhcp(api):
 
 @testlib.with_ovirt_api
 def detach_vm_network_from_host(api):
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
 
     network_utils.set_network_required_in_cluster(
         api, VM_NETWORK, CLUSTER_NAME, False)
@@ -164,10 +160,10 @@ def bond_nics(prefix, api):
         network_utils.attach_network_to_host(
             api, host, BOND_NAME, VLAN200_NET, ip_configuration, [bond])
 
-    hosts = _hosts_in_cluster(api, CLUSTER_NAME)
+    hosts = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)
     utils.invoke_in_parallel(_bond_nics, range(1, len(hosts) + 1), hosts)
 
-    for host in _hosts_in_cluster(api, CLUSTER_NAME):
+    for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
         nt.assert_true(_host_is_attached_to_network(api, host, VLAN200_NET,
                                                     nic_name=BOND_NAME))
 
@@ -193,9 +189,9 @@ def remove_bonding(api):
     network_utils.set_network_required_in_cluster(api, VLAN200_NET,
                                                   CLUSTER_NAME, False)
     utils.invoke_in_parallel(_remove_bonding,
-                             _hosts_in_cluster(api, CLUSTER_NAME))
+                             test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME))
 
-    for host in _hosts_in_cluster(api, CLUSTER_NAME):
+    for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
         nt.assert_false(_host_is_attached_to_network(api, host, VLAN200_NET))
 
 

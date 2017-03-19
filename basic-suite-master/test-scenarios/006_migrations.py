@@ -25,6 +25,7 @@ from ovirtsdk.xml import params
 
 from ovirtlago import testlib
 
+import test_utils
 from test_utils import network_utils, network_utils_v4
 
 
@@ -43,18 +44,6 @@ VLAN200_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 VLAN200_NET_IPv6_MASK = '64'
 
 VM0_NAME = 'vm0'
-
-
-# appears in 003 as well... this doesn't really fit in network utils,
-# should consider moving if/when a general utils module is ever introruced
-def _hosts_in_cluster(api, cluster_name):
-    hosts = api.hosts.list(query='cluster={}'.format(cluster_name))
-    return sorted(hosts, key=lambda host: host.name)
-
-
-def _hosts_in_cluster_v4(root, cluster_name):
-    hosts = root.hosts_service().list(search='cluster={}'.format(cluster_name))
-    return sorted(hosts, key=lambda host: host.name)
 
 
 @testlib.with_ovirt_api
@@ -110,8 +99,9 @@ def migrate_vm(prefix, api):
 
 @testlib.with_ovirt_api
 def prepare_migration_attachments_ipv4(api):
-    for index, host in enumerate(_hosts_in_cluster(api, CLUSTER_NAME),
-                                 start=1):
+    for index, host in enumerate(
+            test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME),
+            start=1):
         ip_address = VLAN200_NET_IPv4_ADDR.format(index)
 
         ip_configuration = network_utils.create_static_ip_configuration(
@@ -133,8 +123,9 @@ def prepare_migration_attachments_ipv4(api):
 def prepare_migration_attachments_ipv6(api_v4_connection):
     engine = api_v4_connection.system_service()
 
-    for index, host in enumerate(_hosts_in_cluster_v4(engine, CLUSTER_NAME),
-                                 start=1):
+    for index, host in enumerate(
+            test_utils.hosts_in_cluster(engine, CLUSTER_NAME),
+            start=1):
         host_service = engine.hosts_service().host_service(id=host.id)
 
         ip_address = VLAN200_NET_IPv6_ADDR.format(index)

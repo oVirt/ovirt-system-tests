@@ -28,21 +28,20 @@ from test_utils import network_utils_v3
 
 
 # Environment (see control.sh and LagoInitFile.in)
-LIBVIRT_NETWORK_FOR_BONDING = testlib.get_prefixed_name('net-bonding')
+LIBVIRT_NETWORK_FOR_MANAGEMENT = testlib.get_prefixed_name('net-management')  # eth0
+LIBVIRT_NETWORK_FOR_BONDING = testlib.get_prefixed_name('net-bonding')  # eth2, eth3
 
 # DC/Cluster
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
 # Networks
-NIC_NAME = 'eth0'
-
 VM_NETWORK = 'VM_Network'
 VM_NETWORK_IPv4_ADDR = '192.0.2.1'
 VM_NETWORK_IPv4_MASK = '255.255.255.0'
 VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
 VM_NETWORK_IPv6_MASK = '64'
-VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
+VM_NETWORK_VLAN_ID = 100
 
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
 BOND_NAME = 'bond0'
@@ -52,16 +51,16 @@ MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
 
 
-def _nics_to_bond(prefix, host_name):
+def _host_vm_nics(prefix, host_name, network_name):
     """
-    Return names of NICs (from a Lago host VM) to be bonded,
+    Return names of host VM NICs attached by Lago to a given libvirt network,
     just like do_status in site-packages/lago/cmd.py:446
 
     TODO: move 'eth{0}' magic to site-packages/ovirtlago/testlib.py?
     """
     lago_host_vm = prefix.get_vms()[host_name]
     return ['eth{0}'.format(i) for i, nic in enumerate(lago_host_vm.nics())
-            if nic['net'] == LIBVIRT_NETWORK_FOR_BONDING]
+            if nic['net'] == network_name]
 
 
 def _ping(host, ip_address):
@@ -92,8 +91,11 @@ def _host_is_attached_to_network(api, host, network_name, nic_name=None):
 
 
 @testlib.with_ovirt_api
-def attach_vm_network_to_host_static_config(api):
+@testlib.with_ovirt_prefix
+def attach_vm_network_to_host_static_config(prefix, api):
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
+    nic_name = _host_vm_nics(prefix, host.name,
+                             LIBVIRT_NETWORK_FOR_MANAGEMENT)[0]  # eth0
     ip_configuration = network_utils_v3.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR,
         VM_NETWORK_IPv4_MASK,
@@ -103,14 +105,15 @@ def attach_vm_network_to_host_static_config(api):
     network_utils_v3.attach_network_to_host(
         api,
         host,
-        NIC_NAME,
+        nic_name,
         VM_NETWORK,
         ip_configuration)
 
     # TODO: currently ost uses v3 SDK that doesn't report ipv6. once available,
     # verify ipv6 as well.
     nt.assert_equals(
-        host.nics.list(name=VLAN_IF_NAME)[0].ip.address,
+        host.nics.list(name='{}.{}'.format(nic_name,
+                                           VM_NETWORK_VLAN_ID))[0].ip.address,
         VM_NETWORK_IPv4_ADDR)
 
 
@@ -141,8 +144,8 @@ def detach_vm_network_from_host(api):
 def bond_nics(prefix, api):
     def _bond_nics(number, host):
         slaves = params.Slaves(host_nic=[
-            params.HostNIC(name=nic) for nic in _nics_to_bond(
-                prefix, host.name)])
+            params.HostNIC(name=nic) for nic in _host_vm_nics(
+                prefix, host.name, LIBVIRT_NETWORK_FOR_BONDING)])  # eth2, eth3
 
         options = params.Options(option=[
             params.Option(name='mode', value='active-backup'),

@@ -79,6 +79,7 @@ GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
 VM_NETWORK = 'VM_Network'
+VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
 
 
@@ -837,9 +838,10 @@ def add_vm_network(api):
     network = network_utils_v3.create_network_params(
         VM_NETWORK,
         DC_NAME,
-        description='VM Network (originally on VLAN 100)',
+        description='VM Network (originally on VLAN {})'.format(
+            VM_NETWORK_VLAN_ID),
         vlan=params.VLAN(
-            id='100',
+            id=VM_NETWORK_VLAN_ID,
         ),
     )
 

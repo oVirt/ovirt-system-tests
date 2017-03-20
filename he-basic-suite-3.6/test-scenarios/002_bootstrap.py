@@ -106,6 +106,11 @@ def add_cluster(api):
         data_center=params.DataCenter(
             name=DC_NAME,
         ),
+        memory_policy=params.MemoryPolicy(
+            overcommit=params.MemoryOverCommit(
+                percent=100
+            )
+        ),
     )
     nt.assert_true(api.clusters.add(p))
 

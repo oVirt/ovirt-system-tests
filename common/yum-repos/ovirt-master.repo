@@ -145,5 +145,5 @@ name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 gpgcheck=0
 enabled=1
-exclude= *sensu-* *grafana-* graphite-* skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
+exclude= osops-tools-monitoring-oschecks *sensu-* *grafana-* graphite-* skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
 max_connections=10

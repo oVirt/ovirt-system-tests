@@ -1,6 +1,6 @@
 #!/bin/bash -x
-HOSTEDENGINE=$1
-DOMAIN=$2
+HOSTEDENGINE="lago-he-basic-suite-4-1-engine"
+DOMAIN=$(dnsdomainname)
 MYADDR=$(\
     /sbin/ip -4 -o addr show dev eth0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\

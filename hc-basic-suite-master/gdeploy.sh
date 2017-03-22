@@ -2,8 +2,8 @@
 HOST0ADDR=$1
 HOST1ADDR=$2
 HOST2ADDR=$3
-HOSTEDENGINE=$4
-DOMAIN=$5
+HOSTEDENGINE="hc-engine"
+DOMAIN=$(dnsdomainname)
 
 sed \
     -e "s,@HOST0@,${HOST0ADDR},g" \

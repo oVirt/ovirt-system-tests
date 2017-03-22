@@ -1,1 +1,0 @@
-../basic-suite-3.6/control.sh

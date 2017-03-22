@@ -19,6 +19,7 @@
 #
 import os
 
+from tempfile import NamedTemporaryFile
 import nose.tools as nt
 from ovirtlago import testlib
 
@@ -28,14 +29,30 @@ def test_initialize_engine(prefix):
     engine = prefix.virt_env.engine_vm()
 
     answer_file_src = os.path.join(
-        os.environ.get('SUITE'),
-        'engine-answer-file.conf'
+        os.environ.get('SUITE'), 'engine-answer-file.conf'
     )
     engine.copy_to(
         answer_file_src,
         '/tmp/answer-file',
     )
 
+    nics = engine.nics()
+    nets = prefix.get_nets()
+    engine_ip = [
+        nic.get('ip') for nic in nics if nets[nic.get('net')].is_management()
+    ]
+
+    with NamedTemporaryFile(delete=False) as sso_conf:
+        sso_conf.write(
+            (
+                'SSO_ALTERNATE_ENGINE_FQDNS='
+                '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0}"\n'
+            ).format(engine_ip.pop())
+        )
+
+    fqdn_conf = '/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf'
+    engine.copy_to(sso_conf.name, fqdn_conf)
+    engine.ssh(['chmod', '644', fqdn_conf])
     result = engine.ssh(
         [
             'engine-setup',
@@ -58,14 +75,12 @@ def test_initialize_engine(prefix):
         ]
     )
 
-    #TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
-    result = engine.ssh(
-        [
-            'systemctl',
-            'stop',
-            'firewalld',
-        ],
-    )
+    # TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
+    result = engine.ssh([
+        'systemctl',
+        'stop',
+        'firewalld',
+    ], )
     nt.eq_(
         result.code, 0, 'firwalld not stopped. Exit code is %s' % result.code
     )

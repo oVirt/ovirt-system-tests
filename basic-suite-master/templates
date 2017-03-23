@@ -1,1 +1,2 @@
-../basic-suite-4.0/templates
+engine=el7.3-base
+hosts=el7.3-base

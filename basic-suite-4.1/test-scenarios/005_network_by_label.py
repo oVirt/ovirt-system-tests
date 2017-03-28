@@ -44,7 +44,7 @@ def assign_hosts_network_label(api):
     """
 
     def _assign_host_network_label(host):
-        nics = host.nics.list()
+        nics = sorted(host.nics.list(), key=lambda n: n.get_name())
         nt.assert_greater_equal(len(nics), 1)
         nic = nics[0]
         return nic.labels.add(

@@ -18,14 +18,14 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import time
-
-import functools
 import nose.tools as nt
 from ovirtsdk.xml import params
 
 from lago import utils
 from ovirtlago import testlib
+
+import test_utils
+
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -36,9 +36,6 @@ NETWORK_LABEL = 'NETWORK_LABEL'
 LABELED_NET_NAME = 'Labeled_Network'
 LABELED_NET_VLAN_ID = 600
 
-@testlib.with_ovirt_api
-def _hosts_in_cluster(api, cluster_name):
-    return api.hosts.list(query='cluster={}'.format(cluster_name))
 
 @testlib.with_ovirt_api
 def assign_hosts_network_label(api):
@@ -57,7 +54,7 @@ def assign_hosts_network_label(api):
                 )
             )
 
-    hosts = _hosts_in_cluster(CLUSTER_NAME)
+    hosts = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)
     vec = utils.func_vector(_assign_host_network_label, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()
@@ -78,14 +75,14 @@ def add_labeled_network(api):
         ),
         description='Labeled network on VLAN {}'.format(LABELED_NET_VLAN_ID),
         usages=params.Usages(),
-        # because only one non-VLAN network, here 'ovirtmgmt', can be assigned to each nic,
-        # this additional network has to be a VLAN network
+        # because only one non-VLAN network, here 'ovirtmgmt', can be assigned
+        # to each nic, this additional network has to be a VLAN network
         vlan=params.VLAN(
             id=LABELED_NET_VLAN_ID,
         ),
     )
     net = api.networks.add(labeled_net)
-    nt.assert_true( net )
+    nt.assert_true(net)
 
     # assign label to the network
     nt.assert_true(
@@ -113,7 +110,7 @@ def assign_labeled_network(api):
 
     labeled_net = api.networks.get(name=LABELED_NET_NAME)
 
-    def _host_is_in_labled_network():
+    def _host_is_in_labeled_network():
         for networkattachment in host.networkattachments.list():
             network = api.networks.get(id=networkattachment.network.get_id())
             if network.name == LABELED_NET_NAME:
@@ -126,8 +123,8 @@ def assign_labeled_network(api):
         api.clusters.get(CLUSTER_NAME).networks.add(labeled_net)
     )
 
-    for host in _hosts_in_cluster(CLUSTER_NAME):
-        testlib.assert_true_within_short(_host_is_in_labled_network)
+    for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
+        testlib.assert_true_within_short(_host_is_in_labeled_network)
 
 
 _TEST_LIST = [

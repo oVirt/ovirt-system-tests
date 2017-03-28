@@ -22,6 +22,8 @@ from ovirtsdk.xml import params
 
 from ovirtlago import testlib
 
+import test_utils
+
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -35,11 +37,6 @@ VLAN100_NET_IPv4_ADDR = '192.0.2.1'
 VLAN100_NET_IPv4_MASK = '255.255.255.0'
 VLAN100_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
 VLAN100_NET_IPv6_MASK = '64'
-
-
-def _hosts_in_cluster(api, cluster_name):
-    hosts = api.hosts.list(query='cluster={}'.format(cluster_name))
-    return sorted(hosts, key=lambda host: host.name)
 
 
 def _get_networkattachment_by_network_id(host, network_id):
@@ -133,7 +130,7 @@ def _modify_ip_config(api, host, ip_configuration):
 
 @testlib.with_ovirt_api
 def attach_vlan_to_host_static_config(api):
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
     ip_configuration = _create_static_ip_configuration()
     _attach_vlan_to_host(api, host, ip_configuration)
 
@@ -146,7 +143,7 @@ def attach_vlan_to_host_static_config(api):
 
 @testlib.with_ovirt_api
 def modify_host_ip_to_dhcp(api):
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
     ip_configuration = _create_dhcp_ip_configuration()
     _modify_ip_config(api, host, ip_configuration)
 
@@ -158,7 +155,7 @@ def modify_host_ip_to_dhcp(api):
 @testlib.with_ovirt_api
 def detach_vlan_from_host(api):
     network_id = api.networks.get(name=VLAN100_NET).id
-    host = _hosts_in_cluster(api, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
 
     def _detach_vlan_from_host():
         attachment = _get_networkattachment_by_network_id(host, network_id)

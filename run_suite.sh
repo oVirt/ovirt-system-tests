@@ -3,7 +3,7 @@ CLI="lago"
 DO_CLEANUP=false
 RECOMMENDED_RAM_IN_MB=8196
 EXTRA_SOURCES=()
-
+RPMS_TO_INSTALL=()
 usage () {
     echo "
 Usage:
@@ -45,8 +45,11 @@ Optional arguments:
 
     -r,--reposync-config
         Use a custom reposync-config file, the default is SUITE/reposync-config.repo
-
-"
+    -l,--local-rpms
+        Install the given RPMs from Lago's internal repo.
+        The RPMs are being installed on the host before any tests being invoked.
+        Please note that this option WILL modify the environment it's running
+        on and it requires root permissions."
 }
 
 ci_msg_if_fails() {
@@ -194,6 +197,11 @@ env_cleanup() {
         echo "Lago cleanup did not work (that is ok), forcing libvirt"
         env_libvirt_cleanup "${SUITE##*/}" "$uid"
     fi
+    if ! [[ -z "${PATH_TO_CONFIG}" ]]; then
+        # Cleanup repo file pointing to lago's internal repo
+        echo "Removing internal repo config from yum configs"
+        rm -f "${PATH_TO_CONFIG}"
+    fi
     echo "======== Cleanup done"
 }
 
@@ -249,11 +257,39 @@ check_ram() {
 }
 
 
+install_local_rpms() {
+    # Global parameter to be used later with the cleanup function
+    PATH_TO_CONFIG="/etc/yum.repos.d/internal.repo"
+
+    local os=$(rpm -E %{dist}) \
+        pkg_manager \
+        uniq_rpms_list \
+        local_repo
+
+    os=${os#.}
+    os=${os%.*}
+    local_repo="file://${PREFIX}/current/internal_repo/${os}"
+
+    [[ -x /bin/dnf ]] && pkg_manager="dnf" || pkg_manager="yum"
+    echo "[internal_repo]" >> "$PATH_TO_CONFIG"
+    echo "name=Lago's internal repo" >> "$PATH_TO_CONFIG"
+    echo "baseurl=$local_repo" >> "$PATH_TO_CONFIG"
+    echo "enabled=1" >> "$PATH_TO_CONFIG"
+    echo "gpgcheck=0" >> "$PATH_TO_CONFIG"
+    echo "max_connections=5" >> "$PATH_TO_CONFIG"
+
+    uniq_rpms_list=$(echo ${RPMS_TO_INSTALL[@]} | sort -u)
+    $pkg_manager -y install ${RPMS_TO_INSTALL[@]} || return 1
+
+    return 0
+}
+
+
 options=$( \
     getopt \
-        -o ho:e:n:b:cs:r: \
+        -o ho:e:n:b:cs:r:l: \
         --long help,output:,engine:,node:,boot-iso:,cleanup \
-        --long extra-rpm-source,reposync-config: \
+        --long extra-rpm-source,reposync-config:,local-rpms: \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -292,10 +328,14 @@ while true; do
             EXTRA_SOURCES+=("$2")
             shift 2
             ;;
-	-r|--reposync-config)
-	    readonly CUSTOM_REPOSYNC=$(realpath "$2")
-	    shift 2
-	    ;;
+        -l|--local-rpms)
+            RPMS_TO_INSTALL+=("$2")
+            shift 2
+            ;;
+         -r|--reposync-config)
+            readonly CUSTOM_REPOSYNC=$(realpath "$2")
+            shift 2
+            ;;
         --)
             shift
             break

@@ -45,13 +45,13 @@ run_suite () {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup_base_version
+    [[ -n $RPMS_TO_INSTALL ]] && install_local_rpms
     env_start
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
         echo "@@@ ERROR: Failed in deploy stage"
         return 1
     fi
-
     declare test_scenarios_before=($(ls "$SUITE"/test-scenarios-before-upgrade/*.py | sort))
     declare test_scenarios_after=($(ls "$SUITE"/test-scenarios-after-upgrade/*.py | sort))
     declare failed=false

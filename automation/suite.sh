@@ -20,6 +20,11 @@ echo "Running suite: $SUITE"
 
 SUITE_REAL_PATH=$(realpath "$SUITE")
 
+# Default RPMs to install in the mock env.
+# Unlike the RPMs from .packages file, this RPMs will be taken from lago's
+# internal repo (assuming that we have a newer version in the internal repo).
+DEFAULT_RPMS=(ovirt-engine-sdk-python python-ovirt-engine-sdk4)
+
 # if above RAM_THRESHOLD KBs are available in /dev/shm, run there
 RAM_THRESHOLD=15000000
 
@@ -82,8 +87,10 @@ elif [[ -e "$PWD/extra_sources" ]]; then
 fi
 
 if [[ -z "$extra_sources_cmd" ]]; then
-    ./run_suite.sh -o "$run_path" "$SUITE" || res=$?
+    ./run_suite.sh -o "$run_path" --local-rpms="${DEFAULT_RPMS[*]}" "$SUITE" \
+        || res=$?
 else
-    ./run_suite.sh -o "$run_path" "$extra_sources_cmd" "$SUITE" || res=$?
+    ./run_suite.sh -o "$run_path" "$extra_sources_cmd"  \
+        --local-rpms="${DEFAULT_RPMS[*]}" "$SUITE" || res=$?
 fi
 exit $res

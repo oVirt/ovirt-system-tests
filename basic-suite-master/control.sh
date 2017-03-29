@@ -21,6 +21,7 @@ run_suite () {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
+    [[ -n $RPMS_TO_INSTALL ]] && install_local_rpms
     env_start
     env_status
     if ! env_deploy; then

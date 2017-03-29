@@ -149,3 +149,9 @@ gpgcheck=0
 enabled=1
 exclude= osops-tools-monitoring-oschecks *sensu-* *grafana-* graphite-* skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
 max_connections=10
+
+[copr-sac-gdeploy-el7]
+name=Copr repo for gdeploy owned by sac
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gdeploy/epel-7-x86_64/
+gpgcheck=0
+enabled=1

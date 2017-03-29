@@ -17,11 +17,13 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
 import glob
 import os
+import subprocess
 import ConfigParser
-import nose.tools as nt
 from ovirtlago import (testlib, constants)
+
 
 @testlib.with_ovirt_prefix
 def gen_config_file_and_params(prefix, cfg_in, cfg_out, cfg_path):
@@ -31,12 +33,11 @@ def gen_config_file_and_params(prefix, cfg_in, cfg_out, cfg_path):
     :param file cfg_out:    File object to write adjusted configuration into
     :param str  cfg_path:   The actual path to the reposync config
 
-    :rtype: str
-    :returns: A string with 'repoclosure' command including it's parameters
+    :rtype: list
+    :returns: A list with 'repoclosure' command including it's parameters
     """
-    TEST_REPO_SECTION='internal_repo'
-    command = ['repoclosure -t --config={}'.format(cfg_path)]
-
+    TEST_REPO_SECTION = 'internal_repo'
+    command = ['repoclosure', '-t', '--config={}'.format(cfg_path)]
     internal_repo_ip = prefix.virt_env.get_net().gw()
     internal_repo_port = constants.REPO_SERVER_PORT
     internal_repo_url = 'http://{ip}:{port}/el7/'.format(
@@ -62,16 +63,17 @@ def gen_config_file_and_params(prefix, cfg_in, cfg_out, cfg_path):
     config.set(TEST_REPO_SECTION, 'proxy', '_none_')
     command.append('--repoid={}'.format(TEST_REPO_SECTION))
     config.write(cfg_out)
-    return " ".join(command)
+    return command
 
 
 def reposync_config_file(config):
     """Open a config file for read and write in order to modify it
     :param str config:  reposync config filename
 
-    :rtype: str
+    :rtype: list
     :returns: A repoclosure command with all the needed parameters ready to be
-    executed"""
+    executed
+    """
     repoclosure_conf = config + "_repoclosure"
     with open(config, 'r') as rf:
         with open(repoclosure_conf, 'w') as wf:
@@ -81,19 +83,25 @@ def reposync_config_file(config):
 
 
 def check_repo_closure():
-    """Find reposync config file(s) and run repoclosure with the repos in the
-    config(s) as lookaside repos
+    """Find reposync config file(s) and check repoclosure against the internal
+     repo with the repos in the config(s) as lookaside repos
     """
     configs = glob.glob(
         os.path.join(os.environ.get('SUITE'), '*reposync*.repo')
     )
-    nt.ok_(configs, 'Error: could not find reposync config file.')
+    if not configs:
+        raise RuntimeError("Could not find reposync config file.")
     for config in configs:
         command = reposync_config_file(config)
-        res = os.system(command)
-        nt.eq_(
-            res, 0, 'Error: repoclosure failed. exit code is: {}'.format(res)
-        )
+        try:
+            subprocess.check_output(command, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            err_msg = ("\n"
+                       "## Params: {com}.\n"
+                       "## Exist status: {es}\n"
+                       "## Output: {out}\n\n"
+                       ).format(com=e.cmd, es=e.returncode, out=e.output,)
+            raise RuntimeError(err_msg)
 
 
 _TEST_LIST = [

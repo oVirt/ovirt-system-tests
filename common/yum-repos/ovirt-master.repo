@@ -108,7 +108,8 @@ includepkgs=gtk2 python2-pyasn1 avahi-libs libtool-ltdl lsscsi python-rhsm socat
  libunwind gnutls gnutls-dane gnutls-utils ntp xfsprogs numactl sanlock-python sanlock-lib sanlock ipxe-roms-qemu initscripts ntpdate net-snmp-utils net-snmp-libs libnl3 libnl3-cli pciutils pciutils-libs
  cryptsetup-libs kpartx firewalld-filesystem libpci3 kmod kmod-libs firewalld-filesystem firewalld python-firewall ipset ipset-libs iptables python-rhsm-certificates ruby ruby-irb ruby-libs
  rubygem-bigdecimal rubygem-io-console rubygem-json rubygem-psych rubygem-rdoc rubygems libcacard libcacard-tools fence-agents-ipdu fence-agents-all abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-python
- abrt-addon-vmcore abrt-cli abrt-dbus abrt-libs abrt-python
+ abrt-addon-vmcore abrt-cli abrt-dbus abrt-libs abrt-python abrt-retrace-client python-augeas libreport-python libreport libreport-plugin-rhtsupport libreport-plugin-ureport libreport-web libtar
+ pygobject2 satyr xmlrpc-c xmlrpc-c-client elfutils gdb abrt
 exclude= *i686
 max_connections=10
 

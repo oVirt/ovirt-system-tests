@@ -40,7 +40,10 @@ cleanup() {
     [[ -d "$run_path/current/logs" ]] \
     && mv "$run_path/current/logs" exported-artifacts/lago_logs
     find "$run_path" \
-        -iname nose\*.xml \
+        -type f \
+        \( -iname "nose*.xml" \
+        -o \
+        -iname "*.junit.xml" \) \
         -exec mv {} exported-artifacts/ \;
     [[ -d "test_logs" ]] && mv test_logs exported-artifacts/
     [[ -e "failure_msg.txt" ]] && mv failure_msg.txt exported-artifacts/

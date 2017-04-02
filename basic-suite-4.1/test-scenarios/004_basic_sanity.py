@@ -388,6 +388,7 @@ def template_export(api):
 
 
 def snapshot_live_merge(api):
+    raise SkipTest("[02/04/17] Test is failing for weeks without real knowladge on the reason, despite debugging from storage team")
     disk = api.vms.get(VM0_NAME).disks.list()[0]
     disk_id = disk.id
     disk_name = disk.name

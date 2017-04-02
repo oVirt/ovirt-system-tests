@@ -3,6 +3,7 @@ set -xe
 MAIN_NFS_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_2"
 ISCSI_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_3"
 NUM_LUNS=5
+EL7="release 7\.[0-9]"
 
 
 setup_device() {
@@ -112,6 +113,26 @@ setup_iscsi() {
 
 }
 
+install_firewalld() {
+    if grep "$EL7" /etc/redhat-release > /dev/null; then
+        if  ! rpm -q firewalld > /dev/null; then
+            {
+                yum install -y firewalld && \
+                {
+                systemctl enable firewalld
+                systemctl start firewalld
+                firewall-cmd --permanent --zone=public --add-interface=eth0
+                systemctl restart firewalld;
+                systemctl restart NetworkManager
+                }
+            }
+        else
+            systemctl enable firewalld
+            systemctl start firewalld
+        fi
+    fi
+}
+
 configure_firewalld() {
     if rpm -q firewalld > /dev/null; then
         if ! systemctl status firewalld > /dev/null; then
@@ -132,6 +153,7 @@ disable_firewalld() {
 setup_services() {
     systemctl disable --now postfix
     systemctl disable --now wpa_supplicant
+    install_firewalld
     configure_firewalld
     disable_firewalld
 

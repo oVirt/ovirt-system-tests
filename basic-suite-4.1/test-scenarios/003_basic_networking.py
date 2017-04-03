@@ -41,49 +41,17 @@ VLAN100_NET_VLAN_ID = 100
 VLAN_IF_NAME = '{}.{}'.format(NIC_NAME, VLAN100_NET_VLAN_ID)
 
 
-def _get_networkattachment_by_network_id(host, network_id):
-    # ovirtsdk requires '.' as a separator in multi-level filtering, we cannot
-    # use kwargs directly
-    # caveat: filtering by network.name is not supported by design (RH 1382341)
-    # as only 'id' and 'href' properties are resolved for nested objects
-    filter_args = {'network.id': network_id}
-    attachment = host.networkattachments.list(**filter_args)[0]
+def _host_is_attached_to_network(api, host, network_name, nic_name=None):
+    try:
+        attachment = network_utils_v3.get_network_attachment(
+            api, host, network_name, DC_NAME)
+    except IndexError:  # there is no attachment of the network to the host
+        return False
+
+    if nic_name:
+        host_nic = host.nics.get(id=attachment.host_nic.id)
+        nt.assert_equals(nic_name, host_nic.name)
     return attachment
-
-
-def _set_network_required_in_cluster(api, network_name, cluster_name,
-                                     required):
-    network = api.clusters.get(cluster_name).networks.get(name=network_name)
-    network.set_required(required)
-    network.update()
-
-
-def _create_dhcp_ip_configuration():
-    ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
-        params.IpAddressAssignment(
-            assignment_method='dhcp'),
-        params.IpAddressAssignment(
-            assignment_method='dhcp',
-            ip=params.IP(version='v6'))
-    ])
-
-    return ip_configuration
-
-
-def _modify_ip_config(api, host, ip_configuration):
-    network_id = api.networks.get(name=VLAN100_NET).id
-    attachment = _get_networkattachment_by_network_id(host, network_id)
-    attachment.set_ip_address_assignments(ip_configuration)
-
-    attachment_action = params.Action(
-        modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[attachment]),
-        check_connectivity=True)
-
-    nt.assert_true(host.setupnetworks(attachment_action))
-
-
-#
 
 
 @testlib.with_ovirt_api
@@ -112,8 +80,8 @@ def attach_vlan_to_host_static_config(api):
 @testlib.with_ovirt_api
 def modify_host_ip_to_dhcp(api):
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
-    ip_configuration = _create_dhcp_ip_configuration()
-    _modify_ip_config(api, host, ip_configuration)
+    ip_configuration = network_utils_v3.create_dhcp_ip_configuration()
+    network_utils_v3.modify_ip_config(api, host, VLAN100_NET, ip_configuration)
 
     # TODO: once the VLANs/dnsmasq issue is resolved,
     # (https://github.com/lago-project/lago/issues/375)
@@ -122,28 +90,13 @@ def modify_host_ip_to_dhcp(api):
 
 @testlib.with_ovirt_api
 def detach_vlan_from_host(api):
-    network_id = api.networks.get(name=VLAN100_NET).id
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
 
-    def _detach_vlan_from_host():
-        attachment = _get_networkattachment_by_network_id(host, network_id)
+    network_utils_v3.set_network_required_in_cluster(
+        api, VLAN100_NET, CLUSTER_NAME, False)
+    network_utils_v3.detach_network_from_host(api, host, VLAN100_NET)
 
-        removal_action = params.Action(
-            removed_network_attachments=params.NetworkAttachments(
-                network_attachment=[params.NetworkAttachment(
-                    id=attachment.id)]))
-
-        host.setupnetworks(removal_action)
-
-    def _host_is_detached_from_vlan_network():
-        with nt.assert_raises(IndexError):
-            _get_networkattachment_by_network_id(host, network_id)
-        return True
-
-    _set_network_required_in_cluster(api, VLAN100_NET, CLUSTER_NAME, False)
-    _detach_vlan_from_host()
-
-    nt.assert_true(_host_is_detached_from_vlan_network())
+    nt.assert_false(_host_is_attached_to_network(api, host, VLAN100_NET))
 
 
 _TEST_LIST = [

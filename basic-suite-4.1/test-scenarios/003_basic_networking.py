@@ -23,6 +23,7 @@ from ovirtsdk.xml import params
 from ovirtlago import testlib
 
 import test_utils
+from test_utils import network_utils_v3
 
 
 # DC/Cluster
@@ -30,13 +31,14 @@ DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
 # Network
-MANAGEMENT_NET = 'ovirtmgmt'
-
 VLAN100_NET = 'VLAN100_Network'
 VLAN100_NET_IPv4_ADDR = '192.0.2.1'
 VLAN100_NET_IPv4_MASK = '255.255.255.0'
 VLAN100_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
 VLAN100_NET_IPv6_MASK = '64'
+NIC_NAME = 'eth0'
+VLAN100_NET_VLAN_ID = 100
+VLAN_IF_NAME = '{}.{}'.format(NIC_NAME, VLAN100_NET_VLAN_ID)
 
 
 def _get_networkattachment_by_network_id(host, network_id):
@@ -56,32 +58,6 @@ def _set_network_required_in_cluster(api, network_name, cluster_name,
     network.update()
 
 
-def _get_mgmt_attachment(api, host):
-    dc = api.datacenters.get(name=DC_NAME)
-    mgmt_network_id = dc.networks.get(name=MANAGEMENT_NET).id
-    mgmt_attachment = _get_networkattachment_by_network_id(
-        host, mgmt_network_id)
-    return mgmt_attachment
-
-
-def _create_static_ip_configuration():
-    ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
-        params.IpAddressAssignment(
-            assignment_method='static',
-            ip=params.IP(
-                address=VLAN100_NET_IPv4_ADDR,
-                netmask=VLAN100_NET_IPv4_MASK)),
-        params.IpAddressAssignment(
-            assignment_method='static',
-            ip=params.IP(
-                address=VLAN100_NET_IPv6_ADDR,
-                netmask=VLAN100_NET_IPv6_MASK,
-                version='v6'))
-    ])
-
-    return ip_configuration
-
-
 def _create_dhcp_ip_configuration():
     ip_configuration = params.IpAddressAssignments(ip_address_assignment=[
         params.IpAddressAssignment(
@@ -92,24 +68,6 @@ def _create_dhcp_ip_configuration():
     ])
 
     return ip_configuration
-
-
-def _attach_vlan_to_host(api, host, ip_configuration):
-    mgmt_attachment = _get_mgmt_attachment(api, host)
-    mgmt_nic_id = mgmt_attachment.get_host_nic().id
-    mgmt_nic_name = host.nics.get(id=mgmt_nic_id).name
-
-    vlan_network_attachment = params.NetworkAttachment(
-        network=params.Network(name=VLAN100_NET),
-        host_nic=params.HostNIC(name=mgmt_nic_name),
-        ip_address_assignments=ip_configuration)
-
-    attachment_action = params.Action(
-        modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[vlan_network_attachment]),
-        check_connectivity=True)
-
-    host.setupnetworks(attachment_action)
 
 
 def _modify_ip_config(api, host, ip_configuration):
@@ -131,13 +89,23 @@ def _modify_ip_config(api, host, ip_configuration):
 @testlib.with_ovirt_api
 def attach_vlan_to_host_static_config(api):
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
-    ip_configuration = _create_static_ip_configuration()
-    _attach_vlan_to_host(api, host, ip_configuration)
+    ip_configuration = network_utils_v3.create_static_ip_configuration(
+        VLAN100_NET_IPv4_ADDR,
+        VLAN100_NET_IPv4_MASK,
+        VLAN100_NET_IPv6_ADDR,
+        VLAN100_NET_IPv6_MASK)
+
+    network_utils_v3.attach_network_to_host(
+        api,
+        host,
+        NIC_NAME,
+        VLAN100_NET,
+        ip_configuration)
 
     # TODO: currently ost uses v3 SDK that doesn't report ipv6. once available,
     # verify ipv6 as well.
     nt.assert_equals(
-        host.nics.list(name='eth0.100')[0].ip.address,
+        host.nics.list(name=VLAN_IF_NAME)[0].ip.address,
         VLAN100_NET_IPv4_ADDR)
 
 

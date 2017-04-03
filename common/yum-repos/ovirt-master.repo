@@ -9,7 +9,7 @@ enabled=1
 gpgcheck=0
 max_connections=10
 exclude = qemu-kvm-tools-ev rubygem-ovirt-engine-sdk4-doc ovirt-engine-sdk-java-javadoc ovirt-guest-agent-windows ovirt-node-ng-image ovirt-guest-tools-iso ovirt-engine-appliance unboundid-ldapsdk-javadoc
- *-debuginfo java-ovirt-engine-sdk4 ovirt-engine-sdk-java ovirt-engine-yarn ovirt-engine-nodejs-* libcacard-devel-ev rubygem-ovirt-engine-sdk4 vdsm-tests ovirt-live-artwork ovirt-release-host-node
+ java-ovirt-engine-sdk4 ovirt-engine-sdk-java ovirt-engine-yarn ovirt-engine-nodejs-* libcacard-devel-ev rubygem-ovirt-engine-sdk4 vdsm-tests ovirt-live-artwork ovirt-release-host-node
  ovirt-node-ng-docs *-javadoc
 proxy=_none_
 

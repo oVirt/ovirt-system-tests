@@ -38,6 +38,8 @@ except ImportError:
 from lago import utils
 from ovirtlago import testlib
 
+from test_utils import network_utils_v3
+
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -824,11 +826,9 @@ def add_quota_cluster_limits(api):
 
 @testlib.with_ovirt_api
 def add_vm_network(api):
-    VLAN100 = params.Network(
-        name=VLAN100_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
+    network = network_utils_v3.create_network_params(
+        VLAN100_NET,
+        DC_NAME,
         description='VM Network on VLAN 100',
         vlan=params.VLAN(
             id='100',
@@ -836,20 +836,18 @@ def add_vm_network(api):
     )
 
     nt.assert_true(
-        api.networks.add(VLAN100)
+        api.networks.add(network)
     )
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN100)
+        api.clusters.get(CLUSTER_NAME).networks.add(network)
     )
 
 
 @testlib.with_ovirt_api
 def add_non_vm_network(api):
-    VLAN200 = params.Network(
-        name=VLAN200_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
+    network = network_utils_v3.create_network_params(
+        VLAN200_NET,
+        DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
         vlan=params.VLAN(
             id='200',
@@ -859,10 +857,10 @@ def add_non_vm_network(api):
     )
 
     nt.assert_true(
-        api.networks.add(VLAN200)
+        api.networks.add(network)
     )
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+        api.clusters.get(CLUSTER_NAME).networks.add(network)
     )
 
 

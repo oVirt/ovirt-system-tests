@@ -46,9 +46,9 @@ VLAN_IF_NAME = '{}.{}'.format(NIC_NAME, VM_NETWORK_VLAN_ID)
 
 MIGRATION_NETWORK = 'VLAN200_Network'
 BOND_NAME = 'bond0'
-MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.%d'
+MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
-MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0%d'
+MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
 
 
@@ -62,6 +62,20 @@ def _host_vm_nics(prefix, host_name, network_name):
     lago_host_vm = prefix.get_vms()[host_name]
     return ['eth{0}'.format(i) for i, nic in enumerate(lago_host_vm.nics())
             if nic['net'] == network_name]
+
+
+def _ping(host, ip_address):
+    """
+    Ping a given address (IPv4/6) from a host.
+    """
+    cmd = ['ping', '-c', '1']
+    # TODO: support pinging by host names?
+    if ':' in ip_address:
+        cmd += ['-6']
+
+    ret = host.ssh(cmd + [ip_address])
+    nt.assert_equals(ret.code, 0, 'Cannot ping {} from {}: {}'.format(
+        ip_address, host.name(), ret))
 
 
 def _host_is_attached_to_network(api, host, network_name, nic_name=None):
@@ -140,8 +154,10 @@ def bond_nics(prefix, api):
             bonding=params.Bonding(slaves=slaves, options=options))
 
         ip_configuration = network_utils_v3.create_static_ip_configuration(
-            MIGRATION_NETWORK_IPv4_ADDR % number, MIGRATION_NETWORK_IPv4_MASK,
-            MIGRATION_NETWORK_IPv6_ADDR % number, MIGRATION_NETWORK_IPv6_MASK)
+            MIGRATION_NETWORK_IPv4_ADDR.format(number),
+            MIGRATION_NETWORK_IPv4_MASK,
+            MIGRATION_NETWORK_IPv6_ADDR.format(number),
+            MIGRATION_NETWORK_IPv6_MASK)
 
         network_utils_v3.attach_network_to_host(
             api, host, BOND_NAME, MIGRATION_NETWORK, ip_configuration, [bond])
@@ -152,6 +168,18 @@ def bond_nics(prefix, api):
     for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
         nt.assert_true(_host_is_attached_to_network(
             api, host, MIGRATION_NETWORK, nic_name=BOND_NAME))
+
+
+@testlib.with_ovirt_prefix
+def verify_interhost_connectivity_ipv4(prefix):
+    first_host = prefix.virt_env.host_vms()[0]
+    _ping(first_host, MIGRATION_NETWORK_IPv4_ADDR.format(2))
+
+
+@testlib.with_ovirt_prefix
+def verify_interhost_connectivity_ipv6(prefix):
+    first_host = prefix.virt_env.host_vms()[0]
+    _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR.format(2))
 
 
 @testlib.with_ovirt_api
@@ -176,6 +204,8 @@ _TEST_LIST = [
     # TODO: move to 0xx_networks_teardown so we can actually use the network
     detach_vm_network_from_host,
     bond_nics,
+    verify_interhost_connectivity_ipv4,
+    verify_interhost_connectivity_ipv6,
     remove_bonding,  # TODO: move to 0xx_networks_teardown as well
 ]
 

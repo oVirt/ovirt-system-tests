@@ -44,12 +44,12 @@ VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
 VM_NETWORK_IPv6_MASK = '64'
 VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
 
-VLAN200_NET = 'VLAN200_Network'  # MTU 9000
+MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
 BOND_NAME = 'bond0'
-VLAN200_NET_IPv4_ADDR = '192.0.3.%d'
-VLAN200_NET_IPv4_MASK = '255.255.255.0'
-VLAN200_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0%d'
-VLAN200_NET_IPv6_MASK = '64'
+MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.%d'
+MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
+MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0%d'
+MIGRATION_NETWORK_IPv6_MASK = '64'
 
 
 def _nics_to_bond(prefix, host_name):
@@ -154,45 +154,46 @@ def bond_nics(prefix, api):
             bonding=params.Bonding(slaves=slaves, options=options))
 
         ip_configuration = network_utils.create_static_ip_configuration(
-            VLAN200_NET_IPv4_ADDR % number, VLAN200_NET_IPv4_MASK,
-            VLAN200_NET_IPv6_ADDR % number, VLAN200_NET_IPv6_MASK)
+            MIGRATION_NETWORK_IPv4_ADDR % number, MIGRATION_NETWORK_IPv4_MASK,
+            MIGRATION_NETWORK_IPv6_ADDR % number, MIGRATION_NETWORK_IPv6_MASK)
 
         network_utils.attach_network_to_host(
-            api, host, BOND_NAME, VLAN200_NET, ip_configuration, [bond])
+            api, host, BOND_NAME, MIGRATION_NETWORK, ip_configuration, [bond])
 
     hosts = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)
     utils.invoke_in_parallel(_bond_nics, range(1, len(hosts) + 1), hosts)
 
     for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        nt.assert_true(_host_is_attached_to_network(api, host, VLAN200_NET,
-                                                    nic_name=BOND_NAME))
+        nt.assert_true(_host_is_attached_to_network(
+            api, host, MIGRATION_NETWORK, nic_name=BOND_NAME))
 
 
 @testlib.with_ovirt_prefix
 def verify_interhost_connectivity_ipv4(prefix):
     first_host = prefix.virt_env.host_vms()[0]
-    _ping(first_host, VLAN200_NET_IPv4_ADDR % 2)
+    _ping(first_host, MIGRATION_NETWORK_IPv4_ADDR % 2)
 
 
 @testlib.with_ovirt_prefix
 def verify_interhost_connectivity_ipv6(prefix):
     first_host = prefix.virt_env.host_vms()[0]
-    _ping(first_host, VLAN200_NET_IPv6_ADDR % 2)
+    _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR % 2)
 
 
 @testlib.with_ovirt_api
 def remove_bonding(api):
     def _remove_bonding(host):
-        network_utils.detach_network_from_host(api, host, VLAN200_NET,
+        network_utils.detach_network_from_host(api, host, MIGRATION_NETWORK,
                                                BOND_NAME)
 
-    network_utils.set_network_required_in_cluster(api, VLAN200_NET,
+    network_utils.set_network_required_in_cluster(api, MIGRATION_NETWORK,
                                                   CLUSTER_NAME, False)
     utils.invoke_in_parallel(_remove_bonding,
                              test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME))
 
     for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        nt.assert_false(_host_is_attached_to_network(api, host, VLAN200_NET))
+        nt.assert_false(_host_is_attached_to_network(api, host,
+                                                     MIGRATION_NETWORK))
 
 
 _TEST_LIST = [

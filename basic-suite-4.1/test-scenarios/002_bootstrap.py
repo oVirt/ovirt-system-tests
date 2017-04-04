@@ -77,7 +77,7 @@ GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
 VM_NETWORK = 'VM_Network'
-VLAN200_NET = 'VLAN200_Network'
+MIGRATION_NETWORK = 'Migration_Net'
 
 
 def _get_host_ip(prefix, host_name):
@@ -846,7 +846,7 @@ def add_vm_network(api):
 @testlib.with_ovirt_api
 def add_non_vm_network(api):
     network = network_utils_v3.create_network_params(
-        VLAN200_NET,
+        MIGRATION_NETWORK,
         DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
         vlan=params.VLAN(

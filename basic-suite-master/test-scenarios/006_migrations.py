@@ -37,11 +37,11 @@ VLAN200_IF_NAME = '{}.200'.format(NIC_NAME)
 
 DEFAULT_MTU = 1500
 
-VLAN200_NET = 'VLAN200_Network'
-VLAN200_NET_IPv4_ADDR = '192.0.3.{}'
-VLAN200_NET_IPv4_MASK = '255.255.255.0'
-VLAN200_NET_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
-VLAN200_NET_IPv6_MASK = '64'
+MIGRATION_NETWORK = 'Migration_Net'
+MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
+MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
+MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
+MIGRATION_NETWORK_IPv6_MASK = '64'
 
 VM0_NAME = 'vm0'
 
@@ -52,7 +52,7 @@ def prepare_migration_vlan(api):
 
     nt.assert_true(
         network_utils.set_network_usages_in_cluster(api,
-                                                    VLAN200_NET,
+                                                    MIGRATION_NETWORK,
                                                     CLUSTER_NAME,
                                                     usages
                                                     )
@@ -61,7 +61,7 @@ def prepare_migration_vlan(api):
     # Set VLAN200's MTU to match the other VLAN's on the NIC.
     nt.assert_true(
         network_utils.set_network_mtu(api,
-                                      VLAN200_NET,
+                                      MIGRATION_NETWORK,
                                       DC_NAME,
                                       DEFAULT_MTU)
     )
@@ -102,16 +102,16 @@ def prepare_migration_attachments_ipv4(api):
     for index, host in enumerate(
             test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME),
             start=1):
-        ip_address = VLAN200_NET_IPv4_ADDR.format(index)
+        ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
 
         ip_configuration = network_utils.create_static_ip_configuration(
             ipv4_addr=ip_address,
-            ipv4_mask=VLAN200_NET_IPv4_MASK)
+            ipv4_mask=MIGRATION_NETWORK_IPv4_MASK)
 
         network_utils.attach_network_to_host(api,
                                              host,
                                              NIC_NAME,
-                                             VLAN200_NET,
+                                             MIGRATION_NETWORK,
                                              ip_configuration)
 
         nt.assert_equals(
@@ -128,15 +128,15 @@ def prepare_migration_attachments_ipv6(api_v4_connection):
             start=1):
         host_service = engine.hosts_service().host_service(id=host.id)
 
-        ip_address = VLAN200_NET_IPv6_ADDR.format(index)
+        ip_address = MIGRATION_NETWORK_IPv6_ADDR.format(index)
 
         ip_configuration = network_utils_v4.create_static_ip_configuration(
             ipv6_addr=ip_address,
-            ipv6_mask=VLAN200_NET_IPv6_MASK)
+            ipv6_mask=MIGRATION_NETWORK_IPv6_MASK)
 
         network_utils_v4.modify_ip_config(engine,
                                           host_service,
-                                          VLAN200_NET,
+                                          MIGRATION_NETWORK,
                                           ip_configuration)
 
         actual_address = next(nic for nic in host_service.nics_service().list()

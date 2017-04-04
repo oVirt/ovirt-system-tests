@@ -47,11 +47,14 @@ def attach_network_to_host(api, host, nic_name, network_name,
     return host.setupnetworks(attachment_action)
 
 
-def detach_network_from_host(api, host, network_name):
+def detach_network_from_host(api, host, network_name, bond_name=None):
     network_id = api.networks.get(name=network_name).id
     attachment = _get_attachment_by_id(host, network_id)
+    bonds = [nic for nic in host.nics.list() if bond_name and
+             nic.name == bond_name]  # there is no more than one bond
 
     removal_action = params.Action(
+        removed_bonds=params.HostNics(host_nic=bonds),
         removed_network_attachments=params.NetworkAttachments(
             network_attachment=[params.NetworkAttachment(
                 id=attachment.id)]))

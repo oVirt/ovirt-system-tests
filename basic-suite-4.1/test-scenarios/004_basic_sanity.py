@@ -349,23 +349,6 @@ def vm_run(prefix):
     )
 
 
-@testlib.with_ovirt_prefix
-def vm_migrate(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    running_host = api.hosts.get(id=api.vms.get(VM0_NAME).get_host().get_id()).get_name()
-    host_names = [h.name() for h in prefix.virt_env.host_vms() if h.name() != running_host]
-
-    migrate_params = params.Action(
-        host=params.Host(
-            name=sorted(host_names)[0]
-        ),
-    )
-    api.vms.get(VM0_NAME).migrate(migrate_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
-    )
-
-
 @testlib.with_ovirt_api
 def template_export(api):
     template_cirros = api.templates.get(TEMPLATE_CIRROS)
@@ -543,7 +526,6 @@ _TEST_LIST = [
     vm_run,
     snapshots_merge,
     suspend_resume_vm,
-    vm_migrate,
     template_export,
     hotplug_nic,
     hotplug_disk,

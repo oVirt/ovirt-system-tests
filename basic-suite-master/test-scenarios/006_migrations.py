@@ -24,7 +24,7 @@ from ovirtlago import testlib
 from ovirtsdk.xml import params
 
 import test_utils
-from test_utils import network_utils, network_utils_v4
+from test_utils import network_utils_v3, network_utils_v4
 
 
 DC_NAME = 'test-dc'
@@ -49,13 +49,13 @@ def prepare_migration_vlan(api):
     usages = params.Usages(['migration'])
 
     nt.assert_true(
-        network_utils.set_network_usages_in_cluster(
+        network_utils_v3.set_network_usages_in_cluster(
             api, MIGRATION_NETWORK, CLUSTER_NAME, usages)
     )
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
     nt.assert_true(
-        network_utils.set_network_mtu(
+        network_utils_v3.set_network_mtu(
             api, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
     )
 
@@ -97,11 +97,11 @@ def prepare_migration_attachments_ipv4(api):
             start=1):
         ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
 
-        ip_configuration = network_utils.create_static_ip_configuration(
+        ip_configuration = network_utils_v3.create_static_ip_configuration(
             ipv4_addr=ip_address,
             ipv4_mask=MIGRATION_NETWORK_IPv4_MASK)
 
-        network_utils.attach_network_to_host(
+        network_utils_v3.attach_network_to_host(
             api, host, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
 
         nt.assert_equals(
@@ -114,7 +114,7 @@ def prepare_migration_attachments_ipv6(api_v4_connection):
     engine = api_v4_connection.system_service()
 
     for index, host in enumerate(
-            test_utils.hosts_in_cluster(engine, CLUSTER_NAME),
+            test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),
             start=1):
         host_service = engine.hosts_service().host_service(id=host.id)
 

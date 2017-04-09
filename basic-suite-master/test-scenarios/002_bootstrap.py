@@ -38,7 +38,7 @@ except ImportError:
 from lago import utils
 from ovirtlago import testlib
 
-from test_utils import network_utils
+from test_utils import network_utils_v3
 
 
 # DC/Cluster
@@ -834,7 +834,7 @@ def add_quota_cluster_limits(api):
 
 @testlib.with_ovirt_api
 def add_vm_network(api):
-    network = network_utils.create_network_params(
+    network = network_utils_v3.create_network_params(
         VM_NETWORK,
         DC_NAME,
         description='VM Network (originally on VLAN 100)',
@@ -853,7 +853,7 @@ def add_vm_network(api):
 
 @testlib.with_ovirt_api
 def add_non_vm_network(api):
-    network = network_utils.create_network_params(
+    network = network_utils_v3.create_network_params(
         MIGRATION_NETWORK,
         DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',

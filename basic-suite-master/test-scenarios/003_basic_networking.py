@@ -24,7 +24,7 @@ from ovirtlago import testlib
 from lago import utils
 
 import test_utils
-from test_utils import network_utils
+from test_utils import network_utils_v3
 
 
 # Environment (see control.sh and LagoInitFile.in)
@@ -80,7 +80,7 @@ def _ping(host, ip_address):
 
 def _host_is_attached_to_network(api, host, network_name, nic_name=None):
     try:
-        attachment = network_utils.get_network_attachment(
+        attachment = network_utils_v3.get_network_attachment(
             api, host, network_name, DC_NAME)
     except IndexError:  # there is no attachment of the network to the host
         return False
@@ -94,13 +94,13 @@ def _host_is_attached_to_network(api, host, network_name, nic_name=None):
 @testlib.with_ovirt_api
 def attach_vm_network_to_host_static_config(api):
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
-    ip_configuration = network_utils.create_static_ip_configuration(
+    ip_configuration = network_utils_v3.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR,
         VM_NETWORK_IPv4_MASK,
         VM_NETWORK_IPv6_ADDR,
         VM_NETWORK_IPv6_MASK)
 
-    network_utils.attach_network_to_host(
+    network_utils_v3.attach_network_to_host(
         api,
         host,
         NIC_NAME,
@@ -117,8 +117,8 @@ def attach_vm_network_to_host_static_config(api):
 @testlib.with_ovirt_api
 def modify_host_ip_to_dhcp(api):
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
-    ip_configuration = network_utils.create_dhcp_ip_configuration()
-    network_utils.modify_ip_config(api, host, VM_NETWORK, ip_configuration)
+    ip_configuration = network_utils_v3.create_dhcp_ip_configuration()
+    network_utils_v3.modify_ip_config(api, host, VM_NETWORK, ip_configuration)
 
     # TODO: once the VLANs/dnsmasq issue is resolved,
     # (https://github.com/lago-project/lago/issues/375)
@@ -129,9 +129,9 @@ def modify_host_ip_to_dhcp(api):
 def detach_vm_network_from_host(api):
     host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
 
-    network_utils.set_network_required_in_cluster(
+    network_utils_v3.set_network_required_in_cluster(
         api, VM_NETWORK, CLUSTER_NAME, False)
-    network_utils.detach_network_from_host(api, host, VM_NETWORK)
+    network_utils_v3.detach_network_from_host(api, host, VM_NETWORK)
 
     nt.assert_false(_host_is_attached_to_network(api, host, VM_NETWORK))
 
@@ -153,13 +153,13 @@ def bond_nics(prefix, api):
             name=BOND_NAME,
             bonding=params.Bonding(slaves=slaves, options=options))
 
-        ip_configuration = network_utils.create_static_ip_configuration(
+        ip_configuration = network_utils_v3.create_static_ip_configuration(
             MIGRATION_NETWORK_IPv4_ADDR.format(number),
             MIGRATION_NETWORK_IPv4_MASK,
             MIGRATION_NETWORK_IPv6_ADDR.format(number),
             MIGRATION_NETWORK_IPv6_MASK)
 
-        network_utils.attach_network_to_host(
+        network_utils_v3.attach_network_to_host(
             api, host, BOND_NAME, MIGRATION_NETWORK, ip_configuration, [bond])
 
     hosts = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)
@@ -185,11 +185,11 @@ def verify_interhost_connectivity_ipv6(prefix):
 @testlib.with_ovirt_api
 def remove_bonding(api):
     def _remove_bonding(host):
-        network_utils.detach_network_from_host(api, host, MIGRATION_NETWORK,
-                                               BOND_NAME)
+        network_utils_v3.detach_network_from_host(api, host, MIGRATION_NETWORK,
+                                                  BOND_NAME)
 
-    network_utils.set_network_required_in_cluster(api, MIGRATION_NETWORK,
-                                                  CLUSTER_NAME, False)
+    network_utils_v3.set_network_required_in_cluster(api, MIGRATION_NETWORK,
+                                                     CLUSTER_NAME, False)
     utils.invoke_in_parallel(_remove_bonding,
                              test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME))
 

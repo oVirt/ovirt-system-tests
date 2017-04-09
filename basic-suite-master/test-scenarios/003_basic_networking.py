@@ -46,9 +46,9 @@ VLAN_IF_NAME = '%s.100' % (NIC_NAME,)
 
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
 BOND_NAME = 'bond0'
-MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.%d'
+MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
-MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0%d'
+MIGRATION_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
 
 
@@ -154,8 +154,10 @@ def bond_nics(prefix, api):
             bonding=params.Bonding(slaves=slaves, options=options))
 
         ip_configuration = network_utils.create_static_ip_configuration(
-            MIGRATION_NETWORK_IPv4_ADDR % number, MIGRATION_NETWORK_IPv4_MASK,
-            MIGRATION_NETWORK_IPv6_ADDR % number, MIGRATION_NETWORK_IPv6_MASK)
+            MIGRATION_NETWORK_IPv4_ADDR.format(number),
+            MIGRATION_NETWORK_IPv4_MASK,
+            MIGRATION_NETWORK_IPv6_ADDR.format(number),
+            MIGRATION_NETWORK_IPv6_MASK)
 
         network_utils.attach_network_to_host(
             api, host, BOND_NAME, MIGRATION_NETWORK, ip_configuration, [bond])
@@ -171,13 +173,13 @@ def bond_nics(prefix, api):
 @testlib.with_ovirt_prefix
 def verify_interhost_connectivity_ipv4(prefix):
     first_host = prefix.virt_env.host_vms()[0]
-    _ping(first_host, MIGRATION_NETWORK_IPv4_ADDR % 2)
+    _ping(first_host, MIGRATION_NETWORK_IPv4_ADDR.format(2))
 
 
 @testlib.with_ovirt_prefix
 def verify_interhost_connectivity_ipv6(prefix):
     first_host = prefix.virt_env.host_vms()[0]
-    _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR % 2)
+    _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR.format(2))
 
 
 @testlib.with_ovirt_api

@@ -18,7 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import ovirtsdk4.types
+from ovirtsdk4.types import BootProtocol, Ip, IpAddressAssignment, IpVersion
 
 
 def _get_attachment_by_id(host, network_id):
@@ -26,10 +26,7 @@ def _get_attachment_by_id(host, network_id):
                 if att.network.id == network_id)
 
 
-def modify_ip_config(engine,
-                     host,
-                     network_name,
-                     ip_configuration):
+def modify_ip_config(engine, host, network_name, ip_configuration):
     network_id = engine.networks_service().list(
         search='name={}'.format(network_name))[0].id
 
@@ -40,23 +37,21 @@ def modify_ip_config(engine,
                                check_connectivity=True)
 
 
-def create_static_ip_configuration(ipv4_addr=None,
-                                   ipv4_mask=None,
-                                   ipv6_addr=None,
-                                   ipv6_mask=None):
+def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None,
+                                   ipv6_addr=None, ipv6_mask=None):
     assignments = []
     if ipv4_addr:
-        assignments.append(ovirtsdk4.types.IpAddressAssignment(
-            assignment_method=ovirtsdk4.types.BootProtocol.STATIC,
-            ip=ovirtsdk4.types.Ip(
+        assignments.append(IpAddressAssignment(
+            assignment_method=BootProtocol.STATIC,
+            ip=Ip(
                 address=ipv4_addr,
                 netmask=ipv4_mask)))
     if ipv6_addr:
-        assignments.append(ovirtsdk4.types.IpAddressAssignment(
-            assignment_method=ovirtsdk4.types.BootProtocol.STATIC,
-            ip=ovirtsdk4.types.Ip(
+        assignments.append(IpAddressAssignment(
+            assignment_method=BootProtocol.STATIC,
+            ip=Ip(
                 address=ipv6_addr,
                 netmask=ipv6_mask,
-                version=ovirtsdk4.types.IpVersion.V6)))
+                version=IpVersion.V6)))
 
     return assignments

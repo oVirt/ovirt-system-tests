@@ -20,10 +20,8 @@
 
 from netaddr.ip import IPAddress
 import nose.tools as nt
-
-from ovirtsdk.xml import params
-
 from ovirtlago import testlib
+from ovirtsdk.xml import params
 
 import test_utils
 from test_utils import network_utils, network_utils_v4
@@ -51,19 +49,14 @@ def prepare_migration_vlan(api):
     usages = params.Usages(['migration'])
 
     nt.assert_true(
-        network_utils.set_network_usages_in_cluster(api,
-                                                    MIGRATION_NETWORK,
-                                                    CLUSTER_NAME,
-                                                    usages
-                                                    )
+        network_utils.set_network_usages_in_cluster(
+            api, MIGRATION_NETWORK, CLUSTER_NAME, usages)
     )
 
-    # Set VLAN200's MTU to match the other VLAN's on the NIC.
+    # Set Migration_Network's MTU to match the other VLAN's on the NIC.
     nt.assert_true(
-        network_utils.set_network_mtu(api,
-                                      MIGRATION_NETWORK,
-                                      DC_NAME,
-                                      DEFAULT_MTU)
+        network_utils.set_network_mtu(
+            api, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
     )
 
 
@@ -108,11 +101,8 @@ def prepare_migration_attachments_ipv4(api):
             ipv4_addr=ip_address,
             ipv4_mask=MIGRATION_NETWORK_IPv4_MASK)
 
-        network_utils.attach_network_to_host(api,
-                                             host,
-                                             NIC_NAME,
-                                             MIGRATION_NETWORK,
-                                             ip_configuration)
+        network_utils.attach_network_to_host(
+            api, host, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
 
         nt.assert_equals(
             host.nics.list(name=VLAN200_IF_NAME)[0].ip.address,
@@ -134,10 +124,8 @@ def prepare_migration_attachments_ipv6(api_v4_connection):
             ipv6_addr=ip_address,
             ipv6_mask=MIGRATION_NETWORK_IPv6_MASK)
 
-        network_utils_v4.modify_ip_config(engine,
-                                          host_service,
-                                          MIGRATION_NETWORK,
-                                          ip_configuration)
+        network_utils_v4.modify_ip_config(
+            engine, host_service, MIGRATION_NETWORK, ip_configuration)
 
         actual_address = next(nic for nic in host_service.nics_service().list()
                               if nic.name == VLAN200_IF_NAME).ipv6.address

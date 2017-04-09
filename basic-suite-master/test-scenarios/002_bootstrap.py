@@ -853,7 +853,7 @@ def add_vm_network(api):
 
 @testlib.with_ovirt_api
 def add_non_vm_network(api):
-    VLAN200 = network_utils.create_network_params(
+    network = network_utils.create_network_params(
         MIGRATION_NETWORK,
         DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
@@ -865,10 +865,10 @@ def add_non_vm_network(api):
     )
 
     nt.assert_true(
-        api.networks.add(VLAN200)
+        api.networks.add(network)
     )
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+        api.clusters.get(CLUSTER_NAME).networks.add(network)
     )
 
 

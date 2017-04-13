@@ -519,6 +519,19 @@ def hotplug_disk(api):
 
 
 @testlib.with_ovirt_api
+def hotunplug_disk(api):
+    disk = api.vms.get(VM0_NAME).disks.get(DISK0_NAME)
+    nt.assert_true(
+        disk.deactivate()
+    )
+
+    testlib.assert_true_within_short(
+        lambda:
+        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).active == False
+    )
+
+
+@testlib.with_ovirt_api
 def suspend_resume_vm(api):
     nt.assert_true(api.vms.get(VM0_NAME).suspend())
 
@@ -561,8 +574,9 @@ _TEST_LIST = [
     snapshots_merge,
     suspend_resume_vm,
     template_export,
-    hotplug_nic,
     hotplug_disk,
+    hotplug_nic,
+    hotunplug_disk,
     add_event,
     vdsm_recovery,
 ]

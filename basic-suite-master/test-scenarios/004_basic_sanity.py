@@ -535,6 +535,24 @@ def disk_operations(api):
     vt.join_all()
 
 
+@testlib.with_ovirt_api4
+def hotplug_cpu(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM0_NAME)[0]
+    vm_service = vms_service.vm_service(vm.id)
+    new_cpu = vm.cpu
+    new_cpu.topology.sockets = 2
+    vm_service.update(
+        vm = types.Vm(
+            cpu = new_cpu
+        )
+    )
+    nt.assert_true(
+        vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 2
+    )
+
+
 @testlib.with_ovirt_api
 def hotplug_nic(api):
     nic2_params = params.NIC(
@@ -633,6 +651,7 @@ _TEST_LIST = [
     vm_run,
     suspend_resume_vm,
     template_export,
+    hotplug_cpu,
     hotplug_disk,
     disk_operations,
     hotplug_nic,

@@ -55,7 +55,7 @@ if grep "$EL7" /etc/redhat-release > /dev/null; then
     fstrim -va
 
     #Configure ntpd only on EL7 - will be used in 4.0, 4.1, Master suites.
-    echo "restrict 192.168.0.0 netmask 255.255.0.0 nomodify notrap" >> /etc/ntp.conf
+    echo "restrict 192.168.0.0 mask 255.255.0.0 nomodify notrap nopeer" >> /etc/ntp.conf
     systemctl enable ntpd
     systemctl start ntpd
     firewall-cmd --add-service=ntp --permanent

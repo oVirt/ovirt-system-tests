@@ -1,5 +1,4 @@
 ovirt-master-snapshot,http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/$distro
-ovirt-4.0-snapshot,http://resources.ovirt.org/pub/ovirt-4.0-snapshot/rpm/$distro
-ovirt-3.6-snapshot,http://resources.ovirt.org/pub/ovirt-3.6-snapshot/rpm/$distro
+ovirt-4.1-snapshot,http://resources.ovirt.org/pub/ovirt-4.1-snapshot/rpm/$distro
 lago,http://resources.ovirt.org/repos/lago/stable/0.0/rpm/$distro
 ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro

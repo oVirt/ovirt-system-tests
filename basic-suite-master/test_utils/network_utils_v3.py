@@ -62,29 +62,6 @@ def detach_network_from_host(api, host, network_name, bond_name=None):
     return host.setupnetworks(removal_action)
 
 
-def modify_ip_config(api, host, network_name, ip_configuration):
-    network_id = api.networks.get(name=network_name).id
-    attachment = _get_attachment_by_id(host, network_id)
-    attachment.set_ip_address_assignments(ip_configuration)
-
-    attachment_action = params.Action(
-        modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[attachment]),
-        check_connectivity=True)
-
-    return host.setupnetworks(attachment_action)
-
-
-def create_dhcp_ip_configuration():
-    return params.IpAddressAssignments(ip_address_assignment=[
-        params.IpAddressAssignment(
-            assignment_method='dhcp'),
-        params.IpAddressAssignment(
-            assignment_method='dhcp',
-            ip=params.IP(version='v6'))
-    ])
-
-
 def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None,
                                    ipv6_addr=None, ipv6_mask=None):
     assignments = []

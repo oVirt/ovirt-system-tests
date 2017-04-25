@@ -37,6 +37,14 @@ def modify_ip_config(engine, host, network_name, ip_configuration):
                                check_connectivity=True)
 
 
+def create_dhcp_ip_configuration():
+    return [
+        IpAddressAssignment(assignment_method=BootProtocol.DHCP),
+        IpAddressAssignment(assignment_method=BootProtocol.DHCP,
+                            ip=Ip(version=IpVersion.V6))
+    ]
+
+
 def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None,
                                    ipv6_addr=None, ipv6_mask=None):
     assignments = []

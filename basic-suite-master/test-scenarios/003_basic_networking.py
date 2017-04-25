@@ -24,7 +24,7 @@ from ovirtlago import testlib
 from lago import utils
 
 import test_utils
-from test_utils import network_utils_v3
+from test_utils import network_utils_v3, network_utils_v4
 
 
 # Environment (see control.sh and LagoInitFile.in)
@@ -117,11 +117,16 @@ def attach_vm_network_to_host_static_config(prefix, api):
         VM_NETWORK_IPv4_ADDR)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def modify_host_ip_to_dhcp(api):
-    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
-    ip_configuration = network_utils_v3.create_dhcp_ip_configuration()
-    network_utils_v3.modify_ip_config(api, host, VM_NETWORK, ip_configuration)
+    engine = api.system_service()
+
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+    ip_configuration = network_utils_v4.create_dhcp_ip_configuration()
+
+    network_utils_v4.modify_ip_config(engine, host_service, VM_NETWORK,
+                                      ip_configuration)
 
     # TODO: once the VLANs/dnsmasq issue is resolved,
     # (https://github.com/lago-project/lago/issues/375)

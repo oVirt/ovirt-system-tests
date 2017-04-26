@@ -59,6 +59,7 @@ def gen_config_file_and_params(prefix, cfg_in, cfg_out, cfg_path):
     config.set(TEST_REPO_SECTION, 'name', 'Local repo')
     config.set(TEST_REPO_SECTION, 'baseurl', internal_repo_url)
     config.set(TEST_REPO_SECTION, 'enabled', 1)
+    config.set(TEST_REPO_SECTION, 'ip_resolve', 4)
     config.set(TEST_REPO_SECTION, 'gpgcheck', 0)
     config.set(TEST_REPO_SECTION, 'proxy', '_none_')
     command.append('--repoid={}'.format(TEST_REPO_SECTION))

@@ -1,17 +1,17 @@
 [main]
 reposdir=/etc/reposync.repos.d
 max_connections=50
+ip_resolve=4
+gpg_check=0
 
 [ovirt-4.1-el7]
 name=oVirt 4.1 Official release
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled=1
-ip_resolve=4
 exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng*
  ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows openvswitch-test
  openvswitch-devel ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows ovirt-engine-nodejs-modules
- ovirt-engine-yarn ovirt-optimizer*
-gpgcheck=0
+ ovirt-engine-yarn ovirt-optimizer* openvswitch-test openvswitch-devel ovirt-engine-nodejs
 max_connections=5
 
 [ovirt-4.1-snapshot-static-el7]
@@ -24,23 +24,17 @@ exclude=ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers ovirt
  ovirt-engine-tools ovirt-engine-tools-backup ovirt-engine-userportal ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper ovirt-engine-webadmin-portal
  ovirt-engine-webadmin-portal-debuginfo ovirt-engine-websocket-proxy ovirt-engine-appliance ovirt-engine-nodejs nsis-simple-service-plugin openvswitch-devel
 enabled=1
-ip_resolve=4
-gpgcheck=0
 max_connections=10
 
 [ovirt-master-dependencies-el7]
 name=oVirt dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
 enabled=1
-ip_resolve=4
-gpgcheck=0
 
 [glusterfs-3.8-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
 enabled=1
-ip_resolve=4
-gpgcheck=0
 exclude=*-debuginfo glusterfs-regression-tests heketi* glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
 max_connections=5
 
@@ -48,8 +42,6 @@ max_connections=5
 name=CentOS7 Base
 baseurl=http://mirror.centos.org/centos/7/os/x86_64/
 enabled=1
-ip_resolve=4
-gpgcheck=0
 includepkgs=lsscsi python-rhsm socat subscription-manager usermode GConf2 OpenIPMI-modalias ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec
  apache-commons-compress apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging
  apache-commons-net apache-commons-vfs apr apr-util atk atlas attr augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api
@@ -92,8 +84,6 @@ max_connections=10
 name=CentOS7 Updates
 baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
 enabled=1
-ip_resolve=4
-gpgcheck=0
 includepkgs=initscripts python-libguestfs ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec apache-commons-collections apache-commons-compress
  apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging apache-commons-net
  apache-commons-vfs apr apr-util atk atlas attr audit-libs-python augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api bind-libs bind-libs-lite
@@ -104,7 +94,8 @@ includepkgs=initscripts python-libguestfs ant antlr-tool aopalliance apache-comm
  fence-agents-ilo-mp fence-agents-ilo-ssh fence-agents-intelmodular fence-agentsruby-ipdu fence-agents-ipmilan fence-agents-kdump fence-agents-mpath fence-agents-rhevm
  fence-agents-rsa fence-agents-rsb fence-agents-scsi fence-agents-vmware-soap fence-agents-wti flac-libs fontconfig fontpackages-filesystem fop fuse fuse-libs GConf2 gdisk
  gdk-pixbuf2 genisoimage geronimo-jms ghostscript ghostscript-fonts giflib gnutls-dane gnutls-utils gperftools-libs graphite2 gsm gssproxy gtk2 hamcrest harfbuzz hexedit
- hicolor-icon-theme hivex hsqldb httpd httpd-tools icc-profiles-openicc icoutils ioprocess ipmitool iptables-services ipxe-roms-qemu iscsi-initiator-utils iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core jakarta-commons-httpclient jasper-libs java-1.7.0-openjdk java-1.7.0-openjdk-devel java-1.7.0-openjdk-headless java-1.8.0-openjdk
+ hicolor-icon-theme hivex hsqldb httpd httpd-tools icc-profiles-openicc icoutils ioprocess ipmitool iptables-services ipxe-roms-qemu iscsi-initiator-utils iscsi-initiator-utils-iscsiuio  
+ isorelax jackson jai-imageio-core jakarta-commons-httpclient jasper-libs java-1.7.0-openjdk java-1.7.0-openjdk-devel java-1.7.0-openjdk-headless java-1.8.0-openjdk
  java-1.8.0-openjdk-headless javamail javapackages-tools javassist jaxen jbigkit-libs jdom jline joda-convert joda-time jsch jsr-311 junit jzlib keyutils kpartx lapack lcms2 ldns
  libaio libasyncns libbasicobjects libcgroup libcollection libconfig libevent libfontenc libgfortran libguestfs libguestfs-tools-c libguestfs-winsupport libibverbs libICE libicu
  libini_config libiscsi libjpeg-turbo libnfsidmap libnl libogg libosinfo libpath_utils libpng libquadmath librados2 librbd1 librdmacm libref_array libreport-filesystem libseccomp
@@ -136,8 +127,6 @@ max_connections=10
 name=CentOS7 Extras
 baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 enabled=1
-ip_resolve=4
-gpgcheck=0
 includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
 exclude= *i686
 max_connections=5
@@ -146,28 +135,22 @@ max_connections=5
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
-ip_resolve=4
 includepkgs=python-uinput,python-ordereddict,python-inotify,python-argparse,novnc,python-kitchen,livecd-tools,spice-html5,mom,python-IPy,safelease,python-paramiko,python2-crypto,libtomcrypt,libtommath,python-cheetah,python-ecdsa,python2-ecdsa,userspace-rcu,hystrix-core,hystrix-metrics-event-stream,archaius-core,rxjava,jctools,jackson-core python-simplejson
 exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess
-gpgcheck=0
 max_connections=5
 
 [centos-ovirt-4.0-el7]
 name=CentOS-7 - oVirt 4.0
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
 enabled=1
-ip_resolve=4
 skip_if_unavailable=1
-gpgcheck=0
 exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply
  python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures openvswitch-*
- mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs userspace-rcu python-openvswitch
- imgbased safelease ioprocess python-crypto python-lockfile
+ mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs python-openvswitch imgbased
+ safelease ioprocess python-crypto python-lockfile
 
 [centos-opstools-testing-el7]
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
-gpgcheck=0
 enabled=1
-ip_resolve=4
 exclude=nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana

@@ -1,12 +1,13 @@
 [main]
 reposdir=/etc/reposync.repos.d
 max_connections=50
+ip_resolve=4
+gpg_check=0
 
 [ovirt-master-tested-el7]
 name=oVirt Master Latest Tested
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
 enabled=1
-gpgcheck=0
 max_connections=10
 exclude = qemu-kvm-tools-ev rubygem-ovirt-engine-sdk4-doc ovirt-engine-sdk-java-javadoc ovirt-guest-agent-windows ovirt-node-ng-image ovirt-guest-tools-iso ovirt-engine-appliance unboundid-ldapsdk-javadoc
  java-ovirt-engine-sdk4 ovirt-engine-sdk-java ovirt-engine-yarn ovirt-engine-nodejs-* libcacard-devel-ev rubygem-ovirt-engine-sdk4 vdsm-tests ovirt-live-artwork ovirt-release-host-node
@@ -23,14 +24,12 @@ exclude=openvswitch-devel openvswitch-test ovirt-node-iso *-debuginfo jasperrepo
  ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper ovirt-engine-webadmin-portal ovirt-engine-webadmin-portal-debuginfo ovirt-engine-websocket-proxy ovirt-engine-appliance
  ovirt-engine-nodejs nsis-simple-service-plugin
 enabled=1
-gpgcheck=0
 max_connections=10
 
 [glusterfs-3.10-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.10/
 enabled=1
-gpgcheck=0
 exclude=*-debuginfo *-devel glusterfs-regression-tests heketi* glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
  glusterfs-extra-xlators glusterfs-rdma glusterfs-resource-agents python-gluster
 max_connections=5
@@ -39,7 +38,6 @@ max_connections=5
 name=CentOS7 Updates
 baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
 enabled=1
-gpgcheck=0
 includepkgs=seavgabios-bin java-1.8.0-openjdk-devel libsemanage initscripts python-libguestfs ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec apache-commons-collections
  apache-commons-compress apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging apache-commons-net
  apache-commons-vfs apr apr-util atk atlas attr audit-libs-python augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api bind-libs bind-libs-lite bind-license
@@ -79,7 +77,6 @@ max_connections=10
 name=CentOS7 Base
 baseurl=http://mirror.centos.org/centos/7/os/x86_64/
 enabled=1
-gpgcheck=0
 includepkgs=gtk2 python2-pyasn1 avahi-libs libtool-ltdl lsscsi python-rhsm socat subscription-manager usermode GConf2 OpenIPMI-modalias ant antlr-tool aopalliance apache-commons-beanutils
  apache-commons-codec apache-commons-compress apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging
  apache-commons-net apache-commons-vfs apr apr-util atk atlas attr audit-libs-python augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api blas boost-system
@@ -117,7 +114,6 @@ max_connections=10
 name=CentOS7 Extras
 baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 enabled=1
-gpgcheck=0
 includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
 exclude= *i686
 max_connections=5
@@ -128,7 +124,6 @@ baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
 includepkgs=python-uinput,python-ordereddict,python-inotify,python-argparse,novnc,python-kitchen,livecd-tools,spice-html5,mom,python-IPy,safelease,python-paramiko,python2-crypto,libtomcrypt,libtommath,python-cheetah,python-ecdsa,python2-ecdsa,userspace-rcu,hystrix-core,hystrix-metrics-event-stream,archaius-core,rxjava,jctools,jackson-core python-simplejson
 exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess
-gpgcheck=0
 max_connections=5
 
 [centos-ovirt-4.0-el7]
@@ -136,7 +131,6 @@ name=CentOS-7 - oVirt master
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
 enabled=1
 skip_if_unavailable=1
-gpgcheck=0
 exclude=python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby*
  python-six python-ply python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures python-openvswitch
  openvswitch openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs
@@ -145,7 +139,6 @@ exclude=python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboun
 [centos-opstools-testing-el7]
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
-gpgcheck=0
 enabled=1
 exclude= osops-tools-monitoring-oschecks *sensu-* *grafana-* graphite-* skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
 max_connections=10
@@ -153,5 +146,4 @@ max_connections=10
 [copr-sac-gdeploy-el7]
 name=Copr repo for gdeploy owned by sac
 baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gdeploy/epel-7-x86_64/
-gpgcheck=0
 enabled=1

@@ -1,1 +1,1 @@
-../basic-suite-3.6/control.sh
+../basic-suite-master/control.sh

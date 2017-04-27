@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Red Hat, Inc.
+# Copyright 2016-2017 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import nose.tools as nt
-from ovirtsdk.xml import params
 
-from ovirtlago import testlib
 from lago import utils
+from netaddr.ip import IPAddress
+import nose.tools as nt
+from ovirtlago import testlib
+from ovirtsdk.xml import params
 
 import test_utils
 from test_utils import network_utils_v3, network_utils_v4
@@ -90,31 +91,34 @@ def _host_is_attached_to_network(api, host, network_name, nic_name=None):
     return attachment
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def attach_vm_network_to_host_static_config(prefix, api):
-    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
+    engine = api.system_service()
+
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+
     nic_name = _host_vm_nics(prefix, host.name,
                              LIBVIRT_NETWORK_FOR_MANAGEMENT)[0]  # eth0
-    ip_configuration = network_utils_v3.create_static_ip_configuration(
+    ip_configuration = network_utils_v4.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR,
         VM_NETWORK_IPv4_MASK,
         VM_NETWORK_IPv6_ADDR,
         VM_NETWORK_IPv6_MASK)
 
-    network_utils_v3.attach_network_to_host(
-        api,
-        host,
+    network_utils_v4.attach_network_to_host(
+        host_service,
         nic_name,
         VM_NETWORK,
         ip_configuration)
 
-    # TODO: currently ost uses v3 SDK that doesn't report ipv6. once available,
-    # verify ipv6 as well.
-    nt.assert_equals(
-        host.nics.list(name='{}.{}'.format(nic_name,
-                                           VM_NETWORK_VLAN_ID))[0].ip.address,
-        VM_NETWORK_IPv4_ADDR)
+    host_nic = next(nic for nic in host_service.nics_service().list() if
+                    nic.name == '{}.{}'.format(nic_name, VM_NETWORK_VLAN_ID))
+    nt.assert_equals(IPAddress(host_nic.ip.address),
+                     IPAddress(VM_NETWORK_IPv4_ADDR))
+    nt.assert_equals(IPAddress(host_nic.ipv6.address),
+                     IPAddress(VM_NETWORK_IPv6_ADDR))
 
 
 @testlib.with_ovirt_api4

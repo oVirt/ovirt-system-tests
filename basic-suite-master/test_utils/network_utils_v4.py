@@ -18,12 +18,26 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from ovirtsdk4.types import BootProtocol, Ip, IpAddressAssignment, IpVersion
+from ovirtsdk4.types import (BootProtocol, HostNic, Ip, IpAddressAssignment,
+                             IpVersion, Network, NetworkAttachment)
 
 
 def _get_attachment_by_id(host, network_id):
     return next(att for att in host.network_attachments_service().list()
                 if att.network.id == network_id)
+
+
+def attach_network_to_host(host, nic_name, network_name, ip_configuration,
+                           bonds=[]):
+    attachment = NetworkAttachment(
+        network=Network(name=network_name),
+        host_nic=HostNic(name=nic_name),
+        ip_address_assignments=ip_configuration)
+
+    return host.setup_networks(
+        modified_bonds=bonds,
+        modified_network_attachments=[attachment],
+        check_connectivity=True)
 
 
 def modify_ip_config(engine, host, network_name, ip_configuration):

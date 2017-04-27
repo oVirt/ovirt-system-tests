@@ -90,28 +90,32 @@ def migrate_vm(prefix, api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def prepare_migration_attachments_ipv4(api):
+    engine = api.system_service()
+
     for index, host in enumerate(
-            test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME),
+            test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),
             start=1):
+        host_service = engine.hosts_service().host_service(id=host.id)
+
         ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
 
-        ip_configuration = network_utils_v3.create_static_ip_configuration(
+        ip_configuration = network_utils_v4.create_static_ip_configuration(
             ipv4_addr=ip_address,
             ipv4_mask=MIGRATION_NETWORK_IPv4_MASK)
 
-        network_utils_v3.attach_network_to_host(
-            api, host, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
+        network_utils_v4.attach_network_to_host(
+            host_service, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
 
-        nt.assert_equals(
-            host.nics.list(name=VLAN200_IF_NAME)[0].ip.address,
-            ip_address)
+        actual_address = next(nic for nic in host_service.nics_service().list()
+                              if nic.name == VLAN200_IF_NAME).ip.address
+        nt.assert_equals(IPAddress(actual_address), IPAddress(ip_address))
 
 
 @testlib.with_ovirt_api4
-def prepare_migration_attachments_ipv6(api_v4_connection):
-    engine = api_v4_connection.system_service()
+def prepare_migration_attachments_ipv6(api):
+    engine = api.system_service()
 
     for index, host in enumerate(
             test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),

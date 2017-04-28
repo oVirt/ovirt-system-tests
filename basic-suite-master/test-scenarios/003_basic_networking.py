@@ -78,7 +78,7 @@ def _ping(host, ip_address):
         ip_address, host.name(), ret))
 
 
-def _host_is_attached_to_network(api, host, network_name, nic_name=None):
+def _host_is_attached_to_network_v3(api, host, network_name, nic_name=None):
     try:
         attachment = network_utils_v3.get_network_attachment(
             api, host, network_name, DC_NAME)
@@ -87,6 +87,20 @@ def _host_is_attached_to_network(api, host, network_name, nic_name=None):
 
     if nic_name:
         host_nic = host.nics.get(id=attachment.host_nic.id)
+        nt.assert_equals(nic_name, host_nic.name)
+    return attachment
+
+
+def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
+    try:
+        attachment = network_utils_v4.get_network_attachment(
+            engine, host, network_name, DC_NAME)
+    except StopIteration:  # there is no attachment of the network to the host
+        return False
+
+    if nic_name:
+        host_nic = next(nic for nic in host.nics_service().list()
+                        if nic.id == attachment.host_nic.id)
         nt.assert_equals(nic_name, host_nic.name)
     return attachment
 
@@ -137,15 +151,19 @@ def modify_host_ip_to_dhcp(api):
     # verify ip configuration.
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def detach_vm_network_from_host(api):
-    host = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)[0]
+    engine = api.system_service()
 
-    network_utils_v3.set_network_required_in_cluster(
-        api, VM_NETWORK, CLUSTER_NAME, False)
-    network_utils_v3.detach_network_from_host(api, host, VM_NETWORK)
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
 
-    nt.assert_false(_host_is_attached_to_network(api, host, VM_NETWORK))
+    network_utils_v4.set_network_required_in_cluster(
+        engine, VM_NETWORK, CLUSTER_NAME, False)
+    network_utils_v4.detach_network_from_host(engine, host_service, VM_NETWORK)
+
+    nt.assert_false(_host_is_attached_to_network(engine, host_service,
+                                                 VM_NETWORK))
 
 
 @testlib.with_ovirt_api
@@ -178,7 +196,7 @@ def bond_nics(prefix, api):
     utils.invoke_in_parallel(_bond_nics, range(1, len(hosts) + 1), hosts)
 
     for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        nt.assert_true(_host_is_attached_to_network(
+        nt.assert_true(_host_is_attached_to_network_v3(
             api, host, MIGRATION_NETWORK, nic_name=BOND_NAME))
 
 
@@ -206,8 +224,8 @@ def remove_bonding(api):
                              test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME))
 
     for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        nt.assert_false(_host_is_attached_to_network(api, host,
-                                                     MIGRATION_NETWORK))
+        nt.assert_false(_host_is_attached_to_network_v3(api, host,
+                                                        MIGRATION_NETWORK))
 
 
 _TEST_LIST = [

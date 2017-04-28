@@ -21,6 +21,8 @@
 from ovirtsdk4.types import (BootProtocol, HostNic, Ip, IpAddressAssignment,
                              IpVersion, Network, NetworkAttachment)
 
+import test_utils
+
 
 def _get_attachment_by_id(host, network_id):
     return next(att for att in host.network_attachments_service().list()
@@ -37,6 +39,20 @@ def attach_network_to_host(host, nic_name, network_name, ip_configuration,
     return host.setup_networks(
         modified_bonds=bonds,
         modified_network_attachments=[attachment],
+        check_connectivity=True)
+
+
+def detach_network_from_host(engine, host, network_name, bond_name=None):
+    network_id = engine.networks_service().list(
+        search='name={}'.format(network_name))[0].id
+
+    attachment = _get_attachment_by_id(host, network_id)
+    bonds = [nic for nic in host.nics_service().list() if bond_name and
+             nic.name == bond_name]  # there is no more than one bond
+
+    return host.setup_networks(
+        removed_bonds=bonds,
+        removed_network_attachments=[attachment],
         check_connectivity=True)
 
 
@@ -77,3 +93,30 @@ def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None,
                 version=IpVersion.V6)))
 
     return assignments
+
+
+def get_network_attachment(engine, host, network_name, dc_name):
+    dc = test_utils.data_center_service(engine, dc_name)
+
+    # CAVEAT: .list(search='name=Migration_Network') is ignored, and the first
+    #         network returned happened to be VM_Network in my case
+    network = next(net for net in dc.networks_service().list()
+                   if net.name == network_name)
+
+    return _get_attachment_by_id(host, network.id)
+
+
+def set_network_required_in_cluster(engine, network_name, cluster_name,
+                                    required):
+    clusters_service = engine.clusters_service()
+    cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
+    cluster_service = clusters_service.cluster_service(cluster.id)
+
+    network = engine.networks_service().list(
+        search='name={}'.format(network_name))[0]
+    network_service = cluster_service.networks_service().network_service(
+        id=network.id)
+
+    network.required = required
+
+    return network_service.update(network)

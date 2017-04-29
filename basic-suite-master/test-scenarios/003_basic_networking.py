@@ -25,7 +25,7 @@ from ovirtlago import testlib
 from ovirtsdk4.types import Bonding, HostNic, Option
 
 import test_utils
-from test_utils import network_utils_v3, network_utils_v4
+from test_utils import network_utils_v4
 
 
 # Environment (see control.sh and LagoInitFile.in)
@@ -76,19 +76,6 @@ def _ping(host, ip_address):
     ret = host.ssh(cmd + [ip_address])
     nt.assert_equals(ret.code, 0, 'Cannot ping {} from {}: {}'.format(
         ip_address, host.name(), ret))
-
-
-def _host_is_attached_to_network_v3(api, host, network_name, nic_name=None):
-    try:
-        attachment = network_utils_v3.get_network_attachment(
-            api, host, network_name, DC_NAME)
-    except IndexError:  # there is no attachment of the network to the host
-        return False
-
-    if nic_name:
-        host_nic = host.nics.get(id=attachment.host_nic.id)
-        nt.assert_equals(nic_name, host_nic.name)
-    return attachment
 
 
 def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
@@ -216,20 +203,24 @@ def verify_interhost_connectivity_ipv6(prefix):
     _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR.format(2))
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def remove_bonding(api):
+    engine = api.system_service()
+
     def _remove_bonding(host):
-        network_utils_v3.detach_network_from_host(api, host, MIGRATION_NETWORK,
-                                                  BOND_NAME)
+        host_service = engine.hosts_service().host_service(id=host.id)
+        network_utils_v4.detach_network_from_host(
+            engine, host_service, MIGRATION_NETWORK, BOND_NAME)
 
-    network_utils_v3.set_network_required_in_cluster(api, MIGRATION_NETWORK,
+    network_utils_v4.set_network_required_in_cluster(engine, MIGRATION_NETWORK,
                                                      CLUSTER_NAME, False)
-    utils.invoke_in_parallel(_remove_bonding,
-                             test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME))
+    utils.invoke_in_parallel(
+        _remove_bonding, test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME))
 
-    for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        nt.assert_false(_host_is_attached_to_network_v3(api, host,
-                                                        MIGRATION_NETWORK))
+    for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
+        host_service = engine.hosts_service().host_service(id=host.id)
+        nt.assert_false(_host_is_attached_to_network(engine, host_service,
+                                                     MIGRATION_NETWORK))
 
 
 _TEST_LIST = [

@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Red Hat, Inc.
+# Copyright 2016-2017 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import nose.tools as nt
-from ovirtsdk.xml import params
-
 from lago import utils
+import nose.tools as nt
 from ovirtlago import testlib
+from ovirtsdk.xml import params
+from ovirtsdk4.types import NetworkLabel
 
 import test_utils
 
@@ -37,24 +37,29 @@ LABELED_NET_NAME = 'Labeled_Network'
 LABELED_NET_VLAN_ID = 600
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def assign_hosts_network_label(api):
     """
     Assigns NETWORK_LABEL to first network interface of every host in cluster
     """
+    engine = api.system_service()
 
     def _assign_host_network_label(host):
-        nics = sorted(host.nics.list(), key=lambda n: n.get_name())
+        host_service = engine.hosts_service().host_service(id=host.id)
+        nics = sorted(host_service.nics_service().list(),
+                      key=lambda n: n.name)
         nt.assert_greater_equal(len(nics), 1)
         nic = nics[0]
-        return nic.labels.add(
-                params.Label(
+        nic_service = host_service.nics_service().nic_service(id=nic.id)
+        labels_service = nic_service.network_labels_service()
+        return labels_service.add(
+                NetworkLabel(
                     id=NETWORK_LABEL,
                     host_nic=nic
                 )
             )
 
-    hosts = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)
+    hosts = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)
     vec = utils.func_vector(_assign_host_network_label, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()

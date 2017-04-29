@@ -31,22 +31,6 @@ def _get_attachment_by_id(host, network_id):
     return attachment
 
 
-def attach_network_to_host(api, host, nic_name, network_name,
-                           ip_configuration, bonds=[]):
-    network_attachment = params.NetworkAttachment(
-        network=params.Network(name=network_name),
-        host_nic=params.HostNIC(name=nic_name),
-        ip_address_assignments=ip_configuration)
-
-    attachment_action = params.Action(
-        modified_bonds=params.HostNics(host_nic=bonds),
-        modified_network_attachments=params.NetworkAttachments(
-            network_attachment=[network_attachment]),
-        check_connectivity=True)
-
-    return host.setupnetworks(attachment_action)
-
-
 def detach_network_from_host(api, host, network_name, bond_name=None):
     network_id = api.networks.get(name=network_name).id
     attachment = _get_attachment_by_id(host, network_id)
@@ -60,27 +44,6 @@ def detach_network_from_host(api, host, network_name, bond_name=None):
                 id=attachment.id)]))
 
     return host.setupnetworks(removal_action)
-
-
-def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None,
-                                   ipv6_addr=None, ipv6_mask=None):
-    assignments = []
-    if ipv4_addr:
-        assignments.append(params.IpAddressAssignment(
-            assignment_method='static',
-            ip=params.IP(
-                address=ipv4_addr,
-                netmask=ipv4_mask)))
-    if ipv6_addr:
-        assignments.append(params.IpAddressAssignment(
-            assignment_method='static',
-            ip=params.IP(
-                address=ipv6_addr,
-                netmask=ipv6_mask,
-                version='v6')))
-
-    return params.IpAddressAssignments(
-        ip_address_assignment=assignments)
 
 
 def get_network_attachment(api, host, net_name, dc_name):

@@ -22,7 +22,7 @@ from lago import utils
 from netaddr.ip import IPAddress
 import nose.tools as nt
 from ovirtlago import testlib
-from ovirtsdk.xml import params
+from ovirtsdk4.types import Bonding, HostNic, Option
 
 import test_utils
 from test_utils import network_utils_v3, network_utils_v4
@@ -166,38 +166,42 @@ def detach_vm_network_from_host(api):
                                                  VM_NETWORK))
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def bond_nics(prefix, api):
+    engine = api.system_service()
+
     def _bond_nics(number, host):
-        slaves = params.Slaves(host_nic=[
-            params.HostNIC(name=nic) for nic in _host_vm_nics(
-                prefix, host.name, LIBVIRT_NETWORK_FOR_BONDING)])  # eth2, eth3
+        slaves = [HostNic(name=nic) for nic in _host_vm_nics(  # eth2, eth3
+                    prefix, host.name, LIBVIRT_NETWORK_FOR_BONDING)]
 
-        options = params.Options(option=[
-            params.Option(name='mode', value='active-backup'),
-            params.Option(name='miimon', value='200'),
-            ])
+        options = [
+            Option(name='mode', value='active-backup'),
+            Option(name='miimon', value='200'),
+            ]
 
-        bond = params.HostNIC(
+        bond = HostNic(
             name=BOND_NAME,
-            bonding=params.Bonding(slaves=slaves, options=options))
+            bonding=Bonding(slaves=slaves, options=options))
 
-        ip_configuration = network_utils_v3.create_static_ip_configuration(
+        ip_configuration = network_utils_v4.create_static_ip_configuration(
             MIGRATION_NETWORK_IPv4_ADDR.format(number),
             MIGRATION_NETWORK_IPv4_MASK,
             MIGRATION_NETWORK_IPv6_ADDR.format(number),
             MIGRATION_NETWORK_IPv6_MASK)
 
-        network_utils_v3.attach_network_to_host(
-            api, host, BOND_NAME, MIGRATION_NETWORK, ip_configuration, [bond])
+        host_service = engine.hosts_service().host_service(id=host.id)
+        network_utils_v4.attach_network_to_host(
+            host_service, BOND_NAME, MIGRATION_NETWORK, ip_configuration,
+            [bond])
 
-    hosts = test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME)
+    hosts = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)
     utils.invoke_in_parallel(_bond_nics, range(1, len(hosts) + 1), hosts)
 
-    for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        nt.assert_true(_host_is_attached_to_network_v3(
-            api, host, MIGRATION_NETWORK, nic_name=BOND_NAME))
+    for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
+        host_service = engine.hosts_service().host_service(id=host.id)
+        nt.assert_true(_host_is_attached_to_network(
+            engine, host_service, MIGRATION_NETWORK, nic_name=BOND_NAME))
 
 
 @testlib.with_ovirt_prefix

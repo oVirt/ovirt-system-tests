@@ -21,8 +21,7 @@
 from lago import utils
 import nose.tools as nt
 from ovirtlago import testlib
-from ovirtsdk.xml import params
-from ovirtsdk4.types import NetworkLabel
+from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
 import test_utils
 
@@ -66,43 +65,45 @@ def assign_hosts_network_label(api):
     nt.assert_true(all(vt.join_all()))
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_labeled_network(api):
     """
     Creates a labeled network
     """
+    engine = api.system_service()
 
     # create network
-    labeled_net = params.Network(
+    labeled_net = Network(
         name=LABELED_NET_NAME,
-        data_center=params.DataCenter(
+        data_center=DataCenter(
             name=DC_NAME,
         ),
         description='Labeled network on VLAN {}'.format(LABELED_NET_VLAN_ID),
-        usages=params.Usages(),
+        usages=[],
         # because only one non-VLAN network, here 'ovirtmgmt', can be assigned
         # to each nic, this additional network has to be a VLAN network
-        vlan=params.VLAN(
+        # NOTE: we have added three more NICs since creating this test
+        vlan=Vlan(
             id=LABELED_NET_VLAN_ID,
         ),
     )
-    net = api.networks.add(labeled_net)
+    net = engine.networks_service().add(labeled_net)
     nt.assert_true(net)
+
+    network_service = engine.networks_service().network_service(id=net.id)
+    labels_service = network_service.network_labels_service()
 
     # assign label to the network
     nt.assert_true(
-        net.labels.add(
-            params.Label(
+        labels_service.add(
+            NetworkLabel(
                 id=NETWORK_LABEL
             )
         )
     )
     nt.assert_equal(
-        len(
-            net.labels.list(
-                id=NETWORK_LABEL
-            )
-        ),
+        len(list(label for label in labels_service.list()
+                 if label.id == NETWORK_LABEL)),
         1
     )
 

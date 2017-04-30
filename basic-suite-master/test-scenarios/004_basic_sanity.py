@@ -138,16 +138,17 @@ def add_disk(api):
     for vm_name, disk_name, sd_name in (
             (VM1_NAME, DISK1_NAME, SD_NFS_NAME),
             (VM2_NAME, DISK2_NAME, SD_SECOND_NFS_NAME)):
-        disk_params.name = disk_name
-        disk_params.storage_domains = params.StorageDomains(
-            storage_domain=[
-                params.StorageDomain(
-                    name=sd_name,
-                ),
-            ])
-        nt.assert_true(
-            api.vms.get(vm_name).disks.add(disk_params)
-        )
+        if api.vms.get(vm_name) is not None:
+            disk_params.name = disk_name
+            disk_params.storage_domains = params.StorageDomains(
+                storage_domain=[
+                    params.StorageDomain(
+                        name=sd_name,
+                    ),
+                ])
+            nt.assert_true(
+                api.vms.get(vm_name).disks.add(disk_params)
+            )
 
     if glance_disk:
         testlib.assert_true_within_short(
@@ -156,10 +157,11 @@ def add_disk(api):
         )
     for vm_name, disk_name in ((VM1_NAME, DISK1_NAME),
                                (VM2_NAME, DISK2_NAME)):
-        testlib.assert_true_within_short(
-            lambda:
-            api.vms.get(vm_name).disks.get(disk_name).status.state == 'ok'
-        )
+        if api.vms.get(vm_name) is not None:
+            testlib.assert_true_within_short(
+                lambda:
+                api.vms.get(vm_name).disks.get(disk_name).status.state == 'ok'
+            )
 
 
 @testlib.with_ovirt_api
@@ -215,6 +217,9 @@ def add_directlun(prefix):
 
 
 def snapshot_cold_merge(api):
+    if api.vms.get(VM1_NAME) is None:
+        raise SkipTest('Glance is not available')
+
     dead_snap1_params = params.Snapshot(
         description='dead_snap1',
         persist_memorystate=False,
@@ -405,6 +410,9 @@ def template_export(api):
 
 
 def snapshot_live_merge(api):
+    if api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME) is None:
+        raise SkipTest('Glance is not available')
+
     disk_id = api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).id
 
     live_snap1_params = params.Snapshot(

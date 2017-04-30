@@ -694,7 +694,7 @@ def list_glance_images_4(api):
         all_images = glance_domain_service.images_service().list()
         if len(all_images):
             GLANCE_AVAIL = True
-    except errors.RequestError:
+    except sdk4.Error:
         raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_4.__name__ )
 
 
@@ -784,7 +784,7 @@ def check_glance_connectivity_4(api):
         try:
             glance.test_connectivity()
             avail = True
-        except errors.RequestError:
+        except sdk4.Error:
             pass
 
     return avail

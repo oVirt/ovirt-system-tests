@@ -18,10 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-def hosts_in_cluster_v3(api, cluster_name):
-    hosts = api.hosts.list(query='cluster={}'.format(cluster_name))
-    return sorted(hosts, key=lambda host: host.name)
-
 
 def hosts_in_cluster_v4(root, cluster_name):
     hosts = root.hosts_service().list(search='cluster={}'.format(cluster_name))

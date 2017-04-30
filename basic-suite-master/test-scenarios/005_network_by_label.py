@@ -18,12 +18,15 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import functools
+
 from lago import utils
 import nose.tools as nt
 from ovirtlago import testlib
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
 import test_utils
+from test_utils import network_utils_v4
 
 
 # DC/Cluster
@@ -34,6 +37,18 @@ CLUSTER_NAME = 'test-cluster'
 NETWORK_LABEL = 'NETWORK_LABEL'
 LABELED_NET_NAME = 'Labeled_Network'
 LABELED_NET_VLAN_ID = 600
+
+
+def _host_is_attached_to_network(engine, host, network_name):
+    try:
+        attachment = network_utils_v4.get_network_attachment(
+            engine, host, network_name, DC_NAME)
+    except StopIteration:  # there is no attachment of the network to the host
+        return False
+
+    # 'return attachment' cannot be used because assert_true_within_short
+    # seems to require True and not just a bool(value) that evaluates as True
+    return True
 
 
 @testlib.with_ovirt_api4
@@ -108,29 +123,31 @@ def add_labeled_network(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def assign_labeled_network(api):
     """
     Adds the labeled network to the cluster and asserts the hosts are attached
     """
+    engine = api.system_service()
 
-    labeled_net = api.networks.get(name=LABELED_NET_NAME)
-
-    def _host_is_in_labeled_network():
-        for networkattachment in host.networkattachments.list():
-            network = api.networks.get(id=networkattachment.network.get_id())
-            if network.name == LABELED_NET_NAME:
-                return True
-        return False
+    labeled_net = engine.networks_service().list(
+        search='name={}'.format(LABELED_NET_NAME))[0]
 
     # the logical network will be automatically assigned to all host network
     # interfaces with that label asynchronously
+    clusters_service = engine.clusters_service()
+    cluster = clusters_service.list(search='name={}'.format(CLUSTER_NAME))[0]
+
+    cluster_service = clusters_service.cluster_service(cluster.id)
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(labeled_net)
+        cluster_service.networks_service().add(labeled_net)
     )
 
-    for host in test_utils.hosts_in_cluster_v3(api, CLUSTER_NAME):
-        testlib.assert_true_within_short(_host_is_in_labeled_network)
+    for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
+        host_service = engine.hosts_service().host_service(id=host.id)
+        testlib.assert_true_within_short(
+            functools.partial(_host_is_attached_to_network, engine,
+                              host_service, LABELED_NET_NAME))
 
 
 _TEST_LIST = [

@@ -45,11 +45,17 @@ Optional arguments:
 
     -r,--reposync-config
         Use a custom reposync-config file, the default is SUITE/reposync-config.repo
+
     -l,--local-rpms
         Install the given RPMs from Lago's internal repo.
         The RPMs are being installed on the host before any tests being invoked.
         Please note that this option WILL modify the environment it's running
-        on and it requires root permissions."
+        on and it requires root permissions.
+
+    -i,--images
+        Create qcow2 images of the vms that were created by the tests in SUITE
+"
+
 }
 
 ci_msg_if_fails() {
@@ -67,6 +73,18 @@ del_failure_msg() {
     local repo_root_dir=$(dirname $SUITE)
     local msg_path="${repo_root_dir}/failure_msg.txt"
     [[ -e "$msg_path" ]] && rm "$msg_path"
+}
+
+
+get_engine_version() {
+    local root_dir="$PWD"
+    cd $PREFIX
+    local version=$(\
+        $CLI --out-format flat ovirt status | \
+        gawk 'match($0, /^global\/version:\s+(.*)$/, a) {print a[1];exit}' \
+    )
+    cd "$root_dir"
+    echo "$version"
 }
 
 
@@ -110,6 +128,43 @@ env_start () {
     cd $PREFIX
     $CLI start
     cd -
+}
+
+env_stop () {
+    ci_msg_if_fails $FUNCNAME
+    echo "#########################"
+    cd $PREFIX
+    $CLI ovirt stop
+    cd -
+}
+
+
+env_create_images () {
+    ci_msg_if_fails $FUNCNAME
+    echo "#########################"
+
+    local export_dir="${PWD}/exported_images"
+    local engine_version=$(get_engine_version)
+    [[ -z "$engine_version" ]] && \
+        echo "Failed to get the engine's version" && return 1
+    local name="ovirt_${engine_version}_demo_$(date +%Y%m%d%H%M)"
+    local archive_name="${name}.tar.xz"
+    local checksum_name="${name}.md5"
+
+    cd $PREFIX
+    sleep 2 #Make sure that we can put the hosts in maintenance
+    env_stop
+    $CLI --out-format yaml export --dst-dir "$export_dir" --standalone
+    cd -
+    cd $export_dir
+    echo "$engine_version" > version.txt
+    python "${OST_REPO_ROOT}/common/scripts/modify_init.py" LagoInitFile
+    echo "Compressing images"
+    local files=($(ls "$export_dir"))
+    tar -cvS "${files[@]}" | xz -T 0 -v --stdout > "$archive_name"
+    md5sum "$archive_name" > "$checksum_name"
+    cd -
+
 }
 
 
@@ -320,8 +375,8 @@ install_local_rpms() {
 
 options=$( \
     getopt \
-        -o ho:e:n:b:cs:r:l: \
-        --long help,output:,engine:,node:,boot-iso:,cleanup \
+        -o ho:e:n:b:cs:r:l:i \
+        --long help,output:,engine:,node:,boot-iso:,cleanup,images \
         --long extra-rpm-source,reposync-config:,local-rpms: \
         -n 'run_suite.sh' \
         -- "$@" \
@@ -365,9 +420,13 @@ while true; do
             RPMS_TO_INSTALL+=("$2")
             shift 2
             ;;
-         -r|--reposync-config)
+        -r|--reposync-config)
             readonly CUSTOM_REPOSYNC=$(realpath "$2")
             shift 2
+            ;;
+        -i|--images)
+            readonly CREATE_IMAGES=true
+            shift
             ;;
         --)
             shift
@@ -381,6 +440,8 @@ if [[ -z "$1" ]]; then
     usage
     exit 1
 fi
+
+export OST_REPO_ROOT="$PWD"
 
 export SUITE="$(realpath "$1")"
 if [ -z "$PREFIX" ]; then
@@ -412,5 +473,8 @@ source "${SUITE}/control.sh"
 
 prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"
 run_suite
+if [[ ! -z "$CREATE_IMAGES" ]]; then
+    env_create_images
+fi
 # No error has occurred, we can delete the error msg.
 del_failure_msg

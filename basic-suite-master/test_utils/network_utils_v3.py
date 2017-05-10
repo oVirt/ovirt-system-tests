@@ -21,20 +21,6 @@
 from ovirtsdk.xml import params
 
 
-def set_network_usages_in_cluster(api, network_name, cluster_name, usages):
-    cluster = api.clusters.get(cluster_name)
-    cluster_network = cluster.networks.get(network_name)
-    cluster_network.set_usages(usages)
-    return cluster_network.update()
-
-
-def set_network_mtu(api, network_name, dc_name, mtu):
-    dc = api.datacenters.get(dc_name)
-    network = dc.networks.get(network_name)
-    network.set_mtu(mtu)
-    return network.update()
-
-
 def create_network_params(network_name, dc_name, **net_params):
     return params.Network(
         name=network_name,

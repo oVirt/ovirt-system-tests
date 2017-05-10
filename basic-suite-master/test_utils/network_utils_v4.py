@@ -106,6 +106,21 @@ def get_network_attachment(engine, host, network_name, dc_name):
     return _get_attachment_by_id(host, network.id)
 
 
+def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
+    clusters_service = engine.clusters_service()
+    cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
+    cluster_service = clusters_service.cluster_service(cluster.id)
+
+    network = engine.networks_service().list(
+        search='name={}'.format(network_name))[0]
+    network_service = cluster_service.networks_service().network_service(
+        id=network.id)
+
+    network.usages = usages
+
+    return network_service.update(network)
+
+
 def set_network_required_in_cluster(engine, network_name, cluster_name,
                                     required):
     clusters_service = engine.clusters_service()
@@ -118,5 +133,17 @@ def set_network_required_in_cluster(engine, network_name, cluster_name,
         id=network.id)
 
     network.required = required
+
+    return network_service.update(network)
+
+
+def set_network_mtu(engine, network_name, dc_name, mtu):
+    dc = test_utils.data_center_service(engine, dc_name)
+
+    network = next(net for net in dc.networks_service().list()
+                   if net.name == network_name)
+    network_service = dc.networks_service().network_service(id=network.id)
+
+    network.mtu = mtu
 
     return network_service.update(network)

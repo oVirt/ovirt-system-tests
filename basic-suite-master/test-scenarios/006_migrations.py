@@ -22,9 +22,10 @@ from netaddr.ip import IPAddress
 import nose.tools as nt
 from ovirtlago import testlib
 from ovirtsdk.xml import params
+from ovirtsdk4.types import NetworkUsage
 
 import test_utils
-from test_utils import network_utils_v3, network_utils_v4
+from test_utils import network_utils_v4
 
 
 DC_NAME = 'test-dc'
@@ -44,19 +45,19 @@ MIGRATION_NETWORK_IPv6_MASK = '64'
 VM0_NAME = 'vm0'
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def prepare_migration_vlan(api):
-    usages = params.Usages(['migration'])
+    engine = api.system_service()
 
     nt.assert_true(
-        network_utils_v3.set_network_usages_in_cluster(
-            api, MIGRATION_NETWORK, CLUSTER_NAME, usages)
+        network_utils_v4.set_network_usages_in_cluster(
+            engine, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
     )
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
     nt.assert_true(
-        network_utils_v3.set_network_mtu(
-            api, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
+        network_utils_v4.set_network_mtu(
+            engine, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
     )
 
 

@@ -21,8 +21,7 @@
 from netaddr.ip import IPAddress
 import nose.tools as nt
 from ovirtlago import testlib
-from ovirtsdk.xml import params
-from ovirtsdk4.types import NetworkUsage
+from ovirtsdk4.types import Host, NetworkUsage, VmStatus
 
 import test_utils
 from test_utils import network_utils_v4
@@ -61,29 +60,28 @@ def prepare_migration_vlan(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def migrate_vm(prefix, api):
+    engine = api.system_service()
+
     def current_running_host():
-        host_id = api.vms.get(VM0_NAME).host.id
-        return api.hosts.get(id=host_id).name
+        vm = engine.vms_service().list(search='name={}'.format(VM0_NAME))[0]
+        host = engine.hosts_service().list(
+            search='id={}'.format(vm.host.id))[0]
+        return host.name
 
     src_host = current_running_host()
     dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
                        if h.name() != src_host])[0]
 
-    migrate_params = params.Action(
-        host=params.Host(
-            name=dst_host
-        ),
-    )
-
-    nt.assert_true(
-      api.vms.get(VM0_NAME).migrate(migrate_params)
-    )
+    vm = engine.vms_service().list(search='name={}'.format(VM0_NAME))[0]
+    # migrate() currently only returns None, but checks for errors internally
+    engine.vms_service().vm_service(vm.id).migrate(host=Host(name=dst_host))
 
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up'
+        lambda: engine.vms_service().list(
+            search='name={}'.format(VM0_NAME))[0].status == VmStatus.UP
     )
 
     nt.assert_equals(

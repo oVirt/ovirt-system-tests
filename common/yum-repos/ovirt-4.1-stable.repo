@@ -8,7 +8,7 @@ gpg_check=0
 name=oVirt 4.1 Official release
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng*
+exclude=ovirt-release-host-node ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng*
  ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows openvswitch-test
  openvswitch-devel ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows ovirt-engine-nodejs-modules
  ovirt-engine-yarn ovirt-optimizer* openvswitch-test openvswitch-devel ovirt-engine-nodejs
@@ -35,7 +35,7 @@ enabled=1
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
 enabled=1
-exclude=*-debuginfo glusterfs-regression-tests heketi* glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
+exclude=glusterfs-resource-agents *-debuginfo glusterfs-regression-tests heketi* glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
 max_connections=5
 
 [centos-base-el7]
@@ -153,4 +153,4 @@ exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovir
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 enabled=1
-exclude=nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana
+exclude=osops-tools-monitoring-oschecks nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana

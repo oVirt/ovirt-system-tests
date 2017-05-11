@@ -53,6 +53,7 @@ run_suite(){
         "http://templates.ovirt.org/repo/repo.metadata" \
         "$suite/LagoInitFile"
     env_repo_setup
+    [[ -n $RPMS_TO_INSTALL ]] && install_local_rpms
     env_start
     env_deploy
     he_deploy || failed=true

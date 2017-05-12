@@ -197,11 +197,7 @@ env_cleanup() {
         echo "Lago cleanup did not work (that is ok), forcing libvirt"
         env_libvirt_cleanup "${SUITE##*/}" "$uid"
     fi
-    if ! [[ -z "${PATH_TO_CONFIG}" ]]; then
-        # Cleanup repo file pointing to lago's internal repo
-        echo "Removing internal repo config from yum configs"
-        rm -f "${PATH_TO_CONFIG}"
-    fi
+    restore_package_manager_config
     echo "======== Cleanup done"
 }
 
@@ -256,30 +252,67 @@ check_ram() {
     fi
 }
 
+get_package_manager() {
+    [[ -x /bin/dnf ]] && echo dnf || echo yum
+}
+
+get_package_manager_config() {
+    local pkg_manager
+
+    pkg_manager="$(get_package_manager)"
+    echo "/etc/${pkg_manager}/${pkg_manager}.conf"
+}
+
+backup_package_manager_config() {
+    local path_to_config  path_to_config_bak
+
+    path_to_config="$(get_package_manager_config)"
+    path_to_config_bak="${path_to_config}.ost_bak"
+
+    if [[ -e "$path_to_config_bak" ]]; then
+        # make sure we only try to backup once
+        return
+    fi
+    cp "$path_to_config" "$path_to_config_bak"
+}
+
+restore_package_manager_config() {
+    local path_to_config  path_to_config_bak
+
+    path_to_config="$(get_package_manager_config)"
+    path_to_config_bak="${path_to_config}.ost_bak"
+
+    if ! [[ -e "$path_to_config_bak" ]]; then
+        return
+    fi
+    cp -f "$path_to_config_bak" "$path_to_config"
+    rm "$path_to_config_bak"
+}
 
 install_local_rpms() {
-    # Global parameter to be used later with the cleanup function
-    PATH_TO_CONFIG="/etc/yum.repos.d/internal.repo"
+    local pkg_manager os path_to_config local_repo
 
-    local os=$(rpm -E %{dist}) \
-        pkg_manager \
-        uniq_rpms_list \
-        local_repo
+    [[ ${#RPMS_TO_INSTALL[@]} -le 0 ]] && return
 
+    pkg_manager="$(get_package_manager)"
+    path_to_config="$(get_package_manager_config)"
+
+    os=$(rpm -E %{dist})
     os=${os#.}
     os=${os%.*}
     local_repo="file://${PREFIX}/current/internal_repo/${os}"
 
-    [[ -x /bin/dnf ]] && pkg_manager="dnf" || pkg_manager="yum"
-    echo "[internal_repo]" >> "$PATH_TO_CONFIG"
-    echo "name=Lago's internal repo" >> "$PATH_TO_CONFIG"
-    echo "baseurl=$local_repo" >> "$PATH_TO_CONFIG"
-    echo "enabled=1" >> "$PATH_TO_CONFIG"
-    echo "gpgcheck=0" >> "$PATH_TO_CONFIG"
-    echo "max_connections=5" >> "$PATH_TO_CONFIG"
+    backup_package_manager_config
+    (
+        echo
+        echo "[internal_repo]"
+        echo "name=Lago's internal repo"
+        echo "baseurl=$local_repo"
+        echo "enabled=1"
+        echo "gpgcheck=0"
+    ) >> "$path_to_config"
 
-    uniq_rpms_list=$(echo ${RPMS_TO_INSTALL[@]} | sort -u)
-    $pkg_manager -y install ${RPMS_TO_INSTALL[@]} || return 1
+    $pkg_manager -y install "${RPMS_TO_INSTALL[@]}" || return 1
 
     return 0
 }

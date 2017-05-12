@@ -45,7 +45,7 @@ run_suite () {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup_base_version
-    [[ -n $RPMS_TO_INSTALL ]] && install_local_rpms
+    install_local_rpms
     env_start
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"

@@ -86,11 +86,16 @@ elif [[ -e "$PWD/extra_sources" ]]; then
     extra_sources_cmd="-s \"conf:$PWD/extra_sources\""
 fi
 
+if [[ ${#DEFAULT_RPMS[@]} -gt 0 ]]; then
+    local_rpms_args=($(printf -- '-l %s ' "${DEFAULT_RPMS[@]}"))
+else
+    local_rpms_args=""
+fi
 if [[ -z "$extra_sources_cmd" ]]; then
-    ./run_suite.sh -o "$run_path" --local-rpms="${DEFAULT_RPMS[*]}" "$SUITE" \
+    ./run_suite.sh -o "$run_path" "${local_rpms_args[@]}" "$SUITE" \
         || res=$?
 else
     ./run_suite.sh -o "$run_path" "$extra_sources_cmd"  \
-        --local-rpms="${DEFAULT_RPMS[*]}" "$SUITE" || res=$?
+        "${local_rpms_args[@]}" "$SUITE" || res=$?
 fi
 exit $res

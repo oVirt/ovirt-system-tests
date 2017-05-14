@@ -5,59 +5,9 @@
 # Project's root
 PROJECT="$PWD"
 
-#Constant regex
-COMMONS_REGEX=(common check-patch.sh suite.sh run_suite.sh)
-BASIC_SUITES_REGEX=($(ls automation | grep -Po "^basic_suite_.*(?=.sh)"))
-ALL_SUITES_REGEX=($(ls automation |grep -Po ".*_suite_.*(?=\.)" | sort | uniq))
-
 #Array to hold all the suites
 #which will be executed
-SUITES_ARR=()
-
-IFS='/' read -r -a git_show <<< $(git show --pretty='format:' --name-only)
-NEW_CHANGES=$( \
-for i in ${git_show[@]}; do
-    echo $i
-done | sort | uniq )
-
-#Check if any common file was changed
-#and run all basic suites
-for common_change in "${COMMONS_REGEX[@]}"
-do
-  if grep -E "$common_change" <<< "${NEW_CHANGES[@]}"; then
-    SUITES_ARR=(${BASIC_SUITES_REGEX[@]})
-    break
-  fi
-done
-
-#Check if any suite was changed
-for suite in "${ALL_SUITES_REGEX[@]}"
-do
-  suite_tr=$(tr '_' '-' <<< "$suite")
-  if grep -E "$suite" <<< "${NEW_CHANGES[@]}"; then
-    SUITES_ARR+=($suite)
-  elif grep -E "$suite_tr" <<< "${NEW_CHANGES[@]}"; then
-    SUITES_ARR+=($suite)
-  fi
-done
-
-#Check if no changes were found
-if [[ -z $SUITES_ARR ]]; then
-    echo "*********************\n
-    NO CHANGES WERE FOUND\n
-    *********************"
-
-    exit 0;
-fi
-
-
-#Remove duplicates and sort the suites
-SUITES_TO_RUN=($(
-  printf '%s\n' "${SUITES_ARR[@]}" \
-  | awk -F- '{print $NF","$0}' \
-  | sort -t"," -k1 -r -u \
-  | cut -d"," -f2
-))
+SUITES_TO_RUN=$(automation/change_resolver.py)
 
 # This function will collect the logs
 # of each suite to a different directory
@@ -80,6 +30,7 @@ collect_all_logs() {
     # The root directory is jenkins' workspace
     mv *__logs logs
     mv logs exported-artifacts
+    mv *.log exported-artifacts
 }
 
 # collect the logs  on failure
@@ -101,18 +52,15 @@ fi
 trap 'on_error $LINENO' SIGTERM ERR
 
 echo "Suites to run:"
-echo "${SUITES_TO_RUN[@]}"
+echo "${SUITES_TO_RUN}"
 
 # run on each version + collect its logs
-for suite in "${SUITES_TO_RUN[@]}"
+for suite in ${SUITES_TO_RUN}
 do
-    #Extract version:
-    suite_tr=$(tr '_' '-' <<< "$suite")
-    ver=$(echo "$suite_tr" | rev | cut -d"-" -f1 | rev)
-
-    if [[ -e automation/"${suite}.sh" ]]; then
-        echo "running $suite\.sh"
-        automation/"${suite}.sh"
+    suite_exec_script="automation/${suite/-suite-/_suite_}.sh"
+    if [[ -e "$suite_exec_script" ]]; then
+        echo "running $suite_exec_script"
+        ./$suite_exec_script
     else
         tput setaf 1; echo "!!! Could not find execution script for $suite"
     fi

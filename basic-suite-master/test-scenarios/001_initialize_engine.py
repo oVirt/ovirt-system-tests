@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import os
+import socket
 
 from tempfile import NamedTemporaryFile
 import nose.tools as nt
@@ -42,12 +43,15 @@ def initialize_engine(prefix):
         nic.get('ip') for nic in nics if nets[nic.get('net')].is_management()
     ]
 
+    host_name = socket.getfqdn()
+    host_ip = socket.gethostbyname(host_name)
+
     with NamedTemporaryFile(delete=False) as sso_conf:
         sso_conf.write(
             (
                 'SSO_ALTERNATE_ENGINE_FQDNS='
-                '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0}"\n'
-            ).format(engine_ip.pop())
+                '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0} {1} {2}"\n'
+            ).format(engine_ip.pop(), host_name, host_ip)
         )
 
     fqdn_conf = '/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf'

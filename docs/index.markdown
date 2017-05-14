@@ -15,3 +15,6 @@ Welcome to oVirt System Tests Documentation Page!
 ## How It works
 * [Package Management](how-it-works/package_management.markdown)
 * [Jinja2 template support](how-it-works/jinja_templates_in_lagoinitfile.markdown)
+
+## Suites
+* [Performance Suite](general/performance-suite.markdown)

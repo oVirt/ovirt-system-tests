@@ -1,0 +1,62 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    engine_config:
+      InstallVds: "false"
+      UseHostNameIdentifier: "true"
+      SSLEnabled: "false"
+      EncryptHostCommunication: "false"
+      MaxNumberOfHostsInStoragePool: 1000
+
+  tasks:
+    - name: Engine config for fake lab
+      shell: "echo {{ item.key }}= | /usr/bin/engine-config -s {{ item.key }}={{ item.value }} --cver=general -p /proc/self/fd/0"
+      with_dict: "{{ engine_config }}"
+
+    - name: Restart engine after config changes
+      service:
+        name: ovirt-engine
+        state: restarted
+
+    - name: wait for engine to come up
+      uri:
+        url: "http://127.0.0.1:80/ovirt-engine/services/health"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 60
+      delay: 1
+
+    - name: Install vdsmfake
+      yum:
+        name: http://jenkins.ovirt.org/job/ovirt-vdsmfake_master_build-artifacts-on-demand-el7-x86_64/39/artifact/exported-artifacts/x86_64/ovirt-vdsmfake-1.0-c7ef406.el7.centos.x86_64.rpm
+        state: present
+
+    - name: Start vdsmfake
+      shell: "vdsmfake &"
+    - name: Wait till vdsmfake is listening
+      uri:
+        url: "http://127.0.0.1:8081"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 60
+      delay: 1
+
+    - name: Set NetworkManager to use dnsmasq
+      ini_file:
+        dest: /etc/NetworkManager/conf.d/dns.conf
+        option: dns
+        value: dnsmasq
+        section: main
+
+    - name: Resolve vdsm.fake to 127.0.0.1
+      copy:
+        dest: /etc/NetworkManager/dnsmasq.d/vdsmfake.conf
+        content: address=/vdsm.fake/127.0.0.1
+
+    - service:
+        name: NetworkManager
+        state: reloaded
+...

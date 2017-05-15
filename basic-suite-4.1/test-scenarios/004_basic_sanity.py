@@ -130,19 +130,21 @@ def add_disk(api):
         active=True,
         bootable=True,
     )
-    nt.assert_true(
-        api.vms.get(VM1_NAME).disks.add(disk_params)
-    )
+    if api.vms.get(VM1_NAME) is not None:
+        nt.assert_true(
+            api.vms.get(VM1_NAME).disks.add(disk_params)
+        )
 
     if glance_disk:
         testlib.assert_true_within_short(
             lambda:
             api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
         )
-    testlib.assert_true_within_short(
-        lambda:
-        api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
-    )
+    if api.vms.get(VM1_NAME) is not None:
+        testlib.assert_true_within_short(
+            lambda:
+            api.vms.get(VM1_NAME).disks.get(DISK1_NAME).status.state == 'ok'
+        )
 
 
 @testlib.with_ovirt_api
@@ -198,6 +200,9 @@ def add_directlun(prefix):
 
 
 def snapshot_cold_merge(api):
+    if api.vms.get(VM1_NAME) is None:
+        raise SkipTest('Glance is not available')
+
     dead_snap1_params = params.Snapshot(
         description='dead_snap1',
         persist_memorystate=False,
@@ -371,6 +376,9 @@ def template_export(api):
 
 
 def snapshot_live_merge(api):
+    if api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME) is None:
+        raise SkipTest('Glance is not available')
+
     disk_id = api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).id
 
     live_snap1_params = params.Snapshot(

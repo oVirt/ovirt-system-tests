@@ -43,7 +43,7 @@ ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "."
 echo "$ADDR engine" >> /etc/hosts
 
 install_firewalld
-yum install --nogpgcheck -y --downloaddir=/dev/shm ntp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
+yum install --nogpgcheck -y --downloaddir=/dev/shm ntp net-snmp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "yum install failed with status ${RET_CODE}."
@@ -67,3 +67,18 @@ sed -i \
     -e '/.*logger category="org.ovirt"/{ n; s/INFO/DEBUG/ }' \
     -e '/.*<root-logger>/{ n; s/INFO/DEBUG/ }' \
     /usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in
+
+cat > /etc/ovirt-engine/notifier/notifier.conf.d/20-snmp.conf << EOF
+SNMP_MANAGERS="localhost:162"
+SNMP_COMMUNITY=public
+SNMP_OID=1.3.6.1.4.1.2312.13.1.1
+FILTER="include:*(snmp:) \${FILTER}"
+EOF
+
+echo "[snmp] logOption f /var/log/snmptrapd.log" >> /etc/snmp/snmptrapd.conf
+echo "disableAuthorization yes" >> /etc/snmp/snmptrapd.conf
+
+cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
+
+systemctl start snmptrapd
+systemctl enable snmptrapd

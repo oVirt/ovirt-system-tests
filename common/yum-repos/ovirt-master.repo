@@ -72,7 +72,7 @@ includepkgs=seavgabios-bin java-1.8.0-openjdk-devel libsemanage initscripts pyth
  xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3 xz-java yajl yum-plugin-versionlock
  yum-utils NetworkManager-config-server device-mapper-libs spice-server systemd-python systemd systemd-sysv systemd-libs libgudev1 hystrix-core hystrix-metrics-event-stream archaius-core
  rxjava jctools 389-ds-base 389-ds-base-libs nss nss-sysinit nss-tools net-snmp-agent-libs openldap-clients openldap cyrus-sasl-gssapi  libcacard libcacard-tools audit-libs audit nspr
- nss-util
+ nss-util net-snmp
 exclude= *i686
 max_connections=10
 

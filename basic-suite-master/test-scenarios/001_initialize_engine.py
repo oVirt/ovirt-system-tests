@@ -64,6 +64,17 @@ def test_initialize_engine(prefix):
         result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
     )
 
+    result = engine.ssh(
+        [
+            'systemctl',
+            'start',
+            'ovirt-engine-notifier',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'engine-ovirt-notifier failed. Exit code is %s' % result.code
+    )
+
     # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
     result = engine.ssh(
         [
@@ -91,4 +102,7 @@ def test_initialize_engine(prefix):
 
     testlib.assert_true_within_short(
         lambda: engine.service('ovirt-engine-dwhd').alive()
+    )
+    testlib.assert_true_within_short(
+        lambda: engine.service('ovirt-engine-notifier').alive()
     )

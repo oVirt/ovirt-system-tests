@@ -9,9 +9,9 @@ name=oVirt Master Latest Tested
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
 enabled=1
 max_connections=10
-exclude = qemu-kvm-tools-ev rubygem-ovirt-engine-sdk4-doc ovirt-engine-sdk-java-javadoc ovirt-guest-agent-windows ovirt-node-ng-image ovirt-guest-tools-iso ovirt-engine-appliance
+exclude = qemu-kvm-tools-ev rubygem-ovirt-engine-sdk4-doc ovirt-engine-sdk-java-javadoc ovirt-guest-* ovirt-node-ng-image ovirt-engine-appliance ioprocess-debuginfo
  unboundid-ldapsdk-javadoc java-ovirt-engine-sdk4 ovirt-engine-sdk-java ovirt-engine-yarn ovirt-engine-nodejs-* libcacard-devel-ev rubygem-ovirt-engine-sdk4 vdsm-tests ovirt-live-artwork
- ovirt-release-host-node ovirt-node-ng-docs *-javadoc otopi-debug-plugins otopi-devtools
+ ovirt-release-host-node ovirt-node-ng-docs *-javadoc otopi-debug-plugins otopi-devtools *sdk4-debuginfo* qemu-kvm-ev-debuginfo ovirt-engine-phantomjs-debuginfo
 proxy=_none_
 
 [ovirt-master-snapshot-static-el7]
@@ -104,7 +104,7 @@ includepkgs=gtk2 python2-pyasn1 avahi-libs libtool-ltdl lsscsi python-rhsm socat
  xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common xorg-x11-font-utils xorg-x11-fonts-Type1 xpp3 xz-java yajl yum-plugin-versionlock
  yum-utils dom4j easymock2 device-mapper-persistent-data dosfstools PyYAML libyaml spice-server python-enum34 python-webob json-glib libatasmart hystrix-core hystrix-metrics-event-stream archaius-core
  rxjava jctools lm_sensors-libs perl-Archive-Tar perl-DB_File perl-IO-Zlib perl-Mozilla-LDAP perl-NetAddr-IP perl-Package-Constants svrcore cyrus-sasl-lib python-ldap python-dateutil libxml2-python libxml2
- python-urlgrabber rpcbind nfs-utils libtevent quota quota-nls libtalloc apache-commons-collections copy-jdk-configs httpd httpd-tools libpng mod_ssl openssl postgresql postgresql-libs postgresql-server
+ python-urlgrabber rpcbind nfs-utils libtevent quota quota-nls libtalloc apache-commons-collections copy-jdk-configs libpng mod_ssl openssl postgresql postgresql-libs postgresql-server
  chkconfig nss-softokn nss-softokn-freebl openssl-libs libselinux libselinux-python libselinux-utils audit-libs openldap-clients cyrus-sasl cyrus-sasl-gssapi libsepol audit GeoIP cyrus-sasl-md5 openldap
  selinux-policy selinux-policy-targeted graphite2 sanlock-python libunwind gnutls gnutls-dane gnutls-utils ntp xfsprogs numactl sanlock-python sanlock-lib sanlock ipxe-roms-qemu initscripts ntpdate
  net-snmp-utils net-snmp-libs libnl3 libnl3-cli pciutils pciutils-libs cryptsetup-libs kpartx firewalld-filesystem libpci3 kmod kmod-libs firewalld-filesystem firewalld python-firewall ipset ipset-libs

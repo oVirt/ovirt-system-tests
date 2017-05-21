@@ -153,4 +153,9 @@ exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovir
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 enabled=1
-exclude=osops-tools-monitoring-oschecks nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana
+exclude=sensu rubygem-sensu* osops-tools-monitoring-oschecks nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana
+
+[copr-sac-gdeploy-el7]
+name=Copr repo for gdeploy owned by sac
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gdeploy/epel-7-x86_64/
+enabled=1

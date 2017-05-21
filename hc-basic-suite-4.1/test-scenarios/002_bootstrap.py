@@ -195,9 +195,9 @@ def _add_storage_domain(api, p):
 
     if dc.storagedomains.get(sd.name).status.state == 'maintenance':
         sd.activate()
-        testlib.assert_true_within_long(
-            lambda: dc.storagedomains.get(sd.name).status.state == 'active'
-        )
+    testlib.assert_true_within_long(
+        lambda: dc.storagedomains.get(sd.name).status.state == 'active'
+    )
 
 
 @testlib.with_ovirt_prefix

@@ -380,9 +380,9 @@ def _add_storage_domain_3(api, p):
 
     if dc.storagedomains.get(sd.name).status.state == 'maintenance':
         sd.activate()
-        testlib.assert_true_within_long(
-            lambda: dc.storagedomains.get(sd.name).status.state == 'active'
-        )
+    testlib.assert_true_within_long(
+        lambda: dc.storagedomains.get(sd.name).status.state == 'active'
+    )
 
 
 def _add_storage_domain_4(api, p):

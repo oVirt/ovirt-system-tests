@@ -27,6 +27,8 @@ from ovirtsdk.xml import params
 from lago import utils
 from ovirtlago import testlib
 
+import ovirtsdk4
+import ovirtsdk4.types as types
 
 MB = 2 ** 20
 GB = 2 ** 30
@@ -41,6 +43,7 @@ TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
+SD_ISCSI_NAME = 'iscsi'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -263,6 +266,32 @@ def snapshot_cold_merge(api):
     )
 
 
+@testlib.with_ovirt_api4
+def live_storage_migration(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM0_NAME)[0]
+    vm_service = vms_service.vm_service(vm.id)
+    disks_service = engine.disks_service()
+    disk = disks_service.list(search=DISK0_NAME)[0]
+    disk_service = disks_service.disk_service(disk.id)
+    disk_service.move(
+        async=False,
+        filter=False,
+        storage_domain=types.StorageDomain(
+            name=SD_ISCSI_NAME
+        )
+    )
+
+    # Assert that the disk is on the correct storage domain,
+    # its status is OK and the snapshot created for the migration
+    # has been merged
+    testlib.assert_equals_within_long(
+        lambda: api.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME and \
+                len(vm_service.snapshots_service().list()) == 1 and \
+                disk_service.get().status, types.DiskStatus.OK)
+
+
 @testlib.with_ovirt_api
 def add_vm_template(api):
     #TODO: Fix the exported domain generation.
@@ -409,75 +438,11 @@ def template_export(api):
     )
 
 
-def snapshot_live_merge(api):
-    if api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME) is None:
-        raise SkipTest('Glance is not available')
-
-    disk_id = api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).id
-
-    live_snap1_params = params.Snapshot(
-        description='live_snap1',
-        persist_memorystate=True,
-        disks=params.Disks(
-            disk=[
-                params.Disk(
-                    id=disk_id,
-                ),
-            ],
-        ),
-    )
-    nt.assert_true(api.vms.get(VM0_NAME).snapshots.add(live_snap1_params))
-    testlib.assert_true_within_short(
-        lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
-    )
-
-    live_snap2_params = params.Snapshot(
-        description='live_snap2',
-        persist_memorystate=True,
-        disks=params.Disks(
-            disk=[
-                params.Disk(
-                    id=disk_id,
-                ),
-            ],
-        ),
-    )
-    nt.assert_true(api.vms.get(VM0_NAME).snapshots.add(live_snap2_params))
-    for i, _ in enumerate(api.vms.get(VM0_NAME).snapshots.list()):
-        testlib.assert_true_within_short(
-            lambda:
-            (api.vms.get(VM0_NAME).snapshots.list()[i].snapshot_status
-             == 'ok')
-        )
-
-    nt.assert_true(api.vms.get(VM0_NAME).snapshots.list()[-2].delete())
-
-    testlib.assert_true_within_long(
-        lambda: len(api.vms.get(VM0_NAME).snapshots.list()) == 2,
-    )
-
-    for i, _ in enumerate(api.vms.get(VM0_NAME).snapshots.list()):
-        testlib.assert_true_within_long(
-            lambda:
-            (api.vms.get(VM0_NAME).snapshots.list()[i].snapshot_status
-             == 'ok'),
-        )
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up'
-    )
-
-    testlib.assert_true_within_long(
-        lambda:
-        api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
-    )
-
-
 @testlib.with_ovirt_api
-def snapshots_merge(api):
+def disk_operations(api):
     vt= utils.VectorThread(
         [
-            functools.partial(snapshot_live_merge, api),
+            functools.partial(live_storage_migration),
             functools.partial(snapshot_cold_merge, api),
         ],
     )
@@ -579,14 +544,14 @@ _TEST_LIST = [
     add_console,
     add_directlun,
     vm_run,
-    snapshots_merge,
     suspend_resume_vm,
     template_export,
     hotplug_disk,
+    disk_operations,
     hotplug_nic,
     hotunplug_disk,
     add_event,
-    vdsm_recovery,
+    vdsm_recovery
 ]
 
 

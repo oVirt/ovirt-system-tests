@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    fluentd_conf_dir: /etc/fluentd/config.d/
+  tasks:
+    - name: create fluentd log dir
+      file:
+        name: /var/log/fluentd
+        owner: fluentd
+        state: directory
+    - name: Disable fluentd forwarding
+      file:
+        path: "{{ fluentd_conf_dir }}/30-source-forward.conf"
+        state: absent
+    - name: Configure fluentd as an aggregator
+      copy:
+        src: 40-aggregator.conf
+        dest: "{{ fluentd_conf_dir }}"
+    - name: Write fluentd events to file
+      copy:
+        src: 50-to-file.conf
+        dest: "{{ fluentd_conf_dir }}"
+    - name: restart fluentd
+      service:
+        name: fluentd
+        state: restarted
+...

@@ -1,0 +1,2 @@
+fluentd_fluentd_host: lago-basic-suite-master-engine
+fluentd_use_ssl: false

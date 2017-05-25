@@ -1,1 +1,13 @@
-check-patch.packages
+ansible
+autoconf
+automake
+grubby
+lago
+lago-ovirt
+libselinux-python
+python-netaddr
+script
+virt-install
+wget
+ovirt-engine-sdk-python
+python-ovirt-engine-sdk4

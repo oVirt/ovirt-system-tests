@@ -70,27 +70,6 @@ def _get_networks(token_id, engine_name):
 
 
 @testlib.with_ovirt_prefix
-def test_ovn_provider_keystone_token(prefix):
-    engine = prefix.virt_env.engine_vm()
-    engine_ip = engine.ip()
-    response_json = _request_auth_token(engine_ip)
-    nt.assert_true(
-        lambda:
-        'access' in response_json and
-        'token' in response_json['access'] and
-        'id' in response_json['access']['token']
-    )
-    token_id = response_json['access']['token']['id']
-    try:
-        uuid.UUID(token_id)
-    except:
-        raise AssertionError(
-            'Incorrect provider auth token value: %s'
-            % (token_id)
-        )
-
-
-@testlib.with_ovirt_prefix
 def test_ovn_provider_networks(prefix):
     engine = prefix.virt_env.engine_vm()
     engine_ip = engine.ip()
@@ -102,7 +81,6 @@ def test_ovn_provider_networks(prefix):
 
 
 _TEST_LIST = [
-    test_ovn_provider_keystone_token,
     test_ovn_provider_networks,
 ]
 

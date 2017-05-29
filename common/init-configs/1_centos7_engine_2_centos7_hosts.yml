@@ -16,12 +16,12 @@ vdsm-host-settings: &vdsm-host-settings
     vm-type: ovirt-host
     memory: 2047
     nics:
-      - net: __LAGO_NET_MANAGEMENT__
-      - net: __LAGO_NET_STORAGE__
-      - net: __LAGO_NET_BONDING__
-      - net: __LAGO_NET_BONDING__
+      - net: lago-{{ env.suite_name }}-net-management
+      - net: lago-{{ env.suite_name }}-net-storage
+      - net: lago-{{ env.suite_name }}-net-bonding
+      - net: lago-{{ env.suite_name }}-net-bonding
     disks:
-      - template_name: __HOSTS_TEMPLATE__
+      - template_name: {{ templates.host }}
         type: template
         name: root
         dev: vda
@@ -32,15 +32,15 @@ vdsm-host-settings: &vdsm-host-settings
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
 
 domains:
-  __ENGINE__:
+  lago-{{ env.suite_name }}-engine:
     <<: *vm-common-settings
     vm-type: ovirt-engine
     memory: 4096
     nics:
-      - net: __LAGO_NET_MANAGEMENT__
-      - net: __LAGO_NET_STORAGE__
+      - net: lago-{{ env.suite_name}}-net-management
+      - net: lago-{{ env.suite_name}}-net-storage
     disks:
-      - template_name: __ENGINE_TEMPLATE__
+      - template_name: {{ templates.engine }}
         type: template
         name: root
         dev: vda
@@ -64,18 +64,17 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
 
-  __HOST0__:
+{% for i in range(hostCount) %}
+  lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vdsm-host-settings
-
-  __HOST1__:
-    <<: *vdsm-host-settings
+{% endfor %}
 
 nets:
-  __LAGO_NET_MANAGEMENT__:
+  lago-{{ env.suite_name }}-net-management:
     <<: *nat-settings
     management: true
     dns_domain_name: lago.local
-  __LAGO_NET_BONDING__:
+  lago-{{ env.suite_name }}-net-bonding:
     <<: *nat-settings
-  __LAGO_NET_STORAGE__:
+  lago-{{ env.suite_name }}-net-storage:
     <<: *nat-settings

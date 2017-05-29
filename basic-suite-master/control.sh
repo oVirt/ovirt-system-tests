@@ -1,19 +1,7 @@
 #!/usr/bin/env bash
 
 prep_suite () {
-    local suite_name="${SUITE##*/}"
-    suite_name="${suite_name//./-}"
-    local engine hosts
-    source "${SUITE}/templates"
-    sed -r \
-        -e "s,__ENGINE__,lago-${suite_name}-engine,g" \
-        -e "s,__HOST([0-9]+)__,lago-${suite_name}-host\1,g" \
-        -e "s,__LAGO_NET_([A-Za-z0-9]*)__,lago-${suite_name}-net-\L\1,g" \
-        -e "s,__STORAGE__,lago-${suite_name}-storage,g" \
-        -e "s,__ENGINE_TEMPLATE__,${engine:?},g" \
-        -e "s,__HOSTS_TEMPLATE__,${hosts:?},g" \
-    < ${SUITE}/LagoInitFile.in \
-    > ${SUITE}/LagoInitFile
+    render_jinja_templates
 }
 
 run_suite () {

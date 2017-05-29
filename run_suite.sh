@@ -99,6 +99,12 @@ env_init () {
         --template-repo-path "$template_repo"
 }
 
+render_jinja_templates () {
+    local suite_name="${SUITE##*/}"
+    # export the suite name so jinja can interpolate it in the template
+    export suite_name="${suite_name//./-}"
+    python "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
+}
 
 env_repo_setup () {
     ci_msg_if_fails $FUNCNAME

@@ -26,8 +26,8 @@ exclude=ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers ovirt
 enabled=1
 max_connections=10
 
-[ovirt-master-dependencies-el7]
-name=oVirt dependencies
+[patternfly-copr-el7]
+name=Patternfly repo
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
 enabled=1
 

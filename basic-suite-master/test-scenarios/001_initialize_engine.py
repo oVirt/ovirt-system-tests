@@ -25,7 +25,7 @@ from ovirtlago import testlib
 
 
 @testlib.with_ovirt_prefix
-def test_initialize_engine(prefix):
+def initialize_engine(prefix):
     engine = prefix.virt_env.engine_vm()
 
     answer_file_src = os.path.join(
@@ -106,3 +106,31 @@ def test_initialize_engine(prefix):
     testlib.assert_true_within_short(
         lambda: engine.service('ovirt-engine-notifier').alive()
     )
+
+
+@testlib.with_ovirt_prefix
+def engine_config(prefix):
+    engine = prefix.virt_env.engine_vm()
+
+    result = engine.ssh(
+        [
+            'engine-config',
+            '--set',
+            'VdsLocalDisksLowFreeSpace=400',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'engine-config failed. Exit code is %s' % result.code
+    )
+
+
+_TEST_LIST = [
+    initialize_engine,
+    engine_config,
+]
+
+
+def test_gen():
+    for t in testlib.test_sequence_gen(_TEST_LIST):
+        test_gen.__name__ = t.description
+        yield t

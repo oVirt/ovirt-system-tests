@@ -27,7 +27,6 @@ from ovirtsdk.xml import params
 from lago import utils
 from ovirtlago import testlib
 
-import ovirtsdk4
 import ovirtsdk4.types as types
 
 import time
@@ -115,24 +114,37 @@ def add_nic(api):
     api.vms.get(VM2_NAME).nics.add(nic_params)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_disk(api):
-    glance_disk = api.disks.get(GLANCE_DISK_NAME)
-    if glance_disk:
-        nt.assert_true(
-            api.vms.get(VM0_NAME).disks.add(
-                params.Disk(
-                    id = glance_disk.get_id(),
-                    active=True,
-                    bootable=True,
-                )
-            )
-        )
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM0_NAME)[0]
+    vm_service = vms_service.vm_service(vm.id)
 
-    disk_params = params.Disk(
-        size=10 * GB,
-        interface='virtio',
-        format='cow',
+    disks_service = engine.disks_service()
+    disk = disks_service.list(search=GLANCE_DISK_NAME)[0]
+    glance_disk = disks_service.disk_service(disk.id)
+    nt.assert_true(vm_service and glance_disk)
+
+    vm_service.disk_attachments_service().add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                id=glance_disk.get().id,
+                storage_domains=[
+                    types.StorageDomain(
+                        name=SD_ISCSI_NAME,
+                    ),
+                ],
+            ),
+            interface=types.DiskInterface.VIRTIO,
+            active=True,
+            bootable=True,
+        ),
+    )
+
+    disk_params = types.Disk(
+        provisioned_size=10 * GB,
+        format=types.DiskFormat.COW,
         status=None,
         sparse=True,
         active=True,
@@ -142,30 +154,25 @@ def add_disk(api):
     for vm_name, disk_name, sd_name in (
             (VM1_NAME, DISK1_NAME, SD_NFS_NAME),
             (VM2_NAME, DISK2_NAME, SD_SECOND_NFS_NAME)):
-        if api.vms.get(vm_name) is not None:
-            disk_params.name = disk_name
-            disk_params.storage_domains = params.StorageDomains(
-                storage_domain=[
-                    params.StorageDomain(
-                        name=sd_name,
-                    ),
-                ])
-            nt.assert_true(
-                api.vms.get(vm_name).disks.add(disk_params)
+        disk_params.name = disk_name
+        disk_params.storage_domains = [
+            types.StorageDomain(
+                name=sd_name,
             )
+        ]
 
-    if glance_disk:
+        vm_service = vms_service.vm_service(vms_service.list(search=vm_name)[0].id)
+        nt.assert_true(
+            vm_service.disk_attachments_service().add(types.DiskAttachment(
+                disk=disk_params,
+                interface=types.DiskInterface.VIRTIO))
+        )
+
+    for disk_name in (GLANCE_DISK_NAME, DISK1_NAME, DISK2_NAME):
         testlib.assert_true_within_short(
             lambda:
-            api.vms.get(VM0_NAME).disks.get(GLANCE_DISK_NAME).status.state == 'ok'
+            disks_service.disk_service(disks_service.list(search=disk_name)[0].id).get().status == types.DiskStatus.OK
         )
-    for vm_name, disk_name in ((VM1_NAME, DISK1_NAME),
-                               (VM2_NAME, DISK2_NAME)):
-        if api.vms.get(vm_name) is not None:
-            testlib.assert_true_within_short(
-                lambda:
-                api.vms.get(vm_name).disks.get(disk_name).status.state == 'ok'
-            )
 
 
 @testlib.with_ovirt_api

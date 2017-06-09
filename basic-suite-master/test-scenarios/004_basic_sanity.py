@@ -61,6 +61,32 @@ SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
 SD_TEMPLATES_NAME = 'templates'
 
+NETWORK_FILTER_NAME = 'clean-traffic'
+NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
+NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
+NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
+NETWORK_FILTER_PARAMETER1_VALUE = '192.168.201.1'
+
+
+def _get_network_fiter_parameters_service(engine):
+    nics_service = _get_nics_service(engine)
+    nic = nics_service.list()[0]
+    return nics_service.nic_service(id=nic.id)\
+        .network_filter_parameters_service()
+
+
+def _get_nics_service(engine):
+    vm_service = _get_vm_service(engine)
+    nics_service = vm_service.nics_service()
+    return nics_service
+
+
+def _get_vm_service(engine):
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM0_NAME)[0]
+    return vms_service.vm_service(vm.id)
+
+
 @testlib.with_ovirt_api
 def add_vm_blank(api):
     vm_memory = 512 * MB
@@ -356,6 +382,55 @@ def add_vm_template(api):
     )
 
 
+@testlib.with_ovirt_api4
+def add_filter(ovirt_api4):
+    engine = ovirt_api4.system_service()
+    nics_service = _get_nics_service(engine)
+    nic = nics_service.list()[0]
+    network = ovirt_api4.follow_link(nic.vnic_profile).network
+    network_filters_service = engine.network_filters_service()
+    network_filter = next(
+        network_filter for network_filter in network_filters_service.list()
+        if network_filter.name == NETWORK_FILTER_NAME
+    )
+    vnic_profiles_service = engine.vnic_profiles_service()
+
+    vnic_profile = vnic_profiles_service.add(
+        types.VnicProfile(
+            name='{}_profile'.format(network_filter.name),
+            network=network,
+            network_filter=network_filter
+        )
+    )
+    nic.vnic_profile = vnic_profile
+    nt.assert_true(
+        nics_service.nic_service(nic.id).update(nic)
+    )
+
+
+@testlib.with_ovirt_api4
+def add_filter_parameter(ovirt_api4):
+    network_filter_parameters_service = _get_network_fiter_parameters_service(
+        ovirt_api4.system_service())
+
+    nt.assert_true(
+        network_filter_parameters_service.add(
+            types.NetworkFilterParameter(
+                name=NETWORK_FILTER_PARAMETER0_NAME,
+                value=NETWORK_FILTER_PARAMETER0_VALUE
+            )
+        )
+    )
+
+    nt.assert_true(
+        network_filter_parameters_service.add(
+            types.NetworkFilterParameter(
+                name=NETWORK_FILTER_PARAMETER1_NAME,
+                value=NETWORK_FILTER_PARAMETER1_VALUE
+            )
+        )
+    )
+
 @testlib.with_ovirt_prefix
 def vm_run(prefix):
     api = prefix.virt_env.engine_vm().get_api()
@@ -553,6 +628,8 @@ _TEST_LIST = [
     add_disk,
     add_console,
     add_directlun,
+    add_filter,
+    add_filter_parameter,
     vm_run,
     suspend_resume_vm,
     template_export,

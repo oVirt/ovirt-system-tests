@@ -30,6 +30,8 @@ from ovirtlago import testlib
 import ovirtsdk4
 import ovirtsdk4.types as types
 
+import time
+
 MB = 2 ** 20
 GB = 2 ** 30
 # the default MAC pool has addresses like 00:1a:4a:16:01:51
@@ -290,6 +292,10 @@ def live_storage_migration(api):
         lambda: api.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME and \
                 len(vm_service.snapshots_service().list()) == 1 and \
                 disk_service.get().status, types.DiskStatus.OK)
+
+    # This sleep is a temporary solution to the race condition
+    # https://bugzilla.redhat.com/1456504
+    time.sleep(1)
 
 
 @testlib.with_ovirt_api

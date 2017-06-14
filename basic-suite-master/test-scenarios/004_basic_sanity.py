@@ -131,7 +131,6 @@ def add_disk(api):
 
     disk_params = params.Disk(
         size=10 * GB,
-        provisioned_size=1,
         interface='virtio',
         format='cow',
         status=None,

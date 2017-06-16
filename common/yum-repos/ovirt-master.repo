@@ -140,6 +140,15 @@ exclude=python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboun
  openvswitch openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs
  userspace-rcu python-crypto
 
+[centos-qemu-ev-release-el7]
+name=CentOS-7 - QEMU EV
+baseurl=http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+gpgcheck=1
+enabled=1
+gpgkey=https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676fe220e61ab8e31927feeede1128/SOURCES!RPM-GPG-KEY-CentOS-SIG-Virtualization
+# If you need to exclude a package from this repo please add a comment here
+# explaining why.
+
 [centos-opstools-testing-el7]
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/

@@ -66,7 +66,7 @@ includepkgs=seavgabios-bin java-1.8.0-openjdk-devel libsemanage initscripts pyth
  fence-agents-rhevm fence-agents-rsa fence-agents-rsb fence-agents-scsi fence-agents-vmware-soap fence-agents-wti flac-libs fontconfig fontpackages-filesystem fop fuse fuse-libs GConf2
  gdisk gdk-pixbuf2 genisoimage geronimo-jms ghostscript ghostscript-fonts giflib gnutls-dane gnutls-utils gperftools-libs graphite2 gsm gssproxy gtk2 hamcrest harfbuzz hexedit
  hicolor-icon-theme hivex hsqldb httpd httpd-tools icc-profiles-openicc icoutils ioprocess ipmitool iptables-services ipxe-roms-qemu iscsi-initiator-utils iscsi-initiator-utils-iscsiuio
- isorelax jackson jai-imageio-core jakarta-commons-httpclient jasper-libs java-1.8.0-openjdk java-1.8.0-openjdk-headless javamail javapackages-tools javassist jaxen 
+ isorelax jackson jai-imageio-core jakarta-commons-httpclient jasper-libs java-1.8.0-openjdk java-1.8.0-openjdk-headless javamail javapackages-tools javassist jaxen
  jbigkit-libs jdom jline joda-convert joda-time jsch jsr-311 junit jzlib keyutils kpartx lapack lcms2 ldns libaio libasyncns libbasicobjects libcgroup libcollection libconfig libevent
  libfontenc libgfortran libguestfs libguestfs-tools-c libguestfs-winsupport libibverbs libICE libicu libini_config libiscsi libjpeg-turbo libnfsidmap libnl libogg libosinfo libpath_utils
  libpng libquadmath librados2 librbd1 librdmacm libref_array libreport-filesystem libseccomp libsemanage-python libSM libsndfile libtalloc libtevent libthai libtiff libtirpc libunwind
@@ -147,17 +147,28 @@ includepkgs=python-uinput,python-ordereddict,python-inotify,python-argparse,novn
 exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess
 max_connections=5
 
-[centos-ovirt-4.0-el7]
-name=CentOS-7 - oVirt master
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
+[centos-ovirt-4.2-el7]
+name=CentOS-7 - oVirt 4.2
+baseurl=http://cbs.centos.org/repos/virt7-ovirt-42-testing/x86_64/os/
+gpgcheck=0
 enabled=1
-skip_if_unavailable=1
-exclude=python2-botocore cockpit-ostree python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby*
- python-six python-ply python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures python-openvswitch
- openvswitch openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs
- userspace-rcu python-crypto
+# If you need to exclude a package from this repo please add a comment here
+# explaining why.
 
-[centos-kvm-common-el7]
+
+[centos-ovirt-common-el7]
+name=CentOS-7 - oVirt common
+baseurl=http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
+gpgcheck=0
+enabled=1
+# If you need to exclude a package from this repo please add a comment here
+# explaining why.
+# cockpit-ostree - requires /usr/libexec/rpm-ostreed from CentOS Atomic SIG. Not needed in oVirt
+exclude=
+ cockpit-ostree
+
+
+[centos-qemu-ev-release-el7]
 name=CentOS-7 - QEMU EV
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck=1
@@ -184,7 +195,11 @@ exclude=
  *sensu-*
  skydive-*
  uchiwa
+ libuv-*
+# libuv-* dropped because it's included in the mirror repo by mistake, shouldn't be there.
+# see https://ovirt-jira.atlassian.net/browse/OVIRT-1497
 max_connections=10
+
 
 [copr-sac-gdeploy-el7]
 name=Copr repo for gdeploy owned by sac

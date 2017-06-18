@@ -83,8 +83,7 @@ def configure_metrics(prefix):
 
 
 _TEST_LIST = [
-    #Disabling due to fluentd issues that needs to be debugged [18/06/17]
-    #configure_metrics,
+    configure_metrics,
 ]
 
 

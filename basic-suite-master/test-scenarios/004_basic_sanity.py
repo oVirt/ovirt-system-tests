@@ -220,32 +220,38 @@ def add_directlun(prefix):
     nt.assert_equals(ret.code, 0)
 
     all_guids = ret.out.splitlines()
-    lun_guid = all_guids[SD_ISCSI_NR_LUNS] #Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
+    lun_guid = all_guids[SD_ISCSI_NR_LUNS]  # Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
 
-    dlun_params = params.Disk(
+    dlun_params = types.Disk(
         name=DLUN_DISK_NAME,
-        interface='virtio_scsi',
-        format='raw',
-        lun_storage=params.Storage(
-            type_='iscsi',
-            logical_unit=[
-                params.LogicalUnit(
-                    id=lun_guid,
+        format=types.DiskFormat.RAW,
+        lun_storage=types.HostStorage(
+            type=types.StorageType.ISCSI,
+            logical_units=[
+                types.LogicalUnit(
                     address=prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ip(),
                     port=SD_ISCSI_PORT,
                     target=SD_ISCSI_TARGET,
+                    id=lun_guid,
                     username='username',
                     password='password',
                 )
             ]
         ),
-        sgio='unfiltered',
+        sgio=types.ScsiGenericIO.UNFILTERED,
     )
 
-    api = prefix.virt_env.engine_vm().get_api()
-    api.vms.get(VM0_NAME).disks.add(dlun_params)
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    vms_service = api.system_service().vms_service()
+    vm_service = vms_service.vm_service(vms_service.list(search=VM0_NAME)[0].id)
+    vm_service.disk_attachments_service().add(types.DiskAttachment(
+        disk=dlun_params,
+        interface=types.DiskInterface.VIRTIO_SCSI))
+
+    disks_service = api.system_service().disks_service()
+    disk = disks_service.disk_service(disks_service.list(search=DLUN_DISK_NAME)[0].id)
     nt.assert_not_equal(
-        api.vms.get(VM0_NAME).disks.get(DLUN_DISK_NAME),
+        vm_service.disk_attachments_service().attachment_service(disk.get().id).get(),
         None,
         'Direct LUN disk not attached'
     )

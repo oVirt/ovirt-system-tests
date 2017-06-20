@@ -8,7 +8,7 @@ PROJECT="$PWD"
 #Array to hold all the suites
 #which will be executed
 SUITES_TO_RUN=$(automation/change_resolver.py)
-
+[[ -z "$SUITES_TO_RUN" ]] && SUITES_TO_RUN="basic_suite_master"
 # This function will collect the logs
 # of each suite to a different directory
 collect_suite_logs() {

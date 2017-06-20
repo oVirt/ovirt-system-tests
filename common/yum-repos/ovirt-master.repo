@@ -156,7 +156,7 @@ exclude=python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboun
  openvswitch openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs
  userspace-rcu python-crypto
 
-[centos-qemu-ev-release-el7]
+[centos-kvm-common-el7]
 name=CentOS-7 - QEMU EV
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck=1

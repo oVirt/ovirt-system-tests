@@ -20,12 +20,13 @@
 #
 import functools
 from os import EX_OK
+import re
 import nose.tools as nt
 from nose import SkipTest
 
 from ovirtsdk.xml import params
 
-from lago import utils
+from lago import utils, ssh
 from ovirtlago import testlib
 
 import ovirtsdk4.types as types
@@ -864,9 +865,11 @@ def hotplug_memory(api):
     )
 
 
-@testlib.with_ovirt_api4
-def hotplug_cpu(api):
-    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
+@testlib.with_ovirt_prefix
+def hotplug_cpu(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 2
     vm_service.update(
@@ -877,6 +880,21 @@ def hotplug_cpu(api):
     nt.assert_true(
         vm_service.get().cpu.topology.sockets == 2
     )
+
+    host = prefix.virt_env.host_vms()[0]
+    ret = host.ssh(['host', VM0_NAME])
+    match = re.search(r'\s([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', ret.out)
+    ip_address = match.group(1)
+    ret = ssh.ssh(
+        ip_addr=ip_address,
+        command=['lscpu'],
+        username='cirros',
+        password='cubswin:)',
+    )
+    nt.assert_equals(ret.code, 0)
+    match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out)
+    nt.assert_true(match.group('cpus') == '2')
+
 
 @testlib.with_ovirt_api4
 def next_run_unplug_cpu(api):

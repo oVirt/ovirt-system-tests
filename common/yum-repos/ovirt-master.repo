@@ -34,12 +34,9 @@ proxy=_none_
 [ovirt-master-snapshot-static-el7]
 name=oVirt Master Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
-exclude=openvswitch-devel openvswitch-test ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows
- vcredist* *javadoc* libguestfs* ovirt-engine-sdk-java ovirt-optimizer-* httpcomponents* ovirt-live-artwork ovirt-engine ovirt-engine ovirt-engine-backend ovirt-engine-dbscripts
- ovirt-engine-extensions-api-impl ovirt-engine-extensions-api-impl-javadoc ovirt-engine-lib ovirt-engine-restapi ovirt-engine-setup ovirt-engine-setup-base
- ovirt-engine-setup-plugin-dockerc ovirt-engine-setup-plugin-ovirt-engine ovirt-engine-setup-plugin-ovirt-engine-common ovirt-engine-setup-plugin-vmconsole-proxy-helper
- ovirt-engine-setup-plugin-websocket-proxy ovirt-engine-tools ovirt-engine-tools-backup ovirt-engine-userportal ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper
- ovirt-engine-webadmin-portal ovirt-engine-webadmin-portal-debuginfo ovirt-engine-websocket-proxy ovirt-engine-appliance ovirt-engine-nodejs nsis-simple-service-plugin
+exclude=
+ *-debuginfo
+ *javadoc*
 enabled=1
 max_connections=10
 

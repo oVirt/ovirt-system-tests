@@ -170,7 +170,20 @@ gpgkey=https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676f
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 enabled=1
-exclude= osops-tools-monitoring-oschecks *sensu-* *grafana-* graphite-* skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
+exclude=
+ *-devel-*
+ *-doc-*
+ *grafana-*
+ graphite-*
+ kibana
+ nodejs-*
+ osops-tools-monitoring-oschecks
+ phantomjs
+ python-django-*
+ rubygem-ffi
+ *sensu-*
+ skydive-*
+ uchiwa
 max_connections=10
 
 [copr-sac-gdeploy-el7]

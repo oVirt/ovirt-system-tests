@@ -502,9 +502,10 @@ def vdsm_recovery(prefix):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def template_export(api):
-    template_cirros = api.templates.get(TEMPLATE_CIRROS)
+    templates_service = api.system_service().templates_service()
+    template_cirros = templates_service.template_service(templates_service.list(search=TEMPLATE_CIRROS)[0].id)
 
     if template_cirros is None:
         raise SkipTest('{0}: template {1} is missing'.format(
@@ -513,13 +514,14 @@ def template_export(api):
             )
         )
 
+    storage_domain = api.system_service().storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
     template_cirros.export(
-        params.Action(
-            storage_domain=api.storagedomains.get(SD_TEMPLATES_NAME)
-         )
+        storage_domain=types.StorageDomain(
+            id=storage_domain.id,
+        ),
     )
     testlib.assert_true_within_long(
-        lambda: api.templates.get(TEMPLATE_CIRROS).status.state == 'ok',
+        lambda: templates_service.template_service(template_cirros.get().id).get().status == types.TemplateStatus.OK,
     )
 
 

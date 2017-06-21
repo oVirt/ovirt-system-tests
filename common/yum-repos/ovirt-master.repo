@@ -9,7 +9,7 @@ name=oVirt Master Latest Tested
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
 enabled=1
 max_connections=10
-exclude =  ioprocess-debuginfo
+exclude =  ioprocess-debuginfo *-devel
  java-ovirt-engine-sdk4
  otopi-debug-plugins
  otopi-devtools
@@ -23,6 +23,7 @@ exclude =  ioprocess-debuginfo
  ovirt-node-ng-docs
  ovirt-node-ng-image
  ovirt-release-host-node
+ qemu-*
  rubygem-ovirt-engine-sdk4
  rubygem-ovirt-engine-sdk4-doc
  vdsm-tests
@@ -82,7 +83,7 @@ includepkgs=seavgabios-bin java-1.8.0-openjdk-devel libsemanage initscripts pyth
  pixman pm-utils policycoreutils policycoreutils-python poppler-data postgresql postgresql-jdbc postgresql-libs postgresql-server psmisc pulseaudio-libs pyparsing python-babel
  python-backports python-backports-ssl_match_hostname python-chardet python-configshell python-cpopen python-dmidecode python-ethtool python-inotify python-ioprocess python-IPy
  python-javapackages python-jinja2 python-kitchen python-kmod python-lxml python-markupsafe python-netaddr python-ply python-psycopg2 python-pthreading python-requests python-rtslib
- python-setuptools python-six python-suds python-urllib3 python-urwid qdox qemu-img-ev qemu-kvm-common-ev qemu-kvm-ev qemu-kvm-tools-ev quota quota-nls radvd relaxngDatatype rhino rpcbind
+ python-setuptools python-six python-suds python-urllib3 python-urwid qdox quota quota-nls radvd relaxngDatatype rhino rpcbind
  rsyslog-mmjsonparse sac safelease sanlock sanlock-lib sanlock-python scrub seabios-bin setools-libs sg3_utils sg3_utils-libs sgabios-bin slf4j sos stax2-api supermin5 syslinux
  syslinux-extlinux targetcli tcp_wrappers telnet tomcat-servlet-3.0-api tree ttmkfdir tuned tzdata-java unbound-libs unzip urw-fonts usbredir virt-v2v ws-commons-util ws-jaxme
  xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3 xz-java yajl yum-plugin-versionlock

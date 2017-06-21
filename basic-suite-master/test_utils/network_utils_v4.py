@@ -18,8 +18,9 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from ovirtsdk4.types import (BootProtocol, HostNic, Ip, IpAddressAssignment,
-                             IpVersion, Network, NetworkAttachment)
+from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
+                             IpAddressAssignment, IpVersion, Network,
+                             NetworkAttachment)
 
 import test_utils
 
@@ -147,3 +148,13 @@ def set_network_mtu(engine, network_name, dc_name, mtu):
     network.mtu = mtu
 
     return network_service.update(network)
+
+
+def create_network_params(network_name, dc_name, **net_params):
+    return Network(
+        name=network_name,
+        data_center=DataCenter(
+            name=dc_name,
+        ),
+        **net_params
+    )

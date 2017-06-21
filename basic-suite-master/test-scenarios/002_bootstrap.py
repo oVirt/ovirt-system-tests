@@ -25,20 +25,21 @@ import nose.tools as nt
 from nose import SkipTest
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
-try:
-    import ovirtsdk4 as sdk4
-    API_V3_ONLY = os.getenv('API_V3_ONLY', False)
-    if API_V3_ONLY:
-        API_V4 = False
-    else:
-        API_V4 = True
-except ImportError:
-    API_V4 = False
+
+# TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
+import ovirtsdk4 as sdk4
 
 from lago import utils
 from ovirtlago import testlib
 
-from test_utils import network_utils_v3
+from test_utils import network_utils_v4
+
+# TODO: use SDKv4 unconditionally, where possible (as in other test scenarios)
+API_V3_ONLY = os.getenv('API_V3_ONLY', False)
+if API_V3_ONLY:
+    API_V4 = False
+else:
+    API_V4 = True
 
 
 # DC/Cluster
@@ -833,44 +834,56 @@ def add_quota_cluster_limits(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm_network(api):
-    network = network_utils_v3.create_network_params(
+    engine = api.system_service()
+
+    network = network_utils_v4.create_network_params(
         VM_NETWORK,
         DC_NAME,
         description='VM Network (originally on VLAN {})'.format(
             VM_NETWORK_VLAN_ID),
-        vlan=params.VLAN(
+        vlan=sdk4.types.Vlan(
             id=VM_NETWORK_VLAN_ID,
         ),
     )
 
+    cluster = engine.clusters_service().list(
+        search='name={}'.format(CLUSTER_NAME))[0]
+    cluster_service = engine.clusters_service().cluster_service(cluster.id)
+
     nt.assert_true(
-        api.networks.add(network)
+        engine.networks_service().add(network)
     )
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(network)
+        cluster_service.networks_service().add(network)
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_non_vm_network(api):
-    network = network_utils_v3.create_network_params(
+    engine = api.system_service()
+
+    network = network_utils_v4.create_network_params(
         MIGRATION_NETWORK,
         DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
-        vlan=params.VLAN(
+        vlan=sdk4.types.Vlan(
             id='200',
         ),
-        usages=params.Usages(),
+        usages=[],
         mtu=9000,
     )
 
+    cluster = engine.clusters_service().list(
+        search='name={}'.format(CLUSTER_NAME))[0]
+    cluster_service = engine.clusters_service().cluster_service(cluster.id)
+
     nt.assert_true(
-        api.networks.add(network)
+        engine.networks_service().add(network)
     )
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(network)
+        cluster_service.networks_service().add(network)
     )
 
 

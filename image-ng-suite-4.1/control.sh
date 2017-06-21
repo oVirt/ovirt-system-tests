@@ -161,6 +161,7 @@ run_suite(){
         "http://templates.ovirt.org/repo/repo.metadata" \
         "$suite/LagoInitFile"
     env_start
+    env_status
     env_deploy
 
     declare test_scenarios=($(ls "$suite"/test-scenarios/*.py | sort))

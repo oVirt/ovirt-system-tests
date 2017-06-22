@@ -18,7 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
-import os
+from os import EX_OK
 import nose.tools as nt
 from nose import SkipTest
 
@@ -49,6 +49,7 @@ SD_ISCSI_NAME = 'iscsi'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
+VM0_PING_DEST = VM0_NAME
 VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
@@ -89,6 +90,16 @@ def _get_vm_service(engine):
     vms_service = engine.vms_service()
     vm = vms_service.list(search=VM0_NAME)[0]
     return vms_service.vm_service(vm.id)
+
+
+def _ping(ovirt_prefix, destination):
+    """
+    Ping a given destination.
+    """
+    host = ovirt_prefix.virt_env.host_vms()[0]
+    cmd = ['ping', '-c', '1']
+    ret = host.ssh(cmd + [destination])
+    return ret.code
 
 
 @testlib.with_ovirt_api
@@ -560,6 +571,11 @@ def vm_run(prefix):
 
 
 @testlib.with_ovirt_prefix
+def ping_vm0(ovirt_prefix):
+    nt.assert_equals(_ping(ovirt_prefix, VM0_PING_DEST), EX_OK)
+
+
+@testlib.with_ovirt_prefix
 def ha_recovery(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
     last_event = int(engine.events_service().list(max=2)[0].id)
@@ -906,6 +922,7 @@ _TEST_LIST = [
     add_filter,
     add_filter_parameter,
     vm_run,
+    ping_vm0,
     ha_recovery,
     suspend_resume_vm,
     template_export,

@@ -94,7 +94,21 @@ name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 gpgcheck=0
 enabled=1
-includepkgs=collectd,collectd-netlink,collectd-virt,collectd-write_http,collectd-disk,fluentd,rubygem-fluent-plugin-secure-forward,rubygem-cool.io,rubygem-http_parser.rb,rubygem-msgpack,rubygem-proxifier,rubygem-resolve-hostname,rubygem-sigdump,rubygem-string-scrub,rubygem-thread_safe,rubygem-tzinfo,rubygem-tzinfo-data,rubygem-yajl-ruby rubygem-fluent-plugin-collectd-nest rubygem-fluent-plugin-viaq_data_model
+exclude=
+ *-devel-*
+ *-doc-*
+ *grafana-*
+ graphite-*
+ kibana
+ nodejs-*
+ osops-tools-monitoring-oschecks
+ phantomjs
+ python-django-*
+ rubygem-ffi
+ *sensu-*
+ skydive-*
+ uchiwa
+max_connections=10
 
 [rnachimu-gdeploy]
 name=Copr repo for gdeploy owned by rnachimu

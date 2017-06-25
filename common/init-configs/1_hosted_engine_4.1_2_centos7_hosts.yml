@@ -12,7 +12,7 @@ domains:
       ovirt-engine-password: 123
 
   __STORAGE__:
-    memory: 1024
+    memory: 750
     distro: el7
     vcpu: 1
     cpu: 1
@@ -20,7 +20,7 @@ domains:
     nics:
       - net: __LAGO_NET__
     disks:
-      - template_name: el7-base
+      - template_name: el7.3-base
         type: template
         name: root
         dev: vda
@@ -30,19 +30,19 @@ domains:
         type: empty
         name: nfs
         dev: sda
-        format: raw
+        format: qcow2
       - comment: Main iSCSI device
         size: 101G
         type: empty
         name: iscsi
         dev: sdc
-        format: raw
+        format: qcow2
       - comment: Hosted engine storage
         size: 60G
         type: empty
         name: he
         dev: sdd
-        format: raw
+        format: qcow2
     metadata:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
@@ -67,7 +67,7 @@ domains:
         size: 60G
         type: empty
         dev: sda
-        format: raw
+        format: qcow2
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge
@@ -95,7 +95,7 @@ domains:
         size: 60G
         type: empty
         dev: sda
-        format: raw
+        format: qcow2
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge

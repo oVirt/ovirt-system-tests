@@ -42,6 +42,11 @@ he_deploy() {
         echo "hosted-engine setup on ${HOST}0 failed with status ${RET_CODE}."
         exit ${RET_CODE}
     fi
+
+    lago shell \
+	lago-${suite_name}-storage \
+        "fstrim -va"
+
     cd -
 }
 

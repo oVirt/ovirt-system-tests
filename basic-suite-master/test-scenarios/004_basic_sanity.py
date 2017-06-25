@@ -325,7 +325,7 @@ def live_storage_migration(api):
 
     # This sleep is a temporary solution to the race condition
     # https://bugzilla.redhat.com/1456504
-    time.sleep(1)
+    time.sleep(3)
 
 
 @testlib.with_ovirt_api

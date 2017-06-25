@@ -1,22 +1,34 @@
 #!/bin/bash -xe
 set -o pipefail
 
+
+download_latest_image() {
+    local job_name="$1"
+    local search_for="$2"
+    local image_dst="$3"
+
+    local job_url="http://jenkins.ovirt.org/job/$job_name"
+    local build_num=$(wget -qO- $job_url/lastSuccessfulBuild/buildNumber)
+    local artifacts_url="$job_url/$build_num/api/json?tree=artifacts[fileName]"
+    local filename=$(wget -qO- $artifacts_url | grep -Po "$search_for")
+    local image_url="$job_url/$build_num/artifact/exported-artifacts/$filename"
+
+    echo "Downloading image from $image_url"
+    wget -O "$image_dst" "$image_url"
+}
+
+
 download_appliance(){
     local appliance_version="${1:-ovirt-4.1}"
     local appliance_distro="${2:-el7}"
     local appliance_dst_file="${3:-oVirt-Engine-Appliance-$appliance_version-$appliance_distro.ova}"
-    local job_url='http://jenkins.ovirt.org/job'
-    job_url+="/ovirt-appliance_${appliance_version}"
-    job_url+="_build-artifacts-${appliance_distro}-x86_64"
-    job_url+="/lastSuccessfulBuild/artifact/exported-artifacts"
 
-    local appliance_image_url="$(\
-        wget -O - --quiet "$job_url/" \
-        | grep -o -e 'oVirt-Engine[^[:space:]"]*\.ova' \
-        | head -n 1\
-    )"
-    echo "Downloading latest appliance image $appliance_image"
-    wget -O "$appliance_dst_file" "$job_url/$appliance_image_url"
+    local job_name="ovirt-appliance_${appliance_version}"
+    job_name+="_build-artifacts-${appliance_distro}-x86_64"
+
+    local file_regex='oVirt-Engine[^[:space:]"]*\.ova'
+
+    download_latest_image "$job_name" "$file_regex" "$appliance_dst_file"
 }
 
 
@@ -24,20 +36,13 @@ download_node_ng(){
     local node_version="${1:-ovirt-4.1}"
     local node_distro="${2:-el7}"
     local node_squashfs_image="${3:-oVirt-Node-$version-$engine_distro.squashfs.img}"
-    local job_url='http://jenkins.ovirt.org/job'
-    local squashfs_image
-    job_url+="/ovirt-node-ng_${node_version}_"
-    job_url+="build-artifacts-${node_distro}-x86_64"
-    job_url+="/lastSuccessfulBuild/artifact/exported-artifacts"
 
-    squashfs_image="$(\
-        wget -O - --quiet "$job_url/" \
-        | grep -o -e 'ovirt-node-ng[^[:space:]"]*\.squashfs\.img' \
-        | sort \
-        | head -n 1 \
-    )"
-    echo "Downloading latest squashfs image $squashfs_image"
-    wget -O "$node_squashfs_image" "$job_url/$squashfs_image"
+    local job_name="ovirt-node-ng_${node_version}_"
+    job_name+="build-artifacts-${node_distro}-x86_64"
+
+    local file_regex='ovirt-node-ng[^[:space:]"]*\.squashfs\.img'
+
+    download_latest_image "$job_name" "$file_regex" "$node_squashfs_image"
 }
 
 
@@ -68,7 +73,7 @@ install_host_image() {
     #give it a chance to finish installing
     sleep 10
     while virsh list | grep -q node; do
-        sleep 1
+        sleep 10
         echo "waiting"
     done
     popd

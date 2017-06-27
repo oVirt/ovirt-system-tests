@@ -152,7 +152,7 @@ name=CentOS-7 - oVirt master
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
 enabled=1
 skip_if_unavailable=1
-exclude=python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby*
+exclude=python2-botocore cockpit-ostree python-ioprocess ioprocess python-lockfile imgbased nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby*
  python-six python-ply python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures python-openvswitch
  openvswitch openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs
  userspace-rcu python-crypto

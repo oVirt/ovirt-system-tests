@@ -19,6 +19,7 @@
 #
 
 import copy
+import ovirtsdk4
 import requests
 import urlparse
 
@@ -34,6 +35,7 @@ OVN_PROVIDER_SUBNETS_URL = 'https://{hostname}:9696/v2.0/subnets/'
 
 OVIRT_USER = 'admin@internal'
 OVIRT_PASSWORD = '123'
+DEFAULT_PROVIDER_NAME = 'ovirt-provider-ovn'
 
 NETWORK_1 = 'network_1'
 PORT_1 = 'port_1'
@@ -292,8 +294,64 @@ def _validate_db_empty(token_id, engine_ip):
     nt.assert_false(subnets)
 
 
+def _get_ovn_provider_id(api):
+    service = api.system_service().openstack_network_providers_service()
+    for provider in service.list():
+        if provider.name == DEFAULT_PROVIDER_NAME:
+            return provider.id
+    raise('ovirt-provider-ovn not present in oVirt')
+
+
+def _get_datacenter_id(api):
+    return api.system_service().data_centers_service().list()[0].id
+
+
+def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
+    network_service = (
+        api.system_service()
+           .openstack_network_providers_service()
+           .provider_service(provider_id)
+           .networks_service()
+           .network_service(network_id)
+    )
+    network_service.import_(
+        async=False,
+        data_center=ovirtsdk4.types.DataCenter(
+            id=datacenter_id
+        ),
+    )
+
+
+def _get_ovirt_network(api, datacenter_id, network_name):
+    networks_service = (
+        api.system_service()
+           .data_centers_service()
+           .data_center_service(datacenter_id)
+           .networks_service()
+    )
+    networks = networks_service.list()
+    for network in networks:
+        if network.name == NETWORKS[network_name]['name']:
+            return network.id
+    raise Exception(
+        'External network % not found' % NETWORKS[network_name]['name']
+    )
+
+
+def _remove_network_from_ovirt(api, datacenter_id, network_id):
+    network_service = (
+        api.system_service()
+           .data_centers_service()
+           .data_center_service(datacenter_id)
+           .networks_service()
+           .network_service(network_id)
+    )
+    network_service.remove()
+
+
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
-def test_ovn_provider_rest(prefix):
+def test_ovn_provider_rest(prefix, api):
     engine_ip = prefix.virt_env.engine_vm().ip()
     token_id = _get_auth_token(engine_ip)
 
@@ -322,6 +380,12 @@ def test_ovn_provider_rest(prefix):
     _validate_network(token_id, engine_ip, NETWORK_1, network1_id)
     _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
     _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
+
+    provider_id = _get_ovn_provider_id(api)
+    datacenter_id = _get_datacenter_id(api)
+    _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
+    ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)
+    _remove_network_from_ovirt(api, datacenter_id, ovirt_network_id)
 
     _delete_port(token_id, engine_ip, port1_id)
     _delete_subnet(token_id, engine_ip, subnet1_id)

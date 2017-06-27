@@ -63,6 +63,9 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
+    artifacts:
+      - /var/log
+      - /root/fluentd
 
 {% for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:

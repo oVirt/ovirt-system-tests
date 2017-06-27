@@ -6,7 +6,7 @@
   tasks:
     - name: create fluentd log dir
       file:
-        name: /var/log/fluentd
+        name: /root/fluentd
         owner: root
         state: directory
     - name: Disable fluentd forwarding

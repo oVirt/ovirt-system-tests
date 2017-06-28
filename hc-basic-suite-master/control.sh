@@ -77,6 +77,18 @@ he_deploy() {
         echo "gdeploy setup on ${HOST}0 failed with status ${RET_CODE}."
         exit ${RET_CODE}
     fi
+
+    lago shell \
+	${HOST}0 \
+	"fstrim -va"
+
+    lago shell \
+	${HOST}1 \
+	"fstrim -va"
+
+    lago shell \
+	${HOST}2 \
+        "fstrim -va"
     cd -
 }
 

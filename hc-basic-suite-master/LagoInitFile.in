@@ -27,14 +27,14 @@ domains:
         name: brick
         size: 100G
         type: empty
-        dev: vdb
-        format: raw
+        dev: sda
+        format: qcow2
       - comment: Used for cache
         name: cache
-        size: 20G
+        size: 100G
         type: empty
-        dev: vdc
-        format: raw
+        dev: sdb
+        format: qcow2
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge
@@ -59,14 +59,14 @@ domains:
         name: brick
         size: 100G
         type: empty
-        dev: vdb
-        format: raw
+        dev: sda
+        format: qcow2
       - comment: Used for cache
         name: cache
-        size: 20G
+        size: 100G
         type: empty
-        dev: vdc
-        format: raw
+        dev: sdb
+        format: qcow2
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge
@@ -91,18 +91,18 @@ domains:
         name: brick
         size: 100G
         type: empty
-        dev: vdb
-        format: raw
+        dev: sda
+        format: qcow2
       - comment: Used for cache
         name: cache
-        size: 20G
+        size: 100G
         type: empty
-        dev: vdc
-        format: raw
+        dev: sdb
+        format: qcow2
       - name: tmp
-        size: 60G
+        size: 100G
         type: empty
-        dev: vdd
+        dev: sdc
         format: qcow2
     metadata:
       ovirt-capabilities:

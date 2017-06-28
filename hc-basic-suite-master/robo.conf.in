@@ -21,12 +21,12 @@ raid6
 
 [pv]
 action=create
-devices=vdb
+devices=sda
 
 [vg1]
 action=create
 vgname=RHS_vg1
-pvname=vdb
+pvname=sda
 
 [lv1]
 action=create
@@ -71,11 +71,11 @@ virtualsize=19GB
 [vg2]
 action=extend
 vgname=RHS_vg1
-pvname=vdc
+pvname=sdb
 
 [lv5]
 action=setup-cache
-ssd=vdc
+ssd=sdb
 vgname=RHS_vg1
 poolname=lvthinpool
 cache_meta_lv=lvcachemeta

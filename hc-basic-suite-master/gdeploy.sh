@@ -22,3 +22,5 @@ if [ ${RET_CODE} -ne 0 ]; then
     echo "gdeploy failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
+
+rm -rf /dev/shm/*.rpm /dev/shm/yum

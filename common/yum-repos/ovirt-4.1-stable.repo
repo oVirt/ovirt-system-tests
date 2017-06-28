@@ -42,7 +42,7 @@ max_connections=5
 name=CentOS7 Base
 baseurl=http://mirror.centos.org/centos/7/os/x86_64/
 enabled=1
-includepkgs=lsscsi python-rhsm socat subscription-manager usermode GConf2 OpenIPMI-modalias ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec
+includepkgs=yum lsscsi python-rhsm socat subscription-manager usermode GConf2 OpenIPMI-modalias ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec
  apache-commons-compress apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging
  apache-commons-net apache-commons-vfs apr apr-util atk atlas attr augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api
  blas boost-system boost-thread bridge-utils bzip2 cairo cal10n celt051 checkpolicy color-filesystem cracklib-python cryptsetup cups-libs deltarpm fence-virt flac-libs fontconfig
@@ -144,7 +144,7 @@ name=CentOS-7 - oVirt 4.0
 baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
 enabled=1
 skip_if_unavailable=1
-exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply
+exclude=cockpit-ostree nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply
  python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures openvswitch-*
  mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs python-openvswitch imgbased
  safelease ioprocess python-crypto python-lockfile
@@ -153,7 +153,7 @@ exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovir
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 enabled=1
-exclude=sensu rubygem-sensu* osops-tools-monitoring-oschecks nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana
+exclude=sensu* rubygem-sensu* osops-tools-monitoring-oschecks nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana
 
 [copr-sac-gdeploy-el7]
 name=Copr repo for gdeploy owned by sac

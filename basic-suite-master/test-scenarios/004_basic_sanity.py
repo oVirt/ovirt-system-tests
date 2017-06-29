@@ -531,6 +531,32 @@ def template_export(api):
     )
 
 
+@testlib.with_ovirt_api4
+def template_update(api):
+    templates_service = api.system_service().templates_service()
+    template_cirros = templates_service.template_service(templates_service.list(search=TEMPLATE_CIRROS)[0].id)
+
+    if template_cirros is None:
+        raise SkipTest('{0}: template {1} is missing'.format(
+            template_update.__name__,
+            TEMPLATE_CIRROS
+        )
+    )
+
+    new_comment = "comment by ovirt-system-tests"
+    template_cirros.update(
+        template = types.Template(
+            comment=new_comment
+        )
+    )
+
+    testlib.assert_true_within_short(
+        lambda: templates_service.template_service(template_cirros.get().id).get().status == types.TemplateStatus.OK,
+    )
+
+    nt.assert_true(templates_service.list(search=TEMPLATE_CIRROS)[0].comment == new_comment)
+
+
 @testlib.with_ovirt_api
 def disk_operations(api):
     vt= utils.VectorThread(
@@ -688,6 +714,7 @@ _TEST_LIST = [
     vm_run,
     suspend_resume_vm,
     template_export,
+    template_update,
     hotplug_cpu,
     next_run_unplug_cpu,
     hotplug_disk,

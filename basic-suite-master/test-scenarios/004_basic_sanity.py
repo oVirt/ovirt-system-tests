@@ -449,7 +449,10 @@ def add_filter_parameter(ovirt_api4):
 
 @testlib.with_ovirt_prefix
 def vm_run(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
+    engine = prefix.virt_env.engine_vm()
+    api = engine.get_api()
+    vm_ip = '.'.join(engine.ip().split('.')[0:3] + ['199'])
+    vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
 
     start_params = params.Action(
@@ -480,12 +483,12 @@ def vm_run(prefix):
                             nic=[params.NIC(
                                 name='eth0',
                                 boot_protocol='STATIC',
-                                on_boot='True',
+                                on_boot=True,
                                 network=params.Network(
                                     ip=params.IP(
-                                        address='192.168.200.200.',
+                                        address=vm_ip,
                                         netmask='255.255.255.0',
-                                        gateway='192.168.200.1',
+                                        gateway=vm_gw,
                                     ),
                                 ),
                             )]

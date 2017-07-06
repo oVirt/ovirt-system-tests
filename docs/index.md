@@ -11,3 +11,6 @@ Welcome to oVirt System Tests Documentation Page!
 * [Jenkins jobs running ost](docs/CI/jenkins_jobs.html)
 * [Verifying a patch on a cetain oVirt project](docs/CI/developers_info.html)
 * [Standard CI implementation for OST](docs/CI/standard_ci_and_ost.html)
+
+## How It works
+* [Package Management](how-it-works/package_management.html)

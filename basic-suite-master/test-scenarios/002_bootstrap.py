@@ -333,6 +333,10 @@ def add_hosts_4(prefix):
     def _host_is_up_4():
         host_service = hosts_service.host_service(api_host.id)
         host_obj = host_service.get()
+
+        if host_obj.status == sdk4.types.HostStatus.INSTALLING:
+            return False
+
         if host_obj.status == sdk4.types.HostStatus.UP:
             return True
 

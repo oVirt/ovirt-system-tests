@@ -20,6 +20,9 @@ setup_nfs() {
     mkdir -p ${exportpath}
     chmod a+rwx ${exportpath}
     echo "${exportpath} *(rw,sync,no_root_squash,no_all_squash)" >> /etc/exports
+}
+
+activate_nfs() {
     exportfs -a
 }
 
@@ -64,8 +67,8 @@ install_deps() {
 
 
 setup_iscsi() {
-    pvcreate /dev/${ISCSI_DEV}
-    vgcreate vg1_storage /dev/${ISCSI_DEV}
+    pvcreate --zero n /dev/${ISCSI_DEV}
+    vgcreate --zero n vg1_storage /dev/${ISCSI_DEV}
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
         delete 0.0.0.0 3260
@@ -74,7 +77,7 @@ setup_iscsi() {
 
     create_lun () {
        local ID=$1
-        lvcreate -L20G -n lun${ID}_bdev vg1_storage
+        lvcreate --zero n -L20G -n lun${ID}_bdev vg1_storage
         targetcli \
             /backstores/block \
             create name=lun${ID}_bdev dev=/dev/vg1_storage/lun${ID}_bdev
@@ -255,6 +258,7 @@ main() {
     setup_iso
     setup_second_nfs
     set_selinux_on_nfs
+    activate_nfs
     setup_lvm_filter
     setup_iscsi
 

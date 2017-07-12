@@ -502,7 +502,8 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
                 functools.partial(add_nfs_storage_domain, prefix),
-                functools.partial(add_iso_storage_domain, prefix),
+               #[12/07/2017] commeting out iso domain creation until we know why it causing random failures
+               #functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
             ],
         )
@@ -512,7 +513,8 @@ def add_secondary_storage_domains(prefix):
                 functools.partial(import_non_template_from_glance, prefix),
                 functools.partial(import_template_from_glance, prefix),
                 functools.partial(add_iscsi_storage_domain, prefix),
-                functools.partial(add_iso_storage_domain, prefix),
+               #[12/07/2017] commeting out iso domain creation until we know why it causing random failures
+               #functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
             ],
         )

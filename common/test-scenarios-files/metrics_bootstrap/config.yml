@@ -1,3 +1,3 @@
 fluentd_fluentd_host: lago-basic-suite-master-engine
 fluentd_use_ssl: false
-ovirt_env_name: lago_engine
+ovirt_env_name: lago-engine

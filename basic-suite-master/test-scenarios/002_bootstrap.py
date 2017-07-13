@@ -75,7 +75,7 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
+CIRROS_IMAGE_NAME = 'CirrOS 0.3.5 for x86_64'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network

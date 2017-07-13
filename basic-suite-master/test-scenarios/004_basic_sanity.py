@@ -97,7 +97,7 @@ def add_vm_blank(api):
         ),
         type_='server',
         high_availability=params.HighAvailability(
-            enabled=True,
+            enabled=False,
         ),
         cluster=params.Cluster(
             name=TEST_CLUSTER,

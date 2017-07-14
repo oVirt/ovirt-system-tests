@@ -560,6 +560,35 @@ def hotplug_cpu(api):
         vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 2
     )
 
+@testlib.with_ovirt_api4
+def next_run_unplug_cpu(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM0_NAME)[0]
+    vm_service = vms_service.vm_service(vm.id)
+    new_cpu = vm.cpu
+    new_cpu.topology.sockets = 1
+    vm_service.update(
+        vm=types.Vm(
+            cpu=new_cpu,
+        ),
+        next_run=True
+    )
+    nt.assert_true(
+        vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 2
+    )
+    nt.assert_true(
+    	vms_service.vm_service(vm.id).get(next_run=True).cpu.topology.sockets == 1
+    )
+    vm_service.reboot()
+    testlib.assert_true_within_long(
+        lambda:
+         vms_service.list(search=VM0_NAME)[0].status == types.VmStatus.UP
+    )
+    nt.assert_true(
+        vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 1
+    )
+
 
 @testlib.with_ovirt_api
 def hotplug_nic(api):
@@ -660,6 +689,7 @@ _TEST_LIST = [
     suspend_resume_vm,
     template_export,
     hotplug_cpu,
+    next_run_unplug_cpu,
     hotplug_disk,
     disk_operations,
     hotplug_nic,

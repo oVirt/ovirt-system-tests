@@ -115,14 +115,19 @@ def add_vm_blank(api):
         memory_policy=params.MemoryPolicy(
             guaranteed=vm_memory / 2,
         ),
+        name=VM0_NAME
+    )
+    api.vms.add(vm_params)
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(VM0_NAME).status.state == 'down',
+    )
+    vm_params.name = VM2_NAME
+    vm_params.high_availability.enabled = True
+    api.vms.add(vm_params)
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(VM2_NAME).status.state == 'down',
     )
 
-    for vm_name in (VM0_NAME, VM2_NAME):
-        vm_params.name = vm_name
-        api.vms.add(vm_params)
-        testlib.assert_true_within_short(
-            lambda: api.vms.get(vm_name).status.state == 'down',
-        )
 
 
 @testlib.with_ovirt_api
@@ -494,6 +499,38 @@ def vm_run(prefix):
     testlib.assert_true_within_short(
         lambda: api.vms.get(VM0_NAME).status.state == 'up',
     )
+    start_params.vm.initialization.cloud_init=params.CloudInit(
+        host=params.Host(
+            address='VM2'
+        ),
+    )
+    api.vms.get(VM2_NAME).start(start_params)
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(VM2_NAME).status.state == 'up',
+    )
+
+
+@testlib.with_ovirt_prefix
+def ha_recovery(prefix):
+    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+    last_event = int(engine.events_service().list(max=2)[0].id)
+    vm = engine.vms_service().list(search=VM2_NAME)[0]
+    host_name = engine.hosts_service().host_service(vm.host.id).get().name
+    vm_host = prefix.virt_env.get_vm(host_name)
+    pid = vm_host.ssh(['pgrep', '-f', 'qemu.*guest=vm2'])
+    vm_host.ssh(['kill', '-KILL', pid.out])
+    events = engine.events_service()
+    testlib.assert_true_within_short(
+        lambda:
+        (next(e for e in events.list(from_=last_event) if e.code == 9602)).code == 9602,
+         allowed_exceptions=[StopIteration]
+    )
+    testlib.assert_true_within_long(
+        lambda:
+        engine.vms_service().list(search=VM2_NAME)[0].status == types.VmStatus.UP
+    )
+    vm_id = engine.vms_service().list(search=VM2_NAME)[0].id
+    engine.vms_service().vm_service(vm_id).stop()
 
 
 @testlib.with_ovirt_prefix
@@ -817,6 +854,7 @@ _TEST_LIST = [
     update_vm_pool,
     remove_vm_pool,
     vm_run,
+    ha_recovery,
     suspend_resume_vm,
     template_export,
     template_update,

@@ -89,7 +89,7 @@ def _get_vm_service(engine):
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
-    vm_memory = 512 * MB
+    vm_memory = 256 * MB
     vm_params = params.VM(
         memory=vm_memory,
         os=params.OperatingSystem(
@@ -568,6 +568,22 @@ def disk_operations(api):
     vt.start_all()
     vt.join_all()
 
+@testlib.with_ovirt_api4
+def hotplug_memory(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM0_NAME)[0]
+    vm_service = vms_service.vm_service(vm.id)
+    new_memory = vm.memory * 2
+    vm_service.update(
+        vm=types.Vm(
+            memory=new_memory
+        )
+    )
+    nt.assert_true(
+        vms_service.list(search=VM0_NAME)[0].memory == new_memory
+    )
+
 
 @testlib.with_ovirt_api4
 def hotplug_cpu(api):
@@ -578,8 +594,8 @@ def hotplug_cpu(api):
     new_cpu = vm.cpu
     new_cpu.topology.sockets = 2
     vm_service.update(
-        vm = types.Vm(
-            cpu = new_cpu
+        vm=types.Vm(
+            cpu=new_cpu
         )
     )
     nt.assert_true(
@@ -715,6 +731,7 @@ _TEST_LIST = [
     suspend_resume_vm,
     template_export,
     template_update,
+    hotplug_memory,
     hotplug_cpu,
     next_run_unplug_cpu,
     hotplug_disk,

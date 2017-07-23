@@ -57,6 +57,15 @@ run_suite () {
     # which in jenkins is 105 chars
     mkdir -p /tmp/.ansible/cp/
     echo -e "[ssh_connection]\ncontrol_path=None" > /tmp/ansible.cfg
+    # Verify the ansible_hosts file
+    if ansible-playbook \
+        --list-hosts \
+        -i ansible_hosts \
+        $SUITE/engine.yml \
+        | grep 'hosts (0):'; then
+            echo "@@@@ ERROR: ansible: No matching hosts were found"
+            return 1
+    fi
     trap cleanup_run EXIT SIGHUP SIGTERM
     $CLI ovirt serve & ANSIBLE_CONFIG=/tmp/ansible.cfg ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i $ANSIBLE_HOSTS_FILE $SUITE/engine.yml --extra-vars='lago_cmd=$CLI prefix=$PREFIX/current log_dir=$PWD/test_logs/${SUITE##*/}/'
 }

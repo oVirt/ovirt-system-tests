@@ -3,14 +3,14 @@
   setup:
     filter: ansible_fqdn
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['ovirt-host'] }}"
+  with_items: "{{ groups['vm-type=ovirt-host'] }}"
   register: tmp_host_names
 
 - name: Fetch host IP addresses
   setup:
     filter: ansible_default_ipv4
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['ovirt-host'] }}"
+  with_items: "{{ groups['vm-type=ovirt-host'] }}"
   register: tmp_host_ips
 
 - name: Fetch engine IP address

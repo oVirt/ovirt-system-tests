@@ -64,14 +64,14 @@
     state: present
     name: cockpit-ovirt-dashboard
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['ovirt-host']}}"
+  with_items: "{{ groups['vm-type=ovirt-host'] }}"
 
 - name: Remove temporary RPM files
   file:
     state: absent
     path: "/dev/shm/*rpm"
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['ovirt-host']}}"
+  with_items: "{{ groups['vm-type=ovirt-host'] }}"
 
 - name: Add NFS storage
   ovirt_storage_domains:

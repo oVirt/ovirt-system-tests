@@ -40,7 +40,6 @@ he_deploy() {
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then
         echo "hosted-engine setup on ${HOST}0 failed with status ${RET_CODE}."
-        exit ${RET_CODE}
     fi
 
     lago shell \

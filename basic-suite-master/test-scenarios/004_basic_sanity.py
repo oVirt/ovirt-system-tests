@@ -646,33 +646,39 @@ def hotplug_nic(api):
     api.vms.get(VM0_NAME).nics.add(nic2_params)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def hotplug_disk(api):
-    disk2_params = params.Disk(
-        name=DISK0_NAME,
-        size=9 * GB,
-        provisioned_size=2,
-        interface='virtio',
-        format='cow',
-        storage_domains=params.StorageDomains(
-            storage_domain=[
-                params.StorageDomain(
-                    name=SD_NFS_NAME,
-                ),
-            ],
-        ),
-        status=None,
-        sparse=True,
-        bootable=False,
-        active=True,
+    vms_service = api.system_service().vms_service()
+    vm_service = vms_service.vm_service(vms_service.list(search=VM0_NAME)[0].id)
+    disk_attachments_service = vm_service.disk_attachments_service()
+    disk_attachment = disk_attachments_service.add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                name=DISK0_NAME,
+                provisioned_size=2 * GB,
+                format=types.DiskFormat.COW,
+                storage_domains=[
+                    types.StorageDomain(
+                        name=SD_NFS_NAME,
+                    ),
+                ],
+                status=None,
+                sparse=True,
+            ),
+            interface=types.DiskInterface.VIRTIO,
+            bootable=False,
+            active=True
+        )
     )
-    api.vms.get(VM0_NAME).disks.add(disk2_params)
+
+    disks_service = api.system_service().disks_service()
+    disk_service = disks_service.disk_service(disk_attachment.disk.id)
 
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+        disk_attachments_service.attachment_service(disk_attachment.id).get().active and
+        disk_service.get().status == types.DiskStatus.OK
     )
-    nt.assert_true(api.vms.get(VM0_NAME).disks.get(DISK0_NAME).active)
 
 
 @testlib.with_ovirt_api

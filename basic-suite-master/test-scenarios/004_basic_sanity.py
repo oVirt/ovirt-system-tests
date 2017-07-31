@@ -156,9 +156,11 @@ def add_disk(api):
         types.DiskAttachment(
             disk=types.Disk(
                 id=glance_disk.get().id,
-                storage_domain=types.StorageDomain(
+                storage_domains=[
+                    types.StorageDomain(
                         name=SD_ISCSI_NAME,
-                ),
+                    ),
+                ],
             ),
             interface=types.DiskInterface.VIRTIO,
             active=True,

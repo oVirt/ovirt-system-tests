@@ -49,6 +49,7 @@ SD_ISCSI_NAME = 'iscsi'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
+VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
@@ -529,7 +530,55 @@ def template_export(api):
         ),
     )
     testlib.assert_true_within_long(
-        lambda: templates_service.template_service(template_cirros.get().id).get().status == types.TemplateStatus.OK,
+        lambda:
+        templates_service.template_service(template_cirros.get().id).get().status == types.TemplateStatus.OK,
+    )
+
+
+@testlib.with_ovirt_api4
+def add_vm_pool(api):
+    engine = api.system_service()
+    pools_service = engine.vm_pools_service()
+    pool_cluster = engine.clusters_service().list(search=TEST_CLUSTER)[0]
+    pool_template = engine.templates_service().list(search=TEMPLATE_CIRROS)[0]
+    pools_service.add(
+        pool=types.VmPool(
+            name=VMPOOL_NAME,
+            cluster=pool_cluster,
+            template=pool_template,
+            use_latest_template_version=True,
+        )
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        engine.vms_service().list(search=VMPOOL_NAME+'-1')[0].status == types.VmStatus.DOWN,
+        allowed_exceptions=[IndexError]
+    )
+
+
+@testlib.with_ovirt_api4
+def update_vm_pool(api):
+    pools_service= api.system_service().vm_pools_service()
+    pool_id = pools_service.list(search=VMPOOL_NAME)[0].id
+    pool_service = pools_service.pool_service(id=pool_id)
+
+    pool_service.update(
+        pool=types.VmPool(
+            max_user_vms=2
+        )
+    )
+    nt.assert_true(
+        api.system_service().vm_pools_service().list(search=VMPOOL_NAME)[0].max_user_vms == 2
+    )
+
+
+@testlib.with_ovirt_api4
+def remove_vm_pool(api):
+    pools_service = api.system_service().vm_pools_service()
+    pool_id = pools_service.list(search=VMPOOL_NAME)[0].id
+    pools_service.pool_service(id=pool_id).remove()
+    nt.assert_true(
+         len(api.system_service().vm_pools_service().list()) == 0
     )
 
 
@@ -544,24 +593,22 @@ def template_update(api):
             TEMPLATE_CIRROS
         )
     )
-
     new_comment = "comment by ovirt-system-tests"
     template_cirros.update(
         template = types.Template(
             comment=new_comment
         )
     )
-
     testlib.assert_true_within_short(
-        lambda: templates_service.template_service(template_cirros.get().id).get().status == types.TemplateStatus.OK,
+        lambda:
+        templates_service.template_service(template_cirros.get().id).get().status == types.TemplateStatus.OK
     )
-
     nt.assert_true(templates_service.list(search=TEMPLATE_CIRROS)[0].comment == new_comment)
 
 
 @testlib.with_ovirt_api
 def disk_operations(api):
-    vt= utils.VectorThread(
+    vt = utils.VectorThread(
         [
             functools.partial(live_storage_migration),
             functools.partial(snapshot_cold_merge, api),
@@ -569,6 +616,7 @@ def disk_operations(api):
     )
     vt.start_all()
     vt.join_all()
+
 
 @testlib.with_ovirt_api4
 def hotplug_memory(api):
@@ -729,6 +777,9 @@ def add_event(api):
 _TEST_LIST = [
     add_vm_blank,
     add_vm_template,
+    add_vm_pool,
+    update_vm_pool,
+    remove_vm_pool,
     add_nic,
     add_disk,
     add_console,

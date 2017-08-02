@@ -355,6 +355,8 @@ def add_vm_template(api):
         template=params.Template(
             name=TEMPLATE_CIRROS,
         ),
+        use_latest_template_version=True,
+        stateless=True,
         display=params.Display(
             type_='vnc',
         ),
@@ -557,6 +559,33 @@ def add_vm_pool(api):
 
 
 @testlib.with_ovirt_api4
+def update_template_version(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    stateless_vm = vms_service.list(search=VM1_NAME)[0]
+    templates_service = engine.templates_service()
+    template = templates_service.list(search=TEMPLATE_CIRROS)[0]
+
+    nt.assert_true(stateless_vm.memory != template.memory)
+
+    templates_service.add(
+        template=types.Template(
+            name=TEMPLATE_CIRROS,
+            vm=stateless_vm,
+            version=types.TemplateVersion(
+                base_template=template,
+                version_number=2
+            )
+        )
+    )
+    pools_service = engine.vm_pools_service()
+    testlib.assert_true_within_long(
+        lambda:
+        pools_service.list(search=VMPOOL_NAME)[0].vm.memory == stateless_vm.memory
+    )
+
+
+@testlib.with_ovirt_api4
 def update_vm_pool(api):
     pools_service= api.system_service().vm_pools_service()
     pool_id = pools_service.list(search=VMPOOL_NAME)[0].id
@@ -670,7 +699,7 @@ def next_run_unplug_cpu(api):
         vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 2
     )
     nt.assert_true(
-    	vms_service.vm_service(vm.id).get(next_run=True).cpu.topology.sockets == 1
+        vms_service.vm_service(vm.id).get(next_run=True).cpu.topology.sockets == 1
     )
     vm_service.reboot()
     testlib.assert_true_within_long(
@@ -777,15 +806,16 @@ def add_event(api):
 _TEST_LIST = [
     add_vm_blank,
     add_vm_template,
-    add_vm_pool,
-    update_vm_pool,
-    remove_vm_pool,
     add_nic,
     add_disk,
     add_console,
     add_directlun,
     add_filter,
     add_filter_parameter,
+    add_vm_pool,
+    update_template_version,
+    update_vm_pool,
+    remove_vm_pool,
     vm_run,
     suspend_resume_vm,
     template_export,

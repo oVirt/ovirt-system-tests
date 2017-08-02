@@ -388,14 +388,8 @@ def _add_storage_domain_4(api, p):
     sd = sds_service.add(p)
 
     sd_service = sds_service.storage_domain_service(sd.id)
-
-    def _is_sd_unattached():
-        usd = sd_service.get()
-        if usd.status == sdk4.types.StorageDomainStatus.UNATTACHED:
-            return True
-
     testlib.assert_true_within_long(
-        _is_sd_unattached
+        lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
     )
 
     dcs_service = api.system_service().data_centers_service()
@@ -409,14 +403,8 @@ def _add_storage_domain_4(api, p):
     )
 
     attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-
-    def _is_sd_active():
-        asd = attached_sd_service.get()
-        if asd.status == sdk4.types.StorageDomainStatus.ACTIVE:
-            return True
-
     testlib.assert_true_within_long(
-        _is_sd_active
+        lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
     )
 
 
@@ -433,7 +421,6 @@ def add_nfs_storage_domain(prefix):
         add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
     else:
         add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_1')
-
 
 
 # TODO: add this over the storage network and with IPv6
@@ -509,8 +496,8 @@ def add_secondary_storage_domains(prefix):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
-                functools.partial(import_non_template_from_glance, prefix),
-                functools.partial(import_template_from_glance, prefix),
+                functools.partial(import_non_template_from_glance, prefix) if GLANCE_AVAIL else None,
+                functools.partial(import_template_from_glance, prefix) if GLANCE_AVAIL else None,
                 functools.partial(add_nfs_storage_domain, prefix),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 # Bug-Url: http://bugzilla.redhat.com/1463263
@@ -522,8 +509,8 @@ def add_secondary_storage_domains(prefix):
     else:
         vt = utils.VectorThread(
             [
-                functools.partial(import_non_template_from_glance, prefix),
-                functools.partial(import_template_from_glance, prefix),
+                functools.partial(import_non_template_from_glance, prefix) if GLANCE_AVAIL else None,
+                functools.partial(import_template_from_glance, prefix) if GLANCE_AVAIL else None,
                 functools.partial(add_iscsi_storage_domain, prefix),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 #Bug-Url: http://bugzilla.redhat.com/1463263
@@ -622,7 +609,8 @@ def import_templates(api):
         )
 
 
-def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+def generic_import_from_glance(prefix, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+    api = prefix.virt_env.engine_vm().get_api()
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     target_image = glance_provider.images.get(name=image_name)
     disk_name = image_name.replace(" ", "_") + image_ext
@@ -800,17 +788,15 @@ def check_glance_connectivity_4(api):
 
 
 def import_non_template_from_glance(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
-    generic_import_from_glance(api)
+    generic_import_from_glance(prefix)
 
 
 def import_template_from_glance(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
+    generic_import_from_glance(prefix, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
 
 
 @testlib.with_ovirt_api

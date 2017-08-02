@@ -798,16 +798,22 @@ def hotplug_disk(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def hotunplug_disk(api):
-    disk = api.vms.get(VM0_NAME).disks.get(DISK0_NAME)
+    vms_service = api.system_service().vms_service()
+    vm_service = vms_service.vm_service(vms_service.list(search=VM0_NAME)[0].id)
+    disks_service = api.system_service().disks_service()
+    disk_service = disks_service.disk_service(disks_service.list(search=DISK0_NAME)[0].id)
+    disk_attachments_service = vm_service.disk_attachments_service()
+    disk_attachment = disk_attachments_service.attachment_service(disk_service.get().id)
+
     nt.assert_true(
-        disk.deactivate()
+        disk_attachment.update(types.DiskAttachment(active=False))
     )
 
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).active == False
+        disk_attachment.get().active == False
     )
 
 

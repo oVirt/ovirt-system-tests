@@ -1,1 +1,6 @@
-image-ng_suite_3.6.mounts
+/var/run/libvirt
+/var/lib/lago
+/var/lib/libvirt/boot
+/boot
+/lib/modules
+/dev/shm

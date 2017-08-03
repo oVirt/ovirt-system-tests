@@ -132,7 +132,7 @@ includepkgs=gtk2 python2-pyasn1 avahi-libs lsscsi python-rhsm socat subscription
  python-urlgrabber rpcbind nfs-utils libtevent quota quota-nls libtalloc apache-commons-collections copy-jdk-configs libpng mod_ssl openssl postgresql postgresql-libs postgresql-server
  nss-softokn nss-softokn-freebl openssl-libs libselinux libselinux-python libselinux-utils audit-libs openldap-clients cyrus-sasl cyrus-sasl-gssapi libsepol audit GeoIP cyrus-sasl-md5 openldap
  graphite2 sanlock-python gnutls gnutls-dane gnutls-utils numactl sanlock-python sanlock-lib sanlock httpcomponents-core libunwind gperftools-libs
- net-snmp-utils net-snmp-libs pciutils pciutils-libs cryptsetup-libs kpartx libpci3 kmod kmod-libs ipset ipset-libs
+ net-snmp-utils net-snmp-libs pciutils pciutils-libs cryptsetup-libs kpartx libpci3 kmod kmod-libs ipset ipset-libs pyOpenSSL python-ipaddress
  iptables python-rhsm-certificates ruby ruby-irb ruby-libs rubygem-bigdecimal rubygem-io-console rubygem-json rubygem-psych rubygem-rdoc rubygems jboss-annotations-1.1-api
  fence-agents-all abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-python abrt-addon-vmcore abrt-cli abrt-dbus abrt-libs abrt-python abrt-retrace-client python-augeas libreport-python libreport
  libreport-plugin-rhtsupport libreport-plugin-ureport libreport-web libtar pygobject2 satyr xmlrpc-c xmlrpc-c-client elfutils gdb abrt lshw resteasy-base-jaxrs resteasy-base-jaxrs-api

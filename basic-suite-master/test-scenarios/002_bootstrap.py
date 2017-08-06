@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014, 2017 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,7 +80,7 @@ CIRROS_IMAGE_NAME = 'CirrOS 0.3.5 for x86_64'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
-VM_NETWORK = 'VM_Network'
+VM_NETWORK = 'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
 

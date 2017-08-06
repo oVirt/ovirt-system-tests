@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright 2016-2017 Red Hat, Inc.
 #
@@ -37,7 +38,7 @@ DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
 # Networks
-VM_NETWORK = 'VM_Network'
+VM_NETWORK = 'VM Network with a very long name and עברית'
 VM_NETWORK_IPv4_ADDR = '192.0.2.1'
 VM_NETWORK_IPv4_MASK = '255.255.255.0'
 VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'

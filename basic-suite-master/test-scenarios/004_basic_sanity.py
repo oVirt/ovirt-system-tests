@@ -852,10 +852,6 @@ _TEST_LIST = [
     add_directlun,
     add_filter,
     add_filter_parameter,
-    add_vm_pool,
-    update_template_version,
-    update_vm_pool,
-    remove_vm_pool,
     vm_run,
     ha_recovery,
     suspend_resume_vm,
@@ -869,6 +865,10 @@ _TEST_LIST = [
     hotplug_nic,
     hotunplug_disk,
     add_event,
+    add_vm_pool,
+    update_template_version,
+    update_vm_pool,
+    remove_vm_pool,
     vdsm_recovery
 ]
 

@@ -9,34 +9,40 @@ PROJECT="$PWD"
 #which will be executed
 SUITES_TO_RUN=$(automation/change_resolver.py)
 [[ -z "$SUITES_TO_RUN" ]] && SUITES_TO_RUN="basic_suite_master"
-# This function will collect the logs
-# of each suite to a different directory
+
 collect_suite_logs() {
-  local test_logs="$PROJECT"/exported-artifacts
+  # Each suite outputs its logs to a directory named "exported-artifacts".
+  # Since "check-patch" can run multiple suites, we need to rename
+  # "exported-artifacts" at the end of each suite
+  # (otherwise the logs will be overridden).
+
+  # Convert the name of "exported-artifacts" directory to $1__logs
+  # $1: Suite name
+
+  local suite_name=${1:?}
+  local test_logs="${PROJECT}/exported-artifacts"
+
   if [[ -d "$test_logs" ]]; then
-    suite_logs="$PROJECT/$suite""__logs"
-    # Rename the logs
+    suite_logs="${PROJECT}/${suite_name}__logs"
+    # Rename the logs dir
     mv "$test_logs" "$suite_logs"
   fi
 }
 
-# This function will collect the logs from
-# all the suites and store them in exported-artifacts,
-# which later will be collected by jenkins
 collect_all_logs() {
-    local logs=logs
-    [[ -d "$logs" ]] || mkdir $logs
-    # mock_cleanup.sh collects the logs from ./logs, ./*/logs
-    # The root directory is jenkins' workspace
-    mv *__logs logs
-    mv logs exported-artifacts
-    mv *.log exported-artifacts
+    # Collect all the log directories created by "collect_suite_logs"
+    # and place them inside exported-artifacts directory.
+
+    mkdir exported-artifacts
+
+    find . -maxdepth 1 -name '*__logs' -print0 | xargs -r -0 mv -t exported-artifacts
+    find . -maxdepth 1 -name '*.log' -print0 | xargs -r -0 mv -t exported-artifacts
 }
 
 # collect the logs  on failure
 on_error() {
   echo "Error on line: $1"
-  collect_suite_logs
+  collect_suite_logs "$suite"
   collect_all_logs
 }
 
@@ -65,8 +71,7 @@ do
         tput setaf 1; echo "!!! Could not find execution script for $suite"
     fi
 
-    # collect the logs for the current suite
-    collect_suite_logs
+    collect_suite_logs "$suite"
 done
 
 # collect all the suit's logs to exported-artifacts

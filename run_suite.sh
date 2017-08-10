@@ -1,4 +1,8 @@
 #!/bin/bash -ex
+
+# Imports
+source common/helpers/logger.sh
+
 CLI="lago"
 DO_CLEANUP=false
 RECOMMENDED_RAM_IN_MB=8196
@@ -90,7 +94,7 @@ get_engine_version() {
 
 env_init () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
+
     local template_repo="${1:-$SUITE/template-repo.json}"
     local initfile="${2:-$SUITE/init.json}"
     $CLI init \
@@ -108,19 +112,19 @@ render_jinja_templates () {
 
 env_repo_setup () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
+
     local extrasrc
     declare -a extrasrcs
     cd $PREFIX
     for extrasrc in "${EXTRA_SOURCES[@]}"; do
         extrasrcs+=("--custom-source=$extrasrc")
-        echo "Adding extra source: $extrasrc"
+        logger.info "Adding extra source: $extrasrc"
     done
     local reposync_conf="$SUITE/reposync-config.repo"
     if [[ -e "$CUSTOM_REPOSYNC" ]]; then
         reposync_conf="$CUSTOM_REPOSYNC"
     fi
-    echo "using reposync config file: $reposync_conf"
+    logger.info "Using reposync config file: $reposync_conf"
     http_proxy="" $CLI ovirt reposetup \
         --reposync-yum-config "$reposync_conf" \
         "${extrasrcs[@]}"
@@ -130,7 +134,7 @@ env_repo_setup () {
 
 env_start () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
+
     cd $PREFIX
     $CLI start
     cd -
@@ -138,7 +142,7 @@ env_start () {
 
 env_stop () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
+
     cd $PREFIX
     $CLI ovirt stop
     cd -
@@ -147,12 +151,11 @@ env_stop () {
 
 env_create_images () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
 
     local export_dir="${PWD}/exported_images"
     local engine_version=$(get_engine_version)
     [[ -z "$engine_version" ]] && \
-        echo "Failed to get the engine's version" && return 1
+        logger.error "Failed to get the engine's version" && return 1
     local name="ovirt_${engine_version}_demo_$(date +%Y%m%d%H%M)"
     local archive_name="${name}.tar.xz"
     local checksum_name="${name}.md5"
@@ -165,7 +168,7 @@ env_create_images () {
     cd $export_dir
     echo "$engine_version" > version.txt
     python "${OST_REPO_ROOT}/common/scripts/modify_init.py" LagoInitFile
-    echo "Compressing images"
+    logger.info "Compressing images"
     local files=($(ls "$export_dir"))
     tar -cvS "${files[@]}" | xz -T 0 -v --stdout > "$archive_name"
     md5sum "$archive_name" > "$checksum_name"
@@ -176,7 +179,7 @@ env_create_images () {
 
 env_deploy () {
     ci_msg_if_fails "$FUNCNAME"
-    echo "#########################"
+
     local res=0
     cd "$PREFIX"
     $CLI ovirt deploy || res=$?
@@ -186,7 +189,7 @@ env_deploy () {
 
 env_status () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
+
     cd $PREFIX
     $CLI status
     cd -
@@ -195,7 +198,7 @@ env_status () {
 
 env_run_test () {
     msg_if_fails "Test ${1##*/} failed."
-    echo "#########################"
+
     local res=0
     cd $PREFIX
     $CLI ovirt runtest $1 || res=$?
@@ -205,7 +208,10 @@ env_run_test () {
 
 env_ansible () {
     ci_msg_if_fails $FUNCNAME
-    echo "#########################"
+
+    cd $PREFIX
+    $CLI ansible_hosts > current/$ANSIBLE_HOSTS_FILE
+    cd -
 
     # Ensure latest Ansible modules are tested:
     rm -rf $SUITE/ovirt-deploy/library || true
@@ -224,7 +230,7 @@ env_ansible () {
 
 env_collect () {
     local tests_out_dir="${1?}"
-    echo "#########################"
+
     [[ -e "${tests_out_dir%/*}" ]] || mkdir -p "${tests_out_dir%/*}"
     cd "$PREFIX/current"
     $CLI collect --output "$tests_out_dir"
@@ -234,29 +240,30 @@ env_collect () {
 
 
 env_cleanup() {
-    echo "#########################"
+
     local res=0
     local uuid
-    echo "======== Cleaning up"
+
+    logger.info "Cleaning up"
     if [[ -e "$PREFIX" ]]; then
-        echo "----------- Cleaning with lago"
+        logger.info "Cleaning with lago"
         $CLI --workdir "$PREFIX" destroy --yes --all-prefixes \
         || res=$?
-        echo "----------- Cleaning with lago done"
+        logger.success "Cleaning with lago done"
     elif [[ -e "$PREFIX/uuid" ]]; then
         uid="$(cat "$PREFIX/uuid")"
         uid="${uid:0:4}"
         res=1
     else
-        echo "----------- No uuid found, cleaning up any lago-generated vms"
+        logger.info "No uuid found, cleaning up any lago-generated vms"
         res=1
     fi
     if [[ "$res" != "0" ]]; then
-        echo "Lago cleanup did not work (that is ok), forcing libvirt"
+        logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
         env_libvirt_cleanup "${SUITE##*/}" "$uid"
     fi
     restore_package_manager_config
-    echo "======== Cleanup done"
+    logger.success "Cleanup done"
 }
 
 
@@ -288,14 +295,14 @@ env_libvirt_cleanup() {
             | awk '{print $1;}' \
         ))
     fi
-    echo "----------- Cleaning libvirt"
+    logger.info "Cleaning with libvirt"
     for domain in "${domains[@]}"; do
         virsh -c qemu:///system destroy "$domain"
     done
     for net in "${nets[@]}"; do
         virsh -c qemu:///system net-destroy "$net"
     done
-    echo "----------- Cleaning libvirt Done"
+    logger.success "Cleaning with libvirt Done"
 }
 
 
@@ -303,7 +310,7 @@ check_ram() {
     local recommended="${1:-$RECOMMENDED_RAM_IN_MB}"
     local cur_ram="$(free -m | grep Mem | awk '{print $2}')"
     if [[ "$cur_ram" -lt "$recommended" ]]; then
-        echo "It's recommended to have at least ${recommended}MB of RAM" \
+        logger.warning "It's recommended to have at least ${recommended}MB of RAM" \
             "installed on the system to run the system tests, if you find" \
             "issues while running them, consider upgrading your system." \
             "(only detected ${cur_ram}MB installed)"
@@ -439,7 +446,7 @@ while true; do
 done
 
 if [[ -z "$1" ]]; then
-    echo "ERROR: no suite passed"
+    logger.error "No suite passed"
     usage
     exit 1
 fi
@@ -458,16 +465,14 @@ fi
 
 [[ -d "$SUITE" ]] \
 || {
-    echo "Suite $SUITE not found or is not a dir"
+    logger.error "Suite $SUITE not found or is not a dir"
     exit 1
 }
 
-echo "################# lago version"
-lago --version
-echo "#################"
+logger.info "Using $(lago --version 2>&1)"
 check_ram "$RECOMMENDED_RAM_IN_MB"
-echo "Running suite found in ${SUITE}"
-echo "Environment will be deployed at ${PREFIX}"
+logger.info  "Running suite found in $SUITE"
+logger.info  "Environment will be deployed at $PREFIX"
 
 rm -rf "${PREFIX}"
 
@@ -477,7 +482,9 @@ source "${SUITE}/control.sh"
 prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"
 run_suite
 if [[ ! -z "$CREATE_IMAGES" ]]; then
+    logger.info "Creating images, this might take some time..."
     env_create_images
 fi
 # No error has occurred, we can delete the error msg.
 del_failure_msg
+logger.success "$SUITE - All tests passed :)"

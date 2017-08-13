@@ -1,0 +1,21 @@
+site_name: oVirt System Tests Docs
+site_description: oVirt system tests documentation
+site_author: oVirt system tests team
+site_dir: docs-out
+use_directory_urls: false
+theme: readthedocs
+repo_url: https://gerrit.ovirt.org/ovirt-system-tests
+repo_name: Gerrit
+pages:
+    - Home: index.markdown
+    - General:
+        - Introduction: general/introduction.markdown
+        - Installation: general/installation.markdown
+        - 'First Run': general/running_tests.markdown
+        - FAQ: general/faq.markdown
+    - CI:
+        - Jenkins: CI/jenkins_jobs.markdown
+        - 'Verifying A Patch': CI/developers_info.markdown
+        - 'Standart CI': CI/standard_ci_and_ost.markdown
+    - 'How It Works':
+        - 'Packages Management': how-it-works/package_management.markdown

@@ -313,6 +313,32 @@ def snapshot_cold_merge(api):
 
 
 @testlib.with_ovirt_api4
+def cold_storage_migration(api):
+    disks_service = api.system_service().disks_service()
+    disk = disks_service.list(search=DISK2_NAME)[0]
+    disk_service = disks_service.disk_service(disk.id)
+
+    # Cold migrate the disk to ISCSI storage domain and then migrate it back
+    # to the NFS domain because it is used by other cases that assume the
+    # disk found on that specific domain
+    for domain in [SD_ISCSI_NAME, SD_SECOND_NFS_NAME]:
+        disk_service.move(
+            async=False,
+            storage_domain=types.StorageDomain(
+                name=domain
+            )
+        )
+
+        testlib.assert_true_within_long(
+            lambda: api.follow_link(
+                disk_service.get().storage_domains[0]
+            ).name == domain and (
+                disk_service.get().status == types.DiskStatus.OK
+            )
+        )
+
+
+@testlib.with_ovirt_api4
 def live_storage_migration(api):
     engine = api.system_service()
     vms_service = engine.vms_service()
@@ -680,6 +706,7 @@ def disk_operations(api):
     vt = utils.VectorThread(
         [
             functools.partial(live_storage_migration),
+            functools.partial(cold_storage_migration),
             functools.partial(snapshot_cold_merge, api),
         ],
     )

@@ -7,34 +7,6 @@
     local: false
     compatibility_version: "{{ compatibility_version }}"
 
-- name: Remove default datacenter
-  ovirt_datacenters:
-    auth: "{{ ovirt_auth }}"
-    state: absent
-    name: Default
-
-- name: Remove default cluster
-  ovirt_clusters:
-    auth: "{{ ovirt_auth }}"
-    state: absent
-    name: Default
-
-- name: Add datacenter quota
-  ovirt_quotas:
-    auth: "{{ ovirt_auth }}"
-    state: present
-    name: "{{ quota_name }}"
-    data_center: "{{ dc_name }}"
-    storage_grace: 70
-    storage_threshold: 90
-    cluster_grace: 70
-    cluster_threshold: 90
-    clusters:
-      - memory: 10
-        cpu: 20
-    storages:
-      - size: 500
-
 - name: Add cluster
   ovirt_clusters:
     auth: "{{ ovirt_auth }}"
@@ -180,3 +152,31 @@
     vm_network: false
     description: Non VM Network on VLAN 200, MTU 9000
     mtu: 9000
+
+- name: Remove default datacenter
+  ovirt_datacenters:
+    auth: "{{ ovirt_auth }}"
+    state: absent
+    name: Default
+
+- name: Remove default cluster
+  ovirt_clusters:
+    auth: "{{ ovirt_auth }}"
+    state: absent
+    name: Default
+
+- name: Add datacenter quota
+  ovirt_quotas:
+    auth: "{{ ovirt_auth }}"
+    state: present
+    name: "{{ quota_name }}"
+    data_center: "{{ dc_name }}"
+    storage_grace: 70
+    storage_threshold: 90
+    cluster_grace: 70
+    cluster_threshold: 90
+    clusters:
+      - memory: 10
+        cpu: 20
+    storages:
+      - size: 500

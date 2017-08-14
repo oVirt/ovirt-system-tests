@@ -200,22 +200,19 @@ env_run_test () {
 env_ansible () {
     ci_msg_if_fails $FUNCNAME
     echo "#########################"
-    cd $PREFIX
-    $CLI ansible_hosts > current/$ANSIBLE_HOSTS_FILE
-    cd -
 
     # Ensure latest Ansible modules are tested:
+    rm -rf $SUITE/ovirt-deploy/library || true
     mkdir -p $SUITE/ovirt-deploy/library
     cd $SUITE/ovirt-deploy/library
-    for module in vms disks clusters datacenters hosts networks quotas storage_domains templates vmpools nics
+    ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/cloud/ovirt/ovirt_"
+    for module in vms disk cluster datacenter hosts networks quotas storage_domains templates vmpools nics
     do
-      wget -N "https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/cloud/ovirt/ovirt_$module.py"
+      OVIRT_MODULES_FILES="$OVIRT_MODULES_FILES $ANSIBLE_URL_PREFIX$module.py "
     done
-    cd -
 
-    # Until Ansible 2.3 is released we need to do this hack:
-    path=$(rpm -ql ansible | grep "module_utils/ovirt.py$")
-    wget https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/module_utils/ovirt.py -O $path
+    wget -N $OVIRT_MODULES_FILES
+    cd -
 }
 
 

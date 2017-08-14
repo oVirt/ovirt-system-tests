@@ -19,12 +19,12 @@
   register: tmp_engine_ip
 
 - name: Get LUN id for storage
-  shell: cat /root/multipath.txt | head -n 1
+  shell: head -n 1 /root/multipath.txt
   register: tmp_sd_lun_id
   changed_when: false
 
 - name: Get LUN id for direct VM disk
-  shell: cat /root/multipath.txt | head -n 2
+  shell: head -n 2 /root/multipath.txt
   register: tmp_vm_lun_id
   changed_when: false
 

@@ -68,6 +68,9 @@ NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
 NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
 NETWORK_FILTER_PARAMETER1_VALUE = '192.168.201.1'
 
+SNAPSHOT_DESC_1 = 'dead_snap1'
+SNAPSHOT_DESC_2 = 'dead_snap2'
+
 
 def _get_network_fiter_parameters_service(engine):
     nics_service = _get_nics_service(engine)
@@ -265,50 +268,67 @@ def add_directlun(prefix):
     )
 
 
+@testlib.with_ovirt_api4
 def snapshot_cold_merge(api):
-    if api.vms.get(VM1_NAME) is None:
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=VM1_NAME)[0]
+
+    if vm is None:
         raise SkipTest('Glance is not available')
 
-    dead_snap1_params = params.Snapshot(
-        description='dead_snap1',
+    snapshots_service = vms_service.vm_service(vm.id).snapshots_service()
+    disk = engine.disks_service().list(search=DISK1_NAME)[0]
+
+    dead_snap1_params = types.Snapshot(
+        description=SNAPSHOT_DESC_1,
         persist_memorystate=False,
-        disks=params.Disks(
-            disk=[
-                params.Disk(
-                    id=api.vms.get(VM1_NAME).disks.get(DISK1_NAME).id,
-                ),
-            ],
-        ),
-    )
-    api.vms.get(VM1_NAME).snapshots.add(dead_snap1_params)
-    testlib.assert_true_within_long(
-        lambda:
-        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        disk_attachments=[
+            types.DiskAttachment(
+                disk=types.Disk(
+                    id=disk.id
+                )
+            )
+        ]
     )
 
-    dead_snap2_params = params.Snapshot(
-        description='dead_snap2',
-        persist_memorystate=False,
-        disks=params.Disks(
-            disk=[
-                params.Disk(
-                    id=api.vms.get(VM1_NAME).disks.get(DISK1_NAME).id,
-                ),
-            ],
-        ),
-    )
-    api.vms.get(VM1_NAME).snapshots.add(dead_snap2_params)
+    snapshots_service.add(dead_snap1_params)
+
     testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
     )
 
-    api.vms.get(VM1_NAME).snapshots.list()[-2].delete()
+    dead_snap2_params = types.Snapshot(
+        description=SNAPSHOT_DESC_2,
+        persist_memorystate=False,
+        disk_attachments=[
+            types.DiskAttachment(
+                disk=types.Disk(
+                    id=disk.id
+                )
+            )
+        ]
+    )
+
+    snapshots_service.add(dead_snap2_params)
+
     testlib.assert_true_within_long(
         lambda:
-        (len(api.vms.get(VM1_NAME).snapshots.list()) == 2) and
-        (api.vms.get(VM1_NAME).snapshots.list()[-1].snapshot_status
-         == 'ok'),
+        snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
+    )
+
+    snapshot = snapshots_service.list()[-2]
+    snapshots_service.snapshot_service(snapshot.id).remove()
+
+    testlib.assert_true_within_long(
+        lambda:
+        (len(snapshots_service.list()) == 2) and
+        (
+            snapshots_service.list()[-1].snapshot_status == (
+                types.SnapshotStatus.OK
+            )
+        ),
     )
 
 
@@ -701,13 +721,13 @@ def template_update(api):
     nt.assert_true(templates_service.list(search=TEMPLATE_CIRROS)[0].comment == new_comment)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def disk_operations(api):
     vt = utils.VectorThread(
         [
             functools.partial(live_storage_migration),
             functools.partial(cold_storage_migration),
-            functools.partial(snapshot_cold_merge, api),
+            functools.partial(snapshot_cold_merge),
         ],
     )
     vt.start_all()

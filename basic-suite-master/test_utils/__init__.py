@@ -28,3 +28,15 @@ def data_center_service(root, name):
     data_centers = root.data_centers_service()
     dc = data_centers.list(search='name={}'.format(name))[0]
     return data_centers.data_center_service(dc.id)
+
+
+def quote_search_string(s):
+    # TODO: this function should eventually be able to format strings in
+    # a way that they will be properly passed on via the sdk to Engine.
+    #
+    # Escaped characters are currently broken, but strings containing spaces
+    # are able to be passed with enclosing quotation marks.
+    if '"' in s:
+        raise ValueError(
+            'Quotation marks currently can not be appear in search phrases')
+    return '"' + s + '"'

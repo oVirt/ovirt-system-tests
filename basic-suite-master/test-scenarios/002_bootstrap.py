@@ -888,6 +888,7 @@ def run_log_collector(prefix):
     result = engine.ssh(
         [
             'ovirt-log-collector',
+            '--verbose',
             '--conf-file=/root/ovirt-log-collector.conf',
         ],
     )

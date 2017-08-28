@@ -75,7 +75,7 @@ run_suite(){
         env_collect "$curdir/test_logs/${suite##*/}/post-${scenario##*/}"
         if $failed; then
             echo "@@@@ ERROR: Failed running $scenario"
-            break
+            return 1
         fi
     done
 }

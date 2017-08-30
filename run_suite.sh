@@ -209,13 +209,11 @@ env_run_test () {
 env_ansible () {
     ci_msg_if_fails $FUNCNAME
 
-    cd $PREFIX
-    $CLI ansible_hosts > current/$ANSIBLE_HOSTS_FILE
-    cd -
-
     # Ensure latest Ansible modules are tested:
     rm -rf $SUITE/ovirt-deploy/library || true
+    rm -rf $SUITE/ovirt-deploy/module_utils || true
     mkdir -p $SUITE/ovirt-deploy/library
+    mkdir -p $SUITE/ovirt-deploy/module_utils
     cd $SUITE/ovirt-deploy/library
     ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/cloud/ovirt/ovirt_"
     for module in vms disk cluster datacenter hosts networks quotas storage_domains templates vmpools nics
@@ -225,6 +223,8 @@ env_ansible () {
 
     wget -N $OVIRT_MODULES_FILES
     cd -
+
+    wget https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/module_utils/ovirt.py -O $SUITE/ovirt-deploy/module_utils/ovirt.py
 }
 
 

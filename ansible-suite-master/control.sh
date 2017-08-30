@@ -39,6 +39,7 @@ run_suite () {
         break
     done
 
+    LOGS_DIR="$PWD/test_logs"
     cd $PREFIX/current
     # SSH ControlPath can have max 108 chars. Ansible default path is $HOME/.ansible/cp
     # which in jenkins is 105 chars
@@ -54,5 +55,5 @@ run_suite () {
             return 1
     fi
     trap cleanup_run EXIT SIGHUP SIGTERM
-    $CLI ovirt serve & ansible-playbook -v -u root --ssh-common-args '-o ControlPath=None -o CheckHostIP=no -o GlobalKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o AddressFamily=inet' -i ansible_hosts_file $SUITE/engine.yml --extra-vars="lago_cmd=$CLI prefix=$PREFIX/current log_dir=$PWD/test_logs/${SUITE##*/}/"
+    $CLI ovirt serve & ansible-playbook -v -u root --ssh-common-args '-o ControlPath=None -o CheckHostIP=no -o GlobalKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o AddressFamily=inet' -i ansible_hosts_file $SUITE/engine.yml --extra-vars="lago_cmd=$CLI prefix=$PREFIX/current log_dir=$LOGS_DIR/${SUITE##*/}/"
 }

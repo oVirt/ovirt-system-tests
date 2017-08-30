@@ -23,27 +23,29 @@
   tags:
     - always
 
-- name: Include bootstrap tasks
-  include: bootstrap.yml
-  tags:
-    - bootstrap
+- block:
+  - name: Include bootstrap tasks
+    include: bootstrap.yml
+    tags:
+      - bootstrap
 
-- name: Collect bootstrap tasks logs
-  include: log.yml task_name=bootstrap
-  tags:
-    - bootstrap
-  when: false
+  always:
+    - name: Collect bootstrap tasks logs
+      include: log.yml task_name=bootstrap
+      tags:
+        - bootstrap
 
-- name: Include sanity tasks
-  include: sanity.yml
-  tags:
-    - sanity
+- block:
+  - name: Include sanity tasks
+    include: sanity.yml
+    tags:
+      - sanity
 
-- name: Collect sanity tasks logs
-  include: log.yml task_name=sanity
-  tags:
-    - sanity
-  when: false
+  always:
+    - name: Collect sanity tasks logs
+      include: log.yml task_name=sanity
+      tags:
+        - sanity
 
 - name: Logout from oVirt
   ovirt_auth:

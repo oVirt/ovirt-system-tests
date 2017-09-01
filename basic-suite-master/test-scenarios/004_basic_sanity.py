@@ -558,15 +558,15 @@ def vm_run(prefix):
         ),
     )
     api.vms.get(VM0_NAME).start(start_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
-    )
     start_params.vm.initialization.cloud_init=params.CloudInit(
         host=params.Host(
             address='VM2'
         ),
     )
     api.vms.get(VM2_NAME).start(start_params)
+    testlib.assert_true_within_short(
+        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+    )
     testlib.assert_true_within_short(
         lambda: api.vms.get(VM2_NAME).status.state == 'up',
     )

@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014, 2017 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,6 +64,7 @@ SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
 SD_TEMPLATES_NAME = 'templates'
 
+VM_NETWORK = u'VM Network with a very long name and עברית'
 NETWORK_FILTER_NAME = 'clean-traffic'
 NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
 NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
@@ -819,7 +821,7 @@ def hotplug_nic(api):
     nic2_params = params.NIC(
         name='eth1',
         network=params.Network(
-            name='ovirtmgmt',
+            name=VM_NETWORK,
         ),
         interface='virtio',
     )

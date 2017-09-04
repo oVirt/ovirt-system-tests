@@ -39,9 +39,9 @@ CLUSTER_NAME = 'test-cluster'
 
 # Networks
 VM_NETWORK = 'VM Network with a very long name and עברית'
-VM_NETWORK_IPv4_ADDR = '192.0.2.1'
+VM_NETWORK_IPv4_ADDR = '192.0.2.{}'
 VM_NETWORK_IPv4_MASK = '255.255.255.0'
-VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:7331'
+VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:733{}'
 VM_NETWORK_IPv6_MASK = '64'
 VM_NETWORK_VLAN_ID = 100
 
@@ -95,18 +95,28 @@ def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
 
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
-def attach_vm_network_to_host_static_config(prefix, api):
+def attach_vm_network_to_host_0_static_config(prefix, api):
+    _attach_vm_network_to_host_static_config(prefix, api, host_num=0)
+
+
+@testlib.with_ovirt_api4
+@testlib.with_ovirt_prefix
+def attach_vm_network_to_host_1_static_config(prefix, api):
+    _attach_vm_network_to_host_static_config(prefix, api, host_num=1)
+
+
+def _attach_vm_network_to_host_static_config(prefix, api, host_num):
     engine = api.system_service()
 
-    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[host_num]
     host_service = engine.hosts_service().host_service(id=host.id)
 
     nic_name = _host_vm_nics(prefix, host.name,
                              LIBVIRT_NETWORK_FOR_MANAGEMENT)[0]  # eth0
     ip_configuration = network_utils_v4.create_static_ip_configuration(
-        VM_NETWORK_IPv4_ADDR,
+        VM_NETWORK_IPv4_ADDR.format(host_num+1),
         VM_NETWORK_IPv4_MASK,
-        VM_NETWORK_IPv6_ADDR,
+        VM_NETWORK_IPv6_ADDR.format(host_num+1),
         VM_NETWORK_IPv6_MASK)
 
     network_utils_v4.attach_network_to_host(
@@ -118,13 +128,13 @@ def attach_vm_network_to_host_static_config(prefix, api):
     host_nic = next(nic for nic in host_service.nics_service().list() if
                     nic.name == '{}.{}'.format(nic_name, VM_NETWORK_VLAN_ID))
     nt.assert_equals(IPAddress(host_nic.ip.address),
-                     IPAddress(VM_NETWORK_IPv4_ADDR))
+                     IPAddress(VM_NETWORK_IPv4_ADDR.format(host_num+1)))
     nt.assert_equals(IPAddress(host_nic.ipv6.address),
-                     IPAddress(VM_NETWORK_IPv6_ADDR))
+                     IPAddress(VM_NETWORK_IPv6_ADDR.format(host_num+1)))
 
 
 @testlib.with_ovirt_api4
-def modify_host_ip_to_dhcp(api):
+def modify_host_0_ip_to_dhcp(api):
     engine = api.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
@@ -140,7 +150,7 @@ def modify_host_ip_to_dhcp(api):
 
 
 @testlib.with_ovirt_api4
-def detach_vm_network_from_host(api):
+def detach_vm_network_from_host_0(api):
     engine = api.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
@@ -225,13 +235,17 @@ def remove_bonding(api):
 
 
 _TEST_LIST = [
-    attach_vm_network_to_host_static_config,
-    modify_host_ip_to_dhcp,
-    detach_vm_network_from_host,
+    attach_vm_network_to_host_0_static_config,
+    modify_host_0_ip_to_dhcp,
+    detach_vm_network_from_host_0,
     bond_nics,
     verify_interhost_connectivity_ipv4,
     verify_interhost_connectivity_ipv6,
     remove_bonding,
+
+    # preparation for 004 and 006
+    attach_vm_network_to_host_0_static_config,
+    attach_vm_network_to_host_1_static_config
 ]
 
 

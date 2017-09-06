@@ -90,16 +90,6 @@ def initialize_engine(prefix):
         ]
     )
 
-    # TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
-    result = engine.ssh([
-        'systemctl',
-        'stop',
-        'firewalld',
-    ], )
-    nt.eq_(
-        result.code, 0, 'firwalld not stopped. Exit code is %s' % result.code
-    )
-
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()
     )

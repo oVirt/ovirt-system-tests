@@ -141,8 +141,10 @@ configure_firewalld() {
             systemctl start firewalld
         fi
 
-        firewall-cmd --add-service=iscsi-target --add-service=ldap
-        firewall-cmd --add-service=iscsi-target --add-service=ldap --permanent
+        firewall-cmd --permanent --add-service=iscsi-target
+        firewall-cmd --permanent --add-service=ldap
+        firewall-cmd --permanent --add-service=nfs
+        firewall-cmd --permanent --add-service=ntp
     fi
 }
 
@@ -157,7 +159,6 @@ setup_services() {
     systemctl disable --now wpa_supplicant
     install_firewalld
     configure_firewalld
-    disable_firewalld
 
     # Allow use of NFS v4.2. oVirt still uses 4.1 though
     sed -i "s/RPCNFSDARGS=\"\"/RPCNFSDARGS=\"-V 4.2\"/g" /etc/sysconfig/nfs

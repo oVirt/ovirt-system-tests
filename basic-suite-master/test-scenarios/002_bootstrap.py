@@ -95,18 +95,21 @@ def _hosts_in_dc(api, dc_name=DC_NAME):
         return sorted(hosts, key=lambda host: host.name)
     raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
 
-def _hosts_in_dc_4(api, dc_name=DC_NAME):
+def _hosts_in_dc_4(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if hosts:
-        return sorted(hosts, key=lambda host: host.name)
+        if random_host:
+            return random.choice(hosts)
+        else:
+            return sorted(hosts, key=lambda host: host.name)
     raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc(api, dc_name))
 
 def _random_host_from_dc_4(api, dc_name=DC_NAME):
-    return random.choice(_hosts_in_dc_4(api, dc_name))
+    return _hosts_in_dc_4(api, dc_name, True)
 
 
 @testlib.with_ovirt_prefix
@@ -385,7 +388,8 @@ def _add_storage_domain_3(api, p):
 
 
 def _add_storage_domain_4(api, p):
-    sds_service = api.system_service().storage_domains_service()
+    system_service = api.system_service()
+    sds_service = system_service.storage_domains_service()
     sd = sds_service.add(p)
 
     sd_service = sds_service.storage_domain_service(sd.id)
@@ -393,7 +397,7 @@ def _add_storage_domain_4(api, p):
         lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
     )
 
-    dcs_service = api.system_service().data_centers_service()
+    dcs_service = system_service.data_centers_service()
     dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
     dc_service = dcs_service.data_center_service(dc.id)
     attached_sds_service = dc_service.storage_domains_service()
@@ -525,17 +529,18 @@ def add_secondary_storage_domains(prefix):
 
 
 def add_iscsi_storage_domain(prefix):
-    # FIXME
-    # if API_V4:
-    #    return add_iscsi_storage_domain_4(prefix)
-
-    api = prefix.virt_env.engine_vm().get_api()
-
-    # Find LUN GUIDs
     ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
     nt.assert_equals(ret.code, 0)
-
     lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
+
+    if API_V4:
+        add_iscsi_storage_domain_4(prefix, lun_guids)
+    else:
+        add_iscsi_storage_domain_3(prefix, lun_guids)
+
+
+def add_iscsi_storage_domain_3(prefix, lun_guids):
+    api = prefix.virt_env.engine_vm().get_api()
 
     p = params.StorageDomain(
         name=SD_ISCSI_NAME,
@@ -568,13 +573,40 @@ def add_iscsi_storage_domain(prefix):
     _add_storage_domain_3(api, p)
 
 
-def add_iscsi_storage_domain_4(prefix):
+def add_iscsi_storage_domain_4(prefix, lun_guids):
     api = prefix.virt_env.engine_vm().get_api_v4()
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
+    p = sdk4.types.StorageDomain(
+        name=SD_ISCSI_NAME,
+        description='iSCSI Storage Domain',
+        type=sdk4.types.StorageDomainType.DATA,
+        discard_after_delete=True,
+        data_center=sdk4.types.DataCenter(
+            name=DC_NAME,
+        ),
+        host=_random_host_from_dc_4(api, DC_NAME),
+        storage_format=sdk4.types.StorageFormat.V4,
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.ISCSI,
+            override_luns=True,
+            volume_group=sdk4.types.VolumeGroup(
+                logical_units=[
+                    sdk4.types.LogicalUnit(
+                        id=lun_id,
+                        address=_get_host_ip(
+                            prefix,
+                            SD_ISCSI_HOST_NAME,
+                        ),
+                        port=SD_ISCSI_PORT,
+                        target=SD_ISCSI_TARGET,
+                        username='username',
+                        password='password',
+                    ) for lun_id in lun_guids
+                ]
+            ),
+        ),
+    )
 
-    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
-    #FIXME
+    _add_storage_domain_4(api, p)
 
 
 def add_iso_storage_domain(prefix):

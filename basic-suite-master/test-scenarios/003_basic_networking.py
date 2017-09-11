@@ -23,7 +23,7 @@ from lago import utils
 from netaddr.ip import IPAddress
 import nose.tools as nt
 from ovirtlago import testlib
-from ovirtsdk4.types import Bonding, HostNic, Option
+from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
 
 import test_utils
 from test_utils import network_utils_v4
@@ -51,6 +51,9 @@ MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
 MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
+
+MANAGEMENT_NETWORK = 'ovirtmgmt'
+PASSTHROUGH_VNIC_PROFILE = 'passthrough_vnic_profile'
 
 
 def _host_vm_nics(prefix, host_name, network_name):
@@ -234,6 +237,41 @@ def remove_bonding(api):
                                                      MIGRATION_NETWORK))
 
 
+def _get_vnic_service(engine, network_name):
+    networks_service = engine.networks_service()
+    net = networks_service.list(search='name={}'.format(network_name))[0]
+    vnic_service = networks_service.network_service(net.id).vnic_profiles_service()
+    return vnic_service
+
+
+@testlib.with_ovirt_api4
+def add_vnic_passthrough_profile(api):
+    engine = api.system_service()
+
+    vnic_service = _get_vnic_service(engine, MANAGEMENT_NETWORK)
+
+    vnic_profile = vnic_service.add(
+        profile=VnicProfile(name=PASSTHROUGH_VNIC_PROFILE,
+                            pass_through=VnicPassThrough(mode=VnicPassThroughMode.ENABLED)))
+    nt.assert_equals(vnic_profile.pass_through.mode, VnicPassThroughMode.ENABLED)
+
+
+@testlib.with_ovirt_api4
+def remove_vnic_passthrough_profile(api):
+    engine = api.system_service()
+
+    vnic_service = _get_vnic_service(engine, MANAGEMENT_NETWORK)
+
+    vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
+                        if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
+                        )
+
+    vnic_service.profile_service(vnic_profile.id).remove()
+    nt.assert_equals(next((vnic_profile for vnic_profile in vnic_service.list()
+                           if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE), None),
+                     None)
+
+
 _TEST_LIST = [
     attach_vm_network_to_host_0_static_config,
     modify_host_0_ip_to_dhcp,
@@ -245,7 +283,10 @@ _TEST_LIST = [
 
     # preparation for 004 and 006
     attach_vm_network_to_host_0_static_config,
-    attach_vm_network_to_host_1_static_config
+    attach_vm_network_to_host_1_static_config,
+
+    add_vnic_passthrough_profile,
+    remove_vnic_passthrough_profile,
 ]
 
 

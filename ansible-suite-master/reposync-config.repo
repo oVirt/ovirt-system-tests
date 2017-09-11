@@ -238,3 +238,11 @@ gpgcheck=0
 enabled=1
 #This repo should be updated/removed once gdeploy will be officially accepted to Fedora/RHEL
 #Fedora bug: https://bugzilla.redhat.com/show_bug.cgi?id=1344276
+
+[centos-sclo-rh-release-el7]
+name=CentOS-7 - SCLo rh
+baseurl=http://mirror.centos.org/centos/7/sclo/x86_64/rh
+gpgcheck=1
+enabled=1
+gpgkey=https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
+includepkgs=rh-postgresql95*

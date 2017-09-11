@@ -21,16 +21,6 @@
 import nose.tools as nt
 import os
 
-try:
-    import ovirtsdk4 as sdk4
-    API_V3_ONLY = os.getenv('API_V3_ONLY', False)
-    if API_V3_ONLY:
-        API_V4 = False
-    else:
-        API_V4 = True
-except ImportError:
-    API_V4 = False
-
 from ovirtlago import testlib
 
 

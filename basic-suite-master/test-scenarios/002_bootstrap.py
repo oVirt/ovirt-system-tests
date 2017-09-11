@@ -335,20 +335,19 @@ def add_hosts_4(prefix):
         )
 
     def _host_is_up_4():
-        host_service = hosts_service.host_service(api_host.id)
-        host_obj = host_service.get()
+        host_status = host_service.get().status
 
-        if host_obj.status == sdk4.types.HostStatus.INSTALLING:
+        if host_status == sdk4.types.HostStatus.INSTALLING:
             return False
 
-        if host_obj.status == sdk4.types.HostStatus.UP:
+        if host_status == sdk4.types.HostStatus.UP:
             return True
 
-        if host_obj.status == sdk4.types.HostStatus.NON_OPERATIONAL:
+        if host_status == sdk4.types.HostStatus.NON_OPERATIONAL:
             raise RuntimeError('Host %s is in non operational state' % api_host.name)
-        if host_obj.status == sdk4.types.HostStatus.INSTALL_FAILED:
+        if host_status == sdk4.types.HostStatus.INSTALL_FAILED:
             raise RuntimeError('Host %s installation failed' % api_host.name)
-        if host_obj.status == sdk4.types.HostStatus.NON_RESPONSIVE:
+        if host_status == sdk4.types.HostStatus.NON_RESPONSIVE:
             raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
 
@@ -360,6 +359,7 @@ def add_hosts_4(prefix):
 
     api_hosts = hosts_service.list()
     for api_host in api_hosts:
+        host_service = hosts_service.host_service(api_host.id)
         testlib.assert_true_within(_host_is_up_4, timeout=15*60)
 
     for host in hosts:
@@ -706,19 +706,20 @@ def list_glance_images_3(api):
 def list_glance_images_4(api):
     global GLANCE_AVAIL
     search_query = 'name={}'.format(SD_GLANCE_NAME)
-    glance_domain_list = api.system_service().storage_domains_service().list(search=search_query)
+    storage_domains_service = api.system_service().storage_domains_service()
+    glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
         openstack_glance = add_glance_4(api)
         if not openstack_glance:
             raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
-        glance_domain_list = api.system_service().storage_domains_service().list(search=search_query)
+        glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not check_glance_connectivity_4(api):
         raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_4.__name__ )
 
     glance_domain = glance_domain_list.pop()
-    glance_domain_service = api.system_service().storage_domains_service().storage_domain_service(glance_domain.id)
+    glance_domain_service = storage_domains_service.storage_domain_service(glance_domain.id)
 
     try:
         all_images = glance_domain_service.images_service().list()

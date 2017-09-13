@@ -96,8 +96,8 @@ def add_ldap_user(api):
 
 
 _TEST_LIST = [
-    add_ldap_provider,
-    add_ldap_user,
+    #add_ldap_provider,
+    #add_ldap_user,
 ]
 
 

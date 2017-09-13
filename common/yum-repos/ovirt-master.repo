@@ -39,6 +39,8 @@ exclude = *-debuginfo
  ovirt-release-*
  libcacard-*
  ovirt-engine-phantomjs
+ ovirt-engine-appliance
+ ovirt-optimizer*
 proxy=_none_
 
 [ovirt-master-snapshot-static-el7]
@@ -48,16 +50,17 @@ exclude=
  *-doc
  *javadoc*
  *-debuginfo
+ openvswitch*
 enabled=1
 max_connections=10
 
-[glusterfs-3.10-el7]
+[glusterfs-3.12-el7]
 name=GlusterFS repo
-baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.10/
+baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled=1
 exclude= *-debuginfo *-devel glusterfs-regression-tests heketi*
  glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel
- glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
+ glusterfs-coreutils glusterfs-geo* glusterfs-ganesha storhaug*
  glusterfs-extra-xlators glusterfs-resource-agents python-gluster
 max_connections=5
 
@@ -76,13 +79,13 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  boost-thread bridge-utils bzip2 cairo cal10n celt051 checkpolicy chkconfig
  color-filesystem cracklib-python cryptsetup cups-libs deltarpm device-mapper
  device-mapper-event device-mapper-event-libs device-mapper-libs
- device-mapper-multipath device-mapper-multipath-libs event-libs fence-agents-*
+ event-libs fence-agents-*
  firewalld firewalld-filesystem flac-libs fontconfig fontpackages-filesystem fop
  fuse fuse-libs GConf2 gdisk gdk-pixbuf2 genisoimage geronimo-jms ghostscript
  ghostscript-fonts giflib gnutls-dane gnutls-utils graphite2 gsm gssproxy gtk2
  hamcrest harfbuzz hexedit hicolor-icon-theme hivex hsqldb httpd httpd-tools
  hystrix-core hystrix-metrics-event-stream icc-profiles-openicc icoutils
- initscripts ioprocess ipmitool iptables-services ipxe-roms ipxe-roms-qemu
+ initscripts ioprocess ipmitool ipxe-roms ipxe-roms-qemu
  iscsi-initiator-utils iscsi-initiator-utils-iscsiuio isorelax jackson
  jai-imageio-core jakarta-commons-httpclient jasper-libs java-1.8.0-openjdk
  java-1.8.0-openjdk-devel java-1.8.0-openjdk-headless javamail
@@ -94,16 +97,15 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  libjpeg-turbo libnfsidmap libnl libnl3 libnl3-cli libogg libosinfo
  libpath_utils libpng libquadmath librados2 librbd1 librdmacm libref_array
  libseccomp libsemanage libsemanage-python libSM libsndfile libtalloc libtevent
- libthai libtiff libtirpc libtool-ltdl libusal libusbx libverto-tevent
- libvirt-client libvirt-daemon libvirt-daemon-* libvirt-lock-sanlock
- libvirt-python libvorbis libX11 libX11-common libXau libxcb libXcomposite
+ libthai libtiff libtirpc libtool-ltdl libusal libusbx
+ libvorbis libX11 libX11-common libXau libxcb libXcomposite
  libXcursor libXdamage libXext libXfixes libXfont libXft libXi libXinerama
  libxml2 libxml2-python libXrandr libXrender libxshmfence libxslt libXt libXtst
- libXxf86vm lksctp-tools log4j lsof lvm2 lvm2-libs lzop m2crypto mailcap make
+ libXxf86vm lksctp-tools log4j lsof lzop m2crypto mailcap make
  mdadm mesa-libEGL mesa-libgbm mesa-libGL mesa-libglapi mod_ssl mom msv-msv
- msv-xsdlib mtools netcf-libs netpbm netpbm-progs net-snmp net-snmp-agent-libs
- net-snmp-libs net-snmp-utils NetworkManager-config-server nfs-utils nmap-ncat
- nspr nss nss-sysinit nss-tools nss-util ntp ntpdate numactl numad numpy
+ msv-xsdlib mtools netcf-libs netpbm netpbm-progs
+ nfs-utils nmap-ncat
+ nspr nss nss-pem nss-sysinit nss-tools nss-util ntp ntpdate numactl numad numpy
  objectweb-asm OpenIPMI-modalias openldap openldap-clients openssl openssl-libs
  pango pcsc-lite-libs perl perl-Business-ISBN perl-Business-ISBN-Data perl-Carp
  perl-Compress-Raw-Bzip2 perl-Compress-Raw-Zlib perl-constant perl-Data-Dumper
@@ -117,8 +119,7 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-Scalar-List-Utils
  perl-Socket perl-Storable perl-Text-ParseWords perl-threads perl-threads-shared
  perl-TimeDate perl-Time-HiRes perl-Time-Local perl-URI perl-WWW-RobotRules
- pexpect pixman pm-utils policycoreutils policycoreutils-python poppler-data
- postgresql postgresql-jdbc postgresql-libs postgresql-server psmisc
+ pexpect pixman pm-utils policycoreutils poppler-data psmisc
  pulseaudio-libs pyparsing python-babel python-backports
  python-backports-ssl_match_hostname python-chardet python-configshell
  python-cpopen python-dmidecode python-ethtool python-firewall python-inotify
@@ -135,8 +136,8 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  urw-fonts usbredir virt-v2v ws-commons-util ws-jaxme xalan-j2 xerces-j2
  xfsprogs xml-commons-apis xml-commons-resolver xmlgraphics-commons
  xmlrpc-client xmlrpc-common xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3
- xz-java yajl yum-plugin-versionlock yum-utils
-
+ xz-java yajl yum-plugin-versionlock yum-utils nss-softokn nss-softokn-freebl
+ scl-utils osinfo-db elfutils-default-yama-scope
 exclude= *i686
 max_connections=10
 
@@ -156,15 +157,15 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  bea-stax bea-stax-api blas boost-system boost-thread bridge-utils bzip2 cairo
  cal10n celt051 checkpolicy color-filesystem copy-jdk-configs cracklib-python
  cryptsetup cryptsetup-libs cups-libs cyrus-sasl cyrus-sasl-gssapi
- cyrus-sasl-lib cyrus-sasl-md5 cyrus-sasl-scram deltarpm
- device-mapper-persistent-data dom4j dosfstools easymock2 elfutils
+ cyrus-sasl-lib cyrus-sasl-md5 cyrus-sasl-scram cyrus-sasl-plain deltarpm
+ dom4j dosfstools easymock2 elfutils
  fence-agents-all fence-virt flac-libs fontconfig fontpackages-filesystem fop
  fuse fuse-libs GConf2 gdb gdisk gdk-pixbuf2 genisoimage GeoIP geronimo-jms
  ghostscript-fonts giflib gnutls gnutls-dane gnutls-utils gperftools-libs
  graphite2 gsm gssproxy gtk2 hamcrest harfbuzz hexedit hicolor-icon-theme hivex
  hsqldb httpcomponents-client httpcomponents-core hystrix-core
  hystrix-metrics-event-stream icc-profiles-openicc icoutils ipmitool ipset
- ipset-libs iptables iptables-services ipxe-roms-qemu iscsi-initiator-utils
+ ipset-libs ipxe-roms-qemu iscsi-initiator-utils
  iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core
  jakarta-commons-httpclient jasper-libs javamail javapackages-tools javassist
  jaxen jbigkit-libs jboss-annotations-1.1-api jctools jdom jline joda-convert
@@ -176,7 +177,8 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  librdmacm libref_array libreport libreport-centos libreport-cli
  libreport-filesystem libreport-plugin-mantisbt libreport-plugin-rhtsupport
  libreport-plugin-ureport libreport-python libreport-web libseccomp libselinux
- libselinux-python libselinux-utils libsemanage-python libsepol libSM libsndfile
+ libselinux-python libselinux-utils libsemanage libsemanage-python libsepol
+ libSM libsndfile
  libtalloc libtar libtevent libthai libtiff libtirpc libunwind libusal libusbx
  libverto-tevent libvirt-python libvorbis libX11 libX11-common libXau libxcb
  libXcomposite libXcursor libXdamage libXext libXfixes libXfont libXft libXi
@@ -184,7 +186,7 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  libXt libXtst libXxf86vm libyaml lksctp-tools lm_sensors-libs log4j lshw lsof
  lsscsi lzop m2crypto mailcap make mdadm mesa-libEGL mesa-libgbm mesa-libGL
  mesa-libglapi mod_ssl msv-msv msv-xsdlib mtools netcf-libs netpbm netpbm-progs
- net-snmp-libs net-snmp-utils nfs-utils nmap-ncat nss-softokn nss-softokn-freebl
+ net-snmp net-snmp-libs net-snmp-agent-libs net-snmp-utils nfs-utils nmap-ncat
  numactl numad numpy objectweb-asm OpenIPMI-modalias openldap openldap-clients
  openssl openssl-libs pango pciutils pciutils-libs pcsc-lite-libs perl
  perl-Archive-Tar perl-Business-ISBN perl-Business-ISBN-Data perl-Carp
@@ -200,8 +202,8 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  perl-Pod-Escapes perl-podlators perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage
  perl-Scalar-List-Utils perl-Socket perl-Storable perl-Text-ParseWords
  perl-threads perl-threads-shared perl-TimeDate perl-Time-HiRes perl-Time-Local
- perl-URI perl-WWW-RobotRules pexpect pixman pm-utils poppler-data postgresql
- postgresql-jdbc postgresql-libs postgresql-server psmisc pulseaudio-libs
+ perl-URI perl-WWW-RobotRules pexpect pixman pm-utils poppler-data
+ psmisc pulseaudio-libs postgresql-jdbc
  pygobject2 pyOpenSSL pyparsing python2-pyasn1 python-augeas python-babel
  python-backports python-backports-ssl_match_hostname python-chardet
  python-configshell python-dateutil python-dmidecode python-enum34
@@ -221,8 +223,19 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  ws-jaxme xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver
  xmlgraphics-commons xmlrpc-c xmlrpc-c-client xmlrpc-client xmlrpc-common
  xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3 xz-java yajl
- yum-plugin-versionlock yum-utils
-
+ yum-plugin-versionlock yum-utils krb5-libs nss-util nss-pem dracut dracut-network
+ dracut-config-rescue nspr tzdata-java ntpdate ntp python-pycparser
+ libtool-ltdl sos policycoreutils-python policycoreutils rdma-core
+ lvm2 lvm2-libs libverto-libevent paratype-pt-sans-caption-fonts
+ device-mapper device-mapper-event device-mapper-event-libs device-mapper-libs
+ device-mapper-persistent-data python-idna python2-cryptography python-cffi
+ libvirt-client libvirt-daemon libvirt-daemon-* libvirt-lock-sanlock
+ p11-kit p11-kit-trust pcre libtasn1 libstdc++ libcap libdb libdb-utils
+ libgcc libgcrypt elfutils-libelf elfutils-libs glibc glibc-common squashfs-tools
+ xz-libs zlib libvirt-libs device-mapper-multipath osinfo-db lldpad fcoe-utils
+ NetworkManager-config-server elfutils-default-yama-scope device-mapper-multipath-libs
+ sysstat dracut-fips mailx tcpdump hmaccalc screen rng-tools iptables-services
+ iptables postgresql-libs
 exclude= *i686
 max_connections=10
 
@@ -236,11 +249,18 @@ includepkgs= cockpit
  cockpit-system
  cockpit-storaged
  cockpit-ws libssh
+ cockpit-dashboard
  libstoraged
  storaged
  storaged-lvm2
  storaged-iscsi
  python-lockfile
+ libtomcrypt
+ libtommath
+ python-httplib2
+ python-paramiko
+ sshpass
+ python2-crypto
 
 exclude= *i686
 max_connections=5
@@ -249,12 +269,13 @@ max_connections=5
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
-includepkgs= python-uinput python-ordereddict python-inotify python-argparse novnc
-  python-kitchen livecd-tools spice-html5 mom python-IPy safelease python-paramiko
-  python2-crypto libtomcrypt libtommath python-cheetah python-ecdsa python2-ecdsa
-  userspace-rcu hystrix-core hystrix-metrics-event-stream archaius-core rxjava
-  jctools jackson-core python-simplejson exclude=python34-* patternfly1
-  ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess
+includepkgs= python-uinput python-ordereddict python-inotify python-argparse
+  python-kitchen livecd-tools spice-html5 mom python-IPy
+  python-cheetah python-ecdsa python2-ecdsa
+  hystrix-core hystrix-metrics-event-stream rxjava
+  python-simplejson
+exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet
+  python-ovirt-engine-sdk4 ioprocess python-ioprocess
 max_connections=5
 
 [centos-ovirt-4.2-el7]
@@ -268,7 +289,13 @@ exclude=
  openvswitch-devel
  openvswitch-test
  *-javadoc
-
+ vdsm*
+ rubygem-ovirt-engine-sdk4*
+ python2-twisted
+ ovirt-engine-sdk-java
+ openstack-java-ceilometer*
+ openstack-java-nova*
+ openstack-java-swift*
 
 [centos-ovirt-common-el7]
 name=CentOS-7 - oVirt common
@@ -285,10 +312,27 @@ exclude= *-doc
  cockpit-ostree
  cockpit-kubernetes
  cockpit-tests
+ storaged*
+ libstoraged
+ libssh
  mockito*
  *ioprocess*
  python-crypto
-
+ python-six
+ python-mock
+ python-nose-docs
+ python-ply
+ userspace-rcu
+ cockpit*
+ mom
+ spice-html5
+ rxjava
+ python2-botocore
+ python-passlib
+ python-flask
+ python-pep8
+ python-werkzeug
+ rubygem-asciidoctor
 
 [centos-qemu-ev-release-el7]
 name=CentOS-7 - QEMU EV
@@ -307,7 +351,6 @@ exclude=
  libcacard-tools
  libunwind
  gperftools*
-
 
 [centos-opstools-testing-el7]
 name=CentOS-7 - OpsTools - testing repo
@@ -330,6 +373,66 @@ exclude=
  libuv-*
 # libuv-* dropped because it's included in the mirror repo by mistake, shouldn't be there.
 # see https://ovirt-jira.atlassian.net/browse/OVIRT-1497
+ rubygem-cucumber*
+ rubygem-simplecov-html
+ rubygem-shoulda
+ rubygem-unf_ext
+ rubygem-json_pure
+ rubygem-backports
+ rubygem-aruba
+ rubygem-rspec*
+ rubygem-sinatra
+ rubygem-eventmachine
+ rubygem-launchy
+ rubygem-amqp
+ rubygem-amq-protocol
+ rubygem-async_sinatra
+ rubygem-configuration
+ rubygem-daemons
+ rubygem-diff
+ rubygem-em-http-server
+ rubygem-em-worker
+ rubygem-multi_json
+ rubygem-power_assert
+ rubygem-rack*
+ rubygem-rr
+ rubygem-session
+ rubygem-test-unit
+ rubygem-thin
+ rubygem-tilt
+ rubygem-diff-lcs
+ rubygem-builder
+ rubygem-childprocess
+ rubygem-multi_test
+ rubygem-atomic
+ rubygem-contracts
+ rubygem-coveralls
+ rubygem-docile
+ rubygem-domain_name
+ rubygem-elasticsearch*
+ rubygem-faraday
+ rubygem-gherkin
+ rubygem-http-cookie
+ rubygem-introspection
+ rubygem-metaclass
+ rubygem-mime-types*
+ rubygem-minitest
+ rubygem-multipart-post
+ rubygem-netrc
+ rubygem-patron
+ rubygem-rest-client
+ rubygem-simplecov
+ rubygem-term-ansicolor
+ rubygem-test-unit-rr
+ rubygem-tins
+ rubygem-unf
+ python-carbon
+ python-simplejson
+ perl-Regexp-Common*
+ python2-hypothesis
+ perl-Collectd
+ rubygem-oj
+ python2-fluent-logger-tests
 max_connections=10
 
 [copr-sac-gdeploy-el7]
@@ -346,4 +449,6 @@ baseurl=http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck=1
 enabled=1
 gpgkey=https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs=rh-postgresql95*
+includepkgs=rh-postgresql95-postgresql-9.5.7
+ rh-postgresql95-postgresql-server-9.5.7 rh-postgresql95-runtime
+ rh-postgresql95-postgresql-libs-9.5.7

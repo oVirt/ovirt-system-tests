@@ -56,6 +56,10 @@ run_suite(){
     env_init \
         "http://templates.ovirt.org/repo/repo.metadata" \
         "$suite/LagoInitFile"
+    cd $PREFIX
+    lago ovirt reposetup \
+        --reposync-yum-config ${suite}/reposync-he.repo
+    cd -
     env_repo_setup
     install_local_rpms
     env_start

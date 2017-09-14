@@ -6,7 +6,15 @@ max_connections=100
 name=oVirt 4.1 Nightly Test Releases
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1-pre/rpm/el7/
 enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso
+ pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents*
+ ovirt-live-artwork* ovirt-node-ng* ovirt-engine-nodejs*
+ *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests
+ libcacard-devel-ev ovirt-guest-agent-windows ovirt-engine-appliance
+ ovirt-engine-4* ovirt-engine-backend ovirt-engine-dashboard
+ ovirt-engine-userportal ovirt-engine-webadmin* ovirt-engine-dwh
+ ovirt-engine-wildfly ovirt-engine-yarn openvswitch-devel openvswitch-test
+ ovirt-engine-dbscripts
 gpgcheck=0
 max_connections=5
 
@@ -14,7 +22,16 @@ max_connections=5
 name=oVirt 4.1 Official Releases
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled=1
-exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng* ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows
+exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso
+ pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents*
+ ovirt-live-artwork* ovirt-node-ng* ovirt-engine-nodejs *ovirt-engine-sdk4-doc*
+ rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev
+ ovirt-guest-agent-windows ovirt-engine-backend ovirt-engine-dashboard
+ ovirt-engine-userportal ovirt-engine-webadmin* ovirt-engine-dwh
+ ovirt-engine-wildfly ovirt-engine-yarn ovirt-engine-nodejs-modules
+ openvswitch-* *-ovirt-engine-sdk4 ovirt-optimizer-dependencies
+ ovirt-engine-wildfly ovirt-web-ui ovirt-engine cockpit-ovirt-dashboard
+ ovirt-engine-appliance
 gpgcheck=0
 max_connections=5
 
@@ -26,18 +43,15 @@ enabled=1
 gpgcheck=0
 max_connections=10
 
-#[virtio-win-stable-el7]
-#name=virtio-win builds roughly matching what was shipped in latest RHEL
-#baseurl=http://fedorapeople.org/groups/virt/virtio-win/repo/stable
-#enabled=1
-#gpgcheck=0
-
 [glusterfs-3.8-el7]
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
 enabled=0
 gpgcheck=0
-exclude=*-debuginfo glusterfs-regression-tests glusterfs-server-* glusterfs-api-devel heketi* userspace-rcu* nfs-ganesha-* gluster-ganesha* gluster-rdma glusterfs-extra-xlators glusterfs-resource-agents python-gluster
+exclude=*-debuginfo glusterfs-regression-tests glusterfs-server-*
+ glusterfs-api-devel heketi* userspace-rcu* nfs-ganesha-*
+ gluster-ganesha* gluster-rdma glusterfs-extra-xlators
+ glusterfs-resource-agents python-gluster
 max_connections=5
 
 [centos-base-el7]
@@ -64,15 +78,28 @@ baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
-exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures openvswitch-devel openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-nose* python-ovirt-engine-sdk4 python-subprocess32 python-websockify python-paramiko python-pbr objenesis mom
+exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-*
+ ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby*
+ python-six python-ply python-werkzeug* python-unittest2 python-testtools*
+ python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock
+ python-minimock userspace-rcu* python-fixtures openvswitch-devel
+ openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36
+ jemalloc* python-nose* python-ovirt-engine-sdk4 python-subprocess32
+ python-websockify python-paramiko python-pbr objenesis mom
 max_connections=5
 
 [epel-el7]
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
-includepkgs=python-uinput,python-ordereddict,python-inotify,python-argparse,novnc,python-kitchen,livecd-tools,spice-html5,mom,python-IPy,safelease,python-paramiko,python2-crypto,libtomcrypt,libtommath,python-cheetah,python-ecdsa,python2-ecdsa,userspace-rcu,hystrix-core,hystrix-metrics-event-stream,archaius-core,rxjava,jctools,jackson-core python-simplejson
-exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess python-cpopen
+includepkgs=python-uinput python-ordereddict python-inotify python-argparse
+ novnc python-kitchen livecd-tools spice-html5 python-IPy safelease
+ python-paramiko python2-crypto libtomcrypt libtommath python-cheetah
+ python-ecdsa python2-ecdsa userspace-rcu hystrix-core
+ hystrix-metrics-event-stream archaius-core rxjava jctools
+ jackson-core python-simplejson
+exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet
+ python-ovirt-engine-sdk4 ioprocess python-ioprocess python-cpopen
 gpgcheck=0
 max_connections=5
 
@@ -81,12 +108,16 @@ name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 gpgcheck=0
 enabled=1
-exclude= osops-tools-monitoring-oschecks *sensu-* *grafana-* graphite-* skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
+exclude= osops-tools-monitoring-oschecks *sensu-* *grafana-* graphite-*
+ skydive-* nodejs-* python-django-* rubygem-amqp-doc phantomjs
+ rubygem-ffi uchiwa rubygem-*-doc-* fluentd-doc kibana
 
 [centos-extras-el7]
 name=CentOS7 Extras
 baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 enabled=1
-includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
+includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system
+ cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2
+ storaged-iscsi python-lockfile
 exclude= *i686
 max_connections=5

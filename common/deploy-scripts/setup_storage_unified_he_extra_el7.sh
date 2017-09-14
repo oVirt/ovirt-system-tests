@@ -9,7 +9,7 @@ setup_device() {
     local exportpath=$3
     mkdir -p "${mountpath}"
     mkfs.xfs -K "/dev/${device}"
-    echo "/dev/${device} ${mountpath} xfs defaults,discard 0 0" >> /etc/fstab
+    echo "/dev/${device} ${mountpath} xfs defaults 0 0" >> /etc/fstab
     mount "/dev/${device}" "${mountpath}"
     mkdir -p "${exportpath}"
     chmod a+rwx "${exportpath}"
@@ -24,7 +24,7 @@ setup_he() {
 
 main() {
     systemctl stop firewalld || true
-    systemctl stop firewalld || true
+    systemctl disable firewalld || true
     setup_he
     rm -rf /dev/shm/*.rpm
 }

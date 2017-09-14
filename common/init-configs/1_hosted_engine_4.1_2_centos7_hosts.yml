@@ -38,7 +38,7 @@ domains:
         dev: sdc
         format: qcow2
       - comment: Hosted engine storage
-        size: 60G
+        size: 80G
         type: empty
         name: he
         dev: sdd
@@ -64,7 +64,7 @@ domains:
         dev: vda
         format: qcow2
       - name: tmp
-        size: 60G
+        size: 80G
         type: empty
         dev: sda
         format: qcow2
@@ -92,7 +92,7 @@ domains:
         dev: vda
         format: qcow2
       - name: tmp
-        size: 60G
+        size: 80G
         type: empty
         dev: sda
         format: qcow2

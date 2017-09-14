@@ -44,7 +44,7 @@ max_connections=10
 
 [centos-ovirt-4.0-el7]
 name=CentOS-7 - oVirt master
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
+baseurl=http://mirror.centos.org/centos/7.3.1611/virt/x86_64/ovirt-4.0/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

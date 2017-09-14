@@ -58,9 +58,9 @@ includepkgs=attr audit audit-libs audit-libs-python augeas augeas-libs autogen-l
 exclude= *i686
 max_connections=10
 
-[centos-ovirt-4.0-el7]
-name=CentOS-$releasever - oVirt 4.0
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
+[centos-ovirt-4.1-el7]
+name=CentOS-$releasever - oVirt 4.1
+baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

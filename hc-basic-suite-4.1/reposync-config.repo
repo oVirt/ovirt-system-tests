@@ -83,7 +83,7 @@ includepkgs=gluster-nagios-addons gluster-nagios-common
 
 [centos-ovirt-41-el7]
 name=CentOS-$releasever - oVirt 41
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
+baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

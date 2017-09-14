@@ -139,9 +139,9 @@ includepkgs=python-uinput,python-ordereddict,python-inotify,python-argparse,novn
 exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess
 max_connections=5
 
-[centos-ovirt-4.0-el7]
-name=CentOS-7 - oVirt 4.0
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.0/
+[centos-ovirt-4.1-el7]
+name=CentOS-7 - oVirt 4.1
+baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
 enabled=1
 skip_if_unavailable=1
 exclude=cockpit-ostree nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply

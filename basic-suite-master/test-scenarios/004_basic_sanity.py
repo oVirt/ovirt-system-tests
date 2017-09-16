@@ -896,6 +896,9 @@ def suspend_resume_vm(api):
 
     nt.assert_true(api.vms.get(VM0_NAME).start())
 
+
+@testlib.with_ovirt_api
+def verify_suspend_resume_vm(api):
     testlib.assert_true_within_long(
         lambda:
         api.vms.get(VM0_NAME).status.state == 'up'
@@ -929,10 +932,12 @@ _TEST_LIST = [
     add_disk,
     vm_run,
     ping_vm0,
-    ha_recovery,
     suspend_resume_vm,
+    ha_recovery,
+    add_event,
     template_export,
     template_update,
+    verify_suspend_resume_vm,
     hotplug_memory,
     hotplug_cpu,
     next_run_unplug_cpu,
@@ -940,7 +945,6 @@ _TEST_LIST = [
     disk_operations,
     hotplug_nic,
     hotunplug_disk,
-    add_event,
     add_vm_pool,
     update_template_version,
     update_vm_pool,

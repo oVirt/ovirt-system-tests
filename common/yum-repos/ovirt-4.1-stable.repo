@@ -8,26 +8,39 @@ gpg_check=0
 name=oVirt 4.1 Official release
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled=1
-exclude=ovirt-release-host-node ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents* ovirt-live-artwork* ovirt-node-ng*
- ovirt-engine-appliance ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows openvswitch-test
- openvswitch-devel ovirt-engine-nodejs *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev ovirt-guest-agent-windows ovirt-engine-nodejs-modules
- ovirt-engine-yarn ovirt-optimizer* openvswitch-test openvswitch-devel ovirt-engine-nodejs
+exclude= ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso
+  pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents*
+  ovirt-live-artwork* ovirt-node-ng* ovirt-engine-appliance ovirt-engine-nodejs
+  *ovirt-engine-sdk4-doc* rubygem* ovirt-engine-sdk-java vdsm-tests
+  libcacard-devel-ev ovirt-guest-agent-windows
+gpgcheck=1
 max_connections=5
 
 [ovirt-4.1-snapshot-static-el7]
 name=oVirt 4.1 Nightly Statics
 baseurl=http://resources.ovirt.org/pub/ovirt-4.1-snapshot-static/rpm/el7/
-exclude=ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows vcredist* *javadoc* libguestfs*
- ovirt-engine-sdk-java ovirt-optimizer-dependencies httpcomponents* ovirt-live-artwork ovirt-engine ovirt-engine ovirt-engine-backend ovirt-engine-dbscripts ovirt-engine-extensions-api-impl
- ovirt-engine-extensions-api-impl-javadoc ovirt-engine-lib ovirt-engine-restapi ovirt-engine-setup ovirt-engine-setup-base ovirt-engine-setup-plugin-dockerc
- ovirt-engine-setup-plugin-ovirt-engine ovirt-engine-setup-plugin-ovirt-engine-common ovirt-engine-setup-plugin-vmconsole-proxy-helper ovirt-engine-setup-plugin-websocket-proxy
- ovirt-engine-tools ovirt-engine-tools-backup ovirt-engine-userportal ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper ovirt-engine-webadmin-portal
- ovirt-engine-webadmin-portal-debuginfo ovirt-engine-websocket-proxy ovirt-engine-appliance ovirt-engine-nodejs nsis-simple-service-plugin openvswitch-devel
+exclude= ovirt-node-iso *-debuginfo jasperreports-server virtio-win-drivers
+  ovirt-guest-tools-iso python-windows pywin32-py2.7 ovirt-guest-agent-windows
+  vcredist* *javadoc* libguestfs* ovirt-engine-sdk-java
+  ovirt-optimizer-dependencies httpcomponents* ovirt-live-artwork ovirt-engine
+  ovirt-engine ovirt-engine-backend ovirt-engine-dbscripts
+  ovirt-engine-extensions-api-impl ovirt-engine-extensions-api-impl-javadoc
+  ovirt-engine-lib ovirt-engine-restapi ovirt-engine-setup
+  ovirt-engine-setup-base ovirt-engine-setup-plugin-dockerc
+  ovirt-engine-setup-plugin-ovirt-engine
+  ovirt-engine-setup-plugin-ovirt-engine-common
+  ovirt-engine-setup-plugin-vmconsole-proxy-helper
+  ovirt-engine-setup-plugin-websocket-proxy ovirt-engine-tools
+  ovirt-engine-tools-backup ovirt-engine-userportal
+  ovirt-engine-userportal-debuginfo ovirt-engine-vmconsole-proxy-helper
+  ovirt-engine-webadmin-portal ovirt-engine-webadmin-portal-debuginfo
+  ovirt-engine-websocket-proxy ovirt-engine-appliance ovirt-engine-nodejs
+  nsis-simple-service-plugin
 enabled=1
 max_connections=10
 
 [patternfly-copr-el7]
-name=Patternfly repo
+name=oVirt 4.1 dependencies
 baseurl=http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/epel-7-x86_64/
 enabled=1
 
@@ -35,48 +48,109 @@ enabled=1
 name=GlusterFS repo
 baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
 enabled=1
-exclude=glusterfs-resource-agents *-debuginfo glusterfs-regression-tests heketi* glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
+exclude= *-debuginfo glusterfs-regression-tests heketi* glusterfs-server-*
+  glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel
+  glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
 max_connections=5
 
 [centos-base-el7]
 name=CentOS7 Base
 baseurl=http://mirror.centos.org/centos/7/os/x86_64/
 enabled=1
-includepkgs=yum lsscsi python-rhsm socat subscription-manager usermode GConf2 OpenIPMI-modalias ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec
- apache-commons-compress apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging
- apache-commons-net apache-commons-vfs apr apr-util atk atlas attr augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api
- blas boost-system boost-thread bridge-utils bzip2 cairo cal10n celt051 checkpolicy color-filesystem cracklib-python cryptsetup cups-libs deltarpm fence-virt flac-libs fontconfig
- fontpackages-filesystem fop fuse fuse-libs gdisk gdk-pixbuf2 genisoimage geronimo-jms ghostscript ghostscript-fonts giflib gperftools-libs gsm gssproxy gtk2 hamcrest harfbuzz hexedit
- hicolor-icon-theme hivex hsqldb icc-profiles-openicc icoutils ipmitool iptables-services iscsi-initiator-utils iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core
- jakarta-commons-httpclient jasper-libs javamail javapackages-tools javassist jaxen jbigkit-libs jdom jline joda-convert joda-time jsch jsr-311 junit jzlib keyutils lapack lcms2 ldns libICE
- libSM libX11 libX11-common libXau libXcomposite libXcursor libXdamage libXext libXfixes libXfont libXft libXi libXinerama libXrandr libXrender libXt libXtst libXxf86vm libaio libasyncns
- libbasicobjects libcgroup libcollection libconfig libevent libfontenc libgfortran libguestfs-winsupport libibverbs libicu libini_config libiscsi libjpeg-turbo libnfsidmap libnl libogg
- libosinfo libpath_utils libquadmath librados2 librbd1 librdmacm libref_array libreport-filesystem libseccomp libsndfile libtalloc libthai libtiff libtirpc libusal
- libusbx libverto-tevent libvorbis libxcb libxshmfence libxslt lksctp-tools log4j lsof lzop m2crypto mailcap make mdadm mesa-libEGL mesa-libGL mesa-libgbm mesa-libglapi
- msv-msv msv-xsdlib mtools netcf-libs netpbm netpbm-progs nmap-ncat numad numpy objectweb-asm pango pcsc-lite-libs perl perl-Business-ISBN perl-Business-ISBN-Data perl-Carp
- perl-Compress-Raw-Bzip2 perl-Compress-Raw-Zlib perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-Encode perl-Encode-Locale perl-Exporter perl-File-Listing perl-File-Path perl-File-Temp
- perl-Filter perl-Getopt-Long perl-HTML-Parser perl-HTML-Tagset perl-HTTP-Cookies perl-HTTP-Daemon perl-HTTP-Date perl-HTTP-Message perl-HTTP-Negotiate perl-HTTP-Tiny
- perl-IO-Compress perl-IO-HTML perl-IO-Socket-IP perl-IO-Socket-SSL perl-LWP-MediaTypes perl-Net-HTTP perl-Net-LibIDN perl-Net-SSLeay perl-PathTools perl-Pod-Escapes perl-Pod-Perldoc
- perl-Pod-Simple perl-Pod-Usage perl-Scalar-List-Utils perl-Socket perl-Storable perl-Text-ParseWords perl-Time-HiRes perl-Time-Local perl-TimeDate perl-URI perl-WWW-RobotRules
- perl-constant perl-hivex perl-libs perl-libwww-perl perl-macros perl-parent perl-podlators perl-threads perl-threads-shared pexpect pixman pm-utils poppler-data postgresql-jdbc
- psmisc pulseaudio-libs pyparsing python-IPy python-babel python-backports python-backports-ssl_match_hostname python-chardet python-configshell python-dmidecode python-ethtool
- python-inotify python-javapackages python-jinja2 python-kitchen python-kmod python-lxml python-markupsafe python-netaddr python-ply python-psycopg2 python-requests python-rtslib
- python-setuptools python-six python-suds python-urllib3 python-urwid qdox radvd relaxngDatatype rhino rsyslog-mmjsonparse sac scrub seabios-bin setools-libs sg3_utils sg3_utils-libs
- sgabios-bin slf4j stax2-api supermin5 syslinux syslinux-extlinux targetcli tcp_wrappers telnet tree ttmkfdir unbound-libs unzip urw-fonts usbredir ws-commons-util
- ws-jaxme xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common xorg-x11-font-utils xorg-x11-fonts-Type1 xpp3 xz-java yajl
- yum-plugin-versionlock yum-utils dom4j easymock2 device-mapper-persistent-data dosfstools seavgabios-bin PyYAML libyaml spice-server python-enum34 python-webob json-glib libatasmart
- hystrix-core hystrix-metrics-event-stream archaius-core rxjava jctools lm_sensors-libs perl-Archive-Tar perl-DB_File perl-IO-Zlib perl-Mozilla-LDAP perl-NetAddr-IP
- perl-Package-Constants svrcore cyrus-sasl-lib python-ldap python-dateutil libxml2-python libxml2 python-urlgrabber rpcbind libtevent
- quota quota-nls libtalloc apache-commons-collections copy-jdk-configs  libpng postgresql postgresql-libs  postgresql-server chkconfig nss-softokn
- nss-softokn-freebl libselinux libselinux-python libselinux-utils openldap-clients cyrus-sasl cyrus-sasl-gssapi libsepol GeoIP cyrus-sasl-md5 openldap selinux-policy
- selinux-policy-targeted graphite2 libunwind gnutls gnutls-dane gnutls-utils xfsprogs numactl sanlock-python sanlock-lib sanlock ipxe-roms-qemu device-mapper-multipath
- device-mapper-multipath-libs initscripts fence-agents-common fence-agents-ipmilan fence-agents-compute fence-agents-all fence-agents-brocade fence-agents-intelmodular
- fence-agents-cisco-ucs fence-agents-eps fence-agents-ilo-ssh fence-agents-vmware-soap fence-agents-wti fence-agents-mpath device-mapper-multipath-libs fence-agents-ilo2 
- fence-agents-cisco-mds fence-agents-ilo-moonshot fence-agents-drac5 fence-agents-rsa fence-agents-rsb fence-agents-ilo-mp fence-agents-ibmblade fence-agents-scsi fence-agents-kdump
- fence-agents-hpblade fence-agents-bladecenter fence-agents-emerson fence-agents-ifmib fence-agents-eaton-snmp fence-agents-ipdu fence-agents-apc fence-agents-apc-snmp
- fence-agents-rhevm net-snmp-utils net-snmp-libs libnl3 libnl3-cli pciutils pciutils-libs cryptsetup-libs kpartx firewalld-filesystem libpci3 kmod kmod-libs firewalld-filesystem firewalld
- NetworkManager NetworkManager-team NetworkManager-libnm NetworkManager-tui python-firewall ipset ipset-libs glib2 iptables python-rhsm-certificates ruby ruby-irb ruby-libs
- rubygem-bigdecimal rubygem-io-console rubygem-json rubygem-psych rubygem-rdoc rubygems python2-pyasn1 avahi-libs libcacard libvirt-python
+includepkgs =python-rhsm socat subscription-manager usermode GConf2
+  OpenIPMI-modalias ant antlr-tool aopalliance apache-commons-beanutils
+  apache-commons-codec apache-commons-compress apache-commons-configuration
+  apache-commons-digester apache-commons-io apache-commons-jexl
+  apache-commons-jxpath apache-commons-lang apache-commons-logging
+  apache-commons-net apache-commons-vfs apr apr-util atk atlas attr
+  audit-libs-python augeas augeas-libs autogen-libopts avalon-framework
+  avalon-logkit batik bea-stax bea-stax-api blas boost-system boost-thread
+  bridge-utils bzip2 cairo cal10n celt051 checkpolicy color-filesystem
+  cracklib-python cryptsetup cups-libs deltarpm fence-virt flac-libs fontconfig
+  fontpackages-filesystem fop fuse fuse-libs gdisk gdk-pixbuf2 genisoimage
+  geronimo-jms ghostscript ghostscript-fonts giflib gperftools-libs gsm gssproxy
+  gtk2 hamcrest harfbuzz hexedit hicolor-icon-theme hivex hsqldb
+  icc-profiles-openicc icoutils ipmitool iptables-services iscsi-initiator-utils
+  iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core
+  jakarta-commons-httpclient jasper-libs javamail javapackages-tools javassist
+  jaxen jbigkit-libs jdom jline joda-convert joda-time jsch jsr-311 junit jzlib
+  keyutils lapack lcms2 ldns libICE libSM libX11 libX11-common libXau
+  libXcomposite libXcursor libXdamage libXext libXfixes libXfont libXft libXi
+  libXinerama libXrandr libXrender libXt libXtst libXxf86vm libaio libasyncns
+  libbasicobjects libcgroup libcollection libconfig libevent libfontenc
+  libgfortran libguestfs-winsupport libibverbs libicu libini_config libiscsi
+  libjpeg-turbo libnfsidmap libnl libogg libosinfo libpath_utils libquadmath
+  librados2 librbd1 librdmacm libref_array libreport-filesystem libseccomp
+  libsemanage-python libsndfile libtalloc libthai libtiff libtirpc libusal
+  libusbx libverto-tevent libvirt-python libvorbis libxcb libxshmfence libxslt
+  lksctp-tools log4j lsof lzop m2crypto mailcap make mdadm mesa-libEGL mesa-libGL
+  mesa-libgbm mesa-libglapi msv-msv msv-xsdlib mtools netcf-libs netpbm
+  netpbm-progs nmap-ncat numad numpy objectweb-asm pango pcsc-lite-libs perl
+  perl-Business-ISBN perl-Business-ISBN-Data perl-Carp perl-Compress-Raw-Bzip2
+  perl-Compress-Raw-Zlib perl-Data-Dumper perl-Digest perl-Digest-MD5 perl-Encode
+  perl-Encode-Locale perl-Exporter perl-File-Listing perl-File-Path
+  perl-File-Temp perl-Filter perl-Getopt-Long perl-HTML-Parser perl-HTML-Tagset
+  perl-HTTP-Cookies perl-HTTP-Daemon perl-HTTP-Date perl-HTTP-Message
+  perl-HTTP-Negotiate perl-HTTP-Tiny perl-IO-Compress perl-IO-HTML
+  perl-IO-Socket-IP perl-IO-Socket-SSL perl-LWP-MediaTypes perl-Net-HTTP
+  perl-Net-LibIDN perl-Net-SSLeay perl-PathTools perl-Pod-Escapes
+  perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-Scalar-List-Utils
+  perl-Socket perl-Storable perl-Text-ParseWords perl-Time-HiRes perl-Time-Local
+  perl-TimeDate perl-URI perl-WWW-RobotRules perl-constant perl-hivex perl-libs
+  perl-libwww-perl perl-macros perl-parent perl-podlators perl-threads
+  perl-threads-shared pexpect pixman pm-utils policycoreutils-python poppler-data
+  postgresql-jdbc psmisc pulseaudio-libs pyparsing python-IPy python-babel
+  python-backports python-backports-ssl_match_hostname python-chardet
+  python-configshell python-dmidecode python-ethtool python-inotify
+  python-javapackages python-jinja2 python-kitchen python-kmod python-lxml
+  python-markupsafe python-netaddr python-ply python-psycopg2 python-requests
+  python-rtslib python-setuptools python-six python-suds python-urllib3
+  python-urwid qdox radvd relaxngDatatype rhino rsyslog-mmjsonparse sac scrub
+  seabios-bin setools-libs sg3_utils sg3_utils-libs sgabios-bin slf4j stax2-api
+  supermin5 syslinux syslinux-extlinux targetcli tcp_wrappers telnet
+  tomcat-servlet-3.0-api tree ttmkfdir unbound-libs unzip urw-fonts usbredir
+  ws-commons-util ws-jaxme xalan-j2 xerces-j2 xml-commons-apis
+  xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common
+  xorg-x11-font-utils xorg-x11-fonts-Type1 xpp3 xz-java yajl
+  yum-plugin-versionlock yum-utils dom4j easymock2 device-mapper-persistent-data
+  dosfstools seavgabios-bin PyYAML libyaml spice-server python-enum34
+  python-webob json-glib libatasmart hystrix-core hystrix-metrics-event-stream
+  archaius-core rxjava jctools lm_sensors-libs perl-Archive-Tar perl-DB_File
+  perl-IO-Zlib perl-Mozilla-LDAP perl-NetAddr-IP perl-Package-Constants svrcore
+  cyrus-sasl-lib python-ldap python-dateutil libxml2-python libxml2 yum
+  python-urlgrabber rpcbind nfs-utils nss nss-tools nss-sysinit nss-util
+  libtevent quota quota-nls libtalloc policycoreutils apache-commons-collections
+  copy-jdk-configs httpd httpd-tools libpng mod_ssl openssl postgresql
+  postgresql-libs  postgresql-server chkconfig nspr nss-softokn
+  nss-softokn-freebl openssl-libs libselinux libselinux-python libselinux-utils
+  audit-libs libsemanage openldap-clients cyrus-sasl cyrus-sasl-gssapi libsepol
+  audit audit-libs GeoIP cyrus-sasl-md5 openldap selinux-policy
+  selinux-policy-targeted graphite2 sanlock-python libunwind gnutls gnutls-dane
+  gnutls-utils ntp xfsprogs virt-v2v numactl linux-firmware libvirt-lock-sanlock
+  sanlock-python sanlock-lib sanlock ipxe-roms-qemu device-mapper-multipath
+  device-mapper-multipath-libs libvirt-client initscripts kernel ntpdate
+  libguestfs libguestfs-tools-c fence-agents-common fence-agents-ipmilan
+  fence-agents-compute fence-agents-all fence-agents-brocade
+  fence-agents-intelmodular fence-agents-cisco-ucs fence-agents-eps
+  fence-agents-ilo-ssh fence-agents-vmware-soap fence-agents-wti
+  fence-agents-mpath device-mapper-multipath-libs fence-agents-ilo2
+  fence-agents-cisco-mds fence-agents-ilo-moonshot fence-agents-drac5
+  fence-agents-rsa fence-agents-rsb fence-agents-ilo-mp fence-agents-ibmblade
+  fence-agents-scsi fence-agents-kdump fence-agents-hpblade
+  fence-agents-bladecenter fence-agents-emerson fence-agents-ifmib
+  fence-agents-eaton-snmp fence-agents-ipdu fence-agents-apc
+  fence-agents-apc-snmp fence-agents-rhevm libvirt-daemon
+  libvirt-daemon-driver-qemu libvirt-daemon-driver-nodedev
+  libvirt-daemon-driver-network libvirt-daemon-driver-interface
+  libvirt-daemon-config-nwfilter libvirt-daemon-driver-nwfilter
+  libvirt-daemon-driver-secret libvirt-daemon-kvm libvirt-daemon-driver-qemu
+  libvirt-daemon-driver-storage net-snmp-utils net-snmp-libs libnl3 libnl3-cli
+  pciutils pciutils-libs cryptsetup-libs kpartx firewalld-filesystem libpci3 kmod
+  kmod-libs firewalld-filesystem firewalld NetworkManager NetworkManager-team
+  NetworkManager-libnm NetworkManager-tui python-firewall ipset ipset-libs glib2
+  iptables python-libguestfs python-rhsm-certificates ruby ruby-irb ruby-libs
+  rubygem-bigdecimal rubygem-io-console rubygem-json rubygem-psych rubygem-rdoc
+  rubygems
 exclude= *i686
 max_connections=10
 
@@ -84,42 +158,91 @@ max_connections=10
 name=CentOS7 Updates
 baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
 enabled=1
-includepkgs=initscripts python-libguestfs ant antlr-tool aopalliance apache-commons-beanutils apache-commons-codec apache-commons-collections apache-commons-compress
- apache-commons-configuration apache-commons-digester apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang apache-commons-logging apache-commons-net
- apache-commons-vfs apr apr-util atk atlas attr audit-libs-python augeas augeas-libs autogen-libopts avalon-framework avalon-logkit batik bea-stax bea-stax-api bind-libs bind-libs-lite
- bind-license bind-utils blas boost-system boost-thread bridge-utils bzip2 cairo cal10n celt051 checkpolicy color-filesystem cracklib-python cryptsetup cups-libs cyrus-sasl
- cyrus-sasl-md5 deltarpm device-mapper device-mapper-event device-mapper-event-libs device-mapper-multipath device-mapper-multipath-libs event-libs fence-agents-all fence-agents-apc
- fence-agents-apc-snmp fence-agents-bladecenter fence-agents-brocade fence-agents-cisco-mds fence-agents-cisco-ucs fence-agents-common fence-agents-compute fence-agents-drac5
- fence-agents-eaton-snmp fence-agents-emerson fence-agents-eps fence-agents-hpblade fence-agents-ibmblade fence-agents-ifmib fence-agents-ilo2 fence-agents-ilo-moonshot
- fence-agents-ilo-mp fence-agents-ilo-ssh fence-agents-intelmodular fence-agentsruby-ipdu fence-agents-ipmilan fence-agents-kdump fence-agents-mpath fence-agents-rhevm
- fence-agents-rsa fence-agents-rsb fence-agents-scsi fence-agents-vmware-soap fence-agents-wti flac-libs fontconfig fontpackages-filesystem fop fuse fuse-libs GConf2 gdisk
- gdk-pixbuf2 genisoimage geronimo-jms ghostscript ghostscript-fonts giflib gnutls-dane gnutls-utils gperftools-libs graphite2 gsm gssproxy gtk2 hamcrest harfbuzz hexedit
- hicolor-icon-theme hivex hsqldb httpd httpd-tools icc-profiles-openicc icoutils ioprocess ipmitool iptables-services ipxe-roms-qemu iscsi-initiator-utils iscsi-initiator-utils-iscsiuio  
- isorelax jackson jai-imageio-core jakarta-commons-httpclient jasper-libs java-1.7.0-openjdk java-1.7.0-openjdk-devel java-1.7.0-openjdk-headless java-1.8.0-openjdk
- java-1.8.0-openjdk-headless javamail javapackages-tools javassist jaxen jbigkit-libs jdom jline joda-convert joda-time jsch jsr-311 junit jzlib keyutils kpartx lapack lcms2 ldns
- libaio libasyncns libbasicobjects libcgroup libcollection libconfig libevent libfontenc libgfortran libguestfs libguestfs-tools-c libguestfs-winsupport libibverbs libICE libicu
- libini_config libiscsi libjpeg-turbo libnfsidmap libnl libogg libosinfo libpath_utils libpng libquadmath librados2 librbd1 librdmacm libref_array libreport-filesystem libseccomp
- libsemanage-python libsemanage libSM libsndfile libtalloc libtevent libthai libtiff libtirpc libunwind libusal libusbx libverto-tevent libvirt-client libvirt-daemon
- libvirt-daemon-config-nwfilter libvirt-daemon-driver-interface libvirt-daemon-driver-network libvirt-daemon-driver-nodedev libvirt-daemon-driver-nwfilter libvirt-daemon-driver-qemu
- libvirt-daemon-driver-secret libvirt-daemon-driver-storage libvirt-daemon-kvm libvirt-lock-sanlock libvorbis libX11 libX11-common libXau libxcb libXcomposite libXcursor
- libXdamage libXext libXfixes libXfont libXft libXi libXinerama libxml2 libxml2-python libXrandr libXrender libxshmfence libxslt libXt libXtst libXxf86vm lksctp-tools log4j lsof lvm2
- lvm2-libs lzop m2crypto mailcap make mdadm mesa-libEGL mesa-libgbm mesa-libGL mesa-libglapi mod_ssl mom msv-msv msv-xsdlib mtools netcf-libs netpbm netpbm-progs net-snmp-libs
- net-snmp-utils nfs-utils nmap-ncat ntp ntpdate numactl numad numpy objectweb-asm OpenIPMI-modalias openssl openssl-libs otopi.plugins.ovirt_host_deploy.gluster.glusterpm pango
- pcsc-lite-libs perl perl-Business-ISBN perl-Business-ISBN-Data perl-Carp perl-Compress-Raw-Bzip2 perl-Compress-Raw-Zlib perl-constant perl-Data-Dumper perl-Digest perl-Digest-MD5
- perl-Encode perl-Encode-Locale perl-Exporter perl-File-Listing perl-File-Path perl-File-Temp perl-Filter perl-Getopt-Long perl-hivex perl-HTML-Parser perl-HTML-Tagset perl-HTTP-Cookies
- perl-HTTP-Daemon perl-HTTP-Date perl-HTTP-Message perl-HTTP-Negotiate perl-HTTP-Tiny perl-IO-Compress perl-IO-HTML perl-IO-Socket-IP perl-IO-Socket-SSL perl-libs perl-libwww-perl
- perl-LWP-MediaTypes perl-macros perl-Net-HTTP perl-Net-LibIDN perl-Net-SSLeay perl-parent perl-PathTools perl-Pod-Escapes perl-podlators perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage
- perl-Scalar-List-Utils perl-Socket perl-Storable perl-Text-ParseWords perl-threads perl-threads-shared perl-TimeDate perl-Time-HiRes perl-Time-Local perl-URI perl-WWW-RobotRules
- pexpect pixman pm-utils policycoreutils-python policycoreutils poppler-data postgresql postgresql-jdbc postgresql-libs postgresql-server psmisc pulseaudio-libs pyparsing libtool-ltdl
- python-babel python-backports python-backports-ssl_match_hostname python-chardet python-configshell python-cpopen python-dmidecode python-ethtool python-inotify python-ioprocess
- python-IPy python-javapackages python-jinja2 python-kitchen python-kmod python-lxml python-markupsafe python-netaddr python-ply python-psycopg2 python-pthreading python-requests
- python-rtslib python-setuptools python-six python-suds python-urllib3 python-urwid qdox qemu-img-ev qemu-kvm-common-ev qemu-kvm-ev qemu-kvm-tools-ev quota quota-nls radvd
- relaxngDatatype rhino rpcbind rsyslog-mmjsonparse sac safelease sanlock sanlock-lib sanlock-python scrub seabios-bin setools-libs sg3_utils sg3_utils-libs sgabios-bin slf4j sos
- stax2-api supermin5 syslinux syslinux-extlinux targetcli tcp_wrappers telnet tomcat-servlet-3.0-api tree ttmkfdir tuned tzdata-java unbound-libs unzip urw-fonts usbredir virt-v2v
- ws-commons-util ws-jaxme xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3 xz-java
- yajl yum-plugin-versionlock yum-utils NetworkManager-config-server device-mapper-libs kernel spice-server systemd-python systemd systemd-sysv systemd-libs libgudev1 hystrix-core
- hystrix-metrics-event-stream archaius-core rxjava jctools 389-ds-base 389-ds-base-libs nss nss-util nss-tools net-snmp-agent-libs openldap-clients openldap cyrus-sasl-gssapi audit
- audit-libs java-1.8.0-openjdk-devel libvirt-daemon-driver-storage nspr nss-sysinit
+includepkgs= initscripts python-libguestfs ant antlr-tool aopalliance
+  apache-commons-beanutils apache-commons-codec apache-commons-collections
+  apache-commons-compress apache-commons-configuration apache-commons-digester
+  apache-commons-io apache-commons-jexl apache-commons-jxpath apache-commons-lang
+  apache-commons-logging apache-commons-net apache-commons-vfs apr apr-util atk
+  atlas attr audit-libs-python augeas augeas-libs autogen-libopts
+  avalon-framework avalon-logkit batik bea-stax bea-stax-api bind-libs
+  bind-libs-lite bind-license bind-utils blas boost-system boost-thread
+  bridge-utils bzip2 cairo cal10n celt051 checkpolicy color-filesystem
+  cracklib-python cryptsetup cups-libs cyrus-sasl cyrus-sasl-md5 deltarpm
+  device-mapper device-mapper-event device-mapper-event-libs
+  device-mapper-multipath device-mapper-multipath-libs event-libs
+  fence-agents-all fence-agents-apc fence-agents-apc-snmp
+  fence-agents-bladecenter fence-agents-brocade fence-agents-cisco-mds
+  fence-agents-cisco-ucs fence-agents-common fence-agents-compute
+  fence-agents-drac5 fence-agents-eaton-snmp fence-agents-emerson
+  fence-agents-eps fence-agents-hpblade fence-agents-ibmblade fence-agents-ifmib
+  fence-agents-ilo2 fence-agents-ilo-moonshot fence-agents-ilo-mp
+  fence-agents-ilo-ssh fence-agents-intelmodular fence-agentsruby-ipdu
+  fence-agents-ipmilan fence-agents-kdump fence-agents-mpath fence-agents-rhevm
+  fence-agents-rsa fence-agents-rsb fence-agents-scsi fence-agents-vmware-soap
+  fence-agents-wti flac-libs fontconfig fontpackages-filesystem fop fuse
+  fuse-libs GConf2 gdisk gdk-pixbuf2 genisoimage geronimo-jms ghostscript
+  ghostscript-fonts giflib gnutls-dane gnutls-utils gperftools-libs graphite2 gsm
+  gssproxy gtk2 hamcrest harfbuzz hexedit hicolor-icon-theme hivex hsqldb httpd
+  httpd-tools icc-profiles-openicc icoutils ioprocess ipmitool iptables-services
+  ipxe-roms-qemu iscsi-initiator-utils iscsi-initiator-utils-iscsiuio isorelax
+  jackson jai-imageio-core jakarta-commons-httpclient jasper-libs
+  java-1.7.0-openjdk java-1.7.0-openjdk-devel java-1.7.0-openjdk-headless
+  java-1.8.0-openjdk java-1.8.0-openjdk-headless javamail javapackages-tools
+  javassist jaxen jbigkit-libs jdom jline joda-convert joda-time jsch jsr-311
+  junit jzlib keyutils kpartx lapack lcms2 ldns libaio libasyncns libbasicobjects
+  libcgroup libcollection libconfig libevent libfontenc libgfortran libguestfs
+  libguestfs-tools-c libguestfs-winsupport libibverbs libICE libicu libini_config
+  libiscsi libjpeg-turbo libnfsidmap libnl libogg libosinfo libpath_utils libpng
+  libquadmath librados2 librbd1 librdmacm libref_array libreport-filesystem
+  libseccomp libsemanage-python libSM libsndfile libtalloc libtevent libthai
+  libtiff libtirpc libunwind libusal libusbx libverto-tevent libvirt-client
+  libvirt-daemon libvirt-daemon-config-nwfilter libvirt-daemon-driver-interface
+  libvirt-daemon-driver-network libvirt-daemon-driver-nodedev
+  libvirt-daemon-driver-nwfilter libvirt-daemon-driver-qemu
+  libvirt-daemon-driver-secret libvirt-daemon-driver-storage libvirt-daemon-kvm
+  libvirt-lock-sanlock libvirt-python libvorbis libX11 libX11-common libXau
+  libxcb libXcomposite libXcursor libXdamage libXext libXfixes libXfont libXft
+  libXi libXinerama libxml2 libxml2-python libXrandr libXrender libxshmfence
+  libxslt libXt libXtst libXxf86vm lksctp-tools log4j lsof lvm2 lvm2-libs lzop
+  m2crypto mailcap make mdadm mesa-libEGL mesa-libgbm mesa-libGL mesa-libglapi
+  mod_ssl mom msv-msv msv-xsdlib mtools netcf-libs netpbm netpbm-progs
+  net-snmp-libs net-snmp-utils nfs-utils nmap-ncat ntp ntpdate numactl numad
+  numpy objectweb-asm OpenIPMI-modalias openssl openssl-libs
+  otopi.plugins.ovirt_host_deploy.gluster.glusterpm pango pcsc-lite-libs perl
+  perl-Business-ISBN perl-Business-ISBN-Data perl-Carp perl-Compress-Raw-Bzip2
+  perl-Compress-Raw-Zlib perl-constant perl-Data-Dumper perl-Digest
+  perl-Digest-MD5 perl-Encode perl-Encode-Locale perl-Exporter perl-File-Listing
+  perl-File-Path perl-File-Temp perl-Filter perl-Getopt-Long perl-hivex
+  perl-HTML-Parser perl-HTML-Tagset perl-HTTP-Cookies perl-HTTP-Daemon
+  perl-HTTP-Date perl-HTTP-Message perl-HTTP-Negotiate perl-HTTP-Tiny
+  perl-IO-Compress perl-IO-HTML perl-IO-Socket-IP perl-IO-Socket-SSL perl-libs
+  perl-libwww-perl perl-LWP-MediaTypes perl-macros perl-Net-HTTP perl-Net-LibIDN
+  perl-Net-SSLeay perl-parent perl-PathTools perl-Pod-Escapes perl-podlators
+  perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-Scalar-List-Utils
+  perl-Socket perl-Storable perl-Text-ParseWords perl-threads perl-threads-shared
+  perl-TimeDate perl-Time-HiRes perl-Time-Local perl-URI perl-WWW-RobotRules
+  pexpect pixman pm-utils policycoreutils-python poppler-data postgresql
+  postgresql-jdbc postgresql-libs postgresql-server psmisc pulseaudio-libs
+  pyparsing python-babel python-backports python-backports-ssl_match_hostname
+  python-chardet python-configshell python-dmidecode python-ethtool
+  python-inotify python-ioprocess python-IPy python-javapackages python-jinja2
+  python-kitchen python-kmod python-lxml python-markupsafe python-netaddr
+  python-ply python-psycopg2 python-requests python-rtslib
+  python-setuptools python-six python-suds python-urllib3 python-urwid qdox
+  qemu-img-ev qemu-kvm-common-ev qemu-kvm-ev qemu-kvm-tools-ev quota quota-nls
+  radvd relaxngDatatype rhino rpcbind rsyslog-mmjsonparse sac safelease sanlock
+  sanlock-lib sanlock-python scrub seabios-bin setools-libs sg3_utils
+  sg3_utils-libs sgabios-bin slf4j sos stax2-api supermin5 syslinux
+  syslinux-extlinux targetcli tcp_wrappers telnet tomcat-servlet-3.0-api tree
+  ttmkfdir tuned tzdata-java unbound-libs unzip urw-fonts usbredir virt-v2v
+  ws-commons-util ws-jaxme xalan-j2 xerces-j2 xml-commons-apis
+  xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common
+  xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3 xz-java yajl
+  yum-plugin-versionlock yum-utils NetworkManager-config-server
+  device-mapper-libs kernel spice-server systemd-python systemd systemd-sysv
+  systemd-libs libgudev1 hystrix-core hystrix-metrics-event-stream archaius-core
+  rxjava jctools 389-ds-base 389-ds-base-libs nss-tools net-snmp-agent-libs
+  openldap-clients openldap cyrus-sasl-gssapi
 exclude= *i686
 max_connections=10
 
@@ -127,33 +250,49 @@ max_connections=10
 name=CentOS7 Extras
 baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 enabled=1
-includepkgs=cockpit cockpit-bridge cockpit-networkmanager cockpit-system cockpit-storaged cockpit-ws libssh libstoraged storaged storaged-lvm2 storaged-iscsi python-lockfile
+includepkgs= cockpit cockpit-bridge cockpit-docker cockpit-networkmanager
+  cockpit-shell cockpit-storaged cockpit-ws docker docker-common
+  docker-forward-journald docker-selinux libssh libstoraged storaged
+  storaged-lvm2 storaged-iscsi
 exclude= *i686
 max_connections=5
+
+[centos-ovirt-4.1-el7]
+name=CentOS-$releasever - oVirt 4.1
+baseurl=https://cbs.centos.org/repos/virt7-ovirt-41-candidate/x86_64/os/
+enabled=1
+skip_if_unavailable=1
+exclude= nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-*
+  ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby*
+  python-six python-ply python-werkzeug* python-unittest2 python-testtools*
+  python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock
+  python-minimock userspace-rcu* python-fixtures openvswitch-devel
+  openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36
+  jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom
+  python-nose-docs userspace-rcu
 
 [epel-el7]
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
-includepkgs=python-uinput,python-ordereddict,python-inotify,python-argparse,novnc,python-kitchen,livecd-tools,spice-html5,mom,python-IPy,safelease,python-paramiko,python2-crypto,libtomcrypt,libtommath,python-cheetah,python-ecdsa,python2-ecdsa,userspace-rcu,hystrix-core,hystrix-metrics-event-stream,archaius-core,rxjava,jctools,jackson-core python-simplejson
-exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet python-ovirt-engine-sdk4 ioprocess python-ioprocess
-max_connections=5
+includepkgs= python-uinput python-ordereddict python-inotify python-argparse
+  novnc python-kitchen livecd-tools spice-html5 mom python-IPy safelease
+  python-paramiko python2-crypto libtomcrypt libtommath python-cheetah
+  python-ecdsa python2-ecdsa userspace-rcu hystrix-core
+  hystrix-metrics-event-stream archaius-core rxjava jctools jackson-core
+  python-simplejson python-daemon python-cpopen python-pthreading
 
-[centos-ovirt-4.1-el7]
-name=CentOS-7 - oVirt 4.1
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
-enabled=1
-skip_if_unavailable=1
-exclude=cockpit-ostree nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-* ovirt-* vdsm-* otopi-* glusterfs-* *javadoc* spice-html5 ebay-* novnc-* ruby* python-six python-ply
- python-werkzeug* python-unittest2 python-testtools* python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock python-minimock userspace-rcu* python-fixtures openvswitch-*
- mockito vhostmd vm-dump-metrics* centos-release-ovirt36 jemalloc* python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom python-nose-docs python-openvswitch imgbased
- safelease ioprocess python-crypto python-lockfile
+exclude= python34-* ovirt-guest-agent-* mom puppet
+  python-ovirt-engine-sdk4 ioprocess python-ioprocess
+max_connections=5
 
 [centos-opstools-testing-el7]
 name=CentOS-7 - OpsTools - testing repo
 baseurl=http://buildlogs.centos.org/centos/7/opstools/x86_64/
 enabled=1
-exclude=sensu* rubygem-sensu* osops-tools-monitoring-oschecks nodejs-devel nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa rubygem-*-doc rubygem-ffi nodejs kibana
+exclude=sensu* rubygem-sensu* osops-tools-monitoring-oschecks nodejs-devel
+  nodejs-docs graphite-web python-django* grafana phantomjs skydive uchiwa
+  rubygem-*-doc rubygem-ffi nodejs kibana
 
 [copr-sac-gdeploy-el7]
 name=Copr repo for gdeploy owned by sac

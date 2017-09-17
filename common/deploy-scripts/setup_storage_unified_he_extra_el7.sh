@@ -23,6 +23,8 @@ setup_he() {
 }
 
 main() {
+    systemctl stop firewalld || true
+    systemctl stop firewalld || true
     setup_he
     rm -rf /dev/shm/*.rpm
 }

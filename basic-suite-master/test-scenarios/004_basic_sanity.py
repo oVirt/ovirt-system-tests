@@ -102,6 +102,20 @@ def _get_disk_service(engine, diskname):
     return disks_service.disk_service(disk.id)
 
 
+def _get_storage_domain_service(engine, sd_name):
+    storage_domains_service = engine.storage_domains_service()
+    sd = storage_domains_service.list(search=sd_name)[0]
+    return storage_domains_service.storage_domain_service(sd.id)
+
+
+def _get_storage_domain_vm_service_by_name(sd_service, vm_name):
+    vms_service = sd_service.vms_service()
+    # StorageDomainVmsService.list has no 'search' parameter and ignores
+    # query={'name': 'spam'} so we have to do the filtering ourselves
+    vm = next(vm for vm in vms_service.list() if vm.name == vm_name)
+    return vms_service.vm_service(vm.id)
+
+
 def _ping(ovirt_prefix, destination):
     """
     Ping a given destination.
@@ -397,6 +411,32 @@ def live_storage_migration(api):
     # This sleep is a temporary solution to the race condition
     # https://bugzilla.redhat.com/1456504
     time.sleep(3)
+
+
+@testlib.with_ovirt_api4
+def export_vm(api):
+    engine = api.system_service()
+    vm_service = _get_vm_service(engine, VM1_NAME)
+    sd = engine.storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
+
+    vm_service.export(
+        storage_domain=types.StorageDomain(
+            id=sd.id,
+        ), discard_snapshots=True, async=True
+    )
+
+
+@testlib.with_ovirt_api4
+def verify_vm_exported(api):
+    engine = api.system_service()
+    storage_domain_service = _get_storage_domain_service(engine, SD_TEMPLATES_NAME)
+
+    testlib.assert_true_within_short(
+        lambda:
+        _get_storage_domain_vm_service_by_name(
+            storage_domain_service, VM1_NAME
+        ).get().status == types.VmStatus.DOWN
+    )
 
 
 @testlib.with_ovirt_api
@@ -930,9 +970,11 @@ _TEST_LIST = [
     add_filter_parameter,
     verify_add_vm_template,
     add_disk,
+    export_vm,
     vm_run,
     ping_vm0,
     suspend_resume_vm,
+    verify_vm_exported,
     ha_recovery,
     add_event,
     template_export,

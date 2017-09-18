@@ -1,6 +1,8 @@
-= Performance Suite
+Performance Suite
+===
 
-== Purpose
+Purpose
+===
 This suite makes it possible to configure the setup size. It lets you set the number
  of host (2 by default for almost all suites) and/or vms, using environment variable or vars/main.yml
 The outcome is the ability to run system tests on large setup i.e 100/5000 hosts/vms or 300/300 all depending
@@ -10,7 +12,8 @@ If you are short on resources you can make the hosts and vms run on ovirt-vdsmfa
 It makes very much sense to port those dynamic features to the basic suite, but this first this suite needs to
 fully prove it self useful
 
-== Usage
+Usage
+===
 The suite is soft-linking almost all of the basic-suite files and just adds
 a test scenerio which does:
 - deploy collectd + fluentd, forwarding to the `engine` machine

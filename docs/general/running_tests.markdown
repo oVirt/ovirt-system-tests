@@ -60,20 +60,25 @@ Now, log in to the web-UI at:
 * Profile: `internal`
 
 If you're running the framework on a remote machine, you can tunnel a local<br>
-port directly to the destination machine::
+port directly to the destination machine - from your local machine:
 ```
-    $ ssh -L 8443:192.168.200.2:443 remote-user@remote-IP
-            ---- =================             ~~~~~~~~~
-            (*)   (**)                         (***)
+    $ ssh -L 8443:192.168.200.2:443 USER@HOST_RUNNING_OST
+            ----  =================      ~~~~~~~~~~~~~~~~
+            (*)   (**)                       (***)
 
-    (*)   - The port on localhost that the tunnel will be available at.
-    (**)  - The destination where the remote machine will connect when local machine
-            connects to the local end of the tunnel.
-    (***) - Remote machine through which we'll connect to the remote end of the
-            tunnel.
+    (*)   - The port on the local machine that the tunnel will be available at.
+    (**)  - The machine IP, visible from the HOST_RUNNING_OST. This is were the traffic is tunneled to.
+            Usually 192.168.200.2 is the address of ovirt-engine
+    (***) - The host running OST which can reach the VMs network and will tunnel the connection.
 ```
 After creating the tunnel, web-UI will be available at `https://localhost:8443/`
 
+**NOTE**: In some cases, like performance-suite, the engine machine will have a different IP. To find it run:
+```
+    # from the deployment folder, say basic-suite-master
+    $ lago --out-format flat status | grep VMs/.*engine.*/NICs/eth0/ip
+
+```
 
 Poke around in the env
 ------------------------

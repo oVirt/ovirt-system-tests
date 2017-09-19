@@ -90,6 +90,9 @@ MIGRATION_NETWORK = 'Migration_Net'
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
+def _get_host_all_ips(prefix, host_name):
+    return prefix.virt_env.get_vm(host_name).all_ips()
+
 def _hosts_in_dc(api, dc_name=DC_NAME):
     hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
     if hosts:
@@ -555,6 +558,20 @@ def add_iscsi_storage_domain(prefix):
 def add_iscsi_storage_domain_3(prefix, lun_guids):
     api = prefix.virt_env.engine_vm().get_api()
 
+    ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
+    luns = []
+    for lun_id in lun_guids:
+        for ip in ips:
+            lun=params.LogicalUnit(
+                id=lun_id,
+                address=ip,
+                port=SD_ISCSI_PORT,
+                target=SD_ISCSI_TARGET,
+                username='username',
+                password='password',
+            )
+            luns.append(lun)
+
     p = params.StorageDomain(
         name=SD_ISCSI_NAME,
         data_center=params.DataCenter(
@@ -566,20 +583,7 @@ def add_iscsi_storage_domain_3(prefix, lun_guids):
         storage=params.Storage(
             type_='iscsi',
             volume_group=params.VolumeGroup(
-                logical_unit=[
-                    params.LogicalUnit(
-                        id=lun_id,
-                        address=_get_host_ip(
-                            prefix,
-                            SD_ISCSI_HOST_NAME,
-                        ),
-                        port=SD_ISCSI_PORT,
-                        target=SD_ISCSI_TARGET,
-                        username='username',
-                        password='password',
-                    ) for lun_id in lun_guids
-                ]
-
+                logical_unit=luns
             ),
         ),
     )
@@ -588,6 +592,21 @@ def add_iscsi_storage_domain_3(prefix, lun_guids):
 
 def add_iscsi_storage_domain_4(prefix, lun_guids):
     api = prefix.virt_env.engine_vm().get_api_v4()
+
+    ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
+    luns = []
+    for lun_id in lun_guids:
+        for ip in ips:
+            lun=sdk4.types.LogicalUnit(
+                id=lun_id,
+                address=ip,
+                port=SD_ISCSI_PORT,
+                target=SD_ISCSI_TARGET,
+                username='username',
+                password='password',
+            )
+            luns.append(lun)
+
     p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
         description='iSCSI Storage Domain',
@@ -602,19 +621,7 @@ def add_iscsi_storage_domain_4(prefix, lun_guids):
             type=sdk4.types.StorageType.ISCSI,
             override_luns=True,
             volume_group=sdk4.types.VolumeGroup(
-                logical_units=[
-                    sdk4.types.LogicalUnit(
-                        id=lun_id,
-                        address=_get_host_ip(
-                            prefix,
-                            SD_ISCSI_HOST_NAME,
-                        ),
-                        port=SD_ISCSI_PORT,
-                        target=SD_ISCSI_TARGET,
-                        username='username',
-                        password='password',
-                    ) for lun_id in lun_guids
-                ]
+                logical_units=luns
             ),
         ),
     )

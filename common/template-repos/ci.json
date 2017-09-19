@@ -206,6 +206,15 @@
      "timestamp": 1483295849.820523
     }
    }
+  },
+  "el7.4-base": {
+   "versions": {
+    "v1": {
+     "source": "ci-templates-vm",
+     "handle": "el7.4-base",
+     "timestamp": 1505808340.5690243
+    }
+   }
   }
  },
  "sources": {

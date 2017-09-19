@@ -53,6 +53,7 @@ SD_ISCSI_NAME = 'iscsi'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
+IMPORTED_VM_NAME = 'imported_vm'
 VM0_PING_DEST = VM0_NAME
 VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
@@ -399,6 +400,43 @@ def verify_vm_exported(api):
             storage_domain_service, VM1_NAME
         ).get().status == types.VmStatus.DOWN
     )
+
+
+@testlib.with_ovirt_api4
+def import_vm_as_clone(api):
+    engine = api.system_service()
+    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
+    vm_to_import = test_utils.get_storage_domain_vm_service_by_name(storage_domain_service, VM1_NAME)
+
+    if vm_to_import is None:
+        raise SkipTest("VM: '%s' not found on export domain: '%s'" % (VM1_NAME, SD_TEMPLATES_NAME))
+
+    vm_to_import.import_(
+        storage_domain=types.StorageDomain(
+            name=SD_ISCSI_NAME,
+        ),
+        cluster=types.Cluster(
+            name=TEST_CLUSTER,
+        ),
+        vm=types.Vm(
+            name=IMPORTED_VM_NAME,
+        ),
+        clone=True, collapse_snapshots=True, async=True
+    )
+
+
+@testlib.with_ovirt_api4
+def verify_vm_import(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, IMPORTED_VM_NAME)
+    testlib.assert_true_within_short(
+        lambda: vm_service.get().status == types.VmStatus.DOWN
+    )
+
+    # Remove the imported VM
+    num_of_vms = len(engine.vms_service().list())
+    vm_service.remove()
+    nt.assert_true(len(engine.vms_service().list()) == (num_of_vms-1))
 
 
 @testlib.with_ovirt_api
@@ -934,11 +972,13 @@ _TEST_LIST = [
     ping_vm0,
     suspend_resume_vm,
     verify_vm_exported,
+    import_vm_as_clone,
     ha_recovery,
     add_event,
     template_export,
     template_update,
     verify_suspend_resume_vm,
+    verify_vm_import,
     hotplug_memory,
     hotplug_cpu,
     next_run_unplug_cpu,

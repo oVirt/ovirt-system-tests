@@ -51,9 +51,9 @@ exclude=
 enabled=1
 max_connections=10
 
-[glusterfs-3.10-el7]
+[glusterfs-3.12-el7]
 name=GlusterFS repo
-baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.10/
+baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled=1
 exclude=*-debuginfo *-devel glusterfs-regression-tests heketi* glusterfs-server-* glusterfs-api-devel nfs-ganesha-* libntirpc* glusterfs-devel glusterfs-coreutils glusterfs-geo* glusterfs-ganesha
  glusterfs-extra-xlators glusterfs-resource-agents python-gluster

@@ -221,27 +221,32 @@ def add_console(api):
 @testlib.with_ovirt_prefix
 def add_directlun(prefix):
     # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
+    iscsi_host = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME)
+    ret = iscsi_host.ssh(['cat', '/root/multipath.txt'])
     nt.assert_equals(ret.code, 0)
 
     all_guids = ret.out.splitlines()
     lun_guid = all_guids[SD_ISCSI_NR_LUNS]  # Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
+
+    ips = iscsi_host.all_ips()
+    luns = []
+    for ip in ips:
+        lun=types.LogicalUnit(
+                id=lun_guid,
+                address=ip,
+                port=SD_ISCSI_PORT,
+                target=SD_ISCSI_TARGET,
+                username='username',
+                password='password',
+            )
+        luns.append(lun)
 
     dlun_params = types.Disk(
         name=DLUN_DISK_NAME,
         format=types.DiskFormat.RAW,
         lun_storage=types.HostStorage(
             type=types.StorageType.ISCSI,
-            logical_units=[
-                types.LogicalUnit(
-                    address=prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ip(),
-                    port=SD_ISCSI_PORT,
-                    target=SD_ISCSI_TARGET,
-                    id=lun_guid,
-                    username='username',
-                    password='password',
-                )
-            ]
+            logical_units=luns,
         ),
         sgio=types.ScsiGenericIO.UNFILTERED,
     )

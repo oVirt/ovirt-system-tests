@@ -69,7 +69,6 @@ NETWORK_FILTER_NAME = 'clean-traffic'
 NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
 NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
 NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
-NETWORK_FILTER_PARAMETER1_VALUE = '192.168.201.1'
 
 SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
@@ -121,7 +120,7 @@ def _ping(ovirt_prefix, destination):
     Ping a given destination.
     """
     host = ovirt_prefix.virt_env.host_vms()[0]
-    cmd = ['ping', '-c', '1']
+    cmd = ['ping', '-4', '-c', '1']
     ret = host.ssh(cmd + [destination])
     return ret.code
 
@@ -181,6 +180,7 @@ def add_nic(api):
     api.vms.get(VM0_NAME).nics.add(nic_params)
 
     nic_params.mac = params.MAC(address=UNICAST_MAC_OUTSIDE_POOL)
+    nic_params.interface='e1000'
     api.vms.get(VM2_NAME).nics.add(nic_params)
 
 
@@ -526,8 +526,11 @@ def add_filter(ovirt_api4):
     )
 
 
-@testlib.with_ovirt_api4
-def add_filter_parameter(ovirt_api4):
+@testlib.with_ovirt_prefix
+def add_filter_parameter(prefix):
+    engine = prefix.virt_env.engine_vm()
+    ovirt_api4 = engine.get_api(api_ver=4)
+    vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
     network_filter_parameters_service = _get_network_fiter_parameters_service(
         ovirt_api4.system_service())
 
@@ -544,7 +547,7 @@ def add_filter_parameter(ovirt_api4):
         network_filter_parameters_service.add(
             types.NetworkFilterParameter(
                 name=NETWORK_FILTER_PARAMETER1_NAME,
-                value=NETWORK_FILTER_PARAMETER1_VALUE
+                value=vm_gw
             )
         )
     )

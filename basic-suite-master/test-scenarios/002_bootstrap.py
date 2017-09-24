@@ -33,6 +33,7 @@ import ovirtsdk4 as sdk4
 from lago import utils
 from ovirtlago import testlib
 
+import test_utils
 from test_utils import network_utils_v4
 
 # TODO: use SDKv4 unconditionally, where possible (as in other test scenarios)
@@ -888,13 +889,11 @@ def add_vm_network(api):
         ),
     )
 
-    cluster = engine.clusters_service().list(
-        search='name={}'.format(CLUSTER_NAME))[0]
-    cluster_service = engine.clusters_service().cluster_service(cluster.id)
-
     nt.assert_true(
         engine.networks_service().add(network)
     )
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
         cluster_service.networks_service().add(network)
     )
@@ -915,13 +914,11 @@ def add_non_vm_network(api):
         mtu=9000,
     )
 
-    cluster = engine.clusters_service().list(
-        search='name={}'.format(CLUSTER_NAME))[0]
-    cluster_service = engine.clusters_service().cluster_service(cluster.id)
-
     nt.assert_true(
         engine.networks_service().add(network)
     )
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
         cluster_service.networks_service().add(network)
     )

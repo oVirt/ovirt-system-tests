@@ -38,10 +38,23 @@ def get_vm_service(engine, vm_name):
     return vms_service.vm_service(vm.id)
 
 
-def get_disk_service(engine, diskname):
+def get_disk_service(engine, disk_name):
     disks_service = engine.disks_service()
-    disk = disks_service.list(search=diskname)[0]
+    disk = disks_service.list(search=disk_name)[0]
     return disks_service.disk_service(disk.id)
+
+def get_template_service(engine, template_name):
+    templates_service = engine.templates_service()
+    template = templates_service.list(search=template_name)[0]
+    if template is None:
+        return None
+    return templates_service.template_service(template.id)
+
+
+def get_pool_service(engine, pool_name):
+    vm_pools_service= engine.vm_pools_service()
+    pool = vm_pools_service.list(search=pool_name)[0]
+    return vm_pools_service.pool_service(pool.id)
 
 
 def get_storage_domain_service(engine, sd_name):
@@ -67,6 +80,12 @@ def data_center_service(root, name):
     data_centers = root.data_centers_service()
     dc = data_centers.list(search='name={}'.format(name))[0]
     return data_centers.data_center_service(dc.id)
+
+
+def get_cluster_service(engine, cluster_name):
+    clusters_service = engine.clusters_service()
+    cluster = clusters_service.list(search=cluster_name)[0]
+    return clusters_service.cluster_service(cluster.id)
 
 
 def quote_search_string(s):

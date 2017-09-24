@@ -589,9 +589,9 @@ def ping_vm0(ovirt_prefix):
 def ha_recovery(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
     last_event = int(engine.events_service().list(max=2)[0].id)
-    vms_service = engine.vms_service()
-    vm = vms_service.list(search=VM2_NAME)[0]
-    host_name = engine.hosts_service().host_service(vm.host.id).get().name
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+    host_id = vm_service.get().host.id
+    host_name = engine.hosts_service().host_service(host_id).get().name
     vm_host = prefix.virt_env.get_vm(host_name)
     pid = vm_host.ssh(['pgrep', '-f', 'qemu.*guest=vm2'])
     vm_host.ssh(['kill', '-KILL', pid.out])
@@ -601,7 +601,6 @@ def ha_recovery(prefix):
         (next(e for e in events.list(from_=last_event) if e.code == 9602)).code == 9602,
          allowed_exceptions=[StopIteration]
     )
-    vm_service = vms_service.vm_service(vm.id)
     testlib.assert_true_within_long(
         lambda:
         vm_service.get().status == types.VmStatus.UP
@@ -628,9 +627,9 @@ def vdsm_recovery(prefix):
 
 @testlib.with_ovirt_api4
 def template_export(api):
-    templates_service = api.system_service().templates_service()
-    template_cirros = templates_service.template_service(templates_service.list(search=TEMPLATE_CIRROS)[0].id)
+    engine = api.system_service()
 
+    template_cirros = test_utils.get_template_service(engine, TEMPLATE_CIRROS)
     if template_cirros is None:
         raise SkipTest('{0}: template {1} is missing'.format(
             template_export.__name__,
@@ -638,17 +637,15 @@ def template_export(api):
             )
         )
 
-    storage_domain = api.system_service().storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
+    storage_domain = engine.storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
     template_cirros.export(
         storage_domain=types.StorageDomain(
             id=storage_domain.id,
         ),
     )
-    template_id = template_cirros.get().id
-    template_service = templates_service.template_service(template_id)
     testlib.assert_true_within_long(
         lambda:
-        template_service.get().status == types.TemplateStatus.OK,
+        template_cirros.get().status == types.TemplateStatus.OK,
     )
 
 
@@ -666,10 +663,10 @@ def add_vm_pool(api):
             use_latest_template_version=True,
         )
     )
-    vms_service = engine.vms_service()
+    vm_service = test_utils.get_vm_service(engine, VMPOOL_NAME+'-1')
     testlib.assert_true_within_short(
         lambda:
-        vms_service.list(search=VMPOOL_NAME+'-1')[0].status == types.VmStatus.DOWN,
+        vm_service.get().status == types.VmStatus.DOWN,
         allowed_exceptions=[IndexError]
     )
 
@@ -677,8 +674,7 @@ def add_vm_pool(api):
 @testlib.with_ovirt_api4
 def update_template_version(api):
     engine = api.system_service()
-    vms_service = engine.vms_service()
-    stateless_vm = vms_service.list(search=VM1_NAME)[0]
+    stateless_vm = engine.vms_service().list(search=VM1_NAME)[0]
     templates_service = engine.templates_service()
     template = templates_service.list(search=TEMPLATE_CIRROS)[0]
 
@@ -694,32 +690,31 @@ def update_template_version(api):
             )
         )
     )
-    pools_service = engine.vm_pools_service()
+    pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
     testlib.assert_true_within_long(
         lambda:
-        pools_service.list(search=VMPOOL_NAME)[0].vm.memory == stateless_vm.memory
+        pool_service.get().vm.memory == stateless_vm.memory
     )
 
 
 @testlib.with_ovirt_api4
 def update_vm_pool(api):
-    vm_pools_service= api.system_service().vm_pools_service()
-    pool_id = vm_pools_service.list(search=VMPOOL_NAME)[0].id
-    vm_pools_service.pool_service(id=pool_id).update(
+    pool_service = test_utils.get_pool_service(api.system_service(), VMPOOL_NAME)
+    pool_service.update(
         pool=types.VmPool(
             max_user_vms=2
         )
     )
     nt.assert_true(
-        vm_pools_service.list(search=VMPOOL_NAME)[0].max_user_vms == 2
+        pool_service.get().max_user_vms == 2
     )
 
 
 @testlib.with_ovirt_api4
 def remove_vm_pool(api):
+    pool_service = test_utils.get_pool_service(api.system_service(), VMPOOL_NAME)
+    pool_service.remove()
     vm_pools_service = api.system_service().vm_pools_service()
-    pool_id = vm_pools_service.list(search=VMPOOL_NAME)[0].id
-    vm_pools_service.pool_service(id=pool_id).remove()
     nt.assert_true(
          len(vm_pools_service.list()) == 0
     )
@@ -727,8 +722,7 @@ def remove_vm_pool(api):
 
 @testlib.with_ovirt_api4
 def template_update(api):
-    templates_service = api.system_service().templates_service()
-    template_cirros = templates_service.template_service(templates_service.list(search=TEMPLATE_CIRROS)[0].id)
+    template_cirros = test_utils.get_template_service(api.system_service(), TEMPLATE_CIRROS)
 
     if template_cirros is None:
         raise SkipTest('{0}: template {1} is missing'.format(
@@ -742,13 +736,13 @@ def template_update(api):
             comment=new_comment
         )
     )
-    template_id = template_cirros.get().id
-    template_service = templates_service.template_service(template_id)
     testlib.assert_true_within_short(
         lambda:
-        template_service.get().status == types.TemplateStatus.OK
+        template_cirros.get().status == types.TemplateStatus.OK
     )
-    nt.assert_true(templates_service.list(search=TEMPLATE_CIRROS)[0].comment == new_comment)
+    nt.assert_true(
+        template_cirros.get().comment == new_comment
+    )
 
 
 @testlib.with_ovirt_api4
@@ -776,7 +770,7 @@ def hotplug_memory(api):
         )
     )
     nt.assert_true(
-        vms_service.list(search=VM0_NAME)[0].memory == new_memory
+        vm_service.get().memory == new_memory
     )
 
 
@@ -793,7 +787,7 @@ def hotplug_cpu(api):
         )
     )
     nt.assert_true(
-        vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 2
+        vm_service.get().cpu.topology.sockets == 2
     )
 
 @testlib.with_ovirt_api4
@@ -810,7 +804,7 @@ def next_run_unplug_cpu(api):
         next_run=True
     )
     nt.assert_true(
-        vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 2
+        vm_service.get().cpu.topology.sockets == 2
     )
     nt.assert_true(
         vm_service.get(next_run=True).cpu.topology.sockets == 1
@@ -818,10 +812,10 @@ def next_run_unplug_cpu(api):
     vm_service.reboot()
     testlib.assert_true_within_long(
         lambda:
-         vms_service.list(search=VM0_NAME)[0].status == types.VmStatus.UP
+         vm_service.get().status == types.VmStatus.UP
     )
     nt.assert_true(
-        vms_service.list(search=VM0_NAME)[0].cpu.topology.sockets == 1
+        vm_service.get().cpu.topology.sockets == 1
     )
 
 

@@ -135,10 +135,8 @@ def assign_labeled_network(api):
 
     # the logical network will be automatically assigned to all host network
     # interfaces with that label asynchronously
-    clusters_service = engine.clusters_service()
-    cluster = clusters_service.list(search='name={}'.format(CLUSTER_NAME))[0]
 
-    cluster_service = clusters_service.cluster_service(cluster.id)
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
         cluster_service.networks_service().add(labeled_net)
     )

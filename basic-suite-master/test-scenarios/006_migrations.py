@@ -66,28 +66,31 @@ def prepare_migration_vlan(api):
 @testlib.with_ovirt_prefix
 def migrate_vm(prefix, api):
     engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
 
-    def current_running_host():
-        vm = engine.vms_service().list(search='name={}'.format(VM0_NAME))[0]
+    def _current_running_host():
+        host_id = vm_service.get().host.id
         host = engine.hosts_service().list(
-            search='id={}'.format(vm.host.id))[0]
+            search='id={}'.format(host_id))[0]
         return host.name
 
-    src_host = current_running_host()
+    src_host = _current_running_host()
     dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
                        if h.name() != src_host])[0]
 
-    vm = engine.vms_service().list(search='name={}'.format(VM0_NAME))[0]
     # migrate() currently only returns None, but checks for errors internally
-    engine.vms_service().vm_service(vm.id).migrate(host=Host(name=dst_host))
+    vm_service.migrate(
+        host=Host(
+            name=dst_host
+        )
+    )
 
     testlib.assert_true_within_short(
-        lambda: engine.vms_service().list(
-            search='name={}'.format(VM0_NAME))[0].status == VmStatus.UP
+        lambda: vm_service.get().status == VmStatus.UP
     )
 
     nt.assert_equals(
-        current_running_host(), dst_host
+        _current_running_host(), dst_host
     )
 
 
@@ -139,10 +142,7 @@ def prepare_migration_attachments_ipv6(api):
 
 @testlib.with_ovirt_api4
 def set_postcopy_migration_policy(api):
-    engine = api.system_service()
-    cluster = engine.clusters_service().list(
-        search='name={}'.format(CLUSTER_NAME))[0]
-    cluster_service = engine.clusters_service().cluster_service(cluster.id)
+    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
     cluster_service.update(
         cluster=Cluster(
             migration=MigrationOptions(

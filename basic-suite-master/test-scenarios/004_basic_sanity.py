@@ -32,6 +32,9 @@ import ovirtsdk4.types as types
 
 import time
 
+import test_utils
+
+
 MB = 2 ** 20
 GB = 2 ** 30
 # the default MAC pool has addresses like 00:1a:4a:16:01:51
@@ -72,47 +75,6 @@ NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
 
 SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
-
-
-def _get_network_fiter_parameters_service(engine):
-    nics_service = _get_nics_service(engine)
-    nic = nics_service.list()[0]
-    return nics_service.nic_service(id=nic.id)\
-        .network_filter_parameters_service()
-
-
-def _get_nics_service(engine):
-    vm_service = _get_vm_service(engine, VM0_NAME)
-    nics_service = vm_service.nics_service()
-    return nics_service
-
-
-def _get_vm_service(engine, vmname):
-    vms_service = engine.vms_service()
-    vm = vms_service.list(search=vmname)[0]
-    if vm is None:
-        return None
-    return vms_service.vm_service(vm.id)
-
-
-def _get_disk_service(engine, diskname):
-    disks_service = engine.disks_service()
-    disk = disks_service.list(search=diskname)[0]
-    return disks_service.disk_service(disk.id)
-
-
-def _get_storage_domain_service(engine, sd_name):
-    storage_domains_service = engine.storage_domains_service()
-    sd = storage_domains_service.list(search=sd_name)[0]
-    return storage_domains_service.storage_domain_service(sd.id)
-
-
-def _get_storage_domain_vm_service_by_name(sd_service, vm_name):
-    vms_service = sd_service.vms_service()
-    # StorageDomainVmsService.list has no 'search' parameter and ignores
-    # query={'name': 'spam'} so we have to do the filtering ourselves
-    vm = next(vm for vm in vms_service.list() if vm.name == vm_name)
-    return vms_service.vm_service(vm.id)
 
 
 def _ping(ovirt_prefix, destination):
@@ -187,8 +149,8 @@ def add_nic(api):
 @testlib.with_ovirt_api4
 def add_disk(api):
     engine = api.system_service()
-    vm_service = _get_vm_service(engine, VM0_NAME)
-    glance_disk = _get_disk_service(engine, GLANCE_DISK_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
     nt.assert_true(vm_service and glance_disk)
 
     vm_service.disk_attachments_service().add(
@@ -226,7 +188,7 @@ def add_disk(api):
             )
         ]
 
-        vm_service = _get_vm_service(engine, vm_name)
+        vm_service = test_utils.get_vm_service(engine, vm_name)
         nt.assert_true(
             vm_service.disk_attachments_service().add(types.DiskAttachment(
                 disk=disk_params,
@@ -234,7 +196,7 @@ def add_disk(api):
         )
 
     for disk_name in (GLANCE_DISK_NAME, DISK1_NAME, DISK2_NAME):
-        disk_service = _get_disk_service(engine, disk_name)
+        disk_service = test_utils.get_disk_service(engine, disk_name)
         testlib.assert_true_within_short(
             lambda:
             disk_service.get().status == types.DiskStatus.OK
@@ -284,13 +246,13 @@ def add_directlun(prefix):
     )
 
     api = prefix.virt_env.engine_vm().get_api_v4()
-    vm_service = _get_vm_service(api.system_service(), VM0_NAME)
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
     disk_attachments_service = vm_service.disk_attachments_service()
     disk_attachments_service.add(types.DiskAttachment(
         disk=dlun_params,
         interface=types.DiskInterface.VIRTIO_SCSI))
 
-    disk_service = _get_disk_service(api.system_service(), DLUN_DISK_NAME)
+    disk_service = test_utils.get_disk_service(api.system_service(), DLUN_DISK_NAME)
     attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
     nt.assert_not_equal(
         attachment_service.get(),
@@ -302,7 +264,7 @@ def add_directlun(prefix):
 @testlib.with_ovirt_api4
 def snapshot_cold_merge(api):
     engine = api.system_service()
-    vm_service = _get_vm_service(engine, VM1_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
 
     if vm_service is None:
         raise SkipTest('Glance is not available')
@@ -364,7 +326,7 @@ def snapshot_cold_merge(api):
 
 @testlib.with_ovirt_api4
 def cold_storage_migration(api):
-    disk_service = _get_disk_service(api.system_service(), DISK2_NAME)
+    disk_service = test_utils.get_disk_service(api.system_service(), DISK2_NAME)
 
     # Cold migrate the disk to ISCSI storage domain and then migrate it back
     # to the NFS domain because it is used by other cases that assume the
@@ -389,8 +351,8 @@ def cold_storage_migration(api):
 @testlib.with_ovirt_api4
 def live_storage_migration(api):
     engine = api.system_service()
-    vm_service = _get_vm_service(engine, VM0_NAME)
-    disk_service = _get_disk_service(engine, DISK0_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_service.move(
         async=False,
         filter=False,
@@ -416,7 +378,7 @@ def live_storage_migration(api):
 @testlib.with_ovirt_api4
 def export_vm(api):
     engine = api.system_service()
-    vm_service = _get_vm_service(engine, VM1_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
     sd = engine.storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
 
     vm_service.export(
@@ -429,11 +391,11 @@ def export_vm(api):
 @testlib.with_ovirt_api4
 def verify_vm_exported(api):
     engine = api.system_service()
-    storage_domain_service = _get_storage_domain_service(engine, SD_TEMPLATES_NAME)
+    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
 
     testlib.assert_true_within_short(
         lambda:
-        _get_storage_domain_vm_service_by_name(
+        test_utils.get_storage_domain_vm_service_by_name(
             storage_domain_service, VM1_NAME
         ).get().status == types.VmStatus.DOWN
     )
@@ -503,7 +465,7 @@ def verify_add_vm_template(api):
 @testlib.with_ovirt_api4
 def add_filter(ovirt_api4):
     engine = ovirt_api4.system_service()
-    nics_service = _get_nics_service(engine)
+    nics_service = test_utils.get_nics_service(engine, VM0_NAME)
     nic = nics_service.list()[0]
     network = ovirt_api4.follow_link(nic.vnic_profile).network
     network_filters_service = engine.network_filters_service()
@@ -531,8 +493,8 @@ def add_filter_parameter(prefix):
     engine = prefix.virt_env.engine_vm()
     ovirt_api4 = engine.get_api(api_ver=4)
     vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
-    network_filter_parameters_service = _get_network_fiter_parameters_service(
-        ovirt_api4.system_service())
+    network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
+        ovirt_api4.system_service(), VM0_NAME)
 
     nt.assert_true(
         network_filter_parameters_service.add(
@@ -806,7 +768,7 @@ def disk_operations(api):
 def hotplug_memory(api):
     engine = api.system_service()
     vms_service = engine.vms_service()
-    vm_service = _get_vm_service(engine, VM0_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory * 2
     vm_service.update(
         vm=types.Vm(
@@ -822,7 +784,7 @@ def hotplug_memory(api):
 def hotplug_cpu(api):
     engine = api.system_service()
     vms_service = engine.vms_service()
-    vm_service = _get_vm_service(engine, VM0_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 2
     vm_service.update(
@@ -838,7 +800,7 @@ def hotplug_cpu(api):
 def next_run_unplug_cpu(api):
     engine = api.system_service()
     vms_service = engine.vms_service()
-    vm_service = _get_vm_service(engine, VM0_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 1
     vm_service.update(
@@ -877,7 +839,7 @@ def hotplug_nic(api):
 
 @testlib.with_ovirt_api4
 def hotplug_disk(api):
-    vm_service = _get_vm_service(api.system_service(), VM0_NAME)
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
     disk_attachments_service = vm_service.disk_attachments_service()
     disk_attachment = disk_attachments_service.add(
         types.DiskAttachment(
@@ -913,8 +875,8 @@ def hotplug_disk(api):
 @testlib.with_ovirt_api4
 def hotunplug_disk(api):
     engine = api.system_service()
-    vm_service = _get_vm_service(engine, VM0_NAME)
-    disk_service = _get_disk_service(engine, DISK0_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_attachments_service = vm_service.disk_attachments_service()
     disk_attachment = disk_attachments_service.attachment_service(disk_service.get().id)
 

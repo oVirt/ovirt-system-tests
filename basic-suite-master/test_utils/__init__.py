@@ -17,6 +17,45 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+def get_nics_service(engine, vm_name):
+    vm_service = get_vm_service(engine, vm_name)
+    nics_service = vm_service.nics_service()
+    return nics_service
+
+
+def get_network_fiter_parameters_service(engine, vm_name):
+    nics_service = get_nics_service(engine, vm_name)
+    nic = nics_service.list()[0]
+    return nics_service.nic_service(id=nic.id)\
+        .network_filter_parameters_service()
+
+
+def get_vm_service(engine, vm_name):
+    vms_service = engine.vms_service()
+    vm = vms_service.list(search=vm_name)[0]
+    if vm is None:
+        return None
+    return vms_service.vm_service(vm.id)
+
+
+def get_disk_service(engine, diskname):
+    disks_service = engine.disks_service()
+    disk = disks_service.list(search=diskname)[0]
+    return disks_service.disk_service(disk.id)
+
+
+def get_storage_domain_service(engine, sd_name):
+    storage_domains_service = engine.storage_domains_service()
+    sd = storage_domains_service.list(search=sd_name)[0]
+    return storage_domains_service.storage_domain_service(sd.id)
+
+
+def get_storage_domain_vm_service_by_name(sd_service, vm_name):
+    vms_service = sd_service.vms_service()
+    # StorageDomainVmsService.list has no 'search' parameter and ignores
+    # query={'name': 'spam'} so we have to do the filtering ourselves
+    vm = next(vm for vm in vms_service.list() if vm.name == vm_name)
+    return vms_service.vm_service(vm.id)
 
 
 def hosts_in_cluster_v4(root, cluster_name):

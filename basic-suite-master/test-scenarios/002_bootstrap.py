@@ -266,15 +266,34 @@ def add_cluster_4(prefix):
 
 @testlib.with_ovirt_prefix
 def add_hosts(prefix):
+    hosts = prefix.virt_env.host_vms()
+    for host in hosts:
+        host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
+
     if API_V4:
-        add_hosts_4(prefix)
+        api = prefix.virt_env.engine_vm().get_api_v4()
+        add_hosts_4(api, hosts)
     else:
-        add_hosts_3(prefix)
+        api = prefix.virt_env.engine_vm().get_api()
+        add_hosts_3(api, hosts)
 
 
-def add_hosts_3(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
+@testlib.with_ovirt_prefix
+def verify_add_hosts(prefix):
+    hosts = prefix.virt_env.host_vms()
 
+    if API_V4:
+        api = prefix.virt_env.engine_vm().get_api_v4()
+        verify_add_hosts_4(api)
+    else:
+        api = prefix.virt_env.engine_vm().get_api()
+        verify_add_hosts_3(api, hosts)
+
+    for host in hosts:
+        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+
+
+def add_hosts_3(api, hosts):
     def _add_host(vm):
         p = params.Host(
             name=vm.name(),
@@ -288,6 +307,13 @@ def add_hosts_3(prefix):
 
         return api.hosts.add(p)
 
+    vec = utils.func_vector(_add_host, [(h,) for h in hosts])
+    vt = utils.VectorThread(vec)
+    vt.start_all()
+    nt.assert_true(all(vt.join_all()))
+
+
+def verify_add_hosts_3(api, hosts):
     def _host_is_up():
         cur_state = api.hosts.get(host.name()).status.state
 
@@ -299,25 +325,12 @@ def add_hosts_3(prefix):
         if cur_state == 'non_operational':
             raise RuntimeError('Host %s is in non operational state' % host.name())
 
-    hosts = prefix.virt_env.host_vms()
-
-    for host in hosts:
-        host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
-
-    vec = utils.func_vector(_add_host, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()))
 
     for host in hosts:
         testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
-
-def add_hosts_4(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
+def add_hosts_4(api, hosts):
     hosts_service = api.system_service().hosts_service()
 
     def _add_host_4(vm):
@@ -333,6 +346,16 @@ def add_hosts_4(prefix):
                 ),
             ),
         )
+
+    for host in hosts:
+        nt.assert_true(
+            _add_host_4(host)
+        )
+
+
+def verify_add_hosts_4(api):
+    hosts_service = api.system_service().hosts_service()
+    api_hosts = hosts_service.list()
 
     def _host_is_up_4():
         host_status = host_service.get().status
@@ -350,20 +373,9 @@ def add_hosts_4(prefix):
         if host_status == sdk4.types.HostStatus.NON_RESPONSIVE:
             raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
-
-    hosts = prefix.virt_env.host_vms()
-    vec = utils.func_vector(_add_host_4, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()))
-
-    api_hosts = hosts_service.list()
     for api_host in api_hosts:
         host_service = hosts_service.host_service(api_host.id)
         testlib.assert_true_within(_host_is_up_4, timeout=15*60)
-
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
 def _add_storage_domain_3(api, p):
@@ -942,19 +954,20 @@ _TEST_LIST = [
     add_dc,
     add_cluster,
     add_hosts,
-    add_master_storage_domain,
     list_glance_images,
-    add_secondary_storage_domains,
-    import_templates,
-    run_log_collector,
-    add_non_vm_network,
-    add_vm_network,
     add_dc_quota,
     remove_default_dc,
     remove_default_cluster,
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,
+    verify_add_hosts,
+    add_master_storage_domain,
+    add_secondary_storage_domains,
+    import_templates,
+    run_log_collector,
+    add_non_vm_network,
+    add_vm_network,
 ]
 
 

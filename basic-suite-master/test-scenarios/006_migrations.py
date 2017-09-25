@@ -21,7 +21,7 @@
 from netaddr.ip import IPAddress
 import nose.tools as nt
 from ovirtlago import testlib
-from ovirtsdk4.types import Host, NetworkUsage, VmStatus
+from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
 
 import test_utils
 from test_utils import network_utils_v4
@@ -43,6 +43,8 @@ MIGRATION_NETWORK_IPv6_MASK = '64'
 
 VM0_NAME = 'vm0'
 
+# Migration policy UUIDs are hard-coded
+MIGRATION_POLICY_POSTCOPY='a7aeedb2-8d66-4e51-bb22-32595027ce71'
 
 @testlib.with_ovirt_api4
 def prepare_migration_vlan(api):
@@ -135,6 +137,23 @@ def prepare_migration_attachments_ipv6(api):
         nt.assert_equals(IPAddress(actual_address), IPAddress(ip_address))
 
 
+@testlib.with_ovirt_api4
+def set_postcopy_migration_policy(api):
+    engine = api.system_service()
+    cluster = engine.clusters_service().list(
+        search='name={}'.format(CLUSTER_NAME))[0]
+    cluster_service = engine.clusters_service().cluster_service(cluster.id)
+    cluster_service.update(
+        cluster=Cluster(
+            migration=MigrationOptions(
+                policy=MigrationPolicy(
+                    id=MIGRATION_POLICY_POSTCOPY
+                )
+            )
+        )
+    )
+
+
 _TEST_LIST = [
     prepare_migration_vlan,
 
@@ -144,6 +163,7 @@ _TEST_LIST = [
     # NOTE: IPv6 migration now trivially works, as ip6tables replace firewalld
     #       and leave ports open. See https://bugzilla.redhat.com/1414524
     prepare_migration_attachments_ipv6,
+    set_postcopy_migration_policy,
     migrate_vm,
 ]
 

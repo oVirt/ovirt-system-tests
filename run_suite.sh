@@ -59,25 +59,10 @@ Optional arguments:
     -i,--images
         Create qcow2 images of the vms that were created by the tests in SUITE
 "
-
-}
-
-ci_msg_if_fails() {
-    msg_if_fails "Failed to prepare environment on step ${1}, please contact the CI team."
-}
-
-msg_if_fails() {
-  # This text file will be passed back to gerrit
-    local repo_root_dir=$(dirname $SUITE)
-    echo "$1" > "${repo_root_dir}/failure_msg.txt"
 }
 
 
-del_failure_msg() {
-    local repo_root_dir=$(dirname $SUITE)
-    local msg_path="${repo_root_dir}/failure_msg.txt"
-    [[ -e "$msg_path" ]] && rm "$msg_path"
-}
+
 
 
 get_engine_version() {
@@ -93,7 +78,6 @@ get_engine_version() {
 
 
 env_init () {
-    ci_msg_if_fails $FUNCNAME
 
     local template_repo="${1:-$SUITE/template-repo.json}"
     local initfile="${2:-$SUITE/init.json}"
@@ -111,7 +95,6 @@ render_jinja_templates () {
 }
 
 env_repo_setup () {
-    ci_msg_if_fails $FUNCNAME
 
     local extrasrc
     declare -a extrasrcs
@@ -139,7 +122,6 @@ env_repo_setup () {
 
 
 env_start () {
-    ci_msg_if_fails $FUNCNAME
 
     cd $PREFIX
     $CLI start
@@ -147,7 +129,6 @@ env_start () {
 }
 
 env_stop () {
-    ci_msg_if_fails $FUNCNAME
 
     cd $PREFIX
     $CLI ovirt stop
@@ -156,7 +137,6 @@ env_stop () {
 
 
 env_create_images () {
-    ci_msg_if_fails $FUNCNAME
 
     local export_dir="${PWD}/exported_images"
     local engine_version=$(get_engine_version)
@@ -184,7 +164,6 @@ env_create_images () {
 
 
 env_deploy () {
-    ci_msg_if_fails "$FUNCNAME"
 
     local res=0
     cd "$PREFIX"
@@ -194,7 +173,6 @@ env_deploy () {
 }
 
 env_status () {
-    ci_msg_if_fails $FUNCNAME
 
     cd $PREFIX
     $CLI status
@@ -203,7 +181,6 @@ env_status () {
 
 
 env_run_test () {
-    msg_if_fails "Test ${1##*/} failed."
 
     local res=0
     cd $PREFIX
@@ -213,7 +190,6 @@ env_run_test () {
 }
 
 env_ansible () {
-    ci_msg_if_fails $FUNCNAME
 
     # Ensure latest Ansible modules are tested:
     rm -rf $SUITE/ovirt-deploy/library || true
@@ -491,6 +467,4 @@ if [[ ! -z "$CREATE_IMAGES" ]]; then
     logger.info "Creating images, this might take some time..."
     env_create_images
 fi
-# No error has occurred, we can delete the error msg.
-del_failure_msg
 logger.success "$SUITE - All tests passed :)"

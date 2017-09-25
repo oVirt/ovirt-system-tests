@@ -14,7 +14,6 @@ prep_suite () {
 
 
 env_repo_setup_base_version () {
-    ci_msg_if_fails $FUNCNAME
     #This function is setting up the env with stable release repo
     echo "######## Setting up repos (init)"
     cd $PREFIX #PREFIX is the dir for the lago env

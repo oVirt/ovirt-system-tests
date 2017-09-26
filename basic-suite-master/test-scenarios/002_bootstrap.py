@@ -173,6 +173,28 @@ def remove_default_dc_4(api):
     dc_service.remove()
 
 
+@testlib.with_ovirt_api4
+def update_default_dc(api):
+    dc_service = test_utils.data_center_service(api.system_service(), 'Default')
+    dc_service.update(
+        data_center=sdk4.types.DataCenter(
+            local=True
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def update_default_cluster(api):
+    cluster_service = test_utils.get_cluster_service(api.system_service(), 'Default')
+    cluster_service.update(
+        cluster=sdk4.types.Cluster(
+            cpu=sdk4.types.Cpu(
+                architecture=sdk4.types.Architecture.PPC64
+            )
+        )
+    )
+
+
 @testlib.with_ovirt_prefix
 def remove_default_cluster(prefix):
     if API_V4:
@@ -961,6 +983,8 @@ _TEST_LIST = [
     add_hosts,
     list_glance_images,
     add_dc_quota,
+    update_default_dc,
+    update_default_cluster,
     remove_default_dc,
     remove_default_cluster,
     add_quota_storage_limits,

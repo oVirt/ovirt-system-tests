@@ -45,6 +45,8 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
     artifacts:
           - /root/fluentd
+          - /var/opt/rh/rh-postgresql95/lib/pgsql/data/pg_log
+
 
 {% if not env.OST_USE_VDSMFAKE is defined %}
 {%- for i in range( env.OST_HOST_COUNT|default(hostCount)|int ) %}

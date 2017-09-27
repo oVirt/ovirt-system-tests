@@ -117,6 +117,36 @@ def _random_host_from_dc(api, dc_name=DC_NAME):
 def _random_host_from_dc_4(api, dc_name=DC_NAME):
     return _hosts_in_dc_4(api, dc_name, True)
 
+def _all_hosts_up(hosts_service, total_hosts):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+        return False
+
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    if len(up_hosts) == len(total_hosts):
+        return True
+
+    _check_problematic_hosts(hosts_service)
+
+def _single_host_up(hosts_service, total_hosts):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+        return False
+
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    if len(up_hosts):
+        return True
+
+    _check_problematic_hosts(hosts_service)
+
+def _check_problematic_hosts(hosts_service):
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational or status=installfailed'.format(DC_NAME))
+    if len(problematic_hosts):
+        dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
+        for host in problematic_hosts:
+            host_service = hosts_service.host_service(host.id)
+            dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
+        raise RuntimeError(dump_hosts)
 
 @testlib.with_ovirt_prefix
 def add_dc(prefix):
@@ -310,9 +340,9 @@ def verify_add_hosts(prefix):
     else:
         api = prefix.virt_env.engine_vm().get_api()
         verify_add_hosts_3(api, hosts)
+        for host in hosts:
+            host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
 def add_hosts_3(api, hosts):
@@ -347,7 +377,6 @@ def verify_add_hosts_3(api, hosts):
         if cur_state == 'non_operational':
             raise RuntimeError('Host %s is in non operational state' % host.name())
 
-
     for host in hosts:
         testlib.assert_true_within(_host_is_up, timeout=15 * 60)
 
@@ -377,27 +406,25 @@ def add_hosts_4(api, hosts):
 
 def verify_add_hosts_4(api):
     hosts_service = api.system_service().hosts_service()
-    api_hosts = hosts_service.list()
+    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
 
-    def _host_is_up_4():
-        host_status = host_service.get().status
+    testlib.assert_true_within_long(
+        lambda: _single_host_up(hosts_service, total_hosts)
+    )
 
-        if host_status == sdk4.types.HostStatus.INSTALLING:
-            return False
+@testlib.with_ovirt_prefix
+def verify_add_all_hosts(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    hosts_service = api.system_service().hosts_service()
+    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
 
-        if host_status == sdk4.types.HostStatus.UP:
-            return True
+    testlib.assert_true_within_long(
+        lambda: _all_hosts_up(hosts_service, total_hosts)
+    )
 
-        if host_status == sdk4.types.HostStatus.NON_OPERATIONAL:
-            raise RuntimeError('Host %s is in non operational state' % api_host.name)
-        if host_status == sdk4.types.HostStatus.INSTALL_FAILED:
-            raise RuntimeError('Host %s installation failed' % api_host.name)
-        if host_status == sdk4.types.HostStatus.NON_RESPONSIVE:
-            raise RuntimeError('Host %s is in non responsive state' % api_host.name)
-
-    for api_host in api_hosts:
-        host_service = hosts_service.host_service(api_host.id)
-        testlib.assert_true_within(_host_is_up_4, timeout=15*60)
+    hosts = prefix.virt_env.host_vms()
+    for host in hosts:
+        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
 def _add_storage_domain_3(api, p):
@@ -994,6 +1021,7 @@ _TEST_LIST = [
     add_master_storage_domain,
     add_secondary_storage_domains,
     import_templates,
+    verify_add_all_hosts,
     run_log_collector,
     add_non_vm_network,
     add_vm_network,

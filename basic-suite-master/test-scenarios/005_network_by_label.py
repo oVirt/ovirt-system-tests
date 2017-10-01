@@ -60,11 +60,12 @@ def assign_hosts_network_label(api):
 
     def _assign_host_network_label(host):
         host_service = engine.hosts_service().host_service(id=host.id)
-        nics = sorted(host_service.nics_service().list(),
+        nics_service = host_service.nics_service()
+        nics = sorted(nics_service.list(),
                       key=lambda n: n.name)
         nt.assert_greater_equal(len(nics), 1)
         nic = nics[0]
-        nic_service = host_service.nics_service().nic_service(id=nic.id)
+        nic_service = nics_service.nic_service(id=nic.id)
         labels_service = nic_service.network_labels_service()
         return labels_service.add(
                 NetworkLabel(
@@ -85,8 +86,6 @@ def add_labeled_network(api):
     """
     Creates a labeled network
     """
-    engine = api.system_service()
-
     # create network
     labeled_net = Network(
         name=LABELED_NET_NAME,
@@ -102,10 +101,11 @@ def add_labeled_network(api):
             id=LABELED_NET_VLAN_ID,
         ),
     )
-    net = engine.networks_service().add(labeled_net)
+    networks_service = api.system_service().networks_service()
+    net = networks_service.add(labeled_net)
     nt.assert_true(net)
 
-    network_service = engine.networks_service().network_service(id=net.id)
+    network_service = networks_service.network_service(id=net.id)
     labels_service = network_service.network_labels_service()
 
     # assign label to the network
@@ -141,8 +141,9 @@ def assign_labeled_network(api):
         cluster_service.networks_service().add(labeled_net)
     )
 
+    hosts_service = engine.hosts_service()
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
-        host_service = engine.hosts_service().host_service(id=host.id)
+        host_service = hosts_service.host_service(id=host.id)
         testlib.assert_true_within_short(
             functools.partial(_host_is_attached_to_network, engine,
                               host_service, LABELED_NET_NAME))

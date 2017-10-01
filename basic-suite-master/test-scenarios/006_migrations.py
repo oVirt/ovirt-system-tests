@@ -67,10 +67,11 @@ def prepare_migration_vlan(api):
 def migrate_vm(prefix, api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    hosts_service = engine.hosts_service()
 
     def _current_running_host():
         host_id = vm_service.get().host.id
-        host = engine.hosts_service().list(
+        host = hosts_service.list(
             search='id={}'.format(host_id))[0]
         return host.name
 
@@ -97,11 +98,12 @@ def migrate_vm(prefix, api):
 @testlib.with_ovirt_api4
 def prepare_migration_attachments_ipv4(api):
     engine = api.system_service()
+    hosts_service = engine.hosts_service()
 
     for index, host in enumerate(
             test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),
             start=1):
-        host_service = engine.hosts_service().host_service(id=host.id)
+        host_service = hosts_service.host_service(id=host.id)
 
         ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
 
@@ -120,11 +122,12 @@ def prepare_migration_attachments_ipv4(api):
 @testlib.with_ovirt_api4
 def prepare_migration_attachments_ipv6(api):
     engine = api.system_service()
+    hosts_service = engine.hosts_service()
 
     for index, host in enumerate(
             test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),
             start=1):
-        host_service = engine.hosts_service().host_service(id=host.id)
+        host_service = hosts_service.host_service(id=host.id)
 
         ip_address = MIGRATION_NETWORK_IPv6_ADDR.format(index)
 

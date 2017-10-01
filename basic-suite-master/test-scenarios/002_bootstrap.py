@@ -167,10 +167,7 @@ def remove_default_dc_3(api):
 
 
 def remove_default_dc_4(api):
-    dcs_service = api.system_service().data_centers_service()
-    search_query='name=Default'
-    dc = dcs_service.list(search=search_query)[0]
-    dc_service = dcs_service.data_center_service(dc.id)
+    dc_service = test_utils.data_center_service(api.system_service(), 'Default')
     dc_service.remove()
 
 
@@ -189,10 +186,7 @@ def remove_default_cluster_3(api):
 
 
 def remove_default_cluster_4(api):
-    clusters_services = api.system_service().clusters_service()
-    search_query='name=Default'
-    cluster=clusters_services.list(search=search_query)[0]
-    cl_service = clusters_services.cluster_service(cluster.id)
+    cl_service = test_utils.get_cluster_service(api.system_service(), 'Default')
     cl_service.remove()
 
 
@@ -413,9 +407,7 @@ def _add_storage_domain_4(api, p):
         lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
     )
 
-    dcs_service = system_service.data_centers_service()
-    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
-    dc_service = dcs_service.data_center_service(dc.id)
+    dc_service = test_utils.data_center_service(system_service, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
     attached_sds_service.add(
         sdk4.types.StorageDomain(

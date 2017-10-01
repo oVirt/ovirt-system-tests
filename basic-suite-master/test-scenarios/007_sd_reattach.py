@@ -53,8 +53,7 @@ def _get_vm_service(root, name, unregistered=None):
 
 @testlib.with_ovirt_api4
 def deactivate_storage_domain(connection):
-    engine = connection.system_service()
-    dc = test_utils.data_center_service(engine, DC_NAME)
+    dc = test_utils.data_center_service(connection.system_service(), DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).deactivate()
 

@@ -565,7 +565,7 @@ def add_secondary_storage_domains(prefix):
 def add_iscsi_storage_domain(prefix):
     ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
     nt.assert_equals(ret.code, 0)
-    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
+    lun_guids = ret.out.splitlines()[0:SD_ISCSI_NR_LUNS-1]
 
     if API_V4:
         add_iscsi_storage_domain_4(prefix, lun_guids)

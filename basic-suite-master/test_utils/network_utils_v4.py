@@ -45,8 +45,8 @@ def attach_network_to_host(host, nic_name, network_name, ip_configuration,
 
 def detach_network_from_host(engine, host, network_name, bond_name=None):
     network_id = engine.networks_service().list(
-        search='name={}'.format(
-            test_utils.quote_search_string(network_name)))[0].id
+        search=u'name={}'.format(
+            test_utils.quote_search_string(network_name)).encode('utf-8'))[0].id
 
     attachment = _get_attachment_by_id(host, network_id)
     bonds = [nic for nic in host.nics_service().list() if bond_name and
@@ -60,8 +60,8 @@ def detach_network_from_host(engine, host, network_name, bond_name=None):
 
 def modify_ip_config(engine, host, network_name, ip_configuration):
     network_id = engine.networks_service().list(
-        search='name={}'.format(
-            test_utils.quote_search_string(network_name)))[0].id
+        search=u'name={}'.format(
+            test_utils.quote_search_string(network_name)).encode('utf-8'))[0].id
 
     attachment = _get_attachment_by_id(host, network_id)
     attachment.ip_address_assignments = ip_configuration
@@ -115,8 +115,8 @@ def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
     cluster_service = clusters_service.cluster_service(cluster.id)
 
     network = engine.networks_service().list(
-        search='name={}'.format(
-            test_utils.quote_search_string(network_name)))[0]
+        search=u'name={}'.format(
+            test_utils.quote_search_string(network_name)).encode('utf-8'))[0]
     network_service = cluster_service.networks_service().network_service(
         id=network.id)
 
@@ -132,8 +132,8 @@ def set_network_required_in_cluster(engine, network_name, cluster_name,
     cluster_service = clusters_service.cluster_service(cluster.id)
 
     network = engine.networks_service().list(
-        search='name={}'.format(
-            test_utils.quote_search_string(network_name)))[0]
+        search=u'name={}'.format(
+            test_utils.quote_search_string(network_name)).encode('utf-8'))[0]
     network_service = cluster_service.networks_service().network_service(
         id=network.id)
 

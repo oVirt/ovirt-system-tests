@@ -83,7 +83,7 @@ TEMPLATE_CIRROS = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_template'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
-VM_NETWORK = 'VM Network with a very long name and עברית'
+VM_NETWORK = u'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
 

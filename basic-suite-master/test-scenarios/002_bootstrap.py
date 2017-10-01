@@ -78,6 +78,8 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
 CIRROS_IMAGE_NAME = 'CirrOS 0.3.5 for x86_64'
+GLANCE_DISK_NAME = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_disk'
+TEMPLATE_CIRROS = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_template'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -509,27 +511,29 @@ def add_secondary_storage_domains(prefix):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
-                functools.partial(import_non_template_from_glance, prefix) if GLANCE_AVAIL else None,
-                functools.partial(import_template_from_glance, prefix) if GLANCE_AVAIL else None,
                 functools.partial(add_nfs_storage_domain, prefix),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 # Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(add_second_nfs_storage_domain, prefix),
+                functools.partial(import_non_template_from_glance, prefix),
+                functools.partial(import_template_from_glance, prefix),
+
             ],
         )
     else:
         vt = utils.VectorThread(
             [
-                functools.partial(import_non_template_from_glance, prefix) if GLANCE_AVAIL else None,
-                functools.partial(import_template_from_glance, prefix) if GLANCE_AVAIL else None,
                 functools.partial(add_iscsi_storage_domain, prefix),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 #Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
                 functools.partial(add_second_nfs_storage_domain, prefix),
+                functools.partial(import_non_template_from_glance, prefix),
+                functools.partial(import_template_from_glance, prefix),
+
             ],
         )
     vt.start_all()
@@ -680,9 +684,14 @@ def generic_import_from_glance(prefix, image_name=CIRROS_IMAGE_NAME, as_template
         target_image.import_image(import_action)
     )
 
-    testlib.assert_true_within_long(
-        lambda: api.disks.get(disk_name).status.state == 'ok',
-    )
+
+
+@testlib.with_ovirt_api
+def verify_glance_import(api):
+    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_CIRROS):
+        testlib.assert_true_within_long(
+            lambda: api.disks.get(disk_name).status.state == 'ok',
+        )
 
 
 @testlib.with_ovirt_prefix
@@ -964,6 +973,7 @@ _TEST_LIST = [
     run_log_collector,
     add_non_vm_network,
     add_vm_network,
+    verify_glance_import,
 ]
 
 

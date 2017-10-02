@@ -11,26 +11,6 @@ vm-common-settings: &vm-common-settings
     artifacts:
       - /var/log
 
-vdsm-host-settings: &vdsm-host-settings
-    <<: *vm-common-settings
-    vm-type: ovirt-host
-    memory: 2047
-    nics:
-      - net: lago-{{ env.suite_name }}-net-management
-      - net: lago-{{ env.suite_name }}-net-storage
-      - net: lago-{{ env.suite_name }}-net-bonding
-      - net: lago-{{ env.suite_name }}-net-bonding
-    disks:
-      - template_name: {{ templates.host }}
-        type: template
-        name: root
-        dev: vda
-        format: qcow2
-    metadata:
-      deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
-
 domains:
   lago-{{ env.suite_name }}-engine:
     <<: *vm-common-settings
@@ -66,12 +46,30 @@ domains:
     artifacts:
       - /var/log
       - /root/fluentd
-
-{% for i in range(hostCount) %}
+{%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
-    <<: *vdsm-host-settings
-{% endfor %}
-
+    <<: *vm-common-settings
+    vm-type: ovirt-host
+    memory: 2047
+    nics:
+      - net: lago-{{ env.suite_name }}-net-management
+      - net: lago-{{ env.suite_name }}-net-storage
+      - net: lago-{{ env.suite_name }}-net-bonding
+      - net: lago-{{ env.suite_name }}-net-bonding
+    disks:
+      - template_name: {{ templates.host }}
+        type: template
+        name: root
+        dev: vda
+        format: qcow2
+    metadata:
+      deploy-scripts:
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+        {% if loop.first -%}
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_1st_host_el7.sh
+        {%- endif %}
+{%- endfor %}
 nets:
   lago-{{ env.suite_name }}-net-management:
     <<: *nat-settings

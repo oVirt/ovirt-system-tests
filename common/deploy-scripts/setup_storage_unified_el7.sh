@@ -149,6 +149,7 @@ configure_firewalld() {
         firewall-cmd --permanent --add-service=ldap
         firewall-cmd --permanent --add-service=nfs
         firewall-cmd --permanent --add-service=ntp
+        firewall-cmd --reload
     fi
 }
 

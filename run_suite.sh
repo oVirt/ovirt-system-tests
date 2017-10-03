@@ -124,8 +124,14 @@ env_repo_setup () {
     if [[ -e "$CUSTOM_REPOSYNC" ]]; then
         reposync_conf="$CUSTOM_REPOSYNC"
     fi
+    if [[ -n "$SKIP_SYNC" ]]; then
+        skipsync="--skip-sync"
+    else
+        skipsync=""
+    fi
     logger.info "Using reposync config file: $reposync_conf"
     http_proxy="" $CLI ovirt reposetup \
+        $skipsync \
         --reposync-yum-config "$reposync_conf" \
         "${extrasrcs[@]}"
     cd -

@@ -1,0 +1,4 @@
+templates:
+  engine: el7.4-base
+  host: el7.4-base
+hostCount: 2

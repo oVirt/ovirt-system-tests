@@ -148,6 +148,10 @@ def _check_problematic_hosts(hosts_service):
             dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
         raise RuntimeError(dump_hosts)
 
+def get_default_ovn_provider(api):
+    return api.system_service().openstack_network_providers_service().list()[0]
+
+
 @testlib.with_ovirt_prefix
 def add_dc(prefix):
     if API_V4:
@@ -311,6 +315,11 @@ def add_cluster_4(prefix):
                     name=DC_NAME,
                 ),
                 ballooning_enabled=True,
+                external_network_providers=[
+                    sdk4.types.ExternalProvider(
+                        id=get_default_ovn_provider(api).id,
+                    )
+               ],
             ),
         )
     )

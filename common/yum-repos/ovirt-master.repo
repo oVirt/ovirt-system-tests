@@ -435,14 +435,6 @@ exclude=
  python2-fluent-logger-tests
 max_connections=10
 
-[copr-sac-gdeploy-el7]
-name=Copr repo for gdeploy owned by sac
-baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gdeploy/epel-7-x86_64/
-gpgcheck=0
-enabled=1
-#This repo should be updated/removed once gdeploy will be officially accepted to Fedora/RHEL
-#Fedora bug: https://bugzilla.redhat.com/show_bug.cgi?id=1344276
-
 [centos-sclo-rh-release-el7]
 name=CentOS-7 - SCLo rh
 baseurl=http://mirror.centos.org/centos/7/sclo/x86_64/rh

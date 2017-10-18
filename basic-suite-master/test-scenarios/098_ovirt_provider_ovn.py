@@ -26,7 +26,13 @@ import urlparse
 import nose.tools as nt
 
 from ovirtlago import testlib
+from ovirtsdk4 import types
 
+import test_utils
+
+
+VM0_NAME = 'vm0'
+CLUSTER_NAME = 'test-cluster'
 
 OVN_PROVIDER_TOKEN_URL = 'https://{hostname}:35357/v2.0/tokens/'
 OVN_PROVIDER_NETWORKS_URL = 'https://{hostname}:9696/v2.0/networks/'
@@ -349,6 +355,20 @@ def _remove_network_from_ovirt(api, datacenter_id, network_id):
     network_service.remove()
 
 
+def _add_network_to_cluster(api, datacenter_id, ovirt_network_id):
+    cluster_service = test_utils.get_cluster_service(
+        api.system_service(), CLUSTER_NAME)
+
+    nt.assert_true(
+        cluster_service.networks_service().add(
+            network=types.Network(
+                id=ovirt_network_id,
+                required=False
+            ),
+        )
+    )
+
+
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def test_ovn_provider_rest(prefix, api):
@@ -385,6 +405,7 @@ def test_ovn_provider_rest(prefix, api):
     datacenter_id = _get_datacenter_id(api)
     _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
     ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)
+    _add_network_to_cluster(api, datacenter_id, ovirt_network_id)
     _remove_network_from_ovirt(api, datacenter_id, ovirt_network_id)
 
     _delete_port(token_id, engine_ip, port1_id)

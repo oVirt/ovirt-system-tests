@@ -174,7 +174,7 @@ def add_dc_3(api):
 def add_dc_4(api):
     dcs_service = api.system_service().data_centers_service()
     nt.assert_true(
-         dcs_service.add(
+        dcs_service.add(
             sdk4.types.DataCenter(
                 name=DC_NAME,
                 description='APIv4 DC',

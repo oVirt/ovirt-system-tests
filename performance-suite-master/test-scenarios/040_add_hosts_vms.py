@@ -134,6 +134,37 @@ def _random_host_from_dc(api, dc_name=DC_NAME):
 def _random_host_from_dc_4(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc_4(api, dc_name))
 
+def _all_hosts_up(hosts_service, total_hosts):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+        return False
+
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    if len(up_hosts) == len(total_hosts):
+        return True
+
+    _check_problematic_hosts(hosts_service)
+
+def _single_host_up(hosts_service, total_hosts):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+        return False
+
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    if len(up_hosts):
+        return True
+
+    _check_problematic_hosts(hosts_service)
+
+def _check_problematic_hosts(hosts_service):
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational or status=installfailed'.format(DC_NAME))
+    if len(problematic_hosts):
+        dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
+        for host in problematic_hosts:
+            host_service = hosts_service.host_service(host.id)
+            dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
+        raise RuntimeError(dump_hosts)
+
 
 @testlib.with_ovirt_prefix
 def add_dc(prefix):
@@ -210,10 +241,19 @@ def get_fake_hosts():
 
 @testlib.with_ovirt_prefix
 def add_hosts(prefix):
+    hosts = get_fake_hosts() if USE_VDSMFAKE else prefix.virt_env.host_vms()
+    if not USE_VDSMFAKE:
+        for host in hosts:
+            host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
+
     api = prefix.virt_env.engine_vm().get_api_v4()
+    add_hosts_4(api, hosts)
+
+
+def add_hosts_4(api, hosts):
     hosts_service = api.system_service().hosts_service()
 
-    def _add_host(vm):
+    def _add_host_4(vm):
         return hosts_service.add(
             sdk4.types.Host(
                 name=vm.name(),
@@ -227,31 +267,40 @@ def add_hosts(prefix):
             ),
         )
 
-    def _host_is_up():
-        host_service = hosts_service.host_service(api_host.id)
-        host_obj = host_service.get()
-        if host_obj.status == sdk4.types.HostStatus.UP:
-            return True
+    for host in hosts:
+        nt.assert_true(
+            _add_host_4(host)
+        )
 
-        if host_obj.status == sdk4.types.HostStatus.NON_OPERATIONAL:
-            raise RuntimeError('Host %s is in non operational state' % api_host.name)
-        if host_obj.status == sdk4.types.HostStatus.INSTALL_FAILED:
-            raise RuntimeError('Host %s installation failed' % api_host.name)
-        if host_obj.status == sdk4.types.HostStatus.NON_RESPONSIVE:
-            raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
-    hosts = get_fake_hosts() if USE_VDSMFAKE else prefix.virt_env.host_vms()
-    vec = utils.func_vector(_add_host, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()))
+@testlib.with_ovirt_prefix
+def verify_add_hosts(prefix):
+    hosts = prefix.virt_env.host_vms()
 
-    api_hosts = hosts_service.list()
-    for api_host in api_hosts:
-        testlib.assert_true_within(_host_is_up, timeout=15*60)
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    verify_add_hosts_4(api)
+
+
+def verify_add_hosts_4(api):
+    hosts_service = api.system_service().hosts_service()
+    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+
+    testlib.assert_true_within_long(
+        lambda: _single_host_up(hosts_service, total_hosts)
+    )
+
+@testlib.with_ovirt_prefix
+def verify_add_all_hosts(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    hosts_service = api.system_service().hosts_service()
+    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+
+    testlib.assert_true_within_long(
+        lambda: _all_hosts_up(hosts_service, total_hosts)
+    )
 
     if not USE_VDSMFAKE:
-        for host in hosts:
+        for host in prefix.virt_env.host_vms():
             host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
@@ -786,9 +835,11 @@ _TEST_LIST = [
     add_dc,
     add_cluster,
     add_hosts,
+    verify_add_hosts,
     add_master_storage_domain,
     list_glance_images,
     add_vm_template,
+    verify_add_all_hosts,
     add_vms,
 ]
 

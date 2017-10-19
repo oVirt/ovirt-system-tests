@@ -33,6 +33,7 @@ import test_utils
 
 VM0_NAME = 'vm0'
 CLUSTER_NAME = 'test-cluster'
+IFACE_NAME = 'eth2'
 
 OVN_PROVIDER_TOKEN_URL = 'https://{hostname}:35357/v2.0/tokens/'
 OVN_PROVIDER_NETWORKS_URL = 'https://{hostname}:9696/v2.0/networks/'
@@ -369,6 +370,36 @@ def _add_network_to_cluster(api, datacenter_id, ovirt_network_id):
     )
 
 
+def _hotplug_network_to_vm(api, vm_name, network_name, iface_name):
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search=vm_name)[0]
+
+    profiles_service = api.system_service().vnic_profiles_service()
+    profile = next(profile for profile in profiles_service.list() if profile.name == network_name)
+
+    nics_service = vms_service.vm_service(vm.id).nics_service()
+    nics_service.add(
+        types.Nic(
+            name=iface_name,
+            vnic_profile=types.VnicProfile(
+                id=profile.id,
+            ),
+        ),
+    )
+
+
+def _remove_iface_from_vm(api, vm_name, iface_name):
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search=vm_name)[0]
+
+    nics_service = vms_service.vm_service(vm.id).nics_service()
+    nic = next(nic for nic in nics_service.list() if nic.name == iface_name)
+
+    nic_service = nics_service.nic_service(nic.id)
+    nic_service.deactivate()
+    nic_service.remove()
+
+
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def test_ovn_provider_rest(prefix, api):
@@ -406,6 +437,8 @@ def test_ovn_provider_rest(prefix, api):
     _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
     ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)
     _add_network_to_cluster(api, datacenter_id, ovirt_network_id)
+    _hotplug_network_to_vm(api, VM0_NAME, NETWORK_1, IFACE_NAME)
+    _remove_iface_from_vm(api, VM0_NAME, IFACE_NAME)
     _remove_network_from_ovirt(api, datacenter_id, ovirt_network_id)
 
     _delete_port(token_id, engine_ip, port1_id)

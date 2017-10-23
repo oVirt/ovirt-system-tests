@@ -395,7 +395,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
-def test_ovn_provider_rest(prefix, api):
+def use_ovn_provider(prefix, api):
     engine = api.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
     token_id = _get_auth_token(engine_ip)
@@ -443,7 +443,7 @@ def test_ovn_provider_rest(prefix, api):
 
 
 _TEST_LIST = [
-    test_ovn_provider_rest,
+    use_ovn_provider,
 ]
 
 

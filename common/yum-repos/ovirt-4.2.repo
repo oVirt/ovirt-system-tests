@@ -7,7 +7,7 @@ gpgcheck=0
 [ovirt-4.2-tested-el7]
 name=oVirt 4.2 tested
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
-enabled=0
+enabled=1
 max_connections=10
 exclude = *-debuginfo
  *-devel

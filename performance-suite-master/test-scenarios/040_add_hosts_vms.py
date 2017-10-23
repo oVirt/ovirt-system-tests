@@ -22,27 +22,21 @@ import os
 import random
 
 import nose.tools as nt
-import ovirtsdk4 as sdk4
-from lago import utils
 from nose import SkipTest
-from ovirtlago import testlib
-
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
 
+# TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
+import ovirtsdk4 as sdk4
+
+from lago import utils
+from ovirtlago import testlib
+
+import test_utils
+from test_utils import network_utils_v4
+
 API_V4 = True
 MB = 2 ** 20
-
-# Simulate Hosts and Vms
-USE_VDSMFAKE = os.environ.has_key('OST_USE_VDSMFAKE')
-VMS_COUNT = int(os.environ.get('OST_VM_COUNT', 100))
-HOST_COUNT = int(os.environ.get('OST_HOST_COUNT', 10))
-VM_NAME = "vm"
-VM_TEMPLATE = "template"
-POOL_NAME = "pool"
-TEMPLATE_BLANK = 'Blank'
-VM1_NAME='vm1'
-GLANCE_IMAGE_TO_IMPORT = 'CirrOS 0.3.4 for x86_64'
 
 # DC/Cluster
 DC_NAME = 'performance-dc'
@@ -54,6 +48,17 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 
 # Storage
 MASTER_SD_TYPE = 'nfs'
+
+# Simulate Hosts and Vms
+USE_VDSMFAKE = os.environ.has_key('OST_USE_VDSMFAKE')
+VMS_COUNT = int(os.environ.get('OST_VM_COUNT', 100))
+HOST_COUNT = int(os.environ.get('OST_HOST_COUNT', 10))
+VM_NAME = "vm"
+VM_TEMPLATE = "template"
+POOL_NAME = "pool"
+TEMPLATE_BLANK = 'Blank'
+VM1_NAME='vm1'
+GLANCE_IMAGE_TO_IMPORT = 'CirrOS 0.3.5 for x86_64'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
@@ -77,7 +82,9 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
+CIRROS_IMAGE_NAME = 'CirrOS 0.3.5 for x86_64'
+GLANCE_DISK_NAME = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_disk'
+TEMPLATE_CIRROS = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_template'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -111,6 +118,8 @@ def vdsmfake_setup(prefix):
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
+def _get_host_all_ips(prefix, host_name):
+    return prefix.virt_env.get_vm(host_name).all_ips()
 
 def _hosts_in_dc(api, dc_name=DC_NAME):
     hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
@@ -118,21 +127,21 @@ def _hosts_in_dc(api, dc_name=DC_NAME):
         return sorted(hosts, key=lambda host: host.name)
     raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
 
-
-def _hosts_in_dc_4(api, dc_name=DC_NAME):
+def _hosts_in_dc_4(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if hosts:
-        return sorted(hosts, key=lambda host: host.name)
+        if random_host:
+            return random.choice(hosts)
+        else:
+            return sorted(hosts, key=lambda host: host.name)
     raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
-
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc(api, dc_name))
 
-
 def _random_host_from_dc_4(api, dc_name=DC_NAME):
-    return random.choice(_hosts_in_dc_4(api, dc_name))
+    return _hosts_in_dc_4(api, dc_name, True)
 
 def _all_hosts_up(hosts_service, total_hosts):
     installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
@@ -304,45 +313,17 @@ def verify_add_all_hosts(prefix):
             host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
-def _add_storage_domain_3(api, p):
-    dc = api.datacenters.get(DC_NAME)
-    sd = api.storagedomains.add(p)
-    nt.assert_true(sd)
-    nt.assert_true(
-        api.datacenters.get(
-            DC_NAME,
-        ).storagedomains.add(
-            api.storagedomains.get(
-                sd.name,
-            ),
-        )
-    )
-
-    if dc.storagedomains.get(sd.name).status.state == 'maintenance':
-        sd.activate()
-    testlib.assert_true_within_long(
-        lambda: dc.storagedomains.get(sd.name).status.state == 'active'
-    )
-
-
 def _add_storage_domain_4(api, p):
-    sds_service = api.system_service().storage_domains_service()
+    system_service = api.system_service()
+    sds_service = system_service.storage_domains_service()
     sd = sds_service.add(p)
 
     sd_service = sds_service.storage_domain_service(sd.id)
-
-    def _is_sd_unattached():
-        usd = sd_service.get()
-        if usd.status == sdk4.types.StorageDomainStatus.UNATTACHED:
-            return True
-
     testlib.assert_true_within_long(
-        _is_sd_unattached
+        lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
     )
 
-    dcs_service = api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
-    dc_service = dcs_service.data_center_service(dc.id)
+    dc_service = test_utils.data_center_service(system_service, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
     attached_sds_service.add(
         sdk4.types.StorageDomain(
@@ -351,14 +332,8 @@ def _add_storage_domain_4(api, p):
     )
 
     attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-
-    def _is_sd_active():
-        asd = attached_sd_service.get()
-        if asd.status == sdk4.types.StorageDomainStatus.ACTIVE:
-            return True
-
     testlib.assert_true_within_long(
-        _is_sd_active
+        lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
     )
 
 
@@ -371,16 +346,16 @@ def add_master_storage_domain(prefix):
 
 
 def add_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
+    add_generic_nfs_storage_domain_4(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
 
 
 # TODO: add this over the storage network and with IPv6
 def add_second_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_SECOND_NFS_NAME,
+    add_generic_nfs_storage_domain_4(prefix, SD_SECOND_NFS_NAME,
                                    SD_NFS_HOST_NAME, SD_SECOND_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
+def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':
@@ -417,67 +392,60 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
 
 
 def add_iscsi_storage_domain(prefix):
-    # FIXME
-    # if API_V4:
-    #    return add_iscsi_storage_domain_4(prefix)
-
-    api = prefix.virt_env.engine_vm().get_api()
-
-    # Find LUN GUIDs
     ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
     nt.assert_equals(ret.code, 0)
+    lun_guids = ret.out.splitlines()[0:SD_ISCSI_NR_LUNS-1]
 
-    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
+    add_iscsi_storage_domain_4(prefix, lun_guids)
 
-    p = params.StorageDomain(
+def add_iscsi_storage_domain_4(prefix, lun_guids):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+
+    ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
+    luns = []
+    for lun_id in lun_guids:
+        for ip in ips:
+            lun=sdk4.types.LogicalUnit(
+                id=lun_id,
+                address=ip,
+                port=SD_ISCSI_PORT,
+                target=SD_ISCSI_TARGET,
+                username='username',
+                password='password',
+            )
+            luns.append(lun)
+
+    p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
-        data_center=params.DataCenter(
+        description='iSCSI Storage Domain',
+        type=sdk4.types.StorageDomainType.DATA,
+        discard_after_delete=True,
+        data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
-        type_='data',
-        storage_format=SD_FORMAT,
-        host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='iscsi',
-            volume_group=params.VolumeGroup(
-                logical_unit=[
-                    params.LogicalUnit(
-                        id=lun_id,
-                        address=_get_host_ip(
-                            prefix,
-                            SD_ISCSI_HOST_NAME,
-                        ),
-                        port=SD_ISCSI_PORT,
-                        target=SD_ISCSI_TARGET,
-                        username='username',
-                        password='password',
-                    ) for lun_id in lun_guids
-                ]
-
+        host=_random_host_from_dc_4(api, DC_NAME),
+        storage_format=sdk4.types.StorageFormat.V4,
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.ISCSI,
+            override_luns=True,
+            volume_group=sdk4.types.VolumeGroup(
+                logical_units=luns
             ),
         ),
     )
-    _add_storage_domain_3(api, p)
 
-
-def add_iscsi_storage_domain_4(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-
-    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
-    #FIXME
+    _add_storage_domain_4(api, p)
 
 
 def add_iso_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
+    add_generic_nfs_storage_domain_4(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
 
 
 def add_templates_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
+    add_generic_nfs_storage_domain_4(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
 
 
-@testlib.with_ovirt_api4
+@testlib.with_ovirt_api
 def import_templates(api):
     #TODO: Fix the exported domain generation
     raise SkipTest('Exported domain generation not supported yet')
@@ -502,7 +470,8 @@ def import_templates(api):
         )
 
 
-def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+def generic_import_from_glance(prefix, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
+    api = prefix.virt_env.engine_vm().get_api()
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     target_image = glance_provider.images.get(name=image_name)
     disk_name = image_name.replace(" ", "_") + image_ext
@@ -527,9 +496,14 @@ def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=Fa
         target_image.import_image(import_action)
     )
 
-    testlib.assert_true_within_long(
-        lambda: api.disks.get(disk_name).status.state == 'ok',
-    )
+
+
+@testlib.with_ovirt_api
+def verify_glance_import(api):
+    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_CIRROS):
+        testlib.assert_true_within_long(
+            lambda: api.disks.get(disk_name).status.state == 'ok',
+        )
 
 
 @testlib.with_ovirt_prefix
@@ -565,19 +539,20 @@ def list_glance_images_3(api):
 def list_glance_images_4(api):
     global GLANCE_AVAIL
     search_query = 'name={}'.format(SD_GLANCE_NAME)
-    glance_domain_list = api.system_service().storage_domains_service().list(search=search_query)
+    storage_domains_service = api.system_service().storage_domains_service()
+    glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
         openstack_glance = add_glance_4(api)
         if not openstack_glance:
             raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
-        glance_domain_list = api.system_service().storage_domains_service().list(search=search_query)
+        glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not check_glance_connectivity_4(api):
         raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_4.__name__ )
 
     glance_domain = glance_domain_list.pop()
-    glance_domain_service = api.system_service().storage_domains_service().storage_domain_service(glance_domain.id)
+    glance_domain_service = storage_domains_service.storage_domain_service(glance_domain.id)
 
     try:
         all_images = glance_domain_service.images_service().list()
@@ -680,20 +655,18 @@ def check_glance_connectivity_4(api):
 
 
 def import_non_template_from_glance(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
-    generic_import_from_glance(api)
+    generic_import_from_glance(prefix)
 
 
 def import_template_from_glance(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
+    generic_import_from_glance(prefix, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
 
 
-@testlib.with_ovirt_api4
+@testlib.with_ovirt_api
 def set_dc_quota_audit(api):
     dc = api.datacenters.get(name=DC_NAME)
     dc.set_quota_mode('audit')
@@ -702,7 +675,7 @@ def set_dc_quota_audit(api):
     )
 
 
-@testlib.with_ovirt_api4
+@testlib.with_ovirt_api
 def add_quota_storage_limits(api):
     dc = api.datacenters.get(DC_NAME)
     quota = dc.quotas.get(name=DC_QUOTA_NAME)
@@ -712,7 +685,7 @@ def add_quota_storage_limits(api):
     )
 
 
-@testlib.with_ovirt_api4
+@testlib.with_ovirt_api
 def add_quota_cluster_limits(api):
     dc = api.datacenters.get(DC_NAME)
     quota = dc.quotas.get(name=DC_QUOTA_NAME)
@@ -837,7 +810,6 @@ _TEST_LIST = [
     add_hosts,
     verify_add_hosts,
     add_master_storage_domain,
-    list_glance_images,
     add_vm_template,
     verify_add_all_hosts,
     add_vms,

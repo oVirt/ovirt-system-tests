@@ -104,7 +104,16 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  libXxf86vm lksctp-tools log4j lsof lzop m2crypto mailcap make
  mdadm mesa-libEGL mesa-libgbm mesa-libGL mesa-libglapi mod_ssl mom msv-msv
  msv-xsdlib mtools netcf-libs netpbm netpbm-progs
- nfs-utils nmap-ncat
+ nfs-utils nmap-ncat libvirt-client libvirt-daemon libvirt-daemon-config-nwfilter
+ libvirt-daemon-driver-interface libvirt-daemon-driver-network
+ libvirt-daemon-driver-nodedev libvirt-daemon-driver-nwfilter
+ libvirt-daemon-driver-qemu libvirt-daemon-driver-secret
+ libvirt-daemon-driver-storage libvirt-daemon-driver-storage-core
+ libvirt-daemon-driver-storage-disk libvirt-daemon-driver-storage-gluster
+ libvirt-daemon-driver-storage-iscsi libvirt-daemon-driver-storage-logical
+ libvirt-daemon-driver-storage-mpath libvirt-daemon-driver-storage-rbd
+ libvirt-daemon-driver-storage-scsi libvirt-daemon-kvm libvirt-libs
+ libvirt-lock-sanlock libvirt-python
  nspr nss nss-pem nss-sysinit nss-tools nss-util ntp ntpdate numactl numad numpy
  objectweb-asm OpenIPMI-modalias openldap openldap-clients openssl openssl-libs
  pango pcsc-lite-libs perl perl-Business-ISBN perl-Business-ISBN-Data perl-Carp
@@ -137,7 +146,8 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  xfsprogs xml-commons-apis xml-commons-resolver xmlgraphics-commons
  xmlrpc-client xmlrpc-common xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3
  xz-java yajl yum-plugin-versionlock yum-utils nss-softokn nss-softokn-freebl
- scl-utils osinfo-db elfutils-default-yama-scope
+ scl-utils osinfo-db elfutils-default-yama-scope iptables iptables-services
+ dnsmasq NetworkManager-config-server python2-cryptography postgresql-libs
 exclude= *i686
 max_connections=10
 
@@ -156,16 +166,16 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  augeas-libs autogen-libopts avahi-libs avalon-framework avalon-logkit batik
  bea-stax bea-stax-api blas boost-system boost-thread bridge-utils bzip2 cairo
  cal10n celt051 checkpolicy color-filesystem copy-jdk-configs cracklib-python
- cryptsetup cryptsetup-libs cups-libs cyrus-sasl cyrus-sasl-gssapi
+ cryptsetup cryptsetup-libs cups-libs cyrus-sasl cyrus-sasl-gssapi libpcap
  cyrus-sasl-lib cyrus-sasl-md5 cyrus-sasl-scram cyrus-sasl-plain deltarpm
- dom4j dosfstools easymock2 elfutils
+ dom4j dosfstools easymock2 elfutils OVMF glib-networking json-c libmodman
  fence-agents-all fence-virt flac-libs fontconfig fontpackages-filesystem fop
  fuse fuse-libs GConf2 gdb gdisk gdk-pixbuf2 genisoimage GeoIP geronimo-jms
  ghostscript-fonts giflib gnutls gnutls-dane gnutls-utils gperftools-libs
  graphite2 gsm gssproxy gtk2 hamcrest harfbuzz hexedit hicolor-icon-theme hivex
- hsqldb httpcomponents-client httpcomponents-core hystrix-core
+ hsqldb httpcomponents-client httpcomponents-core hystrix-core libproxy
  hystrix-metrics-event-stream icc-profiles-openicc icoutils ipmitool ipset
- ipset-libs ipxe-roms-qemu iscsi-initiator-utils
+ ipset-libs ipxe-roms-qemu iscsi-initiator-utils gsettings-desktop-schemas
  iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core
  jakarta-commons-httpclient jasper-libs javamail javapackages-tools javassist
  jaxen jbigkit-libs jboss-annotations-1.1-api jctools jdom jline joda-convert
@@ -178,7 +188,7 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  libreport-filesystem libreport-plugin-mantisbt libreport-plugin-rhtsupport
  libreport-plugin-ureport libreport-python libreport-web libseccomp libselinux
  libselinux-python libselinux-utils libsemanage libsemanage-python libsepol
- libSM libsndfile
+ libSM libsndfile nettle trousers
  libtalloc libtar libtevent libthai libtiff libtirpc libunwind libusal libusbx
  libverto-tevent libvirt-python libvorbis libX11 libX11-common libXau libxcb
  libXcomposite libXcursor libXdamage libXext libXfixes libXfont libXft libXi

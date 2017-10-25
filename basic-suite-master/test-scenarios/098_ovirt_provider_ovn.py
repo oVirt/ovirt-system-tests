@@ -29,6 +29,7 @@ from ovirtlago import testlib
 from ovirtsdk4 import types
 
 import test_utils
+from test_utils import network_utils_v4
 
 
 VM0_NAME = 'vm0'
@@ -42,7 +43,6 @@ OVN_PROVIDER_SUBNETS_URL = 'https://{hostname}:9696/v2.0/subnets/'
 
 OVIRT_USER = 'admin@internal'
 OVIRT_PASSWORD = '123'
-DEFAULT_PROVIDER_NAME = 'ovirt-provider-ovn'
 
 NETWORK_1 = 'network_1'
 PORT_1 = 'port_1'
@@ -301,14 +301,6 @@ def _validate_db_empty(token_id, engine_ip):
     nt.assert_false(subnets)
 
 
-def _get_ovn_provider_id(api):
-    service = api.system_service().openstack_network_providers_service()
-    for provider in service.list():
-        if provider.name == DEFAULT_PROVIDER_NAME:
-            return provider.id
-    raise('ovirt-provider-ovn not present in oVirt')
-
-
 def _get_datacenter_id(api):
     return api.system_service().data_centers_service().list()[0].id
 
@@ -403,6 +395,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def test_ovn_provider_rest(prefix, api):
+    engine = api.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
     token_id = _get_auth_token(engine_ip)
 
@@ -432,7 +425,7 @@ def test_ovn_provider_rest(prefix, api):
     _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
     _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
 
-    provider_id = _get_ovn_provider_id(api)
+    provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
     datacenter_id = _get_datacenter_id(api)
     _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
     ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)

@@ -23,6 +23,7 @@ from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
                              NetworkAttachment)
 
 import test_utils
+from test_utils import constants
 
 
 def _get_attachment_by_id(host, network_id):
@@ -162,3 +163,12 @@ def create_network_params(network_name, dc_name, **net_params):
         ),
         **net_params
     )
+
+
+def get_default_ovn_provider_id(engine):
+    service = engine.openstack_network_providers_service()
+    for provider in service.list():
+        if provider.name == constants.DEFAULT_OVN_PROVIDER_NAME:
+            return provider.id
+    raise Exception('%s not present in oVirt' %
+                    constants.DEFAULT_OVN_PROVIDER_NAME)

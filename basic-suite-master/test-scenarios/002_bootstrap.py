@@ -148,9 +148,6 @@ def _check_problematic_hosts(hosts_service):
             dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
         raise RuntimeError(dump_hosts)
 
-def get_default_ovn_provider(api):
-    return api.system_service().openstack_network_providers_service().list()[0]
-
 
 @testlib.with_ovirt_prefix
 def add_dc(prefix):
@@ -299,9 +296,11 @@ def add_cluster_3(prefix):
 
 
 def add_cluster_4(prefix):
-    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-    clusters_service = api.system_service().clusters_service()
+    engine = api.system_service()
+    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
+    clusters_service = engine.clusters_service()
+    provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
     nt.assert_true(
         clusters_service.add(
             sdk4.types.Cluster(
@@ -317,7 +316,7 @@ def add_cluster_4(prefix):
                 ballooning_enabled=True,
                 external_network_providers=[
                     sdk4.types.ExternalProvider(
-                        id=get_default_ovn_provider(api).id,
+                        id=provider_id,
                     )
                ],
             ),

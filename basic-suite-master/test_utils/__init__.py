@@ -17,6 +17,39 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+import collections
+import functools
+
+# Taken from https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+class memoized(object):
+   '''Decorator. Caches a function's return value each time it is called.
+   If called later with the same arguments, the cached value is returned
+   (not reevaluated).
+   '''
+   def __init__(self, func):
+      self.func = func
+      self.cache = {}
+   def __call__(self, *args):
+      if not isinstance(args, collections.Hashable):
+         # uncacheable. a list, for instance.
+         # better to not cache than blow up.
+         return self.func(*args)
+      if args in self.cache:
+         return self.cache[args]
+      else:
+         value = self.func(*args)
+         self.cache[args] = value
+         return value
+   def __repr__(self):
+      '''Return the function's docstring.'''
+      return self.func.__doc__
+   def __get__(self, obj, objtype):
+      '''Support instance methods.'''
+      return functools.partial(self.__call__, obj)
+
+
+@memoized
 def get_nics_service(engine, vm_name):
     vm_service = get_vm_service(engine, vm_name)
     nics_service = vm_service.nics_service()
@@ -30,6 +63,7 @@ def get_network_fiter_parameters_service(engine, vm_name):
         .network_filter_parameters_service()
 
 
+@memoized
 def get_vm_service(engine, vm_name):
     vms_service = engine.vms_service()
     vm = vms_service.list(search=vm_name)[0]
@@ -38,11 +72,14 @@ def get_vm_service(engine, vm_name):
     return vms_service.vm_service(vm.id)
 
 
+@memoized
 def get_disk_service(engine, disk_name):
     disks_service = engine.disks_service()
     disk = disks_service.list(search=disk_name)[0]
     return disks_service.disk_service(disk.id)
 
+
+@memoized
 def get_template_service(engine, template_name):
     templates_service = engine.templates_service()
     template = templates_service.list(search=template_name)[0]
@@ -51,12 +88,14 @@ def get_template_service(engine, template_name):
     return templates_service.template_service(template.id)
 
 
+@memoized
 def get_pool_service(engine, pool_name):
     vm_pools_service= engine.vm_pools_service()
     pool = vm_pools_service.list(search=pool_name)[0]
     return vm_pools_service.pool_service(pool.id)
 
 
+@memoized
 def get_storage_domain_service(engine, sd_name):
     storage_domains_service = engine.storage_domains_service()
     sd = storage_domains_service.list(search=sd_name)[0]
@@ -76,12 +115,14 @@ def hosts_in_cluster_v4(root, cluster_name):
     return sorted(hosts, key=lambda host: host.name)
 
 
+@memoized
 def data_center_service(root, name):
     data_centers = root.data_centers_service()
     dc = data_centers.list(search='name={}'.format(name))[0]
     return data_centers.data_center_service(dc.id)
 
 
+@memoized
 def get_cluster_service(engine, cluster_name):
     clusters_service = engine.clusters_service()
     cluster = clusters_service.list(search=cluster_name)[0]

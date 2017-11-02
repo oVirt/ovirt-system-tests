@@ -1,1 +1,4 @@
-basic_suite_master.repos.el7
+kvm-common-el7,http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+lago,http://resources.ovirt.org/repos/lago/stable/0.0/rpm/$distro
+ovirt-4.1-tested,http://resources.ovirt.org/repos/ovirt/tested/4.1/rpm/$distro
+ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro

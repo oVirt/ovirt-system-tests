@@ -364,13 +364,12 @@ def _add_network_to_cluster(api, datacenter_id, ovirt_network_id):
 
 
 def _hotplug_network_to_vm(api, vm_name, network_name, iface_name):
-    vms_service = api.system_service().vms_service()
-    vm = vms_service.list(search=vm_name)[0]
+    engine = api.system_service()
 
-    profiles_service = api.system_service().vnic_profiles_service()
+    profiles_service = engine.vnic_profiles_service()
     profile = next(profile for profile in profiles_service.list() if profile.name == network_name)
 
-    nics_service = vms_service.vm_service(vm.id).nics_service()
+    nics_service = test_utils.get_nics_service(engine, vm_name)
     nics_service.add(
         types.Nic(
             name=iface_name,
@@ -382,23 +381,21 @@ def _hotplug_network_to_vm(api, vm_name, network_name, iface_name):
 
 
 def _remove_iface_from_vm(api, vm_name, iface_name):
-    vms_service = api.system_service().vms_service()
-    vm = vms_service.list(search=vm_name)[0]
-
-    nics_service = vms_service.vm_service(vm.id).nics_service()
+    nics_service = test_utils.get_nics_service(api.system_service(), vm_name)
     nic = next(nic for nic in nics_service.list() if nic.name == iface_name)
 
     nic_service = nics_service.nic_service(nic.id)
     nic_service.deactivate()
+    testlib.assert_true_within_short(
+        lambda:
+        nic_service.get().plugged == False
+    )
     nic_service.remove()
 
 
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def test_ovn_provider_rest(prefix, api):
-    # TODO: remove the skip test once ovn is fixed
-    raise SkipTest('OVN fails intermittently Bugzilla 1508883')
-
     engine = api.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
     token_id = _get_auth_token(engine_ip)

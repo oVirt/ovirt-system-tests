@@ -24,6 +24,7 @@ import requests
 import urlparse
 
 import nose.tools as nt
+from nose import SkipTest
 
 from ovirtlago import testlib
 from ovirtsdk4 import types
@@ -395,6 +396,9 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def test_ovn_provider_rest(prefix, api):
+    # TODO: remove the skip test once ovn is fixed
+    raise SkipTest('OVN fails intermittently Bugzilla 1508883')
+
     engine = api.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
     token_id = _get_auth_token(engine_ip)

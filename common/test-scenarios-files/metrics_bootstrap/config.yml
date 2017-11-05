@@ -1,3 +1,4 @@
 fluentd_fluentd_host: lago-basic-suite-master-engine
 fluentd_use_ssl: false
 ovirt_env_name: lago-engine
+fluentd_output_plugin: fluentd

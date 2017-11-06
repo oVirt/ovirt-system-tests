@@ -111,9 +111,7 @@ def get_network_attachment(engine, host, network_name, dc_name):
 
 
 def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
-    clusters_service = engine.clusters_service()
-    cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
-    cluster_service = clusters_service.cluster_service(cluster.id)
+    cluster_service = test_utils.get_cluster_service(engine, cluster_name)
 
     network = engine.networks_service().list(
         search=u'name={}'.format(
@@ -128,9 +126,7 @@ def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
 
 def set_network_required_in_cluster(engine, network_name, cluster_name,
                                     required):
-    clusters_service = engine.clusters_service()
-    cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
-    cluster_service = clusters_service.cluster_service(cluster.id)
+    cluster_service = test_utils.get_cluster_service(engine, cluster_name)
 
     network = engine.networks_service().list(
         search=u'name={}'.format(

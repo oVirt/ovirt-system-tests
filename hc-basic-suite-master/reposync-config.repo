@@ -388,7 +388,6 @@ exclude=
  rubygem-diff
  rubygem-em-http-server
  rubygem-em-worker
- rubygem-multi_json
  rubygem-power_assert
  rubygem-rack*
  rubygem-rr
@@ -405,15 +404,12 @@ exclude=
  rubygem-coveralls
  rubygem-docile
  rubygem-domain_name
- rubygem-elasticsearch*
- rubygem-faraday
  rubygem-gherkin
  rubygem-http-cookie
  rubygem-introspection
  rubygem-metaclass
  rubygem-mime-types*
  rubygem-minitest
- rubygem-multipart-post
  rubygem-netrc
  rubygem-patron
  rubygem-rest-client

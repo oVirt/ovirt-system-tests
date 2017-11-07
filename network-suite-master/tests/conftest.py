@@ -24,6 +24,7 @@ from lago import sdk as lagosdk
 from ovirtsdk4 import Connection
 
 from lib import syncutil
+from lib.netlib import Network
 
 
 ENGINE_DOMAIN = 'lago-network-suite-master-engine'
@@ -89,5 +90,14 @@ def system_service(api):
 
 
 @pytest.fixture(scope='session')
-def networks_service(system_service):
-    return system_service.networks_service()
+def _networks_service(system_service):
+    service = system_service.networks_service()
+    Network.register(service)
+    return service
+
+
+@pytest.fixture(scope='session', autouse=True)
+def ovirtmgmt_network(_networks_service):
+    network = Network()
+    network.import_by_name('ovirtmgmt')
+    return network

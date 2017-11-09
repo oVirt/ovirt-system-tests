@@ -27,11 +27,11 @@ from ovirtlago import testlib
 @testlib.with_ovirt_prefix
 def analyze_postgres(prefix):
     """
-        analyze postgres logs will use pgbadger to create a static html report
-        from the debug logs of postgres. The report will be created under the log
-        directory of pg.
-        The script may expand in the future to include more analysis and reporting
-        using other tools.
+        analyze postgres logs will use pgbadger, pgcluu (and possibly more in the tools
+        in the future) to create a static html reports and csv data.
+        Report will be created under the log directory of pg - maybe subjected to changes
+        in the future.
+        TODO - add test based on the audit output, like fail the test if there are missing indexes
     """
 
     engine = prefix.virt_env.engine_vm()

@@ -101,6 +101,7 @@ run_suite () {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
+    install_local_rpms
     env_start
     env_deploy
     he_deploy || failed=true

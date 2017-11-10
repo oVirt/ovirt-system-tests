@@ -1,4 +1,3 @@
-#
 # Copyright 2014 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,11 +20,22 @@ import functools
 import os
 import random
 import time
+import threading
 
 import nose.tools as nt
+from nose.tools import assert_false
 from nose import SkipTest
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
+try:
+    import ovirtsdk4 as sdk4
+    API_V3_ONLY = os.getenv('API_V3_ONLY', False)
+    if API_V3_ONLY:
+        API_V4 = False
+    else:
+        API_V4 = True
+except ImportError:
+    API_V4 = False
 
 from lago import utils
 from ovirtlago import testlib
@@ -125,48 +135,6 @@ def add_dc_quota(api):
 
 
 @testlib.with_ovirt_prefix
-def add_hosts(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-
-    def _add_host(vm):
-        p = params.Host(
-            name=vm.name(),
-            address=vm.ip(),
-            cluster=params.Cluster(
-                name=CLUSTER_NAME,
-            ),
-            root_password=vm.root_password(),
-            override_iptables=True,
-        )
-
-        return api.hosts.add(p)
-
-    def _host_is_up():
-        cur_state = api.hosts.get(host.name()).status.state
-
-        if cur_state == 'up':
-            return True
-
-        if cur_state == 'install_failed':
-            raise RuntimeError('Host %s failed to install' % host.name())
-        if cur_state == 'non_operational':
-            raise RuntimeError('Host %s is in non operational state' % host.name())
-
-    hosts = prefix.virt_env.host_vms()
-    hosts = [x for x in hosts if x.name() != GLUSTER_HOST0]
-
-    vec = utils.func_vector(_add_host, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()))
-
-    for host in hosts:
-        testlib.assert_true_within(_host_is_up, timeout=15 * 60)
-
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
-
-@testlib.with_ovirt_prefix
 def install_cockpit_ovirt(prefix):
     def _install_cockpit_ovirt_on_host(host):
         ret = host.ssh(['yum', '-y', 'install', 'cockpit-ovirt-dashboard'])
@@ -196,31 +164,28 @@ def _add_storage_domain(api, p):
 
     if dc.storagedomains.get(sd.name).status.state == 'maintenance':
         sd.activate()
+    
     testlib.assert_true_within_long(
         lambda: dc.storagedomains.get(sd.name).status.state == 'active'
     )
 
-
 @testlib.with_ovirt_prefix
 def add_master_storage_domain(prefix):
     if MASTER_SD_TYPE == 'glusterfs':
-         add_glusterfs_storage_domain(prefix, MASTER_SD_NAME, MASTER_SD_GLUSTER_VOL)
+        add_glusterfs_storage_domain(prefix, MASTER_SD_NAME, MASTER_SD_GLUSTER_VOL)
     else:
         add_nfs_storage_domain(prefix)
-
 
 def add_datastore_storage_domain(prefix):
     add_glusterfs_storage_domain(prefix, "data", "data")
 
-
 def add_nfs_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
-
 
 def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
     api = prefix.virt_env.engine_vm().get_api()
     p = params.StorageDomain(
-        name=sd_nfs_name,
+       name=sd_nfs_name,
         data_center=params.DataCenter(
             name=DC_NAME,
         ),
@@ -235,7 +200,6 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
         ),
     )
     _add_storage_domain(api, p)
-
 
 def add_glusterfs_storage_domain(prefix, sdname, volname):
     api = prefix.virt_env.engine_vm().get_api()
@@ -258,6 +222,58 @@ def add_glusterfs_storage_domain(prefix, sdname, volname):
         ),
     )
     _add_storage_domain(api, p)
+
+@testlib.with_ovirt_prefix
+def add_hosts(prefix):
+    if API_V4:
+        add_hosts_4(prefix)
+    else:
+	assert_false('Adding hosts requires API v4.')
+
+def add_hosts_4(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    hosts_service = api.system_service().hosts_service()
+
+    def _add_host_4(vm):
+        return hosts_service.add(
+            sdk4.types.Host(
+                name=vm.name(),
+                description='host %s' % vm.name(),
+                address=vm.name(),
+                root_password=str(vm.root_password()),
+                override_iptables=True,
+                cluster=sdk4.types.Cluster(
+                    name=CLUSTER_NAME,
+                ),
+            ),
+            deploy_hosted_engine=True,
+        )
+
+    def _host_is_up_4():
+        host_service = hosts_service.host_service(api_host.id)
+        host_obj = host_service.get()
+        if host_obj.status == sdk4.types.HostStatus.UP:
+            return True
+
+        if host_obj.status == sdk4.types.HostStatus.NON_OPERATIONAL:
+            raise RuntimeError('Host %s is in non operational state' % api_host.name)
+        if host_obj.status == sdk4.types.HostStatus.INSTALL_FAILED:
+            raise RuntimeError('Host %s installation failed' % api_host.name)
+        if host_obj.status == sdk4.types.HostStatus.NON_RESPONSIVE:
+            raise RuntimeError('Host %s is in non responsive state' % api_host.name)
+
+    hosts = prefix.virt_env.host_vms()
+    vec = utils.func_vector(_add_host_4, [(h,) for h in hosts if not h.name().endswith('t0')])
+    vt = utils.VectorThread(vec)
+    vt.start_all()
+    nt.assert_true(all(vt.join_all()))
+
+    api_hosts = hosts_service.list()
+    for api_host in api_hosts:
+        testlib.assert_true_within(_host_is_up_4, timeout=15*60)
+
+    for host in hosts:
+        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
 @testlib.with_ovirt_prefix
@@ -501,12 +517,16 @@ def run_log_collector(prefix):
         ],
     )
 
+@testlib.with_ovirt_prefix
+def sleep(prefix):
+    time.sleep(120)
 
 _TEST_LIST = [
     wait_engine,
     edit_cluster,
-    add_hosts,
     add_master_storage_domain,
+    sleep,
+    add_hosts,
     list_glance_images,
     import_templates,
     add_non_vm_network,
@@ -523,3 +543,4 @@ def test_gen():
     for t in testlib.test_sequence_gen(_TEST_LIST):
         test_gen.__name__ = t.description
         yield t
+

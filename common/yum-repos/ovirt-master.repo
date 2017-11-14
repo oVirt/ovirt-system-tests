@@ -29,7 +29,6 @@ exclude = *-debuginfo
  python-windows
  pywin32-py2.7
  ovirt-js-dependencies-0.0.3-2
- ovirt-vdsmfake
  unboundid-ldapsdk
  ovirt-web-ui
  ovirt-optimizier*

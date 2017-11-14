@@ -30,7 +30,7 @@
 
     - name: Install vdsmfake
       yum:
-        name: http://jenkins.ovirt.org/job/ovirt-vdsmfake_master_build-artifacts-on-demand-el7-x86_64/39/artifact/exported-artifacts/x86_64/ovirt-vdsmfake-1.0-c7ef406.el7.centos.x86_64.rpm
+        name: ovirt-vdsmfake
         state: present
 
     - name: Start vdsmfake
@@ -43,6 +43,11 @@
       until: result.status == 200
       retries: 60
       delay: 1
+
+    - name: Install dnsmasq
+      yum:
+        name: dnsmasq
+        state: present
 
     - name: Set NetworkManager to use dnsmasq
       ini_file:
@@ -58,5 +63,5 @@
 
     - service:
         name: NetworkManager
-        state: reloaded
+        state: restarted
 ...

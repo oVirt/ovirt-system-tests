@@ -117,31 +117,10 @@ def engine_config(prefix):
         result.code, 0, 'engine-config failed. Exit code is %s' % result.code
     )
 
-@testlib.with_ovirt_prefix
-def tweak_db(prefix):
-    engine = prefix.virt_env.engine_vm()
-
-    tweak_db_file = os.path.join(
-        os.environ.get('SUITE'),
-        '../common/deploy-scripts/db_config_tweaks.sh'
-    )
-    engine.copy_to(tweak_db_file, '/root')
-
-    result = engine.ssh(
-        [
-            'bash',
-            '/root/db_config_tweaks.sh',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'tweaking postgres configuration failed. Exit code is %s' % result.code
-    )
-
 
 _TEST_LIST = [
     initialize_engine,
     engine_config,
-    tweak_db,
 ]
 
 

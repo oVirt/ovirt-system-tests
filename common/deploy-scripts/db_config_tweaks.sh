@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -ex
 
 # A script to add debug configuration to postgres logs.
 # Usually usefull in combination with pgbadger for analysis.

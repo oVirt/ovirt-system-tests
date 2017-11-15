@@ -80,6 +80,14 @@ def get_disk_service(engine, disk_name):
 
 
 @memoized
+def get_disk_attachments_service(engine, vm_name):
+    vm_service = get_vm_service(engine, vm_name)
+    if vm_service is None:
+        return None
+    return vm_service.disk_attachments_service()
+
+
+@memoized
 def get_template_service(engine, template_name):
     templates_service = engine.templates_service()
     template = templates_service.list(search=template_name)[0]

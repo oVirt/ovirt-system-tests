@@ -154,7 +154,9 @@ def add_disk(api):
     glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
     nt.assert_true(vm_service and glance_disk)
 
-    vm_service.disk_attachments_service().add(
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+
+    disk_attachments_service.add(
         types.DiskAttachment(
             disk=types.Disk(
                 id=glance_disk.get().id,
@@ -189,9 +191,9 @@ def add_disk(api):
             )
         ]
 
-        vm_service = test_utils.get_vm_service(engine, vm_name)
+        disk_attachments_service = test_utils.get_disk_attachments_service(engine, vm_name)
         nt.assert_true(
-            vm_service.disk_attachments_service().add(types.DiskAttachment(
+            disk_attachments_service.add(types.DiskAttachment(
                 disk=disk_params,
                 interface=types.DiskInterface.VIRTIO))
         )
@@ -252,13 +254,13 @@ def add_directlun(prefix):
     )
 
     api = prefix.virt_env.engine_vm().get_api_v4()
-    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
-    disk_attachments_service = vm_service.disk_attachments_service()
+    engine = api.system_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachments_service.add(types.DiskAttachment(
         disk=dlun_params,
         interface=types.DiskInterface.VIRTIO_SCSI))
 
-    disk_service = test_utils.get_disk_service(api.system_service(), DLUN_DISK_NAME)
+    disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
     attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
     nt.assert_not_equal(
         attachment_service.get(),
@@ -876,8 +878,7 @@ def hotplug_nic(api):
 
 @testlib.with_ovirt_api4
 def hotplug_disk(api):
-    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
-    disk_attachments_service = vm_service.disk_attachments_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(api.system_service(), VM0_NAME)
     disk_attachment = disk_attachments_service.add(
         types.DiskAttachment(
             disk=types.Disk(
@@ -912,9 +913,8 @@ def hotplug_disk(api):
 @testlib.with_ovirt_api4
 def hotunplug_disk(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
-    disk_attachments_service = vm_service.disk_attachments_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.attachment_service(disk_service.get().id)
 
     nt.assert_true(

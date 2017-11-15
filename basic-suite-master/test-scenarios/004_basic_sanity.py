@@ -206,6 +206,27 @@ def add_disk(api):
         )
 
 
+@testlib.with_ovirt_api4
+def extend_disk(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
+    disk_attachments_service = vm_service.disk_attachments_service()
+    for disk_attachment in disk_attachments_service.list():
+        disk = api.follow_link(disk_attachment.disk)
+        if disk.name == DISK1_NAME:
+            attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
+            attachment_service.update(
+                    types.DiskAttachment(
+                        disk=types.Disk(provisioned_size=2 * GB,)))
+
+    disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
+    testlib.assert_true_within_short(
+        lambda:
+        disk_service.get().status == types.DiskStatus.OK and \
+        disk_service.get().provisioned_size == 2 * GB
+    )
+
+
 @testlib.with_ovirt_api
 def add_console(api):
     vm = api.vms.get(VM0_NAME)
@@ -966,6 +987,7 @@ _TEST_LIST = [
     add_filter_parameter,
     verify_add_vm_template,
     add_disk,
+    extend_disk,
     export_vm,
     vm_run,
     ping_vm0,

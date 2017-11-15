@@ -67,6 +67,12 @@ sed -i \
     -e '/.*<root-logger>/{ n; s/INFO/DEBUG/ }' \
     /usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in
 
+# rotate logs quicker, because of the debug logs they tend to flood the root partition if they run > 15 minutes
+cat > /etc/cron.d/ovirt-engine << EOF
+* * * * * root logrotate /etc/logrotate.d/ovirt-engine
+* * * * * root logrotate /etc/logrotate.d/ovirt-engine-dwh
+EOF
+
 cat > /etc/ovirt-engine/notifier/notifier.conf.d/20-snmp.conf << EOF
 SNMP_MANAGERS="localhost:162"
 SNMP_COMMUNITY=public

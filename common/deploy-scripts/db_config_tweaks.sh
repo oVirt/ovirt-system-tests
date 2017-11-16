@@ -28,4 +28,11 @@ log_error_verbosity = default
 lc_messages='C'
 EOF
 
-systemctl restart ${pg_service}
+# TODO If in the future we want to tweak a config item that demands a restart
+# to take effect we must wait in the script till engine renews the
+# connection:
+#
+#```bash
+# test 200 == $(curl -k https://ovirt/services/health  -o /dev/null -s -w %{http_code})
+#```
+systemctl reload ${pg_service}

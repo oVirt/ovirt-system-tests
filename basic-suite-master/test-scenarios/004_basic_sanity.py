@@ -805,9 +805,7 @@ def disk_operations(api):
 
 @testlib.with_ovirt_api4
 def hotplug_memory(api):
-    engine = api.system_service()
-    vms_service = engine.vms_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
     new_memory = vm_service.get().memory * 2
     vm_service.update(
         vm=types.Vm(
@@ -821,9 +819,7 @@ def hotplug_memory(api):
 
 @testlib.with_ovirt_api4
 def hotplug_cpu(api):
-    engine = api.system_service()
-    vms_service = engine.vms_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 2
     vm_service.update(
@@ -837,9 +833,7 @@ def hotplug_cpu(api):
 
 @testlib.with_ovirt_api4
 def next_run_unplug_cpu(api):
-    engine = api.system_service()
-    vms_service = engine.vms_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 1
     vm_service.update(

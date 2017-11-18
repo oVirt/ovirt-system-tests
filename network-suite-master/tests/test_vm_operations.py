@@ -17,10 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import constants
-
-
-def test_ovirtmgmt_net_exists(networks_service):
-    networks = networks_service.list(
-        search='name={}'.format(constants.Network.OVIRTMGMT))
-    assert len(networks) == 1
+def test_live_vm_migration():
+    # Placeholder. Actual test introduced in  https://gerrit.ovirt.org/83881
+    assert True

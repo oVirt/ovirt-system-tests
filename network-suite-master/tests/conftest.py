@@ -23,8 +23,10 @@ import pytest
 from lago import sdk as lagosdk
 from ovirtsdk4 import Connection
 
-import constants
 from lib import syncutil
+
+
+ENGINE_DOMAIN = 'lago-network-suite-master-engine'
 
 
 def pytest_addoption(parser):
@@ -48,7 +50,7 @@ def env():
 
 @pytest.fixture(scope='session', autouse=True)
 def engine(env):
-    engine = env.get_vms()[constants.Lago.ENGINE_DOMAIN]
+    engine = env.get_vms()[ENGINE_DOMAIN]
 
     ANSWER_FILE_TMP = '/tmp/answer-file'
     ANSWER_FILE_SRC = os.path.join(

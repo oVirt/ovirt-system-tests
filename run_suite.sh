@@ -272,7 +272,7 @@ env_libvirt_cleanup() {
         ))
         local nets=($( \
             virsh -c qemu:///system net-list --all \
-            | egrep "[[:alnum:]]{4}-.*" \
+            | egrep -w "[[:alnum:]]{4}-.*" \
             | egrep -v "vdsm-ovirtmgmt" \
             | awk '{print $1;}' \
         ))

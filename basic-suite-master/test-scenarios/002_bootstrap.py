@@ -96,6 +96,9 @@ def _get_host_ip(prefix, host_name):
 def _get_host_all_ips(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).all_ips()
 
+def _get_host_ips_in_net(prefix, host_name, net_name):
+    return prefix.virt_env.get_vm(host_name).ips_in_net(net_name)
+
 def _hosts_in_dc(api, dc_name=DC_NAME):
     hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
     if hosts:
@@ -572,6 +575,7 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
@@ -579,7 +583,7 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         host=_random_host_from_dc_4(api, DC_NAME),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
-            address=_get_host_ip(prefix, nfs_host_name),
+            address=ips[0],
             path=mount_path,
             nfs_version=nfs_vers,
         ),

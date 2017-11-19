@@ -31,9 +31,9 @@ from ovirtlago import testlib
 
 import ovirtsdk4.types as types
 
-import time
-
 import test_utils
+
+import uuid
 
 
 MB = 2 ** 20
@@ -505,13 +505,21 @@ def cold_storage_migration(api):
 def live_storage_migration(api):
     engine = api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
+    correlation_id = uuid.uuid4()
     disk_service.move(
         async=False,
         filter=False,
         storage_domain=types.StorageDomain(
             name=SD_ISCSI_NAME
-        )
+        ),
+        query={'correlation_id': correlation_id}
     )
+
+    def all_jobs_finished():
+        jobs = engine.jobs_service().list(search='correlation_id=%s' % correlation_id)
+        return all(job.status != types.JobStatus.STARTED for job in jobs)
+
+    testlib.assert_true_within_long(all_jobs_finished)
 
     # Assert that the disk is on the correct storage domain,
     # its status is OK and the snapshot created for the migration
@@ -527,11 +535,6 @@ def live_storage_migration(api):
     testlib.assert_true_within_long(
         lambda: disk_service.get().status == types.DiskStatus.OK
     )
-
-    # This sleep is a temporary solution to the race condition
-    # https://bugzilla.redhat.com/1456504
-    time.sleep(3)
-
 
 @testlib.with_ovirt_api4
 def export_vm1(api):

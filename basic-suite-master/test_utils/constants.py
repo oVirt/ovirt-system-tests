@@ -19,3 +19,4 @@
 #
 
 DEFAULT_OVN_PROVIDER_NAME = 'ovirt-provider-ovn'
+ADD_HOST_TIMEOUT = 20 * 60

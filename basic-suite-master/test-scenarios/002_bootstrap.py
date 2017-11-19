@@ -35,6 +35,7 @@ from ovirtlago import testlib
 
 import test_utils
 from test_utils import network_utils_v4
+from test_utils import constants
 
 # TODO: use SDKv4 unconditionally, where possible (as in other test scenarios)
 API_V3_ONLY = os.getenv('API_V3_ONLY', False)
@@ -386,7 +387,7 @@ def verify_add_hosts_3(api, hosts):
             raise RuntimeError('Host %s is in non operational state' % host.name())
 
     for host in hosts:
-        testlib.assert_true_within(_host_is_up, timeout=15 * 60)
+        testlib.assert_true_within(_host_is_up, timeout=constants.ADD_HOST_TIMEOUT)
 
 
 def add_hosts_4(api, hosts):
@@ -416,8 +417,9 @@ def verify_add_hosts_4(api):
     hosts_service = api.system_service().hosts_service()
     total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
 
-    testlib.assert_true_within_long(
-        lambda: _single_host_up(hosts_service, total_hosts)
+    testlib.assert_true_within(
+        lambda: _single_host_up(hosts_service, total_hosts),
+        timeout=constants.ADD_HOST_TIMEOUT
     )
 
 @testlib.with_ovirt_prefix
@@ -426,8 +428,9 @@ def verify_add_all_hosts(prefix):
     hosts_service = api.system_service().hosts_service()
     total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
 
-    testlib.assert_true_within_long(
-        lambda: _all_hosts_up(hosts_service, total_hosts)
+    testlib.assert_true_within(
+        lambda: _all_hosts_up(hosts_service, total_hosts),
+        timeout=constants.ADD_HOST_TIMEOUT
     )
 
     hosts = prefix.virt_env.host_vms()

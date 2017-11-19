@@ -28,6 +28,7 @@ import ovirtsdk4 as sdk4
 
 from lago import utils
 from ovirtlago import testlib
+from test_utils import constants
 
 API_V3_ONLY = os.getenv('API_V3_ONLY', False)
 if API_V3_ONLY:
@@ -184,7 +185,7 @@ def add_hosts(prefix):
 
     api_hosts = hosts_service.list()
     for api_host in api_hosts:
-        testlib.assert_true_within(_host_is_up_4, timeout=15*60)
+        testlib.assert_true_within(_host_is_up_4, timeout=constants.ADD_HOST_TIMEOUT)
 
     for host in hosts:
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])

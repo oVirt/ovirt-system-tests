@@ -103,7 +103,7 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  libxml2 libxml2-python libXrandr libXrender libxshmfence libxslt libXt libXtst
  libXxf86vm lksctp-tools log4j lsof lzop m2crypto mailcap make
  mdadm mesa-libEGL mesa-libgbm mesa-libGL mesa-libglapi mod_ssl mom msv-msv
- msv-xsdlib mtools netcf-libs netpbm netpbm-progs
+ msv-xsdlib mtools netcf-libs netpbm netpbm-progs libvirt-daemon-config-network
  nfs-utils nmap-ncat libvirt-client libvirt-daemon libvirt-daemon-config-nwfilter
  libvirt-daemon-driver-interface libvirt-daemon-driver-network
  libvirt-daemon-driver-nodedev libvirt-daemon-driver-nwfilter
@@ -145,7 +145,7 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  urw-fonts usbredir virt-v2v ws-commons-util ws-jaxme xalan-j2 xerces-j2
  xfsprogs xml-commons-apis xml-commons-resolver xmlgraphics-commons
  xmlrpc-client xmlrpc-common xorg-x11-fonts-Type1 xorg-x11-font-utils xpp3
- xz-java yajl yum-plugin-versionlock yum-utils nss-softokn nss-softokn-freebl
+ xz-java yajl yum-plugin-versionlock nss-softokn nss-softokn-freebl
  scl-utils osinfo-db elfutils-default-yama-scope iptables iptables-services
  dnsmasq NetworkManager-config-server python2-cryptography postgresql-libs
 exclude= *i686
@@ -176,7 +176,7 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  hsqldb httpcomponents-client httpcomponents-core hystrix-core libproxy
  hystrix-metrics-event-stream icc-profiles-openicc icoutils ipmitool ipset
  ipset-libs ipxe-roms-qemu iscsi-initiator-utils gsettings-desktop-schemas
- iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core
+ iscsi-initiator-utils-iscsiuio isorelax jackson jai-imageio-core libarchive
  jakarta-commons-httpclient jasper-libs javamail javapackages-tools javassist
  jaxen jbigkit-libs jboss-annotations-1.1-api jctools jdom jline joda-convert
  joda-time jsch json-glib jsr-311 junit jzlib keyutils kmod kmod-libs kpartx
@@ -184,11 +184,11 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  libcollection libconfig libevent libfontenc libgfortran libguestfs-winsupport
  libibverbs libICE libicu libini_config libiscsi libjpeg-turbo libnfsidmap libnl
  libogg libosinfo libpath_utils libpci3 libpng libquadmath librados2 librbd1
- librdmacm libref_array libreport libreport-centos libreport-cli
+ librdmacm libref_array libreport libreport-centos libreport-cli yum-utils
  libreport-filesystem libreport-plugin-mantisbt libreport-plugin-rhtsupport
  libreport-plugin-ureport libreport-python libreport-web libseccomp libselinux
  libselinux-python libselinux-utils libsemanage libsemanage-python libsepol
- libSM libsndfile nettle trousers
+ libSM libsndfile nettle trousers virt-install virt-manager-common
  libtalloc libtar libtevent libthai libtiff libtirpc libunwind libusal libusbx
  libverto-tevent libvirt-python libvorbis libX11 libX11-common libXau libxcb
  libXcomposite libXcursor libXdamage libXext libXfixes libXfont libXft libXi
@@ -213,7 +213,7 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  perl-Scalar-List-Utils perl-Socket perl-Storable perl-Text-ParseWords
  perl-threads perl-threads-shared perl-TimeDate perl-Time-HiRes perl-Time-Local
  perl-URI perl-WWW-RobotRules pexpect pixman pm-utils poppler-data
- psmisc pulseaudio-libs postgresql-jdbc
+ psmisc pulseaudio-libs postgresql-jdbc python-ipaddr osinfo-db-tools
  pygobject2 pyOpenSSL pyparsing python2-pyasn1 python-augeas python-babel
  python-backports python-backports-ssl_match_hostname python-chardet
  python-configshell python-dateutil python-dmidecode python-enum34
@@ -271,6 +271,8 @@ includepkgs= cockpit
  python-paramiko
  sshpass
  python2-crypto
+ python-passlib
+ ansible
 
 exclude= *i686
 max_connections=5

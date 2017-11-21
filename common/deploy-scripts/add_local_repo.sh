@@ -13,6 +13,8 @@ repo_gpgcheck=0
 cost=1
 keepcache=1
 ip_resolve=4
+max_connections=10
+deltarpm=0
 EOF
 
 sed -i "s/var\/cache/dev\/shm/g" /etc/yum.conf

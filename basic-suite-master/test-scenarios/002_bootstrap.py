@@ -438,6 +438,27 @@ def verify_add_all_hosts(prefix):
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
 
 
+@testlib.with_ovirt_prefix
+def configure_storage(prefix):
+    engine = prefix.virt_env.engine_vm()
+    storage_script = os.path.join(
+        os.environ.get('SUITE'), 'setup_storage.sh'
+    )
+    engine.copy_to(
+        storage_script,
+        '/tmp/setup_storage.sh',
+    )
+
+    result = engine.ssh(
+        [
+            '/tmp/setup_storage.sh',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'setup_storage.sh failed. Exit code is %s' % result.code
+    )
+
+
 def _add_storage_domain_3(api, p):
     dc = api.datacenters.get(DC_NAME)
     sd = api.storagedomains.add(p)
@@ -1019,6 +1040,7 @@ _TEST_LIST = [
     add_dc,
     add_cluster,
     add_hosts,
+    configure_storage,
     list_glance_images,
     add_dc_quota,
     update_default_dc,

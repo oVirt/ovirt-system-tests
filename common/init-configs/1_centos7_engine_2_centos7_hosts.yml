@@ -41,7 +41,9 @@ domains:
       ovirt-engine-password: 123
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
+        {%- if env.suite_name != 'basic-suite-master' %}
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
+        {%- endif %}
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
     artifacts:
       - /var/log

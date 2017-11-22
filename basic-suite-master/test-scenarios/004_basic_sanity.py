@@ -88,6 +88,14 @@ def _ping(ovirt_prefix, destination):
     return ret.code
 
 
+def _vm_host(prefix, vm_name):
+    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+    vm_service = test_utils.get_vm_service(engine, vm_name)
+    host_id = vm_service.get().host.id
+    host_name = engine.hosts_service().host_service(host_id).get().name
+    return prefix.virt_env.get_vm(host_name)
+
+
 @testlib.with_ovirt_api
 def add_vm_blank(api):
     vm_memory = 256 * MB
@@ -654,13 +662,28 @@ def ping_vm0(ovirt_prefix):
 
 
 @testlib.with_ovirt_prefix
+def restore_vm0_networking(ovirt_prefix):
+    # Networking may not work after resume.  We need this pseudo-test for the
+    # purpose of reviving VM networking by rebooting the VM.  We must be
+    # careful to reboot just the guest OS, not to restart the whole VM, to keep
+    # checking for contingent failures after resume.
+    # A better solution might be using a guest OS other than Cirros.
+    if _ping(ovirt_prefix, VM0_PING_DEST) == EX_OK:
+        return
+    host = _vm_host(ovirt_prefix, VM0_NAME)
+    uri = 'qemu+tls://%s/system' % host.name()
+    ret = host.ssh(['virsh', '-c', uri, 'reboot', '--mode', 'acpi', VM0_NAME])
+    nt.assert_equals(ret.code, EX_OK)
+    # We might want to wait until ssh server inside the VM gets up.  But the
+    # interim tests, especially *_recovery, and repeated ssh connection
+    # attempts in host.ssh calls should give enough time.
+
+
+@testlib.with_ovirt_prefix
 def ha_recovery(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
     last_event = int(engine.events_service().list(max=2)[0].id)
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-    host_id = vm_service.get().host.id
-    host_name = engine.hosts_service().host_service(host_id).get().name
-    vm_host = prefix.virt_env.get_vm(host_name)
+    vm_host = _vm_host(prefix, VM2_NAME)
     pid = vm_host.ssh(['pgrep', '-f', 'qemu.*guest=vm2'])
     vm_host.ssh(['kill', '-KILL', pid.out])
     events = engine.events_service()
@@ -669,6 +692,7 @@ def ha_recovery(prefix):
         (next(e for e in events.list(from_=last_event) if e.code == 9602)).code == 9602,
          allowed_exceptions=[StopIteration]
     )
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
     testlib.assert_true_within_long(
         lambda:
         vm_service.get().status == types.VmStatus.UP
@@ -994,6 +1018,7 @@ _TEST_LIST = [
     vm_run,
     ping_vm0,
     suspend_resume_vm,
+    restore_vm0_networking,
     verify_vm_exported,
     import_vm_as_clone,
     ha_recovery,

@@ -517,10 +517,12 @@ def add_vm_template(api):
 
 @testlib.with_ovirt_api
 def verify_add_vm_template(api):
+    vm = api.vms.get(VM1_NAME)
+    nt.assert_true(vm)
+
     testlib.assert_true_within_long(
         lambda: api.vms.get(VM1_NAME).status.state == 'down',
     )
-    vm = api.vms.get(VM1_NAME)
     disk_name = vm.disks.list()[0].name
     testlib.assert_true_within_long(
         lambda:

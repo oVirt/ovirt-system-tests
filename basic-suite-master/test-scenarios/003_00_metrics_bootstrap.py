@@ -55,22 +55,23 @@ def configure_metrics(prefix):
     )
 
     # Configure the engine-vm as the fluentd aggregator
-    metrics_bootstrap = os.path.join(
-        os.environ.get('SUITE'),
-        '../common/test-scenarios-files/metrics_bootstrap'
-    )
-    engine.copy_to(metrics_bootstrap, '/root')
+    if os.environ.has_key('OST_FLUENTD_AGGREGATOR'):
+        metrics_bootstrap = os.path.join(
+            os.environ.get('SUITE'),
+            '../common/test-scenarios-files/metrics_bootstrap'
+        )
+        engine.copy_to(metrics_bootstrap, '/root')
 
-    result = engine.ssh(
-        [
-            'ansible-playbook',
-            '/root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'Configuring ovirt-engine as fluentd aggregator failed.'
-                        ' Exit code is %s' % result.code
-    )
+        result = engine.ssh(
+            [
+                'ansible-playbook',
+                '/root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml',
+            ],
+        )
+        nt.eq_(
+            result.code, 0, 'Configuring ovirt-engine as fluentd aggregator failed.'
+                            ' Exit code is %s' % result.code
+        )
 
     # clean /dev/shm from yum leftovers. Frees up ~65M
     engine.ssh(['rm', '-rf', '/dev/shm/yum*', '/dev/shm/*.rpm'])

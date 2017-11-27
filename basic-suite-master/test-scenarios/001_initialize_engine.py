@@ -102,25 +102,48 @@ def initialize_engine(prefix):
     )
 
 
-@testlib.with_ovirt_prefix
-def engine_config(prefix):
-    engine = prefix.virt_env.engine_vm()
-
+def _exec_engine_config(engine, key, value):
     result = engine.ssh(
         [
             'engine-config',
             '--set',
-            'VdsLocalDisksLowFreeSpace=400',
+            '{0}={1}'.format(key, value),
         ],
     )
     nt.eq_(
-        result.code, 0, 'engine-config failed. Exit code is %s' % result.code
+        result.code,
+        0,
+        'setting {0}:{1} via engine-config failed with {2}'.format(key, value, result.code)
+    )
+
+
+@testlib.with_ovirt_prefix
+def engine_config(prefix):
+    engine = prefix.virt_env.engine_vm()
+
+    _exec_engine_config(engine, 'VdsLocalDisksLowFreeSpace', '400')
+    _exec_engine_config(engine, 'OvfUpdateIntervalInMinutes', '10')
+
+
+@testlib.with_ovirt_prefix
+def engine_restart(prefix):
+    engine = prefix.virt_env.engine_vm()
+
+    engine.service('ovirt-engine')._request_stop()
+    testlib.assert_true_within_long(
+        lambda: not engine.service('ovirt-engine').alive()
+    )
+
+    engine.service('ovirt-engine')._request_start()
+    testlib.assert_true_within_long(
+        lambda: engine.service('ovirt-engine').alive()
     )
 
 
 _TEST_LIST = [
     initialize_engine,
     engine_config,
+    engine_restart,
 ]
 
 

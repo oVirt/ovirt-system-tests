@@ -13,7 +13,6 @@ exclude = *-debuginfo
  *-devel
  *-javadoc
  java-ovirt-engine-sdk4
- otopi-debug-plugins
  otopi-devtools
  ovirt-engine-nodejs-*
  ovirt-engine-sdk-java

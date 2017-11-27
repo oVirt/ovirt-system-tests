@@ -43,7 +43,7 @@ ADDR=$(/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"."); print a[1] "."
 echo "$ADDR engine" >> /etc/hosts
 
 install_firewalld
-yum install --nogpgcheck -y --downloaddir=/dev/shm ntp net-snmp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap*
+yum install --nogpgcheck -y --downloaddir=/dev/shm ntp net-snmp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap* otopi-debug-plugins
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "yum install failed with status ${RET_CODE}."

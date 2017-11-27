@@ -141,7 +141,6 @@ enabled=1
 max_connections=10
 exclude =  ioprocess-debuginfo *-devel
  java-ovirt-engine-sdk4
- otopi-debug-plugins
  otopi-devtools
  ovirt-engine-nodejs-*
 proxy=_none_

@@ -37,6 +37,8 @@ collect_all_logs() {
 
     find . -maxdepth 1 -name '*__logs' -print0 | xargs -r -0 mv -t exported-artifacts
     find . -maxdepth 1 -name '*.log' -print0 | xargs -r -0 mv -t exported-artifacts
+    tar -czf exported-artifacts.tar.gz exported-artifacts && \
+        mv exported-artifacts.tar.gz exported-artifacts
 }
 
 on_exit() {

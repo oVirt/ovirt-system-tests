@@ -4,6 +4,7 @@
 
 # Project's root
 PROJECT="$PWD"
+ARTIFACTS_DIR="${PROJECT}/exported-artifacts"
 
 #Array to hold all the suites
 #which will be executed
@@ -11,16 +12,16 @@ SUITES_TO_RUN=$(automation/change_resolver.py)
 [[ -z "$SUITES_TO_RUN" ]] && SUITES_TO_RUN="basic_suite_master"
 
 collect_suite_logs() {
-    # Each suite outputs its logs to a directory named "exported-artifacts".
+    # Each suite outputs its logs to a directory named "$ARTIFACTS_DIR.
     # Since "check-patch" can run multiple suites, we need to rename
-    # "exported-artifacts" at the end of each suite
+    # "$ARTIFACTS_DIR at the end of each suite
     # (otherwise the logs will be overridden).
 
-    # Convert the name of "exported-artifacts" directory to $1__logs
+    # Convert the name of ""$ARTIFACTS_DIR"" directory to $1__logs
     # $1: Suite name
 
     local suite_name=${1:?}
-    local test_logs="${PROJECT}/exported-artifacts"
+    local test_logs="$ARTIFACTS_DIR"
 
     if [[ -d "$test_logs" ]]; then
         suite_logs="${PROJECT}/${suite_name}__logs"
@@ -31,14 +32,14 @@ collect_suite_logs() {
 
 collect_all_logs() {
     # Collect all the log directories created by "collect_suite_logs"
-    # and place them inside exported-artifacts directory.
+    # and place them inside "$ARTIFACTS_DIR" directory.
 
-    mkdir exported-artifacts
+    mkdir "$ARTIFACTS_DIR"
 
-    find . -maxdepth 1 -name '*__logs' -print0 | xargs -r -0 mv -t exported-artifacts
-    find . -maxdepth 1 -name '*.log' -print0 | xargs -r -0 mv -t exported-artifacts
-    tar -czf exported-artifacts.tar.gz exported-artifacts && \
-        mv exported-artifacts.tar.gz exported-artifacts
+    find . -maxdepth 1 -name '*__logs' -print0 | xargs -r -0 mv -t "$ARTIFACTS_DIR"
+    find . -maxdepth 1 -name '*.log' -print0 | xargs -r -0 mv -t "$ARTIFACTS_DIR"
+    tar -czf "${ARTIFACTS_DIR}.tar.gz" "$ARTIFACTS_DIR" && \
+        mv "$ARTIFACTS_DIR".tar.gz "$ARTIFACTS_DIR"
 }
 
 on_exit() {
@@ -54,8 +55,8 @@ on_error() {
 pwd
 
 # clean old logs
-if [[ -d "$PROJECT/exported-artifacts" ]]; then
-    rm -rf "$PROJECT/exported-artifacts"
+if [[ -d "$ARTIFACTS_DIR" ]]; then
+    rm -rf "$ARTIFACTS_DIR"
 fi
 
 # Trap any errors and print the line number

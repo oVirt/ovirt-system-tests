@@ -34,12 +34,32 @@ collect_all_logs() {
     # Collect all the log directories created by "collect_suite_logs"
     # and place them inside "$ARTIFACTS_DIR" directory.
 
-    mkdir "$ARTIFACTS_DIR"
+    [[ -d "$ARTIFACTS_DIR" ]] || mkdir "$ARTIFACTS_DIR"
 
     find . -maxdepth 1 -name '*__logs' -print0 | xargs -r -0 mv -t "$ARTIFACTS_DIR"
     find . -maxdepth 1 -name '*.log' -print0 | xargs -r -0 mv -t "$ARTIFACTS_DIR"
     tar -czf "${ARTIFACTS_DIR}.tar.gz" "$ARTIFACTS_DIR" && \
         mv "$ARTIFACTS_DIR".tar.gz "$ARTIFACTS_DIR"
+}
+
+run_create_docs() {
+    local docs_dir_name="docs-out"
+
+    echo "Creating Docs"
+
+    [[ -d "$ARTIFACTS_DIR" ]] || mkdir "$ARTIFACTS_DIR"
+    source "${0%/*}/create-docs.sh"
+    create_docs.create_docs "${ARTIFACTS_DIR}/${docs_dir_name}"
+    # Generate html report
+    cat > "${ARTIFACTS_DIR}/index.html" <<EOF
+    <html>
+    <head>
+        <li>
+            <a href="${docs_dir_name}/index.html">Docs Page</a>
+        </li>
+    </head>
+    </html>
+EOF
 }
 
 on_exit() {
@@ -80,3 +100,4 @@ do
 
     collect_suite_logs "$suite"
 done
+run_create_docs

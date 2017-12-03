@@ -9,3 +9,7 @@ python-netaddr
 script
 virt-install
 wget
+
+### docs
+mkdocs
+fontawesome-fonts-web

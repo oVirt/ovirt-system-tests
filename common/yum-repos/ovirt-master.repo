@@ -127,8 +127,8 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage perl-Scalar-List-Utils
  perl-Socket perl-Storable perl-Text-ParseWords perl-threads perl-threads-shared
  perl-TimeDate perl-Time-HiRes perl-Time-Local perl-URI perl-WWW-RobotRules
- pexpect pixman pm-utils policycoreutils poppler-data psmisc
- pulseaudio-libs pyparsing python-babel python-backports
+ pexpect pixman pm-utils policycoreutils poppler-data psmisc libipa_hbac
+ pulseaudio-libs pyparsing python-babel python-backports http-parser
  python-backports-ssl_match_hostname python-chardet python-configshell
  python-cpopen python-dmidecode python-ethtool python-firewall python-inotify
  python-ioprocess python-IPy python-javapackages python-jinja2 python-kitchen
@@ -147,6 +147,12 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  xz-java yajl yum-plugin-versionlock nss-softokn nss-softokn-freebl
  scl-utils osinfo-db elfutils-default-yama-scope iptables iptables-services
  dnsmasq NetworkManager-config-server python2-cryptography postgresql-libs
+ ipa-client ipa-client-common ipa-common libsmbclient libipa_hbac libsmbclient
+ libsss_autofs libsss_certmap libsss_idmap libsss_nss_idmap libsss_sudo
+ libwbclient samba-client-libs samba-common sssd sssd-ad sssd-client sssd-ipa
+ sssd-common sssd-common-pac sssd-krb5-common sssd-krb5 sssd-ldap sssd-proxy
+ python2-ipaclient python-sssdconfig python2-ipalib python-libipa_hbac
+ python-sss-murmur
 exclude= *i686
 max_connections=10
 
@@ -244,7 +250,10 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  xz-libs zlib libvirt-libs device-mapper-multipath osinfo-db lldpad fcoe-utils
  NetworkManager-config-server elfutils-default-yama-scope device-mapper-multipath-libs
  sysstat dracut-fips mailx tcpdump hmaccalc screen rng-tools iptables-services
- iptables postgresql-libs
+ iptables postgresql-libs authconfig autofs c-ares certmonger hesiod
+ krb5-workstation libdhash libkadm5 libldb libtdb oddjob oddjob-mkhomedir
+ python-dns python-jwcrypto python-netifaces python-nss python-qrcode-core
+ python-yubico python2-pyasn1-modules pyusb python-gssapi newt-python
 exclude= *i686
 max_connections=10
 

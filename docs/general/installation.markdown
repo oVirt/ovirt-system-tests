@@ -1,180 +1,137 @@
 Getting started
 ===============
-This document describes how to get started with running oVirt system tests.<br>
+This document describes how to get started with running oVirt system tests
 
-
-Prerequisites
-=============
+System requirements
+====================
 
 #### Operating System
-Currently OST can run on either Fedora 23+ or Centos 6/7.<br>
-(We are working on adding support for more distributions in the near future).
+Currently OST can run on either supported Fedora versions or Centos 7.
 
 #### Disk Space
-Most tests suites will require that you have at least 36GB of free space under the<br>
-/var/lib/lago directory and an extra 200MB wherever you are running them.
+Most tests suites will require that you have at least 15GB of free space under
+the /var/lib/lago directory and an extra 200MB wherever you are running them.
 
-If you don't have enough disk space on /var, you can change the location<br>
-in lago configuration, for more info see [Lago docs][1].
+If you don't have enough disk space on /var, you can change the location
+in lago configuration, for more info see [Lago config].
 
 #### Memory
-While the memory requirements are derived from the VM specs you'll have in the test suite<br>
-It is recommended that the server you're using will have at least 8GB of RAM in order to<br>
-run the basic suite.
+While the memory requirements are derived from the VM specs you'll have in
+the test suite, it is recommended that the host you're using will have at
+least 8GB of RAM in order to run the basic suite.
 
-**Choose either automated or manual install to setup the environment.**
-### Automated Install
+Installing dependencies
+======================
 
-Please run the following script on your testing env to install all prerequisits:
+**NOTE**: The prefered way to run OST is inside a mock environment, created by
+[mock_runner.sh] This method will ensure that the appropriate oVirt engine SDK
+is being installed. Each suite should use the latest oVirt engine SDK that is
+available for its version (for example, basic-suite-master should use the sdk
+from [ovirt-master latest tested repo]).
+
+### When Running OST with/without mock
+
+#### Install Lago
+
+[Lago installation manual]
+
+#### Configure Firewall
+
+During the run of OST, Lago creates an HTTP server that serves RPMs to
+th VMs. This action requires that port 8585 on the localhost will be accessible
+from the subnets used by Lago.
+
+**NOTE:** This step is not needed if you run firewalld, because it will
+be configured automatically when installing `lago-ovirt`.
+
+Add the following iptables rule (in /etc/sysconfig/iptables):
 
 ```
-wget https://raw.githubusercontent.com/lago-project/lago-demo/master/install_scripts/install_lago.sh
-./install_lago.sh
+#OST
+-A INPUT -p tcp --dport 8585 -s 192.168.0.0/16 -j ACCEPT
+#END OST
 ```
 
-### Manual Install
+### When running OST with mock
 
-Please follow the guidelines below to setup your environment:
+#### Install mock
 
-#### Installing dependencies
+Follow the instructions in "Setting up mock_runner" section at [mock_runner.sh]
 
-Running OST requires installation of [Lago][1] & [repoman][2] projects.
+### When Running OST without mock
 
-**For Fedora:**
-```
-[lago]
-baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/fc$releasever
-name=Lago
-enabled=1
-gpgcheck=0
+#### Install Lago oVirt
 
-[ovirt-ci-tools]
-baseurl=http://resources.ovirt.org/repos/ci-tools/fc$releasever
-name=oVirt CI Tools
-enabled=1
-gpgcheck=0
-```
+**NOTE:** This step is not needed if you installed lago with the install
+script.
+
+Configure the following repo:
 
 **For EL distros (such as CentOS, RHEL, etc.):**
 ```
-[lago]
-baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/el$releasever
-name=Lago
-enabled=1
-gpgcheck=0
-
 [ovirt-ci-tools]
 baseurl=http://resources.ovirt.org/repos/ci-tools/el$releasever
 name=oVirt CI Tools
 enabled=1
 gpgcheck=0
 ```
-
-**TODO**: point to the release rpm once it's implemented, and use gpgcheck=1
-
-Once you have them, install the following packages::
+**For Fedora:**
 ```
-    yum install python-lago lago python-lago-ovirt lago-ovirt
+[ovirt-ci-tools]
+baseurl=http://resources.ovirt.org/repos/ci-tools/fc$releasever
+name=oVirt CI Tools
+enabled=1
+gpgcheck=0
 ```
-This will install all the needed packages.
+Install lago-ovirt
 
-[1]: http://lago.readthedocs.io
-[2]: http://repoman.readthedocs.io
+```
+yum install lago-ovirt
+```
 
-#### Machine set-up
+#### Install oVirt-engine python sdk
 
-Make sure your laptop or test server has the folllowing setup:
+**NOTE:** This step is not needed if you run OST in a mock environment.
 
-* *Virtualization and nested virtualization support*
+Configure the following repo (replace $VERSION with the version of the
+suite that you are running, for example: master or 4.1):
 
-    Make sure that virtualization extension is enabled on the CPU, otherwise,
-    you might need to enable it in the BIOS. Generally, if virtualization extension
-    is disabled, `dmesg` log would contain a line similar to:
-    ```
-        kvm: disabled by BIOS
-    ```
+**For EL distros (such as CentOS, RHEL, etc.):**
 
-    **NOTE**: you can wait until everyithing is setup to reboot and change the
-    bios, to make sure that everyithing will persist after reboot
+```
+[ovirt-tested-$VERSION]
+baseurl=http://resources.ovirt.org/repos/ovirt/tested/$VERSION/rpm/el$releasever
+name=oVirt-$VERSION
+enabled=1
+gpgcheck=0
+```
 
-* *Verify nested virtualization is enabled*
-    ```
-        $ cat /sys/module/kvm_intel/parameters/nested
-    ```
-       This command should print `Y` if nested virtualization is enabled, otherwise,
-       enable it the following way:
+**For Fedora:**
 
-       Edit `/etc/modprobe.d/kvm-intel.conf` and add the following line:
-    ```
-        options kvm-intel nested=y
-    ```
-       Reboot, and make sure nested virtualization is enabled.
+```
+[ovirt-tested-$VERSION]
+baseurl=http://resources.ovirt.org/repos/ovirt/tested/$VERSION/rpm/fc$releasever
+name=oVirt-$VERSION
+enabled=1
+gpgcheck=0
+```
 
+Install oVirt engine SDK v3 and v4:
 
-*  *Setting up libvirt*
+```
+yum install python-ovirt-engine-sdk4 ovirt-engine-sdk-python
+```
 
-    Make sure libvirt is configured to run:
-    ```
-        $ systemctl enable libvirtd
-        $ systemctl start libvirtd
-    ```
+**NOTE:** Before each run of OST make sure that you have the latest SDK installed.
 
-*  *Configure SELinux*
-
-    At the moment, this framework might encounter problems running while SELinux
-    policy is enforced.
-
-    To disable SELinux on the running system, run:
-    ```
-        $ setenforce 0
-    ```
-    To disable SELinux from start-up, edit `/etc/selinux/config` and set:
-    ```
-        SELINUX=permissive
-    ```
-
-*  *User permissions setup*
-
-    Running lago requires certain permissions, so the user running it should be
-    part of certain groups.
-
-    Add yourself to lago and qemu groups:
-    ```
-        $ usermod -a -G lago USERNAME
-        $ usermod -a -G qemu USERNAME
-    ```
-    It is also advised to add qemu user to your group (to be able to store VM files
-    in home directory):
-    ```
-        $ usermod -a -G USERNAME qemu
-    ```
-    For the group changes to take place, you'll need to re-login to the shell.
-    Make sure running `id` returns all the aforementioned groups.
-
-    Make sure that the qemu user has execution rights to the dir where you will be
-    creating the prefixes, you can try it out with:
-    ```
-        $ sudo -u qemu ls /path/to/the/destination/dir
-    ```
-    If it can't access it, make sure that all the dirs in the path have your user
-    or qemu groups and execution rights for the group, or execution rights for
-    other (highly recommended to use the group instead, if the dir did not have
-    execution rights for others already)
-
-    It's very common for the user home directory to not have group execution
-    rights, to make sure you can just run:
-    ```
-        $ chmod g+x $HOME
-    ```
-    And, just to be sure, let's refresh libvirtd service to ensure that it
-    refreshes it's permissions and picks up any newly created users:
-    ```
-        $ sudo service libvirtd restart
-    ```
-
-#### Preparing the workspace for running the tests
-
-Create a directory where you'll be working, *make sure qemu user can access it*.<br>
-We will be using the example configurations of lago, for a custom setup you might want to create your own.
+### Next steps
 
 You're now ready to run the tests! checkout [Running the tests](running_tests.html) for more info.
+
+[Lago config]: http://lago.readthedocs.io/en/latest/Configuration.html
+
+[Lago installation manual]: http://lago.readthedocs.io/en/latest/Installation.html#rpm-based-fedora-24-centos-7-3
+
+[mock_runner.sh]: http://ovirt-infra-docs.readthedocs.io/en/latest/CI/Using_mock_runner/index.html
+
+[ovirt-master latest tested repo]: http://resources.ovirt.org/repos/ovirt/tested/master/rpm/

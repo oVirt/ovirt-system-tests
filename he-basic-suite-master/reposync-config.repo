@@ -117,7 +117,7 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  perl-Socket perl-Storable perl-Text-ParseWords perl-threads perl-threads-shared
  perl-TimeDate perl-Time-HiRes perl-Time-Local perl-URI perl-WWW-RobotRules
  pexpect pixman pm-utils policycoreutils policycoreutils-python poppler-data
- postgresql postgresql-jdbc postgresql-libs postgresql-server psmisc
+ postgresql-jdbc postgresql-libs psmisc
  pulseaudio-libs pyparsing python-babel python-backports
  python-backports-ssl_match_hostname python-chardet python-configshell
  python-cpopen python-dmidecode python-ethtool python-firewall python-inotify
@@ -199,8 +199,8 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  perl-Pod-Escapes perl-podlators perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage
  perl-Scalar-List-Utils perl-Socket perl-Storable perl-Text-ParseWords
  perl-threads perl-threads-shared perl-TimeDate perl-Time-HiRes perl-Time-Local
- perl-URI perl-WWW-RobotRules pexpect pixman pm-utils poppler-data postgresql
- postgresql-jdbc postgresql-libs postgresql-server psmisc pulseaudio-libs
+ perl-URI perl-WWW-RobotRules pexpect pixman pm-utils poppler-data
+ postgresql-jdbc postgresql-libs psmisc pulseaudio-libs
  pygobject2 pyOpenSSL pyparsing python2-pyasn1 python-augeas python-babel
  python-backports python-backports-ssl_match_hostname python-chardet
  python-configshell python-dateutil python-dmidecode python-enum34

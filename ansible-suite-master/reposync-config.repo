@@ -87,7 +87,7 @@ includepkgs=java-1.8.0-openjdk-devel libsemanage initscripts python-libguestfs a
  perl-HTTP-Daemon perl-HTTP-Date perl-HTTP-Message perl-HTTP-Negotiate perl-HTTP-Tiny perl-IO-Compress perl-IO-HTML perl-IO-Socket-IP perl-IO-Socket-SSL perl-libs perl-libwww-perl
  perl-LWP-MediaTypes perl-macros perl-Net-HTTP perl-Net-LibIDN perl-Net-SSLeay perl-parent perl-PathTools perl-Pod-Escapes perl-podlators perl-Pod-Perldoc perl-Pod-Simple perl-Pod-Usage
  perl-Scalar-List-Utils perl-Socket perl-Storable perl-Text-ParseWords perl-threads perl-threads-shared perl-TimeDate perl-Time-HiRes perl-Time-Local perl-URI perl-WWW-RobotRules pexpect
- pixman pm-utils policycoreutils policycoreutils-python poppler-data postgresql postgresql-jdbc postgresql-libs postgresql-server psmisc pulseaudio-libs pyparsing python-babel
+ pixman pm-utils policycoreutils policycoreutils-python poppler-data postgresql-jdbc postgresql-libs psmisc pulseaudio-libs pyparsing python-babel
  python-backports python-backports-ssl_match_hostname python-chardet python-configshell python-cpopen python-dmidecode python-ethtool python-inotify python-ioprocess python-IPy
  python-javapackages python-jinja2 python-kitchen python-kmod python-lxml python-markupsafe python-netaddr python-ply python-psycopg2 python-pthreading python-requests python-rtslib
  python-setuptools python-six python-suds python-urllib3 python-urwid qdox quota quota-nls radvd relaxngDatatype rhino rpcbind libtool-ltdl firewalld firewalld-filesystem
@@ -128,7 +128,7 @@ includepkgs=gtk2 python2-pyasn1 avahi-libs lsscsi python-rhsm socat subscription
  xalan-j2 xerces-j2 xml-commons-apis xml-commons-resolver xmlgraphics-commons xmlrpc-client xmlrpc-common xorg-x11-font-utils xorg-x11-fonts-Type1 xpp3 xz-java yajl yum-plugin-versionlock
  yum-utils dom4j easymock2 device-mapper-persistent-data dosfstools PyYAML libyaml spice-server python-enum34 python-webob json-glib libatasmart hystrix-core hystrix-metrics-event-stream archaius-core
  rxjava jctools lm_sensors-libs perl-Archive-Tar perl-DB_File perl-IO-Zlib perl-Mozilla-LDAP perl-NetAddr-IP perl-Package-Constants svrcore cyrus-sasl-lib python-ldap python-dateutil libxml2-python libxml2
- python-urlgrabber rpcbind nfs-utils libtevent quota quota-nls libtalloc apache-commons-collections copy-jdk-configs libpng mod_ssl openssl postgresql postgresql-libs postgresql-server
+ python-urlgrabber rpcbind nfs-utils libtevent quota quota-nls libtalloc apache-commons-collections copy-jdk-configs libpng mod_ssl openssl postgresql-libs
  nss-softokn nss-softokn-freebl openssl-libs libselinux libselinux-python libselinux-utils audit-libs openldap-clients cyrus-sasl cyrus-sasl-gssapi libsepol audit GeoIP cyrus-sasl-md5 openldap
  graphite2 sanlock-python gnutls gnutls-dane gnutls-utils numactl sanlock-python sanlock-lib sanlock httpcomponents-core libunwind gperftools-libs
  net-snmp-utils net-snmp-libs pciutils pciutils-libs cryptsetup-libs kpartx libpci3 kmod kmod-libs ipset ipset-libs pyOpenSSL python-ipaddress

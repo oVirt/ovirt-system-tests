@@ -432,6 +432,7 @@ baseurl=http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck=1
 enabled=1
 gpgkey=https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs=rh-postgresql95-postgresql-9.5.7
- rh-postgresql95-postgresql-server-9.5.7 rh-postgresql95-runtime
- rh-postgresql95-postgresql-libs-9.5.7
+includepkgs=rh-postgresql95-postgresql-9.5.9
+ rh-postgresql95-postgresql-server-9.5.9 rh-postgresql95-runtime
+ rh-postgresql95-postgresql-libs-9.5.9
+ rh-postgresql95-postgresql-contrib-9.5.9

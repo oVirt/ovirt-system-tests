@@ -33,6 +33,7 @@ start_env() {
         echo "@@@ ERROR: Failed in deploy stage"
         return 1
     fi
+    mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
 }
 
 run_tests() {

@@ -22,7 +22,32 @@ from ovirtsdk4 import types
 from lib.sdkentity import SDKEntity
 
 
+class IpVersion(object):
+
+    V4 = types.IpVersion.V4
+    V6 = types.IpVersion.V6
+
+
+DYNAMIC_IP_CONFIG = [
+    types.IpAddressAssignment(assignment_method=types.BootProtocol.DHCP),
+    types.IpAddressAssignment(assignment_method=types.BootProtocol.DHCP,
+                              ip=types.Ip(version=IpVersion.V6))
+]
+
+
+def create_static_ip_config_assignment(addr, mask, gateway=None,
+                                       version=IpVersion.V4):
+    ip = types.Ip(address=addr, netmask=mask,
+                  version=version, gateway=gateway)
+    return types.IpAddressAssignment(
+        assignment_method=types.BootProtocol.STATIC, ip=ip)
+
+
 class Network(SDKEntity):
+
+    @property
+    def name(self):
+        return self.sdk_type.name
 
     def _build_sdk_type(self, network_name, data_center, vlan=None):
         network = types.Network(

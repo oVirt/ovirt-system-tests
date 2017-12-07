@@ -16,27 +16,38 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import os
-
 import pytest
 
 from lago import sdk as lagosdk
-from ovirtsdk4 import Connection
 
-from lib import syncutil
-from lib.netlib import Network
+from repo_server import create_repo_server
 
+from fixtures.cluster import clusters_service  # NOQA: F401
+from fixtures.cluster import default_cluster  # NOQA: F401
 
-ENGINE_DOMAIN = 'lago-network-suite-master-engine'
+from fixtures.network import networks_service  # NOQA: F401
+from fixtures.network import ovirtmgmt_network  # NOQA: F401
+
+from fixtures.host import hosts_service  # NOQA: F401
+from fixtures.host import host_0  # NOQA: F401
+from fixtures.host import host_1  # NOQA: F401
+
+from fixtures.engine import system_service  # NOQA: F401
+from fixtures.engine import engine  # NOQA: F401
+from fixtures.engine import api  # NOQA: F401
+
+from fixtures.storage import storage_domains_service  # NOQA: F401
+from fixtures.storage import default_storage_domain  # NOQA: F401
+from fixtures.storage import disks_service  # NOQA: F401
+
+from fixtures.data_center import data_centers_service  # NOQA: F401
+from fixtures.data_center import default_data_center  # NOQA: F401
+
+from fixtures.virt import vms_service  # NOQA: F401
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        '--lago-env',
-        action='store',
-        default='.lago',
-        help='path to lago workdir'
-    )
+    parser.addoption('--lago-env', action='store')
 
 
 @pytest.fixture(scope='session')
@@ -45,60 +56,12 @@ def env():
     lago_env = lagosdk.load_env(workdir=workdir)
 
     lago_env.start()
-    yield lago_env
-    lago_env.destroy()
 
-
-@pytest.fixture(scope='session', autouse=True)
-def engine(env):
-    engine = env.get_vms()[ENGINE_DOMAIN]
-
-    ANSWER_FILE_TMP = '/tmp/answer-file'
-    ANSWER_FILE_SRC = os.path.join(
-        os.environ.get('SUITE'), 'engine-answer-file.conf'
-    )
-    engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
-    engine.ssh(
-        [
-            'OTOPI_DEBUG=1',
-            'engine-setup',
-            '--config-append={}'.format(ANSWER_FILE_TMP),
-            '--accept-defaults',
-        ]
-    )
-
-    syncutil.sync(exec_func=_get_engine_api,
-                  exec_func_args=(engine,),
-                  success_criteria=lambda api: isinstance(api, Connection))
-    return engine
-
-
-@pytest.fixture(scope='session')
-def api(engine):
-    return _get_engine_api(engine)
-
-
-def _get_engine_api(engine):
+    # TODO: once a proper solution for repo server w/o OST lago plugin
+    # is available, remove this hack and use it instead.
     try:
-        return engine.get_api_v4()
-    except:
-        return None
-
-
-@pytest.fixture(scope='session')
-def system_service(api):
-    return api.system_service()
-
-
-@pytest.fixture(scope='session')
-def _networks_service(system_service):
-    service = system_service.networks_service()
-    Network.register(service)
-    return service
-
-
-@pytest.fixture(scope='session', autouse=True)
-def ovirtmgmt_network(_networks_service):
-    network = Network()
-    network.import_by_name('ovirtmgmt')
-    return network
+        repo_server = create_repo_server(workdir, lago_env)
+        yield lago_env
+    finally:
+        repo_server.shutdown()
+        lago_env.destroy()

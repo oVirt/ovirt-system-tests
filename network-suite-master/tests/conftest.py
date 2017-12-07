@@ -60,6 +60,7 @@ def engine(env):
     engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
     engine.ssh(
         [
+            'OTOPI_DEBUG=1',
             'engine-setup',
             '--config-append={}'.format(ANSWER_FILE_TMP),
             '--accept-defaults',

@@ -55,6 +55,7 @@ def test_initialize_engine(prefix):
 
     result = engine.ssh(
         [
+            'OTOPI_DEBUG=1',
             'engine-setup',
             '--config-append=/tmp/answer-file-post',
             '--accept-defaults',

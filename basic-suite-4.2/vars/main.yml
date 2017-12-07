@@ -2,3 +2,5 @@ templates:
   engine: el7.4-base
   host: el7.4-base
 hostCount: 2
+install_storage_with_lago_deploy: false
+install_ovirt_host: true

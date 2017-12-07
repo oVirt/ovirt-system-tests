@@ -40,6 +40,7 @@ exclude = *-debuginfo
  ovirt-engine-phantomjs
  ovirt-engine-appliance
  ovirt-optimizer*
+ vcredist-x86-2008*
 proxy=_none_
 
 [ovirt-master-snapshot-static-el7]

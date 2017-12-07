@@ -7,6 +7,7 @@ from operator import or_
 from itertools import imap
 import logging
 
+from change_resolver_conf import CONF
 
 logging.basicConfig(filename='change_resolver.log', level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
@@ -15,7 +16,13 @@ LOGGER = logging.getLogger(__name__)
 def main():
     changes = get_changes()
     change_to_suite = ChangeResolver()
-    print '\n'.join(reduce(or_, imap(change_to_suite, changes)))
+    change_set = reduce(or_, imap(change_to_suite, changes))
+    if not change_set:
+        LOGGER.info('Changes were not detected, returning default suites')
+        change_set = CONF['default_suites']
+    exclude_set = CONF['exclude']
+    LOGGER.debug('excluding: {}'.format(','.join(change_set & exclude_set)))
+    print '\n'.join(change_set - exclude_set)
 
 
 def get_changes():
@@ -54,8 +61,12 @@ class ChangeResolver:
         LOGGER.info('resolving change: {}'.format(change))
         core_files_changed = self._core_files_rgx.search(change)
         if core_files_changed:
-            LOGGER.info('OST core file changed. Adding \"basic-suite-master\"')
-            return set(['basic-suite-master'])
+            LOGGER.info(
+                'OST core file changed. Adding {}'.format(
+                    ','.join(CONF['core_suites'])
+                )
+            )
+            return CONF['core_suites']
 
         suite_files_changed = self._suite_files_rgx.search(change)
         if suite_files_changed:

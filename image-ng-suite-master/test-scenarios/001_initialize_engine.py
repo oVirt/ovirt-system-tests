@@ -44,6 +44,12 @@ def test_initialize_engine(prefix):
             '--offline'
         ],
     )
+    engine.ssh(
+        [
+            'ss',
+            '-anp',
+        ],
+    )
     if result.code != 0:
         return result.code
 

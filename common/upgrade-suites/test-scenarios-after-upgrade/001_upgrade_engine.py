@@ -61,6 +61,13 @@ def test_initialize_engine(prefix):
         ],
     )
 
+    engine.ssh(
+        [
+            'ss',
+            '-anp',
+        ],
+    )
+
     nt.eq_(
         result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
     )

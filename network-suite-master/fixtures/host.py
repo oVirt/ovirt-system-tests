@@ -32,8 +32,13 @@ def host_0(env, system, default_cluster):
     vm = env.get_vms()[HOST_0_DOMAIN]
     host = hostlib.Host(system)
     host.create(default_cluster.name, vm)
-    _wait_for_host_install(host)
     return host
+
+
+@pytest.fixture(scope='session')
+def host_0_up(host_0):
+    _wait_for_host_install(host_0)
+    return host_0
 
 
 @pytest.fixture(scope='session')
@@ -41,8 +46,13 @@ def host_1(env, system, default_cluster):
     vm = env.get_vms()[HOST_1_DOMAIN]
     host = hostlib.Host(system)
     host.create(default_cluster.name, vm)
-    _wait_for_host_install(host)
     return host
+
+
+@pytest.fixture(scope='session')
+def host_1_up(host_1):
+    _wait_for_host_install(host_1)
+    return host_1
 
 
 def _wait_for_host_install(host):
@@ -51,3 +61,9 @@ def _wait_for_host_install(host):
     # TODO: There's currently a NPE (bz#1514853) in Engine's
     # scheduling logic (CPU usage). Once it is resolved, remove this
     time.sleep(20)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def install_hosts_to_save_time(host_0, host_1):
+    """add hosts before any test starts so they can install in parallel"""
+    pass

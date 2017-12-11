@@ -31,6 +31,9 @@ from fixtures.network import ovirtmgmt_network  # NOQA: F401
 
 from fixtures.host import host_0  # NOQA: F401
 from fixtures.host import host_1  # NOQA: F401
+from fixtures.host import host_0_up  # NOQA: F401
+from fixtures.host import host_1_up  # NOQA: F401
+from fixtures.host import install_hosts_to_save_time  # NOQA: F401
 
 from fixtures.engine import engine  # NOQA: F401
 from fixtures.engine import api  # NOQA: F401

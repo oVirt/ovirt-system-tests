@@ -35,12 +35,13 @@ def storage_domains_service(system):
 
 @pytest.fixture(scope='session')
 def default_storage_domain(engine, storage_domains_service,
-                           data_centers_service, default_data_center, host_0):
+                           data_centers_service, default_data_center,
+                           host_0_up):
     sd = types.StorageDomain(
         name=DEFAULT_DOMAIN_NAME,
         description='Default NFS storage domain',
         type=types.StorageDomainType.DATA,
-        host=host_0.sdk_type,
+        host=host_0_up.sdk_type,
         storage=types.HostStorage(
             type=types.StorageType.NFS,
             address=engine.ip(),

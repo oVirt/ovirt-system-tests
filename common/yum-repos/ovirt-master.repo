@@ -79,7 +79,7 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  boost-thread bridge-utils bzip2 cairo cal10n celt051 checkpolicy chkconfig
  color-filesystem cracklib-python cryptsetup cups-libs deltarpm device-mapper
  device-mapper-event device-mapper-event-libs device-mapper-libs
- event-libs fence-agents-*
+ event-libs fence-agents-* cryptsetup-libs
  firewalld firewalld-filesystem flac-libs fontconfig fontpackages-filesystem fop
  fuse fuse-libs GConf2 gdisk gdk-pixbuf2 genisoimage geronimo-jms ghostscript
  ghostscript-fonts giflib gnutls-dane gnutls-utils graphite2 gsm gssproxy gtk2
@@ -172,7 +172,7 @@ includepkgs= abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops
  augeas-libs autogen-libopts avahi-libs avalon-framework avalon-logkit batik
  bea-stax bea-stax-api blas boost-system boost-thread bridge-utils bzip2 cairo
  cal10n celt051 checkpolicy color-filesystem copy-jdk-configs cracklib-python
- cryptsetup cryptsetup-libs cups-libs cyrus-sasl cyrus-sasl-gssapi libpcap
+ cups-libs cyrus-sasl cyrus-sasl-gssapi libpcap
  cyrus-sasl-lib cyrus-sasl-md5 cyrus-sasl-scram cyrus-sasl-plain deltarpm
  dom4j dosfstools easymock2 elfutils OVMF glib-networking json-c libmodman
  fence-agents-all fence-virt flac-libs fontconfig fontpackages-filesystem fop

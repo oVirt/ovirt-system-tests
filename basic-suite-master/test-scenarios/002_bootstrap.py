@@ -1013,29 +1013,6 @@ def add_non_vm_network(api):
     )
 
 
-@testlib.with_ovirt_prefix
-def run_log_collector(prefix):
-    engine = prefix.virt_env.engine_vm()
-    result = engine.ssh(
-        [
-            'ovirt-log-collector',
-            '--verbose',
-            '--conf-file=/root/ovirt-log-collector.conf',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'log collector failed. Exit code is %s' % result.code
-    )
-
-    engine.ssh(
-        [
-            'rm',
-            '-rf',
-            '/dev/shm/sosreport-LogCollector-*',
-        ],
-    )
-
-
 _TEST_LIST = [
     add_dc,
     add_cluster,
@@ -1055,7 +1032,6 @@ _TEST_LIST = [
     verify_add_all_hosts,
     add_secondary_storage_domains,
     import_templates,
-    run_log_collector,
     add_non_vm_network,
     add_vm_network,
     verify_glance_import,

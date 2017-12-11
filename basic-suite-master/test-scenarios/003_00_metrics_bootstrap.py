@@ -18,13 +18,14 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import functools
 import nose.tools as nt
 import os
 
+from lago import utils
 from ovirtlago import testlib
 
 
-@testlib.with_ovirt_prefix
 def configure_metrics(prefix):
     """
      configure the setup for metrics collection. Essentially collectd and
@@ -78,9 +79,42 @@ def configure_metrics(prefix):
         host.ssh(['rm', '-rf', '/dev/shm/yum*', '/dev/shm/*.rpm'])
 
 
+def run_log_collector(prefix):
+    engine = prefix.virt_env.engine_vm()
+    result = engine.ssh(
+        [
+            'ovirt-log-collector',
+            '--verbose',
+            '--conf-file=/root/ovirt-log-collector.conf',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'log collector failed. Exit code is %s' % result.code
+    )
+
+    engine.ssh(
+        [
+            'rm',
+            '-rf',
+            '/dev/shm/sosreport-LogCollector-*',
+        ],
+    )
+
+
+@testlib.with_ovirt_prefix
+def metrics_and_log_collector(prefix):
+    vt = utils.VectorThread(
+            [
+                functools.partial(configure_metrics, prefix),
+                functools.partial(run_log_collector, prefix),
+            ],
+        )
+    vt.start_all()
+    vt.join_all()
+
 
 _TEST_LIST = [
-    configure_metrics,
+    metrics_and_log_collector,
 ]
 
 

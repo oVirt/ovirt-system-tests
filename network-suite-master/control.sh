@@ -23,7 +23,7 @@ create_env() {
 }
 
 run_tests() {
-    python -m pytest -s -v --lago-env "$PREFIX" "${SUITE}/tests"
+    python -m pytest -s -v --durations=0 --lago-env "$PREFIX" "${SUITE}/tests"
 }
 
 run_suite () {

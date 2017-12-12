@@ -12,7 +12,6 @@ function install_firewalld() {
                 systemctl start firewalld
                 firewall-cmd --permanent --zone=public --add-interface=eth0
                 systemctl restart firewalld;
-                systemctl restart NetworkManager
                 }
             }
         else

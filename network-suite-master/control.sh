@@ -4,10 +4,18 @@ prep_suite () {
     render_jinja_templates
 }
 
-create_env() {
-    yum install python-pip
+install_dependencies() {
+    yum install -y python-pip
+    pip install -U pip
+    pip install flake8==3.1.0
     pip install pytest
+}
 
+run_static_analysis() {
+    flake8 --statistics --show-source "${SUITE}"
+}
+
+create_env() {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
@@ -27,6 +35,8 @@ run_tests() {
 }
 
 run_suite () {
+    install_dependencies
+    run_static_analysis
     create_env
     run_tests
 }

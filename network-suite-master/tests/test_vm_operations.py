@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+
 def test_live_vm_migration():
     # Placeholder. Actual test introduced in  https://gerrit.ovirt.org/83881
     assert True

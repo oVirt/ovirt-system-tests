@@ -8,19 +8,24 @@ install_dependencies() {
     yum install -y python-pip
     pip install -U pip
     pip install flake8==3.1.0
+    pip install pylint==1.6.4
     pip install pytest
 }
 
 run_static_analysis() {
     flake8 --statistics --show-source "${SUITE}"
+    pylint --rcfile="${SUITE}/pylintrc" --errors-only "${SUITE}/lib" "${SUITE}/tests"
 }
 
-create_env() {
+setup_env() {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
     install_local_rpms
+}
+
+start_env() {
     env_start
     env_status
     if ! env_deploy; then
@@ -36,7 +41,8 @@ run_tests() {
 
 run_suite () {
     install_dependencies
+    setup_env
     run_static_analysis
-    create_env
+    start_env
     run_tests
 }

@@ -22,22 +22,15 @@ import pytest
 from ovirtsdk4 import types
 
 from lib import syncutil
-from lib import storagelib
 
 
 SD_NFS_NAME = 'nfs'
 SD_NFS_PATH = '/exports/nfs/share1'
 
 
-@pytest.fixture(scope='session', autouse=True)
-def disks_service(system_service):
-    service = system_service.disks_service()
-    storagelib.Disk.register(service)
-
-
 @pytest.fixture(scope='session')
-def storage_domains_service(system_service):
-    return system_service.storage_domains_service()
+def storage_domains_service(system):
+    return system.storage_domains_service
 
 
 @pytest.fixture(scope='session')

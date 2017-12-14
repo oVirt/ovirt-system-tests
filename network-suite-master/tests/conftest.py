@@ -22,28 +22,23 @@ from lago import sdk as lagosdk
 
 from repo_server import create_repo_server
 
-from fixtures.cluster import clusters_service  # NOQA: F401
 from fixtures.cluster import default_cluster  # NOQA: F401
 
-from fixtures.network import networks_service  # NOQA: F401
 from fixtures.network import ovirtmgmt_network  # NOQA: F401
 
-from fixtures.host import hosts_service  # NOQA: F401
 from fixtures.host import host_0  # NOQA: F401
 from fixtures.host import host_1  # NOQA: F401
 
-from fixtures.engine import system_service  # NOQA: F401
 from fixtures.engine import engine  # NOQA: F401
 from fixtures.engine import api  # NOQA: F401
 
 from fixtures.storage import storage_domains_service  # NOQA: F401
 from fixtures.storage import default_storage_domain  # NOQA: F401
-from fixtures.storage import disks_service  # NOQA: F401
 
 from fixtures.data_center import data_centers_service  # NOQA: F401
 from fixtures.data_center import default_data_center  # NOQA: F401
 
-from fixtures.virt import vms_service  # NOQA: F401
+from fixtures.system import system  # NOQA: F401
 
 
 def pytest_addoption(parser):

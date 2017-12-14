@@ -19,7 +19,7 @@
 #
 from ovirtsdk4 import types
 
-from lib.sdkentity import SDKEntity
+from lib.sdkentity import SDKSubEntity
 
 
 class IpVersion(object):
@@ -43,18 +43,22 @@ def create_static_ip_config_assignment(addr, mask, gateway=None,
         assignment_method=types.BootProtocol.STATIC, ip=ip)
 
 
-class Network(SDKEntity):
+class Network(SDKSubEntity):
 
     @property
     def name(self):
         return self.sdk_type.name
 
-    def _build_sdk_type(self, network_name, data_center, vlan=None,
-                        usages=(types.NetworkUsage.VM, )):
+    def _build_sdk_type(self, name, vlan=None,
+                        usages=(types.NetworkUsage.VM,)):
         network = types.Network(
-            name=network_name,
-            data_center=types.DataCenter(name=data_center),
-            usages=usages)
+            name=name,
+            data_center=self._parent_sdk_entity.service.get(),
+            usages=usages
+        )
         if vlan is not None:
             network.vlan = types.Vlan(id=vlan)
         return network
+
+    def _get_parent_service(self, dc):
+        return dc.service.networks_service()

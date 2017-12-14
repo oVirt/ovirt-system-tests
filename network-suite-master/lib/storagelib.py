@@ -20,14 +20,14 @@
 from ovirtsdk4 import types
 
 from lib import syncutil
-from lib.sdkentity import SDKEntity
+from lib.sdkentity import SDKRootEntity
 
 
 MiB = 2 ** 20
 GiB = 2 ** 30
 
 
-class Disk(SDKEntity):
+class Disk(SDKRootEntity):
 
     @property
     def status(self):
@@ -44,6 +44,9 @@ class Disk(SDKEntity):
             status=status,
             sparse=sparse
         )
+
+    def _get_parent_service(self, system):
+        return system.disks_service
 
     def wait_for_up_status(self):
         syncutil.sync(exec_func=lambda: self.status,

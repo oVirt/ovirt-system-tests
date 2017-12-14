@@ -30,9 +30,9 @@ HOST_1_DOMAIN = 'lago-network-suite-master-host-1'
 
 
 @pytest.fixture(scope='session')
-def host_0(env, default_cluster):
+def host_0(env, system, default_cluster):
     vm = env.get_vms()[HOST_0_DOMAIN]
-    host = hostlib.Host()
+    host = hostlib.Host(system)
     try:
         host.create(default_cluster.name, vm)
         with host.wait_for_up_status():
@@ -45,9 +45,9 @@ def host_0(env, default_cluster):
 
 
 @pytest.fixture(scope='session')
-def host_1(env, default_cluster):
+def host_1(env, system, default_cluster):
     vm = env.get_vms()[HOST_1_DOMAIN]
-    host = hostlib.Host()
+    host = hostlib.Host(system)
     try:
         host.create(default_cluster.name, vm)
         with host.wait_for_up_status():
@@ -57,12 +57,6 @@ def host_1(env, default_cluster):
         yield host
     finally:
         collect_artifacts(vm, pytest.config.getoption('--lago-env'))
-
-
-@pytest.fixture(scope='session', autouse=True)
-def hosts_service(system_service):
-    service = system_service.hosts_service()
-    hostlib.Host.register(service)
 
 
 def collect_artifacts(vm, workdir):

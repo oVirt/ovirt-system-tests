@@ -22,15 +22,8 @@ from lib import clusterlib
 
 
 @pytest.fixture(scope='session', autouse=True)
-def default_cluster(clusters_service):
+def default_cluster(system):
     DEFAULT_NAME = 'Default'
-    cluster = clusterlib.Cluster()
+    cluster = clusterlib.Cluster(system)
     cluster.import_by_name(DEFAULT_NAME)
     return cluster
-
-
-@pytest.fixture(scope='session')
-def clusters_service(system_service):
-    service = system_service.clusters_service()
-    clusterlib.Cluster.register(service)
-    return service

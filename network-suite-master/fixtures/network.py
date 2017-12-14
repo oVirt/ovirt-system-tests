@@ -22,14 +22,7 @@ from lib import netlib
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirtmgmt_network(networks_service):
-    network = netlib.Network()
+def ovirtmgmt_network(default_data_center):
+    network = netlib.Network(default_data_center)
     network.import_by_name('ovirtmgmt')
     return network
-
-
-@pytest.fixture(scope='session')
-def networks_service(system_service):
-    service = system_service.networks_service()
-    netlib.Network.register(service)
-    return service

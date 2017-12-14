@@ -29,11 +29,6 @@ ENGINE_DOMAIN = 'lago-network-suite-master-engine'
 
 
 @pytest.fixture(scope='session')
-def system_service(api):
-    return api.system_service()
-
-
-@pytest.fixture(scope='session')
 def api(engine):
     return _get_engine_api(engine)
 

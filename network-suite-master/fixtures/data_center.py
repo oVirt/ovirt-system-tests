@@ -22,15 +22,13 @@ from lib import datacenterlib
 
 
 @pytest.fixture(scope='session', autouse=True)
-def default_data_center(data_centers_service):
+def default_data_center(system):
     DEFAULT_NAME = 'Default'
-    dc = datacenterlib.DataCenter()
+    dc = datacenterlib.DataCenter(system)
     dc.import_by_name(DEFAULT_NAME)
     return dc
 
 
 @pytest.fixture(scope='session')
-def data_centers_service(system_service):
-    service = system_service.data_centers_service()
-    datacenterlib.DataCenter.register(service)
-    return service
+def data_centers_service(system):
+    return system.data_centers_service

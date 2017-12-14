@@ -19,10 +19,10 @@
 #
 from ovirtsdk4 import types
 
-from lib.sdkentity import SDKEntity
+from lib.sdkentity import SDKRootEntity
 
 
-class DataCenter(SDKEntity):
+class DataCenter(SDKRootEntity):
 
     @property
     def name(self):
@@ -30,3 +30,6 @@ class DataCenter(SDKEntity):
 
     def _build_sdk_type(self, dc_name):
         return types.DataCenter(name=dc_name)
+
+    def _get_parent_service(self, system):
+        return system.data_centers_service

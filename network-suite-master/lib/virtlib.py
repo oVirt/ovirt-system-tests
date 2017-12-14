@@ -21,13 +21,13 @@ from contextlib import contextmanager
 from ovirtsdk4 import types
 
 from lib import syncutil
-from lib.sdkentity import SDKEntity
+from lib.sdkentity import SDKRootEntity
 
 
 TEMPLATE_BLANK = 'Blank'
 
 
-class Vm(SDKEntity):
+class Vm(SDKRootEntity):
 
     @property
     def host(self):
@@ -80,6 +80,9 @@ class Vm(SDKEntity):
             cluster=types.Cluster(name=cluster),
             template=types.Template(name=template)
         )
+
+    def _get_parent_service(self, system):
+        return system.vms_service
 
     def _wait_for_status(self, status):
         syncutil.sync(exec_func=lambda: self.status,

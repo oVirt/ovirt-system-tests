@@ -19,10 +19,11 @@
 #
 from ovirtsdk4 import types
 
-from lib.sdkentity import SDKEntity
+from lib.sdkentity import SDKRootEntity
+from lib.sdkentity import SDKSubEntity
 
 
-class Cluster(SDKEntity):
+class Cluster(SDKRootEntity):
 
     @property
     def name(self):
@@ -43,21 +44,22 @@ class Cluster(SDKEntity):
     def _build_sdk_type(self, cluster_name):
         return types.Cluster(name=cluster_name)
 
+    def _get_parent_service(self, system):
+        return system.clusters_service
 
-class ClusterNetwork(object):
 
-    def __init__(self, cluster):
-        self._cluster = cluster
-        self._service = None
-
-    def import_by_id(self, net_id):
-        cluster_networks_service = self._cluster.service.networks_service()
-        self._service = cluster_networks_service.service(net_id)
+class ClusterNetwork(SDKSubEntity):
 
     def assign(self, dc_network):
-        cluster_networks_service = self._cluster.service.networks_service()
-        cluster_networks_service.add(dc_network.sdk_type)
-        self._service = cluster_networks_service.service(dc_network.id)
+        self._parent_service.add(dc_network.sdk_type)
+        service = self._parent_service.service(dc_network.id)
+        self._set_service(service)
+
+    def _build_sdk_type(self, *args, **kwargs):
+        pass
+
+    def _get_parent_service(self, cluster):
+        return cluster.service.networks_service()
 
     @property
     def usages(self):

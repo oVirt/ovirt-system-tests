@@ -33,10 +33,9 @@ class EntityNotFoundError(Exception):
 @six.add_metaclass(abc.ABCMeta)
 class SDKEntity(object):
 
-    _parent_service = None
-
     def __init__(self):
         self._service = None
+        self._parent_service = None
 
     @property
     def id(self):
@@ -50,10 +49,6 @@ class SDKEntity(object):
     def sdk_type(self):
         return self._service.get()
 
-    @classmethod
-    def register(cls, parent_service):
-        cls._parent_service = parent_service
-
     def create(self, *args, **kwargs):
         sdk_type = self._build_sdk_type(*args, **kwargs)
         entity_id = self._parent_service.add(sdk_type).id
@@ -61,10 +56,11 @@ class SDKEntity(object):
         self._set_service(service)
 
     def import_by_name(self, name):
-        entities = self._parent_service.list(search='name={}'.format(name))
+        entities = (entity for entity in self._parent_service.list()
+                    if entity.name == name)
         try:
-            entity_id = entities[0].id
-        except IndexError:
+            entity_id = next(entities).id
+        except StopIteration:
             raise EntityNotFoundError(
                 'entity "{}" was not found.'.format(name)
             )
@@ -97,3 +93,37 @@ class SDKEntity(object):
         if self._service is not None:
             raise EntityAlreadyInitialized
         self._service = service
+
+
+@six.add_metaclass(abc.ABCMeta)
+class SDKRootEntity(SDKEntity):
+
+    def __init__(self, parent_sdk_system):
+        super(SDKRootEntity, self).__init__()
+        self._parent_sdk_system = parent_sdk_system
+        self._parent_service = self._get_parent_service(parent_sdk_system)
+
+    @abc.abstractmethod
+    def _get_parent_service(self, sdk_system):
+        """
+        This method is responsible for getting the parent service given
+        SDKSystem.
+        """
+        pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class SDKSubEntity(SDKEntity):
+
+    def __init__(self, parent_sdk_entity):
+        super(SDKSubEntity, self).__init__()
+        self._parent_sdk_entity = parent_sdk_entity
+        self._parent_service = self._get_parent_service(parent_sdk_entity)
+
+    @abc.abstractmethod
+    def _get_parent_service(self, parent_entity):
+        """
+        This method is responsible for getting the parent service given
+        the parent SDKEntity.
+        """
+        pass

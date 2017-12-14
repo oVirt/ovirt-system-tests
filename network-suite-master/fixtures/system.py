@@ -19,10 +19,11 @@
 #
 import pytest
 
-from lib import virtlib
+from lib.system import SDKSystem
 
 
-@pytest.fixture(scope='session', autouse=True)
-def vms_service(system_service):
-    service = system_service.vms_service()
-    virtlib.Vm.register(service)
+@pytest.fixture(scope='session')
+def system(api):
+    sdk_system = SDKSystem()
+    sdk_system.import_conn(api)
+    return sdk_system

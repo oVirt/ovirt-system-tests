@@ -21,7 +21,7 @@ import contextlib
 from ovirtsdk4 import types
 
 from lib import syncutil, clusterlib
-from lib.sdkentity import SDKEntity
+from lib.sdkentity import SDKRootEntity
 
 
 class HostStatusError(Exception):
@@ -48,7 +48,7 @@ class NetworkAttachmentData(object):
         return self._ip_configuration
 
 
-class Host(SDKEntity):
+class Host(SDKRootEntity):
 
     @property
     def name(self):
@@ -108,6 +108,9 @@ class Host(SDKEntity):
             cluster=types.Cluster(name=cluster)
         )
 
+    def _get_parent_service(self, system):
+        return system.hosts_service
+
     def _host_up_status_success_criteria(self, host_status):
         if host_status == types.HostStatus.UP:
             return True
@@ -142,6 +145,6 @@ class Host(SDKEntity):
         return list(self.service.network_attachments_service().list())
 
     def _cluster(self):
-        cluster = clusterlib.Cluster()
+        cluster = clusterlib.Cluster(self._parent_sdk_system)
         cluster.import_by_id(self.sdk_type.cluster.id)
         return cluster

@@ -38,8 +38,8 @@ MIG_NET_IPv4_ADDR_2 = '192.0.3.2'
 MIG_NET_IPv4_MASK = '255.255.255.0'
 
 
-def _create_disk():
-    disk = storagelib.Disk()
+def _create_disk(system):
+    disk = storagelib.Disk(system)
     disk.create(disk_name=DISK0, sd_name=NFS_NAME)
     disk.wait_for_up_status()
     return disk
@@ -47,10 +47,8 @@ def _create_disk():
 
 @pytest.fixture
 def migration_network(host_0, host_1, default_data_center, default_cluster):
-    network = netlib.Network()
-    network.create(network_name=MIG_NET,
-                   data_center=default_data_center.name,
-                   usages=())
+    network = netlib.Network(default_data_center)
+    network.create(name=MIG_NET, usages=())
     cluster_network = clusterlib.ClusterNetwork(default_cluster)
     cluster_network.assign(network)
     cluster_network.set_usages([types.NetworkUsage.MIGRATION])
@@ -59,9 +57,9 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
 
 
 @pytest.fixture
-def vm_0(default_cluster):
-    disk = _create_disk()
-    vm = virtlib.Vm()
+def vm_0(system, default_cluster):
+    disk = _create_disk(system)
+    vm = virtlib.Vm(system)
     vm.create(vm_name=VM0,
               cluster=default_cluster.name,
               template=virtlib.TEMPLATE_BLANK)

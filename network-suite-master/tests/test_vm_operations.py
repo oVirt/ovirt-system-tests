@@ -49,7 +49,8 @@ def _create_disk():
 def migration_network(host_0, host_1, default_data_center, default_cluster):
     network = netlib.Network()
     network.create(network_name=MIG_NET,
-                   data_center=default_data_center.name)
+                   data_center=default_data_center.name,
+                   usages=())
     cluster_network = clusterlib.ClusterNetwork(default_cluster)
     cluster_network.assign(network)
     cluster_network.set_usages([types.NetworkUsage.MIGRATION])

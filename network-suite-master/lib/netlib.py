@@ -49,11 +49,12 @@ class Network(SDKEntity):
     def name(self):
         return self.sdk_type.name
 
-    def _build_sdk_type(self, network_name, data_center, vlan=None):
+    def _build_sdk_type(self, network_name, data_center, vlan=None,
+                        usages=(types.NetworkUsage.VM, )):
         network = types.Network(
             name=network_name,
-            data_center=types.DataCenter(name=data_center)
-        )
+            data_center=types.DataCenter(name=data_center),
+            usages=usages)
         if vlan is not None:
             network.vlan = types.Vlan(id=vlan)
         return network

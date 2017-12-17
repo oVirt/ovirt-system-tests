@@ -38,6 +38,7 @@ exclude = *-debuginfo
  ovirt-release-*
  libcacard-*
  ovirt-engine-phantomjs
+ ovirt-engine-appliance
 proxy=_none_
 
 [ovirt-master-snapshot-static-el7]

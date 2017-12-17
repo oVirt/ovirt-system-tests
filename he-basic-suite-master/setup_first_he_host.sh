@@ -43,7 +43,12 @@ sed \
 
 fstrim -va
 rm -rf /dev/shm/yum
-hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
+if [ -n "$1" ]; then
+    ANSIBLE="--ansible"
+else
+    ANSIBLE=""
+fi
+hosted-engine --deploy ${ANSIBLE} --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."

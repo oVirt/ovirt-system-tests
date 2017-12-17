@@ -30,7 +30,7 @@ exclude=ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso
  ovirt-engine-userportal ovirt-engine-webadmin* ovirt-engine-dwh
  ovirt-engine-wildfly ovirt-engine-yarn ovirt-engine-nodejs-modules
  openvswitch-* *-ovirt-engine-sdk4 ovirt-optimizer-dependencies
- ovirt-engine-wildfly ovirt-web-ui ovirt-engine cockpit-ovirt-dashboard
+ ovirt-engine-wildfly ovirt-web-ui ovirt-engine
 gpgcheck=0
 max_connections=5
 

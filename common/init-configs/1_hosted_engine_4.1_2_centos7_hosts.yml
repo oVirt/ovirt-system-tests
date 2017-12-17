@@ -35,13 +35,13 @@ domains:
         size: 101G
         type: empty
         name: iscsi
-        dev: sdc
+        dev: sdb
         format: qcow2
       - comment: Hosted engine storage
         size: 80G
         type: empty
         name: he
-        dev: sdd
+        dev: sdc
         format: qcow2
     metadata:
       deploy-scripts:
@@ -58,7 +58,7 @@ domains:
     nics:
       - net: __LAGO_NET__
     disks:
-      - template_name: el7-base
+      - template_name: el7.4-base
         type: template
         name: root
         dev: vda
@@ -86,7 +86,7 @@ domains:
     nics:
       - net: __LAGO_NET__
     disks:
-      - template_name: el7-base
+      - template_name: el7.4-base
         type: template
         name: root
         dev: vda

@@ -82,3 +82,6 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 
 systemctl start snmptrapd
 systemctl enable snmptrapd
+
+# Reserving port 54323 for ovirt-imageio-proxy service
+sysctl -w net.ipv4.ip_local_reserved_ports=54323

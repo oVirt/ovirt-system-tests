@@ -38,6 +38,6 @@ for e.g for oVirt master [latest master tested][6]
 [1]: http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/
 [2]: http://jenkins.ovirt.org/view/oVirt%20system%20tests/
 [3]: http://jenkins.ovirt.org/view/Publishers/
-[4]: http://jenkins.ovirt.org/job/ovirt-system-tests_master_check-patch-fc24-x86_64/
+[4]: http://jenkins.ovirt.org/view/oVirt%20system%20tests/job/ovirt-system-tests_master_check-patch-el7-x86_64/
 [5]: http://jenkins.ovirt.org/view/experimental%20jobs/
 [6]: http://resources.ovirt.org/repos/ovirt/experimental/master/latest.tested/

@@ -37,7 +37,7 @@ issues, make sure you followed the guidelines in the user permissions section be
 
 This will take a while, as first time execution downloads a lot of stuff,<br>
 like downloading OS templates, where each one takes at least 1G of data.<br>
-If you are still worried that its stuck, please refer to the [FAQ](docs/general/faq.html)
+If you are still worried that its stuck, please refer to the [FAQ]
 to see if the issue you're seeing is documented.
 
 Once it is done, you will get an initialized prefix with a 4.0 engine VM,<br>
@@ -129,11 +129,11 @@ Where to find more info
 If you're interested in how things works internally and how you can use Lago cli to do more cool stuff,<br>
 checkout the full [Lago documentation][1] and read about Lago 'verbs' and other goodies.
 
-If you're have more questions about ovirt-system-tests, try checking out the faq[2] page<br>.
+If you're have more questions about ovirt-system-tests, try checking out the [FAQ] page<br>.
 If you still can't find what you're looking for try the mailing list of ovirt (devel@ovirt.org) or lago (lago-devel@ovirt.org).
 
 Enjoy!
 
 
 [1]: http://lago.readthedocs.io/en/stable/
-[2]: docs/general/faq.html
+[FAQ]: faq.markdown

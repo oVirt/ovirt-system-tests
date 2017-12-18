@@ -126,7 +126,7 @@ yum install python-ovirt-engine-sdk4 ovirt-engine-sdk-python
 
 ### Next steps
 
-You're now ready to run the tests! checkout [Running the tests](running_tests.html) for more info.
+You're now ready to run the tests! checkout [Running the tests](running_tests.markdown) for more info.
 
 [Lago config]: http://lago.readthedocs.io/en/latest/Configuration.html
 

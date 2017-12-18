@@ -7,17 +7,18 @@ theme: readthedocs
 repo_url: https://gerrit.ovirt.org/ovirt-system-tests
 repo_name: Gerrit
 pages:
-    - Home: index.markdown
-    - General:
-        - Introduction: general/introduction.markdown
-        - Installation: general/installation.markdown
-        - 'First Run': general/running_tests.markdown
-        - FAQ: general/faq.markdown
-    - CI:
-        - Jenkins: CI/jenkins_jobs.markdown
-        - 'Verifying A Patch': CI/developers_info.markdown
-        - 'Standart CI': CI/standard_ci_and_ost.markdown
-    - 'How It Works':
-        - 'Packages Management': how-it-works/package_management.markdown
-    - Suites:
-        - 'Performance Suite': general/performance-suite.markdown
+  - Home: index.markdown
+  - General:
+    - Introduction: general/introduction.markdown
+    - Installation: general/installation.markdown
+    - 'First Run': general/running_tests.markdown
+    - FAQ: general/faq.markdown
+  - CI:
+    - Jenkins: CI/jenkins_jobs.markdown
+    - 'Verifying A Patch': CI/developers_info.markdown
+    - 'Standart CI': CI/standard_ci_and_ost.markdown
+  - 'How It Works':
+    - 'Packages Management': how-it-works/package_management.markdown
+    - 'LagoInitFile Templating': how-it-works/jinja_templates_in_lagoinitfile.markdown
+  - Suites:
+    - 'Performance Suite': general/performance-suite.markdown

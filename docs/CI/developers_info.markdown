@@ -68,7 +68,7 @@ To run an OST job on any open oVirt patch follow the following guidelines:
 
 If you're having issues or have any questions, please contact the infra team at infra@ovirt.org.
 
-[1]: http://infra-docs.readthedocs.io/en/latest/CI/Build_and_test_standards.html#standard-ci-stages
+[1]: http://ovirt-infra-docs.readthedocs.io/en/latest/CI/Build_and_test_standards#standard-ci-stages
 [2]: http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/lastSuccessfulBuild/
 [3]: http://jenkins.ovirt.org
 [4]: http://jenkins.ovirt.org/job/ovirt-system-tests_manual/

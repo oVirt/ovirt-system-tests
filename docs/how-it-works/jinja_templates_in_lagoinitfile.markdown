@@ -9,7 +9,7 @@ host-0:
 ```
 
 This will create 1 vm with 2047 ram, with the assigned name 'host-0'. If we want 100 hosts or
-to have some of definitions parameterized, we use [jinja template language](jinja) to pre-process the yml file.
+to have some of definitions parameterized, we use [jinja] to pre-process the yml file.
 
 ### Using Jinja templates
 
@@ -42,12 +42,12 @@ If we want 100 hosts, use jinja loops expression:
 ### Load vars into the template context
 By default jinja will loads `vars/main.yml` and load it into rendering context, similar to how it is done with environment
  variables.
- 
+
  ```yml
  # cat vars/main.yml
  hostCount: 100
  ```
- 
+
  Now this expression loops 100 times:
  ```yml
  {% for i in range(hostCount) %} ...
@@ -56,9 +56,9 @@ By default jinja will loads `vars/main.yml` and load it into rendering context, 
 
 ### How it is done
 There is a mini common python script, that invokes the template engine on the LagoInitFile.in and outputs the final file
- with first loading the environment and vars/main.yml demonstrated before. It is recommended that all suites will do the same, it 
+ with first loading the environment and vars/main.yml demonstrated before. It is recommended that all suites will do the same, it
  requires nothing more than pointing the control.sh script to load in the `pre_suite` section:
- 
+
  ```bash
 prep_suite () {
     render_jinja_templates

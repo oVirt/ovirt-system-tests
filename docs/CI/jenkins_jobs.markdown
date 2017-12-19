@@ -23,21 +23,7 @@ The 'check-patch' OST job is using the 'standard CI' to run the OST suites on ea
 Usually the job will run on the updated suite which is modified in the patch itself, but if any of the 'common' files<br>
 will be changed, all 'basic' suites will run as well to make sure a regression wasn't added to a common file.
 
-ovirt experimental jobs
-------------------------
-**Link**: [ovirt experimental jobs][5]<br>
-**Trigger**: Running every time a new commit is merged on ANY oVirt project. (Usually will run on a few commits due to resource limitation).<br>
-
-These jobs are triggered by each 'build-artifacts' job in CI which created RPMs for a specific oVirt project.<br>
-These rpms are being deployed to a temp repo by the 'deploy-ovirt-experimental' job and merged into latest nightly repo using repoman.<br>
-Once the repo is ready with the new RPMs, the 'test experimental' job is triggered using the given repo.<br>
-If the tests pass then a new repo is being publised under latest tested repo,
-
-for e.g for oVirt master [latest master tested][6]
-
 [1]: http://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/
 [2]: http://jenkins.ovirt.org/view/oVirt%20system%20tests/
 [3]: http://jenkins.ovirt.org/view/Publishers/
 [4]: http://jenkins.ovirt.org/view/oVirt%20system%20tests/job/ovirt-system-tests_master_check-patch-el7-x86_64/
-[5]: http://jenkins.ovirt.org/view/experimental%20jobs/
-[6]: http://resources.ovirt.org/repos/ovirt/experimental/master/latest.tested/

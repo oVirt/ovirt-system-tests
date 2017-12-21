@@ -19,11 +19,11 @@
 #
 import pytest
 
-from lib.system import SDKSystem
+from lib.system import SDKSystemRoot
 
 
 @pytest.fixture(scope='session')
 def system(api):
-    sdk_system = SDKSystem()
+    sdk_system = SDKSystemRoot()
     sdk_system.import_conn(api)
     return sdk_system

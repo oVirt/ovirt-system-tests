@@ -19,7 +19,7 @@
 from ovirtsdk4 import Connection
 
 
-class SDKSystem(object):
+class SDKSystemRoot(object):
 
     def __init__(self):
         self._system_service = None

@@ -1017,6 +1017,108 @@ def add_non_vm_network(api):
     )
 
 
+@testlib.with_ovirt_api4
+def add_role(api):
+    roles_service = api.system_service().roles_service()
+    nt.assert_true(
+        roles_service.add(
+            sdk4.types.Role(
+                name='MyRole',
+                administrative=False,
+                description='My custom role to create virtual machines',
+                permits=[
+                    # create_vm permit
+                    sdk4.types.Permit(id='1'),
+                    # login permit
+                    sdk4.types.Permit(id='1300'),
+                ],
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_affinity_label(api):
+    affinity_labels_service = api.system_service().affinity_labels_service()
+    nt.assert_true(
+        affinity_labels_service.add(
+            sdk4.types.AffinityLabel(
+                name='my_affinity_label',
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_fence_agent(api):
+    # TODO: This just adds a fence agent to host, does not enable it.
+    # Of course, we need to find a fence agents that can work on
+    # VMs via the host libvirt, etc...
+    engine = api.system_service()
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+
+    fence_agents_service = host_service.fence_agents_service()
+    nt.assert_true(
+        fence_agents_service.add(
+            sdk4.types.Agent(
+                address='1.2.3.4',
+                type='ipmilan',
+                username='myusername',
+                password='mypassword',
+                options=[
+                    sdk4.types.Option(
+                        name='myname',
+                        value='myvalue',
+                    ),
+                ],
+                order=0,
+            )
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_tag(api):
+    tags_service = api.system_service().tags_service()
+    nt.assert_true(
+        tags_service.add(
+            sdk4.types.Tag(
+                name='mytag',
+                description='My custom tag',
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_mac_pool(api):
+    pools_service = api.system_service().mac_pools_service()
+    pool = pools_service.add(
+        sdk4.types.MacPool(
+            name='mymacpool',
+            ranges=[
+                sdk4.types.Range(
+                    from_='02:00:00:00:00:00',
+                    to='02:00:00:01:00:00',
+                ),
+            ],
+        ),
+    )
+    nt.assert_true(pool)
+
+    cluster_service = test_utils.get_cluster_service(api.system_service(), 'Default')
+    nt.assert_true(
+        cluster_service.update(
+            cluster=sdk4.types.Cluster(
+                mac_pool=sdk4.types.MacPool(
+                    id=pool.id,
+                )
+            )
+        )
+    )
+
+
 _TEST_LIST = [
     add_dc,
     add_cluster,
@@ -1026,13 +1128,18 @@ _TEST_LIST = [
     add_dc_quota,
     update_default_dc,
     update_default_cluster,
+    add_mac_pool,
     remove_default_dc,
     remove_default_cluster,
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,
+    add_role,
+    add_affinity_label,
+    add_tag,
     verify_add_hosts,
     add_master_storage_domain,
+    add_fence_agent,
     verify_add_all_hosts,
     add_secondary_storage_domains,
     import_templates,

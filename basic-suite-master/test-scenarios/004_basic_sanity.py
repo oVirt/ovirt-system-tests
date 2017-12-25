@@ -1021,6 +1021,32 @@ def add_event(api):
     nt.assert_true(api.events.add(event_params))
 
 
+@testlib.with_ovirt_api4
+def add_instance_type(api):
+    instance_types_service = api.system_service().instance_types_service()
+    nt.assert_true(
+        instance_types_service.add(
+            types.InstanceType(
+                name='myinstancetype',
+                description='My instance type',
+                memory=1 * 2**30,
+                memory_policy=types.MemoryPolicy(
+                    max=1 * 2**30,
+                ),
+                high_availability=types.HighAvailability(
+                    enabled=True,
+                ),
+                cpu=types.Cpu(
+                    topology=types.CpuTopology(
+                        cores=2,
+                        sockets=2,
+                    ),
+                ),
+            ),
+        )
+    )
+
+
 _TEST_LIST = [
     add_vm_blank,
     add_vm_template,
@@ -1043,6 +1069,7 @@ _TEST_LIST = [
     add_event,
     template_export,
     template_update,
+    add_instance_type,
     verify_suspend_resume_vm,
     verify_vm_import,
     hotplug_memory,

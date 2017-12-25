@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
+import json
 import os
 import random
 import time
@@ -711,7 +712,7 @@ def wait_engine(prefix):
         except:
             return
 
-    testlib.assert_true_within(_engine_is_up, timeout=10 * 60)
+    testlib.assert_true_within(_engine_is_up, timeout=20 * 60)
 
 
 def list_glance_images_3(api):
@@ -964,11 +965,34 @@ def sleep(prefix):
     time.sleep(120)
 
 
+@testlib.with_ovirt_prefix
+def he_vm_status(prefix):
+    host0 = sorted(prefix.virt_env.host_vms(), key=lambda h: h.name())[0]
+    result = host0.ssh(
+        [
+            'hosted-engine',
+            '--vm-status',
+            '--json',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'hosted-engine --vm-status exit code: %s' % result.code
+    )
+
+    try:
+        vm_status = json.loads(result.out)
+        if vm_status['1']['engine-status']['health'] != 'good':
+            raise RuntimeError('engine-status is not good: %s' % vm_status)
+    except ValueError:
+        raise RuntimeError('could not parse JSON: %s' % result.out)
+
+
 _TEST_LIST = [
     wait_engine,
 #    add_dc,
 #    add_cluster,
     add_master_storage_domain,
+    he_vm_status,
     sleep,
     add_he_hosts,
     list_glance_images,

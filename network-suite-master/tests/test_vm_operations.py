@@ -30,7 +30,6 @@ from lib import clusterlib
 
 ETH1 = 'eth1'
 VM0 = 'vm0'
-DISK0 = 'disk0'
 NFS_NAME = 'nfs'
 MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
@@ -39,6 +38,7 @@ MIG_NET_IPv4_MASK = '255.255.255.0'
 
 
 def _create_disk(system):
+    DISK0 = 'disk0'
     disk = storagelib.Disk(system)
     disk.create(disk_name=DISK0, sd_name=NFS_NAME)
     disk.wait_for_up_status()
@@ -57,7 +57,7 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
 
 
 @pytest.fixture
-def vm_0(system, default_cluster):
+def vm_0(system, default_cluster, default_storage_domain):
     disk = _create_disk(system)
     vm = virtlib.Vm(system)
     vm.create(vm_name=VM0,
@@ -92,7 +92,6 @@ def host_1_with_mig_net(migration_network, host_1):
     host_1.clean_networks()
 
 
-@pytest.mark.usefixtures('default_storage_domain')
 def test_live_vm_migration_using_dedicated_network(vm_0, host_0_with_mig_net,
                                                    host_1_with_mig_net):
     with vm_0.wait_for_up_status():

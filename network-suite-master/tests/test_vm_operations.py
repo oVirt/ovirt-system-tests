@@ -27,10 +27,10 @@ from lib import netlib
 from lib import hostlib
 from lib import clusterlib
 
+import fixtures.storage
 
 ETH1 = 'eth1'
 VM0 = 'vm0'
-NFS_NAME = 'nfs'
 MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
 MIG_NET_IPv4_ADDR_2 = '192.0.3.2'
@@ -40,7 +40,7 @@ MIG_NET_IPv4_MASK = '255.255.255.0'
 def _create_disk(system):
     DISK0 = 'disk0'
     disk = storagelib.Disk(system)
-    disk.create(disk_name=DISK0, sd_name=NFS_NAME)
+    disk.create(disk_name=DISK0, sd_name=fixtures.storage.DEFAULT_DOMAIN_NAME)
     disk.wait_for_up_status()
     return disk
 

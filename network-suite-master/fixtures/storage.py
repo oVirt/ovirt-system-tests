@@ -24,8 +24,8 @@ from ovirtsdk4 import types
 from lib import syncutil
 
 
-SD_NFS_NAME = 'nfs'
-SD_NFS_PATH = '/exports/nfs/share1'
+DEFAULT_DOMAIN_NAME = 'nfs1'
+DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 
 @pytest.fixture(scope='session')
@@ -37,14 +37,14 @@ def storage_domains_service(system):
 def default_storage_domain(engine, storage_domains_service,
                            data_centers_service, default_data_center, host_0):
     sd = types.StorageDomain(
-        name=SD_NFS_NAME,
+        name=DEFAULT_DOMAIN_NAME,
         description='Default NFS storage domain',
         type=types.StorageDomainType.DATA,
         host=host_0.sdk_type,
         storage=types.HostStorage(
             type=types.StorageType.NFS,
             address=engine.ip(),
-            path=SD_NFS_PATH,
+            path=DEFAULT_DOMAIN_PATH,
             nfs_version=types.NfsVersion.V4_2,
         ),
     )

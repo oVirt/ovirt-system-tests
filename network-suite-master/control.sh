@@ -37,7 +37,18 @@ start_env() {
 }
 
 run_tests() {
-    python -m pytest -s -v --durations=0 --lago-env "$PREFIX" "${SUITE}/tests"
+    local artifacts_path="${OST_REPO_ROOT}/exported-artifacts"
+    local junit_xml_path="${artifacts_path}/junit.xml"
+
+    python -m pytest \
+        -s \
+        -v \
+        --durations=0 \
+        --log-level=INFO \
+        --junit-xml="$junit_xml_path" \
+        --lago-env="$PREFIX" \
+        --artifacts-path="$artifacts_path" \
+        "${SUITE}/tests"
 }
 
 run_suite () {

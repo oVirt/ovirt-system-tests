@@ -22,7 +22,6 @@ import pytest
 from ovirtsdk4 import Connection
 
 from lib import syncutil
-from fixtures.host import collect_artifacts
 
 
 ENGINE_DOMAIN = 'lago-network-suite-master-engine'
@@ -41,21 +40,19 @@ def engine(env):
     ANSWER_FILE_SRC = os.path.join(
         os.environ.get('SUITE'), 'engine-answer-file.conf'
     )
-    try:
-        engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
-        engine.ssh(
-            [
-                'engine-setup',
-                '--config-append={}'.format(ANSWER_FILE_TMP),
-                '--accept-defaults',
-            ]
-        )
-        syncutil.sync(exec_func=_get_engine_api,
-                      exec_func_args=(engine,),
-                      success_criteria=lambda api: isinstance(api, Connection))
-        yield engine
-    finally:
-        collect_artifacts(engine, pytest.config.getoption('--lago-env'))
+    engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
+    engine.ssh(
+        [
+            'engine-setup',
+            '--config-append={}'.format(ANSWER_FILE_TMP),
+            '--accept-defaults',
+        ]
+    )
+    syncutil.sync(exec_func=_get_engine_api,
+                  exec_func_args=(engine,),
+                  success_criteria=lambda api: isinstance(api, Connection))
+
+    return engine
 
 
 def _get_engine_api(engine):

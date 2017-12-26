@@ -16,9 +16,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import os
 import time
-import shutil
 
 import pytest
 
@@ -33,37 +31,23 @@ HOST_1_DOMAIN = 'lago-network-suite-master-host-1'
 def host_0(env, system, default_cluster):
     vm = env.get_vms()[HOST_0_DOMAIN]
     host = hostlib.Host(system)
-    try:
-        host.create(default_cluster.name, vm)
-        with host.wait_for_up_status():
-            # TODO: There's currently a NPE (bz#1514853) in Engine's
-            # scheduling logic (CPU usage). Once it is resolved, remove this
-            time.sleep(30)
-        yield host
-    finally:
-        collect_artifacts(vm, pytest.config.getoption('--lago-env'))
+    host.create(default_cluster.name, vm)
+    with host.wait_for_up_status():
+        # TODO: There's currently a NPE (bz#1514853) in Engine's
+        # scheduling logic (CPU usage). Once it is resolved, remove this
+        time.sleep(30)
+
+    return host
 
 
 @pytest.fixture(scope='session')
 def host_1(env, system, default_cluster):
     vm = env.get_vms()[HOST_1_DOMAIN]
     host = hostlib.Host(system)
-    try:
-        host.create(default_cluster.name, vm)
-        with host.wait_for_up_status():
-            # TODO: There's currently a NPE (bz#1514853) in Engine's
-            # scheduling logic (CPU usage). Once it is resolved, remove this
-            time.sleep(30)
-        yield host
-    finally:
-        collect_artifacts(vm, pytest.config.getoption('--lago-env'))
+    host.create(default_cluster.name, vm)
+    with host.wait_for_up_status():
+        # TODO: There's currently a NPE (bz#1514853) in Engine's
+        # scheduling logic (CPU usage). Once it is resolved, remove this
+        time.sleep(30)
 
-
-def collect_artifacts(vm, workdir):
-    artifacts_path = os.path.join(
-        workdir, '..', 'exported-artifacts', vm.name()
-    )
-    if os.path.exists(artifacts_path):
-        shutil.rmtree(artifacts_path)
-    os.makedirs(artifacts_path)
-    vm.copy_from('/var/log', artifacts_path)
+    return host

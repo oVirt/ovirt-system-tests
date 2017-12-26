@@ -42,11 +42,14 @@ get_run_path() {
 
 cleanup() {
     local run_path="$1"
+
     echo "suite.sh: moving artifacts"
-    rm -rf exported-artifacts
-    mkdir -p exported-artifacts
+
+    # collect lago.log
     [[ -d "$run_path/current/logs" ]] \
     && mv "$run_path/current/logs" exported-artifacts/lago_logs
+
+    # collect exported images
     [[ -d exported_images ]] \
     && find exported_images \
         -iname \*.tar.xz \
@@ -54,14 +57,17 @@ cleanup() {
     && find exported_images \
         -iname \*.md5 \
         -exec mv {} exported-artifacts/ \;
-    find "$run_path" \
+
+    # collect nose junit reports
+    [[ -d "$run_path" ]] \
+    && find "$run_path" \
         -type f \
-        \( -iname "nose*.xml" \
-        -o \
-        -iname "*.junit.xml" \) \
+        -iname "*.junit.xml" \
         -exec mv {} exported-artifacts/ \;
+
+    # collect the logs that were collected from lago's vms
     [[ -d "test_logs" ]] && mv test_logs exported-artifacts/
-    [[ -e "failure_msg.txt" ]] && mv failure_msg.txt exported-artifacts/
+
     ./run_suite.sh -o "$run_path" --cleanup "$SUITE"
     exit
 }
@@ -74,6 +80,9 @@ export LIBGUESTFS_BACKEND=direct
 ! [[ -c "/dev/kvm" ]] && mknod /dev/kvm c 10 232
 # uncomment the next lines for extra verbose output
 #export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
+
+rm -rf exported-artifacts
+mkdir -p exported-artifacts
 
 run_path=$(get_run_path)
 trap 'cleanup "$run_path"' SIGTERM SIGINT SIGQUIT EXIT

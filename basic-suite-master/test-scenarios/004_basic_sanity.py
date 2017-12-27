@@ -727,18 +727,27 @@ def ha_recovery(prefix):
 
 @testlib.with_ovirt_prefix
 def vdsm_recovery(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    host_id = api.vms.get(VM0_NAME).host.id
-    vm_host_name = api.hosts.get(id=host_id).name
-    hosts = prefix.virt_env.host_vms()
-    vm_host = next(h for h in hosts if h.name() == vm_host_name)
+    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    host_id = vm_service.get().host.id
+    host_service = engine.hosts_service().host_service(host_id)
+    host_name = host_service.get().name
+    vm_host = prefix.virt_env.get_vm(host_name)
+
     vm_host.service('vdsmd').stop()
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'unknown',
+        lambda:
+        vm_service.get().status == types.VmStatus.UNKNOWN
     )
+
     vm_host.service('vdsmd').start()
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+        lambda:
+        host_service.get().status == types.HostStatus.UP
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        vm_service.get().status == types.VmStatus.UP
     )
 
 

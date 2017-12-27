@@ -236,6 +236,17 @@ def extend_disk1(api):
     )
 
 
+@testlib.with_ovirt_api4
+def sparsify_disk1(api):
+    engine = api.system_service()
+    disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
+    disk_service.sparsify()
+    testlib.assert_true_within_short(
+        lambda:
+        disk_service.get().status == types.DiskStatus.OK
+    )
+
+
 @testlib.with_ovirt_api
 def add_graphics_console(api):
     vm = api.vms.get(VM0_NAME)
@@ -1074,6 +1085,7 @@ _TEST_LIST = [
     ping_vm0,
     suspend_resume_vm0,
     extend_disk1,
+    sparsify_disk1,
     export_vm1,
     verify_vm2_run,
     ha_recovery,

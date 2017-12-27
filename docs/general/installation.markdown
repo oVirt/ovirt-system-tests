@@ -65,24 +65,46 @@ Follow the instructions in "Setting up mock_runner" section at [mock_runner.sh]
 **NOTE:** This step is not needed if you installed lago with the install
 script.
 
-Configure the following repo:
+Configure the following repos:
 
 **For EL distros (such as CentOS, RHEL, etc.):**
+
 ```
+[lago]
+baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/el$releasever
+name=Lago
+enabled=1
+gpgcheck=0
+
 [ovirt-ci-tools]
 baseurl=http://resources.ovirt.org/repos/ci-tools/el$releasever
 name=oVirt CI Tools
 enabled=1
 gpgcheck=0
 ```
-**For Fedora:**
+
+Configure epel repository using the release RPM:
+
 ```
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+```
+
+**For Fedora:**
+
+```
+[lago]
+baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/fc$releasever
+name=Lago
+enabled=1
+gpgcheck=0
+
 [ovirt-ci-tools]
 baseurl=http://resources.ovirt.org/repos/ci-tools/fc$releasever
 name=oVirt CI Tools
 enabled=1
 gpgcheck=0
 ```
+
 Install lago-ovirt
 
 ```

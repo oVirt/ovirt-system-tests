@@ -98,7 +98,7 @@ def _vm_host(prefix, vm_name):
 
 
 @testlib.with_ovirt_api
-def add_vm_blank(api):
+def add_blank_vms(api):
     vm_memory = 256 * MB
     vm_params = params.VM(
         memory=vm_memory,
@@ -157,7 +157,7 @@ def add_nic(api):
 
 
 @testlib.with_ovirt_api4
-def add_disk(api):
+def add_disks(api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
@@ -216,7 +216,7 @@ def add_disk(api):
 
 
 @testlib.with_ovirt_api4
-def extend_disk(api):
+def extend_disk1(api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
     disk_attachments_service = vm_service.disk_attachments_service()
@@ -237,7 +237,7 @@ def extend_disk(api):
 
 
 @testlib.with_ovirt_api
-def add_console(api):
+def add_graphics_console(api):
     vm = api.vms.get(VM0_NAME)
     vm.graphicsconsoles.add(
         params.GraphicsConsole(
@@ -414,7 +414,7 @@ def live_storage_migration(api):
 
 
 @testlib.with_ovirt_api4
-def export_vm(api):
+def export_vm1(api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
     sd = engine.storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
@@ -427,7 +427,7 @@ def export_vm(api):
 
 
 @testlib.with_ovirt_api4
-def verify_vm_exported(api):
+def verify_vm1_exported(api):
     engine = api.system_service()
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
 
@@ -477,7 +477,7 @@ def verify_vm_import(api):
 
 
 @testlib.with_ovirt_api
-def add_vm_template(api):
+def add_vm1_from_template(api):
     #TODO: Fix the exported domain generation.
     #For the time being, add VM from Glance imported template.
     if api.templates.get(name=TEMPLATE_CIRROS) is None:
@@ -525,7 +525,7 @@ def add_vm_template(api):
 
 
 @testlib.with_ovirt_api
-def verify_add_vm_template(api):
+def verify_add_vm1_from_template(api):
     vm = api.vms.get(VM1_NAME)
     nt.assert_true(vm)
 
@@ -592,7 +592,7 @@ def add_filter_parameter(prefix):
     )
 
 @testlib.with_ovirt_prefix
-def vm_run(prefix):
+def run_vms(prefix):
     engine = prefix.virt_env.engine_vm()
     api = engine.get_api()
     vm_ip = '.'.join(engine.ip().split('.')[0:3] + ['199'])
@@ -649,9 +649,14 @@ def vm_run(prefix):
         ),
     )
     api.vms.get(VM2_NAME).start(start_params)
+
     testlib.assert_true_within_short(
         lambda: api.vms.get(VM0_NAME).status.state == 'up',
     )
+
+
+@testlib.with_ovirt_api
+def verify_vm2_run(api):
     testlib.assert_true_within_short(
         lambda: api.vms.get(VM2_NAME).status.state == 'up',
     )
@@ -675,9 +680,17 @@ def restore_vm0_networking(ovirt_prefix):
     uri = 'qemu+tls://%s/system' % host.name()
     ret = host.ssh(['virsh', '-c', uri, 'reboot', '--mode', 'acpi', VM0_NAME])
     nt.assert_equals(ret.code, EX_OK)
-    # We might want to wait until ssh server inside the VM gets up.  But the
-    # interim tests, especially *_recovery, and repeated ssh connection
-    # attempts in host.ssh calls should give enough time.
+    testlib.assert_true_within_long(
+        lambda:
+        _ping(ovirt_prefix, VM0_PING_DEST) == EX_OK
+    )
+
+    engine = ovirt_prefix.virt_env.engine_vm().get_api_v4().system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    testlib.assert_true_within_long(
+        lambda:
+        vm_service.get().status == types.VmStatus.UP
+    )
 
 
 @testlib.with_ovirt_prefix
@@ -987,7 +1000,7 @@ def hotunplug_disk(api):
 
 
 @testlib.with_ovirt_api
-def suspend_resume_vm(api):
+def suspend_resume_vm0(api):
     nt.assert_true(api.vms.get(VM0_NAME).suspend())
 
     testlib.assert_true_within_long(
@@ -999,7 +1012,7 @@ def suspend_resume_vm(api):
 
 
 @testlib.with_ovirt_api
-def verify_suspend_resume_vm(api):
+def verify_suspend_resume_vm0(api):
     testlib.assert_true_within_long(
         lambda:
         api.vms.get(VM0_NAME).status.state == 'up'
@@ -1048,36 +1061,37 @@ def add_instance_type(api):
 
 
 _TEST_LIST = [
-    add_vm_blank,
-    add_vm_template,
+    add_blank_vms,
+    add_vm1_from_template,
     add_nic,
-    add_console,
+    add_graphics_console,
     add_directlun,
     add_filter,
     add_filter_parameter,
-    verify_add_vm_template,
-    add_disk,
-    extend_disk,
-    export_vm,
-    vm_run,
+    verify_add_vm1_from_template,
+    add_disks,
+    run_vms,
     ping_vm0,
-    suspend_resume_vm,
-    restore_vm0_networking,
-    verify_vm_exported,
-    import_vm_as_clone,
+    suspend_resume_vm0,
+    extend_disk1,
+    export_vm1,
+    verify_vm2_run,
     ha_recovery,
-    add_event,
+    verify_vm1_exported,
+    import_vm_as_clone,
     template_export,
     template_update,
     add_instance_type,
-    verify_suspend_resume_vm,
+    add_event,
     verify_vm_import,
+    verify_suspend_resume_vm0,
+    restore_vm0_networking,
     hotplug_memory,
+    hotplug_disk,
+    hotplug_nic,
     hotplug_cpu,
     next_run_unplug_cpu,
-    hotplug_disk,
     disk_operations,
-    hotplug_nic,
     hotunplug_disk,
     add_vm_pool,
     update_template_version,

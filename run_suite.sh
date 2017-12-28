@@ -87,6 +87,15 @@ env_init () {
         --template-repo-path "$template_repo"
 }
 
+put_host_image() {
+    # Place a symlink to th host's base image in dest
+    # The default is to place a symlink named "host_image"
+    # in the internal repo.
+    local dest="${1:-$PREFIX/current/internal_repo/host_image}"
+
+    python "${OST_REPO_ROOT}/common/scripts/put_host_image.py" "$PREFIX" "$dest"
+}
+
 render_jinja_templates () {
     local suite_name="${SUITE##*/}"
     # export the suite name so jinja can interpolate it in the template

@@ -9,6 +9,7 @@ run_suite () {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
+    put_host_image
     install_local_rpms
     env_start
     env_status

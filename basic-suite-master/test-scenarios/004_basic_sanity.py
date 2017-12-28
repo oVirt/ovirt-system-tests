@@ -54,12 +54,14 @@ SD_ISCSI_NAME = 'iscsi'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
+BACKUP_VM_NAME = 'backup_vm'
 IMPORTED_VM_NAME = 'imported_vm'
 VM0_PING_DEST = VM0_NAME
 VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
+BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
 GLANCE_DISK_NAME = 'CirrOS_0.3.5_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
@@ -77,6 +79,7 @@ NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
 
 SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
+SNAPSHOT_FOR_BACKUP_VM = 'backup_snapshot'
 
 
 def _ping(ovirt_prefix, destination):
@@ -126,17 +129,15 @@ def add_blank_vms(api):
         ),
         name=VM0_NAME
     )
-    api.vms.add(vm_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'down',
-    )
-    vm_params.name = VM2_NAME
-    vm_params.high_availability.enabled = True
-    api.vms.add(vm_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM2_NAME).status.state == 'down',
-    )
+    for vm in [VM0_NAME, VM2_NAME, BACKUP_VM_NAME]:
+        vm_params.name = vm
+        if vm == VM2_NAME:
+            vm_params.high_availability.enabled = True
 
+        api.vms.add(vm_params)
+        testlib.assert_true_within_short(
+            lambda: api.vms.get(vm).status.state == 'down',
+        )
 
 
 @testlib.with_ovirt_api
@@ -192,7 +193,8 @@ def add_disks(api):
 
     for vm_name, disk_name, sd_name in (
             (VM1_NAME, DISK1_NAME, SD_NFS_NAME),
-            (VM2_NAME, DISK2_NAME, SD_SECOND_NFS_NAME)):
+            (VM2_NAME, DISK2_NAME, SD_SECOND_NFS_NAME),
+            (BACKUP_VM_NAME, BACKUP_DISK_NAME, SD_NFS_NAME)):
         disk_params.name = disk_name
         disk_params.storage_domains = [
             types.StorageDomain(
@@ -207,7 +209,7 @@ def add_disks(api):
                 interface=types.DiskInterface.VIRTIO))
         )
 
-    for disk_name in (GLANCE_DISK_NAME, DISK1_NAME, DISK2_NAME):
+    for disk_name in (GLANCE_DISK_NAME, DISK1_NAME, DISK2_NAME, BACKUP_DISK_NAME):
         disk_service = test_utils.get_disk_service(engine, disk_name)
         testlib.assert_true_within_short(
             lambda:
@@ -307,6 +309,112 @@ def add_directlun(prefix):
         attachment_service.get(),
         None,
         'Direct LUN disk not attached'
+    )
+
+
+@testlib.with_ovirt_api4
+def add_snapshot_for_backup(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+
+    snapshots_service = vm_service.snapshots_service()
+    disk = vm_service.disk_attachments_service().list()[0]
+
+    backup_snapshot_params = types.Snapshot(
+        description=SNAPSHOT_FOR_BACKUP_VM,
+        persist_memorystate=False,
+        disk_attachments=[
+            types.DiskAttachment(
+                disk=types.Disk(
+                    id=disk.id
+                )
+            )
+        ]
+    )
+    snapshots_service.add(backup_snapshot_params)
+
+
+@testlib.with_ovirt_api4
+def verify_backup_snapshot_created(api):
+    engine = api.system_service()
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+
+    snapshots_service = vm2_service.snapshots_service()
+
+    testlib.assert_true_within_long(
+        lambda:
+        snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK,
+    )
+
+
+@testlib.with_ovirt_api4
+def attach_snapshot_to_backup_vm(api):
+    engine = api.system_service()
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+    snapshots_service = vm2_service.snapshots_service()
+    vm2_disk = vm2_service.disk_attachments_service().list()[0]
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, BACKUP_VM_NAME)
+
+    disk_attachments_service.add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                id=vm2_disk.id,
+                snapshot=types.Snapshot(
+                    id=snapshots_service.list()[-1].id
+                )
+            ),
+            interface=types.DiskInterface.VIRTIO_SCSI,
+            bootable=False,
+            active=True
+        )
+    )
+    nt.assert_true(len(disk_attachments_service.list()) > 0)
+
+
+@testlib.with_ovirt_prefix
+def verify_transient_folder(prefix):
+    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+    sd = engine.storage_domains_service().list(search=SD_SECOND_NFS_NAME)[0]
+    host = _vm_host(prefix, BACKUP_VM_NAME)
+
+    ret = host.ssh(['ls', '/var/lib/vdsm/transient'])
+    nt.assert_equals(ret.code, 0)
+
+    all_volumes = ret.out.splitlines()
+    nt.assert_true(len(all_volumes) == 1)
+
+    nt.assert_true(sd.id in all_volumes[0])
+
+
+@testlib.with_ovirt_api4
+def remove_backup_vm_and_backup_snapshot(api):
+    engine = api.system_service()
+    backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
+    vm2_snapshot = test_utils.get_vm_service(engine, VM2_NAME).snapshots_service().list()[-1]
+    # power-off backup-vm
+    backup_vm_service.stop()
+
+    testlib.assert_true_within_long(
+        lambda:
+        backup_vm_service.get().status == types.VmStatus.DOWN
+    )
+    # remove backup_vm
+    num_of_vms = len(engine.vms_service().list())
+    backup_vm_service.remove()
+    nt.assert_true(len(engine.vms_service().list()) == (num_of_vms-1))
+    # remove vm2 snapshot
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+    vm2_service.snapshots_service().snapshot_service(vm2_snapshot.id).remove()
+
+
+@testlib.with_ovirt_api4
+def verify_backup_snapshot_removed(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+    snapshots_service = vm_service.snapshots_service()
+
+    testlib.assert_true_within_long(
+        lambda: len(snapshots_service.list()) == 1
     )
 
 
@@ -659,6 +767,8 @@ def run_vms(prefix):
         ),
     )
     api.vms.get(VM0_NAME).start(start_params)
+    api.vms.get(BACKUP_VM_NAME).start(start_params)
+
     start_params.vm.initialization.cloud_init=params.CloudInit(
         host=params.Host(
             address='VM2'
@@ -666,8 +776,8 @@ def run_vms(prefix):
     )
     api.vms.get(VM2_NAME).start(start_params)
 
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+    testlib.assert_true_within_long(
+        lambda: api.vms.get(VM0_NAME).status.state == 'up' and api.vms.get(BACKUP_VM_NAME).status.state == 'up',
     )
 
 
@@ -1123,12 +1233,18 @@ _TEST_LIST = [
     add_serial_console_vm2,
     verify_add_vm1_from_template,
     add_disks,
+    add_snapshot_for_backup,
+    verify_backup_snapshot_created,
     run_vms,
+    attach_snapshot_to_backup_vm,
+    verify_transient_folder,
+    remove_backup_vm_and_backup_snapshot,
     ping_vm0,
     suspend_resume_vm0,
     extend_disk1,
     sparsify_disk1,
     export_vm1,
+    verify_backup_snapshot_removed,
     verify_vm2_run,
     ha_recovery,
     verify_vm1_exported,

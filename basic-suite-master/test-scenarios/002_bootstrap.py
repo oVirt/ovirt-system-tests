@@ -1139,7 +1139,7 @@ _TEST_LIST = [
     add_tag,
     verify_add_hosts,
     add_master_storage_domain,
-    add_fence_agent,
+    #add_fence_agent,
     verify_add_all_hosts,
     add_secondary_storage_domains,
     import_templates,

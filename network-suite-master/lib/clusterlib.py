@@ -63,9 +63,7 @@ class ClusterNetwork(SDKSubEntity):
 
     @property
     def usages(self):
-        return self._service.get().usages
+        return self.sdk_type.usages
 
     def set_usages(self, usages):
-        network_sdk_type = self._service.get()
-        network_sdk_type.usages = usages
-        self._service.update(network_sdk_type)
+        self.update(usages=usages)

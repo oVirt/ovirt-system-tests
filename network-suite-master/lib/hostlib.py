@@ -93,7 +93,7 @@ class Host(SDKRootEntity):
     @contextlib.contextmanager
     def wait_for_up_status(self, timeout=5 * 60):
         yield
-        syncutil.sync(exec_func=lambda: self._service.get().status,
+        syncutil.sync(exec_func=lambda: self.sdk_type.status,
                       exec_func_args=(),
                       success_criteria=self._host_up_status_success_criteria,
                       timeout=timeout)

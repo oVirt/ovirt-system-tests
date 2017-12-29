@@ -24,6 +24,10 @@ import time
 DEFAULT_TIMEOUT = 120
 
 
+class Timeout(Exception):
+    pass
+
+
 def sync(exec_func, exec_func_args, success_criteria, timeout=DEFAULT_TIMEOUT):
     end_time = _monothonic_time() + timeout
     while _monothonic_time() < end_time:
@@ -31,6 +35,7 @@ def sync(exec_func, exec_func_args, success_criteria, timeout=DEFAULT_TIMEOUT):
         if success_criteria(result):
             return
         time.sleep(3)
+    raise Timeout()
 
 
 def _monothonic_time():

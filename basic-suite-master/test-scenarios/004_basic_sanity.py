@@ -440,13 +440,18 @@ def export_vm1(api):
 @testlib.with_ovirt_api4
 def verify_vm1_exported(api):
     engine = api.system_service()
-    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
-
+    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
     testlib.assert_true_within_short(
         lambda:
-        test_utils.get_storage_domain_vm_service_by_name(
-            storage_domain_service, VM1_NAME
-        ).get().status == types.VmStatus.DOWN
+        vm_service.get().status == types.VmStatus.DOWN
+    )
+
+    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
+    vm_sd_service = test_utils.get_storage_domain_vm_service_by_name(
+        storage_domain_service, VM1_NAME)
+    testlib.assert_true_within_short(
+        lambda:
+        vm_sd_service.get().status == types.VmStatus.DOWN
     )
 
 

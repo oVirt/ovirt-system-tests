@@ -114,8 +114,11 @@ def get_storage_domain_vm_service_by_name(sd_service, vm_name):
     vms_service = sd_service.vms_service()
     # StorageDomainVmsService.list has no 'search' parameter and ignores
     # query={'name': 'spam'} so we have to do the filtering ourselves
-    vm = next(vm for vm in vms_service.list() if vm.name == vm_name)
-    return vms_service.vm_service(vm.id)
+    vm = next((vm for vm in vms_service.list() if vm.name == vm_name), None)
+    if vm is None:
+        return None
+    else:
+        return vms_service.vm_service(vm.id)
 
 
 def hosts_in_cluster_v4(root, cluster_name):

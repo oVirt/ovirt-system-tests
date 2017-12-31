@@ -5,15 +5,18 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
-#TODO: regenerate this repo once more projects are branched to 4.2
-[ovirt-4.2-tested-el7]
-name = oVirt 4.2 tested
-baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
-enabled = 1
-max_connections = 10
-proxy = _none_
+#Info on why there is a duplicate repo for official 4.2:
+#During runtime in oVirt CI, this repo is replaced automatically with
+#oVirt tested repo, so on runtime this repo will bring newer pkgs from tester
+#repo which will take precedance over the official ones in 4.2 in order
+#to test latest 4.2 pkgs
 
 [ovirt-4.2-el7]
+name = oVirt 4.2 repo
+baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
+enabled = 1
+
+[ovirt-4.2-stable-el7]
 name = oVirt 4.2 Official release
 baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
 enabled = 1

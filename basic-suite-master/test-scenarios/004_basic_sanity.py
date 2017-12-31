@@ -492,7 +492,7 @@ def add_vm1_from_template(api):
     #TODO: Fix the exported domain generation.
     #For the time being, add VM from Glance imported template.
     if api.templates.get(name=TEMPLATE_CIRROS) is None:
-        raise SkipTest('%s: template %s not available.' % (add_vm_template.__name__, TEMPLATE_CIRROS))
+        raise SkipTest('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_CIRROS))
 
     vm_memory = 512 * MB
     vm_params = params.VM(

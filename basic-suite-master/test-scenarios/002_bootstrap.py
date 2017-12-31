@@ -1119,6 +1119,25 @@ def add_mac_pool(api):
     )
 
 
+@testlib.with_ovirt_prefix
+def verify_notifier(prefix):
+    engine = prefix.virt_env.engine_vm()
+    result = engine.ssh(
+        [
+            'grep',
+            'VDC_STOP',
+            '/var/log/messages',
+        ],
+    )
+    nt.eq_(
+        result.code,
+        0,
+        'Failed grep for VDC_STOP with code {0}. Output: {1}'.format(result.code, result.out)
+    )
+    engine.service('ovirt-engine-notifier')._request_stop()
+    engine.service('snmptrapd')._request_stop()
+
+
 _TEST_LIST = [
     add_dc,
     add_cluster,
@@ -1141,6 +1160,7 @@ _TEST_LIST = [
     add_master_storage_domain,
     add_glance_images,
     #add_fence_agent,
+    verify_notifier,
     verify_add_all_hosts,
     add_secondary_storage_domains,
     import_templates,

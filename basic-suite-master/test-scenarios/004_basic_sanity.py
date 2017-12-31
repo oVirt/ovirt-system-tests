@@ -1071,8 +1071,17 @@ def add_instance_type(api):
     )
 
 
+@testlib.with_ovirt_api
+def verify_glance_import(api):
+    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_CIRROS):
+        testlib.assert_true_within_long(
+            lambda: api.disks.get(disk_name).status.state == 'ok',
+        )
+
+
 _TEST_LIST = [
     add_blank_vms,
+    verify_glance_import,
     add_vm1_from_template,
     add_nic,
     add_graphics_console,

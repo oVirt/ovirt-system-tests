@@ -235,12 +235,24 @@ objectclass: inetuser
 sn: user1
 cn: user1 user1
 userPassword: {SSHA}1e/GY7pCEhoL5yMR8HvjI7+3me6PQtxZ
+memberOf: cn=mygroup,ou=Groups,dc=lago,dc=local
 # Password is 123456
+EOC
+    cat >> add_group.ldif <<EOC
+dn: cn=mygroup,ou=Groups,dc=lago,dc=local
+changetype: add
+objectClass: top
+objectClass: posixGroup
+objectClass: groupOfUniqueNames
+gidNumber: 12345
+cn: mygroup
+uniqueMember: uid=user1,ou=People,dc=lago,dc=local
 EOC
     /usr/sbin/setup-ds.pl -dd --silent --file=answer_file.inf \
      --logfile=/var/log/setup-ds.log
 
     ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_user.ldif
+    ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_group.ldif
     systemctl stop dirsrv@lago
 }
 

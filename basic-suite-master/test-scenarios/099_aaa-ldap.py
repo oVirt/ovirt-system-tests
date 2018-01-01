@@ -23,12 +23,14 @@ import os
 import tempfile
 
 from ovirtsdk.xml import params
+import ovirtsdk4.types as types
 
 from ovirtlago import testlib
 
 
 # AAA
 AAA_LDAP_USER = 'user1'
+AAA_LDAP_GROUP = 'mygroup'
 AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
 HOSTNAME_389DS = testlib.get_prefixed_name('engine')
 
@@ -95,8 +97,24 @@ def add_ldap_user(api):
     nt.assert_true(api.users.add(p))
 
 
+@testlib.with_ovirt_api4
+def add_ldap_group(api):
+    engine = api.system_service()
+    groups_service = engine.groups_service()
+
+    groups_service.add(
+        types.Group(
+            name=AAA_LDAP_GROUP,
+            domain=types.Domain(
+                name=AAA_LDAP_AUTHZ_PROVIDER
+            ),
+        ),
+    )
+
+
 _TEST_LIST = [
     add_ldap_provider,
+    add_ldap_group,
     add_ldap_user,
 ]
 

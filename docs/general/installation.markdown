@@ -46,7 +46,7 @@ be configured automatically when installing `lago-ovirt`.
 
 Add the following iptables rule (in /etc/sysconfig/iptables):
 
-```
+```bash
 #OST
 -A INPUT -p tcp --dport 8585 -s 192.168.0.0/16 -j ACCEPT
 #END OST
@@ -69,7 +69,7 @@ Configure the following repos:
 
 **For EL distros (such as CentOS, RHEL, etc.):**
 
-```
+```ini
 [lago]
 baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/el$releasever
 name=Lago
@@ -85,13 +85,13 @@ gpgcheck=0
 
 Configure epel repository using the release RPM:
 
-```
+```ini
 yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 ```
 
 **For Fedora:**
 
-```
+```ini
 [lago]
 baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/fc$releasever
 name=Lago
@@ -107,7 +107,7 @@ gpgcheck=0
 
 Install lago-ovirt
 
-```
+```bash
 yum install lago-ovirt
 ```
 
@@ -120,7 +120,7 @@ suite that you are running, for example: master or 4.1):
 
 **For EL distros (such as CentOS, RHEL, etc.):**
 
-```
+```ini
 [ovirt-tested-$VERSION]
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/$VERSION/rpm/el$releasever
 name=oVirt-$VERSION
@@ -130,7 +130,7 @@ gpgcheck=0
 
 **For Fedora:**
 
-```
+```ini
 [ovirt-tested-$VERSION]
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/$VERSION/rpm/fc$releasever
 name=oVirt-$VERSION
@@ -140,7 +140,7 @@ gpgcheck=0
 
 Install oVirt engine SDK v3 and v4:
 
-```
+```bash
 yum install python-ovirt-engine-sdk4 ovirt-engine-sdk-python
 ```
 

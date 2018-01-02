@@ -1088,6 +1088,24 @@ def verify_glance_import(api):
         )
 
 
+@testlib.with_ovirt_api4
+def add_serial_console_vm2(api):
+    engine = api.system_service()
+    # Find the virtual machine. Note the use of the `all_content` parameter, it is
+    # required in order to obtain additional information that isn't retrieved by
+    # default, like the configuration of the serial console.
+    vm = engine.vms_service().list(search=VM2_NAME, all_content=True)[0]
+    if not vm.console.enabled:
+        vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+        vm_service.update(
+            types.Vm(
+                console=types.Console(
+                    enabled=True
+                )
+            )
+        )
+
+
 _TEST_LIST = [
     add_blank_vms,
     verify_glance_import,
@@ -1097,6 +1115,7 @@ _TEST_LIST = [
     add_directlun,
     add_filter,
     add_filter_parameter,
+    add_serial_console_vm2,
     verify_add_vm1_from_template,
     add_disks,
     run_vms,

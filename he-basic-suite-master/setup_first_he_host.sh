@@ -1,5 +1,7 @@
 #!/bin/bash -x
-HOSTEDENGINE="lago-he-basic-suite-master-engine"
+HOSTEDENGINE="$1"
+shift
+
 DOMAIN=$(dnsdomainname)
 MYADDR=$(\
     /sbin/ip -4 -o addr show dev eth0 \

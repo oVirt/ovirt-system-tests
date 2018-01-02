@@ -1,6 +1,7 @@
 #!/bin/bash -xe
 set -o pipefail
 
+[ -z "${HOSTEDENGINE}" ] && HOSTEDENGINE="lago-he-basic-suite-master-engine"
 
 prep_suite () {
     local suite_name="${SUITE##*/}"
@@ -36,7 +37,7 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        /root/setup_first_he_host.sh ${HE_ANSIBLE}
+        /root/setup_first_he_host.sh ${HOSTEDENGINE} ${HE_ANSIBLE}
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then
         echo "hosted-engine setup on ${HOST}0 failed with status ${RET_CODE}."

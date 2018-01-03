@@ -10,6 +10,12 @@ install_dependencies() {
     pip install flake8==3.1.0
     pip install pylint==1.6.4
     pip install pytest
+
+    # python2-devel gcc are dependencies of shade
+    yum install -y ansible python2-devel gcc
+
+    # dependency of ansible's os_* modules
+    pip install shade
 }
 
 run_static_analysis() {

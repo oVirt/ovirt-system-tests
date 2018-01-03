@@ -1,0 +1,7 @@
+---
+- name: Create networking entities via ansible
+  hosts: localhost
+  gather_facts: no
+
+  roles:
+    - create-ovn-entities

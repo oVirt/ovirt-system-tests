@@ -1,0 +1,7 @@
+---
+- name: Cleans networking entities via ansible
+  hosts: localhost
+  gather_facts: no
+
+  roles:
+    - cleanup-ovn-entities

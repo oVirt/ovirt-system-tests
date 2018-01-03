@@ -1,0 +1,6 @@
+---
+- name: Remove simple network
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: simple_net

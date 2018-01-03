@@ -1,0 +1,7 @@
+---
+- name: Create simple network
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: simple_net
+  register: simple_net

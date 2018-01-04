@@ -17,10 +17,14 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import time
+
 from contextlib import contextmanager
 
+import ovirtsdk4
 from ovirtsdk4 import types
 
+from lib import clusterlib
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
 
@@ -55,6 +59,27 @@ class Vm(SDKRootEntity):
         disk_attachments_service = self._service.disk_attachments_service()
         disk_attachment = disk_attachments_service.add(params)
         return disk_attachment.id
+
+    def remove(self):
+        try:
+            self._avoid_unknown_dc_status_bz_1532578()
+            super(Vm, self).remove()
+        except self._unspecific_sdk_error_bz_1533016():
+            self._retry_removal_due_to_locked_status_bz_1530315()
+
+    def _avoid_unknown_dc_status_bz_1532578(self):
+        self._get_data_center().wait_for_up_status()
+
+    def _unspecific_sdk_error_bz_1533016(self):
+        return ovirtsdk4.Error
+
+    def _retry_removal_due_to_locked_status_bz_1530315(self):
+        time.sleep(30)
+        try:
+            self._avoid_unknown_dc_status_bz_1532578()
+            super(Vm, self).remove()
+        except ovirtsdk4.NotFoundError:
+            pass
 
     @contextmanager
     def wait_for_disk_up_status(self, disk, disk_attachment_id):
@@ -100,3 +125,8 @@ class Vm(SDKRootEntity):
         disk_attachment_service = disk_attachments_service.attachment_service(
             disk_attachment_id)
         return disk_attachment_service.get().active
+
+    def _get_data_center(self):
+        cluster = clusterlib.Cluster(self._parent_sdk_system)
+        cluster.import_by_id(self.sdk_type.cluster.id)
+        return cluster.get_data_center()

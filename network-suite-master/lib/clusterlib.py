@@ -19,6 +19,8 @@
 #
 from ovirtsdk4 import types
 
+from lib import datacenterlib
+
 from lib.sdkentity import SDKRootEntity
 from lib.sdkentity import SDKSubEntity
 
@@ -28,6 +30,11 @@ class Cluster(SDKRootEntity):
     @property
     def name(self):
         return self.sdk_type.name
+
+    def get_data_center(self):
+        dc = datacenterlib.DataCenter(self._parent_sdk_system)
+        dc.import_by_id(self.sdk_type.data_center.id)
+        return dc
 
     def networks(self):
         networks = []

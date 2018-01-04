@@ -21,12 +21,18 @@ import abc
 
 import six
 
+import ovirtsdk4
+
 
 class EntityAlreadyInitialized(Exception):
     pass
 
 
 class EntityNotFoundError(Exception):
+    pass
+
+
+class EntityCreationError(Exception):
     pass
 
 
@@ -51,7 +57,10 @@ class SDKEntity(object):
 
     def create(self, *args, **kwargs):
         sdk_type = self._build_sdk_type(*args, **kwargs)
-        entity_id = self._parent_service.add(sdk_type).id
+        try:
+            entity_id = self._parent_service.add(sdk_type).id
+        except ovirtsdk4.Error as err:
+            raise EntityCreationError(err.message)
         service = self._parent_service.service(entity_id)
         self._set_service(service)
 
@@ -73,7 +82,6 @@ class SDKEntity(object):
 
     def remove(self):
         self._service.remove()
-        self._service = None
 
     def update(self, **kwargs):
         sdk_type = self.sdk_type

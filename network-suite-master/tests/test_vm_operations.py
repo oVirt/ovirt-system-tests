@@ -62,11 +62,14 @@ def vm_0(system, default_cluster, default_storage_domain):
     vm.create(vm_name=VM0,
               cluster=default_cluster.name,
               template=templatelib.TEMPLATE_BLANK)
-    disk_att_id = vm.attach_disk(disk=disk)
-    with vm.wait_for_disk_up_status(disk, disk_att_id):
-        yield vm
-    with vm.wait_for_down_status():
-        vm.stop()
+    try:
+        disk_att_id = vm.attach_disk(disk=disk)
+        with vm.wait_for_disk_up_status(disk, disk_att_id):
+            yield vm
+    finally:
+        with vm.wait_for_down_status():
+            vm.stop()
+        vm.remove()
 
 
 @pytest.fixture

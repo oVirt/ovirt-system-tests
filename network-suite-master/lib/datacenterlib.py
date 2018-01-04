@@ -30,9 +30,16 @@ class DataCenter(SDKRootEntity):
     def name(self):
         return self.sdk_type.name
 
+    @property
+    def status(self):
+        return self.sdk_type.status
+
     def attach_storage_domain(self, sd):
         sds_service = self._service.storage_domains_service()
         sds_service.add(sd.sdk_type)
+
+    def wait_for_up_status(self):
+        self._wait_for_status(types.DataCenterStatus.UP)
 
     def wait_for_sd_active_status(self, sd):
         self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.ACTIVE)
@@ -48,3 +55,9 @@ class DataCenter(SDKRootEntity):
         syncutil.sync(exec_func=lambda: sd_service.get().status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == status)
+
+    def _wait_for_status(self, status):
+        syncutil.sync(exec_func=lambda: self.status,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s == status,
+                      timeout=60 * 5)

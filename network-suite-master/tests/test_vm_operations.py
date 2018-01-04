@@ -58,18 +58,14 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
 @pytest.fixture
 def vm_0(system, default_cluster, default_storage_domain):
     disk = _create_disk(system)
-    vm = virtlib.Vm(system)
-    vm.create(vm_name=VM0,
-              cluster=default_cluster.name,
-              template=templatelib.TEMPLATE_BLANK)
-    try:
+    with virtlib.vm_pool(system, size=1) as (vm,):
+        vm.create(vm_name=VM0,
+                  cluster=default_cluster.name,
+                  template=templatelib.TEMPLATE_BLANK)
+
         disk_att_id = vm.attach_disk(disk=disk)
         with vm.wait_for_disk_up_status(disk, disk_att_id):
             yield vm
-    finally:
-        with vm.wait_for_down_status():
-            vm.stop()
-        vm.remove()
 
 
 @pytest.fixture

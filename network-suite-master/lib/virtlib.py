@@ -24,9 +24,22 @@ from contextlib import contextmanager
 import ovirtsdk4
 from ovirtsdk4 import types
 
+from lib import netlib
 from lib import clusterlib
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
+
+
+@contextmanager
+def vm_pool(system, size):
+    pool = [Vm(system) for _ in range(size)]
+    try:
+        yield pool
+    finally:
+        for vm in pool[::-1]:
+            if vm.service is None:
+                continue
+            vm.remove()
 
 
 class Vm(SDKRootEntity):
@@ -43,10 +56,22 @@ class Vm(SDKRootEntity):
         self._service.start()
 
     def stop(self):
-        self._service.stop()
+        VM_IS_NOT_RUNNING = 'VM is not running'
+
+        try:
+            self._service.stop()
+        except ovirtsdk4.Error as e:
+            if VM_IS_NOT_RUNNING in e.message:
+                return
+            raise
 
     def migrate(self, dst_host_name):
         self._service.migrate(host=types.Host(name=dst_host_name))
+
+    def get_vnic(self, vnic_name):
+        vnic = netlib.Vnic(self)
+        vnic.import_by_name(vnic_name)
+        return vnic
 
     def attach_disk(self, disk, interface=types.DiskInterface.VIRTIO,
                     bootable=True, active=True):
@@ -61,6 +86,8 @@ class Vm(SDKRootEntity):
         return disk_attachment.id
 
     def remove(self):
+        with self.wait_for_down_status():
+            self.stop()
         try:
             self._avoid_unknown_dc_status_bz_1532578()
             super(Vm, self).remove()
@@ -97,12 +124,20 @@ class Vm(SDKRootEntity):
         yield
         self._wait_for_status(types.VmStatus.DOWN)
 
-    def _build_sdk_type(self, vm_name, cluster, template):
+    def _build_sdk_type(self, vm_name, cluster, template, stateless=False):
+        """
+        :type vm_name: string
+        :type cluster: string
+        :type template: string
+        :type stateless: boolean
+        """
+
         return types.Vm(
             name=vm_name,
             cluster=types.Cluster(name=cluster),
-            template=types.Template(name=template)
-        )
+            template=types.Template(name=template),
+            stateless=stateless
+            )
 
     def _get_parent_service(self, system):
         return system.vms_service

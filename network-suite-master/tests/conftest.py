@@ -28,6 +28,7 @@ from repo_server import create_repo_server
 from fixtures.cluster import default_cluster  # NOQA: F401
 
 from fixtures.network import ovirtmgmt_network  # NOQA: F401
+from fixtures.network import ovirtmgmt_vnic_profile  # NOQA: F401
 
 from fixtures.host import host_0  # NOQA: F401
 from fixtures.host import host_1  # NOQA: F401

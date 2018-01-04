@@ -49,6 +49,10 @@ class SDKSystemRoot(object):
         return self._system_service.openstack_image_providers_service()
 
     @property
+    def vnic_profiles_service(self):
+        return self._system_service.vnic_profiles_service()
+
+    @property
     def hosts_service(self):
         return self._system_service.hosts_service()
 

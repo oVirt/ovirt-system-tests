@@ -1,4 +1,4 @@
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,3 +26,10 @@ def ovirtmgmt_network(default_data_center):
     network = netlib.Network(default_data_center)
     network.import_by_name('ovirtmgmt')
     return network
+
+
+@pytest.fixture(scope='session', autouse=True)
+def ovirtmgmt_vnic_profile(system):
+    vnic_profile = netlib.VnicProfile(system)
+    vnic_profile.import_by_name(netlib.OVIRTMGMT)
+    return vnic_profile

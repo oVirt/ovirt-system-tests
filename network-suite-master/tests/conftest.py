@@ -40,6 +40,10 @@ from fixtures.engine import api  # NOQA: F401
 
 from fixtures.storage import default_storage_domain  # NOQA: F401
 
+from fixtures.providers import ovirt_image_repo  # NOQA: F401
+
+from fixtures.virt import cirros_template  # NOQA: F401
+
 from fixtures.data_center import data_centers_service  # NOQA: F401
 from fixtures.data_center import default_data_center  # NOQA: F401
 

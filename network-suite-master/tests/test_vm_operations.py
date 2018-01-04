@@ -26,6 +26,7 @@ from lib import storagelib
 from lib import netlib
 from lib import hostlib
 from lib import clusterlib
+from lib import templatelib
 
 import fixtures.storage
 
@@ -62,7 +63,7 @@ def vm_0(system, default_cluster, default_storage_domain):
     vm = virtlib.Vm(system)
     vm.create(vm_name=VM0,
               cluster=default_cluster.name,
-              template=virtlib.TEMPLATE_BLANK)
+              template=templatelib.TEMPLATE_BLANK)
     disk_att_id = vm.attach_disk(disk=disk)
     with vm.wait_for_disk_up_status(disk, disk_att_id):
         yield vm

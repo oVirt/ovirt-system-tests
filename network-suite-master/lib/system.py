@@ -1,4 +1,4 @@
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,8 +37,16 @@ class SDKSystemRoot(object):
         return self._system_service.storage_domains_service()
 
     @property
+    def templates_service(self):
+        return self._system_service.templates_service()
+
+    @property
     def clusters_service(self):
         return self._system_service.clusters_service()
+
+    @property
+    def openstack_image_providers_service(self):
+        return self._system_service.openstack_image_providers_service()
 
     @property
     def hosts_service(self):

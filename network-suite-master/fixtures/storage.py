@@ -22,6 +22,9 @@ import pytest
 from lib import storagelib
 
 
+CIRROS_IMAGE_NAME = 'CirrOS 0.3.5 for x86_64'
+CIRROS_TEMPLATE_NAME = 'Cirros_0_3_5'
+
 DEFAULT_DOMAIN_NAME = 'nfs1'
 DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,107 @@ from lib.sdkentity import SDKRootEntity
 
 MiB = 2 ** 20
 GiB = 2 ** 30
+
+
+class StorageType(object):
+
+    NFS = types.StorageType.NFS
+    CINDER = types.StorageType.CINDER
+    FCP = types.StorageType.FCP
+    GLANCE = types.StorageType.GLANCE
+    GLUSTERFS = types.StorageType.GLUSTERFS
+    ISCSI = types.StorageType.ISCSI
+    LOCALFS = types.StorageType.LOCALFS
+    NFS = types.StorageType.NFS
+    POSIXFS = types.StorageType.POSIXFS
+
+
+class StorageDomainType(object):
+
+    DATA = types.StorageDomainType.DATA
+    EXPORT = types.StorageDomainType.EXPORT
+    IMAGE = types.StorageDomainType.IMAGE
+    ISO = types.StorageDomainType.ISO
+    VOLUME = types.StorageDomainType.VOLUME
+
+
+class NfsVersion(object):
+
+    V4_2 = types.NfsVersion.V4_2
+    AUTO = types.NfsVersion.AUTO
+    V3 = types.NfsVersion.V3
+    V4 = types.NfsVersion.V4
+    V4_1 = types.NfsVersion.V4_1
+    V4_2 = types.NfsVersion.V4_2
+
+
+class HostStorageData(object):
+
+    def __init__(self, storage_type, address, path, nfs_version=None):
+        self._type = storage_type
+        self._address = address
+        self._path = path
+        self._nfs_version = nfs_version
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def nfs_version(self):
+        return self._nfs_version
+
+
+class StorageDomainStatus(object):
+
+    UNATTACHED = types.StorageDomainStatus.UNATTACHED
+    ACTIVE = types.StorageDomainStatus.ACTIVE
+
+
+class StorageDomain(SDKRootEntity):
+
+    @property
+    def status(self):
+        return self.sdk_type.status
+
+    def wait_for_unattached_status(self):
+        self._wait_for_status(StorageDomainStatus.UNATTACHED)
+
+    def _build_sdk_type(self, name, host, domain_type, host_storage_data):
+        """
+        :param name: string
+        :param name: string
+        :param host: hostlib.Host
+        :param domain_type: StorageDomainType
+        :param host_storage_data: HostStorageData
+        """
+        return types.StorageDomain(
+            name=name,
+            host=host.sdk_type,
+            type=domain_type,
+            storage=types.HostStorage(
+                type=host_storage_data.type,
+                address=host_storage_data.address,
+                path=host_storage_data.path,
+                nfs_version=host_storage_data.nfs_version
+            )
+        )
+
+    def _get_parent_service(self, system):
+        return system.storage_domains_service
+
+    def _wait_for_status(self, status):
+        syncutil.sync(exec_func=lambda: self.status,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s == status)
 
 
 class Disk(SDKRootEntity):

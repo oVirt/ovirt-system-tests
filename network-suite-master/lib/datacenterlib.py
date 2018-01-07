@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #
 from ovirtsdk4 import types
 
+from lib import storagelib
+from lib import syncutil
 from lib.sdkentity import SDKRootEntity
 
 
@@ -28,8 +30,21 @@ class DataCenter(SDKRootEntity):
     def name(self):
         return self.sdk_type.name
 
+    def attach_storage_domain(self, sd):
+        sds_service = self._service.storage_domains_service()
+        sds_service.add(sd.sdk_type)
+
+    def wait_for_sd_active_status(self, sd):
+        self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.ACTIVE)
+
     def _build_sdk_type(self, dc_name):
         return types.DataCenter(name=dc_name)
 
     def _get_parent_service(self, system):
         return system.data_centers_service
+
+    def _wait_for_sd_status(self, sd, status):
+        sd_service = self._service.storage_domains_service().service(sd.id)
+        syncutil.sync(exec_func=lambda: sd_service.get().status,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s == status)

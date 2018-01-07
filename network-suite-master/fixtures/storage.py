@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 #
 import pytest
 
-from ovirtsdk4 import types
-
-from lib import syncutil
+from lib import storagelib
 
 
 DEFAULT_DOMAIN_NAME = 'nfs1'
@@ -29,60 +27,21 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 
 @pytest.fixture(scope='session')
-def storage_domains_service(system):
-    return system.storage_domains_service
+def default_storage_domain(system, engine, host_0_up, default_data_center):
+    storage_domain = storagelib.StorageDomain(system)
+    storage_domain.create(name=DEFAULT_DOMAIN_NAME,
+                          domain_type=storagelib.StorageDomainType.DATA,
+                          host=host_0_up,
+                          host_storage_data=storagelib.HostStorageData(
+                              storage_type=storagelib.StorageType.NFS,
+                              address=engine.ip(),
+                              path=DEFAULT_DOMAIN_PATH,
+                              nfs_version=storagelib.NfsVersion.V4_2
+                              )
+                          )
+    storage_domain.wait_for_unattached_status()
 
+    default_data_center.attach_storage_domain(storage_domain)
+    default_data_center.wait_for_sd_active_status(storage_domain)
 
-@pytest.fixture(scope='session')
-def default_storage_domain(engine, storage_domains_service,
-                           data_centers_service, default_data_center,
-                           host_0_up):
-    sd = types.StorageDomain(
-        name=DEFAULT_DOMAIN_NAME,
-        description='Default NFS storage domain',
-        type=types.StorageDomainType.DATA,
-        host=host_0_up.sdk_type,
-        storage=types.HostStorage(
-            type=types.StorageType.NFS,
-            address=engine.ip(),
-            path=DEFAULT_DOMAIN_PATH,
-            nfs_version=types.NfsVersion.V4_2,
-        ),
-    )
-    storage_domain = _add_storage_domain(sd, storage_domains_service)
-    _attach_storage_domain(
-        data_centers_service, default_data_center, storage_domain)
-
-
-def _add_storage_domain(sd, storage_domains_service):
-    storage_domain = storage_domains_service.add(sd)
-    storage_domain_service = storage_domains_service.storage_domain_service(
-        storage_domain.id)
-
-    syncutil.sync(
-        exec_func=lambda: storage_domain_service.get().status,
-        exec_func_args=(),
-        success_criteria=lambda s: s == types.StorageDomainStatus.UNATTACHED
-    )
     return storage_domain
-
-
-def _attach_storage_domain(data_centers_service, default_data_center,
-                           storage_domain):
-    data_center_service = data_centers_service.data_center_service(
-        default_data_center.id)
-
-    attached_sds_service = data_center_service.storage_domains_service()
-    attached_sds_service.add(
-        types.StorageDomain(
-            id=storage_domain.id,
-        ),
-    )
-    attached_sd_service = attached_sds_service.storage_domain_service(
-        storage_domain.id)
-
-    syncutil.sync(
-        exec_func=lambda: attached_sd_service.get().status,
-        exec_func_args=(),
-        success_criteria=lambda s: s == types.StorageDomainStatus.ACTIVE
-    )

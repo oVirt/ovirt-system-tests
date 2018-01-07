@@ -45,7 +45,7 @@ def configure_metrics(prefix):
 
     result = engine.ssh(
         [
-          '/usr/share/ovirt-engine-metrics/setup/ansible/'
+          '/usr/share/ovirt-engine-metrics/'
           'configure_ovirt_machines_for_metrics.sh',
         ],
     )

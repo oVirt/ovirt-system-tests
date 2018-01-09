@@ -92,7 +92,7 @@ class Vm(SDKRootEntity):
             exec_func=lambda: self._is_disk_attachment_active(
                 disk_attachment_id),
             exec_func_args=(),
-            success_criteria=lambda s: s is True
+            success_criteria=lambda s: s
         )
 
     def _is_disk_attachment_active(self, disk_attachment_id):

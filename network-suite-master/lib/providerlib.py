@@ -40,7 +40,7 @@ class OpenStackImageProviders(SDKRootEntity):
         syncutil.sync(
             exec_func=lambda: self.is_provider_available(self.sdk_type.name),
             exec_func_args=(),
-            success_criteria=lambda s: s is True
+            success_criteria=lambda s: s
         )
 
     def _get_parent_service(self, system):

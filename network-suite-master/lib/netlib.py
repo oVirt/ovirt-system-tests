@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,16 @@
 from ovirtsdk4 import types
 
 from lib.sdkentity import SDKSubEntity
+
+
+class NetworkUsage(object):
+
+    DEFAULT_ROUTE = types.NetworkUsage.DEFAULT_ROUTE
+    DISPLAY = types.NetworkUsage.DISPLAY
+    GLUSTER = types.NetworkUsage.GLUSTER
+    MANAGEMENT = types.NetworkUsage.MANAGEMENT
+    MIGRATION = types.NetworkUsage.MIGRATION
+    VM = types.NetworkUsage.VM
 
 
 class IpVersion(object):

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import pytest
-
-from ovirtsdk4 import types
 
 from lib import virtlib
 from lib import storagelib
@@ -52,7 +50,7 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
     network.create(name=MIG_NET, usages=())
     cluster_network = clusterlib.ClusterNetwork(default_cluster)
     cluster_network.assign(network)
-    cluster_network.set_usages([types.NetworkUsage.MIGRATION])
+    cluster_network.set_usages([netlib.NetworkUsage.MIGRATION])
     yield network
     network.remove()
 

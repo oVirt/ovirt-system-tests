@@ -1138,6 +1138,43 @@ def verify_notifier(prefix):
     engine.service('snmptrapd')._request_stop()
 
 
+@testlib.with_ovirt_prefix
+def verify_engine_backup(prefix):
+    engine = prefix.virt_env.engine_vm()
+    engine.ssh(
+        [
+            'mkdir',
+            '/var/log/ost-engine-backup',
+        ],
+    )
+    result = engine.ssh(
+        [
+            'engine-backup',
+            '--mode=backup',
+            '--file=/var/log/ost-engine-backup/backup.tgz',
+            '--log=/var/log/ost-engine-backup/log.txt',
+        ],
+    )
+    nt.eq_(
+        result.code,
+        0,
+        'Failed to run engine-backup with code {0}. Output: {1}'.format(result.code, result.out)
+    )
+    result = engine.ssh(
+        [
+            'engine-backup',
+            '--mode=verify',
+            '--file=/var/log/ost-engine-backup/backup.tgz',
+            '--log=/var/log/ost-engine-backup/verify-log.txt',
+        ],
+    )
+    nt.eq_(
+        result.code,
+        0,
+        'Failed to verify backup with code {0}. Output: {1}'.format(result.code, result.out)
+    )
+
+
 _TEST_LIST = [
     add_dc,
     add_cluster,
@@ -1160,6 +1197,7 @@ _TEST_LIST = [
     add_master_storage_domain,
     add_glance_images,
     #add_fence_agent,
+    verify_engine_backup,
     verify_notifier,
     verify_add_all_hosts,
     add_secondary_storage_domains,

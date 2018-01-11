@@ -5,3 +5,15 @@
     state: present
     name: simple_net
   register: simple_net
+
+- name: Create simple_net_subnet
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ simple_net.id }}"
+    name: simple_net_subnet
+    ip_version: 4
+    cidr: 10.10.0.0/24
+    gateway_ip: 10.10.0.1
+    enable_dhcp: yes
+  register: simple_net_subnet

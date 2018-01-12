@@ -595,52 +595,57 @@ def verify_vm_import(api):
     nt.assert_true(len(engine.vms_service().list()) == (num_of_vms-1))
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm1_from_template(api):
-    #TODO: Fix the exported domain generation.
-    #For the time being, add VM from Glance imported template.
-    if api.templates.get(name=TEMPLATE_CIRROS) is None:
+    engine = api.system_service()
+    templates_service = engine.templates_service()
+    glance_template = templates_service.list(search='name=%s' % TEMPLATE_CIRROS)[0]
+    if glance_template is None:
         raise SkipTest('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_CIRROS))
 
     vm_memory = 512 * MB
-    vm_params = params.VM(
-        name=VM1_NAME,
-        description='CirrOS imported from Glance as Template',
-        memory=vm_memory,
-        cluster=params.Cluster(
-            name=TEST_CLUSTER,
-        ),
-        template=params.Template(
-            name=TEMPLATE_CIRROS,
-        ),
-        use_latest_template_version=True,
-        stateless=True,
-        display=params.Display(
-            type_='vnc',
-        ),
-        memory_policy=params.MemoryPolicy(
-            guaranteed=vm_memory / 2,
-            ballooning=False,
-        ),
-        os=params.OperatingSystem(
-            type_='other_linux',
-        ),
-        timezone='Etc/GMT',
-        type_='server',
-        serial_number=params.SerialNumber(
-            policy='custom',
-            value='12345678',
-        ),
-        cpu=params.CPU(
-            architecture='X86_64',
-            topology=params.CpuTopology(
-                cores=1,
-                threads=2,
-                sockets=1,
+    vms_service = engine.vms_service()
+    vms_service.add(
+        types.Vm(
+            name=VM1_NAME,
+            description='CirrOS imported from Glance as Template',
+            memory= 512 * MB,
+            cluster=types.Cluster(
+                name=TEST_CLUSTER,
             ),
-        ),
+            template=types.Template(
+                name=TEMPLATE_CIRROS,
+            ),
+            use_latest_template_version=True,
+            stateless=True,
+            display=types.Display(
+                type=types.DisplayType.VNC,
+            ),
+            memory_policy=types.MemoryPolicy(
+                guaranteed=vm_memory / 2,
+                ballooning=False,
+            ),
+            os=types.OperatingSystem(
+                type='other_lnux',
+            ),
+            time_zone=types.TimeZone(
+                name='Etc/GMT',
+            ),
+            type=types.VmType.SERVER,
+            serial_number=types.SerialNumber(
+                policy=types.SerialNumberPolicy.CUSTOM,
+                value='12345678',
+            ),
+            cpu=types.Cpu(
+                architecture=types.Architecture.X86_64,
+                topology=types.CpuTopology(
+                    sockets=1,
+                    cores=1,
+                    threads=2,
+                ),
+            ),
+        )
     )
-    api.vms.add(vm_params)
 
 
 @testlib.with_ovirt_api

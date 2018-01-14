@@ -5,6 +5,16 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
+# Temporary fix for projects who didn't create a branch for 4.2,
+# and their packages were manually added to the pre repo.
+# For each package, please specify why it's needed
+# ovirt-engine-metrics - https://gerrit.ovirt.org/#/c/86026/
+[ovirt-4.2-pre-el7]
+name = oVirt 4.2 pre repo
+baseurl = http://resources.ovirt.org/pub/ovirt-4.2-pre/rpm/el7/
+enabled = 1
+includepkgs = ovirt-engine-metrics
+
 #Info on why there is a duplicate repo for official 4.2:
 #During runtime in oVirt CI, this repo is replaced automatically with
 #oVirt tested repo, so on runtime this repo will bring newer pkgs from tester
@@ -768,4 +778,3 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
-

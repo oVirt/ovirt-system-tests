@@ -164,9 +164,9 @@ def add_disks(api):
     glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
     nt.assert_true(vm_service and glance_disk)
 
-    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    vm0_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
 
-    disk_attachments_service.add(
+    vm0_disk_attachments_service.add(
         types.DiskAttachment(
             disk=types.Disk(
                 id=glance_disk.get().id,
@@ -220,8 +220,7 @@ def add_disks(api):
 @testlib.with_ovirt_api4
 def extend_disk1(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
-    disk_attachments_service = vm_service.disk_attachments_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM1_NAME)
     for disk_attachment in disk_attachments_service.list():
         disk = api.follow_link(disk_attachment.disk)
         if disk.name == DISK1_NAME:
@@ -315,10 +314,9 @@ def add_directlun(prefix):
 @testlib.with_ovirt_api4
 def add_snapshot_for_backup(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
 
-    snapshots_service = vm_service.snapshots_service()
-    disk = vm_service.disk_attachments_service().list()[0]
+    vm2_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM2_NAME)
+    disk = vm2_disk_attachments_service.list()[0]
 
     backup_snapshot_params = types.Snapshot(
         description=SNAPSHOT_FOR_BACKUP_VM,
@@ -331,28 +329,29 @@ def add_snapshot_for_backup(api):
             )
         ]
     )
-    snapshots_service.add(backup_snapshot_params)
+
+    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
+    vm2_snapshots_service.add(backup_snapshot_params)
 
 
 @testlib.with_ovirt_api4
 def verify_backup_snapshot_created(api):
     engine = api.system_service()
-    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
 
-    snapshots_service = vm2_service.snapshots_service()
+    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
 
     testlib.assert_true_within_long(
         lambda:
-        snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK,
+        vm2_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK,
     )
 
 
 @testlib.with_ovirt_api4
 def attach_snapshot_to_backup_vm(api):
     engine = api.system_service()
-    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
-    snapshots_service = vm2_service.snapshots_service()
-    vm2_disk = vm2_service.disk_attachments_service().list()[0]
+    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
+    vm2_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM2_NAME)
+    vm2_disk = vm2_disk_attachments_service.list()[0]
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, BACKUP_VM_NAME)
 
     disk_attachments_service.add(
@@ -360,7 +359,7 @@ def attach_snapshot_to_backup_vm(api):
             disk=types.Disk(
                 id=vm2_disk.id,
                 snapshot=types.Snapshot(
-                    id=snapshots_service.list()[-1].id
+                    id=vm2_snapshots_service.list()[-1].id
                 )
             ),
             interface=types.DiskInterface.VIRTIO_SCSI,
@@ -390,7 +389,8 @@ def verify_transient_folder(prefix):
 def remove_backup_vm_and_backup_snapshot(api):
     engine = api.system_service()
     backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
-    vm2_snapshot = test_utils.get_vm_service(engine, VM2_NAME).snapshots_service().list()[-1]
+    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
+    vm2_snapshot = vm2_snapshots_service.list()[-1]
     # power-off backup-vm
     backup_vm_service.stop()
 
@@ -403,30 +403,27 @@ def remove_backup_vm_and_backup_snapshot(api):
     backup_vm_service.remove()
     nt.assert_true(len(engine.vms_service().list()) == (num_of_vms-1))
     # remove vm2 snapshot
-    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
-    vm2_service.snapshots_service().snapshot_service(vm2_snapshot.id).remove()
+    vm2_snapshots_service.snapshot_service(vm2_snapshot.id).remove()
 
 
 @testlib.with_ovirt_api4
 def verify_backup_snapshot_removed(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-    snapshots_service = vm_service.snapshots_service()
+    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
 
     testlib.assert_true_within_long(
-        lambda: len(snapshots_service.list()) == 1
+        lambda: len(vm2_snapshots_service.list()) == 1
     )
 
 
 @testlib.with_ovirt_api4
 def snapshot_cold_merge(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
+    vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM1_NAME)
 
-    if vm_service is None:
+    if vm1_snapshots_service is None:
         raise SkipTest('Glance is not available')
 
-    snapshots_service = vm_service.snapshots_service()
     disk = engine.disks_service().list(search=DISK1_NAME)[0]
 
     dead_snap1_params = types.Snapshot(
@@ -441,11 +438,11 @@ def snapshot_cold_merge(api):
         ]
     )
 
-    snapshots_service.add(dead_snap1_params)
+    vm1_snapshots_service.add(dead_snap1_params)
 
     testlib.assert_true_within_long(
         lambda:
-        snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
+        vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
     )
 
     dead_snap2_params = types.Snapshot(
@@ -460,21 +457,21 @@ def snapshot_cold_merge(api):
         ]
     )
 
-    snapshots_service.add(dead_snap2_params)
+    vm1_snapshots_service.add(dead_snap2_params)
 
     testlib.assert_true_within_long(
         lambda:
-        snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
+        vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
     )
 
-    snapshot = snapshots_service.list()[-2]
-    snapshots_service.snapshot_service(snapshot.id).remove()
+    snapshot = vm1_snapshots_service.list()[-2]
+    vm1_snapshots_service.snapshot_service(snapshot.id).remove()
 
     testlib.assert_true_within_long(
         lambda:
-        (len(snapshots_service.list()) == 2) and
+        (len(vm1_snapshots_service.list()) == 2) and
         (
-            snapshots_service.list()[-1].snapshot_status == (
+            vm1_snapshots_service.list()[-1].snapshot_status == (
                 types.SnapshotStatus.OK
             )
         ),
@@ -508,7 +505,6 @@ def cold_storage_migration(api):
 @testlib.with_ovirt_api4
 def live_storage_migration(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_service.move(
         async=False,
@@ -518,13 +514,13 @@ def live_storage_migration(api):
         )
     )
 
-    snapshots_service = vm_service.snapshots_service()
+    vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
     # Assert that the disk is on the correct storage domain,
     # its status is OK and the snapshot created for the migration
     # has been merged
     testlib.assert_equals_within_long(
         lambda: api.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME and \
-                len(snapshots_service.list()) == 1 and \
+                len(vm0_snapshots_service.list()) == 1 and \
                 disk_service.get().status, types.DiskStatus.OK)
 
     # This sleep is a temporary solution to the race condition
@@ -1085,7 +1081,8 @@ def hotplug_nic(api):
 
 @testlib.with_ovirt_api4
 def hotplug_disk(api):
-    disk_attachments_service = test_utils.get_disk_attachments_service(api.system_service(), VM0_NAME)
+    engine = api.system_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.add(
         types.DiskAttachment(
             disk=types.Disk(
@@ -1106,7 +1103,7 @@ def hotplug_disk(api):
         )
     )
 
-    disks_service = api.system_service().disks_service()
+    disks_service = engine.disks_service()
     disk_service = disks_service.disk_service(disk_attachment.disk.id)
     attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
 

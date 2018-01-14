@@ -140,6 +140,14 @@ def get_cluster_service(engine, cluster_name):
     return clusters_service.cluster_service(cluster.id)
 
 
+@memoized
+def get_vm_snapshots_service(engine, vm_name):
+    vm_service = get_vm_service(engine, vm_name)
+    if vm_service is None:
+        return None
+    return vm_service.snapshots_service()
+
+
 def quote_search_string(s):
     # TODO: this function should eventually be able to format strings in
     # a way that they will be properly passed on via the sdk to Engine.

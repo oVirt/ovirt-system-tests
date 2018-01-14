@@ -50,7 +50,6 @@ def test_initialize_engine(prefix):
             '-y',
             'update',
             'ovirt-*setup*',
-            'ovirt-engine-metrics',
         ]
     )
 

@@ -16,4 +16,6 @@
     cidr: 10.10.0.0/24
     gateway_ip: 10.10.0.1
     enable_dhcp: yes
+    dns_nameservers:
+      - 8.8.8.8
   register: simple_net_subnet

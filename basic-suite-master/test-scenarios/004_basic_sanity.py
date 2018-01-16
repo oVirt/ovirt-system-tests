@@ -468,12 +468,11 @@ def snapshot_cold_merge(api):
 
     testlib.assert_true_within_long(
         lambda:
-        (len(vm1_snapshots_service.list()) == 2) and
-        (
-            vm1_snapshots_service.list()[-1].snapshot_status == (
-                types.SnapshotStatus.OK
-            )
-        ),
+        len(vm1_snapshots_service.list()) == 2
+    )
+    testlib.assert_true_within_long(
+        lambda:
+        vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
     )
 
 
@@ -494,10 +493,11 @@ def cold_storage_migration(api):
 
         testlib.assert_true_within_long(
             lambda: api.follow_link(
-                disk_service.get().storage_domains[0]
-            ).name == domain and (
-                disk_service.get().status == types.DiskStatus.OK
-            )
+                disk_service.get().storage_domains[0]).name == domain
+        )
+        testlib.assert_true_within_long(
+            lambda:
+            disk_service.get().status == types.DiskStatus.OK
         )
 
 
@@ -513,14 +513,20 @@ def live_storage_migration(api):
         )
     )
 
-    vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
     # Assert that the disk is on the correct storage domain,
     # its status is OK and the snapshot created for the migration
     # has been merged
-    testlib.assert_equals_within_long(
-        lambda: api.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME and \
-                len(vm0_snapshots_service.list()) == 1 and \
-                disk_service.get().status, types.DiskStatus.OK)
+    testlib.assert_true_within_long(
+        lambda: api.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME
+    )
+
+    vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
+    testlib.assert_true_within_long(
+        lambda: len(vm0_snapshots_service.list()) == 1
+    )
+    testlib.assert_true_within_long(
+        lambda: disk_service.get().status == types.DiskStatus.OK
+    )
 
     # This sleep is a temporary solution to the race condition
     # https://bugzilla.redhat.com/1456504
@@ -1113,7 +1119,10 @@ def hotplug_disk(api):
 
     testlib.assert_true_within_short(
         lambda:
-        attachment_service.get().active and
+        attachment_service.get().active == True
+    )
+    testlib.assert_true_within_short(
+        lambda:
         disk_service.get().status == types.DiskStatus.OK
     )
 

@@ -373,7 +373,7 @@ def attach_snapshot_to_backup_vm(api):
 @testlib.with_ovirt_prefix
 def verify_transient_folder(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
-    sd = engine.storage_domains_service().list(search=SD_SECOND_NFS_NAME)[0]
+    sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
     host = _vm_host(prefix, BACKUP_VM_NAME)
 
     ret = host.ssh(['ls', '/var/lib/vdsm/transient'])
@@ -420,11 +420,10 @@ def verify_backup_snapshot_removed(api):
 def snapshot_cold_merge(api):
     engine = api.system_service()
     vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM1_NAME)
-
     if vm1_snapshots_service is None:
         raise SkipTest('Glance is not available')
 
-    disk = engine.disks_service().list(search=DISK1_NAME)[0]
+    disk = engine.disks_service().list(search='name={}'.format(DISK1_NAME))[0]
 
     dead_snap1_params = types.Snapshot(
         description=SNAPSHOT_DESC_1,
@@ -532,7 +531,7 @@ def live_storage_migration(api):
 def export_vm1(api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
-    sd = engine.storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
+    sd = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
 
     vm_service.export(
         storage_domain=types.StorageDomain(
@@ -874,7 +873,7 @@ def template_export(api):
             )
         )
 
-    storage_domain = engine.storage_domains_service().list(search=SD_TEMPLATES_NAME)[0]
+    storage_domain = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
     template_cirros.export(
         storage_domain=types.StorageDomain(
             id=storage_domain.id,
@@ -890,8 +889,8 @@ def template_export(api):
 def add_vm_pool(api):
     engine = api.system_service()
     pools_service = engine.vm_pools_service()
-    pool_cluster = engine.clusters_service().list(search=TEST_CLUSTER)[0]
-    pool_template = engine.templates_service().list(search=TEMPLATE_CIRROS)[0]
+    pool_cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
+    pool_template = engine.templates_service().list(search='name={}'.format(TEMPLATE_CIRROS))[0]
     pools_service.add(
         pool=types.VmPool(
             name=VMPOOL_NAME,
@@ -911,9 +910,9 @@ def add_vm_pool(api):
 @testlib.with_ovirt_api4
 def update_template_version(api):
     engine = api.system_service()
-    stateless_vm = engine.vms_service().list(search=VM1_NAME)[0]
+    stateless_vm = engine.vms_service().list(search='name={}'.format(VM1_NAME))[0]
     templates_service = engine.templates_service()
-    template = templates_service.list(search=TEMPLATE_CIRROS)[0]
+    template = templates_service.list(search='name={}'.format(TEMPLATE_CIRROS))[0]
 
     nt.assert_true(stateless_vm.memory != template.memory)
 
@@ -1206,7 +1205,7 @@ def add_serial_console_vm2(api):
     # Find the virtual machine. Note the use of the `all_content` parameter, it is
     # required in order to obtain additional information that isn't retrieved by
     # default, like the configuration of the serial console.
-    vm = engine.vms_service().list(search=VM2_NAME, all_content=True)[0]
+    vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
     if not vm.console.enabled:
         vm_service = test_utils.get_vm_service(engine, VM2_NAME)
         vm_service.update(

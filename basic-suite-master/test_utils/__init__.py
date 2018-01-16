@@ -66,7 +66,7 @@ def get_network_fiter_parameters_service(engine, vm_name):
 @memoized
 def get_vm_service(engine, vm_name):
     vms_service = engine.vms_service()
-    vm = vms_service.list(search=vm_name)[0]
+    vm = vms_service.list(search='name={}'.format(vm_name))[0]
     if vm is None:
         return None
     return vms_service.vm_service(vm.id)
@@ -75,7 +75,7 @@ def get_vm_service(engine, vm_name):
 @memoized
 def get_disk_service(engine, disk_name):
     disks_service = engine.disks_service()
-    disk = disks_service.list(search=disk_name)[0]
+    disk = disks_service.list(search='name={}'.format(disk_name))[0]
     return disks_service.disk_service(disk.id)
 
 
@@ -90,7 +90,7 @@ def get_disk_attachments_service(engine, vm_name):
 @memoized
 def get_template_service(engine, template_name):
     templates_service = engine.templates_service()
-    template = templates_service.list(search=template_name)[0]
+    template = templates_service.list(search='name={}'.format(template_name))[0]
     if template is None:
         return None
     return templates_service.template_service(template.id)
@@ -99,14 +99,14 @@ def get_template_service(engine, template_name):
 @memoized
 def get_pool_service(engine, pool_name):
     vm_pools_service= engine.vm_pools_service()
-    pool = vm_pools_service.list(search=pool_name)[0]
+    pool = vm_pools_service.list(search='name={}'.format(pool_name))[0]
     return vm_pools_service.pool_service(pool.id)
 
 
 @memoized
 def get_storage_domain_service(engine, sd_name):
     storage_domains_service = engine.storage_domains_service()
-    sd = storage_domains_service.list(search=sd_name)[0]
+    sd = storage_domains_service.list(search='name={}'.format(sd_name))[0]
     return storage_domains_service.storage_domain_service(sd.id)
 
 
@@ -136,7 +136,7 @@ def data_center_service(root, name):
 @memoized
 def get_cluster_service(engine, cluster_name):
     clusters_service = engine.clusters_service()
-    cluster = clusters_service.list(search=cluster_name)[0]
+    cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
     return clusters_service.cluster_service(cluster.id)
 
 

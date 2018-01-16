@@ -48,7 +48,7 @@ rm -rf /dev/shm/yum
 if [ -n "$1" ]; then
     ANSIBLE="--ansible"
 else
-    ANSIBLE=""
+    ANSIBLE="--noansible"
 fi
 hosted-engine --deploy ${ANSIBLE} --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?

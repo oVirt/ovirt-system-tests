@@ -74,6 +74,7 @@ VM_NETWORK = u'VM Network with a very long name and עברית'
 SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
 SNAPSHOT_FOR_BACKUP_VM = 'backup_snapshot'
+SNAPSHOT_DESC_MEM = 'memory_snap'
 
 VDSM_LOG = '/var/log/vdsm/vdsm.log'
 
@@ -452,6 +453,58 @@ def snapshot_cold_merge(api):
         lambda:
         vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
     )
+
+
+@testlib.with_ovirt_api4
+def make_snapshot_with_memory(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    disks_service = engine.disks_service()
+    vm_disks_service = \
+        test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    vm_disks = [disks_service.disk_service(attachment.disk.id).get()
+                for attachment in vm_disks_service.list()]
+    disk_attachments = [types.DiskAttachment(disk=types.Disk(id=disk.id))
+                        for disk in vm_disks
+                        if disk.storage_type != types.DiskStorageType.LUN]
+    snapshots_service = vm_service.snapshots_service()
+    snapshot_params = types.Snapshot(
+        description=SNAPSHOT_DESC_MEM,
+        persist_memorystate=True,
+        disk_attachments=disk_attachments
+    )
+    with test_utils.TestEvent(engine, 45):  # USER_CREATE_SNAPSHOT event
+        snapshots_service.add(snapshot_params)
+
+
+@testlib.with_ovirt_api4
+def preview_snapshot_with_memory(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+
+    def snapshot_created():
+        snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)
+        return (snapshot is not None and
+                snapshot.snapshot_status == types.SnapshotStatus.OK)
+    testlib.assert_true_within_long(snapshot_created)
+    vm_service.stop()
+    _verify_vm_state(engine, VM0_NAME, types.VmStatus.DOWN)
+    snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)
+    vm_service.preview_snapshot(snapshot=snapshot, async=False,
+                                restore_memory=True)
+
+
+@testlib.with_ovirt_api4
+def check_snapshot_with_memory(api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    testlib.assert_true_within_long(
+        lambda: test_utils.get_snapshot(engine, VM0_NAME,
+                                        SNAPSHOT_DESC_MEM).snapshot_status ==
+        types.SnapshotStatus.IN_PREVIEW
+    )
+    vm_service.start()
+    _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
 
 
 @testlib.with_ovirt_api4
@@ -1199,10 +1252,13 @@ _TEST_LIST = [
     disk_operations,
     remove_vm2_lease,
     hotunplug_disk,
+    make_snapshot_with_memory,
     add_vm_pool,
+    preview_snapshot_with_memory,
     update_template_version,
     update_vm_pool,
     remove_vm_pool,
+    check_snapshot_with_memory,
     vdsm_recovery
 ]
 

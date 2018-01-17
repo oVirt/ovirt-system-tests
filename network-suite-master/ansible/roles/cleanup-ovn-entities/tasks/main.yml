@@ -1,4 +1,6 @@
 ---
+
+# Remove the router before removing the subnet to remove the router interfaces
 - name: Remove router0
   os_router:
     cloud: "{{ cloud_name }}"

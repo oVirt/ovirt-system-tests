@@ -25,3 +25,5 @@
     cloud: "{{ cloud_name }}"
     state: present
     name: router0
+    interfaces:
+        - simple_net_subnet

@@ -557,7 +557,6 @@ includepkgs = OVMF
 	python-ldap
 	python-lxml
 	python-markupsafe
-	python-netaddr
 	python-netifaces
 	python-nss
 	python-ply
@@ -707,6 +706,7 @@ includepkgs = ebay-cors-filter
 	openvswitch-ovn-common
 	openvswitch-ovn-host
 	ovirt-cockpit-sso
+	python-netaddr
 	python-websockify
 	python2-openvswitch
 	python2-ovsdbapp

@@ -28,6 +28,7 @@ from lib import netlib
 from lib import clusterlib
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
+from lib.sdkentity import SDKSubEntity
 
 
 @contextmanager
@@ -40,6 +41,17 @@ def vm_pool(system, size):
             if vm.service is None:
                 continue
             vm.remove()
+
+
+class SnapshotStatus(object):
+
+    IN_PREVIEW = types.SnapshotStatus.IN_PREVIEW
+    NOT_READY = types.SnapshotStatus.LOCKED
+    READY = types.SnapshotStatus.OK
+
+
+class SnapshotNotInPreviewError(Exception):
+    pass
 
 
 class Vm(SDKRootEntity):
@@ -64,6 +76,15 @@ class Vm(SDKRootEntity):
             if VM_IS_NOT_RUNNING in e.message:
                 return
             raise
+
+    def snapshots(self, snapshot_id=None):
+        snapshots = []
+        for ss in self._service.snapshots_service().list():
+            if snapshot_id is None or snapshot_id == ss.id:
+                snapshot = VmSnapshot(self)
+                snapshot.import_by_id(ss.id)
+                snapshots.append(snapshot)
+        return snapshots
 
     def migrate(self, dst_host_name):
         self._service.migrate(host=types.Host(name=dst_host_name))
@@ -165,3 +186,54 @@ class Vm(SDKRootEntity):
         cluster = clusterlib.Cluster(self._parent_sdk_system)
         cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster.get_data_center()
+
+
+class VmSnapshot(SDKSubEntity):
+
+    def _get_parent_service(self, vm):
+        return vm.service.snapshots_service()
+
+    def _build_sdk_type(self, description, persist_memorystate=False):
+        return types.Snapshot(
+            persist_memorystate=persist_memorystate,
+            description=description
+            )
+
+    def commit(self):
+        if self.get_sdk_type().snapshot_status != SnapshotStatus.IN_PREVIEW:
+            raise SnapshotNotInPreviewError
+        self._parent_sdk_entity.commit_snapshot()
+
+    def preview(self):
+        self._parent_sdk_entity.service.preview_snapshot(
+            snapshot=self.get_sdk_type().id
+        )
+
+    def restore(self):
+        if self.get_sdk_type().snapshot_status == SnapshotStatus.IN_PREVIEW:
+            self._parent_sdk_entity.commit_snapshot()
+        else:
+            self._service.restore(
+                restore_memory=self.get_sdk_type().persist_memorystate
+            )
+
+    def wait_for_ready_status(self):
+        syncutil.sync(
+            exec_func=lambda: self.get_sdk_type().snapshot_status,
+            exec_func_args=(),
+            success_criteria=lambda status: status == SnapshotStatus.READY
+        )
+
+    def wait_for_snapshot_removal(self, snapshot_id):
+        syncutil.sync(
+            exec_func=self._is_snapshot_present,
+            exec_func_args=(),
+            success_criteria=lambda present: not present
+        )
+
+    def _is_snapshot_present(self):
+        try:
+            self.get_sdk_type()
+        except ovirtsdk4.NotFoundError:
+            return False
+        return True

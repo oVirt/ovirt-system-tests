@@ -33,6 +33,36 @@ VM0 = 'vm0'
 VM1 = 'vm1'
 
 
+def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
+        system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
+
+    with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+        vm_0.create(vm_name=VM0,
+                    cluster=default_cluster,
+                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+        _create_vnic(vm_0, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+
+        with vm_0.wait_for_up_status():
+            vm_0.run()
+
+        snapshot = _create_snapshot(vm_0)
+
+        _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
+
+        vm_1.create(vm_name=VM1,
+                    cluster=default_cluster,
+                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+        _create_vnic(vm_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+
+        with vm_0.wait_for_down_status():
+            vm_0.stop()
+
+        snapshot.restore()
+
+        vnic_0 = vm_0.get_vnic(NIC_NAME)
+        assert vnic_0.mac_address != MAC_ADDR_1
+
+
 def test_move_stateless_vm_mac_to_new_vm_fails(
         system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
 
@@ -96,3 +126,12 @@ def _create_vnic(vm, ovirtmgmt_vnic_profile, mac_addr):
                 mac_addr=mac_addr)
     with vm.wait_for_down_status():
         pass
+
+
+def _create_snapshot(vm):
+    SNAPSHOT_DESC = 'snapshot0'
+
+    snapshot = virtlib.VmSnapshot(vm)
+    snapshot.create(SNAPSHOT_DESC)
+    snapshot.wait_for_ready_status()
+    return snapshot

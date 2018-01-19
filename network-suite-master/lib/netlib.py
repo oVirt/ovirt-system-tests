@@ -73,13 +73,12 @@ class Network(SDKSubEntity):
     def name(self):
         return self.sdk_type.name
 
-    def _build_sdk_type(self, name, vlan=None, required=False,
+    def _build_sdk_type(self, name, vlan=None,
                         usages=(types.NetworkUsage.VM,)):
         network = types.Network(
             name=name,
             data_center=self._parent_sdk_entity.service.get(),
             usages=usages,
-            required=required,
         )
         if vlan is not None:
             network.vlan = types.Vlan(id=vlan)

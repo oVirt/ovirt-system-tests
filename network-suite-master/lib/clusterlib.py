@@ -57,8 +57,11 @@ class Cluster(SDKRootEntity):
 
 class ClusterNetwork(SDKSubEntity):
 
-    def assign(self, dc_network):
-        self._parent_service.add(dc_network.sdk_type)
+    def assign(self, dc_network, required=False):
+        sdk_type = dc_network.sdk_type
+        sdk_type.required = required
+
+        self._parent_service.add(sdk_type)
         service = self._parent_service.service(dc_network.id)
         self._set_service(service)
 

@@ -111,7 +111,6 @@ class StorageDomain(SDKRootEntity):
     def _build_sdk_type(self, name, host, domain_type, host_storage_data):
         """
         :param name: string
-        :param name: string
         :param host: hostlib.Host
         :param domain_type: StorageDomainType
         :param host_storage_data: HostStorageData

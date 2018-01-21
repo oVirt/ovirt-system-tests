@@ -127,14 +127,14 @@ class Vm(SDKRootEntity):
     def _build_sdk_type(self, vm_name, cluster, template, stateless=False):
         """
         :type vm_name: string
-        :type cluster: string
+        :type cluster: clusterlib.Cluster
         :type template: string
         :type stateless: boolean
         """
 
         return types.Vm(
             name=vm_name,
-            cluster=types.Cluster(name=cluster),
+            cluster=cluster.get_sdk_type(),
             template=types.Template(name=template),
             stateless=stateless
             )

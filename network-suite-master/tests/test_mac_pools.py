@@ -38,7 +38,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
-                    cluster=default_cluster.name,
+                    cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME,
                     stateless=True)
 
@@ -50,7 +50,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
         _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
 
         vm_1.create(vm_name=VM1,
-                    cluster=default_cluster.name,
+                    cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
 
         with pytest.raises(netlib.MacAddrInUseError):
@@ -62,7 +62,7 @@ def test_move_mac_to_new_vm(
 
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
-                    cluster=default_cluster.name,
+                    cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
 
         _create_vnic(vm_0, ovirtmgmt_vnic_profile, MAC_ADDR_1)
@@ -73,7 +73,7 @@ def test_move_mac_to_new_vm(
         _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
 
         vm_1.create(vm_name=VM1,
-                    cluster=default_cluster.name,
+                    cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
 
         _create_vnic(vm_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)

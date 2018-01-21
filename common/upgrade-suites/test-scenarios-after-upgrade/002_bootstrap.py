@@ -118,7 +118,6 @@ def add_dc(api):
 
 @testlib.with_ovirt_prefix
 def add_cluster(prefix):
-    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
     clusters_service = api.system_service().clusters_service()
     nt.assert_true(
@@ -126,10 +125,6 @@ def add_cluster(prefix):
             sdk4.types.Cluster(
                 name=CLUSTER_NAME,
                 description='APIv4 Cluster',
-                cpu=sdk4.types.Cpu(
-                    architecture=sdk4.types.Architecture.X86_64,
-                    type=cpu_family,
-                ),
                 data_center=sdk4.types.DataCenter(
                     name=DC_NAME,
                 ),

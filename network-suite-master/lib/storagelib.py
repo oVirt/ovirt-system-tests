@@ -31,6 +31,11 @@ class ImageNotFoundError(Exception):
     pass
 
 
+class DiskFormat(object):
+    COW = types.DiskFormat.COW
+    RAW = types.DiskFormat.RAW
+
+
 class StorageType(object):
 
     NFS = types.StorageType.NFS
@@ -163,7 +168,7 @@ class Disk(SDKRootEntity):
         return self.sdk_type.status
 
     def _build_sdk_type(self, disk_name, sd_name, provisioned_size=2 * GiB,
-                        disk_format=types.DiskFormat.COW, status=None,
+                        disk_format=DiskFormat.COW, status=None,
                         sparse=True):
         return types.Disk(
             name=disk_name,

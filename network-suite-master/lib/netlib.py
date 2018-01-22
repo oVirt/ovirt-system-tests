@@ -71,7 +71,7 @@ class Network(SDKSubEntity):
 
     @property
     def name(self):
-        return self.sdk_type.name
+        return self.get_sdk_type().name
 
     def _build_sdk_type(self, name, vlan=None,
                         usages=(types.NetworkUsage.VM,)):
@@ -92,7 +92,7 @@ class VnicProfile(SDKRootEntity):
 
     @property
     def name(self):
-        return self.sdk_type.name
+        return self.get_sdk_type().name
 
     def _build_sdk_type(self, name, network):
         return types.VnicProfile(name=name, network=network)
@@ -104,13 +104,13 @@ class VnicProfile(SDKRootEntity):
 class Vnic(SDKSubEntity):
 
     def set_mac_addr(self, address):
-        sdk_type = self.sdk_type
+        sdk_type = self.get_sdk_type()
         sdk_type.mac.address = address
         self._service.update(sdk_type)
 
     @property
     def mac_address(self):
-        return self.sdk_type.mac.address
+        return self.get_sdk_type().mac.address
 
     def create(self, name, vnic_profile, interface=VnicInterfaceType.VIRTIO,
                mac_addr=None):
@@ -139,7 +139,7 @@ class Vnic(SDKSubEntity):
         sdk_type = types.Nic(
             name=name,
             interface=interface,
-            vnic_profile=vnic_profile.sdk_type
+            vnic_profile=vnic_profile.get_sdk_type()
         )
         if mac_addr is not None:
             sdk_type.mac = types.Mac(address=mac_addr)

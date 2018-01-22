@@ -46,11 +46,11 @@ class Vm(SDKRootEntity):
 
     @property
     def host(self):
-        return self.sdk_type.host
+        return self.get_sdk_type().host
 
     @property
     def status(self):
-        return self.sdk_type.status
+        return self.get_sdk_type().status
 
     def run(self):
         self._service.start()
@@ -76,7 +76,7 @@ class Vm(SDKRootEntity):
     def attach_disk(self, disk, interface=types.DiskInterface.VIRTIO,
                     bootable=True, active=True):
         params = types.DiskAttachment(
-            disk=disk.sdk_type,
+            disk=disk.get_sdk_type(),
             interface=interface,
             bootable=bootable,
             active=active
@@ -163,5 +163,5 @@ class Vm(SDKRootEntity):
 
     def _get_data_center(self):
         cluster = clusterlib.Cluster(self._parent_sdk_system)
-        cluster.import_by_id(self.sdk_type.cluster.id)
+        cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster.get_data_center()

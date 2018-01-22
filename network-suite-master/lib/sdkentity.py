@@ -51,8 +51,7 @@ class SDKEntity(object):
     def service(self):
         return self._service
 
-    @property
-    def sdk_type(self):
+    def get_sdk_type(self):
         return self._service.get()
 
     def create(self, *args, **kwargs):
@@ -84,7 +83,7 @@ class SDKEntity(object):
         self._service.remove()
 
     def update(self, **kwargs):
-        sdk_type = self.sdk_type
+        sdk_type = self.get_sdk_type()
         for key, value in six.viewitems(kwargs):
             setattr(sdk_type, key, value)
         self._service.update(sdk_type)

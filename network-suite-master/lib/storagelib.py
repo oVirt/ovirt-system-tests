@@ -103,7 +103,7 @@ class StorageDomain(SDKRootEntity):
 
     @property
     def status(self):
-        return self.sdk_type.status
+        return self.get_sdk_type().status
 
     def wait_for_unattached_status(self):
         self._wait_for_status(StorageDomainStatus.UNATTACHED)
@@ -117,7 +117,7 @@ class StorageDomain(SDKRootEntity):
         """
         return types.StorageDomain(
             name=name,
-            host=host.sdk_type,
+            host=host.get_sdk_type(),
             type=domain_type,
             storage=types.HostStorage(
                 type=host_storage_data.type,
@@ -155,8 +155,8 @@ class StorageDomain(SDKRootEntity):
             import_as_template=template_name is not None,
             template=(types.Template(name=template_name)
                       if template_name is not None else None),
-            cluster=cluster.sdk_type,
-            storage_domain=self.sdk_type
+            cluster=cluster.get_sdk_type(),
+            storage_domain=self.get_sdk_type()
         )
 
 
@@ -164,7 +164,7 @@ class Disk(SDKRootEntity):
 
     @property
     def status(self):
-        return self.sdk_type.status
+        return self.get_sdk_type().status
 
     def _build_sdk_type(self, disk_name, sd_name, provisioned_size=2 * GiB,
                         disk_format=DiskFormat.COW, status=None,

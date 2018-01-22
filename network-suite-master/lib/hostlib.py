@@ -52,7 +52,7 @@ class Host(SDKRootEntity):
 
     @property
     def name(self):
-        return self.sdk_type.name
+        return self.get_sdk_type().name
 
     def setup_networks(self, attachments_data,
                        complement_management_network=True):
@@ -93,7 +93,7 @@ class Host(SDKRootEntity):
     @contextlib.contextmanager
     def wait_for_up_status(self, timeout=5 * 60):
         yield
-        syncutil.sync(exec_func=lambda: self.sdk_type.status,
+        syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
                       exec_func_args=(),
                       success_criteria=self._host_up_status_success_criteria,
                       timeout=timeout)
@@ -125,7 +125,7 @@ class Host(SDKRootEntity):
         ip_configuration = attachment_data.ip_configuration
 
         attachment = types.NetworkAttachment(
-            network=network.sdk_type,
+            network=network.get_sdk_type(),
             host_nic=types.HostNic(name=attachment_data.nic_name)
         )
         if ip_configuration is not None:
@@ -146,5 +146,5 @@ class Host(SDKRootEntity):
 
     def _cluster(self):
         cluster = clusterlib.Cluster(self._parent_sdk_system)
-        cluster.import_by_id(self.sdk_type.cluster.id)
+        cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster

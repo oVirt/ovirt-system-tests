@@ -38,7 +38,9 @@ class OpenStackImageProviders(SDKRootEntity):
 
     def wait_until_available(self):
         syncutil.sync(
-            exec_func=lambda: self.is_provider_available(self.sdk_type.name),
+            exec_func=lambda: self.is_provider_available(
+                self.get_sdk_type().name
+            ),
             exec_func_args=(),
             success_criteria=lambda s: s
         )

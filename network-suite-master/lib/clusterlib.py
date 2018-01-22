@@ -29,11 +29,11 @@ class Cluster(SDKRootEntity):
 
     @property
     def name(self):
-        return self.sdk_type.name
+        return self.get_sdk_type().name
 
     def get_data_center(self):
         dc = datacenterlib.DataCenter(self._parent_sdk_system)
-        dc.import_by_id(self.sdk_type.data_center.id)
+        dc.import_by_id(self.get_sdk_type().data_center.id)
         return dc
 
     def networks(self):
@@ -58,7 +58,7 @@ class Cluster(SDKRootEntity):
 class ClusterNetwork(SDKSubEntity):
 
     def assign(self, dc_network, required=False):
-        sdk_type = dc_network.sdk_type
+        sdk_type = dc_network.get_sdk_type()
         sdk_type.required = required
 
         self._parent_service.add(sdk_type)
@@ -73,7 +73,7 @@ class ClusterNetwork(SDKSubEntity):
 
     @property
     def usages(self):
-        return self.sdk_type.usages
+        return self.get_sdk_type().usages
 
     def set_usages(self, usages):
         self.update(usages=usages)

@@ -28,15 +28,15 @@ class DataCenter(SDKRootEntity):
 
     @property
     def name(self):
-        return self.sdk_type.name
+        return self.get_sdk_type().name
 
     @property
     def status(self):
-        return self.sdk_type.status
+        return self.get_sdk_type().status
 
     def attach_storage_domain(self, sd):
         sds_service = self._service.storage_domains_service()
-        sds_service.add(sd.sdk_type)
+        sds_service.add(sd.get_sdk_type())
 
     def wait_for_up_status(self):
         self._wait_for_status(types.DataCenterStatus.UP)

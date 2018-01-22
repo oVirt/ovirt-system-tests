@@ -1041,6 +1041,260 @@ def add_affinity_label(api):
 
 
 @testlib.with_ovirt_api4
+def add_affinity_group(api):
+    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
+    affinity_group_service = cluster_service.affinity_groups_service()
+    nt.assert_true(
+        affinity_group_service.add(
+            sdk4.types.AffinityGroup(
+                name='my_affinity_group',
+                enforcing=False,
+                positive=True,
+                hosts_rule=sdk4.types.AffinityRule(
+                    enabled=False,
+                    enforcing=False,
+                    positive=True,
+                ),
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_bookmark(api):
+    bookmarks_service = api.system_service().bookmarks_service()
+    nt.assert_true(
+        bookmarks_service.add(
+            sdk4.types.Bookmark(
+                name='my_bookmark',
+                value='vm:name=vm*',
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_cpu_profile(api):
+    cpu_profiles_service = api.system_service().cpu_profiles_service()
+    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
+    nt.assert_true(
+        cpu_profiles_service.add(
+            sdk4.types.CpuProfile(
+                name='my_cpu_profile',
+                cluster=sdk4.types.Cluster(
+                    id=cluster_service.get().id,
+                ),
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_qos(api):
+    engine = api.system_service()
+    dc_service = test_utils.data_center_service(engine, DC_NAME)
+    qoss = dc_service.qoss_service()
+    nt.assert_true(
+        qoss.add(
+            sdk4.types.Qos(
+                name='my_cpu_qos',
+                type=sdk4.types.QosType.CPU,
+                cpu_limit=99,
+            ),
+        )
+    )
+    nt.assert_true(
+        qoss.add(
+            sdk4.types.Qos(
+                name='my_storage_qos',
+                type=sdk4.types.QosType.STORAGE,
+                max_iops=999999,
+                description='max_iops_qos',
+            ),
+        )
+    )
+
+@testlib.with_ovirt_api4
+def add_disk_profile(api):
+    engine = api.system_service()
+    disk_profiles_service = engine.disk_profiles_service()
+    dc_service = test_utils.data_center_service(engine, DC_NAME)
+    attached_sds_service = dc_service.storage_domains_service()
+    attached_sd = attached_sds_service.list()[0]
+
+    nt.assert_true(
+        disk_profiles_service.add(
+            sdk4.types.DiskProfile(
+                name='my_disk_profile',
+                storage_domain=sdk4.types.StorageDomain(
+                    id=attached_sd.id,
+                ),
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def get_version(api):
+    engine = api.system_service()
+    product_info = engine.get().product_info
+    name = product_info.name
+    major_version = product_info.version.major
+    nt.assert_true(
+        name == 'oVirt Engine'
+    )
+    nt.assert_true(
+        major_version == 4
+    )
+
+
+@testlib.with_ovirt_api4
+def get_cluster_enabled_features(api):
+    engine = api.system_service()
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
+    enabled_features_service = cluster_service.enabled_features_service()
+    features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
+    #TODO: Fix the below - why is features null?
+    nt.assert_true(features)
+    feature_list = ''
+    for feature in features:
+        if feature.name == 'XYZ':
+            return True
+        else:
+            feature_list += (feature.name + '; ')
+    raise RuntimeError('Feature XYZ is not in cluster enabled features: {0}'.format(feature_list))
+
+
+@testlib.with_ovirt_api4
+def get_cluster_levels(api):
+    cluster_levels_service = api.system_service().cluster_levels_service()
+    cluster_levels = sorted(cluster_levels_service.list(), key=lambda level:level.id)
+    nt.assert_true(cluster_levels)
+    levels = ''
+    for level in cluster_levels:
+        if level.id == '4.2':
+            cluster_level_service = cluster_levels_service.level_service(level.id)
+            cl42 = cluster_level_service.get()
+            #TODO: complete testing for features in 4.2 level.
+            return True
+        else:
+            levels += (level.id + '; ')
+    raise RuntimeError('Could not find 4.2 in cluster_levels: {0}'.format(levels))
+
+
+@testlib.with_ovirt_api4
+def get_domains(api):
+    domains_service = api.system_service().domains_service()
+    domains = sorted(domains_service.list(), key=lambda domain: domain.name)
+    for domain in domains:
+        if domain.name == 'internal-authz':
+            return True
+    raise RuntimeError('Could not find internal-authz domain in domains list')
+
+
+@testlib.with_ovirt_api4
+def get_host_devices(api):
+    engine = api.system_service()
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+    devices_service = host_service.devices_service()
+    devices = sorted(devices_service.list(), key=lambda device: device.name)
+    device_list = ''
+    for device in devices:
+        if device.name == 'block_vda_1': # first virtio-blk disk
+            return True
+        else:
+            device_list += (device.name + '; ')
+    raise RuntimeError('Could not find block_vda1 device in host devices: {}'.format(device_list))
+
+
+@testlib.with_ovirt_api4
+def get_host_hooks(api):
+    engine = api.system_service()
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+    hooks_service = host_service.hooks_service()
+    hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
+    hooks_list = ''
+    for hook in hooks:
+        if hook.name == '50_vhostmd':
+            return True
+        else:
+            hooks_list += (hook.name + '; ')
+    raise RuntimeError('could not find 50_vhostmd hook in host hooks: {0}'.format(hooks_list))
+
+
+@testlib.with_ovirt_api4
+def get_host_stats(api):
+    engine = api.system_service()
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+    stats_service = host_service.statistics_service()
+    stats = sorted(stats_service.list(), key=lambda stat: stat.name)
+    stats_list = ''
+    for stat in stats:
+        if stat.name == 'boot.time':
+            return True
+        else:
+            stats_list += (stat.name + '; ')
+    raise RuntimeError('boot.time stat not in stats: {0}'.format(stats_list))
+
+
+@testlib.with_ovirt_api4
+def get_host_numa_nodes(api):
+    engine = api.system_service()
+    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host_service = engine.hosts_service().host_service(id=host.id)
+    numa_nodes_service = host_service.numa_nodes_service()
+    nodes = numa_nodes_service.list()
+    # TODO: Do a better check on the result nodes struct.
+    # The below is too simplistic.
+    nt.assert_true(
+        nodes[0].index == 0
+    )
+
+
+@testlib.with_ovirt_api4
+def add_scheduling_policy(api):
+    scheduling_policies_service = api.system_service().scheduling_policies_service()
+    nt.assert_true(
+        scheduling_policies_service.add(
+            sdk4.types.SchedulingPolicy(
+                name='my_scheduling_policy',
+                default_policy=False,
+                locked=False,
+                properties=[
+                    sdk4.types.Property(
+                        name='HighUtilization',
+                        value='99',
+                    ),
+                ],
+            )
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def get_system_options(api):
+    #TODO: get some option
+    options_service = api.system_service().options_service()
+
+
+@testlib.with_ovirt_api4
+def get_operating_systems(api):
+    operating_systems_service = api.system_service().operating_systems_service()
+    os_list = sorted(operating_systems_service.list(), key=lambda os:os.name)
+    nt.assert_true(os_list)
+    os_string = ''
+    for os in os_list:
+        if os.name == 'rhel_7x64':
+            return True
+        else:
+            os_string += (os.name + '; ')
+    raise RuntimeError('Could not find rhel_7x64 in operating systems list: {0}'.format(os_string))
+
+
+@testlib.with_ovirt_api4
 def add_fence_agent(api):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
@@ -1170,6 +1424,14 @@ _TEST_LIST = [
     add_dc,
     add_cluster,
     add_hosts,
+    get_version,
+    get_domains,
+    get_operating_systems,
+    get_system_options,
+    get_cluster_levels,
+    add_affinity_group,
+    add_qos,
+    add_bookmark,
     configure_storage,
     list_glance_images,
     add_dc_quota,
@@ -1182,10 +1444,18 @@ _TEST_LIST = [
     add_quota_cluster_limits,
     set_dc_quota_audit,
     add_role,
+    #add_scheduling_policy,
     add_affinity_label,
     add_tag,
+    add_cpu_profile,
     verify_add_hosts,
     add_master_storage_domain,
+    add_disk_profile,
+    #get_cluster_enabled_features,
+    get_host_numa_nodes,
+    get_host_devices,
+    get_host_hooks,
+    get_host_stats,
     add_glance_images,
     #add_fence_agent,
     verify_engine_backup,

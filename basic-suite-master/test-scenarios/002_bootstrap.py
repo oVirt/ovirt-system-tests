@@ -972,12 +972,15 @@ def get_host_stats(api):
 def get_host_numa_nodes(api):
     host_service = _random_host_service_from_dc(api, DC_NAME)
     numa_nodes_service = host_service.numa_nodes_service()
-    nodes = numa_nodes_service.list()
+    nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
     # The below is too simplistic.
     raise SkipTest(' [2018-02-08] test itself identified as possibly faulty')
     nt.assert_true(
         nodes[0].index == 0
+    )
+    nt.assert_true(
+        len(nodes) > 1
     )
 
 
@@ -1282,16 +1285,143 @@ def add_blank_vms(api):
         ),
         name=VM0_NAME
     )
-    for vm in [VM0_NAME, VM2_NAME, BACKUP_VM_NAME]:
+    for vm in [VM0_NAME, BACKUP_VM_NAME]:
         vm_params.name = vm
-        if vm == VM2_NAME:
-            vm_params.high_availability.enabled = True
-            vm_params.custom_emulated_machine = 'pc-i440fx-rhel7.4.0'
-
         api.vms.add(vm_params)
         testlib.assert_true_within_short(
             lambda: api.vms.get(vm).status.state == 'down',
         )
+
+
+@testlib.with_ovirt_api4
+def add_blank_high_perf_vm2(api):
+    engine = api.system_service()
+    hosts_service = engine.hosts_service()
+    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+
+    vms_service = engine.vms_service()
+    vms_service.add(
+        sdk4.types.Vm(
+            name=VM2_NAME,
+            description='Mostly complete High-Performance VM configuration',
+            cluster=sdk4.types.Cluster(
+            name=CLUSTER_NAME,
+            ),
+            template=sdk4.types.Template(
+                name=TEMPLATE_BLANK,
+            ),
+            custom_emulated_machine = 'pc-i440fx-rhel7.4.0',
+            cpu=sdk4.types.Cpu(
+                topology=sdk4.types.CpuTopology(
+                    cores=1,
+                    sockets=2,
+                    threads=1,
+                ),
+                mode=sdk4.types.CpuMode.HOST_PASSTHROUGH,
+                cpu_tune=sdk4.types.CpuTune(
+                    vcpu_pins=[
+                        sdk4.types.VcpuPin(
+                            cpu_set='0',
+                            vcpu=0,
+                        ),
+                        sdk4.types.VcpuPin(
+                            cpu_set='1',
+                            vcpu=1,
+                        ),
+                    ],
+                ),
+            ),
+            usb=sdk4.types.Usb(
+                enabled=False,
+                type=sdk4.types.UsbType.NATIVE,
+            ),
+            soundcard_enabled=False,
+            display=sdk4.types.Display(
+                smartcard_enabled=False,
+                file_transfer_enabled=False,
+                copy_paste_enabled=False,
+                type=sdk4.types.DisplayType.SPICE,
+            ),
+            os=sdk4.types.OperatingSystem(
+                type='Linux',
+            ),
+            io=sdk4.types.Io(
+                threads=1,
+            ),
+            memory_policy=sdk4.types.MemoryPolicy(
+                ballooning=False,
+                guaranteed=256 * MB,
+                max=256 * MB,
+            ),
+            memory=256 * MB,
+            high_availability=sdk4.types.HighAvailability(
+                enabled=True,
+                priority=100,
+            ),
+            rng_device=sdk4.types.RngDevice(
+                source=sdk4.types.RngSource.URANDOM,
+            ),
+            placement_policy=sdk4.types.VmPlacementPolicy(
+                affinity=sdk4.types.VmAffinity.PINNED,
+                hosts=hosts,
+            ),
+            numa_tune_mode=sdk4.types.NumaTuneMode.INTERLEAVE,
+            type=sdk4.types.VmType.HIGH_PERFORMANCE,
+            custom_properties=[
+                sdk4.types.CustomProperty(
+                    name='viodiskcache',
+                    value='writethrough',
+                ),
+            ],
+        ),
+    )
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+    testlib.assert_true_within_long(
+        lambda:
+        vm2_service.get().status == sdk4.types.VmStatus.DOWN
+    )
+
+
+@testlib.with_ovirt_api4
+def configure_high_perf_vm2(api):
+    engine = api.system_service()
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+    vm2_graphics_consoles_service = vm2_service.graphics_consoles_service()
+    vm2_graphics_consoles = vm2_graphics_consoles_service.list()
+    for graphics_console in vm2_graphics_consoles:
+        console_service = vm2_graphics_consoles_service.console_service(graphics_console.id)
+        console_service.remove()
+
+    vm2_numanodes_service = vm2_service.numa_nodes_service()
+    topology = vm2_service.get().cpu.topology
+    total_vcpus = topology.sockets * topology.cores * topology.threads
+    total_memory = vm2_service.get().memory / MB
+    for i in xrange(total_vcpus):
+        nt.assert_true(
+            vm2_numanodes_service.add(
+                node=sdk4.types.VirtualNumaNode(
+                    index=i,
+                    name='{0} vnuma node {1}'.format(VM2_NAME, i),
+                    memory= int(total_memory / total_vcpus),
+                    cpu=sdk4.types.Cpu(
+                        cores=[
+                            sdk4.types.Core(
+                                index=i,
+                            ),
+                        ],
+                    ),
+                    numa_node_pins=[
+                        sdk4.types.NumaNodePin(
+                            index=i,
+                        ),
+                    ],
+                )
+            )
+        )
+
+    nt.assert_true(
+        len(vm2_service.numa_nodes_service().list()) == total_vcpus
+    )
 
 
 @testlib.with_ovirt_api4
@@ -1493,6 +1623,9 @@ _TEST_LIST = [
     add_cpu_profile,
     verify_add_hosts,
     add_master_storage_domain,
+    add_blank_vms,
+    add_blank_high_perf_vm2,
+    configure_high_perf_vm2,
     add_disk_profile,
     get_cluster_enabled_features,
     get_host_numa_nodes,
@@ -1506,7 +1639,6 @@ _TEST_LIST = [
     check_update_host,
     add_vnic_passthrough_profile,
     remove_vnic_passthrough_profile,
-    add_blank_vms,
     add_nic,
     add_graphics_console,
     add_filter,

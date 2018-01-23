@@ -615,11 +615,6 @@ def run_vms(prefix):
     start_params = params.Action(
         use_cloud_init=True,
         vm=params.VM(
-            placement_policy=params.VmPlacementPolicy(
-                host=params.Host(
-                    name=sorted(host_names)[0]
-                ),
-            ),
             initialization=params.Initialization(
                 domain=params.Domain(
                     name='lago.example.com'

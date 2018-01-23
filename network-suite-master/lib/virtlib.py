@@ -170,9 +170,8 @@ class Vm(SDKRootEntity):
 
     def _sync_disk_attachment(self, disk_attachment_id):
         syncutil.sync(
-            exec_func=lambda: self._is_disk_attachment_active(
-                disk_attachment_id),
-            exec_func_args=(),
+            exec_func=self._is_disk_attachment_active,
+            exec_func_args=(disk_attachment_id,),
             success_criteria=lambda s: s
         )
 

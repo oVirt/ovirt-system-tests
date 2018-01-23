@@ -25,7 +25,7 @@ domains:
         format: qcow2
       - comment: Used for brick
         name: brick
-        size: 100G
+        size: 120G
         type: empty
         dev: sda
         format: qcow2
@@ -57,7 +57,7 @@ domains:
         format: qcow2
       - comment: Used for brick
         name: brick
-        size: 100G
+        size: 120G
         type: empty
         dev: sda
         format: qcow2
@@ -89,7 +89,7 @@ domains:
         format: qcow2
       - comment: Used for brick
         name: brick
-        size: 100G
+        size: 120G
         type: empty
         dev: sda
         format: qcow2

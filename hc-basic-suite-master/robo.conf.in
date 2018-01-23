@@ -33,7 +33,7 @@ action=create
 vgname=RHS_vg1
 lvname=engine_lv
 lvtype=thick
-size=30GB
+size=60GB
 mount=/rhs/brick1
 
 [lv2]

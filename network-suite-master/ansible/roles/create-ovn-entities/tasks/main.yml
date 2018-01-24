@@ -19,3 +19,9 @@
     dns_nameservers:
       - 8.8.8.8
   register: simple_net_subnet
+
+- name: Create router0
+  os_router:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: router0

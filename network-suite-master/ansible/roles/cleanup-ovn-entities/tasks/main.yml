@@ -1,4 +1,10 @@
 ---
+- name: Remove router0
+  os_router:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: router0
+
 - name: Remove simple_net_subnet
   os_subnet:
     cloud: "{{ cloud_name }}"

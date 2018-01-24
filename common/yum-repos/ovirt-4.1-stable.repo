@@ -11,9 +11,9 @@ baseurl = http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled = 1
 gpgcheck = 1
 max_connections = 5
+exclude = qemu*
 includepkgs = cockpit-ovirt-dashboard
 	ioprocess
-	mom
 	otopi
 	otopi-debug-plugins
 	otopi-java
@@ -62,10 +62,6 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-web-ui
 	python-ioprocess
 	python-ovirt-engine-sdk4
-	qemu-img-ev
-	qemu-kvm-common-ev
-	qemu-kvm-ev
-	qemu-kvm-tools-ev
 	vdsm
 	vdsm-api
 	vdsm-cli
@@ -76,6 +72,58 @@ includepkgs = cockpit-ovirt-dashboard
 	vdsm-python
 	vdsm-xmlrpc
 	vdsm-yajsonrpc
+
+[centos-qemu-ev-release-el7]
+name = CentOS-7 - QEMU EV
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+gpgcheck = 1
+enabled = 1
+gpgkey = https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676fe220e61ab8e31927feeede1128/SOURCES!RPM-GPG-KEY-CentOS-SIG-Virtualization
+includepkgs = libcacard
+	qemu-img-ev
+	qemu-kvm-common-ev
+	qemu-kvm-ev
+	qemu-kvm-tools-ev
+
+[centos-ovirt-4.1-el7]
+name = CentOS-7 - oVirt 4.1
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
+gpgcheck = 1
+enabled = 1
+includepkgs = archaius-core
+	ebay-cors-filter
+	gofer
+	hystrix-core
+	hystrix-metrics-event-stream
+	jackson-core
+	jctools
+	katello-agent
+	katello-agent-fact-plugin
+	mom
+	novnc
+	openvswitch
+	ovirt-imageio-common
+	ovirt-imageio-daemon
+	pulp-rpm-handlers
+	python-cpopen
+	python-daemon
+	python-dateutil
+	python-gofer
+	python-gofer-proton
+	python-isodate
+	python-keyczar
+	python-nose
+	python-pthreading
+	python-pulp-agent-lib
+	python-pulp-common
+	python-pulp-rpm-common
+	python-websockify
+	python2-jmespath
+	python2-six
+	rxjava
+	safelease
+	spice-html5
+	unboundid-ldapsdk
 
 [patternfly-copr-el7]
 name = oVirt 4.1 dependencies
@@ -227,7 +275,6 @@ includepkgs = OVMF
 	libaio
 	libatasmart
 	libbasicobjects
-	libcacard
 	libcgroup
 	libcollection
 	libconfig
@@ -366,7 +413,6 @@ includepkgs = OVMF
 	python-chardet
 	python-configshell
 	python-dmidecode
-	python-dateutil
 	python-dns
 	python-enum34
 	python-ethtool
@@ -384,7 +430,6 @@ includepkgs = OVMF
 	python-markupsafe
 	python-netaddr
 	python-netifaces
-	python-nose
 	python-nss
 	python-ply
 	python-psycopg2
@@ -443,6 +488,7 @@ includepkgs = OVMF
 	unbound-libs
 	unzip
 	usbredir
+	usermode
 	ws-commons-util
 	ws-jaxme
 	xalan-j2
@@ -525,6 +571,7 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	kernel
 	libgfortran
 	libgudev1
 	libguestfs
@@ -568,6 +615,8 @@ includepkgs = 389-ds-base
 	postgresql-server
 	python-libguestfs
 	python-libipa_hbac
+	python-rhsm
+	python-rhsm-certificates
 	python-sss-murmur
 	python-sssdconfig
 	python2-cryptography
@@ -588,6 +637,7 @@ includepkgs = 389-ds-base
 	sssd-krb5-common
 	sssd-ldap
 	sssd-proxy
+	subscription-manager
 	systemd
 	systemd-libs
 	systemd-python
@@ -612,25 +662,10 @@ includepkgs = cockpit-bridge
 	python-lockfile
 	python-paramiko
 	python2-crypto
-	python2-jmespath
 	sshpass
 	storaged
 	storaged-iscsi
 	storaged-lvm2
-
-[centos-ovirt-4.1-el7]
-name = CentOS-$releasever - oVirt 4.1
-baseurl = https://cbs.centos.org/repos/virt7-ovirt-41-candidate/x86_64/os/
-enabled = 1
-includepkgs = ebay-cors-filter
-	novnc
-	openvswitch
-	ovirt-imageio-common
-	ovirt-imageio-daemon
-	python-websockify
-	python2-six
-	safelease
-	unboundid-ldapsdk
 
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64
@@ -638,19 +673,10 @@ baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
 max_connections = 5
 includepkgs = ansible
-	archaius-core
-	hystrix-core
-	hystrix-metrics-event-stream
-	jackson-core
-	jctools
 	lyx-fonts
-	python-cpopen
-	python-daemon
-	python-keyczar
-	python-pthreading
+	python-qpid-proton
+	qpid-proton-c
 	rubygem-multipart-post
-	rxjava
-	spice-html5
 
 [centos-opstools-testing-el7]
 name = CentOS-7 - OpsTools - testing repo
@@ -684,5 +710,5 @@ includepkgs = collectd
 	rubygem-string-scrub
 	rubygem-thread_safe
 	rubygem-tzinfo
-	rubygem-tzinfo-data
 	rubygem-yajl-ruby
+

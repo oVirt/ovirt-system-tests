@@ -44,6 +44,14 @@ def _create_disk(system):
     return disk
 
 
+def _attach_new_vnic(vm, vnic_profile):
+    NIC_NAME = 'nic1'
+    vnic = netlib.Vnic(vm)
+    vnic.create(name=NIC_NAME, vnic_profile=vnic_profile)
+    with vm.wait_for_down_status():
+        pass
+
+
 @pytest.fixture
 def migration_network(host_0, host_1, default_data_center, default_cluster):
     network = netlib.Network(default_data_center)
@@ -56,12 +64,15 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
 
 
 @pytest.fixture
-def vm_0(system, default_cluster, default_storage_domain):
+def vm_0(system, default_cluster, default_storage_domain,
+         ovirtmgmt_vnic_profile):
     disk = _create_disk(system)
     with virtlib.vm_pool(system, size=1) as (vm,):
         vm.create(vm_name=VM0,
                   cluster=default_cluster,
                   template=templatelib.TEMPLATE_BLANK)
+
+        _attach_new_vnic(vm, ovirtmgmt_vnic_profile)
 
         disk_att_id = vm.attach_disk(disk=disk)
         with vm.wait_for_disk_up_status(disk, disk_att_id):

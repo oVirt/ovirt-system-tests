@@ -25,6 +25,11 @@ from lib.sdkentity import SDKRootEntity
 from lib.sdkentity import SDKSubEntity
 
 
+class SwitchType():
+    LEGACY = types.SwitchType.LEGACY
+    OVS = types.SwitchType.OVS
+
+
 class Cluster(SDKRootEntity):
 
     @property
@@ -47,6 +52,13 @@ class Cluster(SDKRootEntity):
     def mgmt_network(self):
         return next(network for network in self.networks() if
                     types.NetworkUsage.MANAGEMENT in network.usages)
+
+    @property
+    def network_switch_type(self):
+        return self.get_sdk_type().switch_type
+
+    def set_network_switch_type(self, switch_type):
+        self.update(switch_type=switch_type)
 
     def _build_sdk_type(self, data_center, cluster_name):
         return types.Cluster(

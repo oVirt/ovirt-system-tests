@@ -60,6 +60,10 @@ class SDKSystemRoot(object):
     def vms_service(self):
         return self._system_service.vms_service()
 
+    @property
+    def mac_pools_service(self):
+        return self._system_service.mac_pools_service()
+
     def connect(self, url, username, password, ca_file=None, insecure=True):
         conn = Connection(url=url, username=username,
                           password=password, insecure=insecure,

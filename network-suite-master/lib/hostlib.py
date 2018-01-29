@@ -18,11 +18,32 @@
 # Refer to the README and COPYING files for full details of the license
 import contextlib
 
+import ovirtsdk4
 from ovirtsdk4 import types
 
 from lib import clusterlib
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
+
+
+class HostStatus(object):
+
+    CONNECTING = types.HostStatus.CONNECTING
+    DOWN = types.HostStatus.DOWN
+    ERROR = types.HostStatus.ERROR
+    INITIALIZING = types.HostStatus.INITIALIZING
+    INSTALL_FAILED = types.HostStatus.INSTALL_FAILED
+    INSTALLING = types.HostStatus.INSTALLING
+    INSTALLING_OS = types.HostStatus.INSTALLING_OS
+    KDUMPING = types.HostStatus.KDUMPING
+    MAINTENANCE = types.HostStatus.MAINTENANCE
+    NON_OPERATIONAL = types.HostStatus.NON_OPERATIONAL
+    NON_RESPONSIVE = types.HostStatus.NON_RESPONSIVE
+    PENDING_APPROVAL = types.HostStatus.PENDING_APPROVAL
+    PREPARING_FOR_MAINTENANCE = types.HostStatus.PREPARING_FOR_MAINTENANCE
+    REBOOT = types.HostStatus.REBOOT
+    UNASSIGNED = types.HostStatus.UNASSIGNED
+    UP = types.HostStatus.UP
 
 
 class HostStatusError(Exception):
@@ -54,6 +75,26 @@ class Host(SDKRootEntity):
     @property
     def name(self):
         return self.get_sdk_type().name
+
+    def activate(self):
+        self._service.activate()
+
+    def deactivate(self):
+        syncutil.sync(exec_func=self._deactivate,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s)
+
+    def change_cluster(self, cluster):
+        self.deactivate()
+        self.wait_for_maintenance_status()
+        self.update(cluster=cluster.get_sdk_type())
+        with self.wait_for_up_status():
+            self.activate()
+
+    def get_cluster(self):
+        cluster = clusterlib.Cluster(self._parent_sdk_system)
+        cluster.import_by_id(self.get_sdk_type().cluster.id)
+        return cluster
 
     def setup_networks(self, attachments_data,
                        complement_management_network=True):
@@ -99,6 +140,11 @@ class Host(SDKRootEntity):
                       success_criteria=self._host_up_status_success_criteria,
                       timeout=timeout)
 
+    def wait_for_maintenance_status(self):
+        syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s == HostStatus.MAINTENANCE)
+
     def _build_sdk_type(self, cluster, vm):
         """
         :param cluster: clusterlib.Cluster
@@ -117,11 +163,11 @@ class Host(SDKRootEntity):
         return system.hosts_service
 
     def _host_up_status_success_criteria(self, host_status):
-        if host_status == types.HostStatus.UP:
+        if host_status == HostStatus.UP:
             return True
-        if host_status in (types.HostStatus.NON_OPERATIONAL,
-                           types.HostStatus.INSTALL_FAILED,
-                           types.HostStatus.NON_RESPONSIVE):
+        if host_status in (HostStatus.NON_OPERATIONAL,
+                           HostStatus.INSTALL_FAILED,
+                           HostStatus.NON_RESPONSIVE):
             raise HostStatusError('{} is {}'.format(self.name, host_status))
         return False
 
@@ -142,14 +188,26 @@ class Host(SDKRootEntity):
                 if attachment.network.name not in modified_networks]
 
     def _get_mgmt_net_attachment(self):
-        mgmt_network = self._cluster().mgmt_network()
+        mgmt_network = self.get_cluster().mgmt_network()
         return next(att for att in self._get_existing_attachments()
                     if att.network.id == mgmt_network.id)
 
     def _get_existing_attachments(self):
         return list(self.service.network_attachments_service().list())
 
-    def _cluster(self):
-        cluster = clusterlib.Cluster(self._parent_sdk_system)
-        cluster.import_by_id(self.get_sdk_type().cluster.id)
-        return cluster
+    def _deactivate(self):
+        """
+        There is no dedicated status for when a host is still processing
+        asynchronous tasks. Although the status of a host may be 'Up',
+        this currently isn't enough to determine whether a host can be
+        deactivated.
+        """
+        HAS_RUNNING_TASKS = 'Host has asynchronous running tasks'
+
+        try:
+            self._service.deactivate()
+            return True
+        except ovirtsdk4.Error as err:
+            if HAS_RUNNING_TASKS in err.message:
+                return False
+            raise

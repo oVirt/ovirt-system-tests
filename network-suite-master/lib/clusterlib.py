@@ -17,6 +17,9 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import collections
+import contextlib
+
 from ovirtsdk4 import types
 
 from lib import datacenterlib
@@ -25,9 +28,46 @@ from lib.sdkentity import SDKRootEntity
 from lib.sdkentity import SDKSubEntity
 
 
+MacPoolRange = collections.namedtuple("MacPoolRange", "start end")
+
+
 class SwitchType():
     LEGACY = types.SwitchType.LEGACY
     OVS = types.SwitchType.OVS
+
+
+@contextlib.contextmanager
+def mac_pool(system, cluster, name, ranges, allow_duplicates=False):
+    mac_pool_id = cluster.get_mac_pool().id
+
+    temp_mac_pool = MacPool(system)
+    temp_mac_pool.create(name, ranges, allow_duplicates)
+    try:
+        cluster.set_mac_pool(temp_mac_pool)
+        yield temp_mac_pool
+    finally:
+        mac_pool = MacPool(system)
+        mac_pool.import_by_id(mac_pool_id)
+
+        cluster.set_mac_pool(mac_pool)
+        temp_mac_pool.remove()
+
+
+class MacPool(SDKRootEntity):
+
+    def _build_sdk_type(self, name, ranges, allow_duplicates=False):
+        """
+        :param name: string
+        :param ranges: []MacPoolRange
+        """
+        return types.MacPool(
+            name=name,
+            ranges=[types.Range(from_=r.start, to=r.end) for r in ranges],
+            allow_duplicates=allow_duplicates
+        )
+
+    def _get_parent_service(self, system):
+        return system.mac_pools_service
 
 
 class Cluster(SDKRootEntity):
@@ -35,6 +75,11 @@ class Cluster(SDKRootEntity):
     @property
     def name(self):
         return self.get_sdk_type().name
+
+    def get_mac_pool(self):
+        mac_pool = MacPool(self._parent_sdk_system)
+        mac_pool.import_by_id(self.get_sdk_type().mac_pool.id)
+        return mac_pool
 
     def get_data_center(self):
         dc = datacenterlib.DataCenter(self._parent_sdk_system)
@@ -65,6 +110,9 @@ class Cluster(SDKRootEntity):
             name=cluster_name,
             data_center=data_center.get_sdk_type()
         )
+
+    def set_mac_pool(self, mac_pool):
+        self.update(mac_pool=mac_pool.get_sdk_type())
 
     def _get_parent_service(self, system):
         return system.clusters_service

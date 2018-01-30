@@ -25,7 +25,7 @@
     password: "{{ host_password }}"
     cluster: "{{ cluster_name }}"
     override_iptables: true
-    timeout: 300
+    timeout: 360
     poll_interval: 10
   with_together:
     - "{{ host_names}}"

@@ -56,6 +56,44 @@ def cluster_0(system, default_data_center):
     cluster.remove()
 
 
+def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
+        system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
+    with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+        vm_0.create(vm_name=VM0,
+                    cluster=default_cluster,
+                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+        with vm_0.wait_for_down_status():
+            pass
+
+        with vm_0.wait_for_up_status():
+            vm_0.run()
+
+        nicless_snapshot = _create_snapshot(vm_0)
+
+        vm_0_vnic_0 = netlib.Vnic(vm_0)
+        vm_0_vnic_0.create(name=NIC_NAME_1,
+                           vnic_profile=ovirtmgmt_vnic_profile,
+                           mac_addr=MAC_ADDR_1)
+
+        with vm_0.wait_for_down_status():
+            vm_0.stop()
+
+        nicless_snapshot.preview()
+        nicless_snapshot.wait_for_preview_status()
+
+        vm_1.create(vm_name=VM1,
+                    cluster=default_cluster,
+                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+        vm_1_vnic_0 = netlib.Vnic(vm_1)
+        vm_1_vnic_0.create(name=NIC_NAME_1,
+                           vnic_profile=ovirtmgmt_vnic_profile,
+                           mac_addr=MAC_ADDR_1)
+
+        nicless_snapshot.undo_preview()
+
+        assert vm_0.get_vnic(NIC_NAME_1).mac_address != MAC_ADDR_1
+
+
 @pytest.mark.usefixtures('default_storage_domain', 'host_1_in_cluster_0')
 def test_mac_pools_in_different_clusters_dont_overlap(
         system, cluster_0, default_cluster, ovirtmgmt_vnic_profile):

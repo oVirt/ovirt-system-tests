@@ -203,16 +203,21 @@ class VmSnapshot(SDKSubEntity):
     def commit(self):
         if self.get_sdk_type().snapshot_status != SnapshotStatus.IN_PREVIEW:
             raise SnapshotNotInPreviewError
-        self._parent_sdk_entity.commit_snapshot()
+        self._parent_sdk_entity.service.commit_snapshot()
 
     def preview(self):
         self._parent_sdk_entity.service.preview_snapshot(
-            snapshot=self.get_sdk_type().id
+            snapshot=self.get_sdk_type()
         )
+
+    def undo_preview(self):
+        if self.get_sdk_type().snapshot_status != SnapshotStatus.IN_PREVIEW:
+            raise SnapshotNotInPreviewError
+        self._parent_sdk_entity.service.undo_snapshot()
 
     def restore(self):
         if self.get_sdk_type().snapshot_status == SnapshotStatus.IN_PREVIEW:
-            self._parent_sdk_entity.commit_snapshot()
+            self._parent_sdk_entity.service.commit_snapshot()
         else:
             self._service.restore(
                 restore_memory=self.get_sdk_type().persist_memorystate
@@ -223,6 +228,13 @@ class VmSnapshot(SDKSubEntity):
             exec_func=lambda: self.get_sdk_type().snapshot_status,
             exec_func_args=(),
             success_criteria=lambda status: status == SnapshotStatus.READY
+        )
+
+    def wait_for_preview_status(self):
+        syncutil.sync(
+            exec_func=lambda: self.get_sdk_type().snapshot_status,
+            exec_func_args=(),
+            success_criteria=lambda status: status == SnapshotStatus.IN_PREVIEW
         )
 
     def wait_for_snapshot_removal(self, snapshot_id):

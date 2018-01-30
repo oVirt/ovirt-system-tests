@@ -1,4 +1,4 @@
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ HOST_1_DOMAIN = 'lago-network-suite-master-host-1'
 def host_0(env, system, default_cluster):
     vm = env.get_vms()[HOST_0_DOMAIN]
     host = hostlib.Host(system)
-    host.create(default_cluster.name, vm)
+    host.create(default_cluster, vm)
     return host
 
 
@@ -45,7 +45,7 @@ def host_0_up(host_0):
 def host_1(env, system, default_cluster):
     vm = env.get_vms()[HOST_1_DOMAIN]
     host = hostlib.Host(system)
-    host.create(default_cluster.name, vm)
+    host.create(default_cluster, vm)
     return host
 
 

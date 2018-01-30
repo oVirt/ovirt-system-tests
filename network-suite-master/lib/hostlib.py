@@ -100,13 +100,17 @@ class Host(SDKRootEntity):
                       timeout=timeout)
 
     def _build_sdk_type(self, cluster, vm):
+        """
+        :param cluster: clusterlib.Cluster
+        :param vm: LagoVm
+        """
         return types.Host(
             name=vm.name(),
             description='host %s' % vm.name(),
             address=vm.name(),
             root_password=str(vm.root_password()),
             override_iptables=True,
-            cluster=types.Cluster(name=cluster)
+            cluster=cluster.get_sdk_type()
         )
 
     def _get_parent_service(self, system):

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,8 +48,11 @@ class Cluster(SDKRootEntity):
         return next(network for network in self.networks() if
                     types.NetworkUsage.MANAGEMENT in network.usages)
 
-    def _build_sdk_type(self, cluster_name):
-        return types.Cluster(name=cluster_name)
+    def _build_sdk_type(self, data_center, cluster_name):
+        return types.Cluster(
+            name=cluster_name,
+            data_center=data_center.get_sdk_type()
+        )
 
     def _get_parent_service(self, system):
         return system.clusters_service

@@ -445,9 +445,10 @@ fi
 export OST_REPO_ROOT="$PWD"
 
 export SUITE="$(realpath "$1")"
-if [ -z "$PREFIX" ]; then
-    export PREFIX="$PWD/deployment-${SUITE##*/}"
-fi
+
+# If no deployment path provided, set the default
+[[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
+export PREFIX
 
 if "$DO_CLEANUP"; then
     env_cleanup

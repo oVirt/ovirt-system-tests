@@ -26,9 +26,13 @@ from lib import virtlib
 
 import fixtures.virt
 
-
+MAC_POOL = 'mac_pool'
 MAC_ADDR_1 = '00:1a:4a:16:01:50'
 MAC_ADDR_2 = '00:1a:4a:16:01:51'
+MAC_POOL_RANGE = clusterlib.MacPoolRange(
+    start=MAC_ADDR_1, end=MAC_ADDR_2
+)
+
 NIC_NAME_1 = 'nic001'
 NIC_NAME_2 = 'nic002'
 
@@ -54,6 +58,25 @@ def cluster_0(system, default_data_center):
     cluster.create(default_data_center, CLUSTER_0)
     yield cluster
     cluster.remove()
+
+
+def test_assign_vnic_with_full_mac_pool_capacity_fails(
+        system, default_cluster, default_storage_domain,
+        ovirtmgmt_vnic_profile):
+    NIC_NAME_3 = 'nic003'
+
+    with clusterlib.mac_pool(
+        system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,)
+    ):
+        with virtlib.vm_pool(system, size=1) as (vm,):
+            vm.create(vm_name=VM0,
+                      cluster=default_cluster,
+                      template=templatelib.TEMPLATE_BLANK)
+            _create_vnic(vm, NIC_NAME_1, ovirtmgmt_vnic_profile)
+            _create_vnic(vm, NIC_NAME_2, ovirtmgmt_vnic_profile)
+
+            with pytest.raises(netlib.MacPoolIsInFullCapacityError):
+                _create_vnic(vm, NIC_NAME_3, ovirtmgmt_vnic_profile)
 
 
 def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
@@ -99,8 +122,6 @@ def test_mac_pools_in_different_clusters_dont_overlap(
         system, cluster_0, default_cluster, ovirtmgmt_vnic_profile):
     MAC_POOL_0 = 'mac_pool_0'
     MAC_POOL_1 = 'mac_pool_1'
-    MAC_POOL_START = '00:00:00:00:00:02'
-    MAC_POOL_END = '00:00:00:00:00:15'
 
     # NOTE: Static MAC address assignments are independent from the MAC pool
     # range, i.e. it is possible to assign addresses outside the range to
@@ -108,15 +129,11 @@ def test_mac_pools_in_different_clusters_dont_overlap(
     # not already present). However, specifying ranges is required for MAC pool
     # initialization, and as such, arbitrary ranges are used.
 
-    MAC_POOL_RANGES = (clusterlib.MacPoolRange(
-        start=MAC_POOL_START, end=MAC_POOL_END),
-    )
-
     default_cluster_mac_pool = clusterlib.mac_pool(
-        system, default_cluster, MAC_POOL_0, MAC_POOL_RANGES
+        system, default_cluster, MAC_POOL_0, (MAC_POOL_RANGE,)
     )
     cluster_0_mac_pool = clusterlib.mac_pool(
-        system, cluster_0, MAC_POOL_1, MAC_POOL_RANGES
+        system, cluster_0, MAC_POOL_1, (MAC_POOL_RANGE,)
     )
     with default_cluster_mac_pool, cluster_0_mac_pool:
         with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
@@ -124,7 +141,7 @@ def test_mac_pools_in_different_clusters_dont_overlap(
                         cluster=default_cluster,
                         template=templatelib.TEMPLATE_BLANK)
             _create_vnic(
-                vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_POOL_START
+                vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1
             )
 
             vm_1.create(vm_name=VM1,
@@ -132,7 +149,7 @@ def test_mac_pools_in_different_clusters_dont_overlap(
                         template=templatelib.TEMPLATE_BLANK)
             with pytest.raises(netlib.MacAddrInUseError):
                 _create_vnic(
-                    vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_POOL_START
+                    vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1
                 )
 
 

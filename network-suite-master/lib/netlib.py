@@ -31,6 +31,10 @@ class MacAddrInUseError(Exception):
     pass
 
 
+class MacPoolIsInFullCapacityError(Exception):
+    pass
+
+
 class NetworkUsage(object):
 
     DEFAULT_ROUTE = types.NetworkUsage.DEFAULT_ROUTE
@@ -133,6 +137,8 @@ class Vnic(SDKSubEntity):
         except EntityCreationError as err:
             if 'MAC Address' in err.message and 'in use' in err.message:
                 raise MacAddrInUseError(err.message)
+            elif 'Not enough MAC addresses' in err.message:
+                raise MacPoolIsInFullCapacityError(err.message)
             raise
 
     def hotunplug(self):

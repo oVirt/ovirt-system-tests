@@ -60,56 +60,12 @@ Follow the instructions in "Setting up mock_runner" section at [mock_runner.sh]
 
 ### When Running OST without mock
 
-#### Install Lago oVirt
+#### Install Lago oVirt plugin
 
-**NOTE:** This step is not needed if you installed lago with the install
+**NOTE:** This step is not needed if you installed Lago with the install
 script.
 
-Configure the following repos:
-
-**For EL distros (such as CentOS, RHEL, etc.):**
-
-```ini
-[lago]
-baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/el$releasever
-name=Lago
-enabled=1
-gpgcheck=0
-
-[ovirt-ci-tools]
-baseurl=http://resources.ovirt.org/repos/ci-tools/el$releasever
-name=oVirt CI Tools
-enabled=1
-gpgcheck=0
-```
-
-Configure epel repository using the release RPM:
-
-```ini
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-```
-
-**For Fedora:**
-
-```ini
-[lago]
-baseurl=http://resources.ovirt.org/repos/lago/stable/0.0/rpm/fc$releasever
-name=Lago
-enabled=1
-gpgcheck=0
-
-[ovirt-ci-tools]
-baseurl=http://resources.ovirt.org/repos/ci-tools/fc$releasever
-name=oVirt CI Tools
-enabled=1
-gpgcheck=0
-```
-
-Install lago-ovirt
-
-```bash
-yum install lago-ovirt
-```
+[Lago oVirt plugin installation manual]
 
 #### Install oVirt-engine python sdk
 
@@ -153,6 +109,8 @@ You're now ready to run the tests! checkout [Running the tests](running_tests.ma
 [Lago config]: http://lago.readthedocs.io/en/latest/Configuration.html
 
 [Lago installation manual]: http://lago.readthedocs.io/en/latest/Installation.html#rpm-based-fedora-24-centos-7-3
+
+[Lago oVirt plugin installation manual]: http://lago-ost-plugin.readthedocs.io/en/latest/Installation.html
 
 [mock_runner.sh]: http://ovirt-infra-docs.readthedocs.io/en/latest/CI/Using_mock_runner/index.html
 

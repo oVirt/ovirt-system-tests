@@ -7,10 +7,25 @@ gpgcheck=0
 name=oVirt 41 latest tested
 baseurl=http://resources.ovirt.org/repos/ovirt/tested/4.1/rpm/el7/
 enabled=1
-exclude= ovirt-node-iso *-debuginfo jasperreports-server ovirt-guest-tools-iso
-  pywin32-py2.7 vcredist* *javadoc* libguestfs* httpcomponents*
-  ovirt-live-artwork* ovirt-node-ng* ovirt-engine-nodejs *ovirt-engine-sdk4-doc*
-  rubygem* ovirt-engine-sdk-java vdsm-tests libcacard-devel-ev
+exclude=
+  *-debuginfo
+  httpcomponents*
+  jasperreports-server
+  *javadoc*
+  libcacard-devel-ev
+  libguestfs*
+  ovirt-engine-nodejs
+  *ovirt-engine-sdk4-doc*
+  ovirt-engine-sdk-java
+  ovirt-guest-tools-iso
+  ovirt-live-artwork*
+  ovirt-node-iso
+  ovirt-node-ng*
+  pywin32-py2.7
+  qemu*
+  rubygem*
+  vcredist*
+  vdsm-tests
 max_connections=5
 proxy=_none_
 
@@ -210,7 +225,7 @@ includepkgs= ant antlr-tool aopalliance apache-commons-beanutils
   python-kitchen python-kmod python-lxml python-markupsafe python-netaddr
   python-nose python-ply python-psycopg2 python-pthreading python-requests
   python-rtslib python-setuptools python-six python-suds python-urllib3
-  python-urwid qdox qemu-img-ev qemu-kvm-common-ev qemu-kvm-ev qemu-kvm-tools-ev
+  python-urwid qdox
   quota quota-nls radvd relaxngDatatype rhino rpcbind rsyslog-mmjsonparse sac
   safelease sanlock sanlock-lib sanlock-python scrub seabios-bin setools-libs
   sg3_utils sg3_utils-libs sgabios-bin slf4j sos stax2-api supermin5 syslinux
@@ -289,6 +304,17 @@ exclude= python34-* patternfly1 ovirt-guest-agent-* mom puppet
   python-ovirt-engine-sdk4 ioprocess python-ioprocess python-cpopen
 gpgcheck=0
 max_connections=5
+
+[centos-qemu-ev-release-el7]
+name = CentOS-7 - QEMU EV
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+gpgcheck = 0
+enabled = 1
+gpgkey = https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676fe220e61ab8e31927feeede1128/SOURCES!RPM-GPG-KEY-CentOS-SIG-Virtualization
+includepkgs = libcacard
+	qemu-img-ev
+	qemu-kvm-common-ev
+	qemu-kvm-ev
 
 [centos-opstools-testing-el7]
 name=CentOS-7 - OpsTools - testing repo

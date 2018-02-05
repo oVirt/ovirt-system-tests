@@ -24,7 +24,7 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-imageio-daemon
 	ovirt-provider-ovn-driver
 	ovirt-setup-lib
-	python-ioprocess
+	python2-ioprocess
 	python-ovirt-engine-sdk4
 	vdsm
 	vdsm-api

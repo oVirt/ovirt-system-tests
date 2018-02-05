@@ -131,7 +131,7 @@ includepkgs= 389-ds-base 389-ds-base-libs ant antlr-tool aopalliance
  pulseaudio-libs pyparsing python-babel python-backports http-parser
  python-backports-ssl_match_hostname python-chardet python-configshell
  python-cpopen python-dmidecode python-ethtool python-firewall python-inotify
- python-ioprocess python-IPy python-javapackages python-jinja2 python-kitchen
+ python2-ioprocess python-IPy python-javapackages python-jinja2 python-kitchen
  python-kmod python-libguestfs python-lxml python-markupsafe python-netaddr
  python-ply python-psycopg2 python-pthreading python-requests python-rtslib
  python-setuptools python-six python-suds python-urllib3 python-urwid qdox quota
@@ -295,7 +295,7 @@ includepkgs= python-uinput python-ordereddict python-inotify python-argparse
   hystrix-core hystrix-metrics-event-stream rxjava
   python-simplejson
 exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet
-  python-ovirt-engine-sdk4 ioprocess python-ioprocess
+  python-ovirt-engine-sdk4 ioprocess python-ioprocess python2-ioprocess
 max_connections=5
 
 [centos-ovirt-4.2-el7]

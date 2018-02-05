@@ -704,7 +704,7 @@ includepkgs = archaius-core
 	python-dateutil
 	python-extras
 	python-fixtures
-	python-ioprocess
+	python2-ioprocess
 	python-keyczar
 	python-linecache2
 	python-nose

@@ -775,6 +775,7 @@ gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
 includepkgs = rh-postgresql95-postgresql
+	rh-postgresql95-postgresql-contrib
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime

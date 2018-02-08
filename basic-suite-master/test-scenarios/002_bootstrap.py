@@ -1242,6 +1242,8 @@ def get_host_stats(api):
 
 @testlib.with_ovirt_api4
 def get_host_numa_nodes(api):
+    raise SkipTest(' [2018-02-08] test itself identified as possibly faulty')
+# test is disabled until test is fixed.
     engine = api.system_service()
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)

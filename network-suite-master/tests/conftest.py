@@ -39,6 +39,8 @@ from fixtures.host import install_hosts_to_save_time  # NOQA: F401
 from fixtures.engine import engine  # NOQA: F401
 from fixtures.engine import api  # NOQA: F401
 
+from fixtures.fqdn import fqdn  # NOQA: F401
+
 from fixtures.storage import default_storage_domain  # NOQA: F401
 
 from fixtures.providers import ovirt_image_repo  # NOQA: F401

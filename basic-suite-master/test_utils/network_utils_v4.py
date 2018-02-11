@@ -20,7 +20,7 @@
 
 from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
                              IpAddressAssignment, IpVersion, Network,
-                             NetworkAttachment)
+                             NetworkAttachment, Cluster, VnicProfile, Nic)
 
 import test_utils
 from test_utils import constants
@@ -168,3 +168,103 @@ def get_default_ovn_provider_id(engine):
             return provider.id
     raise Exception('%s not present in oVirt' %
                     constants.DEFAULT_OVN_PROVIDER_NAME)
+
+
+def add_networks(engine, dc_name, cluster_name, network_names):
+    networks_service = engine.networks_service()
+    networks = list()
+    for net_name in network_names:
+        network = networks_service.add(
+            network=Network(
+                name=net_name,
+                data_center=DataCenter(name=dc_name),
+                cluster=Cluster(name=cluster_name)))
+        networks.append(network)
+    return networks
+
+
+def assign_networks_to_cluster(engine, cluster_name, networks, required):
+    service = _get_cluster_network_service(engine, cluster_name)
+    for network in networks:
+        service.add(network=Network(id=network.id, required=required))
+
+
+def _get_vm_service(engine, vm_name):
+    vm = engine.vms_service().list(search=vm_name)[0]
+    vm_service=engine.vms_service().vm_service(vm.id)
+    return vm_service
+
+
+def _get_network(engine, cluster_name, network_name):
+    cns = _get_cluster_network_service(engine, cluster_name)
+    return _filter_named_item(network_name, cns.list())
+
+
+def get_profiles_for(engine, networks):
+    profiles = []
+    profile_service = engine.vnic_profiles_service()
+    network_ids = map(lambda network: network.id, networks)
+    for profile in profile_service.list():
+        if profile.network.id in network_ids:
+            profiles.append(profile)
+    return profiles
+
+
+def get_profile(engine, cluster_name, network_name):
+    network = _get_network(engine, cluster_name, network_name)
+    return get_profiles_for(engine, [network])[0]
+
+
+def get_profile_for_id(engine, profile_id):
+    return engine.vnic_profiles_service().profile_service(profile_id).get()
+
+
+def nic_with_profile():
+    return lambda n: n.vnic_profile is not None
+
+
+def filter_nics_with_profiles(nics):
+    return filter(nic_with_profile(), nics)
+
+
+def create_nics_on_vm(engine, vm_name, profiles):
+    vm2_service = _get_vm_service(engine, vm_name)
+    _add_nics(vm2_service, profiles)
+
+
+def _add_nics(vm_service, profiles):
+    nics_service = vm_service.nics_service()
+    for profile in profiles:
+        nics_service.add(
+            Nic(name=profile.name,
+                vnic_profile=VnicProfile(id=profile.id)))
+
+
+def get_nics_on(engine, vm_name):
+    return _get_vm_service(engine, vm_name).nics_service().list()
+
+
+def _get_cluster_network_service(engine, cluster_name):
+    clusters_service = engine.clusters_service()
+    cluster = clusters_service.list(search=cluster_name)[0]
+    cluster_service = clusters_service.cluster_service(cluster.id)
+    cluster_networks_service = cluster_service.networks_service()
+    return cluster_networks_service
+
+
+def remove_profiles(engine, profiles, predicate):
+    to_remove = filter(predicate, profiles)
+    for profile in to_remove:
+        engine.vnic_profiles_service().profile_service(
+            profile.id).remove()
+
+
+def remove_networks(engine, networks, predicate):
+    to_remove = filter(predicate, networks)
+    for network in to_remove:
+        engine.networks_service().network_service(
+            network.id).remove()
+
+
+def _filter_named_item(name, collection):
+    return next(item for item in collection if item.name == name)

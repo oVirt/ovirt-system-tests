@@ -5,28 +5,12 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
-# Temporary fix for projects who didn't create a branch for 4.2,
-# and their packages were manually added to the pre repo.
-# For each package, please specify why it's needed
-# ovirt-engine-metrics - https://gerrit.ovirt.org/#/c/86026/
-[ovirt-4.2-pre-el7]
-name = oVirt 4.2 pre repo
-baseurl = http://resources.ovirt.org/pub/ovirt-4.2-pre/rpm/el7/
-enabled = 1
-includepkgs = ovirt-engine-metrics
-
-#Info on why there is a duplicate repo for official 4.2:
-#During runtime in oVirt CI, this repo is replaced automatically with
-#oVirt tested repo, so on runtime this repo will bring newer pkgs from tester
-#repo which will take precedance over the official ones in 4.2 in order
-#to test latest 4.2 pkgs
-
 [ovirt-4.2-el7]
 name = oVirt 4.2 repo
 baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
 enabled = 1
 
-[ovirt-4.2-stable-el7]
+[ovirt-4.2-official-el7]
 name = oVirt 4.2 Official release
 baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
 enabled = 1
@@ -37,9 +21,12 @@ includepkgs = cockpit-ovirt-dashboard
 	otopi-debug-plugins
 	otopi-java
 	ovirt-ansible-cluster-upgrade
+	ovirt-ansible-disaster-recovery
+	ovirt-ansible-engine-setup
 	ovirt-ansible-image-template
 	ovirt-ansible-infra
 	ovirt-ansible-manageiq
+	ovirt-ansible-repositories
 	ovirt-ansible-roles
 	ovirt-ansible-vm-infra
 	ovirt-engine
@@ -91,6 +78,7 @@ includepkgs = cockpit-ovirt-dashboard
 	vdsm
 	vdsm-api
 	vdsm-client
+	vdsm-common
 	vdsm-hook-ethtool-options
 	vdsm-hook-fcoe
 	vdsm-hook-openstacknet
@@ -100,6 +88,7 @@ includepkgs = cockpit-ovirt-dashboard
 	vdsm-http
 	vdsm-jsonrpc
 	vdsm-jsonrpc-java
+	vdsm-network
 	vdsm-python
 	vdsm-yajsonrpc
 
@@ -133,7 +122,14 @@ includepkgs = 389-ds-base
 	copy-jdk-configs
 	cryptsetup
 	cryptsetup-libs
+	device-mapper-multipath
+	device-mapper-multipath-libs
+	device-mapper-persistent-data
 	dnsmasq
+	dracut
+	dracut-config-rescue
+	dracut-fips
+	dracut-network
 	fence-agents-all
 	fence-agents-apc
 	fence-agents-apc-snmp
@@ -166,6 +162,7 @@ includepkgs = 389-ds-base
 	fence-agents-scsi
 	fence-agents-vmware-soap
 	fence-agents-wti
+	gdb
 	http-parser
 	httpd
 	httpd-tools
@@ -178,6 +175,8 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	kernel
+	kpartx
 	libgfortran
 	libgudev1
 	libguestfs
@@ -216,10 +215,17 @@ includepkgs = 389-ds-base
 	libwbclient
 	log4j
 	mod_ssl
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	nfs-utils
 	postgresql-libs
+	python-dmidecode
 	python-libguestfs
 	python-libipa_hbac
+	python-rhsm
+	python-rhsm-certificates
 	python-sss-murmur
 	python-sssdconfig
 	python2-cryptography
@@ -230,6 +236,7 @@ includepkgs = 389-ds-base
 	scl-utils
 	seabios-bin
 	seavgabios-bin
+	sos
 	spice-server
 	sssd
 	sssd-ad
@@ -241,11 +248,13 @@ includepkgs = 389-ds-base
 	sssd-krb5-common
 	sssd-ldap
 	sssd-proxy
+	subscription-manager
 	systemd
 	systemd-libs
 	systemd-python
 	systemd-sysv
 	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 	virt-v2v
 
@@ -315,12 +324,8 @@ includepkgs = OVMF
 	cyrus-sasl-scram
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-multipath
-	device-mapper-multipath-libs
-	device-mapper-persistent-data
 	dom4j
 	dosfstools
-	dracut-fips
 	easymock2
 	elfutils
 	fcoe-utils
@@ -329,7 +334,6 @@ includepkgs = OVMF
 	fontpackages-filesystem
 	fuse
 	fuse-libs
-	gdb
 	gdisk
 	genisoimage
 	geronimo-jms
@@ -454,10 +458,6 @@ includepkgs = OVMF
 	msv-msv
 	msv-xsdlib
 	mtools
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
 	netcf-libs
 	nettle
 	newt-python
@@ -528,7 +528,6 @@ includepkgs = OVMF
 	python-cffi
 	python-chardet
 	python-configshell
-	python-dmidecode
 	python-dns
 	python-enum34
 	python-ethtool
@@ -594,7 +593,6 @@ includepkgs = OVMF
 	sgabios-bin
 	slf4j
 	socat
-	sos
 	squashfs-tools
 	stax2-api
 	supermin5
@@ -612,6 +610,8 @@ includepkgs = OVMF
 	unbound-libs
 	unzip
 	usbredir
+	usermode
+	uuid
 	virt-install
 	virt-manager-common
 	ws-commons-util
@@ -636,6 +636,7 @@ includepkgs = OVMF
 name = CentOS7 Extras
 baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
 enabled = 1
+exclude = ansible
 includepkgs = cockpit
 	cockpit-bridge
 	cockpit-dashboard
@@ -645,12 +646,10 @@ includepkgs = cockpit
 	cockpit-ws
 	libssh
 	libstoraged
-	libtomcrypt
-	libtommath
 	python-httplib2
 	python-lockfile
 	python-paramiko
-	python2-crypto
+	python-passlib
 	sshpass
 	storaged
 	storaged-iscsi
@@ -660,11 +659,13 @@ includepkgs = cockpit
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
-includepkgs = ansible
-	lyx-fonts
+exclude = ansible
+includepkgs = lyx-fonts
+	python-qpid-proton
 	python-unittest2
 	python2-mimeparse
 	python2-traceback2
+	qpid-proton-c
 	rubygem-multipart-post
 
 [centos-ovirt-4.2-el7]
@@ -672,13 +673,17 @@ name = CentOS-7 - oVirt 4.2
 baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
-includepkgs = archaius-core
+includepkgs = ansible
+	archaius-core
 	ebay-cors-filter
+	gofer
 	hystrix-core
 	hystrix-metrics-event-stream
 	ioprocess
 	jackson-core
 	jctools
+	katello-agent
+	katello-agent-fact-plugin
 	novnc
 	openstack-java-cinder-client
 	openstack-java-cinder-model
@@ -699,16 +704,22 @@ includepkgs = archaius-core
 	ovirt-vmconsole
 	ovirt-vmconsole-host
 	ovirt-vmconsole-proxy
+	pulp-rpm-handlers
 	python-cpopen
 	python-daemon
 	python-dateutil
 	python-extras
 	python-fixtures
-	python2-ioprocess
-	python-keyczar
+	python-gofer
+	python-gofer-proton
+	python-ioprocess
+	python-isodate
 	python-linecache2
 	python-nose
 	python-pthreading
+	python-pulp-agent-lib
+	python-pulp-common
+	python-pulp-rpm-common
 	python-subprocess32
 	python-testtools
 	python-websockify
@@ -779,3 +790,4 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
+

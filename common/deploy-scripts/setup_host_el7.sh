@@ -1,4 +1,5 @@
 #!/bin/bash -xe
+set -ex
 
 yum update -y iptables
 

@@ -13,6 +13,12 @@
     state: absent
     name: simple_net_subnet
 
+- name: Remove port simple_net_port2
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: simple_net_port2
+
 - name: Remove simple network
   os_network:
     cloud: "{{ cloud_name }}"

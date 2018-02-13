@@ -27,3 +27,14 @@
     name: router0
     interfaces:
         - simple_net_subnet
+
+- name: Create port simple_net_port2
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: simple_net_port2
+    network: simple_net
+    # mac_address is required by ovirt-provider-ovn
+    mac_address: '52:54:00:78:8f:90'
+    fixed_ips:
+      - ip_address: 10.10.0.2

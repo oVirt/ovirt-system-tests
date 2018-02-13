@@ -1195,7 +1195,7 @@ def get_domains(api):
 @testlib.with_ovirt_api4
 def get_host_devices(api):
     engine = api.system_service()
-    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     devices_service = host_service.devices_service()
     devices = sorted(devices_service.list(), key=lambda device: device.name)
@@ -1211,7 +1211,7 @@ def get_host_devices(api):
 @testlib.with_ovirt_api4
 def get_host_hooks(api):
     engine = api.system_service()
-    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
@@ -1227,7 +1227,7 @@ def get_host_hooks(api):
 @testlib.with_ovirt_api4
 def get_host_stats(api):
     engine = api.system_service()
-    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
@@ -1245,7 +1245,7 @@ def get_host_numa_nodes(api):
     raise SkipTest(' [2018-02-08] test itself identified as possibly faulty')
 # test is disabled until test is fixed.
     engine = api.system_service()
-    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = numa_nodes_service.list()

@@ -753,6 +753,7 @@ includepkgs = collectd
 	collectd-disk
 	collectd-netlink
 	collectd-postgresql
+	collectd-virt
 	collectd-write_http
 	fluentd
 	rubygem-cool.io

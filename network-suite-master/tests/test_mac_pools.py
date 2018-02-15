@@ -33,7 +33,6 @@ VM0 = 'vm0'
 VM1 = 'vm1'
 
 
-@pytest.mark.xfail(reason='https://bugzilla.redhat.com/1545153')
 def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
 

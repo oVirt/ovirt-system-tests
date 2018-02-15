@@ -16,15 +16,18 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import re
 import time
 
 import pytest
 
 from lib import hostlib
 
+from fixtures.engine import SUITE
 
-HOST_0_DOMAIN = 'lago-network-suite-master-host-0'
-HOST_1_DOMAIN = 'lago-network-suite-master-host-1'
+
+HOST_0_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '0'])
+HOST_1_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '1'])
 
 
 @pytest.fixture(scope='session')

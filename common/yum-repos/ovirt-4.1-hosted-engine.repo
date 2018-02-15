@@ -83,7 +83,7 @@ exclude=nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-*
  python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock
  python-minimock userspace-rcu* python-fixtures openvswitch-devel
  openvswitch-test mockito vhostmd vm-dump-metrics* centos-release-ovirt36
- jemalloc* python-nose* python-ovirt-engine-sdk4 python-subprocess32
+ python-nose* python-ovirt-engine-sdk4 python-subprocess32
  python-websockify python-paramiko python-pbr objenesis mom
 max_connections=5
 

@@ -756,6 +756,7 @@ includepkgs = collectd
 	collectd-virt
 	collectd-write_http
 	fluentd
+	jemalloc
 	rubygem-cool.io
 	rubygem-elasticsearch
 	rubygem-elasticsearch-api

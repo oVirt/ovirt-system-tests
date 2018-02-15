@@ -550,6 +550,7 @@ includepkgs = collectd
 	collectd-netlink
 	collectd-write_http
 	fluentd
+	jemalloc
 	rubygem-cool.io
 	rubygem-fluent-plugin-collectd-nest
 	rubygem-fluent-plugin-rewrite-tag-filter

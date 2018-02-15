@@ -286,7 +286,7 @@ exclude= nfs-ganesha-* unboundid-ldapsdk-javadoc unboundid-ldapsdk gluster-*
   python-six python-ply python-werkzeug* python-unittest2 python-testtools*
   python-pep8 python-flask* ntirpc* libntirpc* pyflakes python-mock
   python-minimock userspace-rcu* python-fixtures openvswitch-devel
-  openvswitch-test mockito vm-dump-metrics* centos-release-ovirt36 jemalloc*
+  openvswitch-test mockito vm-dump-metrics* centos-release-ovirt36
   python-ovirt-engine-sdk4 python-subprocess32 python-pbr objenesis mom
   python-nose-docs userspace-rcu
 

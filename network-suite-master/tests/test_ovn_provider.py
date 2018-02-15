@@ -60,31 +60,11 @@ def os_client_config(engine):
         del os.environ['OS_CLIENT_CONFIG_FILE']
 
 
-@pytest.fixture(scope='module')
-def engine_fqdn(engine):
-    """Make engine's FQDN visible for the test environment.
-
-    If ovirt reports absolute URLs, e.g. for image upload or in the
-    service catalog of ovirt-provider-ovn's OpenStack Identity API,
-    this URLs contains the engine's FQDN like configured by engine-setup.
-    To use this absolute URLs, the environment has to resolve engine's FQDN to
-    engine's IP address.
-    This fixture is not reverted, engine's FQDN should be resolved even after
-    the test completes.
-    """
-    resolve_engine_path = os.path.join(PLAYBOOK_DIR, 'resolve_engine.yml')
-    playbook = Playbook([resolve_engine_path],
-                        extra_vars={'engine_ip': engine.ip()})
-    playbook.run()
-    if playbook.execution_stats.failures:
-        raise HostConfigurationFailure
-
-
-def test_ovn_provider_create_scenario(os_client_config, engine_fqdn):
+def test_ovn_provider_create_scenario(os_client_config):
     _test_ovn_provider('create_scenario.yml')
 
 
-def test_ovn_provider_cleanup_scenario(os_client_config, engine_fqdn):
+def test_ovn_provider_cleanup_scenario(os_client_config):
     _test_ovn_provider('cleanup_scenario.yml')
 
 

@@ -548,6 +548,7 @@ max_connections = 10
 includepkgs = collectd
 	collectd-disk
 	collectd-netlink
+	collectd-virt
 	collectd-write_http
 	fluentd
 	jemalloc

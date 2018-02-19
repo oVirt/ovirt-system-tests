@@ -11,8 +11,10 @@ baseurl = http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
 enabled = 1
 max_connections = 10
 proxy = _none_
+cost = 100
 includepkgs = cockpit-ovirt-dashboard
 	ioprocess
+	mom
 	otopi-common
 	otopi-debug-plugins
 	otopi-java
@@ -70,6 +72,9 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-provider-ovn
 	ovirt-provider-ovn-driver
 	ovirt-setup-lib
+	ovirt-vmconsole
+	ovirt-vmconsole-host
+	ovirt-vmconsole-proxy
 	python-ovirt-engine-sdk4
 	python2-ioprocess
 	python2-otopi
@@ -231,6 +236,8 @@ includepkgs = 389-ds-base
 	python-dmidecode
 	python-libguestfs
 	python-libipa_hbac
+	python-rhsm
+	python-rhsm-certificates
 	python-sss-murmur
 	python-sssdconfig
 	python2-cryptography
@@ -253,6 +260,7 @@ includepkgs = 389-ds-base
 	sssd-krb5-common
 	sssd-ldap
 	sssd-proxy
+	subscription-manager
 	systemd
 	systemd-libs
 	systemd-python
@@ -615,6 +623,7 @@ includepkgs = OVMF
 	unbound-libs
 	unzip
 	usbredir
+	usermode
 	uuid
 	virt-install
 	virt-manager-common
@@ -669,9 +678,11 @@ enabled = 1
 exclude = ansible
 max_connections = 5
 includepkgs = lyx-fonts
+	python-qpid-proton
 	python-unittest2
 	python2-mimeparse
 	python2-traceback2
+	qpid-proton-c
 	rubygem-multipart-post
 
 [centos-ovirt-4.2-el7]
@@ -696,9 +707,6 @@ includepkgs = ebay-cors-filter
 	openvswitch-ovn-common
 	openvswitch-ovn-host
 	ovirt-cockpit-sso
-	ovirt-vmconsole
-	ovirt-vmconsole-host
-	ovirt-vmconsole-proxy
 	python-websockify
 	python2-openvswitch
 	python2-ovsdbapp
@@ -715,20 +723,29 @@ gpgcheck = 0
 enabled = 1
 includepkgs = ansible
 	archaius-core
+	gofer
 	hystrix-core
 	hystrix-metrics-event-stream
 	jackson-core
 	jctools
 	jemalloc
-	mom
+	katello-agent
+	katello-agent-fact-plugin
+	pulp-rpm-handlers
 	python-daemon
 	python-dateutil
 	python-extras
 	python-fixtures
+	python-gofer
+	python-gofer-proton
+	python-isodate
 	python-keyczar
 	python-linecache2
 	python-nose
 	python-pthreading
+	python-pulp-agent-lib
+	python-pulp-common
+	python-pulp-rpm-common
 	python-subprocess32
 	python-testtools
 	python2-jmespath

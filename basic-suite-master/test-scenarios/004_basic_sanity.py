@@ -133,6 +133,7 @@ def add_blank_vms(api):
         vm_params.name = vm
         if vm == VM2_NAME:
             vm_params.high_availability.enabled = True
+            vm_params.custom_emulated_machine = 'pc-i440fx-rhel7.4.0'
 
         api.vms.add(vm_params)
         testlib.assert_true_within_short(

@@ -1265,10 +1265,20 @@ def add_scheduling_policy(api):
                 name='my_scheduling_policy',
                 default_policy=False,
                 locked=False,
-                properties=[
-                    sdk4.types.Property(
-                        name='HighUtilization',
-                        value='99',
+                balances=[
+                    sdk4.types.Balance(
+                        name='OptimalForEvenDistribution',
+                    ),
+                ],
+                filters=[
+                    sdk4.types.Filter(
+                        name='Migration',
+                    ),
+                ],
+                weight=[
+                    sdk4.types.Weight(
+                        name='HA',
+                        factor=2,
                     ),
                 ],
             )
@@ -1446,7 +1456,7 @@ _TEST_LIST = [
     add_quota_cluster_limits,
     set_dc_quota_audit,
     add_role,
-    #add_scheduling_policy,
+    add_scheduling_policy,
     add_affinity_label,
     add_tag,
     add_cpu_profile,

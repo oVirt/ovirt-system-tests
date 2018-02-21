@@ -19,14 +19,11 @@
 #
 import os
 
-import pytest
-import yaml
 
 from lib.ansiblelib import Playbook
 from testlib import suite
 
-OS_AUTH_URL = 'https://{}:35357/v2.0'
-OS_USERNAME = 'admin@internal'
+
 PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
 
 
@@ -37,38 +34,11 @@ class HostConfigurationFailure(Exception):
     pass
 
 
-@pytest.fixture(scope='module')
-def os_client_config(engine):
-    cloud_config = {
-        'clouds': {
-            'ovirt': {
-                'auth': {
-                    'auth_url': OS_AUTH_URL.format(engine.ip()),
-                    'username': OS_USERNAME,
-                    'password': engine.metadata['ovirt-engine-password']
-                },
-                'verify': False
-            }
-        }
-    }
-    os_client_config_file_path = os.path.join(PLAYBOOK_DIR, 'clouds.yml')
-    with open(os_client_config_file_path, 'w') as cloud_config_file:
-        yaml.dump(cloud_config, cloud_config_file, default_flow_style=False)
-
-    original_os_client_config_file = os.environ.get('OS_CLIENT_CONFIG_FILE')
-    os.environ['OS_CLIENT_CONFIG_FILE'] = os_client_config_file_path
-    yield
-    if original_os_client_config_file:
-        os.environ['OS_CLIENT_CONFIG_FILE'] = original_os_client_config_file
-    else:
-        del os.environ['OS_CLIENT_CONFIG_FILE']
-
-
-def test_ovn_provider_create_scenario(os_client_config):
+def test_ovn_provider_create_scenario(openstack_client_config):
     _test_ovn_provider('create_scenario.yml')
 
 
-def test_ovn_provider_cleanup_scenario(os_client_config):
+def test_ovn_provider_cleanup_scenario(openstack_client_config):
     _test_ovn_provider('cleanup_scenario.yml')
 
 

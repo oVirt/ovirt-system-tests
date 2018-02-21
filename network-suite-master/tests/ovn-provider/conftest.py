@@ -16,3 +16,5 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+from fixtures.providers import openstack_client_config  # NOQA: F401

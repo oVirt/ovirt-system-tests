@@ -17,13 +17,18 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import os
 import pytest
+import yaml
 
 from lib.providerlib import OpenStackImageProviders
 
 
+OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'
+OPENSTACK_USERNAME = 'admin@internal'
 OVIRT_IMAGE_REPO_NAME = 'ovirt-image-repository'
 OVIRT_IMAGE_REPO_URL = 'http://glance.ovirt.org:9292/'
+OPENSTACK_CLIENT_CONFIG_FILE = 'clouds.yml'
 
 
 @pytest.fixture(scope='session')
@@ -35,3 +40,32 @@ def ovirt_image_repo(system):
         openstack_image_providers.create(name=OVIRT_IMAGE_REPO_NAME,
                                          url=OVIRT_IMAGE_REPO_URL)
         openstack_image_providers.wait_until_available()
+
+
+@pytest.fixture(scope='session')
+def openstack_client_config(engine):
+    cloud_config = {
+        'clouds': {
+            'ovirt': {
+                'auth': {
+                    'auth_url': OPENSTACK_AUTH_URL.format(engine.ip()),
+                    'username': OPENSTACK_USERNAME,
+                    'password': engine.metadata['ovirt-engine-password']
+                },
+                'verify': False
+            }
+        }
+    }
+    os_client_config_file_path = os.path.join(
+        os.environ.get('SUITE'), OPENSTACK_CLIENT_CONFIG_FILE
+    )
+    with open(os_client_config_file_path, 'w') as cloud_config_file:
+        yaml.dump(cloud_config, cloud_config_file, default_flow_style=False)
+
+    original_os_client_config_file = os.environ.get('OS_CLIENT_CONFIG_FILE')
+    os.environ['OS_CLIENT_CONFIG_FILE'] = os_client_config_file_path
+    yield
+    if original_os_client_config_file is not None:
+        os.environ['OS_CLIENT_CONFIG_FILE'] = original_os_client_config_file
+    else:
+        del os.environ['OS_CLIENT_CONFIG_FILE']

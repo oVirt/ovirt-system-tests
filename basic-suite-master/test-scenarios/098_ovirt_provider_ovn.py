@@ -31,6 +31,7 @@ from ovirtsdk4 import types
 
 import test_utils
 from test_utils import network_utils_v4
+from test_utils import versioning
 
 
 VM0_NAME = 'vm0'
@@ -393,6 +394,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
     nic_service.remove()
 
 
+@versioning.require_version(4, 2)
 @testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
 def use_ovn_provider(prefix, api):

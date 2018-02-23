@@ -36,6 +36,8 @@ from ovirtlago import testlib
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
+from test_utils import versioning
+
 
 # TODO: use SDKv4 unconditionally, where possible (as in other test scenarios)
 API_V3_ONLY = os.getenv('API_V3_ONLY', False)
@@ -47,8 +49,7 @@ else:
 
 # DC/Cluster
 DC_NAME = 'test-dc'
-DC_VER_MAJ = 4
-DC_VER_MIN = 2
+DC_VER_MAJ, DC_VER_MIN = versioning.cluster_version()
 SD_FORMAT = 'v4'
 CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'

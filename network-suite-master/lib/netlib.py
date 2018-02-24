@@ -73,16 +73,15 @@ class Network(SDKSubEntity):
     def name(self):
         return self.get_sdk_type().name
 
-    def _build_sdk_type(self, name, vlan=None,
-                        usages=(NetworkUsage.VM,)):
-        network = types.Network(
+    def create(self, name, vlan=None, usages=(NetworkUsage.VM,)):
+        sdk_type = types.Network(
             name=name,
             data_center=self._parent_sdk_entity.service.get(),
             usages=usages,
         )
         if vlan is not None:
-            network.vlan = types.Vlan(id=vlan)
-        return network
+            sdk_type.vlan = types.Vlan(id=vlan)
+        self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, dc):
         return dc.service.networks_service()
@@ -94,8 +93,9 @@ class VnicProfile(SDKRootEntity):
     def name(self):
         return self.get_sdk_type().name
 
-    def _build_sdk_type(self, name, network):
-        return types.VnicProfile(name=name, network=network)
+    def create(self, name, network):
+        sdk_type = types.VnicProfile(name=name, network=network)
+        self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
         return system.vnic_profiles_service
@@ -112,23 +112,8 @@ class Vnic(SDKSubEntity):
     def mac_address(self):
         return self.get_sdk_type().mac.address
 
-    def create(self, name, vnic_profile, interface=VnicInterfaceType.VIRTIO,
-               mac_addr=None):
-        try:
-            super(Vnic, self).create(name, vnic_profile, interface, mac_addr)
-        except EntityCreationError as err:
-            if 'MAC Address' in err.message and 'in use' in err.message:
-                raise MacAddrInUseError(err.message)
-            raise
-
-    def hotunplug(self):
-        self._service.deactivate()
-
-    def hotplug(self):
-        self._service.activate()
-
-    def _build_sdk_type(self, name, vnic_profile,
-                        interface=VnicInterfaceType.VIRTIO, mac_addr=None):
+    def create(self, name, vnic_profile,
+               interface=VnicInterfaceType.VIRTIO, mac_addr=None):
         """
         :type name: string
         :type vnic_profile: netlib.VnicProfile
@@ -143,7 +128,18 @@ class Vnic(SDKSubEntity):
         )
         if mac_addr is not None:
             sdk_type.mac = types.Mac(address=mac_addr)
-        return sdk_type
+        try:
+            self._create_sdk_entity(sdk_type)
+        except EntityCreationError as err:
+            if 'MAC Address' in err.message and 'in use' in err.message:
+                raise MacAddrInUseError(err.message)
+            raise
+
+    def hotunplug(self):
+        self._service.deactivate()
+
+    def hotplug(self):
+        self._service.activate()
 
     def _get_parent_service(self, vm):
         return vm.service.nics_service()

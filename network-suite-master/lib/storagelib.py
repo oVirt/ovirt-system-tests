@@ -108,14 +108,14 @@ class StorageDomain(SDKRootEntity):
     def wait_for_unattached_status(self):
         self._wait_for_status(StorageDomainStatus.UNATTACHED)
 
-    def _build_sdk_type(self, name, host, domain_type, host_storage_data):
+    def create(self, name, host, domain_type, host_storage_data):
         """
         :param name: string
         :param host: hostlib.Host
         :param domain_type: StorageDomainType
         :param host_storage_data: HostStorageData
         """
-        return types.StorageDomain(
+        sdk_type = types.StorageDomain(
             name=name,
             host=host.get_sdk_type(),
             type=domain_type,
@@ -126,6 +126,7 @@ class StorageDomain(SDKRootEntity):
                 nfs_version=host_storage_data.nfs_version
             )
         )
+        self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
         return system.storage_domains_service
@@ -166,10 +167,10 @@ class Disk(SDKRootEntity):
     def status(self):
         return self.get_sdk_type().status
 
-    def _build_sdk_type(self, disk_name, sd_name, provisioned_size=2 * GiB,
-                        disk_format=DiskFormat.COW, status=None,
-                        sparse=True):
-        return types.Disk(
+    def create(self, disk_name, sd_name, provisioned_size=2 * GiB,
+               disk_format=DiskFormat.COW, status=None,
+               sparse=True):
+        sdk_type = types.Disk(
             name=disk_name,
             provisioned_size=provisioned_size,
             format=disk_format,
@@ -177,6 +178,7 @@ class Disk(SDKRootEntity):
             status=status,
             sparse=sparse
         )
+        self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
         return system.disks_service

@@ -76,6 +76,21 @@ class Host(SDKRootEntity):
     def name(self):
         return self.get_sdk_type().name
 
+    def create(self, cluster, vm):
+        """
+        :param cluster: clusterlib.Cluster
+        :param vm: LagoVm
+        """
+        sdk_type = types.Host(
+            name=vm.name(),
+            description='host %s' % vm.name(),
+            address=vm.name(),
+            root_password=str(vm.root_password()),
+            override_iptables=True,
+            cluster=cluster.get_sdk_type()
+        )
+        self._create_sdk_entity(sdk_type)
+
     def activate(self):
         self._service.activate()
 
@@ -144,20 +159,6 @@ class Host(SDKRootEntity):
         syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == HostStatus.MAINTENANCE)
-
-    def _build_sdk_type(self, cluster, vm):
-        """
-        :param cluster: clusterlib.Cluster
-        :param vm: LagoVm
-        """
-        return types.Host(
-            name=vm.name(),
-            description='host %s' % vm.name(),
-            address=vm.name(),
-            root_password=str(vm.root_password()),
-            override_iptables=True,
-            cluster=cluster.get_sdk_type()
-        )
 
     def _get_parent_service(self, system):
         return system.hosts_service

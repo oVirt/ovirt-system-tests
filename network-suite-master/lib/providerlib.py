@@ -25,6 +25,14 @@ from lib.sdkentity import SDKRootEntity
 
 class OpenStackImageProviders(SDKRootEntity):
 
+    def create(self, name, url, requires_authentication):
+        sdk_type = types.OpenStackImageProvider(
+            name=name,
+            url=url,
+            requires_authentication=requires_authentication
+        )
+        self._create_sdk_entity(sdk_type)
+
     def is_provider_available(self, provider_name):
         providers_service = \
             self._parent_sdk_system.openstack_image_providers_service
@@ -47,10 +55,3 @@ class OpenStackImageProviders(SDKRootEntity):
 
     def _get_parent_service(self, system):
         return system.openstack_image_providers_service
-
-    def _build_sdk_type(self, name, url, requires_authentication):
-        return types.OpenStackImageProvider(
-            name=name,
-            url=url,
-            requires_authentication=requires_authentication
-        )

@@ -44,8 +44,9 @@ class DataCenter(SDKRootEntity):
     def wait_for_sd_active_status(self, sd):
         self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.ACTIVE)
 
-    def _build_sdk_type(self, dc_name):
-        return types.DataCenter(name=dc_name)
+    def create(self, dc_name):
+        sdk_type = types.DataCenter(name=dc_name)
+        self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
         return system.data_centers_service

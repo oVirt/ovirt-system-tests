@@ -145,7 +145,7 @@ class Vm(SDKRootEntity):
         yield
         self._wait_for_status(types.VmStatus.DOWN)
 
-    def _build_sdk_type(self, vm_name, cluster, template, stateless=False):
+    def create(self, vm_name, cluster, template, stateless=False):
         """
         :type vm_name: string
         :type cluster: clusterlib.Cluster
@@ -153,12 +153,13 @@ class Vm(SDKRootEntity):
         :type stateless: boolean
         """
 
-        return types.Vm(
+        sdk_type = types.Vm(
             name=vm_name,
             cluster=cluster.get_sdk_type(),
             template=types.Template(name=template),
             stateless=stateless
             )
+        self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
         return system.vms_service
@@ -192,11 +193,12 @@ class VmSnapshot(SDKSubEntity):
     def _get_parent_service(self, vm):
         return vm.service.snapshots_service()
 
-    def _build_sdk_type(self, description, persist_memorystate=False):
-        return types.Snapshot(
+    def create(self, description, persist_memorystate=False):
+        sdk_type = types.Snapshot(
             persist_memorystate=persist_memorystate,
             description=description
-            )
+        )
+        self._create_sdk_entity(sdk_type)
 
     def commit(self):
         if self.get_sdk_type().snapshot_status != SnapshotStatus.IN_PREVIEW:

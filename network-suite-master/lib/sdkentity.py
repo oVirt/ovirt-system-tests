@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,14 +54,12 @@ class SDKEntity(object):
     def get_sdk_type(self):
         return self._service.get()
 
+    @abc.abstractmethod
     def create(self, *args, **kwargs):
-        sdk_type = self._build_sdk_type(*args, **kwargs)
-        try:
-            entity_id = self._parent_service.add(sdk_type).id
-        except ovirtsdk4.Error as err:
-            raise EntityCreationError(err.message)
-        service = self._parent_service.service(entity_id)
-        self._set_service(service)
+        """This method is responsible for creating and
+        adding the entity to the system
+        """
+        pass
 
     def import_by_name(self, name):
         entities = (entity for entity in self._parent_service.list()
@@ -88,13 +86,13 @@ class SDKEntity(object):
             setattr(sdk_type, key, value)
         self._service.update(sdk_type)
 
-    @abc.abstractmethod
-    def _build_sdk_type(self, *args, **kwargs):
-        """
-        This method is responsible for creating the SDK type that is
-        added to the system via the parent service.
-        """
-        pass
+    def _create_sdk_entity(self, sdk_type):
+        try:
+            entity_id = self._parent_service.add(sdk_type).id
+        except ovirtsdk4.Error as err:
+            raise EntityCreationError(err.message)
+        service = self._parent_service.service(entity_id)
+        self._set_service(service)
 
     def _set_service(self, service):
         if self._service is not None:

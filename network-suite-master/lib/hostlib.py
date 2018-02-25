@@ -70,6 +70,17 @@ class NetworkAttachmentData(object):
         return self._ip_configuration
 
 
+@contextlib.contextmanager
+def change_cluster(host, cluster):
+    original_cluster = host.get_cluster()
+
+    host.change_cluster(cluster)
+    try:
+        yield
+    finally:
+        host.change_cluster(original_cluster)
+
+
 class Host(SDKRootEntity):
 
     @property
@@ -139,6 +150,15 @@ class Host(SDKRootEntity):
             check_connectivity=True
         )
 
+    def networks_in_sync(self, networks=None):
+        if networks is None:
+            attachments = self._get_existing_attachments()
+        else:
+            network_ids = {net.id for net in networks}
+            attachments = [att for att in self._get_existing_attachments()
+                           if att.network.id in network_ids]
+        return all(att.in_sync for att in attachments)
+
     def clean_networks(self):
         mgmt_net_id = self._get_mgmt_net_attachment().network.id
         removed_attachments = [att for att in self._get_existing_attachments()
@@ -146,6 +166,9 @@ class Host(SDKRootEntity):
         self.service.setup_networks(
             removed_network_attachments=removed_attachments
         )
+
+    def sync_all_networks(self):
+        self.service.sync_all_networks()
 
     @contextlib.contextmanager
     def wait_for_up_status(self, timeout=5 * 60):

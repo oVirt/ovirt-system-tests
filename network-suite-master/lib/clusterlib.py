@@ -37,6 +37,16 @@ class SwitchType():
 
 
 @contextlib.contextmanager
+def cluster(system, data_center, name):
+    cluster = Cluster(system)
+    cluster.create(data_center, name)
+    try:
+        yield cluster
+    finally:
+        cluster.remove()
+
+
+@contextlib.contextmanager
 def mac_pool(system, cluster, name, ranges, allow_duplicates=False):
     mac_pool_id = cluster.get_mac_pool().id
 

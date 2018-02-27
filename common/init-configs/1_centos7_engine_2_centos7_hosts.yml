@@ -48,6 +48,8 @@ domains:
     artifacts:
       - /var/log
       - /root/fluentd
+      - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
+      - /var/lib/ovirt-engine/setup/answers
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings

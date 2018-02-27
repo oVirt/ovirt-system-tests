@@ -29,6 +29,9 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_engine.sh
+    artifacts:
+      - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
+      - /var/lib/ovirt-engine/setup/answers
 
   __HOST0__:
     vm-type: ovirt-host

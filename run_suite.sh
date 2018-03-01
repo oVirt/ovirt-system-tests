@@ -98,9 +98,13 @@ put_host_image() {
 
 render_jinja_templates () {
     local suite_name="${SUITE##*/}"
+    local src="${SUITE}/LagoInitFile.in"
+    local dest="${SUITE}/LagoInitFile"
+
     # export the suite name so jinja can interpolate it in the template
     export suite_name="${suite_name//./-}"
-    python "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
+    python "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
+    cat "$dest"
 }
 
 env_repo_setup () {

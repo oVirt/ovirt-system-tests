@@ -107,7 +107,8 @@ name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled = 1
 max_connections = 5
-includepkgs = glusterfs
+includepkgs = gdeploy
+	glusterfs
 	glusterfs-api
 	glusterfs-cli
 	glusterfs-client-xlators
@@ -689,6 +690,7 @@ name = CentOS-7 - oVirt 4.2
 baseurl = http://cbs.centos.org/repos/virt7-ovirt-42-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
+exclude = ovirt-host*
 includepkgs = ebay-cors-filter
 	novnc
 	openstack-java-cinder-client

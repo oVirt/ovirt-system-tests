@@ -1,17 +1,8 @@
 #!/usr/bin/env bash
 
 prep_suite () {
-    local suite_name="${SUITE##*/}"
-    suite_name="${suite_name//./-}"
-    sed -r \
-        -e "s,__ENGINE__,lago-${suite_name}-engine,g" \
-        -e "s,__HOST([0-9]+)__,lago-${suite_name}-host\1,g" \
-        -e "s,__LAGO_NET__,lago-${suite_name}-lago,g" \
-        -e "s,__STORAGE__,lago-${suite_name}-storage,g" \
-    < ${SUITE}/LagoInitFile.in \
-    > ${SUITE}/LagoInitFile
+    render_jinja_templates
 }
-
 
 env_repo_setup_base_version () {
     #This function is setting up the env with stable release repo
@@ -25,7 +16,6 @@ env_repo_setup_base_version () {
     cd -
 }
 
-
 env_repo_setup_destination_version () {
     #The env_repo_setup serves this control
     #This function is for readability purpose only
@@ -37,7 +27,6 @@ clean_internal_repo () {
     echo "Cleaning internal repo"
     rm -rf "$PREFIX"/default/internal_repo
 }
-
 
 run_suite () {
     env_init \

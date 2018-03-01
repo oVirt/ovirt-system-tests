@@ -1,0 +1,6 @@
+[ovirt-appliance-4.2-el7]
+name=oVirt Appliance
+baseurl=http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
+enabled=1
+max_connections=10
+includepkgs=ovirt-engine-appliance

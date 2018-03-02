@@ -44,7 +44,7 @@ from ovirtlago import testlib
 # DC/Cluster
 DC_NAME = 'Default'
 DC_VER_MAJ = 4
-DC_VER_MIN = 1
+DC_VER_MIN = 2
 SD_FORMAT = 'v4'
 CLUSTER_NAME = 'Default'
 DC_QUOTA_NAME = 'DC-QUOTA'

@@ -45,7 +45,7 @@ TEST_DC = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
-TEMPLATE_CIRROS = 'CirrOS_0.3.5_for_x86_64_glance_template'
+TEMPLATE_CIRROS = 'CirrOS_0.4.0_for_x86_64_glance_template'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
@@ -62,7 +62,7 @@ DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
-GLANCE_DISK_NAME = 'CirrOS_0.3.5_for_x86_64_glance_disk'
+GLANCE_DISK_NAME = 'CirrOS_0.4.0_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
@@ -1044,7 +1044,7 @@ def hotplug_cpu(prefix):
         ip_addr=ip_address,
         command=['lscpu'],
         username='cirros',
-        password='cubswin:)',
+        password='gocubsgo',
     )
     nt.assert_equals(ret.code, 0)
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out)

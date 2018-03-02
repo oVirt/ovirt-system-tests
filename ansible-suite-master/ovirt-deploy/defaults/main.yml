@@ -35,7 +35,7 @@ iso_name: iso
 iso_path: /exports/nfs/iso
 ## Glance
 glance_name: ovirt-image-repository
-glance_disk: "CirrOS 0.3.4 for x86_64"
+glance_disk: "CirrOS 0.4.0 for x86_64"
 
 # Templates:
 template_name: "{{ glance_disk | replace(' ', '_') }}_glance_template"

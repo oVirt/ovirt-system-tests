@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014, 2017 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,13 +35,13 @@ TEST_DC = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
-TEMPLATE_CIRROS = 'CirrOS_0.3.4_for_x86_64_glance_template'
+TEMPLATE_CIRROS = 'CirrOS_0.4.0_for_x86_64_glance_template'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
-GLANCE_DISK_NAME = 'CirrOS_0.3.4_for_x86_64_glance_disk'
+GLANCE_DISK_NAME = 'CirrOS_0.4.0_for_x86_64_glance_disk'
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'

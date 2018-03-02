@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014, 2017 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = 'CirrOS 0.3.4 for x86_64'
+CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network

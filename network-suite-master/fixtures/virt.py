@@ -24,8 +24,8 @@ from lib import storagelib
 from lib import templatelib
 
 
-CIRROS_IMAGE_NAME = 'CirrOS 0.3.5 for x86_64'
-CIRROS_TEMPLATE_NAME = 'Cirros_0_3_5'
+CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'
+CIRROS_TEMPLATE_NAME = 'Cirros_0_4_0'
 
 
 @pytest.fixture(scope='session')

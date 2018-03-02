@@ -3,6 +3,7 @@ reposdir=/etc/reposync.repos.d
 max_connections=50
 ip_resolve=4
 gpgcheck=0
+plugins = 1
 
 [ovirt-master-tested-el7]
 name=oVirt Master Latest Tested

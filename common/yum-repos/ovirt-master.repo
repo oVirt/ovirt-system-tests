@@ -675,7 +675,6 @@ includepkgs = cockpit
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
-exclude = ansible
 max_connections = 5
 includepkgs = lyx-fonts
 	python-qpid-proton
@@ -684,6 +683,7 @@ includepkgs = lyx-fonts
 	python2-traceback2
 	qpid-proton-c
 	rubygem-multipart-post
+	ansible
 
 [centos-ovirt-4.2-el7]
 name = CentOS-7 - oVirt 4.2
@@ -722,8 +722,9 @@ includepkgs = ebay-cors-filter
 name = CentOS-7 - oVirt common
 baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
 gpgcheck = 0
+cost = 2000
 enabled = 1
-includepkgs = ansible
+includepkgs =
 	archaius-core
 	gofer
 	hystrix-core

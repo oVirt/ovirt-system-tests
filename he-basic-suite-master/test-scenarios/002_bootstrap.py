@@ -987,14 +987,66 @@ def he_vm_status(prefix):
         raise RuntimeError('could not parse JSON: %s' % result.out)
 
 
+@testlib.with_ovirt_prefix
+def he_get_shared_config(prefix):
+    host0 = sorted(prefix.virt_env.host_vms(), key=lambda h: h.name())[0]
+    # There was a bug, that 'hosted-engine --get-shared-config' wrote local vm.conf
+    # with bad permissions, if it was missing. So remove it, run this, then test sanity.
+    host0.ssh(
+        [
+            'rm',
+            '-fv',
+            '/var/run/ovirt-hosted-engine-ha/vm.conf',
+        ],
+    )
+    # In 4.2 we have 'he_shared', in 4.1 currently 'he_conf'
+    result = host0.ssh(
+        [
+            'hosted-engine',
+            '--get-shared-config',
+            'gateway',
+	    '--type=he_shared',
+	    '||',
+            'hosted-engine',
+            '--get-shared-config',
+            'gateway',
+	    '--type=he_conf',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'hosted-engine --get-shared-config code: %s' % result.code
+    )
+    nt.assert_true(
+	'gateway' in result.out
+    )
+
+
+@testlib.with_ovirt_prefix
+def he_check_ha_agent(prefix):
+    host0 = sorted(prefix.virt_env.host_vms(), key=lambda h: h.name())[0]
+    # Test that ha agent does not emit errors after he_get_shared_config
+    result = host0.ssh(
+        [
+            'grep',
+	    'Permission denied',
+            '/var/log/ovirt-hosted-engine-ha/agent.log'
+        ],
+    )
+    nt.assert_true(
+	'Permission denied' not in result.out
+    )
+
+
 _TEST_LIST = [
     wait_engine,
 #    add_dc,
 #    add_cluster,
     add_master_storage_domain,
     he_vm_status,
+    he_get_shared_config,
     sleep,
     add_he_hosts,
+    he_check_ha_agent,
     list_glance_images,
     add_secondary_storage_domains,
 #    import_templates,

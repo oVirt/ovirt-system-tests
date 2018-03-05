@@ -10,7 +10,7 @@ MYADDR=$(\
 )
 MYHOSTNAME="$(hostname | sed s/_/-/g)"
 
-echo "${MYADDR} ${MYHOSTNAME} ${MYHOSTNAME}.${DOMAIN}" >> /etc/hosts
+echo "${MYADDR} ${MYHOSTNAME}.${DOMAIN} ${MYHOSTNAME}" >> /etc/hosts
 
 HEGW=$(\
     /sbin/ip -4 -o addr show dev eth0 \

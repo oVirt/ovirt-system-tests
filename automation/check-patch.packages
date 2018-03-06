@@ -9,6 +9,9 @@ python-netaddr
 script
 virt-install
 wget
+docker
+python-pip
+python-virtualenv
 
 ### docs
 mkdocs

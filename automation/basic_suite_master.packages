@@ -4,3 +4,6 @@ lago-ovirt
 ovirt-engine-sdk-python
 python-netaddr
 python-ovirt-engine-sdk4
+docker
+python-pip
+python-virtualenv

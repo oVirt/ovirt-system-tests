@@ -20,6 +20,14 @@ run_suite () {
     fi
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
+
+    # use a virtualenv and install selenium via pip, because there is no maintained rpm available
+    venv=$(mktemp -d)
+    virtualenv --system-site-packages "$venv"
+    source $venv/bin/activate
+    pip install -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
+    export PYTHONPATH="${PYTHONPATH}:${venv}/lib/python2.7/site-packages"
+
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"
         env_run_test "$scenario" || failed=true
@@ -35,4 +43,6 @@ run_suite () {
             return 1
         fi
     done
+
+    deactivate
 }

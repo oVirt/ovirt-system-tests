@@ -19,3 +19,4 @@ ovirt-log-collector
 ovirt-engine-extension-aaa-ldap*
 otopi-debug-plugins
 rubygem-fluent-plugin-elasticsearch
+collectd-virt

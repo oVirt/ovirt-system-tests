@@ -38,10 +38,17 @@ def test_initialize_engine(prefix):
 
     result = engine.ssh(
         [
+            'OTOPI_DEBUG=1',
             'engine-setup',
             '--config-append=/tmp/answer-file',
             '--accept-defaults',
             '--offline'
+        ],
+    )
+    engine.ssh(
+        [
+            'ss',
+            '-anp',
         ],
     )
     if result.code != 0:

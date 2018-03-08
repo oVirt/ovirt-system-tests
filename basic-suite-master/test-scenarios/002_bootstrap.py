@@ -49,12 +49,16 @@ else:
     API_V4 = True
 
 
+MB = 2 ** 20
+GB = 2 ** 30
+
 # DC/Cluster
 DC_NAME = 'test-dc'
 DC_VER_MAJ, DC_VER_MIN = versioning.cluster_version()
 SD_FORMAT = 'v4'
 CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'
+TEMPLATE_BLANK = 'Blank'
 
 # Storage
 MASTER_SD_TYPE = 'iscsi'
@@ -90,6 +94,21 @@ GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 VM_NETWORK = u'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
+MANAGEMENT_NETWORK = 'ovirtmgmt'
+PASSTHROUGH_VNIC_PROFILE = 'passthrough_vnic_profile'
+NETWORK_FILTER_NAME = 'clean-traffic'
+NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
+NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
+NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
+
+
+VM0_NAME = 'vm0'
+VM1_NAME = 'vm1'
+VM2_NAME = 'vm2'
+BACKUP_VM_NAME = 'backup_vm'
+
+# the default MAC pool has addresses like 00:1a:4a:16:01:51
+UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
 
 # TODO: support resolving hosts over IPv6 and arbitrary network
@@ -1177,7 +1196,7 @@ def get_cluster_enabled_features(api):
     enabled_features_service = cluster_service.enabled_features_service()
     features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
     #TODO: Fix the below - why is features null?
-    nt.assert_true(features)
+    raise SkipTest('skipping - features is []')
     feature_list = ''
     for feature in features:
         if feature.name == 'XYZ':
@@ -1264,8 +1283,6 @@ def get_host_stats(api):
 
 @testlib.with_ovirt_api4
 def get_host_numa_nodes(api):
-    raise SkipTest(' [2018-02-08] test itself identified as possibly faulty')
-# test is disabled until test is fixed.
     engine = api.system_service()
     host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
@@ -1273,6 +1290,7 @@ def get_host_numa_nodes(api):
     nodes = numa_nodes_service.list()
     # TODO: Do a better check on the result nodes struct.
     # The below is too simplistic.
+    raise SkipTest(' [2018-02-08] test itself identified as possibly faulty')
     nt.assert_true(
         nodes[0].index == 0
     )
@@ -1359,10 +1377,11 @@ def add_fence_agent(api):
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
     engine = api.system_service()
-    host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
+    host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
 
     fence_agents_service = host_service.fence_agents_service()
+    raise SkipTest('Enabling this may affect tests. Needs further tests')
     nt.assert_true(
         fence_agents_service.add(
             sdk4.types.Agent(
@@ -1510,6 +1529,224 @@ def download_engine_certs(prefix):
     conn.close()
 
 
+@testlib.with_ovirt_api4
+def add_vnic_passthrough_profile(api):
+    engine = api.system_service()
+
+    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
+
+    vnic_profile = vnic_service.add(
+        profile=sdk4.types.VnicProfile(
+            name=PASSTHROUGH_VNIC_PROFILE,
+            pass_through=sdk4.types.VnicPassThrough(
+                mode=sdk4.types.VnicPassThroughMode.ENABLED
+            )
+        )
+    )
+    nt.assert_equals(
+        vnic_profile.pass_through.mode, sdk4.types.VnicPassThroughMode.ENABLED
+    )
+
+
+@testlib.with_ovirt_api4
+def remove_vnic_passthrough_profile(api):
+    engine = api.system_service()
+
+    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
+
+    vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
+                        if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
+                        )
+
+    vnic_service.profile_service(vnic_profile.id).remove()
+    nt.assert_equals(next((vnic_profile for vnic_profile in vnic_service.list()
+                           if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE), None),
+                     None)
+
+
+@testlib.with_ovirt_api
+def add_blank_vms(api):
+    vm_memory = 256 * MB
+    vm_params = params.VM(
+        memory=vm_memory,
+        os=params.OperatingSystem(
+            type_='other_linux',
+        ),
+        type_='server',
+        high_availability=params.HighAvailability(
+            enabled=False,
+        ),
+        cluster=params.Cluster(
+            name=CLUSTER_NAME,
+        ),
+        template=params.Template(
+            name=TEMPLATE_BLANK,
+        ),
+        display=params.Display(
+            smartcard_enabled=True,
+            keyboard_layout='en-us',
+            file_transfer_enabled=True,
+            copy_paste_enabled=True,
+        ),
+        memory_policy=params.MemoryPolicy(
+            guaranteed=vm_memory / 2,
+        ),
+        name=VM0_NAME
+    )
+    for vm in [VM0_NAME, VM2_NAME, BACKUP_VM_NAME]:
+        vm_params.name = vm
+        if vm == VM2_NAME:
+            vm_params.high_availability.enabled = True
+            vm_params.custom_emulated_machine = 'pc-i440fx-rhel7.4.0'
+
+        api.vms.add(vm_params)
+        testlib.assert_true_within_short(
+            lambda: api.vms.get(vm).status.state == 'down',
+        )
+
+
+@testlib.with_ovirt_api
+def add_nic(api):
+    NIC_NAME = 'eth0'
+    nic_params = params.NIC(
+        name=NIC_NAME,
+        interface='virtio',
+        network=params.Network(
+            name='ovirtmgmt',
+        ),
+    )
+    api.vms.get(VM0_NAME).nics.add(nic_params)
+
+    nic_params.mac = params.MAC(address=UNICAST_MAC_OUTSIDE_POOL)
+    nic_params.interface='e1000'
+    api.vms.get(VM2_NAME).nics.add(nic_params)
+
+
+@testlib.with_ovirt_api
+def add_graphics_console(api):
+    vm = api.vms.get(VM0_NAME)
+    vm.graphicsconsoles.add(
+        params.GraphicsConsole(
+            protocol='vnc',
+        )
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        len(api.vms.get(VM0_NAME).graphicsconsoles.list()) == 2
+    )
+
+
+@testlib.with_ovirt_api4
+def add_filter(ovirt_api4):
+    engine = ovirt_api4.system_service()
+    nics_service = test_utils.get_nics_service(engine, VM0_NAME)
+    nic = nics_service.list()[0]
+    network = ovirt_api4.follow_link(nic.vnic_profile).network
+    network_filters_service = engine.network_filters_service()
+    network_filter = next(
+        network_filter for network_filter in network_filters_service.list()
+        if network_filter.name == NETWORK_FILTER_NAME
+    )
+    vnic_profiles_service = engine.vnic_profiles_service()
+
+    vnic_profile = vnic_profiles_service.add(
+        sdk4.types.VnicProfile(
+            name='{}_profile'.format(network_filter.name),
+            network=network,
+            network_filter=network_filter
+        )
+    )
+    nic.vnic_profile = vnic_profile
+    nt.assert_true(
+        nics_service.nic_service(nic.id).update(nic)
+    )
+
+
+@testlib.with_ovirt_prefix
+def add_filter_parameter(prefix):
+    engine = prefix.virt_env.engine_vm()
+    ovirt_api4 = engine.get_api(api_ver=4)
+    vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
+    network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
+        ovirt_api4.system_service(), VM0_NAME)
+
+    nt.assert_true(
+        network_filter_parameters_service.add(
+            sdk4.types.NetworkFilterParameter(
+                name=NETWORK_FILTER_PARAMETER0_NAME,
+                value=NETWORK_FILTER_PARAMETER0_VALUE
+            )
+        )
+    )
+
+    nt.assert_true(
+        network_filter_parameters_service.add(
+            sdk4.types.NetworkFilterParameter(
+                name=NETWORK_FILTER_PARAMETER1_NAME,
+                value=vm_gw
+            )
+        )
+    )
+
+
+@testlib.with_ovirt_api4
+def add_serial_console_vm2(api):
+    engine = api.system_service()
+    # Find the virtual machine. Note the use of the `all_content` parameter, it is
+    # required in order to obtain additional information that isn't retrieved by
+    # default, like the configuration of the serial console.
+    vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
+    if not vm.console.enabled:
+        vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+        vm_service.update(
+            sdk4.types.Vm(
+                console=sdk4.types.Console(
+                    enabled=True
+                )
+            )
+        )
+
+@testlib.with_ovirt_api4
+def add_instance_type(api):
+    instance_types_service = api.system_service().instance_types_service()
+    nt.assert_true(
+        instance_types_service.add(
+            sdk4.types.InstanceType(
+                name='myinstancetype',
+                description='My instance type',
+                memory=1 * GB,
+                memory_policy=sdk4.types.MemoryPolicy(
+                    max=1 * GB,
+                ),
+                high_availability=sdk4.types.HighAvailability(
+                    enabled=True,
+                ),
+                cpu=sdk4.types.Cpu(
+                    topology=sdk4.types.CpuTopology(
+                        cores=2,
+                        sockets=2,
+                    ),
+                ),
+            ),
+        )
+    )
+
+
+@testlib.with_ovirt_api
+def add_event(api):
+    event_params = params.Event(
+        description='ovirt-system-tests description',
+        custom_id=int('01234567890'),
+        severity='NORMAL',
+        origin='ovirt-system-tests',
+        cluster=params.Cluster(
+            name=CLUSTER_NAME,
+        ),
+    )
+
+    nt.assert_true(api.events.add(event_params))
+
+
 _TEST_LIST = [
     copy_storage_script,
     download_engine_certs,
@@ -1543,16 +1780,26 @@ _TEST_LIST = [
     verify_add_hosts,
     add_master_storage_domain,
     add_disk_profile,
-    #get_cluster_enabled_features,
+    get_cluster_enabled_features,
     get_host_numa_nodes,
     get_host_devices,
     get_host_hooks,
     get_host_stats,
     add_glance_images,
-    #add_fence_agent,
+    add_fence_agent,
     verify_engine_backup,
     verify_notifier,
     check_update_host,
+    add_vnic_passthrough_profile,
+    remove_vnic_passthrough_profile,
+    add_blank_vms,
+    add_nic,
+    add_graphics_console,
+    add_filter,
+    add_filter_parameter,
+    add_serial_console_vm2,
+    add_instance_type,
+    add_event,
     verify_add_all_hosts,
     add_secondary_storage_domains,
     import_templates,

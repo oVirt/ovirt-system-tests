@@ -38,12 +38,8 @@ import test_utils
 
 MB = 2 ** 20
 GB = 2 ** 30
-# the default MAC pool has addresses like 00:1a:4a:16:01:51
-UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
-TEST_DC = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
-TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
 TEMPLATE_CIRROS = 'CirrOS_0.4.0_for_x86_64_glance_template'
 
@@ -72,10 +68,6 @@ DLUN_DISK_NAME = 'DirectLunDisk'
 SD_TEMPLATES_NAME = 'templates'
 
 VM_NETWORK = u'VM Network with a very long name and עברית'
-NETWORK_FILTER_NAME = 'clean-traffic'
-NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
-NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
-NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
 
 SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
@@ -98,64 +90,6 @@ def _vm_host(prefix, vm_name):
     host_id = vm_service.get().host.id
     host_name = engine.hosts_service().host_service(host_id).get().name
     return prefix.virt_env.get_vm(host_name)
-
-
-@testlib.with_ovirt_api
-def add_blank_vms(api):
-    vm_memory = 256 * MB
-    vm_params = params.VM(
-        memory=vm_memory,
-        os=params.OperatingSystem(
-            type_='other_linux',
-        ),
-        type_='server',
-        high_availability=params.HighAvailability(
-            enabled=False,
-        ),
-        cluster=params.Cluster(
-            name=TEST_CLUSTER,
-        ),
-        template=params.Template(
-            name=TEMPLATE_BLANK,
-        ),
-        display=params.Display(
-            smartcard_enabled=True,
-            keyboard_layout='en-us',
-            file_transfer_enabled=True,
-            copy_paste_enabled=True,
-        ),
-        memory_policy=params.MemoryPolicy(
-            guaranteed=vm_memory / 2,
-        ),
-        name=VM0_NAME
-    )
-    for vm in [VM0_NAME, VM2_NAME, BACKUP_VM_NAME]:
-        vm_params.name = vm
-        if vm == VM2_NAME:
-            vm_params.high_availability.enabled = True
-            vm_params.custom_emulated_machine = 'pc-i440fx-rhel7.4.0'
-
-        api.vms.add(vm_params)
-        testlib.assert_true_within_short(
-            lambda: api.vms.get(vm).status.state == 'down',
-        )
-
-
-@testlib.with_ovirt_api
-def add_nic(api):
-    NIC_NAME = 'eth0'
-    nic_params = params.NIC(
-        name=NIC_NAME,
-        interface='virtio',
-        network=params.Network(
-            name='ovirtmgmt',
-        ),
-    )
-    api.vms.get(VM0_NAME).nics.add(nic_params)
-
-    nic_params.mac = params.MAC(address=UNICAST_MAC_OUTSIDE_POOL)
-    nic_params.interface='e1000'
-    api.vms.get(VM2_NAME).nics.add(nic_params)
 
 
 @testlib.with_ovirt_api4
@@ -246,20 +180,6 @@ def sparsify_disk1(api):
     testlib.assert_true_within_short(
         lambda:
         disk_service.get().status == types.DiskStatus.OK
-    )
-
-
-@testlib.with_ovirt_api
-def add_graphics_console(api):
-    vm = api.vms.get(VM0_NAME)
-    vm.graphicsconsoles.add(
-        params.GraphicsConsole(
-            protocol='vnc',
-        )
-    )
-    testlib.assert_true_within_short(
-        lambda:
-        len(api.vms.get(VM0_NAME).graphicsconsoles.list()) == 2
     )
 
 
@@ -669,58 +589,6 @@ def verify_add_vm1_from_template(api):
         vm.disks.get(disk_name).status.state == 'ok'
     )
 
-
-@testlib.with_ovirt_api4
-def add_filter(ovirt_api4):
-    engine = ovirt_api4.system_service()
-    nics_service = test_utils.get_nics_service(engine, VM0_NAME)
-    nic = nics_service.list()[0]
-    network = ovirt_api4.follow_link(nic.vnic_profile).network
-    network_filters_service = engine.network_filters_service()
-    network_filter = next(
-        network_filter for network_filter in network_filters_service.list()
-        if network_filter.name == NETWORK_FILTER_NAME
-    )
-    vnic_profiles_service = engine.vnic_profiles_service()
-
-    vnic_profile = vnic_profiles_service.add(
-        types.VnicProfile(
-            name='{}_profile'.format(network_filter.name),
-            network=network,
-            network_filter=network_filter
-        )
-    )
-    nic.vnic_profile = vnic_profile
-    nt.assert_true(
-        nics_service.nic_service(nic.id).update(nic)
-    )
-
-
-@testlib.with_ovirt_prefix
-def add_filter_parameter(prefix):
-    engine = prefix.virt_env.engine_vm()
-    ovirt_api4 = engine.get_api(api_ver=4)
-    vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
-    network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
-        ovirt_api4.system_service(), VM0_NAME)
-
-    nt.assert_true(
-        network_filter_parameters_service.add(
-            types.NetworkFilterParameter(
-                name=NETWORK_FILTER_PARAMETER0_NAME,
-                value=NETWORK_FILTER_PARAMETER0_VALUE
-            )
-        )
-    )
-
-    nt.assert_true(
-        network_filter_parameters_service.add(
-            types.NetworkFilterParameter(
-                name=NETWORK_FILTER_PARAMETER1_NAME,
-                value=vm_gw
-            )
-        )
-    )
 
 @testlib.with_ovirt_prefix
 def run_vms(prefix):
@@ -1166,47 +1034,6 @@ def verify_suspend_resume_vm0(api):
 
 
 @testlib.with_ovirt_api
-def add_event(api):
-    event_params = params.Event(
-        description='ovirt-system-tests description',
-        custom_id=int('01234567890'),
-        severity='NORMAL',
-        origin='ovirt-system-tests',
-        cluster=params.Cluster(
-            name=TEST_CLUSTER,
-        ),
-    )
-
-    nt.assert_true(api.events.add(event_params))
-
-
-@testlib.with_ovirt_api4
-def add_instance_type(api):
-    instance_types_service = api.system_service().instance_types_service()
-    nt.assert_true(
-        instance_types_service.add(
-            types.InstanceType(
-                name='myinstancetype',
-                description='My instance type',
-                memory=1 * 2**30,
-                memory_policy=types.MemoryPolicy(
-                    max=1 * 2**30,
-                ),
-                high_availability=types.HighAvailability(
-                    enabled=True,
-                ),
-                cpu=types.Cpu(
-                    topology=types.CpuTopology(
-                        cores=2,
-                        sockets=2,
-                    ),
-                ),
-            ),
-        )
-    )
-
-
-@testlib.with_ovirt_api
 def verify_glance_import(api):
     for disk_name in (GLANCE_DISK_NAME, TEMPLATE_CIRROS):
         testlib.assert_true_within_long(
@@ -1214,34 +1041,10 @@ def verify_glance_import(api):
         )
 
 
-@testlib.with_ovirt_api4
-def add_serial_console_vm2(api):
-    engine = api.system_service()
-    # Find the virtual machine. Note the use of the `all_content` parameter, it is
-    # required in order to obtain additional information that isn't retrieved by
-    # default, like the configuration of the serial console.
-    vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
-    if not vm.console.enabled:
-        vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-        vm_service.update(
-            types.Vm(
-                console=types.Console(
-                    enabled=True
-                )
-            )
-        )
-
-
 _TEST_LIST = [
-    add_blank_vms,
     verify_glance_import,
     add_vm1_from_template,
-    add_nic,
-    add_graphics_console,
     add_directlun,
-    add_filter,
-    add_filter_parameter,
-    add_serial_console_vm2,
     verify_add_vm1_from_template,
     add_disks,
     add_snapshot_for_backup,
@@ -1262,8 +1065,6 @@ _TEST_LIST = [
     import_vm_as_clone,
     template_export,
     template_update,
-    add_instance_type,
-    add_event,
     verify_vm_import,
     verify_suspend_resume_vm0,
     restore_vm0_networking,

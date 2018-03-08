@@ -158,3 +158,10 @@ def quote_search_string(s):
         raise ValueError(
             'Quotation marks currently can not be appear in search phrases')
     return '"' + s + '"'
+
+@memoized
+def get_vnic_profiles_service(engine, network_name):
+    networks_service = engine.networks_service()
+    net = networks_service.list(search='name={}'.format(network_name))[0]
+    return networks_service.network_service(net.id).vnic_profiles_service()
+

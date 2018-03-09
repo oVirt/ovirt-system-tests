@@ -23,8 +23,7 @@ download_appliance(){
     local appliance_distro="${2:-el7}"
     local appliance_dst_file="${3:-oVirt-Engine-Appliance-$appliance_version-$appliance_distro.ova}"
 
-    local job_name="ovirt-appliance_${appliance_version}"
-    job_name+="_build-artifacts-${appliance_distro}-x86_64"
+    local job_name="ovirt-appliance_4.2_build-artifacts-${appliance_distro}-x86_64"
 
     local file_regex='oVirt-Engine[^[:space:]"]*\.ova'
 
@@ -37,8 +36,7 @@ download_node_ng(){
     local node_distro="${2:-el7}"
     local node_squashfs_image="${3:-oVirt-Node-$version-$engine_distro.squashfs.img}"
 
-    local job_name="ovirt-node-ng_${node_version}_"
-    job_name+="build-artifacts-${node_distro}-x86_64"
+    local job_name="ovirt-node-ng_4.2_build-artifacts-${node_distro}-x86_64"
 
     local file_regex='ovirt-node-ng[^[:space:]"]*\.squashfs\.img'
 

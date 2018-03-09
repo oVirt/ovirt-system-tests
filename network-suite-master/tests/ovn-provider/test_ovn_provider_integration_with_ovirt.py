@@ -1,3 +1,4 @@
+#
 # Copyright 2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,6 +18,18 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from fixtures.providers import default_ovn_provider  # NOQA: F401
-from fixtures.providers import openstack_client_config  # NOQA: F401
-from fixtures.providers import ovn_network  # NOQA: F401
+from lib import clusterlib
+from lib import providerlib
+
+
+def test_import_network(ovn_network, default_ovn_provider,
+                        default_data_center, default_cluster):
+    openstack_network = providerlib.OpenStackNetwork(default_ovn_provider)
+    openstack_network.import_by_id(str(ovn_network.id))
+    ovirt_network = openstack_network.create_external_network(
+        default_data_center)
+    try:
+        cluster_network = clusterlib.ClusterNetwork(default_cluster)
+        cluster_network.assign(ovirt_network)
+    finally:
+        ovirt_network.remove()

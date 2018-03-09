@@ -19,9 +19,11 @@
 #
 import os
 import pytest
+import shade
 import yaml
 
 from lib.providerlib import OpenStackImageProviders
+from lib.providerlib import OpenStackNetworkProvider
 
 
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'
@@ -29,6 +31,12 @@ OPENSTACK_USERNAME = 'admin@internal'
 OVIRT_IMAGE_REPO_NAME = 'ovirt-image-repository'
 OVIRT_IMAGE_REPO_URL = 'http://glance.ovirt.org:9292/'
 OPENSTACK_CLIENT_CONFIG_FILE = 'clouds.yml'
+DEFAULT_CLOUD = 'ovirt'
+DEFAULT_OVN_PROVIDER_NAME = 'ovirt-provider-ovn'
+DEFAULT_OVN_NETWORK_NAME = 'default_network_name'
+DEFAULT_OVN_SUBNET_CIDR = '10.0.0.0/24'
+DEFAULT_OVN_SUBNET_NAME = 'default_subnet_name'
+DEFAULT_OVN_SUBNET_GW = '10.0.0.3'
 
 
 @pytest.fixture(scope='session')
@@ -70,3 +78,30 @@ def openstack_client_config(engine):
         os.environ['OS_CLIENT_CONFIG_FILE'] = original_os_client_config_file
     else:
         del os.environ['OS_CLIENT_CONFIG_FILE']
+
+
+@pytest.fixture(scope='session')
+def default_ovn_provider(system):
+    openstack_network_provider = OpenStackNetworkProvider(system)
+    openstack_network_provider.import_by_name(DEFAULT_OVN_PROVIDER_NAME)
+    with openstack_network_provider.disable_auto_sync():
+        yield openstack_network_provider
+
+
+@pytest.fixture(scope='session')
+def ovn_network(openstack_client_config, default_ovn_provider):
+    network_name = DEFAULT_OVN_NETWORK_NAME
+    cloud = shade.openstack_cloud(cloud=DEFAULT_CLOUD)
+    network = cloud.create_network(network_name)
+    try:
+        subnet = cloud.create_subnet(
+            network.id,
+            cidr=DEFAULT_OVN_SUBNET_CIDR,
+            subnet_name=DEFAULT_OVN_SUBNET_NAME,
+            enable_dhcp=True,
+            gateway_ip=DEFAULT_OVN_SUBNET_GW,
+        )
+        yield network
+        cloud.delete_subnet(subnet.id)
+    finally:
+        cloud.delete_network(network.id)

@@ -17,6 +17,9 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import os
+import pytest
+
 from lib import clusterlib
 from lib import hostlib
 
@@ -25,6 +28,12 @@ ETH1 = 'eth1'
 NET_1 = 'net-1'
 NET_1_IPv4_ADDR = '192.0.3.1'
 NET_1_IPv4_MASK = '255.255.255.0'
+
+SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
+
+
+pytestmark = pytest.mark.skipif(
+    SUITE_NAME.endswith('4.2'), reason='Not supported on 4.2 suite')
 
 
 def test_migrate_cluster_from_legacy_to_ovs(

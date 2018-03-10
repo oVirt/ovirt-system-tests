@@ -314,6 +314,21 @@ def add_cluster_4(prefix):
                     name=DC_NAME,
                 ),
                 ballooning_enabled=True,
+                ksm=sdk4.types.Ksm(
+                    enabled=True,
+                    merge_across_nodes=False,
+                ),
+                scheduling_policy=sdk4.types.SchedulingPolicy(
+                    name='evenly_distributed',
+                ),
+                optional_reason=True,
+                memory_policy=sdk4.types.MemoryPolicy(
+                    ballooning=True,
+                    over_commit=sdk4.types.MemoryOverCommit(
+                        percent=150,
+                    ),
+                ),
+                ha_reservation=True,
                 external_network_providers=[
                     sdk4.types.ExternalProvider(
                         id=provider_id,

@@ -1281,6 +1281,31 @@ def get_host_numa_nodes(api):
 
 
 @testlib.with_ovirt_api4
+def check_update_host(api):
+    engine = api.system_service()
+    host = _random_host_from_dc_4(api, DC_NAME)
+    host_service = engine.hosts_service().host_service(id=host.id)
+    events_service = engine.events_service()
+    last_event = int(events_service.list(max=2)[0].id)
+    host_service.upgrade_check()
+
+    # HOST_AVAILABLE_UPDATES_STARTED(884)
+    testlib.assert_true_within_short(
+        lambda:
+        (next(e for e in events_service.list(from_=last_event) if e.code == 884)).code == 884,
+        allowed_exceptions=[StopIteration]
+    )
+
+    # HOST_AVAILABLE_UPDATES_FINISHED(885)
+    last_event = int(events_service.list(max=2)[0].id)
+    testlib.assert_true_within_short(
+        lambda:
+        (next(e for e in events_service.list(from_=last_event) if e.code == 885)).code == 885,
+        allowed_exceptions=[StopIteration]
+    )
+
+
+@testlib.with_ovirt_api4
 def add_scheduling_policy(api):
     scheduling_policies_service = api.system_service().scheduling_policies_service()
     nt.assert_true(
@@ -1529,6 +1554,7 @@ _TEST_LIST = [
     #add_fence_agent,
     verify_engine_backup,
     verify_notifier,
+    check_update_host,
     verify_add_all_hosts,
     add_secondary_storage_domains,
     import_templates,

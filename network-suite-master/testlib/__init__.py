@@ -17,31 +17,3 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from lib import clusterlib
-from lib import hostlib
-
-from testlib import suite
-
-
-ETH1 = 'eth1'
-NET_1 = 'net-1'
-NET_1_IPv4_ADDR = '192.0.3.1'
-NET_1_IPv4_MASK = '255.255.255.0'
-
-
-pytestmark = suite.SKIP_SUITE_42
-
-
-def test_migrate_cluster_from_legacy_to_ovs(
-        host_1_up, system, default_data_center):
-
-    with clusterlib.cluster(
-            system, default_data_center, 'ovs-cluster') as ovs_cluster:
-        ovs_cluster.set_network_switch_type(clusterlib.SwitchType.OVS)
-
-        with hostlib.change_cluster(host_1_up, ovs_cluster):
-            host_1_up.sync_all_networks()
-            assert host_1_up.networks_in_sync()
-
-        host_1_up.sync_all_networks()
-        assert host_1_up.networks_in_sync()

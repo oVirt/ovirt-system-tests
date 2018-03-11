@@ -23,16 +23,14 @@ import pytest
 import yaml
 
 from lib.ansiblelib import Playbook
+from testlib import suite
 
 OS_AUTH_URL = 'https://{}:35357/v2.0'
 OS_USERNAME = 'admin@internal'
 PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
 
-SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
 
-
-pytestmark = pytest.mark.skipif(SUITE_NAME.endswith('4.2'),
-                                reason='Not supported on 4.2 suite')
+pytestmark = suite.SKIP_SUITE_42
 
 
 class HostConfigurationFailure(Exception):

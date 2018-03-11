@@ -103,14 +103,14 @@ def host_1_with_mig_net(migration_network, host_1_up):
 
 def test_live_vm_migration_using_dedicated_network(vm_0, host_0_with_mig_net,
                                                    host_1_with_mig_net):
-    with vm_0.wait_for_up_status():
-        vm_0.run()
+    vm_0.run()
+    vm_0.wait_for_up_status()
 
     dst_host = (host_0_with_mig_net if vm_0.host.id == host_1_with_mig_net.id
                 else host_1_with_mig_net)
 
-    with vm_0.wait_for_up_status():
-        vm_0.migrate(dst_host.name)
+    vm_0.migrate(dst_host.name)
+    vm_0.wait_for_up_status()
 
     # TODO: verify migration was carried via the dedicated network
     assert vm_0.host.id == dst_host.id

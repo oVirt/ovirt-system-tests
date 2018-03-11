@@ -65,8 +65,8 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         with vm_0.wait_for_down_status():
             pass
 
-        with vm_0.wait_for_up_status():
-            vm_0.run()
+        vm_0.run()
+        vm_0.wait_for_up_status()
 
         nicless_snapshot = _create_snapshot(vm_0)
 
@@ -75,8 +75,8 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
                            vnic_profile=ovirtmgmt_vnic_profile,
                            mac_addr=MAC_ADDR_1)
 
-        with vm_0.wait_for_down_status():
-            vm_0.stop()
+        vm_0.stop()
+        vm_0.wait_for_down_status()
 
         nicless_snapshot.preview()
         nicless_snapshot.wait_for_preview_status()
@@ -145,8 +145,8 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
         _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-        with vm_0.wait_for_up_status():
-            vm_0.run()
+        vm_0.run()
+        vm_0.wait_for_up_status()
 
         snapshot = _create_snapshot(vm_0)
 
@@ -177,8 +177,8 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
         _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-        with vm_0.wait_for_up_status():
-            vm_0.run()
+        vm_0.run()
+        vm_0.wait_for_up_status()
 
         _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
 
@@ -200,8 +200,8 @@ def test_move_mac_to_new_vm(
 
         _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-        with vm_0.wait_for_up_status():
-            vm_0.run()
+        vm_0.run()
+        vm_0.wait_for_up_status()
 
         _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
 

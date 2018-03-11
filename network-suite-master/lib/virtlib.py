@@ -135,9 +135,7 @@ class Vm(SDKRootEntity):
         disk.wait_for_up_status()
         self._sync_disk_attachment(disk_attachment_id)
 
-    @contextmanager
     def wait_for_up_status(self):
-        yield
         self._wait_for_status(types.VmStatus.UP)
 
     @contextmanager

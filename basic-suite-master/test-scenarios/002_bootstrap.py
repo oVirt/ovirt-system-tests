@@ -19,8 +19,10 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
+import httplib
 import os
 import random
+import ssl
 
 import nose.tools as nt
 from nose import SkipTest
@@ -436,7 +438,7 @@ def verify_add_all_hosts(prefix):
 
 
 @testlib.with_ovirt_prefix
-def configure_storage(prefix):
+def copy_storage_script(prefix):
     engine = prefix.virt_env.engine_vm()
     storage_script = os.path.join(
         os.environ.get('SUITE'), 'setup_storage.sh'
@@ -446,6 +448,10 @@ def configure_storage(prefix):
         '/tmp/setup_storage.sh',
     )
 
+
+@testlib.with_ovirt_prefix
+def configure_storage(prefix):
+    engine = prefix.virt_env.engine_vm()
     result = engine.ssh(
         [
             '/tmp/setup_storage.sh',
@@ -1435,7 +1441,40 @@ def verify_engine_backup(prefix):
     )
 
 
+@testlib.with_ovirt_prefix
+def download_engine_certs(prefix):
+    engine_ip = prefix.virt_env.engine_vm().ip()
+    engine_base_url = '/ovirt-engine/services/pki-resource?resource=ca-certificate&format='
+    engine_ca_url = engine_base_url + 'X509-PEM-CA'
+    engine_ssh_url = engine_base_url + 'OPENSSH-PUBKEY'
+
+    # We use an unverified connection, as L0 host cannot resolve '...engine.lago.local'
+    conn = httplib.HTTPSConnection(engine_ip, context=ssl._create_unverified_context())
+
+    def _download_file(url, path):
+        conn.request("GET", url)
+        resp = conn.getresponse()
+        nt.assert_true(
+            resp.status == 200
+        )
+        data = resp.read()
+        with open(path, 'wb') as outfile:
+            outfile.write(data)
+
+    _download_file(engine_ca_url, 'engine-ca.pem')
+    # TODO: verify certificate. Either use it, or run:
+    # 'openssl x509 -in engine-ca.pem -text -noout'
+
+    _download_file(engine_ssh_url, 'engine-rsa.pub')
+    # TODO: verify public key. Either use it, or run:
+    # 'ssh-keygen -l -f engine-rsa.pub'
+
+    conn.close()
+
+
 _TEST_LIST = [
+    copy_storage_script,
+    download_engine_certs,
     add_dc,
     add_cluster,
     add_hosts,

@@ -9,6 +9,12 @@ plugins = 1
 name = oVirt 4.2 repo
 baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
 enabled = 1
+exclude = ioprocess
+    python-ioprocess
+
+# excluding ioprocess 0.16.1 in favor of ioprocess 1.0.2
+# since this repo will be picked up first and the rpm collector is not
+# smart enough to detect following repos has newer rpms.
 
 [ovirt-4.2-official-el7]
 name = oVirt 4.2 Official release

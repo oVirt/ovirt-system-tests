@@ -96,7 +96,8 @@ includepkgs = cockpit-ovirt-dashboard
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled = 1
-includepkgs = glusterfs
+includepkgs = gdeploy
+	glusterfs
 	glusterfs-api
 	glusterfs-cli
 	glusterfs-client-xlators

@@ -1308,16 +1308,14 @@ def check_update_host(api):
     # HOST_AVAILABLE_UPDATES_STARTED(884)
     testlib.assert_true_within_short(
         lambda:
-        (next(e for e in events_service.list(from_=last_event) if e.code == 884)).code == 884,
-        allowed_exceptions=[StopIteration]
+        any(e.code == 884 for e in events_service.list(from_=last_event))
     )
 
     # HOST_AVAILABLE_UPDATES_FINISHED(885)
     last_event = int(events_service.list(max=2)[0].id)
     testlib.assert_true_within_short(
         lambda:
-        (next(e for e in events_service.list(from_=last_event) if e.code == 885)).code == 885,
-        allowed_exceptions=[StopIteration]
+        any(e.code == 885 for e in events_service.list(from_=last_event))
     )
 
 

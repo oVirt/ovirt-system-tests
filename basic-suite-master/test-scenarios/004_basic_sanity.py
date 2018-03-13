@@ -704,8 +704,7 @@ def ha_recovery(prefix):
     events = engine.events_service()
     testlib.assert_true_within_short(
         lambda:
-        (next(e for e in events.list(from_=last_event) if e.code == 9602)).code == 9602,
-         allowed_exceptions=[StopIteration]
+        any(e.code == 9602 for e in events.list(from_=last_event))
     )
     vm_service = test_utils.get_vm_service(engine, VM2_NAME)
     testlib.assert_true_within_long(

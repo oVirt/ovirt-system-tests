@@ -17,9 +17,24 @@ setup_device() {
     exportfs -a
 }
 
+setup_he_lun() {
+    local lun_name="he_lun0_bdev"
+
+    lvcreate --zero n -L60G -n $lun_name vg1_storage
+    targetcli \
+        /backstores/block \
+        create name=$lun_name dev=/dev/vg1_storage/$lun_name
+    targetcli \
+        /backstores/block/$lun_name \
+        set attribute emulate_tpu=1
+    targetcli \
+        /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/luns/ \
+        create /backstores/block/$lun_name
+}
 
 setup_he() {
     setup_device "${HE_DEV}" /exports/nfs_he /exports/nfs_he
+    setup_he_lun
 }
 
 main() {

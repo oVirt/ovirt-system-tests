@@ -46,6 +46,7 @@ domains:
     artifacts:
           - /root/fluentd
           - /var/opt/rh/rh-postgresql95/lib/pgsql/data/pg_log
+          - /var/cache/ovirt-engine
 
 
 {% if not env.OST_USE_VDSMFAKE is defined %}

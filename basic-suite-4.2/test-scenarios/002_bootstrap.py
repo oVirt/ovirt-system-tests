@@ -223,8 +223,6 @@ def update_default_dc(api):
 
 @testlib.with_ovirt_api4
 def update_default_cluster(api):
-    raise SkipTest('[2018-03-12] bug opened: 1554377') 
-# remove skip once bug is fixed
     cluster_service = test_utils.get_cluster_service(api.system_service(), 'Default')
     cluster_service.update(
         cluster=sdk4.types.Cluster(

@@ -63,6 +63,28 @@ def cluster_0(system, default_data_center):
     cluster.remove()
 
 
+@pytest.mark.skip(reason='https://bugzilla.redhat.com/1554180')
+def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
+        system, default_cluster, ovirtmgmt_vnic_profile):
+    with clusterlib.mac_pool(
+        system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,),
+        allow_duplicates=True
+    ) as mac_pool:
+        with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+            vm_0.create(vm_name=VM0,
+                        cluster=default_cluster,
+                        template=templatelib.TEMPLATE_BLANK)
+            vm_1.create(vm_name=VM1,
+                        cluster=default_cluster,
+                        template=templatelib.TEMPLATE_BLANK)
+
+            _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+            _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+
+            with pytest.raises(clusterlib.MigrateMacPoolError):
+                mac_pool.set_allow_duplicates(False)
+
+
 def test_assign_vnic_with_full_mac_pool_capacity_fails(
         system, default_cluster, ovirtmgmt_vnic_profile):
     NIC_NAME_3 = 'nic003'

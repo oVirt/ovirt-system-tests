@@ -20,6 +20,7 @@
 import collections
 import contextlib
 
+import ovirtsdk4
 from ovirtsdk4 import types
 
 from lib import datacenterlib
@@ -29,6 +30,10 @@ from lib.sdkentity import SDKSubEntity
 
 
 MacPoolRange = collections.namedtuple("MacPoolRange", "start end")
+
+
+class MigrateMacPoolError(Exception):
+    pass
 
 
 class SwitchType():
@@ -76,6 +81,14 @@ class MacPool(SDKRootEntity):
             allow_duplicates=allow_duplicates
         )
         self._create_sdk_entity(sdk_type)
+
+    def set_allow_duplicates(self, allow_duplicates):
+        try:
+            self.update(allow_duplicates=allow_duplicates)
+        except ovirtsdk4.Error as err:
+            if 'Cannot migrate MACs to another MAC pool' in err.message:
+                raise MigrateMacPoolError(err.message)
+            raise
 
     def _get_parent_service(self, system):
         return system.mac_pools_service

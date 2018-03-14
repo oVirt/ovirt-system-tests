@@ -32,6 +32,7 @@ from ovirtlago import testlib
 import ovirtsdk4.types as types
 
 import test_utils
+from test_utils import versioning
 
 import uuid
 
@@ -42,7 +43,7 @@ GB = 2 ** 30
 DC_NAME = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_CENTOS7 = 'centos7_template'
-TEMPLATE_CIRROS = 'CirrOS_0.4.0_for_x86_64_glance_template'
+TEMPLATE_CIRROS = versioning.guest_os_template_name()
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
@@ -59,7 +60,7 @@ DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
-GLANCE_DISK_NAME = 'CirrOS_0.4.0_for_x86_64_glance_disk'
+GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
@@ -878,6 +879,7 @@ def update_vm_pool(api):
     )
 
 
+@versioning.require_version(4, 1)
 @testlib.with_ovirt_api4
 def remove_vm2_lease(api):
     engine = api.system_service()

@@ -30,17 +30,33 @@ def cluster_version():
     return [int(v) for v in version]
 
 
-def _cluster_version_ok(major, minor):
+def cluster_version_ok(major, minor):
     current = cluster_version()
     return (current[0] > major or
             (current[0] == major and current[1] >= minor))
 
 
 def require_version(major, minor):
-    if _cluster_version_ok(major, minor):
+    if cluster_version_ok(major, minor):
         return lambda test: test
     else:
         def skipped(test):
             # TODO: Any way to log that test.__name__ has been skipped?
             return lambda *args, **kwargs: True
         return skipped
+
+
+def guest_os_image_name():
+    if cluster_version_ok(4, 1):
+        return 'CirrOS 0.4.0 for x86_64'
+    else:
+        # TODO: Replace with 0.4.0 qcow2 v0.1 image once it is available
+        return 'CirrOS 0.3.4 for x86_64'
+
+
+def guest_os_glance_disk_name():
+    return guest_os_image_name().replace(" ", "_") + '_glance_disk'
+
+
+def guest_os_template_name():
+    return guest_os_image_name().replace(" ", "_") + '_glance_template'

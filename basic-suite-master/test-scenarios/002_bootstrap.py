@@ -77,9 +77,9 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'
-GLANCE_DISK_NAME = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_disk'
-TEMPLATE_CIRROS = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_template'
+CIRROS_IMAGE_NAME = versioning.guest_os_image_name()
+GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
+TEMPLATE_CIRROS = versioning.guest_os_template_name()
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -439,6 +439,10 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
 
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
     ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
+    kwargs = {}
+    if sd_format >= 'v4' and \
+       not versioning.cluster_version_ok(4, 1):
+        kwargs['storage_format'] = sdk4.types.StorageFormat.V3
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
@@ -450,6 +454,7 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
             path=mount_path,
             nfs_version=nfs_vers,
         ),
+        **kwargs
     )
 
     _add_storage_domain(api, p)
@@ -520,16 +525,17 @@ def add_iscsi_storage_domain(prefix):
             )
             luns.append(lun)
 
+    v4_domain = versioning.cluster_version_ok(4, 1)
     p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
         description='iSCSI Storage Domain',
         type=sdk4.types.StorageDomainType.DATA,
-        discard_after_delete=True,
+        discard_after_delete=v4_domain,
         data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
         host=_random_host_from_dc(api, DC_NAME),
-        storage_format=sdk4.types.StorageFormat.V4,
+        storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
             override_luns=True,
@@ -1471,6 +1477,7 @@ def configure_high_perf_vm2(api):
     )
 
 
+@versioning.require_version(4, 1)
 @testlib.with_ovirt_api4
 def add_vm2_lease(api):
     engine = api.system_service()

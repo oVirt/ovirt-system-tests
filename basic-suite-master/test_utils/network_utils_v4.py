@@ -189,12 +189,6 @@ def assign_networks_to_cluster(engine, cluster_name, networks, required):
         service.add(network=Network(id=network.id, required=required))
 
 
-def _get_vm_service(engine, vm_name):
-    vm = engine.vms_service().list(search=vm_name)[0]
-    vm_service=engine.vms_service().vm_service(vm.id)
-    return vm_service
-
-
 def _get_network(engine, cluster_name, network_name):
     cns = _get_cluster_network_service(engine, cluster_name)
     return _filter_named_item(network_name, cns.list())
@@ -228,7 +222,7 @@ def filter_nics_with_profiles(nics):
 
 
 def create_nics_on_vm(engine, vm_name, profiles):
-    vm2_service = _get_vm_service(engine, vm_name)
+    vm2_service = test_utils.get_vm_service(engine, vm_name)
     _add_nics(vm2_service, profiles)
 
 
@@ -241,29 +235,24 @@ def _add_nics(vm_service, profiles):
 
 
 def get_nics_on(engine, vm_name):
-    return _get_vm_service(engine, vm_name).nics_service().list()
+    return test_utils.get_vm_service(engine, vm_name).nics_service().list()
 
 
 def _get_cluster_network_service(engine, cluster_name):
-    clusters_service = engine.clusters_service()
-    cluster = clusters_service.list(search=cluster_name)[0]
-    cluster_service = clusters_service.cluster_service(cluster.id)
-    cluster_networks_service = cluster_service.networks_service()
-    return cluster_networks_service
+    cluster_service = test_utils.get_cluster_service(engine, cluster_name)
+    return cluster_service.networks_service()
 
 
 def remove_profiles(engine, profiles, predicate):
     to_remove = filter(predicate, profiles)
     for profile in to_remove:
-        engine.vnic_profiles_service().profile_service(
-            profile.id).remove()
+        engine.vnic_profiles_service().profile_service(profile.id).remove()
 
 
 def remove_networks(engine, networks, predicate):
     to_remove = filter(predicate, networks)
     for network in to_remove:
-        engine.networks_service().network_service(
-            network.id).remove()
+        engine.networks_service().network_service(network.id).remove()
 
 
 def _filter_named_item(name, collection):

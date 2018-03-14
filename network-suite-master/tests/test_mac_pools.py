@@ -40,6 +40,9 @@ VM0 = 'vm0'
 VM1 = 'vm1'
 
 
+pytestmark = pytest.mark.usefixtures('default_storage_domain')
+
+
 @pytest.fixture(scope='module')
 def host_1_in_cluster_0(default_data_center, host_1_up, cluster_0):
     current_cluster = host_1_up.get_cluster()
@@ -61,8 +64,7 @@ def cluster_0(system, default_data_center):
 
 
 def test_assign_vnic_with_full_mac_pool_capacity_fails(
-        system, default_cluster, default_storage_domain,
-        ovirtmgmt_vnic_profile):
+        system, default_cluster, ovirtmgmt_vnic_profile):
     NIC_NAME_3 = 'nic003'
 
     with clusterlib.mac_pool(
@@ -117,7 +119,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         assert vm_0.get_vnic(NIC_NAME_1).mac_address != MAC_ADDR_1
 
 
-@pytest.mark.usefixtures('default_storage_domain', 'host_1_in_cluster_0')
+@pytest.mark.usefixtures('host_1_in_cluster_0')
 def test_mac_pools_in_different_clusters_dont_overlap(
         system, cluster_0, default_cluster, ovirtmgmt_vnic_profile):
     MAC_POOL_0 = 'mac_pool_0'

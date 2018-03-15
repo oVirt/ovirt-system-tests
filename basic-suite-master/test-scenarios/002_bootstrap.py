@@ -1588,6 +1588,10 @@ def add_blank_vms(api):
             file_transfer_enabled=True,
             copy_paste_enabled=True,
         ),
+        usb=params.Usb(
+            enabled=True,
+            type_=sdk4.types.UsbType.NATIVE,
+        ),
         memory_policy=params.MemoryPolicy(
             guaranteed=vm_memory / 2,
         ),

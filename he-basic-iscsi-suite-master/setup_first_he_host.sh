@@ -31,7 +31,7 @@ OVAIMAGE=$(\
     | tail -11\
 )
 
-SD_ISCSI_ADDR=$(host -t A lago-he-basic-iscsi-suite-master-storage|awk '{print $NF}')
+SD_ISCSI_ADDR=$(host -t A ${HOSTEDENGINE/-engine/-storage}|awk '{print $NF}')
 iscsiadm -m discovery -t sendtargets -p $SD_ISCSI_ADDR
 iscsiadm -m node -L all
 rescan-scsi-bus.sh

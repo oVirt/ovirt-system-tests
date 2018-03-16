@@ -9,6 +9,7 @@ substage:
   - he-basic-ansible_suite_4.2
   - he-basic-ansible_suite_master
   - he-basic-iscsi_suite_master
+  - he-basic-iscsi_suite_4.2
   - he-basic_suite_4.2
   - he-basic_suite_master
   - image-ng_suite_4.2

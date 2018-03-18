@@ -36,6 +36,10 @@ class MigrateMacPoolError(Exception):
     pass
 
 
+class MacPoolContainsDuplicatesError(Exception):
+    pass
+
+
 class SwitchType():
     LEGACY = types.SwitchType.LEGACY
     OVS = types.SwitchType.OVS
@@ -88,6 +92,8 @@ class MacPool(SDKRootEntity):
         except ovirtsdk4.Error as err:
             if 'Cannot migrate MACs to another MAC pool' in err.message:
                 raise MigrateMacPoolError(err.message)
+            if 'mac pool contains duplicate macs' in err.message:
+                raise MacPoolContainsDuplicatesError(err.message)
             raise
 
     def _get_parent_service(self, system):

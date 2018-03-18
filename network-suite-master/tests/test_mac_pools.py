@@ -63,7 +63,6 @@ def cluster_0(system, default_data_center):
     cluster.remove()
 
 
-@pytest.mark.skip(reason='https://bugzilla.redhat.com/1554180')
 def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
         system, default_cluster, ovirtmgmt_vnic_profile):
     with clusterlib.mac_pool(
@@ -81,7 +80,7 @@ def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
             _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
             _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-            with pytest.raises(clusterlib.MigrateMacPoolError):
+            with pytest.raises(clusterlib.MacPoolContainsDuplicatesError):
                 mac_pool.set_allow_duplicates(False)
 
 

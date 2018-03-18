@@ -1506,15 +1506,20 @@ def download_engine_certs(prefix):
     # We use an unverified connection, as L0 host cannot resolve '...engine.lago.local'
     conn = httplib.HTTPSConnection(engine_ip, context=ssl._create_unverified_context())
 
-    def _download_file(url, path):
+    def _download_file(url, path=None, compare_string=None):
         conn.request("GET", url)
         resp = conn.getresponse()
         nt.assert_true(
             resp.status == 200
         )
         data = resp.read()
-        with open(path, 'wb') as outfile:
-            outfile.write(data)
+        if path:
+            with open(path, 'wb') as outfile:
+                outfile.write(data)
+        if compare_string:
+            nt.assert_true(
+                data == compare_string
+            )
 
     _download_file(engine_ca_url, 'engine-ca.pem')
     # TODO: verify certificate. Either use it, or run:
@@ -1523,6 +1528,9 @@ def download_engine_certs(prefix):
     _download_file(engine_ssh_url, 'engine-rsa.pub')
     # TODO: verify public key. Either use it, or run:
     # 'ssh-keygen -l -f engine-rsa.pub'
+
+    healthy = "DB Up!Welcome to Health Status!"
+    _download_file('/ovirt-engine/services/health', path=None, compare_string=healthy)
 
     conn.close()
 

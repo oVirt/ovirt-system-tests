@@ -826,6 +826,27 @@ def update_vm_pool(api):
 
 
 @testlib.with_ovirt_api4
+def remove_vm2_lease(api):
+    engine = api.system_service()
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+
+    vm2_service.update(
+        vm=types.Vm(
+            high_availability=types.HighAvailability(
+                enabled=False,
+            ),
+            lease=types.StorageDomainLease(
+                storage_domain=None
+            )
+        )
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        vm2_service.get().lease is None
+    )
+
+
+@testlib.with_ovirt_api4
 def remove_vm_pool(api):
     pool_service = test_utils.get_pool_service(api.system_service(), VMPOOL_NAME)
     pool_service.remove()
@@ -1073,6 +1094,7 @@ _TEST_LIST = [
     hotplug_cpu,
     next_run_unplug_cpu,
     disk_operations,
+    remove_vm2_lease,
     hotunplug_disk,
     add_vm_pool,
     update_template_version,

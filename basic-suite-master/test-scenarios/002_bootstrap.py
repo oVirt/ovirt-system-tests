@@ -1615,6 +1615,30 @@ def add_blank_vms(api):
         )
 
 
+@testlib.with_ovirt_api4
+def add_vm2_lease(api):
+    engine = api.system_service()
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+    sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
+
+    vm2_service.update(
+        vm=sdk4.types.Vm(
+            high_availability=sdk4.types.HighAvailability(
+                enabled=True,
+            ),
+            lease=sdk4.types.StorageDomainLease(
+                storage_domain=sdk4.types.StorageDomain(
+                    id=sd.id
+                )
+            )
+        )
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        vm2_service.get().lease.storage_domain.id == sd.id
+    )
+
+
 @testlib.with_ovirt_api
 def add_nic(api):
     NIC_NAME = 'eth0'
@@ -1812,6 +1836,7 @@ _TEST_LIST = [
     add_event,
     verify_add_all_hosts,
     add_secondary_storage_domains,
+    add_vm2_lease,
     import_templates,
     add_non_vm_network,
     add_vm_network,

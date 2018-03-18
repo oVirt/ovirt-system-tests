@@ -9,9 +9,34 @@ create_docs.create_docs() {
 }
 
 create_docs.main() {
+    local name="$(basename "${0%.*}")"
+    if [[ "$name" = "check-docs" ]]; then
+        # Alias for CI
+        create_docs.check
+        return
+    fi
     create_docs.create_docs
 }
 
-if [[ "$0" = "$BASH_SOURCE" ]]; then
-    create_docs.main
-fi
+create_docs.check() {
+    local project="$PWD"
+    local artifacts_dir="${project}/exported-artifacts"
+    local docs_dir_name="docs-out"
+
+    echo "Creating Docs"
+
+    [[ -d "$artifacts_dir" ]] || mkdir "$artifacts_dir"
+    create_docs.create_docs "${artifacts_dir}/${docs_dir_name}"
+    # Generate html report
+    cat > "${artifacts_dir}/index.html" <<EOF
+    <html>
+    <head>
+        <li>
+            <a href="${docs_dir_name}/index.html">Docs Page</a>
+        </li>
+    </head>
+    </html>
+EOF
+}
+
+create_docs.main

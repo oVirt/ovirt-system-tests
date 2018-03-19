@@ -1,24 +1,27 @@
 domains:
-  __ENGINE__:
+  lago-{{ env.suite_name }}-engine:
     vm-provider: ssh
     vm-type: ovirt-engine
+    ssh-password: 123456
     distro: el7
     service_provider: systemd
-    ssh-password: 123456
     nics:
-      - net: __LAGO_NET_MANAGEMENT__
+      - net: lago-{{ env.suite_name}}-net-management
         ip: 192.168.200.99
     metadata:
       ovirt-engine-password: 123
+    artifacts:
+      - /var/log
 
-  __HOST2__:
+{%- for i in range(hostCount) %}
+  lago-{{ env.suite_name }}-host-{{ i }}:
     vm-type: ovirt-host
     distro: el7
     memory: 5120
     nics:
-      - net: __LAGO_NET_MANAGEMENT__
+      - net: lago-{{ env.suite_name}}-net-management
     disks:
-      - template_name: el7-base
+      - template_name: {{ templates.host }}
         type: template
         name: root
         dev: vda
@@ -35,87 +38,30 @@ domains:
         type: empty
         dev: sdb
         format: qcow2
-    metadata:
-      ovirt-capabilities:
-        - snapshot-live-merge
-      deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
-        - $LAGO_INITFILE_PATH/hc_setup_host.sh
-
-  __HOST1__:
-    vm-type: ovirt-host
-    distro: el7
-    memory: 5120
-    nics:
-      - net: __LAGO_NET_MANAGEMENT__
-    disks:
-      - template_name: el7-base
-        type: template
-        name: root
-        dev: vda
-        format: qcow2
-      - comment: Used for brick
-        name: brick
-        size: 120G
-        type: empty
-        dev: sda
-        format: qcow2
-      - comment: Used for cache
-        name: cache
-        size: 100G
-        type: empty
-        dev: sdb
-        format: qcow2
-    metadata:
-      ovirt-capabilities:
-        - snapshot-live-merge
-      deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
-        - $LAGO_INITFILE_PATH/hc_setup_host.sh
-
-  __HOST0__:
-    vm-type: ovirt-host
-    distro: el7
-    memory: 5120
-    nics:
-      - net: __LAGO_NET_MANAGEMENT__
-    disks:
-      - template_name: el7-base
-        type: template
-        name: root
-        dev: vda
-        format: qcow2
-      - comment: Used for brick
-        name: brick
-        size: 120G
-        type: empty
-        dev: sda
-        format: qcow2
-      - comment: Used for cache
-        name: cache
-        size: 100G
-        type: empty
-        dev: sdb
-        format: qcow2
+      {% if loop.first -%}
       - name: tmp
         size: 100G
         type: empty
         dev: sdc
         format: qcow2
+      {%- endif %}
     metadata:
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
-        - $LAGO_INITFILE_PATH/gdeploy-setup.sh
         - $LAGO_INITFILE_PATH/hc_setup_host.sh
+        {% if loop.first -%}
+        - $LAGO_INITFILE_PATH/gdeploy-setup.sh
         - $LAGO_INITFILE_PATH/setup_first_host.sh
+        {%- endif %}
+    artifacts:
+      - /var/log
+{%- endfor %}
 
 nets:
-  __LAGO_NET_MANAGEMENT__:
+  lago-{{ env.suite_name}}-net-management:
     type: nat
     dhcp:
       start: 100

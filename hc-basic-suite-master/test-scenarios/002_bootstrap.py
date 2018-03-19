@@ -53,9 +53,6 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'glusterfs'
 MASTER_SD_GLUSTER_VOL = 'vmstore'
 MASTER_SD_NAME = 'vmstore'
-GLUSTER_HOST0 = testlib.get_prefixed_name('host0')
-GLUSTER_HOST1 = testlib.get_prefixed_name('host1')
-GLUSTER_HOST2 = testlib.get_prefixed_name('host2')
 
 SD_NFS_NAME = 'nfs'
 SD_NFS_HOST_NAME = testlib.get_prefixed_name('storage')
@@ -204,9 +201,10 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
 
 def add_glusterfs_storage_domain(prefix, sdname, volname):
     api = prefix.virt_env.engine_vm().get_api()
-    mount_path = "{0}://{1}".format(_get_host_ip(prefix, GLUSTER_HOST0), volname)
-    mount_options = "backup-volfile-servers={0}:{1}".format(_get_host_ip(prefix, GLUSTER_HOST1),
-                                                            _get_host_ip(prefix, GLUSTER_HOST2))
+    hosts = sorted([vm.name() for vm in prefix.virt_env.host_vms()])
+    mount_path = "{0}://{1}".format(hosts[0], volname)
+    mount_options = "backup-volfile-servers={0}".format(':'.join(hosts[1:]))
+
     p = params.StorageDomain(
         name=sdname,
         data_center=params.DataCenter(
@@ -263,8 +261,11 @@ def add_hosts_4(prefix):
         if host_obj.status == sdk4.types.HostStatus.NON_RESPONSIVE:
             raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
-    hosts = prefix.virt_env.host_vms()
-    vec = utils.func_vector(_add_host_4, [(h,) for h in hosts if not h.name().endswith('t0')])
+    hosts = sorted(
+        prefix.virt_env.host_vms(),
+        key=lambda vm: vm.name()
+    )
+    vec = utils.func_vector(_add_host_4, [(h,) for h in hosts[1:]])
     vt = utils.VectorThread(vec)
     vt.start_all()
     nt.assert_true(all(vt.join_all()))
@@ -544,4 +545,3 @@ def test_gen():
     for t in testlib.test_sequence_gen(_TEST_LIST):
         test_gen.__name__ = t.description
         yield t
-

@@ -19,4 +19,5 @@
 
 from fixtures.providers import default_ovn_provider  # NOQA: F401
 from fixtures.providers import openstack_client_config  # NOQA: F401
+from fixtures.providers import ovirt_external_network  # NOQA: F401
 from fixtures.providers import ovn_network  # NOQA: F401

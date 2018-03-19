@@ -17,19 +17,47 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import shade
 
+from fixtures.providers import DEFAULT_CLOUD
 from lib import clusterlib
-from lib import providerlib
+from lib import netlib
+from lib import templatelib
+from lib import virtlib
 
 
-def test_import_network(ovn_network, default_ovn_provider,
-                        default_data_center, default_cluster):
-    openstack_network = providerlib.OpenStackNetwork(default_ovn_provider)
-    openstack_network.import_by_id(str(ovn_network.id))
-    ovirt_network = openstack_network.create_external_network(
-        default_data_center)
-    try:
-        cluster_network = clusterlib.ClusterNetwork(default_cluster)
-        cluster_network.assign(ovirt_network)
-    finally:
-        ovirt_network.remove()
+VNIC0_NAME = 'nic001'
+VM0_NAME = 'vm0'
+VNIC0_MAC = '00:1a:4a:17:15:50'
+
+
+def test_connect_vm_to_external_network(ovirt_external_network, system,
+                                        default_cluster,
+                                        default_storage_domain):
+    cluster_network = clusterlib.ClusterNetwork(default_cluster)
+    cluster_network.assign(ovirt_external_network)
+    with virtlib.vm_pool(system, size=1) as (vm_0,):
+        vm_0.create(
+            vm_name=VM0_NAME,
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK
+        )
+        disk = default_storage_domain.create_disk('disk1')
+        vm_0.attach_disk(disk=disk)
+
+        vnic_profile0 = netlib.VnicProfile(system)
+        vnic_profile0.import_by_name(ovirt_external_network.name)
+
+        vm0_vnic_0 = netlib.Vnic(vm_0)
+        vm0_vnic_0.create(
+            name=VNIC0_NAME,
+            vnic_profile=vnic_profile0,
+            mac_addr=VNIC0_MAC
+        )
+        vm_0.wait_for_down_status()
+
+        vm_0.run()
+
+        cloud = shade.openstack_cloud(cloud=DEFAULT_CLOUD)
+        assert any(vm0_vnic_0.mac_address == port.mac_address
+                   for port in cloud.list_ports())

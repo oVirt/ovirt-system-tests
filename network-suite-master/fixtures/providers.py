@@ -23,6 +23,7 @@ import shade
 import yaml
 
 from lib.providerlib import OpenStackImageProviders
+from lib.providerlib import OpenStackNetwork
 from lib.providerlib import OpenStackNetworkProvider
 
 
@@ -105,3 +106,16 @@ def ovn_network(openstack_client_config, default_ovn_provider):
         cloud.delete_subnet(subnet.id)
     finally:
         cloud.delete_network(network.id)
+
+
+@pytest.fixture(scope='session')
+def ovirt_external_network(default_ovn_provider, default_data_center,
+                           ovn_network):
+    openstack_network = OpenStackNetwork(default_ovn_provider)
+    openstack_network.import_by_id(str(ovn_network.id))
+    ovirt_network = openstack_network.create_external_network(
+        default_data_center)
+    try:
+        yield ovirt_network
+    finally:
+        ovirt_network.remove()

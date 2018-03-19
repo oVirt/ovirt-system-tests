@@ -1182,7 +1182,7 @@ def get_version(api):
     name = product_info.name
     major_version = product_info.version.major
     nt.assert_true(
-        name == 'oVirt Engine'
+        name in ('oVirt Engine', 'Red Hat Virtualization Manager')
     )
     nt.assert_true(
         major_version == 4

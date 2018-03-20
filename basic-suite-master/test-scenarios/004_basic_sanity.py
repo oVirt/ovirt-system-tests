@@ -578,19 +578,23 @@ def add_vm1_from_template(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def verify_add_vm1_from_template(api):
-    vm = api.vms.get(VM1_NAME)
-    nt.assert_true(vm)
-
-    testlib.assert_true_within_long(
-        lambda: api.vms.get(VM1_NAME).status.state == 'down',
-    )
-    disk_name = vm.disks.list()[0].name
-    testlib.assert_true_within_long(
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
+    testlib.assert_true_within_short(
         lambda:
-        vm.disks.get(disk_name).status.state == 'ok'
+        vm_service.get().status == types.VmStatus.DOWN
     )
+
+    disks_service = engine.disks_service()
+    vm1_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM1_NAME)
+    for disk_attachment in vm1_disk_attachments_service.list():
+        disk_service = disks_service.disk_service(disk_attachment.disk.id)
+        testlib.assert_true_within_short(
+            lambda:
+            disk_service.get().status == types.DiskStatus.OK
+        )
 
 
 @testlib.with_ovirt_prefix
@@ -659,10 +663,12 @@ def run_vms(prefix):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def verify_vm2_run(api):
+    vm_service = test_utils.get_vm_service(api.system_service(), VM2_NAME)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM2_NAME).status.state == 'up',
+        lambda:
+        vm_service.get().status == types.VmStatus.UP
     )
 
 
@@ -1048,11 +1054,12 @@ def suspend_resume_vm0(api):
     nt.assert_true(api.vms.get(VM0_NAME).start())
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def verify_suspend_resume_vm0(api):
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
     testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).status.state == 'up'
+        vm_service.get().status == types.VmStatus.UP
     )
 
 

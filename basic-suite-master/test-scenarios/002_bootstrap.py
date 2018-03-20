@@ -41,14 +41,6 @@ from test_utils import constants
 from test_utils import versioning
 
 
-# TODO: use SDKv4 unconditionally, where possible (as in other test scenarios)
-API_V3_ONLY = os.getenv('API_V3_ONLY', False)
-if API_V3_ONLY:
-    API_V4 = False
-else:
-    API_V4 = True
-
-
 MB = 2 ** 20
 GB = 2 ** 30
 
@@ -121,13 +113,7 @@ def _get_host_all_ips(prefix, host_name):
 def _get_host_ips_in_net(prefix, host_name, net_name):
     return prefix.virt_env.get_vm(host_name).ips_in_net(net_name)
 
-def _hosts_in_dc(api, dc_name=DC_NAME):
-    hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
-        return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
-
-def _hosts_in_dc_4(api, dc_name=DC_NAME, random_host=False):
+def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if hosts:
@@ -138,10 +124,7 @@ def _hosts_in_dc_4(api, dc_name=DC_NAME, random_host=False):
     raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
-    return random.choice(_hosts_in_dc(api, dc_name))
-
-def _random_host_from_dc_4(api, dc_name=DC_NAME):
-    return _hosts_in_dc_4(api, dc_name, True)
+    return _hosts_in_dc(api, dc_name, True)
 
 def _all_hosts_up(hosts_service, total_hosts):
     installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
@@ -175,29 +158,8 @@ def _check_problematic_hosts(hosts_service):
         raise RuntimeError(dump_hosts)
 
 
-@testlib.with_ovirt_prefix
-def add_dc(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        add_dc_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        add_dc_3(api)
-
-
-def add_dc_3(api):
-    p = params.DataCenter(
-        name=DC_NAME,
-        local=False,
-        version=params.Version(
-            major=DC_VER_MAJ,
-            minor=DC_VER_MIN,
-        ),
-    )
-    nt.assert_true(api.datacenters.add(p))
-
-
-def add_dc_4(api):
+@testlib.with_ovirt_api4
+def add_dc(api):
     dcs_service = api.system_service().data_centers_service()
     nt.assert_true(
         dcs_service.add(
@@ -211,21 +173,8 @@ def add_dc_4(api):
     )
 
 
-@testlib.with_ovirt_prefix
-def remove_default_dc(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        remove_default_dc_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        remove_default_dc_3(api)
-
-
-def remove_default_dc_3(api):
-    nt.assert_true(api.datacenters.get(name='Default').delete())
-
-
-def remove_default_dc_4(api):
+@testlib.with_ovirt_api4
+def remove_default_dc(api):
     dc_service = test_utils.data_center_service(api.system_service(), 'Default')
     dc_service.remove()
 
@@ -252,73 +201,28 @@ def update_default_cluster(api):
     )
 
 
-@testlib.with_ovirt_prefix
-def remove_default_cluster(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        remove_default_cluster_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        remove_default_cluster_3(api)
-
-
-def remove_default_cluster_3(api):
-    nt.assert_true(api.clusters.get(name='Default').delete())
-
-
-def remove_default_cluster_4(api):
+@testlib.with_ovirt_api4
+def remove_default_cluster(api):
     cl_service = test_utils.get_cluster_service(api.system_service(), 'Default')
     cl_service.remove()
 
 
 @testlib.with_ovirt_prefix
 def add_dc_quota(prefix):
-    if API_V4:
 #FIXME - add API_v4 add_dc_quota_4() function
-        api = prefix.virt_env.engine_vm().get_api()
-        add_dc_quota_3(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        add_dc_quota_3(api)
-
-
-def add_dc_quota_3(api):
-        dc = api.datacenters.get(name=DC_NAME)
-        quota = params.Quota(
-            name=DC_QUOTA_NAME,
-            description='DC-QUOTA-DESCRIPTION',
-            data_center=dc,
-            cluster_soft_limit_pct=99,
-        )
-        nt.assert_true(dc.quotas.add(quota))
-
-
-@testlib.with_ovirt_prefix
-def add_cluster(prefix):
-    if API_V4:
-        add_cluster_4(prefix)
-    else:
-        add_cluster_3(prefix)
-
-
-def add_cluster_3(prefix):
     api = prefix.virt_env.engine_vm().get_api()
-    p = params.Cluster(
-        name=CLUSTER_NAME,
-        version=params.Version(
-            major=DC_VER_MAJ,
-            minor=DC_VER_MIN,
-        ),
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        ballooning_enabled=True,
+    dc = api.datacenters.get(name=DC_NAME)
+    quota = params.Quota(
+        name=DC_QUOTA_NAME,
+        description='DC-QUOTA-DESCRIPTION',
+        data_center=dc,
+        cluster_soft_limit_pct=99,
     )
-    nt.assert_true(api.clusters.add(p))
+    nt.assert_true(dc.quotas.add(quota))
 
 
-def add_cluster_4(prefix):
-    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+@testlib.with_ovirt_api4
+def add_cluster(api):
     engine = api.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
@@ -362,69 +266,10 @@ def add_hosts(prefix):
     for host in hosts:
         host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
 
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api_v4()
-        add_hosts_4(api, hosts)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        add_hosts_3(api, hosts)
-
-
-@testlib.with_ovirt_prefix
-def verify_add_hosts(prefix):
-    hosts = prefix.virt_env.host_vms()
-
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api_v4()
-        verify_add_hosts_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        verify_add_hosts_3(api, hosts)
-        for host in hosts:
-            host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
-
-
-
-def add_hosts_3(api, hosts):
-    def _add_host(vm):
-        p = params.Host(
-            name=vm.name(),
-            address=vm.ip(),
-            cluster=params.Cluster(
-                name=CLUSTER_NAME,
-            ),
-            root_password=vm.root_password(),
-            override_iptables=True,
-        )
-
-        return api.hosts.add(p)
-
-    vec = utils.func_vector(_add_host, [(h,) for h in hosts])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()))
-
-
-def verify_add_hosts_3(api, hosts):
-    def _host_is_up():
-        cur_state = api.hosts.get(host.name()).status.state
-
-        if cur_state == 'up':
-            return True
-
-        if cur_state == 'install_failed':
-            raise RuntimeError('Host %s failed to install' % host.name())
-        if cur_state == 'non_operational':
-            raise RuntimeError('Host %s is in non operational state' % host.name())
-
-    for host in hosts:
-        testlib.assert_true_within(_host_is_up, timeout=constants.ADD_HOST_TIMEOUT)
-
-
-def add_hosts_4(api, hosts):
+    api = prefix.virt_env.engine_vm().get_api_v4()
     hosts_service = api.system_service().hosts_service()
 
-    def _add_host_4(vm):
+    def _add_host(vm):
         return hosts_service.add(
             sdk4.types.Host(
                 name=vm.name(),
@@ -440,11 +285,12 @@ def add_hosts_4(api, hosts):
 
     for host in hosts:
         nt.assert_true(
-            _add_host_4(host)
+            _add_host(host)
         )
 
 
-def verify_add_hosts_4(api):
+@testlib.with_ovirt_api4
+def verify_add_hosts(api):
     hosts_service = api.system_service().hosts_service()
     total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
 
@@ -494,28 +340,7 @@ def configure_storage(prefix):
     )
 
 
-def _add_storage_domain_3(api, p):
-    dc = api.datacenters.get(DC_NAME)
-    sd = api.storagedomains.add(p)
-    nt.assert_true(sd)
-    nt.assert_true(
-        api.datacenters.get(
-            DC_NAME,
-        ).storagedomains.add(
-            api.storagedomains.get(
-                sd.name,
-            ),
-        )
-    )
-
-    if dc.storagedomains.get(sd.name).status.state == 'maintenance':
-        sd.activate()
-    testlib.assert_true_within_long(
-        lambda: dc.storagedomains.get(sd.name).status.state == 'active'
-    )
-
-
-def _add_storage_domain_4(api, p):
+def _add_storage_domain(api, p):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
     sd = sds_service.add(p)
@@ -548,10 +373,7 @@ def add_master_storage_domain(prefix):
 
 
 def add_nfs_storage_domain(prefix):
-    if API_V4:
-        add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
-    else:
-        add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_1')
+    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
 
 
 # TODO: add this over the storage network and with IPv6
@@ -560,34 +382,7 @@ def add_second_nfs_storage_domain(prefix):
                                    SD_NFS_HOST_NAME, SD_SECOND_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
-    if API_V4:
-        add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
-    else:
-        add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
-
-
-def add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.StorageDomain(
-        name=sd_nfs_name,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_=sd_type,
-        storage_format=sd_format,
-        host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='nfs',
-            address=_get_host_ip(prefix, nfs_host_name),
-            path=mount_path,
-            nfs_version=nfs_version,
-        ),
-    )
-    _add_storage_domain_3(api, p)
-
-
-def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_2'):
+def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_2'):
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':
@@ -612,7 +407,7 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
         type=dom_type,
-        host=_random_host_from_dc_4(api, DC_NAME),
+        host=_random_host_from_dc(api, DC_NAME),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
             address=ips[0],
@@ -621,7 +416,7 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         ),
     )
 
-    _add_storage_domain_4(api, p)
+    _add_storage_domain(api, p)
 
 @testlib.with_ovirt_prefix
 def add_secondary_storage_domains(prefix):
@@ -673,48 +468,6 @@ def add_iscsi_storage_domain(prefix):
     nt.assert_equals(ret.code, 0)
     lun_guids = ret.out.splitlines()[0:SD_ISCSI_NR_LUNS-1]
 
-    if API_V4:
-        add_iscsi_storage_domain_4(prefix, lun_guids)
-    else:
-        add_iscsi_storage_domain_3(prefix, lun_guids)
-
-
-def add_iscsi_storage_domain_3(prefix, lun_guids):
-    api = prefix.virt_env.engine_vm().get_api()
-
-    ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
-    luns = []
-    for lun_id in lun_guids:
-        for ip in ips:
-            lun=params.LogicalUnit(
-                id=lun_id,
-                address=ip,
-                port=SD_ISCSI_PORT,
-                target=SD_ISCSI_TARGET,
-                username='username',
-                password='password',
-            )
-            luns.append(lun)
-
-    p = params.StorageDomain(
-        name=SD_ISCSI_NAME,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_='data',
-        storage_format=SD_FORMAT,
-        host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='iscsi',
-            volume_group=params.VolumeGroup(
-                logical_unit=luns
-            ),
-        ),
-    )
-    _add_storage_domain_3(api, p)
-
-
-def add_iscsi_storage_domain_4(prefix, lun_guids):
     api = prefix.virt_env.engine_vm().get_api_v4()
 
     ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
@@ -739,7 +492,7 @@ def add_iscsi_storage_domain_4(prefix, lun_guids):
         data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
-        host=_random_host_from_dc_4(api, DC_NAME),
+        host=_random_host_from_dc(api, DC_NAME),
         storage_format=sdk4.types.StorageFormat.V4,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
@@ -750,7 +503,7 @@ def add_iscsi_storage_domain_4(prefix, lun_guids):
         ),
     )
 
-    _add_storage_domain_4(api, p)
+    _add_storage_domain(api, p)
 
 
 def add_iso_storage_domain(prefix):
@@ -811,49 +564,20 @@ def generic_import_from_glance(glance_provider, image_name=CIRROS_IMAGE_NAME, as
     )
 
 
-@testlib.with_ovirt_prefix
-def list_glance_images(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        list_glance_images_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        list_glance_images_3(api)
-
-
-def list_glance_images_3(api):
-    global GLANCE_AVAIL
-    glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-    if glance_provider is None:
-        openstack_glance = add_glance_3(api)
-        if openstack_glance is None:
-            raise SkipTest('%s: GLANCE storage domain is not available.' % list_glance_images_3.__name__ )
-        glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-
-    if not check_glance_connectivity_3(api):
-        raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_3.__name__ )
-
-    try:
-        all_images = glance_provider.images.list()
-        if len(all_images):
-            GLANCE_AVAIL = True
-    except errors.RequestError:
-        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_3.__name__ )
-
-
-def list_glance_images_4(api):
+@testlib.with_ovirt_api4
+def list_glance_images(api):
     global GLANCE_AVAIL
     search_query = 'name={}'.format(SD_GLANCE_NAME)
     storage_domains_service = api.system_service().storage_domains_service()
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
-        openstack_glance = add_glance_4(api)
+        openstack_glance = add_glance(api)
         if not openstack_glance:
             raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
         glance_domain_list = storage_domains_service.list(search=search_query)
 
-    if not check_glance_connectivity_4(api):
+    if not check_glance_connectivity(api):
         raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_4.__name__ )
 
     glance_domain = glance_domain_list.pop()
@@ -867,33 +591,7 @@ def list_glance_images_4(api):
         raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_4.__name__ )
 
 
-def add_glance_3(api):
-    target_server = params.OpenStackImageProvider(
-        name=SD_GLANCE_NAME,
-        url=GLANCE_SERVER_URL
-    )
-    try:
-        provider = api.openstackimageproviders.add(target_server)
-        glance = []
-
-        def get():
-            instance = api.openstackimageproviders.get(id=provider.get_id())
-            if instance:
-                glance.append(instance)
-                return True
-            else:
-                return False
-
-        testlib.assert_true_within_short(func=get, allowed_exceptions=[errors.RequestError])
-    except (AssertionError, errors.RequestError):
-        # RequestError if add method was failed.
-        # AssertionError if add method succeed but we couldn't verify that glance was actually added
-        return None
-
-    return glance.pop()
-
-
-def add_glance_4(api):
+def add_glance(api):
     target_server = sdk4.types.OpenStackImageProvider(
         name=SD_GLANCE_NAME,
         description=SD_GLANCE_NAME,
@@ -929,19 +627,7 @@ def add_glance_4(api):
     return glance.pop()
 
 
-def check_glance_connectivity_3(api):
-    avail = False
-    try:
-        glance = api.openstackimageproviders.get(name=SD_GLANCE_NAME)
-        glance.testconnectivity()
-        avail = True
-    except errors.RequestError:
-        pass
-
-    return avail
-
-
-def check_glance_connectivity_4(api):
+def check_glance_connectivity(api):
     avail = False
     providers_service = api.system_service().openstack_image_providers_service()
     providers = [
@@ -1236,7 +922,7 @@ def get_domains(api):
 @testlib.with_ovirt_api4
 def get_host_devices(api):
     engine = api.system_service()
-    host = _random_host_from_dc_4(api, DC_NAME)
+    host = _random_host_from_dc(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     devices_service = host_service.devices_service()
     devices = sorted(devices_service.list(), key=lambda device: device.name)
@@ -1252,7 +938,7 @@ def get_host_devices(api):
 @testlib.with_ovirt_api4
 def get_host_hooks(api):
     engine = api.system_service()
-    host = _random_host_from_dc_4(api, DC_NAME)
+    host = _random_host_from_dc(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
@@ -1268,7 +954,7 @@ def get_host_hooks(api):
 @testlib.with_ovirt_api4
 def get_host_stats(api):
     engine = api.system_service()
-    host = _random_host_from_dc_4(api, DC_NAME)
+    host = _random_host_from_dc(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
@@ -1284,7 +970,7 @@ def get_host_stats(api):
 @testlib.with_ovirt_api4
 def get_host_numa_nodes(api):
     engine = api.system_service()
-    host = _random_host_from_dc_4(api, DC_NAME)
+    host = _random_host_from_dc(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = numa_nodes_service.list()
@@ -1299,7 +985,7 @@ def get_host_numa_nodes(api):
 @testlib.with_ovirt_api4
 def check_update_host(api):
     engine = api.system_service()
-    host = _random_host_from_dc_4(api, DC_NAME)
+    host = _random_host_from_dc(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
     events_service = engine.events_service()
     last_event = int(events_service.list(max=2)[0].id)
@@ -1375,7 +1061,7 @@ def add_fence_agent(api):
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
     engine = api.system_service()
-    host = _random_host_from_dc_4(api, DC_NAME)
+    host = _random_host_from_dc(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
 
     fence_agents_service = host_service.fence_agents_service()

@@ -33,6 +33,7 @@ readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"
 
 get_run_path() {
     local avail_shm
+    [[ -d "/dev/shm/ost" ]] && rm -rf "/dev/shm/ost"
     avail_shm=$(df --output=avail /dev/shm | sed 1d)
     [[ "$avail_shm" -ge "$RAM_THRESHOLD" ]] && \
         mkdir -p "/dev/shm/ost" && \

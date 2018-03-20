@@ -113,9 +113,16 @@ if [[ -e "$CREATE_IMAGES" ]]; then
     extra_cmds+=(-i)
 fi
 
-./run_suite.sh \
-    -o "$run_path" \
-    "${extra_cmds[@]}" \
-    "$SUITE" || res=$?
+# At first SIGTERM will be sent.
+# If "run_suite.sh" will not stop, SIGKILL will be sent
+# after the duration that was specified to --kill-after.
+timeout \
+    --kill-after 5m \
+    100m \
+    ./run_suite.sh \
+        -o "$run_path" \
+        "${extra_cmds[@]}" \
+        "$SUITE" \
+    || res=$?
 
 exit $res

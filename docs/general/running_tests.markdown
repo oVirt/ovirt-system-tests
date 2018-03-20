@@ -130,7 +130,7 @@ If you're interested in how things works internally and how you can use Lago cli
 checkout the full [Lago documentation][1] and read about Lago 'verbs' and other goodies.
 
 If you're have more questions about ovirt-system-tests, try checking out the [FAQ] page<br>.
-If you still can't find what you're looking for try the mailing list of ovirt (devel@ovirt.org) or lago (lago-devel@ovirt.org).
+If you still can't find what you're looking for, try the mailing list of oVirt (devel@ovirt.org) or lago (lago-devel@ovirt.org).
 
 Enjoy!
 

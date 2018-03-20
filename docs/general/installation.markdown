@@ -23,7 +23,7 @@ least 8GB of RAM in order to run the basic suite.
 Installing dependencies
 ======================
 
-**NOTE**: The prefered way to run OST is inside a mock environment, created by
+**NOTE**: The preferred way to run OST is inside a mock environment, created by
 [mock_runner.sh] This method will ensure that the appropriate oVirt engine SDK
 is being installed. Each suite should use the latest oVirt engine SDK that is
 available for its version (for example, basic-suite-master should use the sdk
@@ -38,7 +38,7 @@ from [ovirt-master latest tested repo]).
 #### Configure Firewall
 
 During the run of OST, Lago creates an HTTP server that serves RPMs to
-th VMs. This action requires that port 8585 on the localhost will be accessible
+the VMs. This action requires that port 8585 on the localhost will be accessible
 from the subnets used by Lago.
 
 **NOTE:** This step is not needed if you run firewalld, because it will

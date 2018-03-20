@@ -16,7 +16,7 @@ pages:
   - CI:
     - Jenkins: CI/jenkins_jobs.markdown
     - 'Verifying A Patch': CI/developers_info.markdown
-    - 'Standart CI': CI/standard_ci_and_ost.markdown
+    - 'Standard CI': CI/standard_ci_and_ost.markdown
   - 'How It Works':
     - 'Packages Management': how-it-works/package_management.markdown
     - 'LagoInitFile Templating': how-it-works/jinja_templates_in_lagoinitfile.markdown

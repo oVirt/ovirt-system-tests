@@ -8,7 +8,7 @@ host-0:
   memory: 2047
 ```
 
-This will create 1 vm with 2047 ram, with the assigned name 'host-0'. If we want 100 hosts or
+This will create 1 VM with 2047 ram, with the assigned name 'host-0'. If we want 100 hosts or
 to have some of definitions parameterized, we use [jinja] to pre-process the yml file.
 
 ### Using Jinja templates

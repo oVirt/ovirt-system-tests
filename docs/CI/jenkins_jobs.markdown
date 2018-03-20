@@ -7,16 +7,16 @@ Currently the oVirt [Jenkins server](http://jenkins.ovirt.org) has a few jobs wh
 
 ovirt-system-tests jobs
 -----------------------
-**Trigger/Frequency**: Running nightly on latest oVirt snapshot rpms, example for master [oVirt master nightly repos][1]<br>
+**Trigger/Frequency**: Running nightly on latest oVirt snapshot RPMs, example for master [oVirt master nightly repos][1]<br>
 **Link**: [ovirt-system-tests-jenkins-view][2]<br>
 
 These jobs are using oVirt packages which are built per commit and published nightly via the [publishers jobs][3]<br>
-Note: since the experimental jobs are running on newer packages, these jobs might be obselete soon since they
+Note: since the experimental jobs are running on newer packages, these jobs might be obsolete soon since they
 are running on non-verified published RPMs.
 
 ovirt-system-tests check-patch
 -------------------------------
-**Trigger/Frequency**: Running on each OST patch, using latest.tested oVirt experimental rpms(see next section for info)<br>
+**Trigger/Frequency**: Running on each OST patch, using latest.tested oVirt experimental RPMs(see next section for info)<br>
 **Link**: [ovirt-system-tests-check-patch][4]<br>
 
 The 'check-patch' OST job is using the 'standard CI' to run the OST suites on each new OST patch.<br>

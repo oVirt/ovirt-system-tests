@@ -1,4 +1,4 @@
-oVirt System Tests Frequentyly Asked Questions
+oVirt System Tests Frequently Asked Questions
 ==============================================
 Mostly TBD
 

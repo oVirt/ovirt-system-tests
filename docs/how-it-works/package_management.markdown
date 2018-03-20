@@ -34,7 +34,7 @@ An example of a reposync directory:
     ```
 
 2. Inside Lago's prefix, repoman creates a directory named `internal_repo` and
-adds to it the rpms found in the sources that were specified using
+adds to it the RPMs found in the sources that were specified using
 `-s,--extra-rpm-source` option to `run_suite.sh`. An example of an
 `internal_repo`:
 

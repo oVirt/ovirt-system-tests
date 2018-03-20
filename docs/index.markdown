@@ -8,8 +8,8 @@ Welcome to oVirt System Tests Documentation Page!
 * [FAQ](general/faq.markdown)
 
 ## CI
-* [Jenkins jobs running ost](CI/jenkins_jobs.markdown)
-* [Verifying a patch on a cetain oVirt project](CI/developers_info.markdown)
+* [Jenkins jobs running OST](CI/jenkins_jobs.markdown)
+* [Verifying a patch on a certain oVirt project](CI/developers_info.markdown)
 * [Standard CI implementation for OST](CI/standard_ci_and_ost.markdown)
 
 ## How It works

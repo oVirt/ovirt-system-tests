@@ -74,6 +74,8 @@ SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
 SNAPSHOT_FOR_BACKUP_VM = 'backup_snapshot'
 
+VDSM_LOG = '/var/log/vdsm/vdsm.log'
+
 
 def _ping(ovirt_prefix, destination):
     """
@@ -1085,21 +1087,46 @@ def hotunplug_disk(api):
         )
 
 
-@testlib.with_ovirt_api
-def suspend_resume_vm0(api):
-    nt.assert_true(api.vms.get(VM0_NAME).suspend())
+_log_time_before_suspend = None
 
+
+@testlib.with_ovirt_prefix
+def suspend_resume_vm0(prefix):
+    vm_host = _vm_host(prefix, VM0_NAME)
+    ret = vm_host.ssh(['tail', '-1', VDSM_LOG])
+    nt.assert_equals(ret.code, EX_OK)
+    log_items = ret.out.split()
+    global _log_time_before_suspend
+    _log_time_before_suspend = log_items[0] + ' ' + log_items[1]  # date + time
+
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
+    vm_service.suspend()
     testlib.assert_true_within_long(
-        lambda:
-        api.vms.get(VM0_NAME).status.state == 'suspended'
+        lambda: vm_service.get().status == types.VmStatus.SUSPENDED
     )
 
-    nt.assert_true(api.vms.get(VM0_NAME).start())
+    vm_service.start()
 
 
-@testlib.with_ovirt_api4
-def verify_suspend_resume_vm0(api):
+@testlib.with_ovirt_prefix
+def verify_suspend_resume_vm0(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
     _verify_vm_state(api.system_service(), VM0_NAME, types.VmStatus.UP)
+    vm_host = _vm_host(prefix, VM0_NAME)
+
+    def log_line_count(regexp):
+        awk = ('BEGIN {{ n = 0; }} '
+               '$1 + " " + $2 > "{}" && $0 ~ /{}/ {{ n = n + 1; }} '
+               'END {{ print n; }}').format(
+                   _log_time_before_suspend, regexp
+               )
+        ret = vm_host.ssh(['awk', "'" + awk + "'", VDSM_LOG])
+        nt.assert_equals(ret.code, EX_OK)
+        return int(ret.out)
+
+    nt.assert_equals(log_line_count('START create\(.*memoryDumpVolume'), 1)
+    nt.ok_(log_line_count('CPU running: onResume') >= 1)
 
 
 @testlib.with_ovirt_api

@@ -126,20 +126,24 @@ def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
 
-def _all_hosts_up(hosts_service, total_hosts):
+def _random_host_service_from_dc(api, dc_name=DC_NAME):
+    host = _hosts_in_dc(api, dc_name, True)
+    return api.system_service().hosts_service().host_service(id=host.id)
+
+def _all_hosts_up(hosts_service, total_num_hosts):
     installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
-    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+    if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
-    if len(up_hosts) == len(total_hosts):
+    if len(up_hosts) == total_num_hosts:
         return True
 
     _check_problematic_hosts(hosts_service)
 
-def _single_host_up(hosts_service, total_hosts):
+def _single_host_up(hosts_service, total_num_hosts):
     installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
-    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+    if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
@@ -261,11 +265,16 @@ def add_cluster(api):
 
 
 @testlib.with_ovirt_prefix
-def add_hosts(prefix):
+def sync_time(prefix):
+    #TODO: Move to chrony
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
         host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
 
+
+@testlib.with_ovirt_prefix
+def add_hosts(prefix):
+    hosts = prefix.virt_env.host_vms()
     api = prefix.virt_env.engine_vm().get_api_v4()
     hosts_service = api.system_service().hosts_service()
 
@@ -292,7 +301,7 @@ def add_hosts(prefix):
 @testlib.with_ovirt_api4
 def verify_add_hosts(api):
     hosts_service = api.system_service().hosts_service()
-    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
 
     testlib.assert_true_within(
         lambda: _single_host_up(hosts_service, total_hosts),
@@ -303,7 +312,7 @@ def verify_add_hosts(api):
 def verify_add_all_hosts(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
     hosts_service = api.system_service().hosts_service()
-    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
 
     testlib.assert_true_within(
         lambda: _all_hosts_up(hosts_service, total_hosts),
@@ -802,8 +811,9 @@ def add_bookmark(api):
 
 @testlib.with_ovirt_api4
 def add_cpu_profile(api):
-    cpu_profiles_service = api.system_service().cpu_profiles_service()
-    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
+    engine = api.system_service()
+    cpu_profiles_service = engine.cpu_profiles_service()
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
         cpu_profiles_service.add(
             sdk4.types.CpuProfile(
@@ -818,8 +828,7 @@ def add_cpu_profile(api):
 
 @testlib.with_ovirt_api4
 def add_qos(api):
-    engine = api.system_service()
-    dc_service = test_utils.data_center_service(engine, DC_NAME)
+    dc_service = test_utils.data_center_service(api.system_service(), DC_NAME)
     qoss = dc_service.qoss_service()
     nt.assert_true(
         qoss.add(
@@ -863,8 +872,7 @@ def add_disk_profile(api):
 
 @testlib.with_ovirt_api4
 def get_version(api):
-    engine = api.system_service()
-    product_info = engine.get().product_info
+    product_info = api.system_service().get().product_info
     name = product_info.name
     major_version = product_info.version.major
     nt.assert_true(
@@ -877,8 +885,7 @@ def get_version(api):
 
 @testlib.with_ovirt_api4
 def get_cluster_enabled_features(api):
-    engine = api.system_service()
-    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
+    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
     enabled_features_service = cluster_service.enabled_features_service()
     features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
     #TODO: Fix the below - why is features null?
@@ -921,9 +928,7 @@ def get_domains(api):
 
 @testlib.with_ovirt_api4
 def get_host_devices(api):
-    engine = api.system_service()
-    host = _random_host_from_dc(api, DC_NAME)
-    host_service = engine.hosts_service().host_service(id=host.id)
+    host_service = _random_host_service_from_dc(api, DC_NAME)
     devices_service = host_service.devices_service()
     devices = sorted(devices_service.list(), key=lambda device: device.name)
     device_list = ''
@@ -937,9 +942,7 @@ def get_host_devices(api):
 
 @testlib.with_ovirt_api4
 def get_host_hooks(api):
-    engine = api.system_service()
-    host = _random_host_from_dc(api, DC_NAME)
-    host_service = engine.hosts_service().host_service(id=host.id)
+    host_service = _random_host_service_from_dc(api, DC_NAME)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
     hooks_list = ''
@@ -953,9 +956,7 @@ def get_host_hooks(api):
 
 @testlib.with_ovirt_api4
 def get_host_stats(api):
-    engine = api.system_service()
-    host = _random_host_from_dc(api, DC_NAME)
-    host_service = engine.hosts_service().host_service(id=host.id)
+    host_service = _random_host_service_from_dc(api, DC_NAME)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
     stats_list = ''
@@ -969,9 +970,7 @@ def get_host_stats(api):
 
 @testlib.with_ovirt_api4
 def get_host_numa_nodes(api):
-    engine = api.system_service()
-    host = _random_host_from_dc(api, DC_NAME)
-    host_service = engine.hosts_service().host_service(id=host.id)
+    host_service = _random_host_service_from_dc(api, DC_NAME)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = numa_nodes_service.list()
     # TODO: Do a better check on the result nodes struct.
@@ -985,8 +984,7 @@ def get_host_numa_nodes(api):
 @testlib.with_ovirt_api4
 def check_update_host(api):
     engine = api.system_service()
-    host = _random_host_from_dc(api, DC_NAME)
-    host_service = engine.hosts_service().host_service(id=host.id)
+    host_service = _random_host_service_from_dc(api, DC_NAME)
     events_service = engine.events_service()
     last_event = int(events_service.list(max=2)[0].id)
     host_service.upgrade_check()
@@ -1060,9 +1058,7 @@ def add_fence_agent(api):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
-    engine = api.system_service()
-    host = _random_host_from_dc(api, DC_NAME)
-    host_service = engine.hosts_service().host_service(id=host.id)
+    host_service = _random_host_service_from_dc(api, DC_NAME)
 
     fence_agents_service = host_service.fence_agents_service()
     raise SkipTest('Enabling this may affect tests. Needs further tests')
@@ -1100,7 +1096,8 @@ def add_tag(api):
 
 @testlib.with_ovirt_api4
 def add_mac_pool(api):
-    pools_service = api.system_service().mac_pools_service()
+    engine = api.system_service()
+    pools_service = engine.mac_pools_service()
     pool = pools_service.add(
         sdk4.types.MacPool(
             name='mymacpool',
@@ -1114,7 +1111,7 @@ def add_mac_pool(api):
     )
     nt.assert_true(pool)
 
-    cluster_service = test_utils.get_cluster_service(api.system_service(), 'Default')
+    cluster_service = test_utils.get_cluster_service(engine, 'Default')
     nt.assert_true(
         cluster_service.update(
             cluster=sdk4.types.Cluster(
@@ -1223,9 +1220,7 @@ def download_engine_certs(prefix):
 
 @testlib.with_ovirt_api4
 def add_vnic_passthrough_profile(api):
-    engine = api.system_service()
-
-    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
+    vnic_service = test_utils.get_vnic_profiles_service(api.system_service(), MANAGEMENT_NETWORK)
 
     vnic_profile = vnic_service.add(
         profile=sdk4.types.VnicProfile(
@@ -1242,9 +1237,7 @@ def add_vnic_passthrough_profile(api):
 
 @testlib.with_ovirt_api4
 def remove_vnic_passthrough_profile(api):
-    engine = api.system_service()
-
-    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
+    vnic_service = test_utils.get_vnic_profiles_service(api.system_service(), MANAGEMENT_NETWORK)
 
     vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
                         if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
@@ -1473,6 +1466,7 @@ _TEST_LIST = [
     add_dc,
     add_cluster,
     add_hosts,
+    sync_time,
     get_version,
     get_domains,
     get_operating_systems,

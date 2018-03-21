@@ -93,6 +93,15 @@ def _vm_host(prefix, vm_name):
     return prefix.virt_env.get_vm(host_name)
 
 
+def _verify_vm_state(engine, vm_name, state):
+    vm_service = test_utils.get_vm_service(engine, vm_name)
+    testlib.assert_true_within_long(
+        lambda:
+        vm_service.get().status == state
+    )
+    return vm_service
+
+
 @testlib.with_ovirt_api4
 def add_disks(api):
     engine = api.system_service()
@@ -482,11 +491,7 @@ def export_vm1(api):
 @testlib.with_ovirt_api4
 def verify_vm1_exported(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
-    testlib.assert_true_within_short(
-        lambda:
-        vm_service.get().status == types.VmStatus.DOWN
-    )
+    _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
 
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
     vm_sd_service = test_utils.get_storage_domain_vm_service_by_name(
@@ -523,10 +528,7 @@ def import_vm_as_clone(api):
 @testlib.with_ovirt_api4
 def verify_vm_import(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, IMPORTED_VM_NAME)
-    testlib.assert_true_within_short(
-        lambda: vm_service.get().status == types.VmStatus.DOWN
-    )
+    vm_service = _verify_vm_state(engine, IMPORTED_VM_NAME, types.VmStatus.DOWN)
 
     # Remove the imported VM
     num_of_vms = len(engine.vms_service().list())
@@ -590,11 +592,7 @@ def add_vm1_from_template(api):
 @testlib.with_ovirt_api4
 def verify_add_vm1_from_template(api):
     engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
-    testlib.assert_true_within_short(
-        lambda:
-        vm_service.get().status == types.VmStatus.DOWN
-    )
+    _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
 
     disks_service = engine.disks_service()
     vm1_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM1_NAME)
@@ -674,11 +672,7 @@ def run_vms(prefix):
 
 @testlib.with_ovirt_api4
 def verify_vm2_run(api):
-    vm_service = test_utils.get_vm_service(api.system_service(), VM2_NAME)
-    testlib.assert_true_within_short(
-        lambda:
-        vm_service.get().status == types.VmStatus.UP
-    )
+    _verify_vm_state(api.system_service(), VM2_NAME, types.VmStatus.UP)
 
 
 @testlib.with_ovirt_prefix
@@ -705,11 +699,7 @@ def restore_vm0_networking(ovirt_prefix):
     )
 
     engine = ovirt_prefix.virt_env.engine_vm().get_api_v4().system_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    testlib.assert_true_within_long(
-        lambda:
-        vm_service.get().status == types.VmStatus.UP
-    )
+    _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
 
 
 @testlib.with_ovirt_prefix
@@ -724,11 +714,7 @@ def ha_recovery(prefix):
         lambda:
         any(e.code == 9602 for e in events.list(from_=last_event))
     )
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-    testlib.assert_true_within_long(
-        lambda:
-        vm_service.get().status == types.VmStatus.UP
-    )
+    vm_service = _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
     vm_service.stop()
 
 
@@ -1066,11 +1052,7 @@ def suspend_resume_vm0(api):
 
 @testlib.with_ovirt_api4
 def verify_suspend_resume_vm0(api):
-    vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
-    testlib.assert_true_within_long(
-        lambda:
-        vm_service.get().status == types.VmStatus.UP
-    )
+    _verify_vm_state(api.system_service(), VM0_NAME, types.VmStatus.UP)
 
 
 @testlib.with_ovirt_api

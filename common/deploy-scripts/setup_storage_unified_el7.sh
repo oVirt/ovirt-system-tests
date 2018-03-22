@@ -3,7 +3,7 @@ set -xe
 MAIN_NFS_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_2"
 ISCSI_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_3"
 NUM_LUNS=5
-EL7="release 7\.[0-9]"
+DIST=$(uname -r |awk -F\. '{print $(NF-1)}')
 
 
 setup_device() {
@@ -54,7 +54,7 @@ set_selinux_on_nfs() {
 
 install_deps() {
     systemctl disable --now kdump.service
-    yum install -y --downloaddir=/dev/shm \
+    yum install -y \
                    nfs-utils \
                    rpcbind \
                    lvm2 \
@@ -120,7 +120,7 @@ setup_iscsi() {
 }
 
 install_firewalld() {
-    if grep "$EL7" /etc/redhat-release > /dev/null; then
+    if [[ "$DIST" == "el7" ]]; then
         if  ! rpm -q firewalld > /dev/null; then
             {
                 yum install -y firewalld && \
@@ -183,15 +183,16 @@ setup_services() {
 }
 
 install_deps_389ds() {
-    yum install -y --downloaddir=/dev/shm 389-ds-base
+    yum install -y 389-ds-base
 }
 
 setup_389ds() {
     DOMAIN=lago.local
     PASSWORD=12345678
     HOSTNAME=$(hostname | sed s/_/-/g)."$DOMAIN"
+    NIC=$(ip route |awk '$1=="default" {print $5; exit}')
     ADDR=$(\
-      /sbin/ip -4 -o addr show dev eth0 \
+      /sbin/ip -4 -o addr show dev $NIC \
       | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
       | awk -F/ '{print $1}'\
     )

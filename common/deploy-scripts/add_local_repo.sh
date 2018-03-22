@@ -1,5 +1,5 @@
 set -xe
-DIST=$(uname -r | sed -r  's/^.*\.([^\.]+)\.[^\.]+$/\1/')
+DIST=$(uname -r |awk -F\. '{print $(NF-1)}')
 ADDR=$(ip -4 addr show scope global up |grep -m1 inet | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}')
 
 cat > /etc/yum.repos.d/local-ovirt.repo <<EOF
@@ -17,8 +17,10 @@ max_connections=10
 deltarpm=0
 EOF
 
-sed -i "s/var\/cache/dev\/shm/g" /etc/yum.conf
-echo "persistdir=/dev/shm" >> /etc/yum.conf
+if [ "$DIST" == "el7" ]; then
+    sed -i "s/var\/cache/dev\/shm/g" /etc/yum.conf
+    echo "persistdir=/dev/shm" >> /etc/yum.conf
+fi
 
 # disable any other repos to avoid downloading metadata
 #yum install --disablerepo=\* --enablerepo=alocalsync -y yum-utils

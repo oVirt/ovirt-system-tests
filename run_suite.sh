@@ -61,9 +61,18 @@ Optional arguments:
 "
 }
 
+on_sigterm() {
+    local dest="${OST_REPO_ROOT}/test_logs/${SUITE##*/}/post-suite-sigterm"
 
+    set +e
+    export CLI
+    export -f env_collect
+    timeout \
+        120s \
+        bash -c "env_collect $dest"
 
-
+    exit 143
+}
 
 get_engine_version() {
     local root_dir="$PWD"
@@ -465,6 +474,7 @@ fi
     exit 1
 }
 
+trap "on_sigterm" SIGTERM
 logger.info "Using $(lago --version 2>&1)"
 check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"

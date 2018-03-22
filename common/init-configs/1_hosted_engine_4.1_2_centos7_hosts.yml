@@ -32,7 +32,7 @@ domains:
         dev: sda
         format: qcow2
       - comment: Main iSCSI device
-        size: 161G
+        size: 191G
         type: empty
         name: iscsi
         dev: sdb

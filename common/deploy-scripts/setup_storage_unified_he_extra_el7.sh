@@ -20,7 +20,7 @@ setup_device() {
 setup_he_lun() {
     local lun_name="he_lun0_bdev"
 
-    lvcreate --zero n -L60G -n $lun_name vg1_storage
+    lvcreate --zero n -L80G -n $lun_name vg1_storage
     targetcli \
         /backstores/block \
         create name=$lun_name dev=/dev/vg1_storage/$lun_name

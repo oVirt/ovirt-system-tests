@@ -18,7 +18,7 @@ domains:
     nics:
       - net: __LAGO_NET_MANAGEMENT__
     disks:
-      - template_name: el7-base
+      - template_name: el7.4-base-1
         type: template
         name: root
         dev: vda
@@ -50,7 +50,7 @@ domains:
     nics:
       - net: __LAGO_NET_MANAGEMENT__
     disks:
-      - template_name: el7-base
+      - template_name: el7.4-base-1
         type: template
         name: root
         dev: vda
@@ -82,7 +82,7 @@ domains:
     nics:
       - net: __LAGO_NET_MANAGEMENT__
     disks:
-      - template_name: el7-base
+      - template_name: el7.4-base-1
         type: template
         name: root
         dev: vda

@@ -1,3 +1,3 @@
 templates:
-  host: el7.4-base
+  host: el7.4-base-1
 hostCount: 3

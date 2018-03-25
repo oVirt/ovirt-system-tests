@@ -17,6 +17,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import contextlib
 import os
 
 import pytest
@@ -27,3 +28,13 @@ SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
 
 SKIP_SUITE_42 = pytest.mark.skipif(SUITE_NAME.endswith('4.2'),
                                    reason='Not supported on 4.2 suite')
+
+
+@contextlib.contextmanager
+def collect_artifacts(env, artifacts_path, module_name):
+    try:
+        yield
+    finally:
+        p = os.path.join(artifacts_path, module_name)
+        os.makedirs(p)
+        env.collect_artifacts(output_dir=p, ignore_nopath=True)

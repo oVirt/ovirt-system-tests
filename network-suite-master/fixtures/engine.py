@@ -23,6 +23,7 @@ import pytest
 from ovirtsdk4 import Connection
 
 from lib import syncutil
+from testlib import suite
 
 
 SUITE = os.path.split(os.environ['SUITE'])[1]
@@ -36,24 +37,24 @@ def api(engine):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def engine(fqdn, env):
-    engine = env.get_vms()[ENGINE_DOMAIN]
+def engine(fqdn, env, artifacts_path):
+    with suite.collect_artifacts(env, artifacts_path, 'pre-tests'):
+        engine = env.get_vms()[ENGINE_DOMAIN]
 
-    ANSWER_FILE_TMP = '/tmp/answer-file'
+        ANSWER_FILE_TMP = '/tmp/answer-file'
 
-    engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
-    engine.ssh(
-        [
-            'engine-setup',
-            '--config-append={}'.format(ANSWER_FILE_TMP),
-            '--accept-defaults',
-        ]
-    )
-    syncutil.sync(exec_func=_get_engine_api,
-                  exec_func_args=(engine,),
-                  success_criteria=lambda api: isinstance(api, Connection))
-
-    return engine
+        engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
+        engine.ssh(
+            [
+                'engine-setup',
+                '--config-append={}'.format(ANSWER_FILE_TMP),
+                '--accept-defaults',
+            ]
+        )
+        syncutil.sync(exec_func=_get_engine_api,
+                      exec_func_args=(engine,),
+                      success_criteria=lambda api: isinstance(api, Connection))
+        return engine
 
 
 def _get_engine_api(engine):

@@ -52,6 +52,8 @@ from fixtures.data_center import default_data_center  # NOQA: F401
 
 from fixtures.system import system  # NOQA: F401
 
+from testlib import suite
+
 
 def pytest_addoption(parser):
     parser.addoption('--lago-env', action='store')
@@ -97,7 +99,5 @@ def env(artifacts_path):
 
 @pytest.fixture(scope='module', autouse=True)
 def collect_artifacts(env, artifacts_path, request):
-    yield
-    p = os.path.join(artifacts_path, request.module.__name__)
-    os.makedirs(p)
-    env.collect_artifacts(output_dir=p, ignore_nopath=True)
+    with suite.collect_artifacts(env, artifacts_path, request.module.__name__):
+        yield

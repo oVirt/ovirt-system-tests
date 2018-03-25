@@ -40,8 +40,20 @@ get_run_path() {
         echo "$PWD/deployment-$SUITE"
 }
 
+print_host_info() {
+    echo "FS info:"
+    df -h
+
+    echo "RAM info:"
+    free -h
+}
+
 cleanup() {
     local run_path="$1"
+
+    print_host_info
+    echo "Prefix size:"
+    du -sh "$run_path"
 
     echo "suite.sh: moving artifacts"
 

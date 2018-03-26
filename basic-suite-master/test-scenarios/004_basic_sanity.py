@@ -942,6 +942,7 @@ def hotplug_cpu(prefix):
         command=['lscpu'],
         username='cirros',
         password='gocubsgo',
+        tries=200
     )
     nt.assert_equals(ret.code, 0)
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out)

@@ -39,6 +39,7 @@ import uuid
 MB = 2 ** 20
 GB = 2 ** 30
 
+DC_NAME = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_CENTOS7 = 'centos7_template'
 TEMPLATE_CIRROS = 'CirrOS_0.4.0_for_x86_64_glance_template'
@@ -1079,9 +1080,30 @@ def verify_glance_import(api):
             lambda: api.disks.get(disk_name).status.state == 'ok',
         )
 
+@testlib.with_ovirt_api4
+def reconstruct_master_domain(api):
+    system_service = api.system_service()
+    dc_service = test_utils.data_center_service(system_service, DC_NAME)
+    attached_sds_service = dc_service.storage_domains_service()
+    master_sd = next(sd for sd in attached_sds_service.list() if sd.master)
+    attached_sd_service = attached_sds_service.storage_domain_service(master_sd.id)
+    attached_sd_service.deactivate()
+    testlib.assert_true_within_long(
+        lambda: attached_sd_service.get().status ==
+                types.StorageDomainStatus.MAINTENANCE
+        )
+    new_master_sd = next(sd for sd in attached_sds_service.list() if sd.master)
+    nt.assert_true(new_master_sd.id != master_sd.id)
+    attached_sd_service.activate()
+    testlib.assert_true_within_long(
+        lambda: attached_sd_service.get().status ==
+                types.StorageDomainStatus.ACTIVE
+        )
+
 
 _TEST_LIST = [
     verify_glance_import,
+    reconstruct_master_domain,
     add_vm1_from_template,
     add_directlun,
     verify_add_vm1_from_template,

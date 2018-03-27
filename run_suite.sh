@@ -59,6 +59,13 @@ Optional arguments:
 
     -i,--images
         Create qcow2 images of the vms that were created by the tests in SUITE
+
+    --only-verify-requirements
+        Verify that the system has the correct requirements (Disk Space, RAM, etc...)
+        and exit.
+
+    --ignore-requirements
+        Don't fail if the system requirements are not satisfied.
 "
 }
 
@@ -75,6 +82,14 @@ on_sigterm() {
     exit 143
 }
 
+verify_system_requirements() {
+    local prefix="${1:?}"
+
+    "${OST_REPO_ROOT}/common/scripts/verify_system_requirements.py" \
+        --prefix-path "$prefix" \
+        "${SUITE}/vars/main.yml"
+}
+
 get_engine_version() {
     local root_dir="$PWD"
     cd $PREFIX
@@ -85,7 +100,6 @@ get_engine_version() {
     cd "$root_dir"
     echo "$version"
 }
-
 
 env_init () {
 
@@ -392,6 +406,7 @@ options=$( \
         -o ho:e:n:b:cs:r:l:i \
         --long help,output:,engine:,node:,boot-iso:,cleanup,images \
         --long extra-rpm-source,reposync-config:,local-rpms: \
+        --long only-verify-requirements,ignore-requirements \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -403,7 +418,7 @@ eval set -- "$options"
 while true; do
     case $1 in
         -o|--output)
-            PREFIX=$(realpath $2)
+            PREFIX=$(realpath -m $2)
             shift 2
             ;;
         -n|--node)
@@ -442,6 +457,14 @@ while true; do
             readonly CREATE_IMAGES=true
             shift
             ;;
+        --only-verify-requirements)
+            readonly ONLY_VERIFY_REQUIREMENTS=true
+            shift
+            ;;
+        --ignore-requirements)
+            readonly IGNORE_REQUIREMENTS=true
+            shift
+            ;;
         --)
             shift
             break
@@ -473,6 +496,11 @@ fi
         ${PREFIX} shouldn't exist. Please remove it and retry"
     exit 1
 }
+
+mkdir -p "$PREFIX"
+[[ "$IGNORE_REQUIREMENTS" ]] || verify_system_requirements "$PREFIX"
+[[ $? -ne 0 ]] && { rm -rf "$PREFIX"; exit 1; }
+[[ "$ONLY_VERIFY_REQUIREMENTS" ]] && { rm -rf "$PREFIX"; exit; }
 
 [[ -d "$SUITE" ]] \
 || {

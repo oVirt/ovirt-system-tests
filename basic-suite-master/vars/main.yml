@@ -4,3 +4,5 @@ templates:
 hostCount: 2
 install_storage_with_lago_deploy: false
 install_ovirt_host: true
+system_requirements:
+  disk_space_gb: 15

@@ -25,22 +25,27 @@ SUITE_REAL_PATH=$(realpath "$SUITE")
 # internal repo (assuming that we have a newer version in the internal repo).
 DEFAULT_RPMS=(ovirt-engine-sdk-python python-ovirt-engine-sdk4)
 
-# if above RAM_THRESHOLD KBs are available in /dev/shm, run there
-RAM_THRESHOLD=15000000
-
 #Indicate if image creation is needed
 readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"
 
 get_run_path() {
-    local avail_shm
+    local ram_path="/dev/shm/ost/deployment-${SUITE}"
+    local disk_path="${PWD}/deployment-${SUITE}"
+
     [[ -d "/dev/shm/ost" ]] && rm -rf "/dev/shm/ost"
-    avail_shm=$(df --output=avail /dev/shm | sed 1d)
-    [[ "$avail_shm" -ge "$RAM_THRESHOLD" ]] && \
-        mkdir -p "/dev/shm/ost" && \
-        echo "/dev/shm/ost/deployment-$SUITE" || {
-            rm -rf "$PWD/deployment-$SUITE"
-            echo "$PWD/deployment-$SUITE"
-        }
+    [[ -d "$disk_path" ]] && rm -rf "$disk_path"
+
+    ./run_suite.sh -o "$ram_path" --only-verify-requirements "$SUITE" && {
+        echo "$ram_path"
+        return
+    }
+
+    ./run_suite.sh -o "$disk_path" --only-verify-requirements "$SUITE" && {
+        echo "$disk_path"
+        return
+    }
+
+    return 1
 }
 
 print_host_info() {

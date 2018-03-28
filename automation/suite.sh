@@ -53,7 +53,9 @@ cleanup() {
 
     print_host_info
     echo "Prefix size:"
-    du -sh "$run_path"
+    du -h -d 1 "${run_path}/default"
+    echo "Images Size:"
+    ls -lhs "${run_path}/default/images"
 
     echo "suite.sh: moving artifacts"
 

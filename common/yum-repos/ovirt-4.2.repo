@@ -721,6 +721,7 @@ includepkgs = ansible
 	python-gofer-proton
 	python2-ioprocess
 	python-isodate
+	python-keyczar
 	python-linecache2
 	python-nose
 	python-pthreading

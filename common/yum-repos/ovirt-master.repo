@@ -679,6 +679,7 @@ max_connections = 5
 includepkgs = lyx-fonts
 	python-qpid-proton
 	python-unittest2
+	python-keyczar
 	python2-mimeparse
 	python2-traceback2
 	qpid-proton-c

@@ -357,9 +357,15 @@ def snapshot_cold_merge(api):
             )
         ]
     )
+    correlation_id = uuid.uuid4()
 
-    vm1_snapshots_service.add(dead_snap1_params)
+    vm1_snapshots_service.add(dead_snap1_params,
+                              query={'correlation_id': correlation_id})
 
+    testlib.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
+    )
     testlib.assert_true_within_long(
         lambda:
         vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK

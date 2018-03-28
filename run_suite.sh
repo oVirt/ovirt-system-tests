@@ -251,9 +251,8 @@ env_cleanup() {
     logger.info "Cleaning up"
     if [[ -e "$PREFIX" ]]; then
         logger.info "Cleaning with lago"
-        $CLI --workdir "$PREFIX" destroy --yes --all-prefixes \
-        || res=$?
-        logger.success "Cleaning with lago done"
+        $CLI --workdir "$PREFIX" destroy --yes --all-prefixes || res=$?
+        [[ "$res" -eq 0 ]] && logger.success "Cleaning with lago done"
     elif [[ -e "$PREFIX/uuid" ]]; then
         uid="$(cat "$PREFIX/uuid")"
         uid="${uid:0:4}"
@@ -262,7 +261,7 @@ env_cleanup() {
         logger.info "No uuid found, cleaning up any lago-generated vms"
         res=1
     fi
-    if [[ "$res" != "0" ]]; then
+    if [[ "$res" -ne 0 ]]; then
         logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
         env_libvirt_cleanup "${SUITE##*/}" "$uid"
     fi

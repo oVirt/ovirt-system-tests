@@ -1,8 +1,6 @@
 #!/bin/bash -xe
 set -o pipefail
 
-[ -z "${HOSTEDENGINE}" ] && HOSTEDENGINE="lago-he-basic-suite-master-engine"
-
 prep_suite () {
     local suite_name="${SUITE##*/}"
     suite_name="${suite_name//./-}"
@@ -15,12 +13,13 @@ prep_suite () {
     > ${SUITE}/LagoInitFile
 }
 
-
 he_deploy() {
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     local suite_name="${SUITE##*/}"
     suite_name="${suite_name//./-}"
+    local he_name="${HOSTEDENGINE:-lago-${suite_name}-engine}"
+
     HOST=lago-${suite_name}-host
     cd $PREFIX
     echo "#########################"
@@ -37,7 +36,7 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        /root/setup_first_he_host.sh ${HOSTEDENGINE} ${HE_ANSIBLE}
+        /root/setup_first_he_host.sh "$he_name" "$HE_ANSIBLE"
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then
         echo "hosted-engine setup on ${HOST}0 failed with status ${RET_CODE}."

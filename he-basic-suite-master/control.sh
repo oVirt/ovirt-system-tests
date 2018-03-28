@@ -2,15 +2,7 @@
 set -o pipefail
 
 prep_suite () {
-    local suite_name="${SUITE##*/}"
-    suite_name="${suite_name//./-}"
-    sed -r \
-        -e "s,__ENGINE__,lago-${suite_name}-engine,g" \
-        -e "s,__HOST([0-9]+)__,lago-${suite_name}-host\1,g" \
-        -e "s,__LAGO_NET__,lago-${suite_name}-lago,g" \
-        -e "s,__STORAGE__,lago-${suite_name}-storage,g" \
-    < ${SUITE}/LagoInitFile.in \
-    > ${SUITE}/LagoInitFile
+    render_jinja_templates
 }
 
 he_deploy() {
@@ -20,7 +12,7 @@ he_deploy() {
     suite_name="${suite_name//./-}"
     local he_name="${HOSTEDENGINE:-lago-${suite_name}-engine}"
 
-    HOST=lago-${suite_name}-host
+    HOST=lago-${suite_name}-host-
     cd $PREFIX
     echo "#########################"
     echo "Deploying on ${HOST}0"

@@ -393,8 +393,8 @@ def add_he_hosts_4(prefix):
             raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
 
-    hosts = prefix.virt_env.host_vms()
-    vec = utils.func_vector(_add_he_host_4, [(h,) for h in hosts if not h.name().endswith('t0')])
+    hosts = sorted(prefix.virt_env.host_vms(), key=lambda host: host.name())[1:]
+    vec = utils.func_vector(_add_he_host_4, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()
     nt.assert_true(all(vt.join_all()))

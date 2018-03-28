@@ -436,11 +436,7 @@ def live_storage_migration(api):
         query={'correlation_id': correlation_id}
     )
 
-    def all_jobs_finished():
-        jobs = engine.jobs_service().list(search='correlation_id=%s' % correlation_id)
-        return all(job.status != types.JobStatus.STARTED for job in jobs)
-
-    testlib.assert_true_within_long(all_jobs_finished)
+    testlib.assert_true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
 
     # Assert that the disk is on the correct storage domain,
     # its status is OK and the snapshot created for the migration

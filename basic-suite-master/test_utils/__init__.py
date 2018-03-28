@@ -20,6 +20,7 @@
 
 import collections
 import functools
+import ovirtsdk4.types as types
 
 # Taken from https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
 class memoized(object):
@@ -165,3 +166,7 @@ def get_vnic_profiles_service(engine, network_name):
     net = networks_service.list(search='name={}'.format(network_name))[0]
     return networks_service.network_service(net.id).vnic_profiles_service()
 
+
+def all_jobs_finished(engine, correlation_id):
+    jobs = engine.jobs_service().list(search='correlation_id=%s' % correlation_id)
+    return all(job.status != types.JobStatus.STARTED for job in jobs)

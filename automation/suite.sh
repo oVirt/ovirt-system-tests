@@ -52,10 +52,14 @@ cleanup() {
     local run_path="$1"
 
     print_host_info
-    echo "Prefix size:"
-    du -h -d 1 "${run_path}/default"
-    echo "Images Size:"
-    ls -lhs "${run_path}/default/images"
+    [[ -d "${run_path}/default" ]] && {
+        echo "Prefix size:"
+        du -h -d 1 "${run_path}/default"
+    }
+    [[ -d "${run_path}/default/images" ]] && {
+        echo "Images Size:"
+        ls -lhs "${run_path}/default/images"
+    }
 
     echo "suite.sh: moving artifacts"
 

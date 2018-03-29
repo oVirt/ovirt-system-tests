@@ -102,6 +102,20 @@ def _verify_vm_state(engine, vm_name, state):
     return vm_service
 
 
+def _vm_ssh(prefix, vm_name, command, tries=None):
+    host = _vm_host(prefix, vm_name)
+    ret = host.ssh(['host', vm_name])
+    match = re.search(r'\s([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', ret.out)
+    ip_address = match.group(1)
+    return ssh.ssh(
+        ip_addr=ip_address,
+        command=command,
+        username='cirros',
+        password='gocubsgo',
+        tries=tries,
+    )
+
+
 @testlib.with_ovirt_api4
 def add_disks(api):
     engine = api.system_service()
@@ -704,8 +718,12 @@ def restore_vm0_networking(ovirt_prefix):
     # careful to reboot just the guest OS, not to restart the whole VM, to keep
     # checking for contingent failures after resume.
     # A better solution might be using a guest OS other than Cirros.
-    if _ping(ovirt_prefix, VM0_PING_DEST) == EX_OK:
-        return
+    try:
+        if _vm_ssh(ovirt_prefix, VM0_NAME, ['true'], tries=1).code == 0:
+            return
+    except RuntimeError:
+        # May happen on timeout, e.g. when networking is not working at all.
+        pass
     host = _vm_host(ovirt_prefix, VM0_NAME)
     uri = 'qemu+tls://%s/system' % host.name()
     ret = host.ssh(['virsh', '-c', uri, 'reboot', '--mode', 'acpi', VM0_NAME])
@@ -717,6 +735,8 @@ def restore_vm0_networking(ovirt_prefix):
 
     engine = ovirt_prefix.virt_env.engine_vm().get_api_v4().system_service()
     _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
+
+    nt.assert_equals(_vm_ssh(ovirt_prefix, VM0_NAME, ['true']).code, 0)
 
 
 @testlib.with_ovirt_prefix
@@ -961,18 +981,7 @@ def hotplug_cpu(prefix):
         nt.assert_true(
             vm_service.get().cpu.topology.sockets == 2
         )
-
-    host = prefix.virt_env.host_vms()[0]
-    ret = host.ssh(['host', VM0_NAME])
-    match = re.search(r'\s([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', ret.out)
-    ip_address = match.group(1)
-    ret = ssh.ssh(
-        ip_addr=ip_address,
-        command=['lscpu'],
-        username='cirros',
-        password='gocubsgo',
-        tries=200
-    )
+    ret = _vm_ssh(prefix, VM0_NAME, ['lscpu'])
     nt.assert_equals(ret.code, 0)
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out)
     nt.assert_true(match.group('cpus') == '2')

@@ -50,6 +50,21 @@ domains:
       - /root/fluentd
       - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
       - /var/lib/ovirt-engine/setup/answers
+      - /etc/ovirt-engine
+      - /etc/ovirt-engine-dwh
+      - /etc/ovirt-engine-metrics
+      - /etc/ovirt-engine-setup.conf.d
+      - /etc/ovirt-engine-setup.env.d
+      - /etc/ovirt-host-deploy.conf.d
+      - /etc/ovirt-imageio-proxy
+      - /etc/ovirt-provider-ovn
+      - /etc/ovirt-vmconsole
+      - /etc/ovirt-web-ui
+      - /etc/dnf
+      - /etc/firewalld
+      - /etc/httpd
+      - /etc/sysconfig
+      - /etc/yum
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings

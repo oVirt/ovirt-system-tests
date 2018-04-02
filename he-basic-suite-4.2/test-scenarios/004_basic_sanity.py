@@ -24,6 +24,9 @@ from nose import SkipTest
 from ovirtsdk.xml import params
 
 from ovirtlago import testlib
+import ovirtsdk4.types as types
+import test_utils
+import uuid
 
 
 MB = 2 ** 20
@@ -148,48 +151,72 @@ def add_directlun(prefix):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def snapshot_merge(api):
-    dead_snap1_params = params.Snapshot(
+    engine = api.system_service()
+    vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
+
+    disk = engine.disks_service().list(search='name={}'.format(DISK0_NAME))[0]
+
+    dead_snap1_params = types.Snapshot(
         description='dead_snap1',
         persist_memorystate=False,
-        disks=params.Disks(
-            disk=[
-                params.Disk(
-                    id=api.vms.get(VM0_NAME).disks.get(DISK0_NAME).id,
-                ),
-            ],
-        ),
-    )
-    api.vms.get(VM0_NAME).snapshots.add(dead_snap1_params)
-    testlib.assert_true_within_short(
-        lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        disk_attachments=[
+            types.DiskAttachment(
+                disk=types.Disk(
+                    id=disk.id
+                )
+            )
+        ]
     )
 
-    dead_snap2_params = params.Snapshot(
+    correlation_id = uuid.uuid4()
+    vm0_snapshots_service.add(
+        dead_snap1_params,
+        query={'correlation_id': correlation_id}
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        vm0_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
+    )
+
+    dead_snap2_params = types.Snapshot(
         description='dead_snap2',
         persist_memorystate=False,
-        disks=params.Disks(
-            disk=[
-                params.Disk(
-                    id=api.vms.get(VM0_NAME).disks.get(DISK0_NAME).id,
-                ),
-            ],
-        ),
-    )
-    api.vms.get(VM0_NAME).snapshots.add(dead_snap2_params)
-    testlib.assert_true_within_short(
-        lambda:
-        api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
+        disk_attachments=[
+            types.DiskAttachment(
+                disk=types.Disk(
+                    id=disk.id
+                )
+            )
+        ]
     )
 
-    api.vms.get(VM0_NAME).snapshots.list()[-2].delete()
+    correlation_id_snap2 = uuid.uuid4()
+
+    vm0_snapshots_service.add(
+        dead_snap2_params,
+        query={'correlation_id': correlation_id_snap2}
+    )
     testlib.assert_true_within_short(
         lambda:
-        (len(api.vms.get(VM0_NAME).snapshots.list()) == 2) and
-        (api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status
-         == 'ok'),
+        test_utils.all_jobs_finished(engine, correlation_id_snap2)
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        vm0_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
+    )
+
+    snapshot = vm0_snapshots_service.list()[-2]
+    vm0_snapshots_service.snapshot_service(snapshot.id).remove()
+    testlib.assert_true_within_short(
+        lambda:
+        (len(vm0_snapshots_service.list()) == 2) and
+        (vm0_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK),
     )
 
 

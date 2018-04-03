@@ -307,6 +307,19 @@ def _get_datacenter_id(api):
     return api.system_service().data_centers_service().list()[0].id
 
 
+def _disable_auto_sync(api, provider_id):
+    provider_service = (
+        api.system_service()
+           .openstack_network_providers_service()
+           .provider_service(provider_id)
+    )
+    provider_service.update(
+        types.OpenStackNetworkProvider(
+            auto_sync=False
+        )
+    )
+
+
 def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
     network_service = (
         api.system_service()
@@ -400,6 +413,9 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 def use_ovn_provider(prefix, api):
     engine = api.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
+    provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
+    _disable_auto_sync(api, provider_id)
+
     token_id = _get_auth_token(engine_ip)
 
     _validate_db_empty(token_id, engine_ip)
@@ -428,7 +444,6 @@ def use_ovn_provider(prefix, api):
     _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
     _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
 
-    provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
     datacenter_id = _get_datacenter_id(api)
     _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
     ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)

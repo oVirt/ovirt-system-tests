@@ -25,8 +25,8 @@ chmod a+rwx 				\
 	/exports/nfs_clean/share1/	\
 	/exports/nfs_clean/iso/
 
-echo '/exports/nfs_clean/share1 *(rw,sync,no_root_squash,no_all_squash)' >> /etc/exports
-echo '/exports/nfs_exported/ *(rw,sync,no_root_squash,no_all_squash)' >> /etc/exports
+echo '/exports/nfs_clean/share1 *(rw,sync,anonuid=36,anongid=36,all_squash)' >> /etc/exports
+echo '/exports/nfs_exported/ *(rw,sync,anonuid=36,anongid=36,all_squash)' >> /etc/exports
 exportfs -a
 
 systemctl start rpcbind.service

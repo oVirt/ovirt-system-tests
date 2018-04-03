@@ -14,7 +14,7 @@ setup_device() {
     mount /dev/${device} ${mountpath}
     mkdir -p ${exportpath}
     chmod a+rwx ${exportpath}
-    echo "${exportpath} *(rw,sync,no_root_squash,no_all_squash)" >> /etc/exports
+    echo "${exportpath} *(rw,sync,anonuid=36,anongid=36,all_squash)" >> /etc/exports
     exportfs -a
 }
 
@@ -37,7 +37,7 @@ install_deps() {
 setup_iso() {
     mkdir -p /exports/iso
     chmod a+rwx /exports/iso
-    echo '/exports/iso/ *(rw,sync,no_root_squash,no_all_squash)' \
+    echo '/exports/iso/ *(rw,sync,anonuid=36,anongid=36,all_squash)' \
     >> /etc/exports
     exportfs -a
 }

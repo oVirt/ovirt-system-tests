@@ -164,51 +164,61 @@ def _check_problematic_hosts(hosts_service):
 
 @testlib.with_ovirt_api4
 def add_dc(api):
-    dcs_service = api.system_service().data_centers_service()
-    nt.assert_true(
-        dcs_service.add(
-            sdk4.types.DataCenter(
-                name=DC_NAME,
-                description='APIv4 DC',
-                local=False,
-                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
-            ),
+    engine = api.system_service()
+    dcs_service = engine.data_centers_service()
+    with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
+        nt.assert_true(
+            dcs_service.add(
+                sdk4.types.DataCenter(
+                    name=DC_NAME,
+                    description='APIv4 DC',
+                    local=False,
+                    version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
+                ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def remove_default_dc(api):
-    dc_service = test_utils.data_center_service(api.system_service(), 'Default')
-    dc_service.remove()
+    engine = api.system_service()
+    dc_service = test_utils.data_center_service(engine, 'Default')
+    with test_utils.TestEvent(engine, 954): # USER_REMOVE_STORAGE_POOL event
+        dc_service.remove()
 
 
 @testlib.with_ovirt_api4
 def update_default_dc(api):
-    dc_service = test_utils.data_center_service(api.system_service(), 'Default')
-    dc_service.update(
-        data_center=sdk4.types.DataCenter(
-            local=True
+    engine = api.system_service()
+    dc_service = test_utils.data_center_service(engine, 'Default')
+    with test_utils.TestEvent(engine, 952): # USER_UPDATE_STORAGE_POOL event
+        dc_service.update(
+            data_center=sdk4.types.DataCenter(
+                local=True
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def update_default_cluster(api):
-    cluster_service = test_utils.get_cluster_service(api.system_service(), 'Default')
-    cluster_service.update(
-        cluster=sdk4.types.Cluster(
-            cpu=sdk4.types.Cpu(
-                architecture=sdk4.types.Architecture.PPC64
+    engine = api.system_service()
+    cluster_service = test_utils.get_cluster_service(engine, 'Default')
+    with test_utils.TestEvent(engine, 811): # USER_UPDATE_CLUSTER event
+        cluster_service.update(
+            cluster=sdk4.types.Cluster(
+                cpu=sdk4.types.Cpu(
+                    architecture=sdk4.types.Architecture.PPC64
+                )
             )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def remove_default_cluster(api):
-    cl_service = test_utils.get_cluster_service(api.system_service(), 'Default')
-    cl_service.remove()
+    engine = api.system_service()
+    cl_service = test_utils.get_cluster_service(engine, 'Default')
+    with test_utils.TestEvent(engine, 813): # USER_REMOVE_CLUSTER event
+        cl_service.remove()
 
 
 @testlib.with_ovirt_prefix
@@ -230,38 +240,39 @@ def add_cluster(api):
     engine = api.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
-    nt.assert_true(
-        clusters_service.add(
-            sdk4.types.Cluster(
-                name=CLUSTER_NAME,
-                description='APIv4 Cluster',
-                data_center=sdk4.types.DataCenter(
-                    name=DC_NAME,
-                ),
-                ballooning_enabled=True,
-                ksm=sdk4.types.Ksm(
-                    enabled=True,
-                    merge_across_nodes=False,
-                ),
-                scheduling_policy=sdk4.types.SchedulingPolicy(
-                    name='evenly_distributed',
-                ),
-                optional_reason=True,
-                memory_policy=sdk4.types.MemoryPolicy(
-                    ballooning=True,
-                    over_commit=sdk4.types.MemoryOverCommit(
-                        percent=150,
+    with test_utils.TestEvent(engine, 809):
+        nt.assert_true(
+            clusters_service.add(
+                sdk4.types.Cluster(
+                    name=CLUSTER_NAME,
+                    description='APIv4 Cluster',
+                    data_center=sdk4.types.DataCenter(
+                        name=DC_NAME,
                     ),
+                    ballooning_enabled=True,
+                    ksm=sdk4.types.Ksm(
+                        enabled=True,
+                        merge_across_nodes=False,
+                    ),
+                    scheduling_policy=sdk4.types.SchedulingPolicy(
+                        name='evenly_distributed',
+                    ),
+                    optional_reason=True,
+                    memory_policy=sdk4.types.MemoryPolicy(
+                        ballooning=True,
+                        over_commit=sdk4.types.MemoryOverCommit(
+                            percent=150,
+                        ),
+                    ),
+                    ha_reservation=True,
+                    external_network_providers=[
+                        sdk4.types.ExternalProvider(
+                            id=provider_id,
+                        )
+                    ],
                 ),
-                ha_reservation=True,
-                external_network_providers=[
-                    sdk4.types.ExternalProvider(
-                        id=provider_id,
-                    )
-                ],
-            ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_prefix
@@ -276,7 +287,8 @@ def sync_time(prefix):
 def add_hosts(prefix):
     hosts = prefix.virt_env.host_vms()
     api = prefix.virt_env.engine_vm().get_api_v4()
-    hosts_service = api.system_service().hosts_service()
+    engine = api.system_service()
+    hosts_service = engine.hosts_service()
 
     def _add_host(vm):
         return hosts_service.add(
@@ -292,10 +304,11 @@ def add_hosts(prefix):
             ),
         )
 
-    for host in hosts:
-        nt.assert_true(
-            _add_host(host)
-        )
+    with test_utils.TestEvent(engine, 42):
+        for host in hosts:
+            nt.assert_true(
+                _add_host(host)
+            )
 
 
 @testlib.with_ovirt_api4
@@ -352,25 +365,29 @@ def configure_storage(prefix):
 def _add_storage_domain(api, p):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
-    sd = sds_service.add(p)
+    with test_utils.TestEvent(system_service, 956): # USER_ADD_STORAGE_DOMAIN(956)
+        sd = sds_service.add(p)
 
-    sd_service = sds_service.storage_domain_service(sd.id)
-    testlib.assert_true_within_long(
-        lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
-    )
+        sd_service = sds_service.storage_domain_service(sd.id)
+        testlib.assert_true_within_long(
+            lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
+        )
 
     dc_service = test_utils.data_center_service(system_service, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
-    attached_sds_service.add(
-        sdk4.types.StorageDomain(
-            id=sd.id,
-        ),
-    )
 
-    attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-    testlib.assert_true_within_long(
-        lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
-    )
+    with test_utils.TestEvent(system_service, [966, 962]):
+        # USER_ACTIVATED_STORAGE_DOMAIN(966)
+        # USER_ATTACH_STORAGE_DOMAIN_TO_POOL(962)
+        attached_sds_service.add(
+            sdk4.types.StorageDomain(
+                id=sd.id,
+            ),
+        )
+        attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
+        testlib.assert_true_within_long(
+            lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
+        )
 
 
 @testlib.with_ovirt_prefix
@@ -577,7 +594,8 @@ def generic_import_from_glance(glance_provider, image_name=CIRROS_IMAGE_NAME, as
 def list_glance_images(api):
     global GLANCE_AVAIL
     search_query = 'name={}'.format(SD_GLANCE_NAME)
-    storage_domains_service = api.system_service().storage_domains_service()
+    engine = api.system_service()
+    storage_domains_service = engine.storage_domains_service()
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
@@ -586,14 +604,15 @@ def list_glance_images(api):
             raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
         glance_domain_list = storage_domains_service.list(search=search_query)
 
-    if not check_glance_connectivity(api):
+    if not check_glance_connectivity(engine):
         raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_4.__name__ )
 
     glance_domain = glance_domain_list.pop()
     glance_domain_service = storage_domains_service.storage_domain_service(glance_domain.id)
 
     try:
-        all_images = glance_domain_service.images_service().list()
+        with test_utils.TestEvent(engine, 998):
+            all_images = glance_domain_service.images_service().list()
         if len(all_images):
             GLANCE_AVAIL = True
     except sdk4.Error:
@@ -636,9 +655,9 @@ def add_glance(api):
     return glance.pop()
 
 
-def check_glance_connectivity(api):
+def check_glance_connectivity(engine):
     avail = False
-    providers_service = api.system_service().openstack_image_providers_service()
+    providers_service = engine.openstack_image_providers_service()
     providers = [
         provider for provider in providers_service.list()
         if provider.name == SD_GLANCE_NAME
@@ -709,9 +728,10 @@ def add_vm_network(api):
         ),
     )
 
-    nt.assert_true(
-        engine.networks_service().add(network)
-    )
+    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+        nt.assert_true(
+            engine.networks_service().add(network)
+        )
 
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
@@ -734,9 +754,10 @@ def add_non_vm_network(api):
         mtu=9000,
     )
 
-    nt.assert_true(
-        engine.networks_service().add(network)
-    )
+    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+        nt.assert_true(
+            engine.networks_service().add(network)
+        )
 
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
@@ -746,67 +767,75 @@ def add_non_vm_network(api):
 
 @testlib.with_ovirt_api4
 def add_role(api):
-    roles_service = api.system_service().roles_service()
-    nt.assert_true(
-        roles_service.add(
-            sdk4.types.Role(
-                name='MyRole',
-                administrative=False,
-                description='My custom role to create virtual machines',
-                permits=[
-                    # create_vm permit
-                    sdk4.types.Permit(id='1'),
-                    # login permit
-                    sdk4.types.Permit(id='1300'),
-                ],
-            ),
+    engine = api.system_service()
+    roles_service = engine.roles_service()
+    with test_utils.TestEvent(engine, 864): # USER_ADD_ROLE_WITH_ACTION_GROUP event
+        nt.assert_true(
+            roles_service.add(
+                sdk4.types.Role(
+                    name='MyRole',
+                    administrative=False,
+                    description='My custom role to create virtual machines',
+                    permits=[
+                        # create_vm permit
+                        sdk4.types.Permit(id='1'),
+                        # login permit
+                        sdk4.types.Permit(id='1300'),
+                    ],
+                ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def add_affinity_label(api):
-    affinity_labels_service = api.system_service().affinity_labels_service()
-    nt.assert_true(
-        affinity_labels_service.add(
-            sdk4.types.AffinityLabel(
-                name='my_affinity_label',
-            ),
+    engine = api.system_service()
+    affinity_labels_service = engine.affinity_labels_service()
+    with test_utils.TestEvent(engine, 10380): 
+        nt.assert_true(
+            affinity_labels_service.add(
+                sdk4.types.AffinityLabel(
+                    name='my_affinity_label',
+                ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def add_affinity_group(api):
-    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
+    engine = api.system_service()
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
-    nt.assert_true(
-        affinity_group_service.add(
-            sdk4.types.AffinityGroup(
-                name='my_affinity_group',
-                enforcing=False,
-                positive=True,
-                hosts_rule=sdk4.types.AffinityRule(
-                    enabled=False,
+    with test_utils.TestEvent(engine, 10350): 
+        nt.assert_true(
+            affinity_group_service.add(
+                sdk4.types.AffinityGroup(
+                    name='my_affinity_group',
                     enforcing=False,
                     positive=True,
+                    hosts_rule=sdk4.types.AffinityRule(
+                        enabled=False,
+                        enforcing=False,
+                        positive=True,
+                    ),
                 ),
-            ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def add_bookmark(api):
-    bookmarks_service = api.system_service().bookmarks_service()
-    nt.assert_true(
-        bookmarks_service.add(
-            sdk4.types.Bookmark(
-                name='my_bookmark',
-                value='vm:name=vm*',
-            ),
+    engine = api.system_service()
+    bookmarks_service = engine.bookmarks_service()
+    with test_utils.TestEvent(engine, 350):
+        nt.assert_true(
+            bookmarks_service.add(
+                sdk4.types.Bookmark(
+                    name='my_bookmark',
+                    value='vm:name=vm*',
+                ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
@@ -814,41 +843,46 @@ def add_cpu_profile(api):
     engine = api.system_service()
     cpu_profiles_service = engine.cpu_profiles_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
-    nt.assert_true(
-        cpu_profiles_service.add(
-            sdk4.types.CpuProfile(
-                name='my_cpu_profile',
-                cluster=sdk4.types.Cluster(
-                    id=cluster_service.get().id,
+    with test_utils.TestEvent(engine, 10130): # USER_ADDED_CPU_PROFILE event
+        nt.assert_true(
+            cpu_profiles_service.add(
+                sdk4.types.CpuProfile(
+                    name='my_cpu_profile',
+                    cluster=sdk4.types.Cluster(
+                        id=cluster_service.get().id,
+                    ),
                 ),
-            ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
 def add_qos(api):
-    dc_service = test_utils.data_center_service(api.system_service(), DC_NAME)
+    engine = api.system_service()
+    dc_service = test_utils.data_center_service(engine, DC_NAME)
     qoss = dc_service.qoss_service()
-    nt.assert_true(
-        qoss.add(
-            sdk4.types.Qos(
-                name='my_cpu_qos',
-                type=sdk4.types.QosType.CPU,
-                cpu_limit=99,
-            ),
+    with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
+        nt.assert_true(
+            qoss.add(
+                sdk4.types.Qos(
+                    name='my_cpu_qos',
+                    type=sdk4.types.QosType.CPU,
+                    cpu_limit=99,
+                ),
+            )
         )
-    )
-    nt.assert_true(
-        qoss.add(
-            sdk4.types.Qos(
-                name='my_storage_qos',
-                type=sdk4.types.QosType.STORAGE,
-                max_iops=999999,
-                description='max_iops_qos',
-            ),
+    with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
+        nt.assert_true(
+            qoss.add(
+                sdk4.types.Qos(
+                    name='my_storage_qos',
+                    type=sdk4.types.QosType.STORAGE,
+                    max_iops=999999,
+                    description='max_iops_qos',
+                ),
+            )
         )
-    )
+
 
 @testlib.with_ovirt_api4
 def add_disk_profile(api):
@@ -858,16 +892,17 @@ def add_disk_profile(api):
     attached_sds_service = dc_service.storage_domains_service()
     attached_sd = attached_sds_service.list()[0]
 
-    nt.assert_true(
-        disk_profiles_service.add(
-            sdk4.types.DiskProfile(
-                name='my_disk_profile',
-                storage_domain=sdk4.types.StorageDomain(
-                    id=attached_sd.id,
+    with test_utils.TestEvent(engine, 10120): # USER_ADDED_DISK_PROFILE event
+        nt.assert_true(
+            disk_profiles_service.add(
+                sdk4.types.DiskProfile(
+                    name='my_disk_profile',
+                    storage_domain=sdk4.types.StorageDomain(
+                        id=attached_sd.id,
+                    ),
                 ),
-            ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api4
@@ -989,51 +1024,42 @@ def check_update_host(api):
     engine = api.system_service()
     host_service = _random_host_service_from_dc(api, DC_NAME)
     events_service = engine.events_service()
-    last_event = int(events_service.list(max=2)[0].id)
-    host_service.upgrade_check()
-
-    # HOST_AVAILABLE_UPDATES_STARTED(884)
-    testlib.assert_true_within_short(
-        lambda:
-        any(e.code == 884 for e in events_service.list(from_=last_event))
-    )
-
-    # HOST_AVAILABLE_UPDATES_FINISHED(885)
-    last_event = int(events_service.list(max=2)[0].id)
-    testlib.assert_true_within_short(
-        lambda:
-        any(e.code == 885 for e in events_service.list(from_=last_event))
-    )
+    with test_utils.TestEvent(engine, [884, 885]):
+        # HOST_AVAILABLE_UPDATES_STARTED(884)
+        # HOST_AVAILABLE_UPDATES_FINISHED(885)
+        host_service.upgrade_check()
 
 
 @testlib.with_ovirt_api4
 def add_scheduling_policy(api):
-    scheduling_policies_service = api.system_service().scheduling_policies_service()
-    nt.assert_true(
-        scheduling_policies_service.add(
-            sdk4.types.SchedulingPolicy(
-                name='my_scheduling_policy',
-                default_policy=False,
-                locked=False,
-                balances=[
-                    sdk4.types.Balance(
-                        name='OptimalForEvenDistribution',
-                    ),
-                ],
-                filters=[
-                    sdk4.types.Filter(
-                        name='Migration',
-                    ),
-                ],
-                weight=[
-                    sdk4.types.Weight(
-                        name='HA',
-                        factor=2,
-                    ),
-                ],
+    engine = api.system_service()
+    scheduling_policies_service = engine.scheduling_policies_service()
+    with test_utils.TestEvent(engine, 9910): 
+        nt.assert_true(
+            scheduling_policies_service.add(
+                sdk4.types.SchedulingPolicy(
+                    name='my_scheduling_policy',
+                    default_policy=False,
+                    locked=False,
+                    balances=[
+                        sdk4.types.Balance(
+                            name='OptimalForEvenDistribution',
+                        ),
+                    ],
+                    filters=[
+                        sdk4.types.Filter(
+                            name='Migration',
+                        ),
+                    ],
+                    weight=[
+                        sdk4.types.Weight(
+                            name='HA',
+                            factor=2,
+                        ),
+                    ],
+                )
             )
         )
-    )
 
 
 @testlib.with_ovirt_api4
@@ -1086,7 +1112,8 @@ def add_fence_agent(api):
 
 @testlib.with_ovirt_api4
 def add_tag(api):
-    tags_service = api.system_service().tags_service()
+    engine = api.system_service()
+    tags_service = engine.tags_service()
     nt.assert_true(
         tags_service.add(
             sdk4.types.Tag(
@@ -1101,29 +1128,31 @@ def add_tag(api):
 def add_mac_pool(api):
     engine = api.system_service()
     pools_service = engine.mac_pools_service()
-    pool = pools_service.add(
-        sdk4.types.MacPool(
-            name='mymacpool',
-            ranges=[
-                sdk4.types.Range(
-                    from_='02:00:00:00:00:00',
-                    to='02:00:00:01:00:00',
-                ),
-            ],
-        ),
-    )
-    nt.assert_true(pool)
+    with test_utils.TestEvent(engine, 10700): # MAC_POOL_ADD_SUCCESS event
+        pool = pools_service.add(
+            sdk4.types.MacPool(
+                name='mymacpool',
+                ranges=[
+                    sdk4.types.Range(
+                        from_='02:00:00:00:00:00',
+                        to='02:00:00:01:00:00',
+                    ),
+                ],
+            ),
+        )
+        nt.assert_true(pool)
 
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
-    nt.assert_true(
-        cluster_service.update(
-            cluster=sdk4.types.Cluster(
-                mac_pool=sdk4.types.MacPool(
-                    id=pool.id,
+    with test_utils.TestEvent(engine, 811):
+        nt.assert_true(
+            cluster_service.update(
+                cluster=sdk4.types.Cluster(
+                    mac_pool=sdk4.types.MacPool(
+                        id=pool.id,
+                    )
                 )
             )
         )
-    )
 
 
 @testlib.with_ovirt_prefix
@@ -1147,27 +1176,31 @@ def verify_notifier(prefix):
 
 @testlib.with_ovirt_prefix
 def verify_engine_backup(prefix):
-    engine = prefix.virt_env.engine_vm()
-    engine.ssh(
+    engine_vm = prefix.virt_env.engine_vm()
+    engine_vm.ssh(
         [
             'mkdir',
             '/var/log/ost-engine-backup',
         ],
     )
-    result = engine.ssh(
-        [
-            'engine-backup',
-            '--mode=backup',
-            '--file=/var/log/ost-engine-backup/backup.tgz',
-            '--log=/var/log/ost-engine-backup/log.txt',
-        ],
-    )
-    nt.eq_(
-        result.code,
-        0,
-        'Failed to run engine-backup with code {0}. Output: {1}'.format(result.code, result.out)
-    )
-    result = engine.ssh(
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api.system_service()
+
+    with test_utils.TestEvent(engine, [9024, 9025]): #backup started event, completed
+        result = engine_vm.ssh(
+            [
+                'engine-backup',
+                '--mode=backup',
+                '--file=/var/log/ost-engine-backup/backup.tgz',
+                '--log=/var/log/ost-engine-backup/log.txt',
+            ],
+        )
+        nt.eq_(
+            result.code,
+            0,
+            'Failed to run engine-backup with code {0}. Output: {1}'.format(result.code, result.out)
+        )
+    result = engine_vm.ssh(
         [
             'engine-backup',
             '--mode=verify',
@@ -1223,33 +1256,37 @@ def download_engine_certs(prefix):
 
 @testlib.with_ovirt_api4
 def add_vnic_passthrough_profile(api):
-    vnic_service = test_utils.get_vnic_profiles_service(api.system_service(), MANAGEMENT_NETWORK)
+    engine = api.system_service()
+    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
-    vnic_profile = vnic_service.add(
-        profile=sdk4.types.VnicProfile(
-            name=PASSTHROUGH_VNIC_PROFILE,
-            pass_through=sdk4.types.VnicPassThrough(
-                mode=sdk4.types.VnicPassThroughMode.ENABLED
+    with test_utils.TestEvent(engine, 1122):
+        vnic_profile = vnic_service.add(
+            profile=sdk4.types.VnicProfile(
+                name=PASSTHROUGH_VNIC_PROFILE,
+                pass_through=sdk4.types.VnicPassThrough(
+                    mode=sdk4.types.VnicPassThroughMode.ENABLED
+                )
             )
         )
-    )
-    nt.assert_equals(
-        vnic_profile.pass_through.mode, sdk4.types.VnicPassThroughMode.ENABLED
-    )
+        nt.assert_equals(
+            vnic_profile.pass_through.mode, sdk4.types.VnicPassThroughMode.ENABLED
+        )
 
 
 @testlib.with_ovirt_api4
 def remove_vnic_passthrough_profile(api):
-    vnic_service = test_utils.get_vnic_profiles_service(api.system_service(), MANAGEMENT_NETWORK)
+    engine = api.system_service()
+    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
     vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
                         if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
                         )
 
-    vnic_service.profile_service(vnic_profile.id).remove()
-    nt.assert_equals(next((vnic_profile for vnic_profile in vnic_service.list()
-                           if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE), None),
-                     None)
+    with test_utils.TestEvent(engine, 1126):
+        vnic_service.profile_service(vnic_profile.id).remove()
+        nt.assert_equals(next((vnic_profile for vnic_profile in vnic_service.list()
+                               if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE), None),
+                         None)
 
 
 @testlib.with_ovirt_api
@@ -1507,29 +1544,31 @@ def add_filter(ovirt_api4):
 
 @testlib.with_ovirt_prefix
 def add_filter_parameter(prefix):
-    engine = prefix.virt_env.engine_vm()
-    ovirt_api4 = engine.get_api(api_ver=4)
-    vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
+    engine_vm = prefix.virt_env.engine_vm()
+    ovirt_api4 = engine_vm.get_api(api_ver=4)
+    vm_gw = '.'.join(engine_vm.ip().split('.')[0:3] + ['1'])
+    engine = ovirt_api4.system_service()
     network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
-        ovirt_api4.system_service(), VM0_NAME)
+        engine, VM0_NAME)
 
-    nt.assert_true(
-        network_filter_parameters_service.add(
-            sdk4.types.NetworkFilterParameter(
-                name=NETWORK_FILTER_PARAMETER0_NAME,
-                value=NETWORK_FILTER_PARAMETER0_VALUE
+    with test_utils.TestEvent(engine, 10912):
+        nt.assert_true(
+            network_filter_parameters_service.add(
+                sdk4.types.NetworkFilterParameter(
+                    name=NETWORK_FILTER_PARAMETER0_NAME,
+                    value=NETWORK_FILTER_PARAMETER0_VALUE
+                )
             )
         )
-    )
 
-    nt.assert_true(
-        network_filter_parameters_service.add(
-            sdk4.types.NetworkFilterParameter(
-                name=NETWORK_FILTER_PARAMETER1_NAME,
-                value=vm_gw
+        nt.assert_true(
+            network_filter_parameters_service.add(
+                sdk4.types.NetworkFilterParameter(
+                    name=NETWORK_FILTER_PARAMETER1_NAME,
+                    value=vm_gw
+                )
             )
         )
-    )
 
 
 @testlib.with_ovirt_api4
@@ -1541,38 +1580,42 @@ def add_serial_console_vm2(api):
     vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
     if not vm.console.enabled:
         vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-        vm_service.update(
-            sdk4.types.Vm(
-                console=sdk4.types.Console(
-                    enabled=True
+        with test_utils.TestEvent(engine, 35): # USER_UPDATE_VM event
+            vm_service.update(
+                sdk4.types.Vm(
+                    console=sdk4.types.Console(
+                        enabled=True
+                    )
                 )
             )
-        )
+
 
 @testlib.with_ovirt_api4
 def add_instance_type(api):
-    instance_types_service = api.system_service().instance_types_service()
-    nt.assert_true(
-        instance_types_service.add(
-            sdk4.types.InstanceType(
-                name='myinstancetype',
-                description='My instance type',
-                memory=1 * GB,
-                memory_policy=sdk4.types.MemoryPolicy(
-                    max=1 * GB,
-                ),
-                high_availability=sdk4.types.HighAvailability(
-                    enabled=True,
-                ),
-                cpu=sdk4.types.Cpu(
-                    topology=sdk4.types.CpuTopology(
-                        cores=2,
-                        sockets=2,
+    engine = api.system_service()
+    instance_types_service = engine.instance_types_service()
+    with test_utils.TestEvent(engine, 29):
+        nt.assert_true(
+            instance_types_service.add(
+                sdk4.types.InstanceType(
+                    name='myinstancetype',
+                    description='My instance type',
+                    memory=1 * GB,
+                    memory_policy=sdk4.types.MemoryPolicy(
+                        max=1 * GB,
+                    ),
+                    high_availability=sdk4.types.HighAvailability(
+                        enabled=True,
+                    ),
+                    cpu=sdk4.types.Cpu(
+                        topology=sdk4.types.CpuTopology(
+                            cores=2,
+                            sockets=2,
+                        ),
                     ),
                 ),
-            ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_api

@@ -27,6 +27,7 @@ import ovirtsdk4.types as types
 
 from ovirtlago import testlib
 
+import test_utils
 
 # AAA
 AAA_LDAP_USER = 'user1'
@@ -101,15 +102,15 @@ def add_ldap_user(api):
 def add_ldap_group(api):
     engine = api.system_service()
     groups_service = engine.groups_service()
-
-    groups_service.add(
-        types.Group(
-            name=AAA_LDAP_GROUP,
-            domain=types.Domain(
-                name=AAA_LDAP_AUTHZ_PROVIDER
+    with test_utils.TestEvent(engine, 149): # USER_ADD(149)
+        groups_service.add(
+            types.Group(
+                name=AAA_LDAP_GROUP,
+                domain=types.Domain(
+                    name=AAA_LDAP_AUTHZ_PROVIDER
+                ),
             ),
-        ),
-    )
+        )
 
 
 _TEST_LIST = [

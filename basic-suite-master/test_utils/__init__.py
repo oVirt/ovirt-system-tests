@@ -168,5 +168,10 @@ def get_vnic_profiles_service(engine, network_name):
 
 
 def all_jobs_finished(engine, correlation_id):
-    jobs = engine.jobs_service().list(search='correlation_id=%s' % correlation_id)
+    try:
+        jobs = engine.jobs_service().list(
+            search='correlation_id=%s' % correlation_id
+        )
+    except:
+        jobs = engine.jobs_service().list()
     return all(job.status != types.JobStatus.STARTED for job in jobs)

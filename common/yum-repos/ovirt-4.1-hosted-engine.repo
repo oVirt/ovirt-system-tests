@@ -73,7 +73,7 @@ max_connections=10
 
 [centos-ovirt-4.1-el7]
 name=CentOS-$releasever - oVirt 4.1
-baseurl=http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.1/
+baseurl=http://mirror.centos.org/centos/7.4.1708/virt/x86_64/ovirt-4.1/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

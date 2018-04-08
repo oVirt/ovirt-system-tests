@@ -84,8 +84,6 @@ def env(artifacts_path):
         loglevel=logging.DEBUG
     )
 
-    lago_env.start()
-
     # TODO: once a proper solution for repo server w/o OST lago plugin
     # is available, remove this hack and use it instead.
     try:
@@ -94,7 +92,6 @@ def env(artifacts_path):
     finally:
         repo_server.shutdown()
         shutil.move(lago_log_path, artifacts_path)
-        lago_env.destroy()
 
 
 @pytest.fixture(scope='module', autouse=True)

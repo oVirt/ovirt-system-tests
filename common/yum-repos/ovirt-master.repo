@@ -26,6 +26,7 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-ansible-manageiq
 	ovirt-ansible-repositories
 	ovirt-ansible-roles
+	ovirt-ansible-v2v-conversion-host
 	ovirt-ansible-vm-infra
 	ovirt-engine
 	ovirt-engine-api-explorer
@@ -813,4 +814,3 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
-

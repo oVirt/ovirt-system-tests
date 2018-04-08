@@ -37,8 +37,10 @@ get_run_path() {
     avail_shm=$(df --output=avail /dev/shm | sed 1d)
     [[ "$avail_shm" -ge "$RAM_THRESHOLD" ]] && \
         mkdir -p "/dev/shm/ost" && \
-        echo "/dev/shm/ost/deployment-$SUITE" || \
-        echo "$PWD/deployment-$SUITE"
+        echo "/dev/shm/ost/deployment-$SUITE" || {
+            rm -rf "$PWD/deployment-$SUITE"
+            echo "$PWD/deployment-$SUITE"
+        }
 }
 
 print_host_info() {

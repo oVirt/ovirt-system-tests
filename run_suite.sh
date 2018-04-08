@@ -23,6 +23,7 @@ Positional arguments:
 Optional arguments:
     -o,--output PATH
         Path where the new environment will be deployed.
+        PATH shouldn't exist.
 
     -e,--engine PATH
         Path to ovirt-engine appliance iso image
@@ -467,6 +468,12 @@ if "$DO_CLEANUP"; then
     exit $?
 fi
 
+[[ -e "$PREFIX" ]] && {
+    echo "Failed to run OST. \
+        ${PREFIX} shouldn't exist. Please remove it and retry"
+    exit 1
+}
+
 [[ -d "$SUITE" ]] \
 || {
     logger.error "Suite $SUITE not found or is not a dir"
@@ -478,8 +485,6 @@ logger.info "Using $(lago --version 2>&1)"
 check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"
 logger.info  "Environment will be deployed at $PREFIX"
-
-rm -rf "${PREFIX}"
 
 export PYTHONPATH="${PYTHONPATH}:${SUITE}"
 source "${SUITE}/control.sh"

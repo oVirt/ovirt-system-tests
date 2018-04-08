@@ -46,7 +46,7 @@ run_tests() {
     local artifacts_path="${OST_REPO_ROOT}/exported-artifacts"
     local junit_xml_path="${artifacts_path}/junit.xml"
 
-    python -m pytest \
+    python -B -m pytest \
         -s \
         -v \
         --durations=0 \

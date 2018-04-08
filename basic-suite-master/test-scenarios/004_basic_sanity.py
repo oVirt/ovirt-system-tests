@@ -253,15 +253,15 @@ def add_snapshot_for_backup(api):
     )
 
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
-    vm2_snapshots_service.add(backup_snapshot_params)
 
+    correlation_id = uuid.uuid4()
+    vm2_snapshots_service.add(backup_snapshot_params,
+                              query={'correlation_id': correlation_id})
 
-@testlib.with_ovirt_api4
-def verify_backup_snapshot_created(api):
-    engine = api.system_service()
-
-    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
-
+    testlib.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
+    )
     testlib.assert_true_within_long(
         lambda:
         vm2_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK,
@@ -1109,7 +1109,6 @@ _TEST_LIST = [
     verify_add_vm1_from_template,
     add_disks,
     add_snapshot_for_backup,
-    verify_backup_snapshot_created,
     run_vms,
     attach_snapshot_to_backup_vm,
     verify_transient_folder,

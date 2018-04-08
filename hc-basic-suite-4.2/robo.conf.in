@@ -33,7 +33,7 @@ action=create
 vgname=RHS_vg1
 lvname=engine_lv
 lvtype=thick
-size=60GB
+size=100GB
 mount=/rhs/brick1
 
 [lv2]
@@ -43,7 +43,7 @@ poolname=lvthinpool
 lvtype=thinpool
 poolmetadatasize=10MB
 chunksize=1024k
-size=40GB
+size=45GB
 
 [lv3]
 action=create
@@ -62,7 +62,7 @@ vgname=RHS_vg1
 size=19GB
 lvtype=thinlv
 mount=/rhs/brick3
-virtualsize=19GB
+virtualsize=20GB
 
 #Commenting out now, because of issues with guest-fs-freeze
 #[selinux]
@@ -151,4 +151,3 @@ file=/root/generate-hc-answerfile.sh @HOST0@ @HOST1@ @HOST2@ @HOSTEDENGINE@ @DOM
 [shell2:@HOST0@]
 action=execute
 command=hosted-engine --deploy --config-append=/root/hc-answers.conf
-

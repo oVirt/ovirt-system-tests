@@ -258,14 +258,14 @@ includepkgs= cockpit
  sshpass
  python2-crypto
 
-exclude= *i686
+exclude= *i686 ansible
 max_connections=5
 
 [epel-el7]
 name=Extra Packages for Enterprise Linux 7 - x86_64
 baseurl=http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled=1
-includepkgs= python-uinput python-ordereddict python-inotify python-argparse
+includepkgs= ansible python-uinput python-ordereddict python-inotify python-argparse
   python-kitchen livecd-tools spice-html5 mom python-IPy
   python-cheetah python-ecdsa python2-ecdsa
   hystrix-core hystrix-metrics-event-stream rxjava
@@ -282,6 +282,7 @@ enabled=1
 # If you need to exclude a package from this repo please add a comment here
 # explaining why.
 exclude=
+ ansible
  openvswitch-devel
  openvswitch-test
  *-javadoc
@@ -329,6 +330,7 @@ exclude= *-doc
  python-pep8
  python-werkzeug
  rubygem-asciidoctor
+ ansible
 
 [centos-qemu-ev-release-el7]
 name=CentOS-7 - QEMU EV

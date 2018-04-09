@@ -3,4 +3,4 @@ templates:
   host: el7.4-base-1
 hostCount: 2
 system_requirements:
-  disk_space_gb: 75
+  disk_space_gb: 80

@@ -19,7 +19,5 @@ CONF = {
     'core_suites': {
         'basic-suite-master',
     },
-    'exclude': {
-        'he-basic-iscsi-suite-master',
-    }
+    'exclude': set()
 }

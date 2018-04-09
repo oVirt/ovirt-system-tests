@@ -20,7 +20,13 @@ install_dependencies() {
 
 run_static_analysis() {
     flake8 --statistics --show-source "${SUITE}"
-    pylint --rcfile="${SUITE}/pylintrc" --errors-only "${SUITE}/lib" "${SUITE}/tests"
+    pylint \
+        --rcfile="${SUITE}/pylintrc" \
+        --errors-only \
+        "${SUITE}/fixtures" \
+        "${SUITE}/lib" \
+        "${SUITE}/testlib" \
+        "${SUITE}/tests"
 }
 
 setup_env() {

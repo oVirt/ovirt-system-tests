@@ -60,5 +60,5 @@ def engine(fqdn, env, artifacts_path):
 def _get_engine_api(engine):
     try:
         return engine.get_api_v4()
-    except:
+    except Exception:
         return None

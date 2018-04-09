@@ -38,7 +38,8 @@ def ovirt_image_repo(system):
         openstack_image_providers.import_by_name(OVIRT_IMAGE_REPO_NAME)
     else:
         openstack_image_providers.create(name=OVIRT_IMAGE_REPO_NAME,
-                                         url=OVIRT_IMAGE_REPO_URL)
+                                         url=OVIRT_IMAGE_REPO_URL,
+                                         requires_authentication=False)
         openstack_image_providers.wait_until_available()
 
 

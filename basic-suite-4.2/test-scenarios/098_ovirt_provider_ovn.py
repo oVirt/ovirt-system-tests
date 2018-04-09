@@ -19,12 +19,13 @@
 #
 
 import copy
+import urlparse
+from contextlib import contextmanager
+
 import ovirtsdk4
 import requests
-import urlparse
 
 import nose.tools as nt
-from nose import SkipTest
 
 from ovirtlago import testlib
 from ovirtsdk4 import types
@@ -307,17 +308,28 @@ def _get_datacenter_id(api):
     return api.system_service().data_centers_service().list()[0].id
 
 
+@contextmanager
 def _disable_auto_sync(api, provider_id):
     provider_service = (
         api.system_service()
            .openstack_network_providers_service()
            .provider_service(provider_id)
     )
+    original_auto_sync = provider_service.get().auto_sync
     provider_service.update(
         types.OpenStackNetworkProvider(
             auto_sync=False
         )
     )
+    try:
+        yield
+    finally:
+        if original_auto_sync:
+            provider_service.update(
+                types.OpenStackNetworkProvider(
+                    auto_sync=original_auto_sync
+                )
+            )
 
 
 def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
@@ -414,47 +426,47 @@ def use_ovn_provider(prefix, api):
     engine = api.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
-    _disable_auto_sync(api, provider_id)
 
     token_id = _get_auth_token(engine_ip)
 
     _validate_db_empty(token_id, engine_ip)
 
-    network1_id = _add_network(
-        token_id,
-        engine_ip,
-        NETWORK_1,
-    )
+    with _disable_auto_sync(api, provider_id):
+        network1_id = _add_network(
+            token_id,
+            engine_ip,
+            NETWORK_1,
+        )
 
-    subnet1_id = _add_subnet(
-        token_id,
-        engine_ip,
-        SUBNET_1,
-        network1_id,
-    )
+        subnet1_id = _add_subnet(
+            token_id,
+            engine_ip,
+            SUBNET_1,
+            network1_id,
+        )
 
-    port1_id = _add_port(
-        token_id,
-        engine_ip,
-        PORT_1,
-        network1_id,
-    )
+        port1_id = _add_port(
+            token_id,
+            engine_ip,
+            PORT_1,
+            network1_id,
+        )
 
-    _validate_network(token_id, engine_ip, NETWORK_1, network1_id)
-    _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
-    _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
+        _validate_network(token_id, engine_ip, NETWORK_1, network1_id)
+        _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
+        _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
 
-    datacenter_id = _get_datacenter_id(api)
-    _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
-    ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)
-    _add_network_to_cluster(api, datacenter_id, ovirt_network_id)
-    _hotplug_network_to_vm(api, VM0_NAME, NETWORK_1, IFACE_NAME)
-    _remove_iface_from_vm(api, VM0_NAME, IFACE_NAME)
-    _remove_network_from_ovirt(api, datacenter_id, ovirt_network_id)
+        datacenter_id = _get_datacenter_id(api)
+        _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
+        ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)
+        _add_network_to_cluster(api, datacenter_id, ovirt_network_id)
+        _hotplug_network_to_vm(api, VM0_NAME, NETWORK_1, IFACE_NAME)
+        _remove_iface_from_vm(api, VM0_NAME, IFACE_NAME)
+        _remove_network_from_ovirt(api, datacenter_id, ovirt_network_id)
 
-    _delete_port(token_id, engine_ip, port1_id)
-    _delete_subnet(token_id, engine_ip, subnet1_id)
-    _delete_network(token_id, engine_ip, network1_id)
+        _delete_port(token_id, engine_ip, port1_id)
+        _delete_subnet(token_id, engine_ip, subnet1_id)
+        _delete_network(token_id, engine_ip, network1_id)
 
     _validate_db_empty(token_id, engine_ip)
 

@@ -667,8 +667,8 @@ includepkgs = cockpit
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
-exclude = ansible
-includepkgs = lyx-fonts
+includepkgs = ansible
+	lyx-fonts
 	python-qpid-proton
 	python-unittest2
 	python2-mimeparse
@@ -681,8 +681,8 @@ name = CentOS-7 - oVirt 4.2
 baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
-includepkgs = ansible
-	archaius-core
+exclude = ansible
+includepkgs = archaius-core
 	ebay-cors-filter
 	gofer
 	hystrix-core

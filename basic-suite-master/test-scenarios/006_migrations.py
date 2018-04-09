@@ -80,6 +80,9 @@ def migrate_vm(prefix, api):
     dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
                        if h.name() != src_host])[0]
 
+    print('source host: {}'.format(src_host))
+    print('destination host: {}'.format(dst_host))
+
     # migrate() currently only returns None, but checks for errors internally
     vm_service.migrate(
         host=Host(

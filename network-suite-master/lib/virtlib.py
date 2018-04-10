@@ -150,13 +150,16 @@ class Vm(SDKRootEntity):
         :type template: string
         :type stateless: boolean
         """
+        MB256 = 256 * 2 ** 20
 
         sdk_type = types.Vm(
             name=vm_name,
             cluster=cluster.get_sdk_type(),
             template=types.Template(name=template),
-            stateless=stateless
-            )
+            stateless=stateless,
+            memory=MB256,
+            memory_policy=types.MemoryPolicy(guaranteed=MB256 // 2)
+        )
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):

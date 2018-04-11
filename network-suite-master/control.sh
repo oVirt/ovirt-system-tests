@@ -9,7 +9,7 @@ install_dependencies() {
     pip install -U pip
     pip install flake8==3.1.0
     pip install pylint==1.6.4
-    pip install pytest==3.3
+    pip install pytest==3.5
 
     # python2-devel gcc are dependencies of shade
     yum install -y ansible python2-devel gcc

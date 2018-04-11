@@ -20,6 +20,9 @@
 
 import collections
 import functools
+import ovirtsdk4.types as types
+import uuid
+from ovirtlago import testlib
 
 # Taken from https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
 class memoized(object):
@@ -158,3 +161,40 @@ def quote_search_string(s):
         raise ValueError(
             'Quotation marks currently can not be appear in search phrases')
     return '"' + s + '"'
+
+def all_jobs_finished(engine, correlation_id):
+    try:
+        jobs = engine.jobs_service().list(
+            search='correlation_id=%s' % correlation_id
+        )
+    except:
+        jobs = engine.jobs_service().list()
+    return all(job.status != types.JobStatus.STARTED for job in jobs)
+
+
+def assert_finished_within(
+    func,
+    engine,
+    timeout,
+    allowed_exceptions=None,
+    *args,
+    **kwargs
+):
+
+    if 'query' in kwargs:
+        if 'correlation_id' not in kwargs['query']:
+            kwargs['query']['correlation_id'] = uuid.uuid4()
+    else:
+        kwargs['query'] = {'correlation_id': uuid.uuid4()}
+
+    func(*args, **kwargs)
+
+    testlib.assert_true_within(
+        lambda: all_jobs_finished(engine, kwargs['query']['correlation_id']),
+        timeout
+    )
+
+assert_finished_within_long = functools.partial(
+    assert_finished_within,
+    timeout=testlib.LONG_TIMEOUT
+)

@@ -23,9 +23,10 @@ import nose.tools as nt
 from nose import SkipTest
 from ovirtlago import testlib
 from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
+import json
 
 import test_utils
-from test_utils import network_utils_v4
+from test_utils import network_utils_v4, assert_finished_within_long
 
 
 DC_NAME = 'test-dc'
@@ -68,6 +69,7 @@ def prepare_migration_vlan(api):
 def migrate_vm(prefix, api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm_id = vm_service.get().id
     hosts_service = engine.hosts_service()
 
     def _current_running_host():
@@ -80,12 +82,34 @@ def migrate_vm(prefix, api):
     dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
                        if h.name() != src_host])[0]
 
-    # migrate() currently only returns None, but checks for errors internally
-    vm_service.migrate(
-        host=Host(
-            name=dst_host
-        )
+    print('source host: {}'.format(src_host))
+    print('destination host: {}'.format(dst_host))
+
+    assert_finished_within_long(
+        vm_service.migrate,
+        engine,
+        host=Host(name=dst_host)
     )
+
+    # Verify that VDSM cleaned the vm in the source host
+    def vm_is_not_on_host():
+        src_host_obj = [
+            h for h in prefix.virt_env.host_vms()
+            if h.name() == src_host
+        ][0]
+
+        ret = src_host_obj.ssh(['vdsm-client', 'Host', 'getVMList'])
+        if ret:
+            raise RuntimeError('Failed to call vdsm-client in {}, {}'.format(
+                src_host, ret.err
+                )
+            )
+
+        parsed_output = json.loads(ret.out)
+
+        return vm_id not in parsed_output
+
+    testlib.assert_true_within_short(vm_is_not_on_host)
 
     testlib.assert_true_within_short(
         lambda: vm_service.get().status == VmStatus.UP

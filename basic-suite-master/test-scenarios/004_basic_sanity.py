@@ -1082,6 +1082,7 @@ def verify_glance_import(api):
 
 @testlib.with_ovirt_api4
 def reconstruct_master_domain(api):
+    raise SkipTest('TODO:Handle case where tasks are running')
     system_service = api.system_service()
     dc_service = test_utils.data_center_service(system_service, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()

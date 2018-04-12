@@ -104,6 +104,12 @@ class VnicProfile(SDKRootEntity):
     def _get_parent_service(self, system):
         return system.vnic_profiles_service
 
+    def filter_id(self):
+        network_filter = self.get_sdk_type().network_filter
+        if network_filter:
+            return network_filter.id
+        return None
+
 
 class Vnic(SDKSubEntity):
 

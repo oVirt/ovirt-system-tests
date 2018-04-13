@@ -152,6 +152,13 @@ def get_vm_snapshots_service(engine, vm_name):
     return vm_service.snapshots_service()
 
 
+def get_snapshot(engine, vm_name, description):
+    snapshots_service = get_vm_snapshots_service(engine, vm_name)
+    return next((snap for snap in snapshots_service.list()
+                 if snap.description == description),
+                None)
+
+
 def quote_search_string(s):
     # TODO: this function should eventually be able to format strings in
     # a way that they will be properly passed on via the sdk to Engine.

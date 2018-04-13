@@ -338,6 +338,13 @@ def complete_hosts_setup(prefix):
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+        host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level=DEBUG'])
+        for logger in ('root', 'vds', 'virt',):
+            host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level=DEBUG',
+                      'name={}'.format(logger)])
+            sed_expr = ('/logger_{}/,/level=/s/level=INFO/level=DEBUG/'
+                        .format(logger))
+            host.ssh(['sed', '-i', sed_expr, '/etc/vdsm/logger.conf'])
 
 
 @testlib.with_ovirt_prefix

@@ -6,7 +6,7 @@ prep_suite () {
 
 install_dependencies() {
     yum install -y python-pip
-    pip install -U pip
+    pip install -U pip==9.0.3
     pip install flake8==3.1.0
     pip install pylint==1.6.4
     pip install pytest==3.5
@@ -15,7 +15,7 @@ install_dependencies() {
     yum install -y ansible python2-devel gcc
 
     # dependency of ansible's os_* modules
-    pip install shade
+    pip install shade==1.27.1
 }
 
 run_static_analysis() {

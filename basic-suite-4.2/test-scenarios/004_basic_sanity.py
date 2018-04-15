@@ -293,7 +293,7 @@ def add_directlun(prefix):
             type=types.StorageType.ISCSI,
             logical_units=luns,
         ),
-        sgio=types.ScsiGenericIO.UNFILTERED,
+        # sgio=types.ScsiGenericIO.UNFILTERED,
     )
 
     api = prefix.virt_env.engine_vm().get_api_v4()

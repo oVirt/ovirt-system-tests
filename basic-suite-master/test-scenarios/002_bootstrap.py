@@ -332,6 +332,9 @@ def verify_add_all_hosts(prefix):
         timeout=constants.ADD_HOST_TIMEOUT
     )
 
+
+@testlib.with_ovirt_prefix
+def complete_hosts_setup(prefix):
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
@@ -1690,6 +1693,7 @@ _TEST_LIST = [
     add_instance_type,
     add_event,
     verify_add_all_hosts,
+    complete_hosts_setup,
     add_secondary_storage_domains,
     add_vm2_lease,
     import_templates,

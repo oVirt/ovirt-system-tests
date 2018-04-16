@@ -56,5 +56,15 @@ def test_connect_vm_to_external_network(ovirt_external_network, system,
 
         vm_0.run()
 
-        assert any(vm0_vnic_0.mac_address == port.mac_address
-                   for port in default_ovn_provider_client.list_ports())
+        ovn_port = _lookup_port_by_device_id(
+            vm0_vnic_0.id, default_ovn_provider_client)
+        assert ovn_port
+        assert vm0_vnic_0.mac_address == ovn_port.mac_address
+
+
+def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):
+    for port in default_ovn_provider_cloud.list_ports():
+        device_id = port.get('device_id')
+        if device_id and device_id == vnic_id:
+            return port
+    return None

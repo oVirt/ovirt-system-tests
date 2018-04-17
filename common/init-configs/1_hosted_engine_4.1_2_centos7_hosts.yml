@@ -20,7 +20,7 @@ domains:
     nics:
       - net: lago-{{ env.suite_name }}-net-management
     disks:
-      - template_name: el7.4-base-1
+      - template_name: {{ templates.storage }}
         type: template
         name: root
         dev: vda
@@ -59,7 +59,7 @@ domains:
     nics:
       - net: lago-{{ env.suite_name }}-net-management
     disks:
-      - template_name: el7.4-base-1
+      - template_name: {{ templates.host }}
         type: template
         name: root
         dev: vda

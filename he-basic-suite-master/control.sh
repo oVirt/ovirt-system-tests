@@ -47,7 +47,7 @@ run_suite(){
     local curdir="${PWD?}"
     declare failed=false
     env_init \
-        "http://templates.ovirt.org/repo/repo.metadata" \
+        "$1" \
         "$suite/LagoInitFile"
     cd $PREFIX
     lago ovirt reposetup \

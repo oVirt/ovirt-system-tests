@@ -25,32 +25,36 @@ import ovirtsdk4.types as types
 import uuid
 from ovirtlago import testlib
 
+
 # Taken from https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
 class memoized(object):
-   '''Decorator. Caches a function's return value each time it is called.
-   If called later with the same arguments, the cached value is returned
-   (not reevaluated).
-   '''
-   def __init__(self, func):
-      self.func = func
-      self.cache = {}
-   def __call__(self, *args):
-      if not isinstance(args, collections.Hashable):
-         # uncacheable. a list, for instance.
-         # better to not cache than blow up.
-         return self.func(*args)
-      if args in self.cache:
-         return self.cache[args]
-      else:
-         value = self.func(*args)
-         self.cache[args] = value
-         return value
-   def __repr__(self):
-      '''Return the function's docstring.'''
-      return self.func.__doc__
-   def __get__(self, obj, objtype):
-      '''Support instance methods.'''
-      return functools.partial(self.__call__, obj)
+    '''Decorator. Caches a function's return value each time it is called.
+    If called later with the same arguments, the cached value is returned
+    (not reevaluated).
+    '''
+    def __init__(self, func):
+        self.func = func
+        self.cache = {}
+
+    def __call__(self, *args):
+        if not isinstance(args, collections.Hashable):
+            # uncacheable. a list, for instance.
+            # better to not cache than blow up.
+            return self.func(*args)
+        if args in self.cache:
+            return self.cache[args]
+        else:
+            value = self.func(*args)
+            self.cache[args] = value
+            return value
+
+    def __repr__(self):
+        '''Return the function's docstring.'''
+        return self.func.__doc__
+
+    def __get__(self, obj, objtype):
+        '''Support instance methods.'''
+        return functools.partial(self.__call__, obj)
 
 
 @memoized
@@ -102,7 +106,7 @@ def get_template_service(engine, template_name):
 
 @memoized
 def get_pool_service(engine, pool_name):
-    vm_pools_service= engine.vm_pools_service()
+    vm_pools_service = engine.vm_pools_service()
     pool = vm_pools_service.list(search='name={}'.format(pool_name))[0]
     return vm_pools_service.pool_service(pool.id)
 
@@ -163,6 +167,7 @@ def quote_search_string(s):
             'Quotation marks currently can not be appear in search phrases')
     return '"' + s + '"'
 
+
 @memoized
 def get_vnic_profiles_service(engine, network_name):
     networks_service = engine.networks_service()
@@ -202,6 +207,7 @@ def assert_finished_within(
         timeout
     )
 
+
 assert_finished_within_long = functools.partial(
     assert_finished_within,
     timeout=testlib.LONG_TIMEOUT
@@ -224,6 +230,6 @@ def TestEvent(engine, event_id):
             event_id = [event_id]
         for e_id in event_id:
             testlib.assert_true_within_long(
-            lambda:
-            any(e.code == e_id for e in events.list(from_=last_event))
-        )
+               lambda:
+               any(e.code == e_id for e in events.list(from_=last_event))
+            )

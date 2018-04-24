@@ -11,7 +11,7 @@ RPMs you built for your patches ( see [build-on-demand][1] on how to build RPMs 
 
 Example of running a suite locally with a custom repo: (from the OST root dir)
 ```
-./run_suite.sh -s http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/1/ basic_suite_master
+./run_suite.sh -s http://jenkins.ovirt.org/job/vdsm_master_build-artifacts-on-demand-el7-x86_64/1/ basic-suite-master
 ```
 
 On Jenkins

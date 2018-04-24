@@ -131,6 +131,13 @@ class Cluster(SDKRootEntity):
             networks.append(cluster_network)
         return networks
 
+    def host_ids(self):
+        return [
+            sdk_host.id
+            for sdk_host in self._parent_sdk_system.hosts_service.list()
+            if sdk_host.cluster.id == self.id
+        ]
+
     def mgmt_network(self):
         return next(network for network in self.networks() if
                     types.NetworkUsage.MANAGEMENT in network.usages)

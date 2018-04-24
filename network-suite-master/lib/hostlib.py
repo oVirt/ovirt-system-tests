@@ -87,6 +87,10 @@ class Host(SDKRootEntity):
     def name(self):
         return self.get_sdk_type().name
 
+    @property
+    def is_not_spm(self):
+        return self.get_sdk_type().spm.status == types.SpmStatus.NONE
+
     def create(self, cluster, vm):
         """
         :param cluster: clusterlib.Cluster
@@ -192,6 +196,12 @@ class Host(SDKRootEntity):
                       exec_func_args=(),
                       success_criteria=self._host_up_status_success_criteria,
                       timeout=timeout)
+
+    def wait_for_non_operational_status(self):
+        NONOP = HostStatus.NON_OPERATIONAL
+        syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s == NONOP)
 
     def wait_for_maintenance_status(self):
         syncutil.sync(exec_func=lambda: self.get_sdk_type().status,

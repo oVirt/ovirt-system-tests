@@ -108,6 +108,7 @@ class Host(SDKRootEntity):
     def deactivate(self):
         self.wait_for_up_status()
         syncutil.sync(exec_func=self._deactivate,
+                      timeout=3 * 60,
                       exec_func_args=(),
                       success_criteria=lambda s: s)
 

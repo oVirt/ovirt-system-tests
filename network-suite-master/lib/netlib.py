@@ -98,7 +98,7 @@ class VnicProfile(SDKRootEntity):
         return self.get_sdk_type().name
 
     def create(self, name, network):
-        sdk_type = types.VnicProfile(name=name, network=network)
+        sdk_type = types.VnicProfile(name=name, network=network.get_sdk_type())
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):

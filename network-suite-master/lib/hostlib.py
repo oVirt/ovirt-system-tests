@@ -221,18 +221,19 @@ class Host(SDKRootEntity):
         return list(self.service.network_attachments_service().list())
 
     def _deactivate(self):
+        """Some host states are not represented by dedicated status (e.g.
+        SPM contention). Although a status of a host may be 'Up', switching
+        it to maintenance mode is not possible in some of these states.
         """
-        There is no dedicated status for when a host is still processing
-        asynchronous tasks. Although the status of a host may be 'Up',
-        this currently isn't enough to determine whether a host can be
-        deactivated.
-        """
+
         HAS_RUNNING_TASKS = 'Host has asynchronous running tasks'
+        HOST_IS_CONTENDING = 'Host is contending'
 
         try:
             self._service.deactivate()
             return True
-        except ovirtsdk4.Error as err:
-            if HAS_RUNNING_TASKS in err.message:
+        except ovirtsdk4.Error as e:
+            msg = e.message
+            if HAS_RUNNING_TASKS in msg or HOST_IS_CONTENDING in msg:
                 return False
             raise

@@ -187,7 +187,7 @@ def add_directlun(prefix):
                 )
             ]
         ),
-        sgio='unfiltered',
+        # sgio='unfiltered',
     )
 
     api = prefix.virt_env.engine_vm().get_api()

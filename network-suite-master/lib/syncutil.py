@@ -25,7 +25,13 @@ DEFAULT_TIMEOUT = 120
 
 
 class Timeout(Exception):
-    pass
+
+    @property
+    def last_result(self):
+        return self.args[0]
+
+    def __str__(self):
+        return "Last evaluated result: {}".format(self.args[0])
 
 
 def sync(exec_func, exec_func_args, success_criteria, timeout=DEFAULT_TIMEOUT):
@@ -35,7 +41,7 @@ def sync(exec_func, exec_func_args, success_criteria, timeout=DEFAULT_TIMEOUT):
         if success_criteria(result):
             return
         time.sleep(3)
-    raise Timeout()
+    raise Timeout(result)
 
 
 def _monothonic_time():

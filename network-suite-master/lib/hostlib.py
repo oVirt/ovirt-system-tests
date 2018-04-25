@@ -106,6 +106,8 @@ class Host(SDKRootEntity):
         self._service.activate()
 
     def deactivate(self):
+        with self.wait_for_up_status():
+            pass
         syncutil.sync(exec_func=self._deactivate,
                       exec_func_args=(),
                       success_criteria=lambda s: s)

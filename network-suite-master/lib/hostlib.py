@@ -190,8 +190,7 @@ class Host(SDKRootEntity):
         if host_status == HostStatus.UP:
             return True
         if host_status in (HostStatus.NON_OPERATIONAL,
-                           HostStatus.INSTALL_FAILED,
-                           HostStatus.NON_RESPONSIVE):
+                           HostStatus.INSTALL_FAILED):
             raise HostStatusError('{} is {}'.format(self.name, host_status))
         return False
 

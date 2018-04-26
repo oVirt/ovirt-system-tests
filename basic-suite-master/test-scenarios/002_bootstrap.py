@@ -1449,6 +1449,7 @@ def configure_high_perf_vm2(api):
     topology = vm2_service.get().cpu.topology
     total_vcpus = topology.sockets * topology.cores * topology.threads
     total_memory = vm2_service.get().memory / MB
+    raise SkipTest('Skipping until vNUMA and pinning to hosts work together')
     for i in xrange(total_vcpus):
         nt.assert_true(
             vm2_numanodes_service.add(

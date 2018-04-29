@@ -36,11 +36,17 @@ class Timeout(Exception):
 
 def sync(exec_func, exec_func_args, success_criteria, timeout=DEFAULT_TIMEOUT):
     end_time = _monothonic_time() + timeout
+
+    result = exec_func(*exec_func_args)
+    if success_criteria(result):
+        return
+
     while _monothonic_time() < end_time:
+        time.sleep(3)
         result = exec_func(*exec_func_args)
         if success_criteria(result):
             return
-        time.sleep(3)
+
     raise Timeout(result)
 
 

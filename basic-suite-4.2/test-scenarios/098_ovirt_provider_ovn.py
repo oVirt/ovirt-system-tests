@@ -360,7 +360,7 @@ def _get_ovirt_network(api, datacenter_id, network_name):
         if network.name == NETWORKS[network_name]['name']:
             return network.id
     raise Exception(
-        'External network % not found' % NETWORKS[network_name]['name']
+        'External network %s not found' % NETWORKS[network_name]['name']
     )
 
 

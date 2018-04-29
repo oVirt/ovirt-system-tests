@@ -1244,9 +1244,8 @@ def download_engine_certs(prefix):
     def _download_file(url, path=None, compare_string=None):
         conn.request("GET", url)
         resp = conn.getresponse()
-        nt.assert_true(
-            resp.status == 200
-        )
+        if resp.status != 200:
+            return False
         data = resp.read()
         if path:
             with open(path, 'wb') as outfile:
@@ -1255,17 +1254,24 @@ def download_engine_certs(prefix):
             nt.assert_true(
                 data == compare_string
             )
+        return True
 
-    _download_file(engine_ca_url, 'engine-ca.pem')
+    testlib.assert_true_within_short(
+        lambda: _download_file(engine_ca_url, 'engine-ca.pem')
+    )
     # TODO: verify certificate. Either use it, or run:
     # 'openssl x509 -in engine-ca.pem -text -noout'
 
-    _download_file(engine_ssh_url, 'engine-rsa.pub')
+    testlib.assert_true_within_short(
+        lambda: _download_file(engine_ssh_url, 'engine-rsa.pub')
+    )
     # TODO: verify public key. Either use it, or run:
     # 'ssh-keygen -l -f engine-rsa.pub'
 
     healthy = "DB Up!Welcome to Health Status!"
-    _download_file('/ovirt-engine/services/health', path=None, compare_string=healthy)
+    testlib.assert_true_within_short(
+        lambda: _download_file('/ovirt-engine/services/health', path=None, compare_string=healthy)
+    )
 
     conn.close()
 

@@ -23,7 +23,13 @@ run_suite () {
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"
         env_run_test "$scenario" || failed=true
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
+        if [[ -n "$OST_SKIP_COLLECT" ]]; then
+            if [[ "$failed" == "true" ]]; then
+                env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
+            fi
+        else
+            env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
+        fi
         if $failed; then
             echo "@@@@ ERROR: Failed running $scenario"
             return 1

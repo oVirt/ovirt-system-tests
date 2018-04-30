@@ -7,20 +7,56 @@
     state: absent
     name: router0
 
-- name: Remove simple_net_subnet
-  os_subnet:
-    cloud: "{{ cloud_name }}"
-    state: absent
-    name: simple_net_subnet
-
-- name: Remove port simple_net_port2
+- name: Remove port net10_port1
   os_port:
     cloud: "{{ cloud_name }}"
     state: absent
-    name: simple_net_port2
+    name: net10_port1
 
-- name: Remove simple network
+- name: Remove net10_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net10_subnet1
+
+- name: Remove network 10
   os_network:
     cloud: "{{ cloud_name }}"
     state: absent
-    name: simple_net
+    name: net10
+
+- name: Remove port net11_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net11_port1
+
+- name: Remove net11_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net11_subnet1
+
+- name: Remove network 2
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net11
+
+- name: Remove port net12_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net12_port1
+
+- name: Remove net12_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net12_subnet1
+
+- name: Remove network 12
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: absent
+    name: net12

@@ -1,24 +1,87 @@
 ---
-- name: Create simple network
+- name: Create network 10
   os_network:
     cloud: "{{ cloud_name }}"
     state: present
-    name: simple_net
-  register: simple_net
+    name: net10
+  register: net10
 
-- name: Create simple_net_subnet
+- name: Create net10_subnet 1
   os_subnet:
     cloud: "{{ cloud_name }}"
     state: present
-    network_name: "{{ simple_net.id }}"
-    name: simple_net_subnet
+    network_name: "{{ net10.id }}"
+    name: net10_subnet1
     ip_version: 4
     cidr: 10.10.0.0/24
     gateway_ip: 10.10.0.1
     enable_dhcp: yes
-    dns_nameservers:
-      - 8.8.8.8
-  register: simple_net_subnet
+  register: net10_subnet1
+
+- name: Create port net10_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net10_port1
+    network: net10
+    fixed_ips:
+      - ip_address: 10.10.0.2
+
+- name: Create network 11
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net11
+  register: net11
+
+- name: Create net11_subnet 1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net11.id }}"
+    name: net11_subnet1
+    ip_version: 4
+    cidr: 10.11.0.0/24
+    gateway_ip: 10.11.0.1
+    enable_dhcp: yes
+  register: net11_subnet1
+
+- name: Create port net11_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net11_port1
+    network: net11
+    fixed_ips:
+      - ip_address: 10.11.0.2
+
+- name: Create network 12
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net12
+  register: net12
+
+- name: Create net12_subnet 1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net12.id }}"
+    name: net12_subnet1
+    ip_version: 4
+    cidr: 10.12.0.0/24
+    gateway_ip: 10.12.0.1
+    enable_dhcp: yes
+  register: net12_subnet1
+
+- name: Create port net12_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net12_port1
+    network: net12
+    fixed_ips:
+      - ip_address: 10.12.0.2
 
 - name: Create router0
   os_router:
@@ -26,15 +89,6 @@
     state: present
     name: router0
     interfaces:
-        - simple_net_subnet
-
-- name: Create port simple_net_port2
-  os_port:
-    cloud: "{{ cloud_name }}"
-    state: present
-    name: simple_net_port2
-    network: simple_net
-    # mac_address is required by ovirt-provider-ovn
-    mac_address: '52:54:00:78:8f:90'
-    fixed_ips:
-      - ip_address: 10.10.0.2
+        - net10_subnet1
+        - net11_subnet1
+        - net12_subnet1

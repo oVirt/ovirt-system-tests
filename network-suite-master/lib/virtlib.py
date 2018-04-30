@@ -129,9 +129,7 @@ class Vm(SDKRootEntity):
         except ovirtsdk4.NotFoundError:
             pass
 
-    @contextmanager
     def wait_for_disk_up_status(self, disk, disk_attachment_id):
-        yield
         disk.wait_for_up_status()
         self._sync_disk_attachment(disk_attachment_id)
 

@@ -74,8 +74,8 @@ def vm_0(system, default_cluster, default_storage_domain,
         _attach_new_vnic(vm, ovirtmgmt_vnic_profile)
 
         disk_att_id = vm.attach_disk(disk=disk)
-        with vm.wait_for_disk_up_status(disk, disk_att_id):
-            yield vm
+        vm.wait_for_disk_up_status(disk, disk_att_id)
+        yield vm
 
 
 @pytest.fixture

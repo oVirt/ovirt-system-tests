@@ -82,6 +82,15 @@ def openstack_client_config(engine):
 
 
 @pytest.fixture(scope='session')
+def default_ovn_provider_client(openstack_client_config):
+    '''
+    Returns a shade connection configured to connect
+    to the default ovn provider.
+    '''
+    return shade.openstack_cloud(cloud=DEFAULT_CLOUD)
+
+
+@pytest.fixture(scope='session')
 def default_ovn_provider(system):
     openstack_network_provider = OpenStackNetworkProvider(system)
     openstack_network_provider.import_by_name(DEFAULT_OVN_PROVIDER_NAME)
@@ -90,12 +99,11 @@ def default_ovn_provider(system):
 
 
 @pytest.fixture(scope='session')
-def ovn_network(openstack_client_config, default_ovn_provider):
+def ovn_network(default_ovn_provider, default_ovn_provider_client):
     network_name = DEFAULT_OVN_NETWORK_NAME
-    cloud = shade.openstack_cloud(cloud=DEFAULT_CLOUD)
-    network = cloud.create_network(network_name)
+    network = default_ovn_provider_client.create_network(network_name)
     try:
-        subnet = cloud.create_subnet(
+        subnet = default_ovn_provider_client.create_subnet(
             network.id,
             cidr=DEFAULT_OVN_SUBNET_CIDR,
             subnet_name=DEFAULT_OVN_SUBNET_NAME,
@@ -103,9 +111,9 @@ def ovn_network(openstack_client_config, default_ovn_provider):
             gateway_ip=DEFAULT_OVN_SUBNET_GW,
         )
         yield network
-        cloud.delete_subnet(subnet.id)
+        default_ovn_provider_client.delete_subnet(subnet.id)
     finally:
-        cloud.delete_network(network.id)
+        default_ovn_provider_client.delete_network(network.id)
 
 
 @pytest.fixture(scope='session')

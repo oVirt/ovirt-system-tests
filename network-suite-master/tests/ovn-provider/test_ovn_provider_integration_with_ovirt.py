@@ -17,9 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import shade
-
-from fixtures.providers import DEFAULT_CLOUD
 from lib import clusterlib
 from lib import netlib
 from lib import templatelib
@@ -33,6 +30,7 @@ VNIC0_MAC = '00:1a:4a:17:15:50'
 
 def test_connect_vm_to_external_network(ovirt_external_network, system,
                                         default_cluster,
+                                        default_ovn_provider_client,
                                         default_storage_domain):
     cluster_network = clusterlib.ClusterNetwork(default_cluster)
     cluster_network.assign(ovirt_external_network)
@@ -58,6 +56,5 @@ def test_connect_vm_to_external_network(ovirt_external_network, system,
 
         vm_0.run()
 
-        cloud = shade.openstack_cloud(cloud=DEFAULT_CLOUD)
         assert any(vm0_vnic_0.mac_address == port.mac_address
-                   for port in cloud.list_ports())
+                   for port in default_ovn_provider_client.list_ports())

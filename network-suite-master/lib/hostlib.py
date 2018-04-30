@@ -152,6 +152,17 @@ class Host(SDKRootEntity):
             check_connectivity=True
         )
 
+    def remove_networks(self, removed_network_names):
+        removed_attachments = [
+            attachment for attachment in self._get_existing_attachments()
+            if attachment.network.name in removed_network_names
+        ]
+
+        return self.service.setup_networks(
+            removed_network_attachments=removed_attachments,
+            check_connectivity=True
+        )
+
     def networks_in_sync(self, networks=None):
         if networks is None:
             attachments = self._get_existing_attachments()

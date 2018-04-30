@@ -106,8 +106,7 @@ class Host(SDKRootEntity):
         self._service.activate()
 
     def deactivate(self):
-        with self.wait_for_up_status():
-            pass
+        self.wait_for_up_status()
         syncutil.sync(exec_func=self._deactivate,
                       exec_func_args=(),
                       success_criteria=lambda s: s)
@@ -116,8 +115,8 @@ class Host(SDKRootEntity):
         self.deactivate()
         self.wait_for_maintenance_status()
         self.update(cluster=cluster.get_sdk_type())
-        with self.wait_for_up_status():
-            self.activate()
+        self.activate()
+        self.wait_for_up_status()
 
     def get_cluster(self):
         cluster = clusterlib.Cluster(self._parent_sdk_system)
@@ -172,9 +171,7 @@ class Host(SDKRootEntity):
     def sync_all_networks(self):
         self.service.sync_all_networks()
 
-    @contextlib.contextmanager
     def wait_for_up_status(self, timeout=5 * 60):
-        yield
         syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
                       exec_func_args=(),
                       success_criteria=self._host_up_status_success_criteria,

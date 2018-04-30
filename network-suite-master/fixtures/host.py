@@ -59,8 +59,7 @@ def host_1_up(host_1):
 
 
 def _wait_for_host_install(host):
-    with host.wait_for_up_status(timeout=15 * 60):
-        pass
+    host.wait_for_up_status(timeout=15 * 60)
     # TODO: There's currently a NPE (bz#1514853) in Engine's
     # scheduling logic (CPU usage). Once it is resolved, remove this
     time.sleep(20)

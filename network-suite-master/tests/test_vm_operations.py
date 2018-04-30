@@ -48,8 +48,7 @@ def _attach_new_vnic(vm, vnic_profile):
     NIC_NAME = 'nic1'
     vnic = netlib.Vnic(vm)
     vnic.create(name=NIC_NAME, vnic_profile=vnic_profile)
-    with vm.wait_for_down_status():
-        pass
+    vm.wait_for_down_status()
 
 
 @pytest.fixture

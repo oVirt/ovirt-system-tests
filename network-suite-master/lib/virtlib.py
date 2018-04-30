@@ -107,8 +107,8 @@ class Vm(SDKRootEntity):
         return disk_attachment.id
 
     def remove(self):
-        with self.wait_for_down_status():
-            self.stop()
+        self.stop()
+        self.wait_for_down_status()
         try:
             self._avoid_unknown_dc_status_bz_1532578()
             super(Vm, self).remove()
@@ -138,9 +138,7 @@ class Vm(SDKRootEntity):
     def wait_for_up_status(self):
         self._wait_for_status(types.VmStatus.UP)
 
-    @contextmanager
     def wait_for_down_status(self):
-        yield
         self._wait_for_status(types.VmStatus.DOWN)
 
     def create(self, vm_name, cluster, template, stateless=False):

@@ -108,8 +108,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
-        with vm_0.wait_for_down_status():
-            pass
+        vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
@@ -120,7 +119,6 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         vm_0_vnic_0.create(name=NIC_NAME_1,
                            vnic_profile=ovirtmgmt_vnic_profile,
                            mac_addr=MAC_ADDR_1)
-
         vm_0.stop()
         vm_0.wait_for_down_status()
 
@@ -197,8 +195,8 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
         _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-        with vm_0.wait_for_down_status():
-            vm_0.stop()
+        vm_0.stop()
+        vm_0.wait_for_down_status()
 
         snapshot.restore()
 
@@ -267,8 +265,7 @@ def _create_vnic(vm, vnic_name, ovirtmgmt_vnic_profile, mac_addr=None):
     vnic.create(name=vnic_name,
                 vnic_profile=ovirtmgmt_vnic_profile,
                 mac_addr=mac_addr)
-    with vm.wait_for_down_status():
-        pass
+    vm.wait_for_down_status()
 
 
 def _create_snapshot(vm):

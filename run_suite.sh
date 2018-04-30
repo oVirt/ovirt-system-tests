@@ -144,7 +144,7 @@ env_repo_setup () {
     if [[ -e "$CUSTOM_REPOSYNC" ]]; then
         reposync_conf="$CUSTOM_REPOSYNC"
     fi
-    if [[ -n "$SKIP_SYNC" ]]; then
+    if [[ -n "$OST_SKIP_SYNC" ]]; then
         skipsync="--skip-sync"
     else
         skipsync=""

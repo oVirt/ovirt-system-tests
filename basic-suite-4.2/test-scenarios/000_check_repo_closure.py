@@ -113,8 +113,8 @@ def check_repo_closure():
     """Find reposync config file(s) and check repoclosure against the internal
      repo with the repos in the config(s) as lookaside repos
     """
-    if os.getenv('SKIP_SYNC', False):
-        raise SkipTest('SKIP_SYNC is set, skipping repo closure check')
+    if os.getenv('OST_SKIP_SYNC', False):
+        raise SkipTest('OST_SKIP_SYNC is set, skipping repo closure check')
 
     configs = glob.glob(
         os.path.join(os.environ.get('SUITE'), '*reposync*.repo')

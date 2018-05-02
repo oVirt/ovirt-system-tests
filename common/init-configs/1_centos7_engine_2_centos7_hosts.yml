@@ -10,6 +10,7 @@ vm-common-settings: &vm-common-settings
     service_provider: systemd
     artifacts:
       - /var/log
+      - /etc/resolv.conf
 
 domains:
   lago-{{ env.suite_name }}-engine:
@@ -65,6 +66,7 @@ domains:
       - /etc/httpd
       - /etc/sysconfig
       - /etc/yum
+      - /etc/resolv.conf
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings

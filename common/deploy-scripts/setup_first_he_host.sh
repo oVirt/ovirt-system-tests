@@ -27,15 +27,9 @@ echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 VMPASS=123456
 ENGINEPASS=123
 
-OVAIMAGE=$(\
-    ls /usr/share/ovirt-engine-appliance/ovirt-engine-appliance-*.ova \
-    | tail -11\
-)
-
 sed \
     -e "s,@GW@,${HEGW},g" \
     -e "s,@ADDR@,${HEADDR},g" \
-    -e "s,@OVAIMAGE@,${OVAIMAGE},g" \
     -e "s,@VMPASS@,${VMPASS},g" \
     -e "s,@ENGINEPASS@,${ENGINEPASS},g" \
     -e "s,@DOMAIN@,${DOMAIN},g" \

@@ -18,7 +18,6 @@ OVEHOSTED_STORAGE/storageDomainConnection=str:@STORAGEHOSTNAME@:/exports/nfs_he
 OVEHOSTED_VM/vmMemSizeMB=int:3171
 OVEHOSTED_VM/vmMACAddr=str:54:52:c0:a8:c8:63
 OVEHOSTED_VM/vmVCpus=str:2
-OVEHOSTED_VM/ovfArchive=str:@OVAIMAGE@
 OVEHOSTED_VM/cloudinitInstanceDomainName=str:@DOMAIN@
 OVEHOSTED_VM/cloudinitInstanceHostName=str:@HOSTEDENGINE@.@DOMAIN@
 OVEHOSTED_VM/cloudinitVMStaticCIDR=str:@ADDR@/24

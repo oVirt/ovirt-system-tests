@@ -9,6 +9,7 @@ MYADDR=$(\
     | awk -F/ '{print $1}' \
 )
 MYHOSTNAME="$(hostname | sed s/_/-/g)"
+STORAGEHOSTNAME="${HOSTEDENGINE/engine/storage}"
 
 echo "${MYADDR} ${MYHOSTNAME}.${DOMAIN} ${MYHOSTNAME}" >> /etc/hosts
 
@@ -40,6 +41,7 @@ sed \
     -e "s,@DOMAIN@,${DOMAIN},g" \
     -e "s,@MYHOSTNAME@,${MYHOSTNAME},g" \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
+    -e "s,@STORAGEHOSTNAME@,${STORAGEHOSTNAME},g" \
     < /root/hosted-engine-deploy-answers-file.conf.in \
     > /root/hosted-engine-deploy-answers-file.conf
 

@@ -583,10 +583,10 @@ def import_templates(api):
         )
 
 
-def generic_import_from_glance(glance_provider, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
-    target_image = glance_provider.images.get(name=image_name)
-    disk_name = image_name.replace(" ", "_") + image_ext
-    template_name = image_name.replace(" ", "_") + template_ext
+def generic_import_from_glance(glance_provider, as_template=False,
+                               dest_storage_domain=MASTER_SD_TYPE,
+                               dest_cluster=CLUSTER_NAME):
+    target_image = glance_provider.images.get(name=CIRROS_IMAGE_NAME)
     import_action = params.Action(
         storage_domain=params.StorageDomain(
             name=dest_storage_domain,
@@ -596,10 +596,10 @@ def generic_import_from_glance(glance_provider, image_name=CIRROS_IMAGE_NAME, as
         ),
         import_as_template=as_template,
         disk=params.Disk(
-            name=disk_name,
+            name=(TEMPLATE_CIRROS if as_template else GLANCE_DISK_NAME)
         ),
         template=params.Template(
-            name=template_name,
+            name=TEMPLATE_CIRROS,
         ),
     )
 
@@ -700,7 +700,7 @@ def import_non_template_from_glance(glance_provider):
 def import_template_from_glance(glance_provider):
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(glance_provider, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
+    generic_import_from_glance(glance_provider, as_template=True)
 
 
 @testlib.with_ovirt_api

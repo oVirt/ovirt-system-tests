@@ -1425,7 +1425,9 @@ def add_blank_high_perf_vm2(api):
                 hosts=hosts,
             ),
             numa_tune_mode=sdk4.types.NumaTuneMode.INTERLEAVE,
-            type=sdk4.types.VmType.HIGH_PERFORMANCE,
+            type=(sdk4.types.VmType.HIGH_PERFORMANCE
+                  if versioning.cluster_version_ok(4, 2) else
+                  sdk4.types.VmType.SERVER),
             custom_properties=[
                 sdk4.types.CustomProperty(
                     name='viodiskcache',

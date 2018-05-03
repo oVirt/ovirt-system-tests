@@ -19,6 +19,7 @@
 #
 from ovirtsdk4 import types
 
+from lib import netlib
 from lib import storagelib
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
@@ -37,6 +38,19 @@ class DataCenter(SDKRootEntity):
     def attach_storage_domain(self, sd):
         sds_service = self._service.storage_domains_service()
         sds_service.add(sd.get_sdk_type())
+
+    def list_qos(self):
+        qos_entities = []
+        for qos in self._service.qoss_service().list():
+            qos_entity = netlib.QoS(self)
+            qos_entity.import_by_name(name=qos.name)
+            qos_entities.append(qos_entity)
+        return qos_entities
+
+    def remove_qos(self, qos_names):
+        for qos in self.list_qos():
+            if qos.name in qos_names:
+                self._service.qoss_service().qos_service(qos.id).remove()
 
     def wait_for_up_status(self):
         self._wait_for_status(types.DataCenterStatus.UP)

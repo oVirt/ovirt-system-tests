@@ -271,3 +271,13 @@ class Host(SDKRootEntity):
             if HAS_RUNNING_TASKS in msg or HOST_IS_CONTENDING in msg:
                 return False
             raise
+
+
+@contextlib.contextmanager
+def setup_networks(host, attach_data):
+    host.setup_networks(attach_data)
+    try:
+        yield
+    finally:
+        networks = [attach_datum.network for attach_datum in attach_data]
+        host.remove_networks(networks)

@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import contextlib
+
 from ovirtsdk4 import types
 
 from lib.sdkentity import EntityCreationError
@@ -77,11 +79,19 @@ class Network(SDKSubEntity):
     def name(self):
         return self.get_sdk_type().name
 
-    def create(self, name, vlan=None, usages=(NetworkUsage.VM,)):
+    def create(self,
+               name,
+               vlan=None,
+               usages=(NetworkUsage.VM,),
+               qos=None,
+               auto_generate_profile=True):
+        qos_type = None if qos is None else qos.get_sdk_type()
         sdk_type = types.Network(
             name=name,
             data_center=self._parent_sdk_entity.service.get(),
             usages=usages,
+            qos=qos_type,
+            profile_required=auto_generate_profile
         )
         if vlan is not None:
             sdk_type.vlan = types.Vlan(id=vlan)
@@ -97,8 +107,13 @@ class VnicProfile(SDKRootEntity):
     def name(self):
         return self.get_sdk_type().name
 
-    def create(self, name, network):
-        sdk_type = types.VnicProfile(name=name, network=network.get_sdk_type())
+    def create(self, name, network, qos=None):
+        qos_type = None if qos is None else qos.get_sdk_type()
+        sdk_type = types.VnicProfile(
+            name=name,
+            network=network.get_sdk_type(),
+            qos=qos_type
+        )
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
@@ -155,3 +170,52 @@ class Vnic(SDKSubEntity):
 
     def _get_parent_service(self, vm):
         return vm.service.nics_service()
+
+
+class QoS(SDKSubEntity):
+
+    @property
+    def name(self):
+        return self.get_sdk_type().name
+
+    def create(self,
+               name,
+               qos_type,
+               inbound_average=None,
+               inbound_peak=None,
+               inbound_burst=None,
+               outbound_average=None,
+               outbound_peak=None,
+               outbound_burst=None,
+               outbound_average_upperlimit=None,
+               outbound_average_realtime=None,
+               outbound_average_linkshare=None):
+        self._create_sdk_entity(
+            types.Qos(
+                name=name,
+                type=qos_type,
+                inbound_average=inbound_average,
+                inbound_peak=inbound_peak,
+                inbound_burst=inbound_burst,
+                outbound_average=outbound_average,
+                outbound_peak=outbound_peak,
+                outbound_burst=outbound_burst,
+                outbound_average_upperlimit=outbound_average_upperlimit,
+                outbound_average_realtime=outbound_average_realtime,
+                outbound_average_linkshare=outbound_average_linkshare
+            )
+        )
+        self.get_sdk_type().id = self.id
+
+    def _get_parent_service(self, dc):
+        return dc.service.qoss_service()
+
+
+@contextlib.contextmanager
+def create_vnic_profile(system, name, network, qos=None):
+    vnic_p = VnicProfile(system)
+    vnic_p.create(name, network, qos)
+    try:
+        yield vnic_p
+    finally:
+        vnic_p.remove()

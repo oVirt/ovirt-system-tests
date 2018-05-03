@@ -86,7 +86,7 @@ def host_0_with_mig_net(migration_network, host_0_up):
         migration_network, ETH1, [ip_config])
     host_0_up.setup_networks([mig_att_data])
     yield host_0_up
-    host_0_up.remove_networks((migration_network.name,))
+    host_0_up.remove_networks((migration_network,))
 
 
 @pytest.fixture
@@ -97,7 +97,7 @@ def host_1_with_mig_net(migration_network, host_1_up):
         migration_network, ETH1, [ip_config])
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up
-    host_1_up.remove_networks((migration_network.name,))
+    host_1_up.remove_networks((migration_network,))
 
 
 def test_live_vm_migration_using_dedicated_network(vm_0, host_0_with_mig_net,

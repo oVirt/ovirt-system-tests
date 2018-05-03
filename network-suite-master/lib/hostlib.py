@@ -152,10 +152,14 @@ class Host(SDKRootEntity):
             check_connectivity=True
         )
 
-    def remove_networks(self, removed_network_names):
+    def remove_networks(self, removed_networks):
+        removed_network_ids = [
+            removed_network.id for removed_network in removed_networks
+        ]
+
         removed_attachments = [
             attachment for attachment in self._get_existing_attachments()
-            if attachment.network.name in removed_network_names
+            if attachment.network.id in removed_network_ids
         ]
 
         return self.service.setup_networks(

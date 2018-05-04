@@ -1127,7 +1127,11 @@ def verify_suspend_resume_vm0(prefix):
         nt.assert_equals(ret.code, EX_OK)
         return int(ret.out)
 
-    nt.assert_equals(log_line_count('START create\(.*memoryDumpVolume'), 1)
+    if versioning.cluster_version_ok(4, 2):
+        identifier = 'memoryDumpVolume'
+    else:
+        identifier = 'hiberVolHandle'
+    nt.assert_equals(log_line_count('START create\(.*' + identifier), 1)
     nt.ok_(log_line_count('CPU running: onResume') >= 1)
 
 

@@ -14,7 +14,6 @@ proxy = _none_
 cost = 100
 includepkgs = cockpit-ovirt-dashboard
 	ioprocess
-	mom
 	otopi-common
 	otopi-debug-plugins
 	otopi-java
@@ -130,20 +129,14 @@ includepkgs = 389-ds-base
 	augeas-libs
 	autofs
 	bind-libs
-	bind-libs-lite
-	bind-license
 	bind-utils
 	copy-jdk-configs
 	cryptsetup
-	cryptsetup-libs
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
 	dnsmasq
-	dracut
-	dracut-config-rescue
 	dracut-fips
-	dracut-network
 	fence-agents-all
 	fence-agents-apc
 	fence-agents-apc-snmp
@@ -183,14 +176,11 @@ includepkgs = 389-ds-base
 	ipa-client
 	ipa-client-common
 	ipa-common
-	iptables
 	iptables-services
 	ipxe-roms-qemu
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	kernel
-	kpartx
 	libgfortran
 	libgudev1
 	libguestfs
@@ -203,6 +193,7 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
+	libtevent
 	libvirt-client
 	libvirt-daemon
 	libvirt-daemon-config-network
@@ -245,11 +236,20 @@ includepkgs = 389-ds-base
 	python2-cryptography
 	python2-ipaclient
 	python2-ipalib
+	ruby
+	ruby-irb
+	ruby-libs
+	rubygem-bigdecimal
+	rubygem-io-console
+	rubygem-psych
+	rubygem-rdoc
+	rubygems
 	samba-client-libs
 	samba-common
 	scl-utils
 	seabios-bin
 	seavgabios-bin
+	slf4j
 	sos
 	spice-server
 	sssd
@@ -263,12 +263,8 @@ includepkgs = 389-ds-base
 	sssd-ldap
 	sssd-proxy
 	subscription-manager
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tomcat-servlet-3.0-api
-	tuned
 	tzdata-java
 	virt-v2v
 
@@ -447,7 +443,6 @@ includepkgs = OVMF
 	libtalloc
 	libtar
 	libtdb
-	libtevent
 	libtirpc
 	libunwind
 	libusal
@@ -586,14 +581,6 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
-	ruby
-	ruby-irb
-	ruby-libs
-	rubygem-bigdecimal
-	rubygem-io-console
-	rubygem-psych
-	rubygem-rdoc
-	rubygems
 	sanlock
 	sanlock-lib
 	sanlock-python
@@ -605,7 +592,6 @@ includepkgs = OVMF
 	sg3_utils
 	sg3_utils-libs
 	sgabios-bin
-	slf4j
 	socat
 	squashfs-tools
 	stax2-api
@@ -652,13 +638,7 @@ baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
 enabled = 1
 exclude = ansible
 max_connections = 5
-includepkgs = cockpit
-	cockpit-bridge
-	cockpit-dashboard
-	cockpit-networkmanager
-	cockpit-storaged
-	cockpit-system
-	cockpit-ws
+includepkgs = cockpit-storaged
 	libssh
 	libstoraged
 	libtomcrypt
@@ -677,15 +657,23 @@ name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
 max_connections = 5
-includepkgs = lyx-fonts
-	python-qpid-proton
-	python-unittest2
+includepkgs = ansible
+	archaius-core
+	jackson-core
+	jctools
+	lyx-fonts
+	python-daemon
+	python-isodate
 	python-keyczar
+	python-linecache2
+	python-pthreading
+	python-unittest2
 	python2-mimeparse
+	python2-qpid-proton
 	python2-traceback2
 	qpid-proton-c
 	rubygem-multipart-post
-	ansible
+	rxjava
 
 [centos-ovirt-4.2-el7]
 name = CentOS-7 - oVirt 4.2
@@ -712,6 +700,8 @@ includepkgs = ebay-cors-filter
 	ovirt-cockpit-sso
 	python-netaddr
 	python-websockify
+	python2-extras
+	python2-fixtures
 	python2-openvswitch
 	python2-ovsdbapp
 	python2-pbr
@@ -726,35 +716,31 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
 gpgcheck = 0
 cost = 2000
 enabled = 1
-includepkgs =
-	archaius-core
+exclude = cockpit-storaged*
+includepkgs = cockpit
+	cockpit-bridge
+	cockpit-dashboard
+	cockpit-networkmanager
+	cockpit-system
+	cockpit-ws
 	gofer
 	hystrix-core
 	hystrix-metrics-event-stream
-	jackson-core
-	jctools
 	jemalloc
 	katello-agent
 	katello-agent-fact-plugin
+	mom
 	pulp-rpm-handlers
-	python-daemon
 	python-dateutil
-	python-extras
-	python-fixtures
 	python-gofer
 	python-gofer-proton
-	python-isodate
-	python-keyczar
-	python-linecache2
 	python-nose
-	python-pthreading
 	python-pulp-agent-lib
 	python-pulp-common
 	python-pulp-rpm-common
 	python-subprocess32
 	python-testtools
 	python2-jmespath
-	rxjava
 	vhostmd
 
 [centos-qemu-ev-release-el7]
@@ -814,3 +800,4 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
+

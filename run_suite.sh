@@ -378,7 +378,7 @@ restore_package_manager_config() {
 }
 
 install_local_rpms() {
-    local pkg_manager os path_to_config local_repo
+    local pkg_manager os path_to_config
 
     [[ ${#RPMS_TO_INSTALL[@]} -le 0 ]] && return
 
@@ -388,17 +388,21 @@ install_local_rpms() {
     os=$(rpm -E %{dist})
     os=${os#.}
     os=${os%.*}
-    local_repo="file://${PREFIX}/current/internal_repo/${os}"
 
     backup_package_manager_config
-    (
-        echo
-        echo "[internal_repo]"
-        echo "name=Lago's internal repo"
-        echo "baseurl=$local_repo"
-        echo "enabled=1"
-        echo "gpgcheck=0"
-    ) >> "$path_to_config"
+
+    cat > "$path_to_config" <<EOF
+[internal_repo]
+name=Lago's internal repo
+
+# In lago ost 0.44.3 the path to the internal repo was changed
+baseurl="file://${PREFIX}/current/internal_repo/${os}"
+        "file://${PREFIX}/current/internal_repo/default/${os}"
+
+enabled=1
+gpgcheck=0
+skip_if_unavailable=1
+EOF
 
     $pkg_manager -y install "${RPMS_TO_INSTALL[@]}" || return 1
 

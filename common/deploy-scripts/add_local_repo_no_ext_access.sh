@@ -5,7 +5,11 @@ ADDR=$(ip -4 addr show scope global up |grep -m1 inet | awk '{split($4,a,"."); p
 cat > /etc/yum.repos.d/local-ovirt.repo <<EOF
 [alocalsync]
 name=Latest oVirt nightly
+
+# In lago ost 0.44.3 the path to the internal repo was changed
 baseurl=http://$ADDR:8585/$DIST/
+        http://$ADDR:8585/default/$DIST/
+
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

@@ -5,24 +5,13 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
-[ovirt-4.2-el7]
-name = oVirt 4.2 repo
-baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
+[ovirt-4.2-tested-el7]
+name = oVirt 4.2 tested repo
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
+cost = 100
 enabled = 1
-exclude = ioprocess
-    python-ioprocess
-
-# excluding ioprocess 0.16.1 in favor of ioprocess 1.0.2
-# since this repo will be picked up first and the rpm collector is not
-# smart enough to detect following repos has newer rpms.
-
-[ovirt-4.2-official-el7]
-name = oVirt 4.2 Official release
-baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
-enabled = 1
-gpgcheck = 1
 includepkgs = cockpit-ovirt-dashboard
-	mom
+	ioprocess
 	otopi
 	otopi-debug-plugins
 	otopi-java
@@ -31,7 +20,6 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-ansible-engine-setup
 	ovirt-ansible-image-template
 	ovirt-ansible-infra
-	ovirt-ansible-manageiq
 	ovirt-ansible-repositories
 	ovirt-ansible-roles
 	ovirt-ansible-v2v-conversion-host
@@ -51,6 +39,7 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-engine-lib
 	ovirt-engine-metrics
 	ovirt-engine-restapi
+	ovirt-engine-sdk-python
 	ovirt-engine-setup
 	ovirt-engine-setup-base
 	ovirt-engine-setup-plugin-ovirt-engine
@@ -80,8 +69,21 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-provider-ovn
 	ovirt-provider-ovn-driver
 	ovirt-setup-lib
-	ovirt-web-ui
+	ovirt-vmconsole
+	ovirt-vmconsole-host
+	ovirt-vmconsole-proxy
 	python-ovirt-engine-sdk4
+	python2-ioprocess
+	vdsm-jsonrpc-java
+
+[ovirt-4.2-official-el7]
+name = oVirt 4.2 Official release
+baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
+enabled = 1
+gpgcheck = 1
+includepkgs = mom
+	ovirt-ansible-manageiq
+	ovirt-web-ui
 	vdsm
 	vdsm-api
 	vdsm-client
@@ -94,7 +96,6 @@ includepkgs = cockpit-ovirt-dashboard
 	vdsm-hook-vmfex-dev
 	vdsm-http
 	vdsm-jsonrpc
-	vdsm-jsonrpc-java
 	vdsm-network
 	vdsm-python
 	vdsm-yajsonrpc
@@ -124,20 +125,14 @@ includepkgs = 389-ds-base
 	augeas-libs
 	autofs
 	bind-libs
-	bind-libs-lite
-	bind-license
 	bind-utils
 	copy-jdk-configs
 	cryptsetup
-	cryptsetup-libs
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
 	dnsmasq
-	dracut
-	dracut-config-rescue
 	dracut-fips
-	dracut-network
 	fence-agents-all
 	fence-agents-apc
 	fence-agents-apc-snmp
@@ -177,14 +172,11 @@ includepkgs = 389-ds-base
 	ipa-client
 	ipa-client-common
 	ipa-common
-	iptables
 	iptables-services
 	ipxe-roms-qemu
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	kernel
-	kpartx
 	libgfortran
 	libgudev1
 	libguestfs
@@ -197,6 +189,7 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
+	libtevent
 	libvirt-client
 	libvirt-daemon
 	libvirt-daemon-config-network
@@ -239,11 +232,20 @@ includepkgs = 389-ds-base
 	python2-cryptography
 	python2-ipaclient
 	python2-ipalib
+	ruby
+	ruby-irb
+	ruby-libs
+	rubygem-bigdecimal
+	rubygem-io-console
+	rubygem-psych
+	rubygem-rdoc
+	rubygems
 	samba-client-libs
 	samba-common
 	scl-utils
 	seabios-bin
 	seavgabios-bin
+	slf4j
 	sos
 	spice-server
 	sssd
@@ -257,12 +259,8 @@ includepkgs = 389-ds-base
 	sssd-ldap
 	sssd-proxy
 	subscription-manager
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tomcat-servlet-3.0-api
-	tuned
 	tzdata-java
 	virt-v2v
 
@@ -440,7 +438,6 @@ includepkgs = OVMF
 	libtalloc
 	libtar
 	libtdb
-	libtevent
 	libtirpc
 	libunwind
 	libusal
@@ -552,7 +549,6 @@ includepkgs = OVMF
 	python-ldap
 	python-lxml
 	python-markupsafe
-	python-netaddr
 	python-netifaces
 	python-nss
 	python-ply
@@ -580,14 +576,6 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
-	ruby
-	ruby-irb
-	ruby-libs
-	rubygem-bigdecimal
-	rubygem-io-console
-	rubygem-psych
-	rubygem-rdoc
-	rubygems
 	sanlock
 	sanlock-lib
 	sanlock-python
@@ -599,7 +587,6 @@ includepkgs = OVMF
 	sg3_utils
 	sg3_utils-libs
 	sgabios-bin
-	slf4j
 	socat
 	squashfs-tools
 	stax2-api
@@ -654,10 +641,12 @@ includepkgs = cockpit
 	cockpit-ws
 	libssh
 	libstoraged
+	libtomcrypt
+	libtommath
 	python-httplib2
 	python-lockfile
 	python-paramiko
-	python-passlib
+	python2-crypto
 	sshpass
 	storaged
 	storaged-iscsi
@@ -669,9 +658,9 @@ baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
 includepkgs = ansible
 	lyx-fonts
-	python-qpid-proton
 	python-unittest2
 	python2-mimeparse
+	python2-qpid-proton
 	python2-traceback2
 	qpid-proton-c
 	rubygem-multipart-post
@@ -687,9 +676,9 @@ includepkgs = archaius-core
 	gofer
 	hystrix-core
 	hystrix-metrics-event-stream
-	ioprocess
 	jackson-core
 	jctools
+	jemalloc
 	katello-agent
 	katello-agent-fact-plugin
 	novnc
@@ -708,22 +697,15 @@ includepkgs = archaius-core
 	openvswitch-ovn-common
 	openvswitch-ovn-host
 	ovirt-cockpit-sso
-	ovirt-engine-sdk-python
-	ovirt-vmconsole
-	ovirt-vmconsole-host
-	ovirt-vmconsole-proxy
 	pulp-rpm-handlers
-	python-cpopen
 	python-daemon
 	python-dateutil
-	python-extras
-	python-fixtures
 	python-gofer
 	python-gofer-proton
-	python2-ioprocess
 	python-isodate
 	python-keyczar
 	python-linecache2
+	python-netaddr
 	python-nose
 	python-pthreading
 	python-pulp-agent-lib
@@ -732,6 +714,8 @@ includepkgs = archaius-core
 	python-subprocess32
 	python-testtools
 	python-websockify
+	python2-extras
+	python2-fixtures
 	python2-jmespath
 	python2-openvswitch
 	python2-ovsdbapp
@@ -765,7 +749,6 @@ includepkgs = collectd
 	collectd-virt
 	collectd-write_http
 	fluentd
-	jemalloc
 	rubygem-cool.io
 	rubygem-elasticsearch
 	rubygem-elasticsearch-api
@@ -787,7 +770,6 @@ includepkgs = collectd
 	rubygem-string-scrub
 	rubygem-thread_safe
 	rubygem-tzinfo
-	rubygem-tzinfo-data
 	rubygem-yajl-ruby
 
 [centos-sclo-rh-release-el7]
@@ -801,3 +783,4 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
+

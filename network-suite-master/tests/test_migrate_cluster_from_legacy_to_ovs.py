@@ -23,12 +23,6 @@ from lib import hostlib
 from testlib import suite
 
 
-ETH1 = 'eth1'
-NET_1 = 'net-1'
-NET_1_IPv4_ADDR = '192.0.3.1'
-NET_1_IPv4_MASK = '255.255.255.0'
-
-
 pytestmark = suite.SKIP_SUITE_42
 
 

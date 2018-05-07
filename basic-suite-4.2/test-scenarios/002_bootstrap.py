@@ -454,7 +454,9 @@ def verify_add_all_hosts(prefix):
 def copy_storage_script(prefix):
     engine = prefix.virt_env.engine_vm()
     storage_script = os.path.join(
-        os.environ.get('SUITE'), 'setup_storage.sh'
+        os.environ.get('SUITE'),
+        'deploy-scripts',
+        'setup_storage.sh',
     )
     engine.copy_to(
         storage_script,

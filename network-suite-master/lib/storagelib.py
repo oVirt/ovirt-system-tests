@@ -102,6 +102,10 @@ class StorageDomainStatus(object):
 class StorageDomain(SDKRootEntity):
 
     @property
+    def name(self):
+        return self.get_sdk_type().name
+
+    @property
     def status(self):
         return self.get_sdk_type().status
 
@@ -159,6 +163,12 @@ class StorageDomain(SDKRootEntity):
             cluster=cluster.get_sdk_type(),
             storage_domain=self.get_sdk_type()
         )
+
+    def create_disk(self, name):
+        disk = Disk(self._parent_sdk_system)
+        disk.create(disk_name=name, sd_name=self.name)
+        disk.wait_for_up_status()
+        return disk
 
 
 class Disk(SDKRootEntity):

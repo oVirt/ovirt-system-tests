@@ -20,13 +20,11 @@
 import pytest
 
 from lib import virtlib
-from lib import storagelib
 from lib import netlib
 from lib import hostlib
 from lib import clusterlib
 from lib import templatelib
 
-import fixtures.storage
 
 ETH1 = 'eth1'
 VM0 = 'vm0'
@@ -34,14 +32,6 @@ MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
 MIG_NET_IPv4_ADDR_2 = '192.0.3.2'
 MIG_NET_IPv4_MASK = '255.255.255.0'
-
-
-def _create_disk(system):
-    DISK0 = 'disk0'
-    disk = storagelib.Disk(system)
-    disk.create(disk_name=DISK0, sd_name=fixtures.storage.DEFAULT_DOMAIN_NAME)
-    disk.wait_for_up_status()
-    return disk
 
 
 def _attach_new_vnic(vm, vnic_profile):
@@ -65,7 +55,7 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
 @pytest.fixture
 def vm_0(system, default_cluster, default_storage_domain,
          ovirtmgmt_vnic_profile):
-    disk = _create_disk(system)
+    disk = default_storage_domain.create_disk('disk0')
     with virtlib.vm_pool(system, size=1) as (vm,):
         vm.create(vm_name=VM0,
                   cluster=default_cluster,

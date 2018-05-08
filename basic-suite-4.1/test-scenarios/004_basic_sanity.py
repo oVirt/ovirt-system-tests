@@ -503,9 +503,11 @@ def suspend_resume_vm(api):
 
     nt.assert_true(api.vms.get(VM0_NAME).start())
 
-    testlib.assert_true_within_long(
-        lambda:
-        api.vms.get(VM0_NAME).status.state == 'up'
+    # By the time https://bugzilla.redhat.com/show_bug.cgi?id=1503468
+    # will be fixed, increase the timeout to 30 minutes
+    testlib.assert_true_within(
+        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+        timeout=60*30
     )
 
 

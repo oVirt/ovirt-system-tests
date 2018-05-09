@@ -89,8 +89,10 @@ def run_log_collector(prefix):
             '--conf-file=/root/ovirt-log-collector.conf',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'log collector failed. Exit code is %s' % result.code
+    # log collector returns status code == 2 for warnings
+    nt.assert_true(
+        result.code in (0, 2),
+        'log collector failed. Exit code is %s' % result.code
     )
 
     engine.ssh(

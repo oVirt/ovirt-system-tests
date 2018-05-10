@@ -1159,9 +1159,11 @@ def suspend_resume_vm0(api):
 
 @testlib.with_ovirt_api
 def verify_suspend_resume_vm0(api):
-    testlib.assert_true_within_long(
-        lambda:
-        api.vms.get(VM0_NAME).status.state == 'up'
+    # By the time https://bugzilla.redhat.com/show_bug.cgi?id=1503468
+    # will be fixed, increase the timeout to 30 minutes
+    testlib.assert_true_within(
+        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+        timeout=60*30
     )
 
 

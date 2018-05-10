@@ -69,6 +69,11 @@ Optional arguments:
 "
 }
 
+on_exit() {
+    logger.info "Dumping lago env status"
+    env_status || logger.error "Failed to dump env status"
+}
+
 on_sigterm() {
     local dest="${OST_REPO_ROOT}/test_logs/${SUITE##*/}/post-suite-sigterm"
 
@@ -509,6 +514,8 @@ mkdir -p "$PREFIX"
 }
 
 trap "on_sigterm" SIGTERM
+trap "on_exit" EXIT
+
 logger.info "Using $(lago --version 2>&1)"
 check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"

@@ -121,159 +121,18 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	NetworkManager-config-server
-	apr
-	augeas
-	augeas-libs
-	autofs
-	bind-libs
-	bind-utils
-	copy-jdk-configs
-	cryptsetup
-	device-mapper-multipath
-	device-mapper-multipath-libs
-	device-mapper-persistent-data
-	dnsmasq
-	dracut-fips
-	fence-agents-all
-	fence-agents-apc
-	fence-agents-apc-snmp
-	fence-agents-bladecenter
-	fence-agents-brocade
-	fence-agents-cisco-mds
-	fence-agents-cisco-ucs
-	fence-agents-common
-	fence-agents-compute
-	fence-agents-drac5
-	fence-agents-eaton-snmp
-	fence-agents-emerson
-	fence-agents-eps
-	fence-agents-hpblade
-	fence-agents-ibmblade
-	fence-agents-ifmib
-	fence-agents-ilo-moonshot
-	fence-agents-ilo-mp
-	fence-agents-ilo-ssh
-	fence-agents-ilo2
-	fence-agents-intelmodular
-	fence-agents-ipdu
-	fence-agents-ipmilan
-	fence-agents-kdump
-	fence-agents-mpath
-	fence-agents-rhevm
-	fence-agents-rsa
-	fence-agents-rsb
-	fence-agents-sbd
-	fence-agents-scsi
-	fence-agents-vmware-soap
-	fence-agents-wti
-	gdb
-	http-parser
-	httpd
-	httpd-tools
-	ipa-client
-	ipa-client-common
-	ipa-common
-	iptables-services
-	ipxe-roms-qemu
-	java-1.8.0-openjdk
-	java-1.8.0-openjdk-devel
-	java-1.8.0-openjdk-headless
-	libgfortran
-	libgudev1
-	libguestfs
-	libguestfs-tools-c
-	libipa_hbac
-	libquadmath
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
-	libtevent
-	libvirt-client
-	libvirt-daemon
-	libvirt-daemon-config-network
-	libvirt-daemon-config-nwfilter
-	libvirt-daemon-driver-interface
-	libvirt-daemon-driver-network
-	libvirt-daemon-driver-nodedev
-	libvirt-daemon-driver-nwfilter
-	libvirt-daemon-driver-qemu
-	libvirt-daemon-driver-secret
-	libvirt-daemon-driver-storage
-	libvirt-daemon-driver-storage-core
-	libvirt-daemon-driver-storage-disk
-	libvirt-daemon-driver-storage-gluster
-	libvirt-daemon-driver-storage-iscsi
-	libvirt-daemon-driver-storage-logical
-	libvirt-daemon-driver-storage-mpath
-	libvirt-daemon-driver-storage-rbd
-	libvirt-daemon-driver-storage-scsi
-	libvirt-daemon-kvm
-	libvirt-libs
-	libvirt-lock-sanlock
-	libvirt-python
-	libwbclient
-	log4j
-	mod_ssl
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
-	nfs-utils
-	postgresql-libs
-	python-dmidecode
-	python-libguestfs
-	python-libipa_hbac
-	python-rhsm
-	python-rhsm-certificates
-	python-sss-murmur
-	python-sssdconfig
-	python2-cryptography
-	python2-ipaclient
-	python2-ipalib
-	ruby
-	ruby-irb
-	ruby-libs
-	rubygem-bigdecimal
-	rubygem-io-console
-	rubygem-psych
-	rubygem-rdoc
-	rubygems
-	samba-client-libs
-	samba-common
-	scl-utils
-	seabios-bin
-	seavgabios-bin
-	slf4j
-	sos
-	spice-server
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
-	subscription-manager
-	systemd-python
-	tomcat-servlet-3.0-api
+includepkgs = slf4j
 	tzdata-java
-	virt-v2v
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = OVMF
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	NetworkManager-config-server
+	OVMF
 	OpenIPMI-modalias
 	PyYAML
 	abrt
@@ -305,17 +164,27 @@ includepkgs = OVMF
 	apache-commons-logging
 	apache-commons-net
 	apache-commons-vfs
+	apr
 	apr-util
 	atlas
 	attr
+	audit
+	audit-libs
 	audit-libs-python
+	augeas
+	augeas-libs
 	authconfig
+	autofs
 	autogen-libopts
 	avahi-libs
 	avalon-framework
 	avalon-logkit
 	bea-stax
 	bea-stax-api
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
 	blas
 	boost-system
 	boost-thread
@@ -326,25 +195,81 @@ includepkgs = OVMF
 	celt051
 	certmonger
 	checkpolicy
+	copy-jdk-configs
 	cracklib-python
+	cryptsetup
+	cryptsetup-libs
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
+	cyrus-sasl-lib
 	cyrus-sasl-md5
 	cyrus-sasl-plain
 	cyrus-sasl-scram
+	dbus
+	dbus-libs
+	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
+	device-mapper-libs
+	device-mapper-multipath
+	device-mapper-multipath-libs
+	device-mapper-persistent-data
+	dnsmasq
 	dom4j
 	dosfstools
+	dracut
+	dracut-config-rescue
+	dracut-fips
+	dracut-network
 	easymock2
 	elfutils
+	elfutils-libelf
+	elfutils-libs
 	fcoe-utils
+	fence-agents-all
+	fence-agents-amt-ws
+	fence-agents-apc
+	fence-agents-apc-snmp
+	fence-agents-bladecenter
+	fence-agents-brocade
+	fence-agents-cisco-mds
+	fence-agents-cisco-ucs
+	fence-agents-common
+	fence-agents-compute
+	fence-agents-drac5
+	fence-agents-eaton-snmp
+	fence-agents-emerson
+	fence-agents-eps
+	fence-agents-heuristics-ping
+	fence-agents-hpblade
+	fence-agents-ibmblade
+	fence-agents-ifmib
+	fence-agents-ilo-moonshot
+	fence-agents-ilo-mp
+	fence-agents-ilo-ssh
+	fence-agents-ilo2
+	fence-agents-intelmodular
+	fence-agents-ipdu
+	fence-agents-ipmilan
+	fence-agents-kdump
+	fence-agents-mpath
+	fence-agents-rhevm
+	fence-agents-rsa
+	fence-agents-rsb
+	fence-agents-sbd
+	fence-agents-scsi
+	fence-agents-vmware-rest
+	fence-agents-vmware-soap
+	fence-agents-wti
 	fence-virt
+	firewalld
+	firewalld-filesystem
 	fontconfig
 	fontpackages-filesystem
 	fuse
 	fuse-libs
+	gdb
 	gdisk
 	genisoimage
 	geronimo-jms
@@ -362,14 +287,26 @@ includepkgs = OVMF
 	hivex
 	hmaccalc
 	hsqldb
+	http-parser
 	httpcomponents-client
 	httpcomponents-core
+	httpd
+	httpd-tools
+	ipa-client
+	ipa-client-common
+	ipa-common
 	ipmitool
+	iptables
+	iptables-services
+	ipxe-roms-qemu
 	iscsi-initiator-utils
 	iscsi-initiator-utils-iscsiuio
 	isorelax
 	jackson
 	jakarta-commons-httpclient
+	java-1.8.0-openjdk
+	java-1.8.0-openjdk-devel
+	java-1.8.0-openjdk-headless
 	javamail
 	javapackages-tools
 	javassist
@@ -385,9 +322,10 @@ includepkgs = OVMF
 	junit
 	jzlib
 	keyutils
+	kpartx
+	krb5-libs
 	krb5-workstation
 	lapack
-	ldns
 	libICE
 	libSM
 	libX11
@@ -402,17 +340,33 @@ includepkgs = OVMF
 	libaio
 	libarchive
 	libatasmart
+	libattr
 	libbasicobjects
+	libblockdev
+	libblockdev-crypto
+	libblockdev-fs
+	libblockdev-loop
+	libblockdev-lvm
+	libblockdev-mdraid
+	libblockdev-part
+	libblockdev-swap
+	libblockdev-utils
+	libbytesize
 	libcgroup
 	libcollection
 	libconfig
 	libdhash
 	libevent
 	libfontenc
+	libgfortran
+	libgudev1
+	libguestfs
+	libguestfs-tools-c
 	libguestfs-winsupport
 	libibverbs
 	libicu
 	libini_config
+	libipa_hbac
 	libiscsi
 	libjpeg-turbo
 	libkadm5
@@ -426,6 +380,7 @@ includepkgs = OVMF
 	libpcap
 	libpng
 	libproxy
+	libquadmath
 	librados2
 	librbd1
 	librdmacm
@@ -439,15 +394,52 @@ includepkgs = OVMF
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux
+	libselinux-python
+	libselinux-utils
+	libsemanage
 	libsemanage-python
+	libsepol
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
+	libtevent
 	libtirpc
-	libunwind
+	libudisks2
 	libusal
 	libusbx
 	libverto-libevent
+	libvirt-client
+	libvirt-daemon
+	libvirt-daemon-config-network
+	libvirt-daemon-config-nwfilter
+	libvirt-daemon-driver-interface
+	libvirt-daemon-driver-network
+	libvirt-daemon-driver-nodedev
+	libvirt-daemon-driver-nwfilter
+	libvirt-daemon-driver-qemu
+	libvirt-daemon-driver-secret
+	libvirt-daemon-driver-storage
+	libvirt-daemon-driver-storage-core
+	libvirt-daemon-driver-storage-disk
+	libvirt-daemon-driver-storage-gluster
+	libvirt-daemon-driver-storage-iscsi
+	libvirt-daemon-driver-storage-logical
+	libvirt-daemon-driver-storage-mpath
+	libvirt-daemon-driver-storage-rbd
+	libvirt-daemon-driver-storage-scsi
+	libvirt-daemon-kvm
+	libvirt-libs
+	libvirt-lock-sanlock
+	libvirt-python
+	libwbclient
+	libwsman1
 	libxcb
 	libxml2-python
 	libxslt
@@ -455,22 +447,31 @@ includepkgs = OVMF
 	lksctp-tools
 	lldpad
 	lm_sensors-libs
+	log4j
 	lshw
 	lsof
 	lvm2
 	lvm2-libs
+	lz4
 	lzop
 	m2crypto
 	mailcap
 	mailx
 	make
 	mdadm
+	mod_ssl
+	mpfr
 	msv-msv
 	msv-xsdlib
 	mtools
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	netcf-libs
 	nettle
 	newt-python
+	nfs-utils
 	nmap-ncat
 	ntp
 	ntpdate
@@ -480,11 +481,16 @@ includepkgs = OVMF
 	objectweb-asm
 	oddjob
 	oddjob-mkhomedir
+	openldap
 	openldap-clients
 	openssl
+	openssl-libs
+	openwsman-python
+	opus
 	osinfo-db
 	osinfo-db-tools
 	pciutils
+	pciutils-libs
 	perl
 	perl-Archive-Tar
 	perl-Carp
@@ -525,8 +531,10 @@ includepkgs = OVMF
 	perl-threads-shared
 	pexpect
 	pixman
+	policycoreutils
 	policycoreutils-python
 	postgresql-jdbc
+	postgresql-libs
 	psmisc
 	pygobject2
 	pyparsing
@@ -538,20 +546,25 @@ includepkgs = OVMF
 	python-cffi
 	python-chardet
 	python-configshell
+	python-dmidecode
 	python-dns
 	python-enum34
 	python-ethtool
+	python-firewall
 	python-gssapi
 	python-idna
 	python-inotify
 	python-ipaddr
 	python-ipaddress
+	python-isodate
 	python-javapackages
 	python-jinja2
 	python-jwcrypto
 	python-kitchen
 	python-kmod
 	python-ldap
+	python-libguestfs
+	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -563,11 +576,16 @@ includepkgs = OVMF
 	python-requests
 	python-rtslib
 	python-setuptools
+	python-sss-murmur
+	python-sssdconfig
 	python-suds
 	python-urllib3
 	python-urwid
 	python-webob
 	python-yubico
+	python2-cryptography
+	python2-ipaclient
+	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
 	pyusb
@@ -581,32 +599,70 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
+	ruby
+	ruby-irb
+	ruby-libs
+	rubygem-bigdecimal
+	rubygem-io-console
+	rubygem-psych
+	rubygem-rdoc
+	rubygems
+	samba-client-libs
+	samba-common
+	samba-common-libs
 	sanlock
 	sanlock-lib
 	sanlock-python
 	satyr
 	scannotation
+	scl-utils
 	screen
 	scrub
+	seabios-bin
+	seavgabios-bin
 	setools-libs
 	sg3_utils
 	sg3_utils-libs
 	sgabios-bin
 	socat
+	sos
+	spice-server
 	squashfs-tools
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	stax2-api
+	subscription-manager
+	subscription-manager-rhsm
+	subscription-manager-rhsm-certificates
 	supermin5
 	svrcore
 	syslinux
 	syslinux-extlinux
 	sysstat
+	systemd
+	systemd-libs
+	systemd-python
+	systemd-sysv
 	targetcli
 	tcp_wrappers
 	tcpdump
 	telnet
+	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
+	tuned
+	udisks2
+	udisks2-iscsi
+	udisks2-lvm2
 	unbound-libs
 	unzip
 	usbredir
@@ -614,6 +670,8 @@ includepkgs = OVMF
 	uuid
 	virt-install
 	virt-manager-common
+	virt-v2v
+	volume_key-libs
 	ws-commons-util
 	ws-jaxme
 	xalan-j2
@@ -638,9 +696,7 @@ baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
 enabled = 1
 exclude = ansible
 max_connections = 5
-includepkgs = cockpit-storaged
-	libssh
-	libstoraged
+includepkgs = libssh
 	libtomcrypt
 	libtommath
 	python-httplib2
@@ -648,9 +704,6 @@ includepkgs = cockpit-storaged
 	python-paramiko
 	python2-crypto
 	sshpass
-	storaged
-	storaged-iscsi
-	storaged-lvm2
 
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64
@@ -663,7 +716,6 @@ includepkgs = ansible
 	jctools
 	lyx-fonts
 	python-daemon
-	python-isodate
 	python-keyczar
 	python-linecache2
 	python-pthreading
@@ -716,11 +768,11 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
 gpgcheck = 0
 cost = 2000
 enabled = 1
-exclude = cockpit-storaged*
 includepkgs = cockpit
 	cockpit-bridge
 	cockpit-dashboard
 	cockpit-networkmanager
+	cockpit-storaged
 	cockpit-system
 	cockpit-ws
 	gofer
@@ -728,7 +780,8 @@ includepkgs = cockpit
 	hystrix-metrics-event-stream
 	jemalloc
 	katello-agent
-	katello-agent-fact-plugin
+	katello-host-tools
+	katello-host-tools-fact-plugin
 	mom
 	pulp-rpm-handlers
 	python-dateutil

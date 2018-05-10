@@ -2,27 +2,21 @@
 stage: check-patch
 substage:
   - ansible_suite_master
-  - basic_suite_4.1
   - basic_suite_4.2
   - basic_suite_master
-  - hc-basic_suite_4.1
   - hc-basic_suite_4.2
   - hc-basic_suite_master
   - he-basic-ansible_suite_4.2
   - he-basic-ansible_suite_master
   - he-basic-iscsi_suite_master
-  - he-basic_suite_4.1
   - he-basic_suite_4.2
   - he-basic_suite_master
-  - image-ng_suite_4.1
   - image-ng_suite_4.2
   - image-ng_suite_master
   - network_suite_4.2
   - network_suite_master
   - performance_suite_master
-  - upgrade-from-prevrelease_suite_4.1
   - upgrade-from-prevrelease_suite_4.2
-  - upgrade-from-release_suite_4.1
   - upgrade-from-release_suite_master
   - check_docs:
       runif:

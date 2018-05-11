@@ -131,9 +131,9 @@ baseurl = http://copr-be.cloud.fedoraproject.org/results/patternfly/patternfly1/
 enabled = 1
 includepkgs = patternfly1
 
-[glusterfs-3.8-el7]
+[glusterfs-3.8-7.4-snapshot-el7]
 name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/
+baseurl = http://mirror.centos.org/centos/7.4.1708/storage/x86_64/gluster-3.8/
 enabled = 1
 max_connections = 5
 includepkgs = glusterfs

@@ -25,6 +25,8 @@ import os
 from lago import utils
 from ovirtlago import testlib
 
+import test_utils
+
 
 def configure_metrics(prefix):
     """
@@ -121,7 +123,4 @@ _TEST_LIST = [
 ]
 
 
-def test_gen():
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        test_gen.__name__ = t.description
-        yield t
+test_gen = test_utils.mk_test_gen(_TEST_LIST)

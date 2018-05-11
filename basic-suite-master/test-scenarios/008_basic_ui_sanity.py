@@ -329,8 +329,4 @@ _TEST_LIST = [
 ]
 
 
-def test_gen():
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        log(t)
-        test_gen.__name__ = t.description
-        yield t
+test_gen = test_utils.mk_test_gen(_TEST_LIST)

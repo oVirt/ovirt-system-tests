@@ -27,8 +27,8 @@ import uuid
 from ovirtlago import testlib
 
 
-def test_gen(test_names, generator):
-    '''Run the given tests amending their names according to the context.
+def mk_test_gen(test_names):
+    '''Return test generator running test_names with possibly amended names.
 
     Tests suites are run repeatedly under different conditions, such as data
     center version as defined by OST_DC_VERSION environment variable.  This
@@ -38,16 +38,23 @@ def test_gen(test_names, generator):
     Arguments:
 
       test_names -- sequence of names of the tests to run
-      generator -- the calling test generator function providing test names to
-        nose
+
+    Returns:
+
+      Test generator function.
+
     '''
     ost_dc_version = os.environ.get('OST_DC_VERSION', None)
-    for t in testlib.test_sequence_gen(test_names):
-        test_id = t.description
-        if ost_dc_version is not None:
-            test_id = '{}_{}'.format(test_id, ost_dc_version.replace('.', ''))
-        generator.__name__ = test_id
-        yield t
+
+    def test_gen():
+        for t in testlib.test_sequence_gen(test_names):
+            test_id = t.description
+            if ost_dc_version is not None:
+                test_id = ('{}_{}'
+                           .format(test_id, ost_dc_version.replace('.', '')))
+            test_gen.__name__ = test_id
+            yield t
+    return test_gen
 
 
 # Taken from https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize

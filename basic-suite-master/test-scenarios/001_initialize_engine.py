@@ -24,6 +24,8 @@ from tempfile import NamedTemporaryFile
 import nose.tools as nt
 from ovirtlago import testlib
 
+import test_utils
+
 
 @testlib.with_ovirt_prefix
 def initialize_engine(prefix):
@@ -154,7 +156,4 @@ _TEST_LIST = [
 ]
 
 
-def test_gen():
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        test_gen.__name__ = t.description
-        yield t
+test_gen = test_utils.mk_test_gen(_TEST_LIST)

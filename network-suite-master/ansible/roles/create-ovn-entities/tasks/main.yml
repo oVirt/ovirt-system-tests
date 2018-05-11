@@ -1,12 +1,12 @@
 ---
-- name: Create network 10
+- name: Create network net10
   os_network:
     cloud: "{{ cloud_name }}"
     state: present
     name: net10
   register: net10
 
-- name: Create net10_subnet 1
+- name: Create subnet net10_subnet1
   os_subnet:
     cloud: "{{ cloud_name }}"
     state: present
@@ -27,14 +27,14 @@
     fixed_ips:
       - ip_address: 10.10.0.11
 
-- name: Create network 11
+- name: Create network net11
   os_network:
     cloud: "{{ cloud_name }}"
     state: present
     name: net11
   register: net11
 
-- name: Create net11_subnet 1
+- name: Create subnet net11_subnet1
   os_subnet:
     cloud: "{{ cloud_name }}"
     state: present
@@ -55,14 +55,14 @@
     fixed_ips:
       - ip_address: 10.11.0.11
 
-- name: Create network 12
+- name: Create network net12
   os_network:
     cloud: "{{ cloud_name }}"
     state: present
     name: net12
   register: net12
 
-- name: Create net12_subnet 1
+- name: Create subnet net12_subnet 1
   os_subnet:
     cloud: "{{ cloud_name }}"
     state: present
@@ -83,12 +83,53 @@
     fixed_ips:
       - ip_address: 10.12.0.11
 
-- name: Create router0
+- name: Create network net14
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net14
+  register: net14
+
+- name: Create subnet net14_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net14.id }}"
+    name: net14_subnet1
+    ip_version: 4
+    cidr: 10.14.0.0/24
+    gateway_ip: 10.14.0.1
+    enable_dhcp: yes
+  register: net14_subnet1
+
+- name: Create port net14_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net14_port1
+    network: net14
+    fixed_ips:
+      - ip_address: 10.14.0.11
+
+- name: Create router router0
   os_router:
     cloud: "{{ cloud_name }}"
     state: present
     name: router0
+    network: "{{net12.id}}"
+    enable_snat: no
+    external_fixed_ips:
+      - subnet: "{{net12_subnet1.id}}"
+        ip: 10.12.0.100
     interfaces:
         - net10_subnet1
         - net11_subnet1
+
+- name: Create router router1
+  os_router:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: router1
+    interfaces:
         - net12_subnet1
+        - net14_subnet1

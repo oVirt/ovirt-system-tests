@@ -89,6 +89,13 @@ class Vm(SDKRootEntity):
     def migrate(self, dst_host_name):
         self._service.migrate(host=types.Host(name=dst_host_name))
 
+    def create_vnic(self, vnic_name, vnic_profile, mac_addr=None):
+        vnic = netlib.Vnic(self)
+        vnic.create(name=vnic_name,
+                    vnic_profile=vnic_profile,
+                    mac_addr=mac_addr)
+        return vnic
+
     def get_vnic(self, vnic_name):
         vnic = netlib.Vnic(self)
         vnic.import_by_name(vnic_name)

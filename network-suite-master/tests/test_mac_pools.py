@@ -77,8 +77,11 @@ def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
                         cluster=default_cluster,
                         template=templatelib.TEMPLATE_BLANK)
 
-            _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
-            _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+            vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+            vm_0.wait_for_down_status()
+
+            vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+            vm_1.wait_for_down_status()
 
             with pytest.raises(clusterlib.MacPoolContainsDuplicatesError):
                 mac_pool.set_allow_duplicates(False)
@@ -95,11 +98,11 @@ def test_assign_vnic_with_full_mac_pool_capacity_fails(
             vm.create(vm_name=VM0,
                       cluster=default_cluster,
                       template=templatelib.TEMPLATE_BLANK)
-            _create_vnic(vm, NIC_NAME_1, ovirtmgmt_vnic_profile)
-            _create_vnic(vm, NIC_NAME_2, ovirtmgmt_vnic_profile)
+            vm.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile)
+            vm.create_vnic(NIC_NAME_2, ovirtmgmt_vnic_profile)
 
             with pytest.raises(netlib.MacPoolIsInFullCapacityError):
-                _create_vnic(vm, NIC_NAME_3, ovirtmgmt_vnic_profile)
+                vm.create_vnic(NIC_NAME_3, ovirtmgmt_vnic_profile)
 
 
 def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
@@ -115,10 +118,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
 
         nicless_snapshot = _create_snapshot(vm_0)
 
-        vm_0_vnic_0 = netlib.Vnic(vm_0)
-        vm_0_vnic_0.create(name=NIC_NAME_1,
-                           vnic_profile=ovirtmgmt_vnic_profile,
-                           mac_addr=MAC_ADDR_1)
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.stop()
         vm_0.wait_for_down_status()
 
@@ -128,10 +128,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
-        vm_1_vnic_0 = netlib.Vnic(vm_1)
-        vm_1_vnic_0.create(name=NIC_NAME_1,
-                           vnic_profile=ovirtmgmt_vnic_profile,
-                           mac_addr=MAC_ADDR_1)
+        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
         nicless_snapshot.undo_preview()
 
@@ -161,16 +158,14 @@ def test_mac_pools_in_different_clusters_dont_overlap(
             vm_0.create(vm_name=VM0,
                         cluster=default_cluster,
                         template=templatelib.TEMPLATE_BLANK)
-            _create_vnic(
-                vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1
-            )
+            vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
             vm_1.create(vm_name=VM1,
                         cluster=cluster_0,
                         template=templatelib.TEMPLATE_BLANK)
             with pytest.raises(netlib.MacAddrInUseError):
-                _create_vnic(
-                    vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1
+                vm_1.create_vnic(
+                    NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1
                 )
 
 
@@ -181,7 +176,8 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
-        _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
@@ -193,7 +189,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
-        _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
         vm_0.stop()
         vm_0.wait_for_down_status()
@@ -213,7 +209,8 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME,
                     stateless=True)
 
-        _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
@@ -225,7 +222,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
 
         with pytest.raises(netlib.MacAddrInUseError):
-            _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+            vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
 
 def test_move_mac_to_new_vm(
@@ -236,7 +233,8 @@ def test_move_mac_to_new_vm(
                     cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
 
-        _create_vnic(vm_0, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
@@ -247,7 +245,7 @@ def test_move_mac_to_new_vm(
                     cluster=default_cluster,
                     template=fixtures.virt.CIRROS_TEMPLATE_NAME)
 
-        _create_vnic(vm_1, NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
         vnic_1 = vm_1.get_vnic(NIC_NAME_1)
         assert vnic_1.mac_address == MAC_ADDR_1
@@ -258,14 +256,6 @@ def _replace_vnic_mac_addr(vm, addr):
     vnic.hotunplug()
     vnic.set_mac_addr(addr)
     vnic.hotplug()
-
-
-def _create_vnic(vm, vnic_name, ovirtmgmt_vnic_profile, mac_addr=None):
-    vnic = netlib.Vnic(vm)
-    vnic.create(name=vnic_name,
-                vnic_profile=ovirtmgmt_vnic_profile,
-                mac_addr=mac_addr)
-    vm.wait_for_down_status()
 
 
 def _create_snapshot(vm):

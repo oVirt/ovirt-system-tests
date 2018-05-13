@@ -117,16 +117,43 @@ includepkgs = gdeploy
 name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
-includepkgs = slf4j
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	copy-jdk-configs
+	java-1.8.0-openjdk
+	java-1.8.0-openjdk-devel
+	java-1.8.0-openjdk-headless
+	krb5-workstation
+	libkadm5
+	libvirt-client
+	libvirt-daemon
+	libvirt-daemon-config-network
+	libvirt-daemon-config-nwfilter
+	libvirt-daemon-driver-interface
+	libvirt-daemon-driver-network
+	libvirt-daemon-driver-nodedev
+	libvirt-daemon-driver-nwfilter
+	libvirt-daemon-driver-qemu
+	libvirt-daemon-driver-secret
+	libvirt-daemon-driver-storage
+	libvirt-daemon-driver-storage-core
+	libvirt-daemon-driver-storage-disk
+	libvirt-daemon-driver-storage-gluster
+	libvirt-daemon-driver-storage-iscsi
+	libvirt-daemon-driver-storage-logical
+	libvirt-daemon-driver-storage-mpath
+	libvirt-daemon-driver-storage-rbd
+	libvirt-daemon-driver-storage-scsi
+	libvirt-daemon-kvm
+	libvirt-libs
+	libvirt-lock-sanlock
 	tzdata-java
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	NetworkManager-config-server
+includepkgs = NetworkManager-config-server
 	OVMF
 	OpenIPMI-modalias
 	PyYAML
@@ -143,6 +170,7 @@ includepkgs = 389-ds-base
 	abrt-python
 	abrt-retrace-client
 	abrt-tui
+	alsa-lib
 	ant
 	antlr-tool
 	aopalliance
@@ -163,8 +191,6 @@ includepkgs = 389-ds-base
 	apr-util
 	atlas
 	attr
-	audit
-	audit-libs
 	audit-libs-python
 	augeas
 	augeas-libs
@@ -177,8 +203,6 @@ includepkgs = 389-ds-base
 	bea-stax
 	bea-stax-api
 	bind-libs
-	bind-libs-lite
-	bind-license
 	bind-utils
 	blas
 	boost-system
@@ -190,37 +214,25 @@ includepkgs = 389-ds-base
 	celt051
 	certmonger
 	checkpolicy
-	copy-jdk-configs
 	cracklib-python
 	cryptsetup
-	cryptsetup-libs
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
-	cyrus-sasl-lib
 	cyrus-sasl-md5
 	cyrus-sasl-plain
 	cyrus-sasl-scram
-	dbus
-	dbus-libs
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
 	dnsmasq
 	dom4j
 	dosfstools
-	dracut
-	dracut-config-rescue
 	dracut-fips
-	dracut-network
 	easymock2
 	elfutils
-	elfutils-libelf
-	elfutils-libs
 	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
@@ -258,8 +270,6 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-soap
 	fence-agents-wti
 	fence-virt
-	firewalld
-	firewalld-filesystem
 	fontconfig
 	fontpackages-filesystem
 	fuse
@@ -291,7 +301,6 @@ includepkgs = 389-ds-base
 	ipa-client-common
 	ipa-common
 	ipmitool
-	iptables
 	iptables-services
 	ipxe-roms-qemu
 	iscsi-initiator-utils
@@ -299,9 +308,6 @@ includepkgs = 389-ds-base
 	isorelax
 	jackson
 	jakarta-commons-httpclient
-	java-1.8.0-openjdk
-	java-1.8.0-openjdk-devel
-	java-1.8.0-openjdk-headless
 	javamail
 	javapackages-tools
 	javassist
@@ -317,9 +323,6 @@ includepkgs = 389-ds-base
 	junit
 	jzlib
 	keyutils
-	kpartx
-	krb5-libs
-	krb5-workstation
 	lapack
 	libICE
 	libSM
@@ -335,7 +338,6 @@ includepkgs = 389-ds-base
 	libaio
 	libarchive
 	libatasmart
-	libattr
 	libbasicobjects
 	libblockdev
 	libblockdev-crypto
@@ -364,7 +366,6 @@ includepkgs = 389-ds-base
 	libipa_hbac
 	libiscsi
 	libjpeg-turbo
-	libkadm5
 	libldb
 	libmodman
 	libnfsidmap
@@ -389,12 +390,7 @@ includepkgs = 389-ds-base
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
-	libselinux
-	libselinux-python
-	libselinux-utils
-	libsemanage
 	libsemanage-python
-	libsepol
 	libsmbclient
 	libsss_autofs
 	libsss_certmap
@@ -410,28 +406,6 @@ includepkgs = 389-ds-base
 	libusal
 	libusbx
 	libverto-libevent
-	libvirt-client
-	libvirt-daemon
-	libvirt-daemon-config-network
-	libvirt-daemon-config-nwfilter
-	libvirt-daemon-driver-interface
-	libvirt-daemon-driver-network
-	libvirt-daemon-driver-nodedev
-	libvirt-daemon-driver-nwfilter
-	libvirt-daemon-driver-qemu
-	libvirt-daemon-driver-secret
-	libvirt-daemon-driver-storage
-	libvirt-daemon-driver-storage-core
-	libvirt-daemon-driver-storage-disk
-	libvirt-daemon-driver-storage-gluster
-	libvirt-daemon-driver-storage-iscsi
-	libvirt-daemon-driver-storage-logical
-	libvirt-daemon-driver-storage-mpath
-	libvirt-daemon-driver-storage-rbd
-	libvirt-daemon-driver-storage-scsi
-	libvirt-daemon-kvm
-	libvirt-libs
-	libvirt-lock-sanlock
 	libvirt-python
 	libwbclient
 	libwsman1
@@ -443,11 +417,9 @@ includepkgs = 389-ds-base
 	lldpad
 	lm_sensors-libs
 	log4j
-	lshw
 	lsof
 	lvm2
 	lvm2-libs
-	lz4
 	lzop
 	m2crypto
 	mailcap
@@ -476,16 +448,13 @@ includepkgs = 389-ds-base
 	objectweb-asm
 	oddjob
 	oddjob-mkhomedir
-	openldap
 	openldap-clients
 	openssl
-	openssl-libs
 	openwsman-python
 	opus
 	osinfo-db
 	osinfo-db-tools
 	pciutils
-	pciutils-libs
 	perl
 	perl-Archive-Tar
 	perl-Carp
@@ -526,7 +495,6 @@ includepkgs = 389-ds-base
 	perl-threads-shared
 	pexpect
 	pixman
-	policycoreutils
 	policycoreutils-python
 	postgresql-jdbc
 	postgresql-libs
@@ -545,7 +513,6 @@ includepkgs = 389-ds-base
 	python-dns
 	python-enum34
 	python-ethtool
-	python-firewall
 	python-gssapi
 	python-idna
 	python-inotify
@@ -616,9 +583,8 @@ includepkgs = 389-ds-base
 	seabios-bin
 	seavgabios-bin
 	setools-libs
-	sg3_utils
-	sg3_utils-libs
 	sgabios-bin
+	slf4j
 	socat
 	sos
 	spice-server
@@ -642,10 +608,7 @@ includepkgs = 389-ds-base
 	syslinux
 	syslinux-extlinux
 	sysstat
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	targetcli
 	tcp_wrappers
 	tcpdump
@@ -654,7 +617,6 @@ includepkgs = 389-ds-base
 	tree
 	trousers
 	ttmkfdir
-	tuned
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2

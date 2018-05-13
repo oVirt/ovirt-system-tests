@@ -122,7 +122,7 @@ cleanup() {
 main() {
     local project_dir="${0%/*}"
     local lago_repo="http://templates.ovirt.org/repo/repo.metadata"
-    local lago_template="el7.4-base-1"
+    local lago_template="el7.5-base"
     local vm_name=vm-01
     local pkgs=()
     local options=$( \

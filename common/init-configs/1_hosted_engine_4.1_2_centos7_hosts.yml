@@ -59,11 +59,16 @@ domains:
     nics:
       - net: lago-{{ env.suite_name }}-net-management
     disks:
-      - template_name: {{ templates.host }}
-        type: template
+      - type: template
         name: root
         dev: vda
         format: qcow2
+        {% if root_disk_path -%}
+        template_type: qcow2
+        path: {{ root_disk_path -}}
+        {% else -%}
+        template_name: {{ templates.host }}
+        {%- endif %}
       - name: tmp
         size: 80G
         type: empty
@@ -73,6 +78,9 @@ domains:
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:
+        {% if check_node_status -%}
+        - $LAGO_INITFILE_PATH/../common/deploy-scripts/check_node_status.sh
+        {%- endif %}
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh

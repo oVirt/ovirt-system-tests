@@ -91,16 +91,18 @@ class Host(SDKRootEntity):
     def is_not_spm(self):
         return self.get_sdk_type().spm.status == types.SpmStatus.NONE
 
-    def create(self, cluster, vm):
+    def create(self, cluster, name, address, root_password):
         """
         :param cluster: clusterlib.Cluster
-        :param vm: LagoVm
+        :param name: str
+        :param address: str
+        :param root_password: str
         """
         sdk_type = types.Host(
-            name=vm.name(),
-            description='host %s' % vm.name(),
-            address=vm.name(),
-            root_password=str(vm.root_password()),
+            name=name,
+            description='host %s' % name,
+            address=address,
+            root_password=root_password,
             override_iptables=True,
             cluster=cluster.get_sdk_type()
         )

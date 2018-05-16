@@ -34,7 +34,8 @@ HOST_1_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '1'])
 def host_0(env, system, default_cluster):
     vm = env.get_vms()[HOST_0_DOMAIN]
     host = hostlib.Host(system)
-    host.create(default_cluster, vm)
+    host.create(
+        default_cluster, vm.name(), vm.name(), str(vm.root_password()))
     return host
 
 
@@ -48,7 +49,8 @@ def host_0_up(host_0):
 def host_1(env, system, default_cluster):
     vm = env.get_vms()[HOST_1_DOMAIN]
     host = hostlib.Host(system)
-    host.create(default_cluster, vm)
+    host.create(
+        default_cluster, vm.name(), vm.name(), str(vm.root_password()))
     return host
 
 

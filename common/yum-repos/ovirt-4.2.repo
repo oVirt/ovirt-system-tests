@@ -683,6 +683,7 @@ includepkgs = ansible
 	cockpit
 	cockpit-bridge
 	cockpit-dashboard
+	cockpit-machines-ovirt
 	cockpit-networkmanager
 	cockpit-storaged
 	cockpit-system

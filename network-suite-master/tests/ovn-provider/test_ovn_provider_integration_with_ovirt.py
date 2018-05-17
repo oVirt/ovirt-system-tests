@@ -57,6 +57,7 @@ def test_connect_vm_to_external_network(ovirt_external_network, system,
         vm_0.wait_for_down_status()
 
         vm_0.run()
+        vm_0.wait_for_up_status()
 
         ovn_port = _lookup_port_by_device_id(
             vm0_vnic_0.id, default_ovn_provider_client)

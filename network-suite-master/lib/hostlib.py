@@ -92,6 +92,10 @@ class Host(SDKRootEntity):
         return self.get_sdk_type().address
 
     @property
+    def root_password(self):
+        return self._root_password
+
+    @property
     def is_not_spm(self):
         return self.get_sdk_type().spm.status == types.SpmStatus.NONE
 
@@ -111,6 +115,7 @@ class Host(SDKRootEntity):
             cluster=cluster.get_sdk_type()
         )
         self._create_sdk_entity(sdk_type)
+        self._root_password = root_password
 
     def activate(self):
         self._service.activate()

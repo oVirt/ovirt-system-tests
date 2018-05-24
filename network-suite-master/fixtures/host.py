@@ -35,7 +35,7 @@ def host_0(env, system, default_cluster):
     vm = env.get_vms()[HOST_0_DOMAIN]
     host = hostlib.Host(system)
     host.create(
-        default_cluster, vm.name(), vm.name(), str(vm.root_password()))
+        default_cluster, vm.name(), vm.ip(), str(vm.root_password()))
     return host
 
 
@@ -50,7 +50,7 @@ def host_1(env, system, default_cluster):
     vm = env.get_vms()[HOST_1_DOMAIN]
     host = hostlib.Host(system)
     host.create(
-        default_cluster, vm.name(), vm.name(), str(vm.root_password()))
+        default_cluster, vm.name(), vm.ip(), str(vm.root_password()))
     return host
 
 

@@ -88,6 +88,10 @@ class Host(SDKRootEntity):
         return self.get_sdk_type().name
 
     @property
+    def address(self):
+        return self.get_sdk_type().address
+
+    @property
     def is_not_spm(self):
         return self.get_sdk_type().spm.status == types.SpmStatus.NONE
 

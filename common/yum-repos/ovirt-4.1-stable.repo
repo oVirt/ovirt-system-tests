@@ -87,7 +87,7 @@ includepkgs = libcacard
 
 [centos-ovirt-4.1-el7]
 name = CentOS-7 - oVirt 4.1
-baseurl = http://mirror.centos.org/centos/7.4.1708/virt/x86_64/ovirt-4.1/
+baseurl = http://vault.centos.org/7.4.1708/virt/x86_64/ovirt-4.1/
 gpgcheck = 1
 enabled = 1
 includepkgs = archaius-core
@@ -133,7 +133,7 @@ includepkgs = patternfly1
 
 [glusterfs-3.8-7.4-snapshot-el7]
 name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7.4.1708/storage/x86_64/gluster-3.8/
+baseurl = http://vault.centos.org/7.4.1708/storage/x86_64/gluster-3.8/
 enabled = 1
 max_connections = 5
 includepkgs = glusterfs

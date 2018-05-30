@@ -1,4 +1,4 @@
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,23 +16,5 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import pytest
-
-from lib import clusterlib
-
-
-@pytest.fixture(scope='session', autouse=True)
-def default_cluster(system):
-    DEFAULT_NAME = 'Default'
-    cluster = clusterlib.Cluster(system)
-    cluster.import_by_name(DEFAULT_NAME)
-    return cluster
-
-
-@pytest.fixture(scope='session')
-def ovs_cluster(system, default_data_center):
-    OVS_CLUSTER_NAME = 'ovs-cluster'
-    with clusterlib.cluster(
-            system, default_data_center, OVS_CLUSTER_NAME) as ovs_cluster:
-        ovs_cluster.set_network_switch_type(clusterlib.SwitchType.OVS)
-        yield ovs_cluster
+from fixtures.cluster import ovs_cluster  # NOQA: F401
+from fixtures.host import host_in_ovs_cluster  # NOQA: F401

@@ -1,4 +1,3 @@
-#
 # Copyright 2018 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,25 +16,3 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from lib import clusterlib
-from lib import hostlib
-
-from testlib import suite
-
-
-pytestmark = suite.SKIP_SUITE_42
-
-
-def test_migrate_cluster_from_legacy_to_ovs(
-        host_1_up, system, default_data_center):
-
-    with clusterlib.cluster(
-            system, default_data_center, 'ovs-cluster') as ovs_cluster:
-        ovs_cluster.set_network_switch_type(clusterlib.SwitchType.OVS)
-
-        with hostlib.change_cluster(host_1_up, ovs_cluster):
-            host_1_up.sync_all_networks()
-            assert host_1_up.networks_in_sync()
-
-        host_1_up.sync_all_networks()
-        assert host_1_up.networks_in_sync()

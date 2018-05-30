@@ -60,6 +60,21 @@ def host_1_up(host_1):
     return host_1
 
 
+@pytest.fixture(scope='session')
+def host_in_ovs_cluster(
+        system, ovs_cluster, default_cluster, default_data_center):
+    host_id = default_cluster.host_ids()[0]
+    host = hostlib.Host(system)
+    host.import_by_id(host_id)
+    host.wait_for_up_status(timeout=15 * 60)
+    with hostlib.change_cluster(host, ovs_cluster):
+        host.sync_all_networks()
+        default_data_center.wait_for_up_status()
+        yield host
+    host.sync_all_networks()
+    default_data_center.wait_for_up_status()
+
+
 def _wait_for_host_install(host):
     host.wait_for_up_status(timeout=15 * 60)
     # TODO: There's currently a NPE (bz#1514853) in Engine's

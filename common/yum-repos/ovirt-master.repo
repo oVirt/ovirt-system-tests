@@ -689,9 +689,9 @@ includepkgs = ansible
 	rubygem-multipart-post
 	rxjava
 
-[centos-ovirt-4.2-el7]
-name = CentOS-7 - oVirt 4.2
-baseurl = http://cbs.centos.org/repos/virt7-ovirt-42-testing/x86_64/os/
+[centos-ovirt-4.3-el7]
+name = CentOS-7 - oVirt 4.3
+baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
 exclude = ovirt-host*

@@ -17,6 +17,7 @@ substage:
   - network_suite_4.2
   - network_suite_master
   - performance_suite_master
+  - upgrade-from-release_suite_4.2
   - upgrade-from-prevrelease_suite_4.2
   - upgrade-from-release_suite_master
   - check_docs:

@@ -40,6 +40,7 @@ def test_initialize_engine(prefix):
         [
             'OTOPI_DEBUG=1',
             'engine-setup',
+            '--accept-defaults',
             '--config-append=/tmp/answer-file-pre',
         ],
     )

@@ -11,6 +11,8 @@ install_dependencies() {
     pip install pylint==1.6.4
     pip install pytest==3.5
 
+    pip install contextlib2
+
     # python2-devel gcc are dependencies of shade
     yum install -y ansible-2.5.3-1.el7 python2-devel gcc
 

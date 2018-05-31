@@ -152,6 +152,9 @@ class Cluster(SDKRootEntity):
     def set_mac_pool(self, mac_pool):
         self.update(mac_pool=mac_pool.get_sdk_type())
 
+    def sync_all_networks(self):
+        self.service.sync_all_networks()
+
     def _get_parent_service(self, system):
         return system.clusters_service
 
@@ -178,3 +181,13 @@ class ClusterNetwork(SDKSubEntity):
 
     def set_usages(self, usages):
         self.update(usages=usages)
+
+
+@contextlib.contextmanager
+def network_assignment(cluster, network, required=False):
+    cluster_network = ClusterNetwork(cluster)
+    cluster_network.assign(network, required)
+    try:
+        yield cluster_network
+    finally:
+        cluster_network.remove()

@@ -86,6 +86,10 @@ def change_cluster(host, cluster):
 
 class Host(SDKRootEntity):
 
+    def __init__(self, parent_sdk_system):
+        super(Host, self).__init__(parent_sdk_system)
+        self._root_password = None
+
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -225,6 +229,11 @@ class Host(SDKRootEntity):
                       exec_func_args=(),
                       success_criteria=lambda s: s == HostStatus.MAINTENANCE)
 
+    def wait_for_networks_in_sync(self, networks=None):
+        syncutil.sync(exec_func=self.networks_in_sync,
+                      exec_func_args=(networks,),
+                      success_criteria=lambda s: s)
+
     def _get_parent_service(self, system):
         return system.hosts_service
 
@@ -270,6 +279,9 @@ class Host(SDKRootEntity):
         if HAS_RUNNING_TASKS in error.msg or HOST_IS_CONTENDING in error.msg:
             return False
         return True
+
+    def refresh_capabilities(self):
+        self.service.refresh()
 
 
 @contextlib.contextmanager

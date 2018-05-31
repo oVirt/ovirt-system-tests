@@ -254,3 +254,13 @@ def create_vnic_profile(system, name, network, qos=None):
         yield vnic_p
     finally:
         vnic_p.remove()
+
+
+@contextlib.contextmanager
+def new_network(name, dc):
+    network = Network(dc)
+    network.create(name=name)
+    try:
+        yield network
+    finally:
+        network.remove()

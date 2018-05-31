@@ -13,6 +13,7 @@ substage:
   - he-basic_suite_4.2
   - he-basic_suite_master
   - he-node-ng_suite_master
+  - he-node-ng_suite_4.2
   - network_suite_4.2
   - network_suite_master
   - performance_suite_master

@@ -14,7 +14,7 @@ prep_suite() {
     mkdir -p "${suite}/images"
 
     # Download node rpm
-    reposync -q -n -c "${suite}/reposync-node.repo" -r ovirt-node-ng-master-el7
+    reposync -q -n -c "${suite}/reposync-node.repo"
     local node_rpm=$(find . -name "*image-update*.rpm" -exec realpath {} \;)
     local node_url="file://${node_rpm}"
     local vm_name="ovirt-ngn"

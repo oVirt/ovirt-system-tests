@@ -1,0 +1,9 @@
+# This is used by directly control.sh, and not by lago, to download the latest
+# ovirt-node-ng-image-update rpm
+
+[ovirt-node-ng-4.2-el7]
+name=oVirt Node NG
+baseurl=http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
+enabled=1
+max_connections=10
+includepkgs=ovirt-node-ng-image-update

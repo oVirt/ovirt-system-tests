@@ -31,6 +31,7 @@ from ovirtlago import testlib
 
 import ovirtsdk4.types as types
 
+import uuid
 import time
 
 import test_utils
@@ -332,19 +333,22 @@ def add_snapshot_for_backup(api):
     )
 
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
-    vm2_snapshots_service.add(backup_snapshot_params)
 
+    correlation_id = uuid.uuid4()
+    with test_utils.TestEvent(engine, [45, 68]):
+        # USER_CREATE_SNAPSHOT(41) event
+        # USER_CREATE_SNAPSHOT_FINISHED_SUCCESS(68) event
+        vm2_snapshots_service.add(backup_snapshot_params,
+                                  query={'correlation_id': correlation_id})
 
-@testlib.with_ovirt_api4
-def verify_backup_snapshot_created(api):
-    engine = api.system_service()
-
-    vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
-
-    testlib.assert_true_within_long(
-        lambda:
-        vm2_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK,
-    )
+        testlib.assert_true_within_long(
+            lambda:
+            test_utils.all_jobs_finished(engine, correlation_id)
+        )
+        testlib.assert_true_within_long(
+            lambda:
+            vm2_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK,
+        )
 
 
 @testlib.with_ovirt_api4
@@ -437,9 +441,15 @@ def snapshot_cold_merge(api):
             )
         ]
     )
+    correlation_id = uuid.uuid4()
 
-    vm1_snapshots_service.add(dead_snap1_params)
+    vm1_snapshots_service.add(dead_snap1_params,
+                              query={'correlation_id': correlation_id})
 
+    testlib.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
+    )
     testlib.assert_true_within_long(
         lambda:
         vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
@@ -456,9 +466,15 @@ def snapshot_cold_merge(api):
             )
         ]
     )
+    correlation_id_snap2 = uuid.uuid4()
 
-    vm1_snapshots_service.add(dead_snap2_params)
+    vm1_snapshots_service.add(dead_snap2_params,
+                              query={'correlation_id': correlation_id_snap2})
 
+    testlib.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id_snap2)
+    )
     testlib.assert_true_within_long(
         lambda:
         vm1_snapshots_service.list()[-1].snapshot_status == types.SnapshotStatus.OK
@@ -506,13 +522,17 @@ def cold_storage_migration(api):
 def live_storage_migration(api):
     engine = api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
+    correlation_id = uuid.uuid4()
     disk_service.move(
         async=False,
         filter=False,
         storage_domain=types.StorageDomain(
             name=SD_ISCSI_NAME
-        )
+        ),
+        query={'correlation_id': correlation_id}
     )
+
+    testlib.assert_true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
 
     # Assert that the disk is on the correct storage domain,
     # its status is OK and the snapshot created for the migration
@@ -528,11 +548,6 @@ def live_storage_migration(api):
     testlib.assert_true_within_long(
         lambda: disk_service.get().status == types.DiskStatus.OK
     )
-
-    # This sleep is a temporary solution to the race condition
-    # https://bugzilla.redhat.com/1456504
-    time.sleep(3)
-
 
 @testlib.with_ovirt_api4
 def export_vm1(api):
@@ -1247,7 +1262,6 @@ _TEST_LIST = [
     verify_add_vm1_from_template,
     add_disks,
     add_snapshot_for_backup,
-    verify_backup_snapshot_created,
     run_vms,
     attach_snapshot_to_backup_vm,
     verify_transient_folder,

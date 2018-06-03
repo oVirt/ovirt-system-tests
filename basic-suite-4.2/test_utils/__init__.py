@@ -19,6 +19,7 @@
 #
 
 import collections
+import contextlib
 import functools
 import ovirtsdk4.types as types
 import uuid
@@ -198,3 +199,24 @@ assert_finished_within_long = functools.partial(
     assert_finished_within,
     timeout=testlib.LONG_TIMEOUT
 )
+
+
+@contextlib.contextmanager
+def TestEvent(engine, event_id):
+    '''
+    event_id could either be an int - a single
+    event ID or a list - multiple event IDs
+    that all will be checked
+    '''
+    events = engine.events_service()
+    last_event = int(events.list(max=2)[0].id)
+    try:
+        yield
+    finally:
+        if isinstance(event_id, int):
+            event_id = [event_id]
+        for e_id in event_id:
+            testlib.assert_true_within_long(
+               lambda:
+               any(e.code == e_id for e in events.list(from_=last_event))
+            )

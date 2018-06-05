@@ -25,7 +25,7 @@
     name: net10_port1
     network: net10
     fixed_ips:
-      - ip_address: 10.10.0.2
+      - ip_address: 10.10.0.11
 
 - name: Create network 11
   os_network:
@@ -53,7 +53,7 @@
     name: net11_port1
     network: net11
     fixed_ips:
-      - ip_address: 10.11.0.2
+      - ip_address: 10.11.0.11
 
 - name: Create network 12
   os_network:
@@ -81,7 +81,7 @@
     name: net12_port1
     network: net12
     fixed_ips:
-      - ip_address: 10.12.0.2
+      - ip_address: 10.12.0.11
 
 - name: Create router0
   os_router:

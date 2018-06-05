@@ -729,7 +729,7 @@ includepkgs = ebay-cors-filter
 	openvswitch-ovn-common
 	openvswitch-ovn-host
 	ovirt-cockpit-sso
-	python-netaddr
+	python2-netaddr
 	python-websockify
 	python2-extras
 	python2-fixtures

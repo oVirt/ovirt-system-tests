@@ -777,7 +777,7 @@ def restore_vm0_networking(ovirt_prefix):
     try:
         if _vm_ssh(ovirt_prefix, VM0_NAME, ['true'], tries=1).code == 0:
             return
-    except RuntimeError:
+    except getattr(ssh, 'LagoSSHTimeoutException', RuntimeError):
         # May happen on timeout, e.g. when networking is not working at all.
         pass
     host = _vm_host(ovirt_prefix, VM0_NAME)

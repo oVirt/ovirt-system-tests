@@ -141,10 +141,20 @@ class Vm(SDKRootEntity):
         self._sync_disk_attachment(disk_attachment_id)
 
     def wait_for_up_status(self):
-        self._wait_for_status(types.VmStatus.UP)
+        self._wait_for_status((types.VmStatus.UP,))
+
+    def wait_for_powering_up_status(self):
+        """
+        According to lib/vdsm/api/vdsm-api.yml 'powering up' means
+        that VM creation is complete and now the VM booting. In libvirt
+        lifecycle terms the VM is 'defined' but not yet 'running'. In other
+        words, the configuration of the VM has been successfully processed
+        by qemu\kvm
+        """
+        self._wait_for_status((types.VmStatus.POWERING_UP, types.VmStatus.UP))
 
     def wait_for_down_status(self):
-        self._wait_for_status(types.VmStatus.DOWN)
+        self._wait_for_status((types.VmStatus.DOWN,))
 
     def create(self, vm_name, cluster, template, stateless=False):
         """
@@ -168,10 +178,10 @@ class Vm(SDKRootEntity):
     def _get_parent_service(self, system):
         return system.vms_service
 
-    def _wait_for_status(self, status):
+    def _wait_for_status(self, statuses):
         syncutil.sync(exec_func=lambda: self.status,
                       exec_func_args=(),
-                      success_criteria=lambda s: s == status)
+                      success_criteria=lambda s: s in statuses)
 
     def _sync_disk_attachment(self, disk_attachment_id):
         syncutil.sync(

@@ -705,6 +705,7 @@ def list_glance_images(prefix):
 def wait_engine(prefix):
 
     def _engine_is_up():
+        print('API_V4: %s' % API_V4)
         engine = prefix.virt_env.engine_vm()
         try:
             if engine and engine.get_api():

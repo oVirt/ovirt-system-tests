@@ -18,3 +18,8 @@
 #
 from fixtures.cluster import ovs_cluster  # NOQA: F401
 from fixtures.host import host_in_ovs_cluster  # NOQA: F401
+
+from fixtures.providers import default_ovn_provider  # NOQA: F401
+from fixtures.providers import default_ovn_provider_client  # NOQA: F401
+from fixtures.providers import ovn_network  # NOQA: F401
+from fixtures.providers import openstack_client_config  # NOQA: F401

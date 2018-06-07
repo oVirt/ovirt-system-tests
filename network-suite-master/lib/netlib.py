@@ -37,6 +37,10 @@ class MacPoolIsInFullCapacityError(Exception):
     pass
 
 
+class ExternalProviderRequired(Exception):
+    pass
+
+
 class NetworkUsage(object):
 
     DEFAULT_ROUTE = types.NetworkUsage.DEFAULT_ROUTE
@@ -84,7 +88,19 @@ class Network(SDKSubEntity):
                vlan=None,
                usages=(NetworkUsage.VM,),
                qos=None,
-               auto_generate_profile=True):
+               auto_generate_profile=True,
+               external_provider=None,
+               external_provider_physical_network=None
+               ):
+        """
+        :type name: string
+        :type vlan: integer
+        :type usages: (netlib.NetworkUsage,)
+        :type qos: netlib.QoS
+        :type auto_generate_profile: bool
+        :type external_provider: providerlib.OpenStackNetworkProvider
+        :type external_provider_physical_network: netlib.Network
+        """
         qos_type = None if qos is None else qos.get_sdk_type()
         sdk_type = types.Network(
             name=name,
@@ -95,6 +111,14 @@ class Network(SDKSubEntity):
         )
         if vlan is not None:
             sdk_type.vlan = types.Vlan(id=vlan)
+        if external_provider is not None:
+            sdk_type.external_provider = types.OpenStackNetworkProvider(
+                id=external_provider.id)
+        if external_provider_physical_network is not None:
+            if external_provider is None:
+                raise ExternalProviderRequired
+            sdk_type.external_provider_physical_network = types.Network(
+                id=external_provider_physical_network.id)
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, dc):

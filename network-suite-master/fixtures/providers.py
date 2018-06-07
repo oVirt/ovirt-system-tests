@@ -56,7 +56,7 @@ def ovirt_image_repo(system):
 def openstack_client_config(engine):
     cloud_config = {
         'clouds': {
-            'ovirt': {
+            DEFAULT_CLOUD: {
                 'auth': {
                     'auth_url': OPENSTACK_AUTH_URL.format(engine.ip()),
                     'username': OPENSTACK_USERNAME,
@@ -74,7 +74,7 @@ def openstack_client_config(engine):
 
     original_os_client_config_file = os.environ.get('OS_CLIENT_CONFIG_FILE')
     os.environ['OS_CLIENT_CONFIG_FILE'] = os_client_config_file_path
-    yield
+    yield DEFAULT_CLOUD
     if original_os_client_config_file is not None:
         os.environ['OS_CLIENT_CONFIG_FILE'] = original_os_client_config_file
     else:
@@ -83,11 +83,11 @@ def openstack_client_config(engine):
 
 @pytest.fixture(scope='session')
 def default_ovn_provider_client(openstack_client_config):
-    '''
+    """
     Returns a shade connection configured to connect
     to the default ovn provider.
-    '''
-    return shade.openstack_cloud(cloud=DEFAULT_CLOUD)
+    """
+    return shade.openstack_cloud(cloud=openstack_client_config)
 
 
 @pytest.fixture(scope='session')

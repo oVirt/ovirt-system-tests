@@ -23,6 +23,7 @@ import pytest
 from lib import clusterlib
 from lib import netlib
 from lib import virtlib
+from testlib.ping import ssh_ping
 
 
 VNIC0_NAME = 'vnic0'
@@ -55,7 +56,7 @@ def ovn_physnet(default_data_center, ovirtmgmt_network, ovs_cluster,
 
 def test_connect_vm_to_external_physnet(system, ovs_cluster,
                                         cirros_template, ovn_physnet,
-                                        host_in_ovs_cluster):
+                                        host_in_ovs_cluster, host_0, host_1):
     with virtlib.vm_pool(system, size=1) as (vm_0,):
         vm_0.create(
             vm_name=VM0_NAME,
@@ -73,5 +74,14 @@ def test_connect_vm_to_external_physnet(system, ovs_cluster,
         )
 
         vm_0.wait_for_down_status()
-        vm_0.run()
+        vm_0.run_once(cloud_init_hostname=VM0_NAME)
         vm_0.wait_for_up_status()
+
+        other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
+        ssh_ping(other_host.address, other_host.root_password, VM0_NAME)
+
+
+def _other_host(host, candidates):
+    return next(
+        candidate for candidate in candidates if candidate.id != host.id
+    )

@@ -67,6 +67,25 @@ class Vm(SDKRootEntity):
     def run(self):
         self._service.start()
 
+    def run_once(self, cloud_init_hostname=None):
+        vm_definition = self._cloud_init_vm_definition(cloud_init_hostname)
+        self._service.start(
+            use_cloud_init=self._uses_cloud_init(vm_definition),
+            vm=vm_definition
+        )
+
+    def _cloud_init_vm_definition(self, cloud_init_hostname):
+        if cloud_init_hostname:
+            return types.Vm(initialization=types.Initialization(
+                    cloud_init=types.CloudInit(host=types.Host(
+                        address=cloud_init_hostname))))
+        else:
+            return None
+
+    def _uses_cloud_init(self, vm_definition):
+        return (vm_definition and vm_definition.initialization and
+                vm_definition.initialization.cloud_init is not None)
+
     def stop(self):
         VM_IS_NOT_RUNNING = 'VM is not running'
 

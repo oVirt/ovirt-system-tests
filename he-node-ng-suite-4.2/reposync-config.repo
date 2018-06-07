@@ -1,1 +1,6 @@
-../he-node-ng-suite-master/reposync-config.repo
+[ovirt-4.2-tested-el7]
+name = oVirt 4.2 tested repo
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
+cost = 100
+enabled = 1
+includepkgs = python-ovirt-engine-sdk4

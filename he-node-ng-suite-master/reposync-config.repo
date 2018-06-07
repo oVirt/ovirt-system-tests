@@ -1,1 +1,6 @@
-# No need to reposync anything other than whatever is in reposync-he.repo
+[ovirt-master-tested-el7]
+name = oVirt Master Latest Tested
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
+enabled = 1
+cost = 100
+includepkgs = python-ovirt-engine-sdk4

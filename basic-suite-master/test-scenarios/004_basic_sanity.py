@@ -62,11 +62,6 @@ DISK2_NAME = '%s_disk2' % VM2_NAME
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
 GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 
-SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
-SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
-SD_ISCSI_PORT = 3260
-SD_ISCSI_NR_LUNS = 2
-DLUN_DISK_NAME = 'DirectLunDisk'
 SD_TEMPLATES_NAME = 'templates'
 
 VM_NETWORK = u'VM Network with a very long name and עברית'
@@ -220,56 +215,6 @@ def sparsify_disk1(api):
     # USER_SPARSIFY_IMAGE_FINISH_SUCCESS event
     # TODO: enable - sparsify sometimes fails.
     # test_utils.test_for_event(engine, 1326, last_event)
-
-
-@testlib.with_ovirt_prefix
-def add_directlun(prefix):
-    # Find LUN GUIDs
-    iscsi_host = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME)
-    ret = iscsi_host.ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-
-    all_guids = ret.out.splitlines()
-    lun_guid = all_guids[SD_ISCSI_NR_LUNS]  # Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
-
-    ips = iscsi_host.all_ips()
-    luns = []
-    for ip in ips:
-        lun=types.LogicalUnit(
-                id=lun_guid,
-                address=ip,
-                port=SD_ISCSI_PORT,
-                target=SD_ISCSI_TARGET,
-                username='username',
-                password='password',
-            )
-        luns.append(lun)
-
-    dlun_params = types.Disk(
-        name=DLUN_DISK_NAME,
-        format=types.DiskFormat.RAW,
-        lun_storage=types.HostStorage(
-            type=types.StorageType.ISCSI,
-            logical_units=luns,
-        ),
-        # sgio=types.ScsiGenericIO.UNFILTERED,
-    )
-
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api.system_service()
-    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
-    with test_utils.TestEvent(engine, 97): 
-        disk_attachments_service.add(types.DiskAttachment(
-            disk=dlun_params,
-            interface=types.DiskInterface.VIRTIO_SCSI))
-
-        disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
-        attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
-        nt.assert_not_equal(
-            attachment_service.get(),
-            None,
-            'Direct LUN disk not attached'
-        )
 
 
 @testlib.with_ovirt_api4
@@ -1221,7 +1166,6 @@ _TEST_LIST = [
     verify_glance_import,
     reconstruct_master_domain,
     add_vm1_from_template,
-    add_directlun,
     verify_add_vm1_from_template,
     add_disks,
     add_snapshot_for_backup,

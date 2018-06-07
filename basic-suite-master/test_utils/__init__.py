@@ -240,3 +240,26 @@ def TestEvent(engine, event_id):
                lambda:
                any(e.code == e_id for e in events.list(from_=last_event))
             )
+
+
+def get_luns(prefix, host, port, target, from_lun, to_lun=None):
+    ret = prefix.virt_env.get_vm(host).ssh(['cat', '/root/multipath.txt'])
+    if to_lun is not None: # take a range of LUNs
+        lun_guids = ret.out.splitlines()[from_lun:to_lun]
+    else: # take a single LUN from the list.
+        lun_guids = [ret.out.splitlines()[from_lun]]
+    ips = prefix.virt_env.get_vm(host).all_ips()
+    luns = []
+    for lun_id in lun_guids:
+        for ip in ips:
+            lun=types.LogicalUnit(
+                id=lun_id,
+                address=ip,
+                port=port,
+                target=target,
+                username='username',
+                password='password',
+            )
+            luns.append(lun)
+
+    return luns

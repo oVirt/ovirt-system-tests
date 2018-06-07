@@ -66,6 +66,7 @@ SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
+DLUN_DISK_NAME = 'DirectLunDisk'
 
 SD_ISO_NAME = 'iso'
 SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
@@ -102,13 +103,6 @@ BACKUP_VM_NAME = 'backup_vm'
 # the default MAC pool has addresses like 00:1a:4a:16:01:51
 UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
-
-# TODO: support resolving hosts over IPv6 and arbitrary network
-def _get_host_ip(prefix, host_name):
-    return prefix.virt_env.get_vm(host_name).ip()
-
-def _get_host_all_ips(prefix, host_name):
-    return prefix.virt_env.get_vm(host_name).all_ips()
 
 def _get_host_ips_in_net(prefix, host_name, net_name):
     return prefix.virt_env.get_vm(host_name).ips_in_net(net_name)
@@ -492,6 +486,35 @@ def add_secondary_storage_domains(prefix):
 
 
 @testlib.with_ovirt_prefix
+def resize_and_refresh_storage_domain(prefix):
+    storage_vm = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME)
+    result = storage_vm.ssh(
+        [
+            'lvresize',
+            '--size',
+            '+3000M',
+            '/dev/mapper/vg1_storage-lun0_bdev',
+        ],
+    )
+    nt.eq_(
+        result.code,
+        0,
+        'Failed to resize lun0. Code: {0}, output: {1}'.format(result.code, result.out)
+    )
+
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api.system_service()
+    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_ISCSI_NAME)
+    luns = test_utils.get_luns(
+        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
+    with test_utils.TestEvent(engine, 1022): # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
+        storage_domain_service.refresh_luns(
+            async=False,
+            logical_units=luns
+        )
+
+
+@testlib.with_ovirt_prefix
 def add_glance_images(prefix):
     api = prefix.virt_env.engine_vm().get_api()
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
@@ -507,27 +530,11 @@ def add_glance_images(prefix):
 
 
 def add_iscsi_storage_domain(prefix):
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-    lun_guids = ret.out.splitlines()[0:SD_ISCSI_NR_LUNS-1]
-
-    api = prefix.virt_env.engine_vm().get_api_v4()
-
-    ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
-    luns = []
-    for lun_id in lun_guids:
-        for ip in ips:
-            lun=sdk4.types.LogicalUnit(
-                id=lun_id,
-                address=ip,
-                port=SD_ISCSI_PORT,
-                target=SD_ISCSI_TARGET,
-                username='username',
-                password='password',
-            )
-            luns.append(lun)
+    luns = test_utils.get_luns(
+        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
 
     v4_domain = versioning.cluster_version_ok(4, 1)
+    api = prefix.virt_env.engine_vm().get_api_v4()
     p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
         description='iSCSI Storage Domain',
@@ -1661,6 +1668,36 @@ def add_event(api):
     nt.assert_true(api.events.add(event_params))
 
 
+@testlib.with_ovirt_prefix
+def add_direct_lun_vm0(prefix):
+    luns = test_utils.get_luns(
+        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=SD_ISCSI_NR_LUNS+1)
+    dlun_params = sdk4.types.Disk(
+        name=DLUN_DISK_NAME,
+        format=sdk4.types.DiskFormat.RAW,
+        lun_storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.ISCSI,
+            logical_units=luns,
+        ),
+    )
+
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api.system_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    with test_utils.TestEvent(engine, 97):
+        disk_attachments_service.add(sdk4.types.DiskAttachment(
+            disk=dlun_params,
+            interface=sdk4.types.DiskInterface.VIRTIO_SCSI))
+
+        disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
+        attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
+        nt.assert_not_equal(
+            attachment_service.get(),
+            None,
+            'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
+        )
+
+
 _TEST_LIST = [
     copy_storage_script,
     download_engine_certs,
@@ -1695,6 +1732,7 @@ _TEST_LIST = [
     verify_add_hosts,
     add_master_storage_domain,
     add_blank_vms,
+    add_direct_lun_vm0,
     add_blank_high_perf_vm2,
     configure_high_perf_vm2,
     add_disk_profile,
@@ -1720,6 +1758,7 @@ _TEST_LIST = [
     verify_add_all_hosts,
     complete_hosts_setup,
     add_secondary_storage_domains,
+    resize_and_refresh_storage_domain,
     add_vm2_lease,
     import_templates,
     add_non_vm_network,

@@ -33,7 +33,7 @@ domains:
         dev: sda
         format: raw
       - comment: Main iSCSI device
-        size: 101G
+        size: 105G
         type: empty
         name: iscsi
         dev: sdc

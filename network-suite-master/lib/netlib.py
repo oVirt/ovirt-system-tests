@@ -90,8 +90,8 @@ class Network(SDKSubEntity):
                qos=None,
                auto_generate_profile=True,
                external_provider=None,
-               external_provider_physical_network=None
-               ):
+               external_provider_physical_network=None,
+               mtu=None):
         """
         :type name: string
         :type vlan: integer
@@ -100,6 +100,7 @@ class Network(SDKSubEntity):
         :type auto_generate_profile: bool
         :type external_provider: providerlib.OpenStackNetworkProvider
         :type external_provider_physical_network: netlib.Network
+        :type mtu: integer
         """
         qos_type = None if qos is None else qos.get_sdk_type()
         sdk_type = types.Network(
@@ -107,7 +108,8 @@ class Network(SDKSubEntity):
             data_center=self._parent_sdk_entity.service.get(),
             usages=usages,
             qos=qos_type,
-            profile_required=auto_generate_profile
+            profile_required=auto_generate_profile,
+            mtu=mtu
         )
         if vlan is not None:
             sdk_type.vlan = types.Vlan(id=vlan)

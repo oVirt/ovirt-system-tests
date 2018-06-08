@@ -26,16 +26,17 @@ class PingFailed(SshException):
     pass
 
 
-def ssh_ping(source, password, destination):
+def ssh_ping(source, password, destination, data_size=56):
     """
     Ping a given destination from source.
 
     :parameter source: the host which executes the ping command
     :parameter password: the root password for the host source
     :parameter destination: the destination of the ping command
+    :parameter data_size: the size of the data payload
     """
 
-    cmd = 'ping -4 -c 1 ' + destination
+    cmd = 'ping -4 -c 1 -M do -s {} {}'.format(data_size, destination)
     try:
         sshlib.exec_command(source, password, cmd)
     except SshException as err:

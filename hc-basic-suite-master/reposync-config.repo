@@ -14,7 +14,7 @@ exclude = *-debuginfo
  *-devel
  *-javadoc
  java-ovirt-engine-sdk4
- otopi-devtools
+ python2-otopi-devtools
  ovirt-engine-nodejs-*
  ovirt-engine-sdk-java
  ovirt-engine-yarn

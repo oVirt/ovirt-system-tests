@@ -24,7 +24,6 @@ from lib import netlib
 from lib import templatelib
 from lib import virtlib
 
-import fixtures.virt
 
 MAC_POOL = 'mac_pool'
 MAC_ADDR_1 = '00:1a:4a:16:01:50'
@@ -110,7 +109,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
         vm_0.wait_for_down_status()
 
         vm_0.run()
@@ -127,7 +126,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
         vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
         nicless_snapshot.undo_preview()
@@ -175,7 +174,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
         vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.wait_for_down_status()
 
@@ -188,7 +187,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
         vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
         vm_0.stop()
@@ -206,7 +205,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME,
+                    template=cirros_template,
                     stateless=True)
 
         vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
@@ -219,7 +218,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
 
         with pytest.raises(netlib.MacAddrInUseError):
             vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
@@ -231,7 +230,7 @@ def test_move_mac_to_new_vm(
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
 
         vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.wait_for_down_status()
@@ -243,7 +242,7 @@ def test_move_mac_to_new_vm(
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
-                    template=fixtures.virt.CIRROS_TEMPLATE_NAME)
+                    template=cirros_template)
 
         vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 

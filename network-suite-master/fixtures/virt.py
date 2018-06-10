@@ -40,3 +40,5 @@ def cirros_template(system, ovirt_image_repo, default_cluster,
     )
 
     templatelib.wait_for_template_ok_status(system, CIRROS_TEMPLATE_NAME)
+
+    return CIRROS_TEMPLATE_NAME

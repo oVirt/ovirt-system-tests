@@ -28,7 +28,7 @@ class Browser(Enum):
     def __str__(self):
         return self.value
 
-DRIVER_MAX_RETRIES = 20
+DRIVER_MAX_RETRIES = 200
 DRIVER_SLEEP_TIME = .12
 GC_WAIT_TIME = 5
 LEFT_NAV_HOVER_TIME = .8

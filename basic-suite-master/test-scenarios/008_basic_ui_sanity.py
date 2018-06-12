@@ -69,7 +69,8 @@ PASSWORD = get_engine_admin_password()
 
 SS_PATH = os.path.join(
     os.environ.get('OST_REPO_ROOT'),
-    'exported-artifacts/screenshots/'
+    'exported-artifacts/screenshots%s/' %
+    (os.environ.get('OST_DC_VERSION', ''),)
 )
 
 HUB_CONTAINER_IMAGE = 'selenium/hub:3.9.1-actinium'

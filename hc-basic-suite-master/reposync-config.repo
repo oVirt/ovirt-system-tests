@@ -60,6 +60,13 @@ enabled=1
 exclude=*-debuginfo *-devel glusterfs-regression-tests heketi* nfs-ganesha-* libntirpc* glusterfs-ganesha
 max_connections=5
 
+[centos-gluster-3.12-el7]
+name=CentOS-7 gluster 3.12 el7 testing
+baseurl=https://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.12/
+gpgcheck=0
+enabled=1
+includepkgs=gdeploy
+
 [centos-updates-el7]
 name=CentOS7 Updates
 baseurl=http://mirror.centos.org/centos/7/updates/x86_64/

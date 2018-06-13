@@ -159,7 +159,7 @@ def _get_chrome_capabilities():
 
 def init():
     # make screenshot directory
-    os.mkdir(SS_PATH)
+    os.makedirs(SS_PATH)
 
 
 def start_grid():

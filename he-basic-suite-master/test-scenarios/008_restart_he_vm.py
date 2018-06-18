@@ -24,6 +24,8 @@ from ovirtlago import testlib
 
 import logging
 
+host_state = 8
+index_value = 1
 
 @testlib.with_ovirt_prefix
 def set_global_maintenance(prefix):
@@ -47,6 +49,23 @@ def restart_he_vm(prefix):
     _wait_for_engine_health(host)
 
 
+def _is_state_maintenance(host, state):
+    return_value = False
+    status = _get_he_status(host)
+
+    for k, v in status.items():
+        if not k.isdigit():
+            continue
+
+        host_extra = v['extra'].split("\n")
+        he_state = host_extra[host_state].split("=")[index_value]
+        if he_state == "ReinitializeFSM" or he_state == state:
+            return_value = True
+            break
+
+    return return_value
+
+
 @testlib.with_ovirt_prefix
 def clear_global_maintenance(prefix):
     host = prefix.virt_env.host_vms()[0]
@@ -56,6 +75,10 @@ def clear_global_maintenance(prefix):
 
     testlib.assert_true_within_short(
         lambda: _get_he_status(host)['global_maintenance'] is False
+    )
+
+    testlib.assert_true_within_long(
+        lambda: _is_state_maintenance(host, "GlobalMaintenance") is False
     )
 
 
@@ -121,7 +144,7 @@ def _start_he_vm(host):
     nt.assert_equals(ret.code, 0)
     logging.info("Command succeeded")
 
-    logging.info("Waiting to VM to be UP...")
+    logging.info("Waiting for VM to be UP...")
 
     testlib.assert_true_within_short(lambda: any(
         v["engine-status"]["vm"] == "up"
@@ -133,7 +156,7 @@ def _start_he_vm(host):
 
 
 def _wait_for_engine_health(host):
-    logging.info("Waiting for engine to start ...")
+    logging.info("Waiting for engine to start...")
     testlib.assert_true_within_long(lambda: any(
         v["engine-status"]["health"] == "good"
         for k, v in _get_he_status(host).items()
@@ -154,3 +177,4 @@ def test_gen():
     for t in testlib.test_sequence_gen(_TEST_LIST):
         test_gen.__name__ = t.description
         yield t
+

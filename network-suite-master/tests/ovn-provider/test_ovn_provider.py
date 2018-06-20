@@ -22,10 +22,12 @@ import os
 
 from lib.ansiblelib import Playbook
 from lib import sshlib as ssh
+from testlib import shade_hack
 from testlib import suite
 
 
 PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
+NETWORK10_NAME = 'net10'
 NETWORK10_PORT1_NAME = 'net10_port1'
 NETWORK11_PORT1_NAME = 'net11_port1'
 NETWORK10_SUBNET1_NAME = 'net10_subnet1'
@@ -61,6 +63,19 @@ def test_validate_ovn_provider_connectivity(default_ovn_provider_client,
             ssh.exec_command(host_1.address, host_1.root_password,
                              'ip netns exec ' + port2.name + ' ping -4 -c 1 ' +
                              port1.fixed_ips[0]['ip_address'])
+
+
+def test_update_network_mtu(default_ovn_provider_client):
+    network10 = default_ovn_provider_client.get_network(NETWORK10_NAME)
+    mtu = 1501
+    path = '/networks/{network_id}'.format(network_id=network10.id)
+    data = {'network': {'mtu': mtu, 'name': network10.name}}
+
+    # HACK: this is a workaround until BZ 1590248 and BZ 1590251 are fixed
+    shade_hack.hack_os_put_request(default_ovn_provider_client, path, data)
+
+    network10 = default_ovn_provider_client.get_network(NETWORK10_NAME)
+    assert network10.mtu == mtu
 
 
 def test_ovn_provider_cleanup_scenario(openstack_client_config):

@@ -58,7 +58,7 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-engine-wildfly-overlay
 	ovirt-host
 	ovirt-host-dependencies
-	ovirt-host-deploy
+	ovirt-host-deploy-common
 	ovirt-host-deploy-java
 	ovirt-hosted-engine-ha
 	ovirt-hosted-engine-setup
@@ -78,6 +78,7 @@ includepkgs = cockpit-ovirt-dashboard
 	python-ovirt-engine-sdk4
 	python2-ioprocess
 	python2-otopi
+	python2-ovirt-host-deploy
 	vdsm
 	vdsm-api
 	vdsm-client

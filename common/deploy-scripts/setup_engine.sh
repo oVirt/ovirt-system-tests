@@ -1,6 +1,8 @@
 set -xe
 
 DIST=$(uname -r |awk -F\. '{print $(NF-1)}')
+FC_REGEX="^fc[0-9]+$"
+
 # if needed, install and configure firewalld
 function install_firewalld() {
     if [[ "$DIST" == "el7" ]]; then
@@ -46,13 +48,13 @@ install_firewalld
 if [ "$DIST" == "el7" ]; then
     yum_cmd="yum install --nogpgcheck --downloaddir=/dev/shm -y"
 fi
-if [ "$DIST" == "fc27" ]; then
+if [[ "$DIST" =~ $FC_REGEX ]]; then
     yum_cmd="dnf install -y"
 fi
 ${yum_cmd} ntp net-snmp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap* otopi-debug-plugins
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
-    echo "yum install failed with status ${RET_CODE}."
+    echo "install failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
 rm -rf /dev/shm/yum /dev/shm/*.rpm

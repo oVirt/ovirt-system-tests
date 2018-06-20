@@ -44,19 +44,36 @@ NIC=$(ip route | awk '$1=="default" {print $5; exit}')
 ADDR=$(/sbin/ip -4 -o addr show dev $NIC | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1}')
 echo "$ADDR engine" >> /etc/hosts
 
+pkgs_to_install=(
+    "ntp"
+    "net-snmp"
+    "ovirt-engine"
+    "ovirt-log-collector"
+    "ovirt-engine-extension-aaa-ldap*"
+    "otopi-debug-plugins"
+    "cronie"
+)
+
 install_firewalld
-if [ "$DIST" == "el7" ]; then
-    yum_cmd="yum install --nogpgcheck --downloaddir=/dev/shm -y"
+
+if [[ "$DIST" == "el7" ]]; then
+    install_cmd="yum install --nogpgcheck --downloaddir=/dev/shm -y"
+elif [[ "$DIST" =~ $FC_REGEX ]]; then
+    install_cmd="dnf install -y"
+else
+    echo "Unknown distro $DIST"
+    exit 1
 fi
-if [[ "$DIST" =~ $FC_REGEX ]]; then
-    yum_cmd="dnf install -y"
-fi
-${yum_cmd} ntp net-snmp ovirt-engine ovirt-log-collector ovirt-engine-extension-aaa-ldap* otopi-debug-plugins
-RET_CODE=$?
-if [ ${RET_CODE} -ne 0 ]; then
-    echo "install failed with status ${RET_CODE}."
-    exit ${RET_CODE}
-fi
+
+$install_cmd "${pkgs_to_install[@]}" || {
+    ret=$?
+    echo "install failed with status $ret"
+    exit $ret
+}
+
+systemctl enable crond
+systemctl start crond
+
 rm -rf /dev/shm/yum /dev/shm/*.rpm
 fstrim -va
 echo "restrict 192.168.0.0 mask 255.255.0.0 nomodify notrap nopeer" >> /etc/ntp.conf

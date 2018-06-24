@@ -24,6 +24,7 @@ substage:
   - upgrade-from-release_suite_4.2
   - upgrade-from-prevrelease_suite_4.2
   - upgrade-from-release_suite_master
+  - openshift-on-ovirt 
   - check_docs:
       runif:
         filechanged: ['automation/create-docs*', 'docs/*']

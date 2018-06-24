@@ -95,6 +95,33 @@ verify_system_requirements() {
         "${SUITE}/vars/main.yml"
 }
 
+get_orb() {
+    # Fetch pre made images of oVirt
+    local url="${1:?}"
+    local md5_url="$2"
+    local archive_name && archive_name="$(basename "$url")"
+    local md5_name
+
+    [[ "$md5_url" ]] || md5_url="${url}.md5"
+    md5_name="$(basename "$md5_url")"
+
+    pushd "$SUITE"
+    wget --progress=dot:giga "$url"
+    wget "$md5_url"
+
+    md5sum -c "$md5_name" || {
+        echo "Orb image failed checksum test"
+        return 1
+    }
+    (
+        set -o pipefail
+        xz -T 0 --decompress --stdout "$archive_name" \
+        | tar -xv \
+        || { echo "Failed to unpack Orb images"; return 1; }
+    )
+    popd
+}
+
 get_engine_version() {
     local root_dir="$PWD"
     cd $PREFIX
@@ -167,6 +194,12 @@ env_start () {
 
     cd $PREFIX
     $CLI start
+    cd -
+}
+
+env_ovirt_start() {
+    cd "$PREFIX"
+    "$CLI" ovirt start
     cd -
 }
 

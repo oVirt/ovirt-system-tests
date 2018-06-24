@@ -1,0 +1,2 @@
+rhv_cluster: test-cluster
+rhv_data_storage: nfs

@@ -489,7 +489,7 @@ fi
 
 export OST_REPO_ROOT="$PWD"
 
-export SUITE="$(realpath "$1")"
+export SUITE="$(realpath --no-symlinks "$1")"
 
 # If no deployment path provided, set the default
 [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"

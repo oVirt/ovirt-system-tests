@@ -4,6 +4,10 @@ substage:
   - ansible_suite_master
   - basic_suite_4.2
   - basic_suite_master
+  - compat-3.6_suite_master
+  - compat-4.0_suite_master
+  - compat-4.1_suite_master
+  - compat-4.2_suite_master
   - hc-basic_suite_4.2
   - hc-basic_suite_master
   - he-basic-ansible_suite_4.2

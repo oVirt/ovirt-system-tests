@@ -19,6 +19,11 @@
 #
 
 from lib import sshlib
+from lib.sshlib import SshException
+
+
+class PingFailed(SshException):
+    pass
 
 
 def ssh_ping(source, password, destination):
@@ -31,4 +36,7 @@ def ssh_ping(source, password, destination):
     """
 
     cmd = 'ping -4 -c 1 ' + destination
-    sshlib.exec_command(source, password, cmd)
+    try:
+        sshlib.exec_command(source, password, cmd)
+    except SshException as err:
+        raise PingFailed(err)

@@ -22,7 +22,9 @@ import pytest
 
 from lib import clusterlib
 from lib import netlib
+from lib import syncutil
 from lib import virtlib
+from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 
 
@@ -75,13 +77,26 @@ def test_connect_vm_to_external_physnet(system, ovs_cluster,
 
         vm_0.wait_for_down_status()
         vm_0.run_once(cloud_init_hostname=VM0_NAME)
-        vm_0.wait_for_up_status()
 
         other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
-        ssh_ping(other_host.address, other_host.root_password, VM0_NAME)
+        syncutil.sync(exec_func=_ping_successful,
+                      exec_func_args=(
+                          other_host.address,
+                          other_host.root_password,
+                          VM0_NAME
+                      ),
+                      success_criteria=lambda success: success)
 
 
 def _other_host(host, candidates):
     return next(
         candidate for candidate in candidates if candidate.id != host.id
     )
+
+
+def _ping_successful(source, password, destination):
+    try:
+        ssh_ping(source, password, destination)
+        return True
+    except PingFailed:
+        return False

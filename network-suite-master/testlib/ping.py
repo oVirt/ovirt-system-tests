@@ -26,7 +26,7 @@ class PingFailed(SshException):
     pass
 
 
-def ssh_ping(source, password, destination, data_size=56):
+def ssh_ping(source, password, destination, data_size=56, netns=None):
     """
     Ping a given destination from source.
 
@@ -34,9 +34,11 @@ def ssh_ping(source, password, destination, data_size=56):
     :parameter password: the root password for the host source
     :parameter destination: the destination of the ping command
     :parameter data_size: the size of the data payload
+    :parameter netns: optional networking namespace in which to execute
     """
-
-    cmd = 'ping -4 -c 1 -M do -s {} {}'.format(data_size, destination)
+    netns_prefix = 'ip netns exec {} '.format(netns) if netns else ''
+    cmd = netns_prefix + 'ping -4 -c 1 -M do -s {} {}'.format(
+        data_size, destination)
     try:
         sshlib.exec_command(source, password, cmd)
     except SshException as err:

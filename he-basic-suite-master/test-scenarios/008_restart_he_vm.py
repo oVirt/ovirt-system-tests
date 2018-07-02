@@ -124,10 +124,13 @@ def _shutdown_he_vm(host):
 
 
 def _restart_services(host):
-    logging.info("Restarting services...")
-    ret = host.ssh(["systemctl", "restart", "vdsmd", "ovirt-ha-broker", "ovirt-ha-agent"])
+    logging.info("Stopping services...")
+    ret = host.ssh(["systemctl", "stop", "vdsmd", "ovirt-ha-broker", "ovirt-ha-agent"])
     nt.assert_equals(ret.code, 0)
-    logging.info("Success.")
+
+    logging.info("Starting services...")
+    ret = host.ssh(["systemctl", "start", "vdsmd", "ovirt-ha-broker", "ovirt-ha-agent"])
+    nt.assert_equals(ret.code, 0)
 
     logging.info("Waiting for agent to be ready...")
 

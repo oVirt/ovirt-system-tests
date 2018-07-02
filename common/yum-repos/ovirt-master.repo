@@ -769,12 +769,11 @@ includepkgs = gofer
 	python2-jmespath
 	vhostmd
 
-[centos-qemu-ev-release-el7]
-name = CentOS-7 - QEMU EV
-baseurl = http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
-gpgcheck = 1
+[centos-qemu-ev-testing-el7]
+name = CentOS-7 - QEMU EV - Testing
+baseurl = http://buildlogs.centos.org/centos/7/virt/x86_64/kvm-common/
+gpgcheck = 0
 enabled = 1
-gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-Virtualization
 includepkgs = libcacard
 	qemu-img-ev
 	qemu-kvm-common-ev

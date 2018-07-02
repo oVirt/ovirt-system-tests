@@ -47,6 +47,7 @@ def restart_he_vm(prefix):
     hosts = prefix.virt_env.host_vms()
     host = _find_host_running_he_vm(hosts)
 
+    logging.info("Engine VM is on host %s, restarting the VM", host.name())
     _shutdown_he_vm(host)
     _restart_services(host)
     _start_he_vm(host)

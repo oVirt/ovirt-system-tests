@@ -45,9 +45,9 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_el7.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_storage_unified_he_extra_el7.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_el7.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_he_extra_el7.sh
 
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
@@ -79,15 +79,15 @@ domains:
         - snapshot-live-merge
       deploy-scripts:
         {% if check_node_status -%}
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/check_node_status.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/check_node_status.sh
         {%- endif %}
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_tmp_part_el7.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/add_tmp_part_el7.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh
         {% if loop.first -%}
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/install_he_4.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/install_he_4.sh
         {% else -%}
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/install_he_4_additional_host.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/install_he_4_additional_host.sh
         {%- endif %}
 {%- endfor %}
 

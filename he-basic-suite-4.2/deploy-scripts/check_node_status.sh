@@ -1,0 +1,1 @@
+../../common/deploy-scripts/check_node_status.sh

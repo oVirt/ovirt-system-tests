@@ -1,0 +1,1 @@
+../../common/deploy-scripts/install_he_4.sh

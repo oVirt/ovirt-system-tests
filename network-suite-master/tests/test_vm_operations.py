@@ -25,17 +25,16 @@ from lib import hostlib
 from lib import clusterlib
 from lib import templatelib
 
-
 ETH1 = 'eth1'
 VM0 = 'vm0'
 MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
 MIG_NET_IPv4_ADDR_2 = '192.0.3.2'
 MIG_NET_IPv4_MASK = '255.255.255.0'
+NIC_NAME = 'nic1'
 
 
 def _attach_new_vnic(vm, vnic_profile):
-    NIC_NAME = 'nic1'
     vnic = netlib.Vnic(vm)
     vnic.create(name=NIC_NAME, vnic_profile=vnic_profile)
     vm.wait_for_down_status()
@@ -52,9 +51,9 @@ def migration_network(host_0, host_1, default_data_center, default_cluster):
     network.remove()
 
 
-@pytest.fixture
-def vm_0(system, default_cluster, default_storage_domain,
-         ovirtmgmt_vnic_profile):
+@pytest.fixture(scope='module')
+def running_vm_0(system, default_cluster, default_storage_domain,
+                 ovirtmgmt_vnic_profile):
     disk = default_storage_domain.create_disk('disk0')
     with virtlib.vm_pool(system, size=1) as (vm,):
         vm.create(vm_name=VM0,
@@ -65,6 +64,8 @@ def vm_0(system, default_cluster, default_storage_domain,
 
         disk_att_id = vm.attach_disk(disk=disk)
         vm.wait_for_disk_up_status(disk, disk_att_id)
+        vm.run()
+        vm.wait_for_up_status()
         yield vm
 
 
@@ -90,16 +91,29 @@ def host_1_with_mig_net(migration_network, host_1_up):
     host_1_up.remove_networks((migration_network,))
 
 
-def test_live_vm_migration_using_dedicated_network(vm_0, host_0_with_mig_net,
+def test_live_vm_migration_using_dedicated_network(running_vm_0,
+                                                   host_0_with_mig_net,
                                                    host_1_with_mig_net):
-    vm_0.run()
-    vm_0.wait_for_up_status()
-
-    dst_host = (host_0_with_mig_net if vm_0.host.id == host_1_with_mig_net.id
+    dst_host = (host_0_with_mig_net
+                if running_vm_0.host.id == host_1_with_mig_net.id
                 else host_1_with_mig_net)
 
-    vm_0.migrate(dst_host.name)
-    vm_0.wait_for_up_status()
+    running_vm_0.migrate(dst_host.name)
+    running_vm_0.wait_for_up_status()
 
     # TODO: verify migration was carried via the dedicated network
-    assert vm_0.host.id == dst_host.id
+    assert running_vm_0.host.id == dst_host.id
+
+
+@pytest.mark.xfail(reason="https://bugzilla.redhat.com/1600140")
+def test_hot_linking_vnic(running_vm_0):
+    vnic = running_vm_0.get_vnic(NIC_NAME)
+    assert vnic.linked is True
+
+    vnic.set_linked(False)
+    vnic = running_vm_0.get_vnic(NIC_NAME)
+    assert not vnic.linked
+
+    vnic.set_linked(True)
+    vnic = running_vm_0.get_vnic(NIC_NAME)
+    assert vnic.linked is True

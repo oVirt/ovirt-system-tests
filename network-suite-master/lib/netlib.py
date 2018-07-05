@@ -154,9 +154,18 @@ class VnicProfile(SDKRootEntity):
 
 class Vnic(SDKSubEntity):
 
+    @property
+    def linked(self):
+        return self.get_sdk_type().linked
+
     def set_mac_addr(self, address):
         sdk_type = self.get_sdk_type()
         sdk_type.mac.address = address
+        self._service.update(sdk_type)
+
+    def set_linked(self, linked):
+        sdk_type = self.get_sdk_type()
+        sdk_type.linked = linked
         self._service.update(sdk_type)
 
     @property

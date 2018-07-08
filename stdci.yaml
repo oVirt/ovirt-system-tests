@@ -36,7 +36,9 @@ substage:
       script:
         fromfile: 'automation/basic_suite_master.sh'
 runif:
-  filechanged: '{{ substage|replace("_", "[_-]") }}*'
+  filechanged:
+    - '{{ substage|replace("_", "[_-]") }}*'
+    - 'automation/{{ substage|replace("_", "[_-]") }}*'
 script:
   fromfile: 'automation/{{ substage }}.sh'
 runtime-requirements:

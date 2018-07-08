@@ -54,7 +54,7 @@ domains:
     vm-type: ovirt-host
     distro: el7
     service_provider: systemd
-    memory: 4720
+    memory: 5744
     cpu_model: SandyBridge
     nics:
       - net: lago-{{ env.suite_name }}-net-management

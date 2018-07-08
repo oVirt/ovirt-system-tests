@@ -15,3 +15,7 @@ sysctl -w net.ipv4.ip_local_reserved_ports=54322
 for node in /sys/devices/system/node/node*; do
     echo $HUGEPAGES > $node/hugepages/hugepages-2048kB/nr_hugepages;
 done
+
+# Configure libvirtd log
+mkdir -p /etc/libvirt
+echo 'log_outputs="2:file:/var/log/libvirt.log"' >> /etc/libvirt/libvirtd.conf

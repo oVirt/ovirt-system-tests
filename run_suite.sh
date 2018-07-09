@@ -226,7 +226,9 @@ env_run_test () {
 
     local res=0
     cd $PREFIX
-    $CLI ovirt runtest $1 || res=$?
+    local junitxml_file="$PREFIX/${1##*/}.junit.xml"
+    $CLI ovirt runtest $1 --junitxml-file "${junitxml_file}"  || res=$?
+    [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
     cd -
     return "$res"
 }

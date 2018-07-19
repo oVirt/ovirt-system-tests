@@ -194,4 +194,6 @@ _TEST_LIST = [
 ]
 
 
-test_gen = test_utils.mk_test_gen(_TEST_LIST)
+def test_gen():
+    for t in test_utils.test_gen(_TEST_LIST, test_gen):
+        yield t

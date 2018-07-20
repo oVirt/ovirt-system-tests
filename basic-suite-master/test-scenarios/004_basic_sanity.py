@@ -426,12 +426,9 @@ def make_snapshot_with_memory(api):
 def preview_snapshot_with_memory(api):
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-
-    def snapshot_created():
-        snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)
-        return (snapshot is not None and
-                snapshot.snapshot_status == types.SnapshotStatus.OK)
-    testlib.assert_true_within_long(snapshot_created)
+    with test_utils.TestEvent(engine, 68):  # USER_CREATE_SNAPSHOT_FINISHED_SUCCESS
+        # Wait for snapshot creation initiated in make_snapshot_with_memory
+        pass
     vm_service.stop()
     _verify_vm_state(engine, VM0_NAME, types.VmStatus.DOWN)
     snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)

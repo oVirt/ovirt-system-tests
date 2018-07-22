@@ -23,12 +23,18 @@ import nose.tools as nt
 from ovirtlago import testlib
 
 import logging
+import time
 
 host_state = 8
 index_value = 1
+wait_value = 300
+
 
 @testlib.with_ovirt_prefix
 def set_global_maintenance(prefix):
+    logging.info("Waiting For System Stability...")
+    time.sleep(wait_value)
+
     host = prefix.virt_env.host_vms()[0]
 
     testlib.assert_true_within_short(
@@ -66,6 +72,9 @@ def _is_state_maintenance(host, state):
 
 @testlib.with_ovirt_prefix
 def clear_global_maintenance(prefix):
+    logging.info("Waiting For System Stability...")
+    time.sleep(wait_value)
+
     host = prefix.virt_env.host_vms()[0]
 
     testlib.assert_true_within_short(

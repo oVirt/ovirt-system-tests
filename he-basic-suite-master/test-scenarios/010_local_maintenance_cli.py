@@ -27,6 +27,7 @@ import time
 
 host_state = 8
 index_value = 1
+wait_value = 300
 
 
 def _wait_for_engine_migration(host, he_index, health, state):
@@ -39,6 +40,9 @@ def _wait_for_engine_migration(host, he_index, health, state):
         lambda: _check_migration_state(host, state) is False
     )
     logging.info("Engine has migrated.")
+
+    logging.info("Waiting For System Stability...")
+    time.sleep(wait_value)
 
 
 def _is_state_maintenance(host, state):
@@ -108,6 +112,9 @@ def _check_migration_state(host, state):
 
 @testlib.with_ovirt_prefix
 def local_maintenance(prefix):
+    logging.info("Waiting For System Stability...")
+    time.sleep(wait_value)
+
     hosts = prefix.virt_env.host_vms()
     he_index, host = _find_host_running_he_vm(hosts)
 
@@ -121,6 +128,12 @@ def local_maintenance(prefix):
     nt.assert_equals(ret.code, 0)
 
     _wait_for_engine_maintenance(host, he_index, False)
+
+    current_he_index, host = _find_host_running_he_vm(hosts)
+
+    testlib.assert_true_within_short(
+        lambda: he_index != current_he_index
+    )
 
 
 _TEST_LIST = [

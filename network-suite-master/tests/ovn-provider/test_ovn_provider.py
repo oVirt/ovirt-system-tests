@@ -27,7 +27,6 @@ from lib import sshlib as ssh
 from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 from testlib import shade_hack
-from testlib import suite
 
 
 PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
@@ -40,9 +39,6 @@ NETWORK11_SUBNET1_NAME = 'net11_subnet1'
 NETWORK14_SUBNET1_NAME = 'net14_subnet1'
 ROUTER0_NAME = 'router0'
 ROUTER1_NAME = 'router1'
-
-
-pytestmark = suite.SKIP_SUITE_42
 
 
 class HostConfigurationFailure(Exception):

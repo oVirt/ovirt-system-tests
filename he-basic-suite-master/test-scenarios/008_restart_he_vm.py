@@ -30,11 +30,9 @@ index_value = 1
 @testlib.with_ovirt_prefix
 def set_global_maintenance(prefix):
     host = prefix.virt_env.host_vms()[0]
-    ret = host.ssh(["hosted-engine", "--set-maintenance", "--mode=global"])
-    nt.assert_equals(ret.code, 0)
 
     testlib.assert_true_within_short(
-        lambda: _get_he_status(host)['global_maintenance'] is True
+        lambda: _set_and_test_maintenance_mode(host, True)
     )
 
 
@@ -70,16 +68,31 @@ def _is_state_maintenance(host, state):
 def clear_global_maintenance(prefix):
     host = prefix.virt_env.host_vms()[0]
 
-    ret = host.ssh(["hosted-engine", "--set-maintenance", "--mode=none"])
-    nt.assert_equals(ret.code, 0)
-
     testlib.assert_true_within_short(
-        lambda: _get_he_status(host)['global_maintenance'] is False
+        lambda: _set_and_test_maintenance_mode(host, False)
     )
 
     testlib.assert_true_within_long(
         lambda: _is_state_maintenance(host, "GlobalMaintenance") is False
     )
+
+
+def _set_and_test_maintenance_mode(host, enable):
+    """
+    Updates the global maintenance mode and tests if the value was stored.
+
+    Sometimes there is a race condition where the command that modifies the global maintenance flag is ignored.
+    That is why the maintenance mode is updated repeatedly in a loop until it succeeds.
+    """
+
+    ret = host.ssh([
+        "hosted-engine",
+        "--set-maintenance",
+        "--mode={}".format("global" if enable else "none")
+    ])
+    nt.assert_equals(ret.code, 0)
+
+    return _get_he_status(host)['global_maintenance'] == enable
 
 
 def _find_host_running_he_vm(hosts):

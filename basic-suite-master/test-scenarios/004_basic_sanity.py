@@ -425,10 +425,12 @@ def make_snapshot_with_memory(api):
 @testlib.with_ovirt_api4
 def preview_snapshot_with_memory(api):
     engine = api.system_service()
+    events = engine.events_service()
+    testlib.assert_true_within_long(
+        # wait for event 68 == USER_CREATE_SNAPSHOT_FINISHED_SUCCESS
+        lambda: any(e.code == 68 for e in events.list(max=6))
+    )
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    with test_utils.TestEvent(engine, 68):  # USER_CREATE_SNAPSHOT_FINISHED_SUCCESS
-        # Wait for snapshot creation initiated in make_snapshot_with_memory
-        pass
     vm_service.stop()
     _verify_vm_state(engine, VM0_NAME, types.VmStatus.DOWN)
     snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)

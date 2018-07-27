@@ -626,14 +626,16 @@ def list_glance_images(api):
     if not glance_domain_list:
         openstack_glance = add_glance(api)
         if not openstack_glance:
-            raise SkipTest('%s GLANCE storage domain is not available.' % list_glance_images_4.__name__ )
+            raise SkipTest('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not check_glance_connectivity(engine):
-        raise SkipTest('%s: GLANCE connectivity test failed' % list_glance_images_4.__name__ )
+        raise SkipTest('GLANCE connectivity test failed')
 
     glance_domain = glance_domain_list.pop()
-    glance_domain_service = storage_domains_service.storage_domain_service(glance_domain.id)
+    glance_domain_service = storage_domains_service.storage_domain_service(
+        glance_domain.id
+    )
 
     try:
         with test_utils.TestEvent(engine, 998):
@@ -641,7 +643,7 @@ def list_glance_images(api):
         if len(all_images):
             GLANCE_AVAIL = True
     except sdk4.Error:
-        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_4.__name__ )
+        raise SkipTest('GLANCE is not available: client request error')
 
 
 def add_glance(api):

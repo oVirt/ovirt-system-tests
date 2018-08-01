@@ -521,6 +521,8 @@ trap "on_sigterm" SIGTERM
 trap "on_exit" EXIT
 
 logger.info "Using $(lago --version 2>&1)"
+logger.info "Using $(lago ovirt --version 2>&1)"
+
 check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"
 logger.info  "Environment will be deployed at $PREFIX"

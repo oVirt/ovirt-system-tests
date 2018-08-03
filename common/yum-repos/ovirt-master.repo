@@ -935,7 +935,8 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
 exclude = ovirt-host*
-includepkgs = ebay-cors-filter
+includepkgs = dpdk
+	ebay-cors-filter
 	novnc
 	openstack-java-cinder-client
 	openstack-java-cinder-model

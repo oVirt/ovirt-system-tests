@@ -5,7 +5,8 @@ ip_resolve = 4
 gpg_check = 0
 plugins = 1
 
-[ovirt-4.1-el7]
+# 4.1 was removed from tested - changing repo name to remove injection
+[ovirt-4.1-released-el7]
 name = oVirt 4.1 Official release
 baseurl = http://resources.ovirt.org/pub/ovirt-4.1/rpm/el7/
 enabled = 1

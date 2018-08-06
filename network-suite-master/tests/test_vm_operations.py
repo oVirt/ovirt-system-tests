@@ -105,7 +105,6 @@ def test_live_vm_migration_using_dedicated_network(running_vm_0,
     assert running_vm_0.host.id == dst_host.id
 
 
-@pytest.mark.xfail(reason="https://bugzilla.redhat.com/1600140")
 def test_hot_linking_vnic(running_vm_0):
     vnic = running_vm_0.get_vnic(NIC_NAME)
     assert vnic.linked is True

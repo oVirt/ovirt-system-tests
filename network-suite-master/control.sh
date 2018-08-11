@@ -50,7 +50,7 @@ start_env() {
 
 run_tests() {
     local artifacts_path="${OST_REPO_ROOT}/exported-artifacts"
-    local junit_xml_path="${artifacts_path}/junit.xml"
+    local junit_xml_path="${artifacts_path}/pytest.junit.xml"
 
     python -B -m pytest \
         -s \

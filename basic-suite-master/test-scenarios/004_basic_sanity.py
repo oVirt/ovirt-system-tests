@@ -19,6 +19,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
+import os
 from os import EX_OK
 import re
 import nose.tools as nt
@@ -54,6 +55,7 @@ VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
 BACKUP_VM_NAME = 'backup_vm'
 IMPORTED_VM_NAME = 'imported_vm'
+OVF_VM_NAME = 'ovf_vm'
 VM0_PING_DEST = VM0_NAME
 VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
@@ -1161,6 +1163,38 @@ def reconstruct_master_domain(api):
         )
 
 
+@testlib.with_ovirt_api4
+def ovf_import(api):
+    # Read the OVF file and replace the disk id
+    engine = api.system_service()
+    disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
+    disk_id = disk_service.get().id
+    ovf_file = os.path.join(os.environ['SUITE'], 'files', 'test-vm.ovf')
+    ovf_text = open(ovf_file).read()
+    ovf_text = ovf_text.replace(
+        "ovf:diskId='52df5324-2230-40d9-9d3d-8cbb2aa33ba6'",
+        "ovf:diskId='%s'" % (disk_id,)
+    )
+    # Upload OVF
+    vms_service = engine.vms_service()
+    vms_service.add(
+        types.Vm(
+            name=OVF_VM_NAME,
+            cluster=types.Cluster(
+                name=TEST_CLUSTER,
+            ),
+            initialization=types.Initialization(
+                configuration=types.Configuration(
+                    type=types.ConfigurationType.OVA,
+                    data=ovf_text
+                )
+            )
+        )
+    )
+    # Check the VM exists
+    nt.assert_true(test_utils.get_vm_service(engine, OVF_VM_NAME) is not None)
+
+
 _TEST_LIST = [
     verify_glance_import,
     reconstruct_master_domain,
@@ -1202,6 +1236,7 @@ _TEST_LIST = [
     update_vm_pool,
     remove_vm_pool,
     check_snapshot_with_memory,
+    ovf_import,
     vdsm_recovery
 ]
 

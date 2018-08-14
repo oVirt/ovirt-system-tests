@@ -42,7 +42,7 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-engine-extension-aaa-ldap
 	ovirt-engine-extension-aaa-ldap-setup
 	ovirt-engine-extensions-api-impl
-	ovirt-engine-lib
+	python2-ovirt-engine-lib
 	ovirt-engine-metrics
 	ovirt-engine-restapi
 	ovirt-engine-sdk-python

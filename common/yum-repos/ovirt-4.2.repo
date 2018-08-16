@@ -10,95 +10,12 @@ name = oVirt 4.2 tested repo
 baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
 cost = 100
 enabled = 1
-includepkgs = cockpit-ovirt-dashboard
-	ioprocess
-	otopi
-	otopi-debug-plugins
-	otopi-java
-	ovirt-ansible-cluster-upgrade
-	ovirt-ansible-disaster-recovery
-	ovirt-ansible-engine-setup
-	ovirt-ansible-image-template
-	ovirt-ansible-infra
-	ovirt-ansible-repositories
-	ovirt-ansible-roles
-	ovirt-ansible-v2v-conversion-host
-	ovirt-ansible-vm-infra
-	ovirt-engine
-	ovirt-engine-api-explorer
-	ovirt-engine-backend
-	ovirt-engine-cli
-	ovirt-engine-dashboard
-	ovirt-engine-dbscripts
-	ovirt-engine-dwh
-	ovirt-engine-dwh-setup
-	ovirt-engine-extension-aaa-jdbc
-	ovirt-engine-extension-aaa-ldap
-	ovirt-engine-extension-aaa-ldap-setup
-	ovirt-engine-extensions-api-impl
-	ovirt-engine-lib
-	ovirt-engine-metrics
-	ovirt-engine-restapi
-	ovirt-engine-sdk-python
-	ovirt-engine-setup
-	ovirt-engine-setup-base
-	ovirt-engine-setup-plugin-ovirt-engine
-	ovirt-engine-setup-plugin-ovirt-engine-common
-	ovirt-engine-setup-plugin-vmconsole-proxy-helper
-	ovirt-engine-setup-plugin-websocket-proxy
-	ovirt-engine-tools
-	ovirt-engine-tools-backup
-	ovirt-engine-vmconsole-proxy-helper
-	ovirt-engine-webadmin-portal
-	ovirt-engine-websocket-proxy
-	ovirt-engine-wildfly
-	ovirt-engine-wildfly-overlay
-	ovirt-host
-	ovirt-host-dependencies
-	ovirt-host-deploy
-	ovirt-host-deploy-java
-	ovirt-hosted-engine-ha
-	ovirt-hosted-engine-setup
-	ovirt-imageio-common
-	ovirt-imageio-daemon
-	ovirt-imageio-proxy
-	ovirt-imageio-proxy-setup
-	ovirt-iso-uploader
-	ovirt-js-dependencies
-	ovirt-log-collector
-	ovirt-provider-ovn
-	ovirt-provider-ovn-driver
-	ovirt-setup-lib
-	ovirt-vmconsole
-	ovirt-vmconsole-host
-	ovirt-vmconsole-proxy
-	python-ovirt-engine-sdk4
-	python2-ioprocess
-	vdsm-jsonrpc-java
 
 [ovirt-4.2-official-el7]
 name = oVirt 4.2 Official release
 baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
 enabled = 1
 gpgcheck = 1
-includepkgs = mom
-	ovirt-ansible-manageiq
-	ovirt-web-ui
-	vdsm
-	vdsm-api
-	vdsm-client
-	vdsm-common
-	vdsm-hook-ethtool-options
-	vdsm-hook-fcoe
-	vdsm-hook-openstacknet
-	vdsm-hook-vfio-mdev
-	vdsm-hook-vhostmd
-	vdsm-hook-vmfex-dev
-	vdsm-http
-	vdsm-jsonrpc
-	vdsm-network
-	vdsm-python
-	vdsm-yajsonrpc
 
 [glusterfs-3.12-el7]
 name = GlusterFS repo

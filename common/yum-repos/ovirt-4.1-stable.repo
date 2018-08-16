@@ -13,66 +13,6 @@ enabled = 1
 gpgcheck = 1
 max_connections = 5
 exclude = qemu*
-includepkgs = cockpit-ovirt-dashboard
-	ioprocess
-	otopi
-	otopi-debug-plugins
-	otopi-java
-	ovirt-engine
-	ovirt-engine-backend
-	ovirt-engine-cli
-	ovirt-engine-dashboard
-	ovirt-engine-dbscripts
-	ovirt-engine-dwh
-	ovirt-engine-dwh-setup
-	ovirt-engine-extension-aaa-jdbc
-	ovirt-engine-extension-aaa-ldap
-	ovirt-engine-extension-aaa-ldap-setup
-	ovirt-engine-extensions-api-impl
-	ovirt-engine-lib
-	ovirt-engine-metrics
-	ovirt-engine-restapi
-	ovirt-engine-sdk-python
-	ovirt-engine-setup
-	ovirt-engine-setup-base
-	ovirt-engine-setup-plugin-ovirt-engine
-	ovirt-engine-setup-plugin-ovirt-engine-common
-	ovirt-engine-setup-plugin-vmconsole-proxy-helper
-	ovirt-engine-setup-plugin-websocket-proxy
-	ovirt-engine-tools
-	ovirt-engine-tools-backup
-	ovirt-engine-userportal
-	ovirt-engine-vmconsole-proxy-helper
-	ovirt-engine-webadmin-portal
-	ovirt-engine-websocket-proxy
-	ovirt-engine-wildfly
-	ovirt-engine-wildfly-overlay
-	ovirt-host
-	ovirt-host-deploy
-	ovirt-host-deploy-java
-	ovirt-hosted-engine-ha
-	ovirt-hosted-engine-setup
-	ovirt-imageio-proxy
-	ovirt-imageio-proxy-setup
-	ovirt-iso-uploader
-	ovirt-log-collector
-	ovirt-setup-lib
-	ovirt-vmconsole
-	ovirt-vmconsole-host
-	ovirt-vmconsole-proxy
-	ovirt-web-ui
-	python-ioprocess
-	python-ovirt-engine-sdk4
-	vdsm
-	vdsm-api
-	vdsm-cli
-	vdsm-client
-	vdsm-hook-vmfex-dev
-	vdsm-jsonrpc
-	vdsm-jsonrpc-java
-	vdsm-python
-	vdsm-xmlrpc
-	vdsm-yajsonrpc
 
 [centos-qemu-ev-release-el7]
 name = CentOS-7 - QEMU EV

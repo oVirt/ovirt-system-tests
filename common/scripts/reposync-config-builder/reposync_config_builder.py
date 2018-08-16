@@ -29,7 +29,11 @@ The plugin will generate a new config named "YOUR_CONF_NAME.modified".
 The modified conf will be created in the directory of your original conf,
 and will include the packages you tried to install and their deps.
 
+The following options can be added to each section:
 
+"ost_skip_inject"
+
+If set to True, the repo will not be modified by the plugin
 
 """
 
@@ -59,7 +63,7 @@ def predownload_hook(conduit):
     and update the includepkgs / exclude field in the config.
 
     :param conduit: :class:`yum.plugins.DownloadPluginConduit`
-    :raises: :class:`yum.plugins.PluginYumExit
+    :raises: :class:`yum.plugins.PluginYumExit`
         if an error occurred when trying to build the pkgs list,
         or if "skip_install" config option == True
     """
@@ -82,6 +86,30 @@ def predownload_hook(conduit):
         raise PluginYumExit('reposync_config_builder: Skipping install')
 
 
+def str_to_set(string):
+    return set(re.split(r'\s+', string.strip()))
+
+
+def get_skip_injection(cp):
+    """Get a set of repos that should be modified by the plugin
+
+    :param cp: :class:`ConfigParser.RawConfigParser`
+    :return: A set of repos that shouldn't be modified
+    :rtype: set
+    """
+    skip_injection = set()
+    key = 'ost_skip_injection'
+
+    for section in cp.sections():
+        try:
+            if cp.getboolean(section, key):
+                skip_injection.add(section)
+        except ConfigParser.NoOptionError:
+            pass
+
+    return skip_injection
+
+
 def set_include(conf_path, repoid_to_pkgs):
     """
     Update the includepkgs / exclude fields of the yum
@@ -98,6 +126,9 @@ def set_include(conf_path, repoid_to_pkgs):
     with open(conf_path, mode='rt') as f:
         cp.readfp(f)
 
+    # skip "include/exclude" injection
+    skip_injection = get_skip_injection(cp)
+
     # repos that doesn't have pkgs that we need
     repos_to_exclude = (
         repo
@@ -108,10 +139,11 @@ def set_include(conf_path, repoid_to_pkgs):
 
     # add include
     for repoid, pkgs in repoid_to_pkgs.iteritems():
+        if repoid in skip_injection:
+            continue
+
         if cp.has_option(repoid, 'includepkgs'):
-            predefined_includes = set(
-                re.split(r'\s+', cp.get(repoid, 'includepkgs'))
-            )
+            predefined_includes = str_to_set(cp.get(repoid, 'includepkgs'))
         else:
             predefined_includes = set()
 
@@ -123,6 +155,9 @@ def set_include(conf_path, repoid_to_pkgs):
 
     # add exclude
     for repoid in repos_to_exclude:
+        if repoid in skip_injection:
+            continue
+
         cp.set(repoid, 'exclude', '*')
 
     with open(conf_path + '.modified', mode='wt') as f:

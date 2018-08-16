@@ -1,6 +1,7 @@
 ---
 stage: check-patch
 substage:
+  - dr_suite_master
   - ansible_suite_master
   - basic_suite_4.2
   - basic_suite_master

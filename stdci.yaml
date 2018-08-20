@@ -1,54 +1,63 @@
 ---
-stage: check-patch
-substage:
-  - dr_suite_master
-  - ansible_suite_master
-  - basic_suite_4.2
-  - basic_suite_master
-  - compat-3.6_suite_master
-  - compat-4.0_suite_master
-  - compat-4.1_suite_master
-  - compat-4.2_suite_master
-  - hc-basic_suite_4.2
-  - hc-basic_suite_master
-  - he-basic-ansible_suite_4.2
-  - he-basic-ansible_suite_master
-  - he-basic-iscsi_suite_master
-  - he-basic-iscsi_suite_4.2
-  - he-basic_suite_4.2
-  - he-basic_suite_master
-  - he-node-ng_suite_master
-  - he-node-ng_suite_4.2
-  - network_suite_4.2
-  - network_suite_master
-  - performance_suite_master
-  - upgrade-from-release_suite_4.2
-  - upgrade-from-prevrelease_suite_4.2
-  - upgrade-from-release_suite_master
-  - openshift-on-ovirt
-  - test-ost-container:
-      runif:
-        filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']
-  - check_docs:
-      runif:
-        filechanged: ['automation/create-docs*', 'docs/*']
+stage:
+  - poll-upstream-sources:
+      substage:
+        - ovirt-master
+        - ovirt-4.2
+        - ovirt-4.2-release
+        - ovirt-4.1-stable
       script:
-        fromfile: 'automation/check-docs.sh'
-      runtime-requirements:
-        # Docs check/build doesn't require bare metal, so it's better
-        # to overwrite the global config of nesting support.
-        support-nesting-level: 0
-  - ost_core_change:
+        fromfile: 'automation/{{ stage }}_{{ substage }}.sh'
+  - check-patch:
+      substage:
+        - dr_suite_master
+        - ansible_suite_master
+        - basic_suite_4.2
+        - basic_suite_master
+        - compat-3.6_suite_master
+        - compat-4.0_suite_master
+        - compat-4.1_suite_master
+        - compat-4.2_suite_master
+        - hc-basic_suite_4.2
+        - hc-basic_suite_master
+        - he-basic-ansible_suite_4.2
+        - he-basic-ansible_suite_master
+        - he-basic-iscsi_suite_master
+        - he-basic-iscsi_suite_4.2
+        - he-basic_suite_4.2
+        - he-basic_suite_master
+        - he-node-ng_suite_master
+        - he-node-ng_suite_4.2
+        - network_suite_4.2
+        - network_suite_master
+        - performance_suite_master
+        - upgrade-from-release_suite_4.2
+        - upgrade-from-prevrelease_suite_4.2
+        - upgrade-from-release_suite_master
+        - openshift-on-ovirt
+        - test-ost-container:
+            runif:
+              filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']
+        - check_docs:
+            runif:
+              filechanged: ['automation/create-docs*', 'docs/*']
+            script:
+              fromfile: 'automation/check-docs.sh'
+            runtime-requirements:
+              # Docs check/build doesn't require bare metal, so it's better
+              # to overwrite the global config of nesting support.
+              support-nesting-level: 0
+        - ost_core_change:
+            runif:
+              # Any change that is not part of a suite
+              filechanged: ['run_suite.sh', 'automation/suite.sh']
+            script:
+              fromfile: 'automation/basic_suite_master.sh'
       runif:
-        # Any change that is not part of a suite
-        filechanged: ['run_suite.sh', 'automation/suite.sh']
+        filechanged:
+          - '{{ substage|replace("_", "[_-]") }}*'
+          - 'automation/{{ substage|replace("_", "[_-]") }}*'
       script:
-        fromfile: 'automation/basic_suite_master.sh'
-runif:
-  filechanged:
-    - '{{ substage|replace("_", "[_-]") }}*'
-    - 'automation/{{ substage|replace("_", "[_-]") }}*'
-script:
-  fromfile: 'automation/{{ substage }}.sh'
+        fromfile: 'automation/{{ substage }}.sh'
 runtime-requirements:
   support-nesting-level: 2

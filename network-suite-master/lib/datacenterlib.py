@@ -17,8 +17,11 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import contextlib
+
 from ovirtsdk4 import types
 
+from lib import error
 from lib import netlib
 from lib import storagelib
 from lib import syncutil
@@ -39,6 +42,15 @@ class DataCenter(SDKRootEntity):
         sds_service = self._service.storage_domains_service()
         sds_service.add(sd.get_sdk_type())
 
+    def deactivate_storage_domain(self, sd):
+        self._sd_service(sd).deactivate()
+
+    def deactivate_storage_domain_sync(self, sd):
+        syncutil.sync(
+            exec_func=self.deactivate_storage_domain,
+            exec_func_args=(sd,),
+            error_criteria=error.sd_deactivation_error_not_due_to_busy)
+
     def list_qos(self):
         qos_entities = []
         for qos in self._service.qoss_service().list():
@@ -58,6 +70,10 @@ class DataCenter(SDKRootEntity):
     def wait_for_sd_active_status(self, sd):
         self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.ACTIVE)
 
+    def wait_for_sd_maintenance_status(self, sd):
+        self._wait_for_sd_status(sd,
+                                 storagelib.StorageDomainStatus.MAINTENANCE)
+
     def create(self, dc_name):
         sdk_type = types.DataCenter(name=dc_name)
         self._create_sdk_entity(sdk_type)
@@ -66,13 +82,29 @@ class DataCenter(SDKRootEntity):
         return system.data_centers_service
 
     def _wait_for_sd_status(self, sd, status):
-        sd_service = self._service.storage_domains_service().service(sd.id)
+        sd_service = self._sd_service(sd)
         syncutil.sync(exec_func=lambda: sd_service.get().status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == status)
+
+    def _sd_service(self, sd):
+        return self._service.storage_domains_service().service(sd.id)
 
     def _wait_for_status(self, status):
         syncutil.sync(exec_func=lambda: self.status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == status,
                       timeout=60 * 5)
+
+
+@contextlib.contextmanager
+def attached_storage_domain(data_center, storage_domain):
+    data_center.attach_storage_domain(storage_domain)
+    try:
+        # assuming that even if the storage does not become active,
+        # deactivate will not fail:
+        data_center.wait_for_sd_active_status(storage_domain)
+        yield storage_domain
+    finally:
+        data_center.deactivate_storage_domain_sync(storage_domain)
+        data_center.wait_for_sd_maintenance_status(storage_domain)

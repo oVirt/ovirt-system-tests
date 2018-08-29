@@ -19,6 +19,7 @@
 #
 from ovirtsdk4 import types
 
+from lib import error
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
 
@@ -97,6 +98,7 @@ class StorageDomainStatus(object):
 
     UNATTACHED = types.StorageDomainStatus.UNATTACHED
     ACTIVE = types.StorageDomainStatus.ACTIVE
+    MAINTENANCE = types.StorageDomainStatus.MAINTENANCE
 
 
 class StorageDomain(SDKRootEntity):
@@ -131,6 +133,15 @@ class StorageDomain(SDKRootEntity):
             )
         )
         self._create_sdk_entity(sdk_type)
+
+    def destroy(self):
+        self._service.remove(destroy=True)
+
+    def destroy_sync(self):
+        syncutil.sync(
+            exec_func=self.destroy,
+            exec_func_args=(),
+            error_criteria=error.sd_destroy_error_not_due_to_busy)
 
     def _get_parent_service(self, system):
         return system.storage_domains_service

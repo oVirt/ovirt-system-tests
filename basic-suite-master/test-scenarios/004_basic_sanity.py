@@ -315,11 +315,18 @@ def remove_backup_vm_and_backup_snapshot(api):
     num_of_vms = len(engine.vms_service().list())
     backup_vm_service.remove()
     nt.assert_true(len(engine.vms_service().list()) == (num_of_vms-1))
+    # TODO: Remove the version requirement once
+    # https://bugzilla.redhat.com/1623467 is fixed.
+    if not versioning.cluster_version_ok(4, 2):
+        return
     with test_utils.TestEvent(engine, 342): # USER_REMOVE_SNAPSHOT event
         # remove vm2 snapshot
         vm2_snapshots_service.snapshot_service(vm2_snapshot.id).remove()
 
 
+# TODO: Remove the version requirement once https://bugzilla.redhat.com/1623467
+# is fixed.
+@versioning.require_version(4, 2)
 @testlib.with_ovirt_api4
 def verify_backup_snapshot_removed(api):
     engine = api.system_service()

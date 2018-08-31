@@ -48,7 +48,6 @@ domains:
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_engine.sh
     artifacts:
       - /var/log
-      - /root/fluentd
       - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
       - /var/lib/ovirt-engine/setup/answers
       - /etc/ovirt-engine

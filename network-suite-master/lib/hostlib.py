@@ -122,10 +122,13 @@ class Host(SDKRootEntity):
 
     def deactivate(self):
         self.wait_for_up_status()
-        syncutil.sync(exec_func=self._deactivate,
-                      timeout=3 * 60,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s)
+        syncutil.sync(
+            exec_func=self._service.deactivate,
+            exec_func_args=(),
+            timeout=3 * 60,
+            error_criteria=Host._is_error_non_transient
+        )
+        self.wait_for_maintenance_status()
 
     def change_cluster(self, cluster):
         self.deactivate()
@@ -254,23 +257,16 @@ class Host(SDKRootEntity):
     def _get_existing_attachments(self):
         return list(self.service.network_attachments_service().list())
 
-    def _deactivate(self):
-        """Some host states are not represented by dedicated status (e.g.
-        SPM contention). Although a status of a host may be 'Up', switching
-        it to maintenance mode is not possible in some of these states.
-        """
-
+    @staticmethod
+    def _is_error_non_transient(error):
         HAS_RUNNING_TASKS = 'Host has asynchronous running tasks'
         HOST_IS_CONTENDING = 'Host is contending'
 
-        try:
-            self._service.deactivate()
+        if not isinstance(error, ovirtsdk4.Error):
             return True
-        except ovirtsdk4.Error as e:
-            msg = e.message
-            if HAS_RUNNING_TASKS in msg or HOST_IS_CONTENDING in msg:
-                return False
-            raise
+        if HAS_RUNNING_TASKS in error.msg or HOST_IS_CONTENDING in error.msg:
+            return False
+        return True
 
 
 @contextlib.contextmanager

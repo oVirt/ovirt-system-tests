@@ -34,18 +34,34 @@ class Timeout(Exception):
         return "Last evaluated result: {}".format(self.args[0])
 
 
-def sync(exec_func, exec_func_args, success_criteria, timeout=DEFAULT_TIMEOUT):
+def sync(exec_func,
+         exec_func_args,
+         success_criteria=lambda result: True,
+         error_criteria=lambda error: True,
+         timeout=DEFAULT_TIMEOUT):
     end_time = _monothonic_time() + timeout
 
-    result = exec_func(*exec_func_args)
-    if success_criteria(result):
-        return
+    try:
+        result = exec_func(*exec_func_args)
+    except Exception as e:
+        if error_criteria(e):
+            raise
+        result = e
+    else:
+        if success_criteria(result):
+            return
 
     while _monothonic_time() < end_time:
         time.sleep(3)
-        result = exec_func(*exec_func_args)
-        if success_criteria(result):
-            return
+        try:
+            result = exec_func(*exec_func_args)
+        except Exception as e:
+            if error_criteria(e):
+                raise
+            result = e
+        else:
+            if success_criteria(result):
+                return
 
     raise Timeout(result)
 

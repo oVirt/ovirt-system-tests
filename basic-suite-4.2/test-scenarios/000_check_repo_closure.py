@@ -27,8 +27,6 @@ from pwd import getpwuid
 from shutil import rmtree
 from yum.misc import getCacheDir
 from ovirtlago import (testlib, constants)
-from lago.utils import ver_cmp
-import pkg_resources 
 
 
 @testlib.with_ovirt_prefix
@@ -50,14 +48,8 @@ def gen_config_file_and_params(
     command = ['repoclosure', '-t', '--config={}'.format(cfg_path)]
     internal_repo_ip = prefix.virt_env.get_net().gw()
     internal_repo_port = constants.REPO_SERVER_PORT
-    lago_ost_version = pkg_resources.get_distribution('lago-ovirt').version
 
-    if ver_cmp(lago_ost_version, '0.44.3') < 0:
-        template = 'http://{ip}:{port}/el7/'
-    else:
-        template = 'http://{ip}:{port}/default/el7'
-
-    internal_repo_url = template.format(
+    internal_repo_url = 'http://{ip}:{port}/default/el7'.format(
         ip=internal_repo_ip, port=internal_repo_port
     )
 

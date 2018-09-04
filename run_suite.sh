@@ -430,11 +430,7 @@ install_local_rpms() {
     cat > "$path_to_config" <<EOF
 [internal_repo]
 name=Lago's internal repo
-
-# In lago ost 0.44.3 the path to the internal repo was changed
-baseurl="file://${PREFIX}/current/internal_repo/${os}"
-        "file://${PREFIX}/current/internal_repo/default/${os}"
-
+baseurl="file://${PREFIX}/current/internal_repo/default/${os}"
 enabled=1
 gpgcheck=0
 skip_if_unavailable=1

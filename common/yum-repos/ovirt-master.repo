@@ -440,6 +440,7 @@ includepkgs = OVMF
 	numad
 	numpy
 	objectweb-asm
+	objectweb-asm4
 	oddjob
 	oddjob-mkhomedir
 	openssl
@@ -670,8 +671,13 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
 exclude = ovirt-host*
-includepkgs = dpdk
+includepkgs = bouncycastle
+	bouncycastle-pkix
+	dpdk
 	ebay-cors-filter
+	jcip-annotations
+	json-smart
+	nimbus-jose-jwt
 	novnc
 	openstack-java-cinder-client
 	openstack-java-cinder-model

@@ -70,6 +70,7 @@ Optional arguments:
 }
 
 on_exit() {
+    [[ "$?" -ne 0 ]] && logger.error "on_exit: Exiting with a non-zero status"
     logger.info "Dumping lago env status"
     env_status || logger.error "Failed to dump env status"
 }

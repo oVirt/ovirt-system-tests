@@ -40,6 +40,35 @@ def sync(exec_func,
          success_criteria=lambda result: True,
          error_criteria=lambda error: True,
          timeout=DEFAULT_TIMEOUT):
+    """Sync an operation until it either:
+
+    - succeeds (according to the success_criteria specified)
+    - fails due to timing out (after the specified timeout)
+    - fails due to a terminal error (according to the error_criteria specified)
+
+    A caller may specifiy a success_criteria function that should return:
+
+    - False if the sync should continue to retry
+    - True if the sync should terminate immediately
+
+    A caller may also specify an error_criteria function if the sync
+    should continue to retry when the operation fails with an anticipated
+    exception. This function will be called back with the exception and
+    should return:
+
+    - False if the sync should continue to retry
+    - True if the sync should stop and the exception raised back to the caller
+
+    By default, both success_criteria and error_criteria return True, causing
+    all results and all errors to return and raise respectively. The default
+    timeout is 120 seconds.
+
+    :param exec_func: callable
+    :param exec_func_args: tuple/dict
+    :param success_criteria: callable
+    :param error_criteria: callable
+    :param timeout: int
+    """
     end_time = _monothonic_time() + timeout
 
     if isinstance(exec_func_args, collections.Mapping):

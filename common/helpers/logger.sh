@@ -22,12 +22,14 @@ logger.log() {
         local calling_script="$(basename "$0")"
         local calling_func="${FUNCNAME[2]}"
         local level="${1:?}"
+        local timestamp=$(date "+%Y-%m-%d %H:%M:%S.%N%z")
 
         shift
 
         printf \
-            "%b%s::%s::%s:: %s%b\n" \
+            "%b%s %s::%s::%s:: %s%b\n" \
             "${!level}" \
+            "$timestamp" \
             "$calling_script" \
             "$calling_func" \
             "${level}" \

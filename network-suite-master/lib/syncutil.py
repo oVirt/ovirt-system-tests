@@ -17,6 +17,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import collections
 import os
 import time
 
@@ -41,8 +42,15 @@ def sync(exec_func,
          timeout=DEFAULT_TIMEOUT):
     end_time = _monothonic_time() + timeout
 
+    if isinstance(exec_func_args, collections.Mapping):
+        kwargs = exec_func_args
+        args = ()
+    else:
+        args = exec_func_args
+        kwargs = {}
+
     try:
-        result = exec_func(*exec_func_args)
+        result = exec_func(*args, **kwargs)
     except Exception as e:
         if error_criteria(e):
             raise
@@ -54,7 +62,7 @@ def sync(exec_func,
     while _monothonic_time() < end_time:
         time.sleep(3)
         try:
-            result = exec_func(*exec_func_args)
+            result = exec_func(*args, **kwargs)
         except Exception as e:
             if error_criteria(e):
                 raise

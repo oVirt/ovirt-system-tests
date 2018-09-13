@@ -21,6 +21,8 @@ import shutil
 
 import pytest
 
+from lib import syncutil
+
 from fixtures.engine import ENGINE_DOMAIN
 from fixtures.engine import ANSWER_FILE_SRC
 
@@ -88,3 +90,56 @@ def _modify_hosts_file(fqdn, address):
         tf.write(ENGINE_ENTRY + data)
 
     shutil.move(TEMP_FILE, HOSTS_FILE)
+
+
+@pytest.fixture(scope='session')
+def engine_storage_ipv6(engine):
+    """
+    lago creates a storage network with an ipv6 subnet and connects it to NIC
+    eth1 of its VMs but does not assign an ip (v6) to the NIC.
+    this function connects to the engine VM using its ssh API to:
+    * assign an ipv6 address to the NIC
+    * wait for the address to be assigned (it might take up to a few seconds)
+    * retrieve the address
+    :return: the ipv6 address as string
+    :raise: timeout exception if global ipv6 address not found on NIC
+    """
+    STORAGE_NET_NIC_NAME = 'eth1'
+    _assign_ipv6(engine, STORAGE_NET_NIC_NAME)
+    syncutil.sync(exec_func=_get_ipv6,
+                  exec_func_args=(engine, STORAGE_NET_NIC_NAME),
+                  success_criteria=lambda ipv6: ipv6 != '',
+                  timeout=10)
+    return _get_ipv6(engine, STORAGE_NET_NIC_NAME)
+
+
+def _assign_ipv6(lago_vm, nic_name):
+    """
+    lago creates a storage network with an ipv6 subnet and connects it to NIC
+    eth1 of its VMs but does not assign an ip (v6) to the NIC.
+    this function connects to a lago VM using its ssh API and requests an ipv6
+    address be assigned to the NIC using nmcli.
+    :param lago_vm: any lago vm that exposes an ssh API into itself
+    :param nic_name: the name of the NIC to assign an ipv6 address to
+    :raise: exception if an error occurred during the assignment
+    """
+    res = lago_vm.ssh(['nmcli', 'con', 'modify',
+                       nic_name, 'ipv6.method', 'auto'])
+    if res.code:
+        raise Exception('nmcli con modify failed: exit code %s, error "%s"'
+                        % (res.code, res.err))
+    res = lago_vm.ssh(['nmcli', 'con', 'up', nic_name])
+    if res.code:
+        raise Exception('nmcli con up failed: exit code %s, error "%s"'
+                        % (res.code, res.err))
+
+
+def _get_ipv6(lago_vm, nic_name):
+    """
+    :param lago_vm: any lago vm that exposes an ssh API into itself
+    :param nic_name: the name of the NIC from which to get the ipv6 address
+    :return: the ipv6 address of the lago vm on eth1 as string or empty string
+    """
+    INET6 = 'inet6 '
+    res = lago_vm.ssh(['ip -o -6 a show', nic_name, 'scope global'])
+    return res.out[res.out.find(INET6) + len(INET6):res.out.find('/')]

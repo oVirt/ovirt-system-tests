@@ -25,6 +25,9 @@ from lib import clusterlib
 from lib import syncutil
 from lib.sdkentity import SDKRootEntity
 
+HOST_TIMEOUT_SHORT = 5 * 60
+HOST_TIMEOUT_LONG = 15 * 60
+
 
 class HostStatus(object):
 
@@ -205,7 +208,7 @@ class Host(SDKRootEntity):
     def sync_all_networks(self):
         self.service.sync_all_networks()
 
-    def wait_for_up_status(self, timeout=5 * 60):
+    def wait_for_up_status(self, timeout=HOST_TIMEOUT_SHORT):
         syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
                       exec_func_args=(),
                       success_criteria=self._host_up_status_success_criteria,

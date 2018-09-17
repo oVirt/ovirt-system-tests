@@ -53,7 +53,7 @@ def cluster_hosts_up(default_cluster, system):
     for host_id in cluster_host_ids:
         host = hostlib.Host(system)
         host.import_by_id(host_id)
-        host.wait_for_up_status()
+        host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
         cluster_hosts.append(host)
     return cluster_hosts
 

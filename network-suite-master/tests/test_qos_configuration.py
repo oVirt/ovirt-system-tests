@@ -100,7 +100,7 @@ def cluster_host_up(system, default_cluster):
     any_host_id = default_cluster.host_ids()[0]
     host = hostlib.Host(system)
     host.import_by_id(any_host_id)
-    host.wait_for_up_status()
+    host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
     yield host
 
 

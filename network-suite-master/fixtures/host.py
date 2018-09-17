@@ -66,7 +66,7 @@ def host_in_ovs_cluster(
     host_id = default_cluster.host_ids()[0]
     host = hostlib.Host(system)
     host.import_by_id(host_id)
-    host.wait_for_up_status(timeout=15 * 60)
+    host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
     with hostlib.change_cluster(host, ovs_cluster):
         host.sync_all_networks()
         default_data_center.wait_for_up_status()
@@ -76,7 +76,7 @@ def host_in_ovs_cluster(
 
 
 def _wait_for_host_install(host):
-    host.wait_for_up_status(timeout=15 * 60)
+    host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
     # TODO: There's currently a NPE (bz#1514853) in Engine's
     # scheduling logic (CPU usage). Once it is resolved, remove this
     time.sleep(20)

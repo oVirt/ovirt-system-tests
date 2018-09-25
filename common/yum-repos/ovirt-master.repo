@@ -699,6 +699,7 @@ includepkgs = bouncycastle
 	python2-fixtures
 	python2-netaddr
 	python2-openvswitch
+	python2-ovsdbapp
 	python2-pyOpenSSL
 	python2-six
 	safelease
@@ -798,11 +799,3 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
 
-# This is a temporary workaround to use ovsdbapp-0.12.1 which is currently not
-# released in cbs. When python-ovsdbapp-0.12.1 is released, oVirt should tag it
-# and this repo below should be removed.
-[mdbarroso-python-ovsdbapp-el7]
-name = Copr repo for python-ovsdbapp
-baseurl = https://copr-be.cloud.fedoraproject.org/results/mdbarroso/ovsdbapp/epel-7-$basearch/
-enabled = 1
-includepkgs = python2-ovsdbapp

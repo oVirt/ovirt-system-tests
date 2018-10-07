@@ -68,6 +68,7 @@ def sync(exec_func,
     :param success_criteria: callable
     :param error_criteria: callable
     :param timeout: int
+    :return: the result of running the exec_func
     """
     end_time = _monothonic_time() + timeout
 
@@ -86,7 +87,7 @@ def sync(exec_func,
         result = e
     else:
         if success_criteria(result):
-            return
+            return result
 
     while _monothonic_time() < end_time:
         time.sleep(3)
@@ -98,7 +99,7 @@ def sync(exec_func,
             result = e
         else:
             if success_criteria(result):
-                return
+                return result
 
     raise Timeout(result)
 

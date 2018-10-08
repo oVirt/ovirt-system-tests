@@ -106,11 +106,10 @@ def engine_storage_ipv6(engine):
     """
     STORAGE_NET_NIC_NAME = 'eth1'
     _assign_ipv6(engine, STORAGE_NET_NIC_NAME)
-    syncutil.sync(exec_func=_get_ipv6,
-                  exec_func_args=(engine, STORAGE_NET_NIC_NAME),
-                  success_criteria=lambda ipv6: ipv6 != '',
-                  timeout=10)
-    return _get_ipv6(engine, STORAGE_NET_NIC_NAME)
+    return syncutil.sync(exec_func=_get_ipv6,
+                         exec_func_args=(engine, STORAGE_NET_NIC_NAME),
+                         success_criteria=lambda ipv6: ipv6 != '',
+                         timeout=10)
 
 
 def _assign_ipv6(lago_vm, nic_name):

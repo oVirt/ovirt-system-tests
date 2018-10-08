@@ -156,6 +156,18 @@ def _check_problematic_hosts(hosts_service):
         raise RuntimeError(dump_hosts)
 
 
+def _change_logging_level(host, logger_name, level='DEBUG',
+                          qualified_logger_name=None):
+    if qualified_logger_name is None:
+        qualified_logger_name = logger_name
+
+    host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level={}'.format(level),
+              'name={}'.format(qualified_logger_name)])
+    sed_expr = ('/logger_{}/,/level=/s/level=INFO/level={}/'
+                .format(logger_name, level))
+    host.ssh(['sed', '-i', sed_expr, '/etc/vdsm/logger.conf'])
+
+
 @testlib.with_ovirt_api4
 def add_dc(api):
     engine = api.system_service()
@@ -334,11 +346,9 @@ def complete_hosts_setup(prefix):
         host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
         host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level=DEBUG'])
         for logger in ('root', 'vds', 'virt',):
-            host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level=DEBUG',
-                      'name={}'.format(logger)])
-            sed_expr = ('/logger_{}/,/level=/s/level=INFO/level=DEBUG/'
-                        .format(logger))
-            host.ssh(['sed', '-i', sed_expr, '/etc/vdsm/logger.conf'])
+            _change_logging_level(host, logger)
+        _change_logging_level(host, 'schema_inconsistency', 'DEBUG',
+                              'schema.inconsistency')
 
 
 @testlib.with_ovirt_prefix

@@ -25,7 +25,10 @@ substage:
   - upgrade-from-release_suite_4.2
   - upgrade-from-prevrelease_suite_4.2
   - upgrade-from-release_suite_master
-  - openshift-on-ovirt 
+  - openshift-on-ovirt
+  - test-ost-container:
+      runif:
+        filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']
   - check_docs:
       runif:
         filechanged: ['automation/create-docs*', 'docs/*']

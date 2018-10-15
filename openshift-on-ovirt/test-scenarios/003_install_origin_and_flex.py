@@ -40,7 +40,7 @@ def install_origin_and_flex(prefix):
         '-e', 'ENGINE_USER={}'.format('admin@internal'),
         '-e', 'ENGINE_PASS={}'.format(engine_pass),
         '-v', '{}:/root/user_vars.yaml'.format(user_vars),
-        'docker.io/rgolangh/ovirt-openshift-extensions-ci',
+        'quay.io/rgolangh/ovirt-openshift-extensions-ci',
     ])
 
     if exit_code > 0:

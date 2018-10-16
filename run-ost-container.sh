@@ -47,9 +47,11 @@ run() {
 
     "$cli" run \
         -d \
+        --rm \
         -v "${lago_data_dir}":/var/lib/lago \
         -v "${subnet_dir}":/var/lib/lago/subnets \
         -v "${PWD}:${PWD}" \
+        --device "/dev/kvm:/dev/kvm:rw" \
         -w "$PWD" \
         --privileged \
         --name "$name" \
@@ -82,7 +84,7 @@ _exec() {
 
 
 list() {
-    "$cli" ps -f label=com.github.lago-project.lago.version "$@"
+    "$cli" ps -f label=com.github.lago-project.lago-ost-plugin.version "$@"
 }
 
 

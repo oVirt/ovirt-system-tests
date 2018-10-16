@@ -6,6 +6,7 @@ from subprocess import check_output
 from operator import or_
 from itertools import imap
 import logging
+import sys
 
 from change_resolver_conf import CONF
 
@@ -14,25 +15,20 @@ LOGGER = logging.getLogger(__name__)
 
 
 def main():
-    changes = get_changes()
+    changes = get_changes(sys.argv[1])
     change_to_suite = ChangeResolver()
     change_set = reduce(or_, imap(change_to_suite, changes))
+
     if not change_set:
         LOGGER.info('Changes were not detected, returning default suites')
         change_set = CONF['default_suites']
     exclude_set = CONF['exclude']
     LOGGER.debug('excluding: {}'.format(','.join(change_set & exclude_set)))
-    print '\n'.join(change_set - exclude_set)
+    print "\n".join(str(e) for e in change_set - exclude_set)
 
-
-def get_changes():
-    return (
-        l for l in check_output(
-            ["git", "show", "--pretty=format:", "--name-only"]
-        ).splitlines()
-        if l
-    )
-
+def get_changes(x):
+    f = os.path.realpath(x)
+    return [f]
 
 class ChangeResolver:
     def __call__(self, change):
@@ -122,7 +118,6 @@ class ChangeResolver:
             self._suites.setdefault(f, set()).add(self.path_to_suite(symlink))
         LOGGER.debug('generated file to suite(s) map:\n{}'.format(self._suites))
         return self._suites
-
 
 if __name__ == "__main__":
     main()

@@ -632,6 +632,7 @@ includepkgs = cockpit
 	cockpit-storaged
 	cockpit-system
 	cockpit-ws
+	dpdk
 	libssh
 	python-httplib2
 	python-lockfile
@@ -673,7 +674,6 @@ enabled = 1
 exclude = ovirt-host*
 includepkgs = bouncycastle
 	bouncycastle-pkix
-	dpdk
 	ebay-cors-filter
 	jcip-annotations
 	json-smart

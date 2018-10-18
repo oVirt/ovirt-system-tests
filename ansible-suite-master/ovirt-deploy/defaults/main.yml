@@ -12,7 +12,7 @@ quota_name: DC-QUOTA
 
 # Clusters:
 cluster_name: test-cluster
-cpu_type: Intel Conroe Family
+cpu_type: Intel Nehalem Family
 
 # Hosts:
 host_password: 123456

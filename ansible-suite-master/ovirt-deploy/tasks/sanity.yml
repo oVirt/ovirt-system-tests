@@ -1,6 +1,6 @@
 ---
 - name: Add VM from Blank template
-  ovirt_vms:
+  ovirt_vm:
     auth: "{{ ovirt_auth }}"
     state: stopped
     name: "{{ vm_name0 }}"
@@ -16,7 +16,7 @@
         profile_name: ovirtmgmt
 
 - name: Add disk to VM
-  ovirt_disks:
+  ovirt_disk:
     auth: "{{ ovirt_auth }}"
     vm_name: "{{ vm_name0 }}"
     name: "{{ vm_disk_name0 }}"
@@ -27,7 +27,7 @@
     bootable: true
 
 - name: Attach logical unit to VM
-  ovirt_disks:
+  ovirt_disk:
     auth: "{{ ovirt_auth }}"
     vm_name: "{{ vm_name0 }}"
     name: "{{ disk_lun_name }}"
@@ -39,7 +39,7 @@
     interface: virtio
 
 - name: Add VM from template
-  ovirt_vms:
+  ovirt_vm:
     auth: "{{ ovirt_auth }}"
     state: stopped
     name: "{{ vm_name1 }}"
@@ -54,7 +54,7 @@
     cpu_shares: 1024
 
 - name: Run VM with cloud-init
-  ovirt_vms:
+  ovirt_vm:
     auth: "{{ ovirt_auth }}"
     state: running
     name: "{{ vm_name1 }}"
@@ -77,14 +77,14 @@
       root_password: secret
 
 - name: Migrate VM
-  ovirt_vms:
+  ovirt_vm:
     auth: "{{ ovirt_auth }}"
     state: running
     name: "{{ vm_name1 }}"
     host: "{{ host_names[1] }}"
 
 - name: Export template
-  ovirt_templates:
+  ovirt_template:
     auth: "{{ ovirt_auth }}"
     name: "{{ template_name }}"
     state: exported
@@ -92,7 +92,7 @@
     cluster: "{{ cluster_name }}"
 
 - name: Hotplug NIC
-  ovirt_nics:
+  ovirt_nic:
     auth: "{{ ovirt_auth }}"
     state: present
     vm: "{{ vm_name1 }}"
@@ -102,7 +102,7 @@
     network: ovirtmgmt
 
 - name: Hotplug disk to VM
-  ovirt_disks:
+  ovirt_disk:
     auth: "{{ ovirt_auth }}"
     name: "{{ disk_hotplug_name }}"
     vm_name: "{{ vm_name1 }}"
@@ -112,7 +112,7 @@
     storage_domain: "{{ nfs_name }}"
 
 - name: Create vm pool
-  ovirt_vmpools:
+  ovirt_vmpool:
     auth: "{{ ovirt_auth }}"
     name: "{{ vmpool_name }}"
     cluster: "{{ cluster_name }}"

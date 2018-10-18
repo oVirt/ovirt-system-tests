@@ -1,6 +1,6 @@
 ---
 - name: Add test datacenter
-  ovirt_datacenters:
+  ovirt_datacenter:
     auth: "{{ ovirt_auth }}"
     state: present
     name: "{{ dc_name }}"
@@ -8,7 +8,7 @@
     compatibility_version: "{{ compatibility_version }}"
 
 - name: Add cluster
-  ovirt_clusters:
+  ovirt_cluster:
     auth: "{{ ovirt_auth }}"
     state: present
     name: "{{ cluster_name }}"
@@ -18,7 +18,7 @@
     ballooning: true
 
 - name: Add hosts to oVirt engine
-  ovirt_hosts:
+  ovirt_host:
     auth: "{{ ovirt_auth }}"
     name: "{{ item.0 }}"
     address: "{{ item.1 }}"
@@ -46,7 +46,7 @@
   with_items: "{{ groups['vm-type=ovirt-host'] }}"
 
 - name: Add NFS storage
-  ovirt_storage_domains:
+  ovirt_storage_domain:
     auth: "{{ ovirt_auth }}"
     name: "{{ nfs_name }}"
     host: "{{ host_names[0] }}"
@@ -59,7 +59,7 @@
       retrans: 10
 
 - name: Add iSCSI storage
-  ovirt_storage_domains:
+  ovirt_storage_domain:
     auth: "{{ ovirt_auth }}"
     name: "{{ iscsi_name }}"
     host: "{{ host_names[0] }}"
@@ -76,7 +76,7 @@
   register: data_iscsi
 
 - name: Add export storage
-  ovirt_storage_domains:
+  ovirt_storage_domain:
     auth: "{{ ovirt_auth }}"
     host: "{{ host_names[0] }}"
     name: "{{ export_name }}"
@@ -90,7 +90,7 @@
   register: export_nfs
 
 - name: Add iso storage
-  ovirt_storage_domains:
+  ovirt_storage_domain:
     auth: "{{ ovirt_auth }}"
     host: "{{ host_names[0] }}"
     name: "{{ iso_name }}"
@@ -115,7 +115,7 @@
   delay: 5
 
 - name: Import template from glance
-  ovirt_templates:
+  ovirt_template:
     auth: "{{ ovirt_auth }}"
     state: imported
     name: "{{ template_name }}"
@@ -125,13 +125,13 @@
     cluster: "{{ cluster_name }}"
 
 - name: Update quota mode of dacenter
-  ovirt_datacenters:
+  ovirt_datacenter:
     auth: "{{ ovirt_auth }}"
     name: "{{ dc_name }}"
     quota_mode: audit
 
 - name: Create new vlan and assign it to cluster
-  ovirt_networks:
+  ovirt_network:
     auth: "{{ ovirt_auth }}"
     data_center: "{{ dc_name }}"
     name: "{{ network1_name}}"
@@ -160,13 +160,13 @@
     name: Default
 
 - name: Remove default cluster
-  ovirt_clusters:
+  ovirt_cluster:
     auth: "{{ ovirt_auth }}"
     state: absent
     name: Default
 
 - name: Add datacenter quota
-  ovirt_quotas:
+  ovirt_quota:
     auth: "{{ ovirt_auth }}"
     state: present
     name: "{{ quota_name }}"

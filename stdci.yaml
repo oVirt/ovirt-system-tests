@@ -7,7 +7,7 @@ stage:
         - ovirt-4.2-release
         - ovirt-4.1-stable
       script:
-        fromfile: 'automation/{{ stage }}_{{ substage }}.sh'
+        fromfile: 'automation/{{ stage }}.{{ substage }}.sh'
   - check-patch:
       substage:
         - dr_suite_master

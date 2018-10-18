@@ -146,6 +146,12 @@ exclude =  ioprocess-debuginfo *-devel
 proxy=_none_
 ```
 
+The following options can be added to each section:
+"ost_skip_injection"
+If set to True, the repo will not be modified by the plugin.
+The packages won't be listed in the reposync-config file.
+(i.e ost_skip_injection = True)
+
 repoman
 --------
 repoman is a tool for building custom yum repos from different kinds of
@@ -161,7 +167,7 @@ packages that were inserted to the `internal_repo`) can be found in Lago's log
 located at:
 `deployment-$SUITE/default/logs/lago.log`.
 
-2. A packages that the test needs is missing from the `internal_repo`:
+2. A package that the test needs is missing from the `internal_repo`:
     * In `$SUITE/reposync-config.repo`, check that the package is not excluded.
     * In `$SUITE/reposync-config.repo`, If the package's repo has the
       `includepkgs` filter, check that the packages is on the list.

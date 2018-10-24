@@ -5,6 +5,10 @@ commit_changes_to_git() {
     local my_repofile="${2:?}"
     local modified_date=$(stat -c %Y "$repofile_real_path")
     local md5=$(echo "$modified_date" | md5sum | cut -d ' ' -f1)
+    # To revert after fixing mock_runner
+    git config user.name "jenkins CI"
+    git config user.email "jenkins@ovirt.org"
+    # end revert
     git add "$repofile_real_path"
     git commit -s -m "Auto create $my_repofile" -m "x-md5: $md5"
 }

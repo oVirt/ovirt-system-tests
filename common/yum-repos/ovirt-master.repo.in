@@ -104,8 +104,3 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-
-[mdbarroso-python-ovsdbapp-el7]
-name = Copr repo for python-ovsdbapp
-baseurl = https://copr-be.cloud.fedoraproject.org/results/mdbarroso/ovsdbapp/epel-7-$basearch/
-enabled = 1

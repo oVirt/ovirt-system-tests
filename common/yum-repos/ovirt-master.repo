@@ -99,6 +99,8 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-rest
 	fence-agents-vmware-soap
 	fence-agents-wti
+	firewalld
+	firewalld-filesystem
 	gsettings-desktop-schemas
 	httpd
 	httpd-tools
@@ -174,6 +176,7 @@ includepkgs = 389-ds-base
 	postgresql-jdbc
 	postgresql-libs
 	python-configshell
+	python-firewall
 	python-libguestfs
 	python-libipa_hbac
 	python-rtslib
@@ -205,6 +208,7 @@ includepkgs = 389-ds-base
 	systemd-python
 	systemd-sysv
 	targetcli
+	tomcat-servlet-3.0-api
 	tuned
 	tzdata-java
 	virt-v2v
@@ -583,7 +587,6 @@ includepkgs = OVMF
 	tcp_wrappers
 	tcpdump
 	telnet
-	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
@@ -793,9 +796,13 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs = rh-postgresql95-postgresql
+includepkgs = rh-postgresql10-postgresql
+	rh-postgresql10-postgresql-contrib
+	rh-postgresql10-postgresql-libs
+	rh-postgresql10-postgresql-server
+	rh-postgresql10-runtime
+	rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-contrib
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
-

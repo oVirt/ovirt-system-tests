@@ -1,0 +1,13 @@
+---
+- name: Add an allow icmp security group rule to the default group
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Add allow ICMP sec group rule
+      os_security_group_rule:
+        cloud: "{{ cloud_name }}"
+        state: present
+        security_group: Default
+        protocol: icmp
+        remote_ip_prefix: "{{ source_ip }}"

@@ -1,0 +1,13 @@
+---
+- name: Remove an ICMP security group rule from the default group
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Remove ICMP rule
+      os_security_group_rule:
+        cloud: "{{ cloud_name }}"
+        state: absent
+        security_group: Default
+        protocol: icmp
+        remote_ip_prefix: "{{ source_ip }}"

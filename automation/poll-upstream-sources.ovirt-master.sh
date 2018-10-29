@@ -6,6 +6,9 @@ commit_changes_to_git() {
     local modified_date=$(stat -c %Y "$repofile_real_path")
     local md5=$(echo "$modified_date" | md5sum | cut -d ' ' -f1)
     # To revert after fixing mock_runner
+    curl -Lo .git/hooks/commit-msg https://gerrit.ovirt.org/tools/hooks/commit-msg
+    chmod +x .git/hooks/commit-msg
+
     git config user.name "jenkins CI"
     git config user.email "jenkins@ovirt.org"
     # end revert

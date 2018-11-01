@@ -53,3 +53,27 @@ def exec_command(address, password, command, username=DEFAULT_USER):
         return stdout.read()
     finally:
         client.close()
+
+
+class Node(object):
+    """
+    A class to collect operations that need to be carried out on a node (host
+    or VM) but are not supported by the corresponding oVirt objects.
+    """
+
+    def __init__(self, address, password, username=DEFAULT_USER):
+        self._address = address
+        self._username = username
+        self._password = password
+
+    def exec_command(self, command):
+        exec_command(
+            address=self._address,
+            password=self._password,
+            command=command,
+            username=self._username
+        )
+
+    def set_mtu(self, iface_name, mtu_value):
+        self.exec_command('ip link set {iface} mtu {mtu}'
+                          .format(iface=iface_name, mtu=mtu_value))

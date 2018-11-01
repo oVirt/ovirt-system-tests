@@ -1431,14 +1431,14 @@ def verify_notifier(prefix):
     result = engine.ssh(
         [
             'grep',
-            'VDC_STOP',
+            'USER_VDC_LOGIN',
             '/var/log/messages',
         ],
     )
     nt.eq_(
         result.code,
         0,
-        'Failed grep for VDC_STOP with code {0}. Output: {1}'.format(result.code, result.out)
+        'Failed grep for USER_VDC_LOGIN with code {0}. Output: {1}'.format(result.code, result.out)
     )
     engine.service('ovirt-engine-notifier')._request_stop()
     engine.service('snmptrapd')._request_stop()

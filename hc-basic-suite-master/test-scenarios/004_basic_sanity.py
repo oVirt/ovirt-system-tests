@@ -48,6 +48,7 @@ MASTER_SD_NAME = 'vmstore'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
+HE_VM_NAME = 'HostedEngine'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 MASTER_SD_NAME = 'vmstore'
@@ -270,6 +271,22 @@ def vm_migrate(prefix):
     )
 
 
+@testlib.with_ovirt_prefix
+def he_vm_migrate(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
+    host_names = [h.name() for h in prefix.virt_env.host_vms()]
+    migrate_params = params.Action(
+        host=params.Host(
+            name=sorted(host_names)[2]
+        ),
+    )
+    api.vms.get(HE_VM_NAME).migrate(migrate_params)
+    host = api.hosts.get(name=sorted(host_names)[2])
+    testlib.assert_true_within_long(
+        lambda: api.vms.get(HE_VM_NAME).host.id == host.id,
+    )
+
+
 @testlib.host_capability(['snapshot-live-merge'])
 @testlib.with_ovirt_api
 def snapshot_live_merge(api):
@@ -384,6 +401,7 @@ _TEST_LIST = [
     snapshot_live_merge,
     hotplug_nic,
     hotplug_disk,
+    he_vm_migrate
 ]
 
 

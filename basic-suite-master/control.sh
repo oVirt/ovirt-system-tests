@@ -44,5 +44,6 @@ run_suite () {
         fi
     done
 
+    generate_vdsm_coverage_report
     deactivate
 }

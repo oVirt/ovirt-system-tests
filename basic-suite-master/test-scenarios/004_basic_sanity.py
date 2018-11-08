@@ -1137,7 +1137,7 @@ def verify_suspend_resume_vm0(prefix):
 
     def log_line_count(regexp):
         awk = ('BEGIN {{ n = 0; }} '
-               '$1 + " " + $2 > "{}" && $0 ~ /{}/ {{ n = n + 1; }} '
+               '$1 " " $2 > "{}" && $0 ~ /{}/ {{ n = n + 1; }} '
                'END {{ print n; }}').format(
                    _log_time_before_suspend, regexp
                )

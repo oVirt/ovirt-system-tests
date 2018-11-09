@@ -14,7 +14,7 @@ install_dependencies() {
     pip install contextlib2
 
     # python2-devel gcc are dependencies of shade
-    yum install -y ansible-2.5.3-1.el7 python2-devel gcc
+    yum install -y ansible python2-devel gcc
 
     # dependency of ansible's os_* modules
     pip install shade==1.27.1

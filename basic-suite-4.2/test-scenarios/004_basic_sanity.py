@@ -1111,30 +1111,40 @@ def update_template_version(api):
 
 @testlib.with_ovirt_api4
 def update_vm_pool(api):
-    pool_service = test_utils.get_pool_service(
-        api.system_service(),
-        VMPOOL_NAME,
-    )
+    engine = api.system_service()
+    pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
+    correlation_id = uuid.uuid4()
     pool_service.update(
         pool=types.VmPool(
             max_user_vms=2
-        )
+        ),
+        query={'correlation_id': correlation_id}
     )
     nt.assert_true(
         pool_service.get().max_user_vms == 2
+    )
+    testlib.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
     )
 
 
 @testlib.with_ovirt_api4
 def remove_vm_pool(api):
+    engine = api.system_service()
     pool_service = test_utils.get_pool_service(
-        api.system_service(),
+        engine,
         VMPOOL_NAME,
     )
-    pool_service.remove()
+    correlation_id = uuid.uuid4()
+    pool_service.remove(query={'correlation_id': correlation_id})
     vm_pools_service = api.system_service().vm_pools_service()
     nt.assert_true(
         len(vm_pools_service.list()) == 0
+    )
+    testlib.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
     )
 
 

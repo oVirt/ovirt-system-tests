@@ -40,7 +40,16 @@ def install_origin_and_flex(prefix):
         '-e', 'ENGINE_USER={}'.format('admin@internal'),
         '-e', 'ENGINE_PASS={}'.format(engine_pass),
         '-v', '{}:/root/user_vars.yaml'.format(user_vars),
+        '--entrypoint', 'ansible-playbook',
         'quay.io/rgolangh/ovirt-openshift-extensions-ci',
+        '-i',
+        'integ.ini',
+        'site.yaml',
+        '--extra-vars',
+        '{"openshift_release": "3.11",'
+        ' "openshift_image_tag": "v3.11",'
+        ' "openshift_pkg_version": "-3.11.0"'
+        '}'
     ])
 
     if exit_code > 0:

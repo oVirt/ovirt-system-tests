@@ -255,6 +255,10 @@ def add_cluster(api):
                     data_center=sdk4.types.DataCenter(
                         name=DC_NAME,
                     ),
+                    version=sdk4.types.Version(
+                        major=DC_VER_MAJ,
+                        minor=DC_VER_MIN
+                    ),
                     ballooning_enabled=True,
                     ksm=sdk4.types.Ksm(
                         enabled=True,

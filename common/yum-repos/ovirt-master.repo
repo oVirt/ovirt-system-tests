@@ -238,6 +238,7 @@ includepkgs = OVMF
 	abrt-python
 	abrt-retrace-client
 	abrt-tui
+	aide
 	alsa-lib
 	ant
 	antlr-tool
@@ -452,6 +453,7 @@ includepkgs = OVMF
 	opus
 	osinfo-db
 	osinfo-db-tools
+	pam_pkcs11
 	pciutils
 	perl
 	perl-Archive-Tar

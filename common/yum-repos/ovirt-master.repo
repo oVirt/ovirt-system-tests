@@ -173,6 +173,7 @@ includepkgs = 389-ds-base
 	openscap-scanner
 	openscap-utils
 	patch
+	pcsc-lite-libs
 	postgresql-jdbc
 	postgresql-libs
 	python-configshell

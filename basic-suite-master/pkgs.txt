@@ -25,3 +25,6 @@ rh-postgresql10-postgresql-contrib
 rh-postgresql10-postgresql-libs
 rh-postgresql10-postgresql-server
 rh-postgresql10-runtime
+aide
+pam_pkcs11
+pcsc-lite-libs

@@ -223,7 +223,8 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = OVMF
+includepkgs = aide
+	OVMF
 	OpenIPMI-modalias
 	PyYAML
 	abrt
@@ -454,6 +455,7 @@ includepkgs = OVMF
 	osinfo-db
 	osinfo-db-tools
 	pciutils
+	pam_pkcs11
 	perl
 	perl-Archive-Tar
 	perl-Carp

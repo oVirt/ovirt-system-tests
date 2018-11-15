@@ -10,13 +10,71 @@ name = oVirt 4.2 Official release
 baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
 enabled = 1
 gpgcheck = 1
+includepkgs = cockpit-ovirt-dashboard
+	mom
+	ovirt-ansible-cluster-upgrade
+	ovirt-ansible-disaster-recovery
+	ovirt-ansible-engine-setup
+	ovirt-ansible-hosted-engine-setup
+	ovirt-ansible-image-template
+	ovirt-ansible-infra
+	ovirt-ansible-manageiq
+	ovirt-ansible-repositories
+	ovirt-ansible-roles
+	ovirt-ansible-shutdown-env
+	ovirt-ansible-v2v-conversion-host
+	ovirt-ansible-vm-infra
+	ovirt-engine
+	ovirt-engine-api-explorer
+	ovirt-engine-backend
+	ovirt-engine-cli
+	ovirt-engine-dashboard
+	ovirt-engine-dbscripts
+	ovirt-engine-dwh
+	ovirt-engine-dwh-setup
+	ovirt-engine-extension-aaa-jdbc
+	ovirt-engine-extension-aaa-ldap
+	ovirt-engine-extension-aaa-ldap-setup
+	ovirt-engine-extensions-api-impl
+	ovirt-engine-lib
+	ovirt-engine-metrics
+	ovirt-engine-restapi
+	ovirt-engine-setup
+	ovirt-engine-setup-base
+	ovirt-engine-setup-plugin-ovirt-engine
+	ovirt-engine-setup-plugin-ovirt-engine-common
+	ovirt-engine-setup-plugin-vmconsole-proxy-helper
+	ovirt-engine-setup-plugin-websocket-proxy
+	ovirt-engine-tools
+	ovirt-engine-tools-backup
+	ovirt-engine-vmconsole-proxy-helper
+	ovirt-engine-webadmin-portal
+	ovirt-engine-websocket-proxy
+	ovirt-engine-wildfly
+	ovirt-engine-wildfly-overlay
+	ovirt-hosted-engine-ha
+	ovirt-hosted-engine-setup
+	ovirt-imageio-common
+	ovirt-imageio-daemon
+	ovirt-imageio-proxy
+	ovirt-imageio-proxy-setup
+	ovirt-iso-uploader
+	ovirt-js-dependencies
+	ovirt-log-collector
+	ovirt-provider-ovn
+	ovirt-provider-ovn-driver
+	ovirt-vmconsole
+	ovirt-vmconsole-host
+	ovirt-vmconsole-proxy
+	ovirt-web-ui
+	python-ovirt-engine-sdk4
+	vdsm
 
 [glusterfs-3.12-el7]
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled = 1
-includepkgs = 
-	gdeploy
+includepkgs = gdeploy
 	glusterfs
 	glusterfs-api
 	glusterfs-cli
@@ -29,14 +87,26 @@ includepkgs =
 name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
-includepkgs = 
-	389-ds-base
+includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
+	audit
+	audit-libs
+	audit-libs-python
 	augeas
 	augeas-libs
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
 	certmonger
 	copy-jdk-configs
+	device-mapper-multipath
+	device-mapper-multipath-libs
+	dracut
+	dracut-config-rescue
+	dracut-fips
+	dracut-network
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -72,6 +142,12 @@ includepkgs =
 	fence-agents-vmware-rest
 	fence-agents-vmware-soap
 	fence-agents-wti
+	firewalld
+	firewalld-filesystem
+	git
+	gsettings-desktop-schemas
+	httpd
+	httpd-tools
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -80,19 +156,31 @@ includepkgs =
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	kernel
+	kpartx
 	krb5-workstation
 	libgfortran
+	libgudev1
 	libguestfs
 	libguestfs-tools-c
 	libibverbs
+	libipa_hbac
 	libkadm5
 	libquadmath
 	librdmacm
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
+	libvirt
 	libvirt-client
 	libvirt-daemon
 	libvirt-daemon-config-network
 	libvirt-daemon-config-nwfilter
 	libvirt-daemon-driver-interface
+	libvirt-daemon-driver-lxc
 	libvirt-daemon-driver-network
 	libvirt-daemon-driver-nodedev
 	libvirt-daemon-driver-nwfilter
@@ -110,6 +198,9 @@ includepkgs =
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	libwbclient
+	linux-firmware
+	mod_ssl
 	net-snmp
 	net-snmp-agent-libs
 	net-snmp-libs
@@ -123,26 +214,55 @@ includepkgs =
 	nss-util
 	openldap
 	openldap-clients
+	perl-Git
 	postgresql-jdbc
+	postgresql-libs
 	python-configshell
+	python-firewall
 	python-libguestfs
+	python-libipa_hbac
 	python-rtslib
+	python-sss-murmur
+	python-sssdconfig
 	python2-ipaclient
 	python2-ipalib
 	radvd
 	rdma-core
+	samba-client-libs
+	samba-common
+	samba-common-libs
+	slf4j
 	sos
 	spice-server
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
+	systemd
+	systemd-libs
+	systemd-python
+	systemd-sysv
 	targetcli
+	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 	virt-v2v
+	xmlrpc-client
+	xmlrpc-common
+	yum-plugin-versionlock
+	yum-utils
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
-includepkgs = 
-	OVMF
+includepkgs = OVMF
 	OpenIPMI-modalias
 	PyYAML
 	abrt
@@ -179,7 +299,6 @@ includepkgs =
 	apr-util
 	atlas
 	attr
-	audit-libs-python
 	authconfig
 	autofs
 	autogen-libopts
@@ -188,8 +307,6 @@ includepkgs =
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-libs
-	bind-utils
 	blas
 	boost-system
 	boost-thread
@@ -209,13 +326,10 @@ includepkgs =
 	cyrus-sasl-scram
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-multipath
-	device-mapper-multipath-libs
 	device-mapper-persistent-data
 	dnsmasq
 	dom4j
 	dosfstools
-	dracut-fips
 	easymock2
 	elfutils
 	fcoe-utils
@@ -234,7 +348,6 @@ includepkgs =
 	gnutls-dane
 	gnutls-utils
 	gperftools-libs
-	gsettings-desktop-schemas
 	gssproxy
 	hamcrest
 	hesiod
@@ -245,8 +358,6 @@ includepkgs =
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
-	httpd
-	httpd-tools
 	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils
@@ -301,11 +412,10 @@ includepkgs =
 	libdhash
 	libevent
 	libfontenc
-	libgudev1
+	libgnome-keyring
 	libguestfs-winsupport
 	libicu
 	libini_config
-	libipa_hbac
 	libiscsi
 	libjpeg-turbo
 	libldb
@@ -330,13 +440,8 @@ includepkgs =
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux-ruby
 	libsemanage-python
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -347,7 +452,6 @@ includepkgs =
 	libusbx
 	libverto-libevent
 	libvirt-python
-	libwbclient
 	libwsman1
 	libxcb
 	libxml2-python
@@ -366,11 +470,11 @@ includepkgs =
 	mailx
 	make
 	mdadm
-	mod_ssl
 	mpfr
 	msv-msv
 	msv-xsdlib
 	mtools
+	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -398,6 +502,7 @@ includepkgs =
 	perl-DB_File
 	perl-Data-Dumper
 	perl-Encode
+	perl-Error
 	perl-Exporter
 	perl-File-Path
 	perl-File-Temp
@@ -417,6 +522,7 @@ includepkgs =
 	perl-Scalar-List-Utils
 	perl-Socket
 	perl-Storable
+	perl-TermReadKey
 	perl-Text-ParseWords
 	perl-Time-HiRes
 	perl-Time-Local
@@ -431,7 +537,6 @@ includepkgs =
 	pexpect
 	pixman
 	policycoreutils-python
-	postgresql-libs
 	psmisc
 	pygobject2
 	pyparsing
@@ -458,7 +563,6 @@ includepkgs =
 	python-kitchen
 	python-kmod
 	python-ldap
-	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -469,8 +573,6 @@ includepkgs =
 	python-qrcode-core
 	python-requests
 	python-setuptools
-	python-sss-murmur
-	python-sssdconfig
 	python-suds
 	python-urllib3
 	python-urwid
@@ -488,6 +590,7 @@ includepkgs =
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
+	rsync
 	ruby
 	ruby-irb
 	ruby-libs
@@ -496,9 +599,6 @@ includepkgs =
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
-	samba-client-libs
-	samba-common
-	samba-common-libs
 	sanlock
 	sanlock-lib
 	sanlock-python
@@ -511,19 +611,8 @@ includepkgs =
 	seavgabios-bin
 	setools-libs
 	sgabios-bin
-	slf4j
 	socat
 	squashfs-tools
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	stax2-api
 	subscription-manager
 	subscription-manager-rhsm
@@ -533,11 +622,9 @@ includepkgs =
 	syslinux
 	syslinux-extlinux
 	sysstat
-	systemd-python
 	tcp_wrappers
 	tcpdump
 	telnet
-	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
@@ -560,48 +647,65 @@ includepkgs =
 	xml-commons-resolver
 	xmlrpc-c
 	xmlrpc-c-client
-	xmlrpc-client
-	xmlrpc-common
 	xorg-x11-font-utils
 	xorg-x11-fonts-Type1
 	xpp3
 	xz-java
 	yajl
-	yum-plugin-versionlock
-	yum-utils
 
 [centos-extras-el7]
 name = CentOS7 Extras
 baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
 enabled = 1
-includepkgs = 
-	cockpit
+exclude = libtomcrypt
+	libtommath
+	python2-crypto
+includepkgs = cockpit
 	cockpit-bridge
 	cockpit-dashboard
+	cockpit-machines-ovirt
 	cockpit-storaged
 	cockpit-system
 	cockpit-ws
 	libssh
-	libtomcrypt
-	libtommath
 	python-httplib2
 	python-lockfile
 	python-paramiko
-	python2-crypto
 	sshpass
 
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
-includepkgs = 
+exclude = collectd
+	collectd-virt
+	collectd-netlink
+	collectd-postgresql
+includepkgs = ansible
+	facter
+	hiera
+	libtomcrypt
+	libtommath
 	lyx-fonts
+	nbdkit
+	nbdkit-devel
+	nbdkit-plugin-python-common
+	nbdkit-plugin-python2
+	nbdkit-plugin-vddk
+	puppet
+	python-ordereddict
 	python-unittest2
+	python2-crypto
 	python2-mimeparse
+	python2-pbr
 	python2-qpid-proton
+	python2-subprocess32
 	python2-traceback2
 	qpid-proton-c
+	ruby-augeas
+	ruby-shadow
 	rubygem-multipart-post
+	rubygem-rgen
 
 [centos-ovirt-4.2-7.5-temp-el7]
 name = CentOS-7 - oVirt 4.2 (temp virt repo)
@@ -609,8 +713,12 @@ baseurl = https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = novnc
-includepkgs = 
 	ansible
+	python2-ecdsa
+	ovirt
+	vdsm
+	otopi
+includepkgs = ansible-doc
 	archaius-core
 	ebay-cors-filter
 	gofer
@@ -637,8 +745,17 @@ includepkgs =
 	openvswitch-ovn-central
 	openvswitch-ovn-common
 	openvswitch-ovn-host
+	otopi-debug-plugins
+	otopi-java
 	ovirt-cockpit-sso
 	ovirt-engine-sdk-python
+	ovirt-guest-agent-common
+	ovirt-guest-agent-pam-module
+	ovirt-host
+	ovirt-host-dependencies
+	ovirt-host-deploy
+	ovirt-host-deploy-java
+	ovirt-setup-lib
 	pulp-rpm-handlers
 	python-daemon
 	python-dateutil
@@ -652,7 +769,6 @@ includepkgs =
 	python-pulp-agent-lib
 	python-pulp-common
 	python-pulp-rpm-common
-	python-subprocess32
 	python-testtools
 	python-websockify
 	python2-extras
@@ -661,12 +777,25 @@ includepkgs =
 	python2-jmespath
 	python2-openvswitch
 	python2-ovsdbapp
-	python2-pbr
 	python2-pyOpenSSL
 	python2-six
 	rxjava
 	safelease
 	unboundid-ldapsdk
+	vdsm-api
+	vdsm-client
+	vdsm-common
+	vdsm-hook-ethtool-options
+	vdsm-hook-fcoe
+	vdsm-hook-openstacknet
+	vdsm-hook-vhostmd
+	vdsm-hook-vmfex-dev
+	vdsm-http
+	vdsm-jsonrpc
+	vdsm-jsonrpc-java
+	vdsm-network
+	vdsm-python
+	vdsm-yajsonrpc
 	vhostmd
 
 [centos-ovirt-4.2-el7]
@@ -675,8 +804,8 @@ baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = ansible
-includepkgs = 
-	novnc
+includepkgs = novnc
+	otopi
 
 [centos-qemu-ev-release-el7]
 name = CentOS-7 - QEMU EV
@@ -684,8 +813,7 @@ baseurl = http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck = 1
 enabled = 1
 gpgkey = https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676fe220e61ab8e31927feeede1128/SOURCES!RPM-GPG-KEY-CentOS-SIG-Virtualization
-includepkgs = 
-	libcacard
+includepkgs = libcacard
 	qemu-img-ev
 	qemu-kvm-common-ev
 	qemu-kvm-ev
@@ -694,8 +822,7 @@ includepkgs =
 name = CentOS-7 - OpsTools - released repo
 baseurl = http://mirror.centos.org/centos/7/opstools/x86_64
 enabled = 1
-includepkgs = 
-	collectd
+includepkgs = collectd
 	collectd-disk
 	collectd-netlink
 	collectd-postgresql
@@ -731,8 +858,7 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs = 
-	rh-postgresql95-postgresql
+includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-contrib
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server

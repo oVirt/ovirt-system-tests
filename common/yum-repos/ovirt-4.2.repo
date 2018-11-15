@@ -95,6 +95,9 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-rest
 	fence-agents-vmware-soap
 	fence-agents-wti
+	firewalld
+	firewalld-filesystem
+	git
 	gsettings-desktop-schemas
 	httpd
 	httpd-tools
@@ -164,9 +167,11 @@ includepkgs = 389-ds-base
 	nss-util
 	openldap
 	openldap-clients
+	perl-Git
 	postgresql-jdbc
 	postgresql-libs
 	python-configshell
+	python-firewall
 	python-libguestfs
 	python-libipa_hbac
 	python-rtslib
@@ -197,6 +202,7 @@ includepkgs = 389-ds-base
 	systemd-python
 	systemd-sysv
 	targetcli
+	tomcat-servlet-3.0-api
 	tuned
 	tzdata-java
 	virt-v2v
@@ -359,6 +365,7 @@ includepkgs = OVMF
 	libdhash
 	libevent
 	libfontenc
+	libgnome-keyring
 	libguestfs-winsupport
 	libicu
 	libini_config
@@ -386,6 +393,7 @@ includepkgs = OVMF
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux-ruby
 	libsemanage-python
 	libtalloc
 	libtar
@@ -419,6 +427,7 @@ includepkgs = OVMF
 	msv-msv
 	msv-xsdlib
 	mtools
+	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -446,6 +455,7 @@ includepkgs = OVMF
 	perl-DB_File
 	perl-Data-Dumper
 	perl-Encode
+	perl-Error
 	perl-Exporter
 	perl-File-Path
 	perl-File-Temp
@@ -465,6 +475,7 @@ includepkgs = OVMF
 	perl-Scalar-List-Utils
 	perl-Socket
 	perl-Storable
+	perl-TermReadKey
 	perl-Text-ParseWords
 	perl-Time-HiRes
 	perl-Time-Local
@@ -532,6 +543,7 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
+	rsync
 	ruby
 	ruby-irb
 	ruby-libs
@@ -566,7 +578,6 @@ includepkgs = OVMF
 	tcp_wrappers
 	tcpdump
 	telnet
-	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
@@ -599,6 +610,9 @@ includepkgs = OVMF
 name = CentOS7 Extras
 baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
 enabled = 1
+exclude = libtomcrypt
+	libtommath
+	python2-crypto
 includepkgs = cockpit
 	cockpit-bridge
 	cockpit-dashboard
@@ -607,27 +621,44 @@ includepkgs = cockpit
 	cockpit-system
 	cockpit-ws
 	libssh
-	libtomcrypt
-	libtommath
 	python-httplib2
 	python-lockfile
 	python-paramiko
-	python2-crypto
 	sshpass
 
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
-includepkgs = lyx-fonts
+exclude = collectd
+	collectd-virt
+	collectd-netlink
+	collectd-postgresql
+includepkgs = ansible
+	facter
+	hiera
+	libtomcrypt
+	libtommath
+	lyx-fonts
+	nbdkit
+	nbdkit-devel
+	nbdkit-plugin-python-common
+	nbdkit-plugin-python2
+	nbdkit-plugin-vddk
+	puppet
+	python-ordereddict
 	python-unittest2
+	python2-crypto
 	python2-mimeparse
 	python2-pbr
 	python2-qpid-proton
 	python2-subprocess32
 	python2-traceback2
 	qpid-proton-c
+	ruby-augeas
+	ruby-shadow
 	rubygem-multipart-post
+	rubygem-rgen
 
 [centos-ovirt-4.2-7.5-temp-el7]
 name = CentOS-7 - oVirt 4.2 (temp virt repo)
@@ -635,7 +666,9 @@ baseurl = https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = novnc
-includepkgs = ansible
+	ansible
+	python2-ecdsa
+includepkgs = ansible-doc
 	archaius-core
 	ebay-cors-filter
 	gofer
@@ -662,6 +695,8 @@ includepkgs = ansible
 	openvswitch-ovn-common
 	openvswitch-ovn-host
 	ovirt-cockpit-sso
+	ovirt-guest-agent-common
+	ovirt-guest-agent-pam-module
 	pulp-rpm-handlers
 	python-daemon
 	python-dateutil

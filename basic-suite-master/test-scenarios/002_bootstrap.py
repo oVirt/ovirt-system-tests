@@ -1559,12 +1559,13 @@ def add_graphics_console(api):
     engine = api.system_service()
     vm = test_utils.get_vm_service(engine, VM0_NAME)
     consoles_service = vm.graphics_consoles_service()
-    console = consoles_service.console_service('766e63')
-    console.remove()
-    testlib.assert_true_within_short(
-        lambda:
-        len(consoles_service.list()) == 1
-    )
+    if len(consoles_service.list()) == 2:
+        console = consoles_service.console_service('766e63')
+        console.remove()
+        testlib.assert_true_within_short(
+            lambda:
+            len(consoles_service.list()) == 1
+        )
 
     # and add it back
     consoles_service.add(

@@ -29,6 +29,7 @@ def install_origin_and_flex(prefix):
     engine_ip = engine.ip()
     engine_pass = engine.metadata['ovirt-engine-password']
     user_vars = os.path.join(os.environ['SUITE'], 'user_vars.yaml')
+    deploy_flex = os.path.join(os.environ['SUITE'], 'deploy_flex.yaml')
 
     exit_code = subprocess.call([
         'docker', 'run',
@@ -40,6 +41,7 @@ def install_origin_and_flex(prefix):
         '-e', 'ENGINE_USER={}'.format('admin@internal'),
         '-e', 'ENGINE_PASS={}'.format(engine_pass),
         '-v', '{}:/root/user_vars.yaml'.format(user_vars),
+        '-v', '{}:/root/deploy_flex.yaml'.format(deploy_flex),
         '--entrypoint', 'ansible-playbook',
         'quay.io/rgolangh/ovirt-openshift-extensions-ci',
         '-i',

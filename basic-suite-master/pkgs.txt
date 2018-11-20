@@ -29,5 +29,8 @@ aide
 pam_pkcs11
 pcsc-lite-libs
 mesa-libgbm
+mesa-libglapi
 libibumad
 libepoxy
+libwayland-server
+libwayland-client

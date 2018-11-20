@@ -416,6 +416,8 @@ includepkgs = aide
 	libverto-libevent
 	libvirt-python
 	libwsman1
+	libwayland-server
+	libwayland-client
 	libxcb
 	libxml2-python
 	libxslt
@@ -434,6 +436,7 @@ includepkgs = aide
 	make
 	mdadm
 	mesa-libgbm
+	mesa-libglapi
 	mpfr
 	msv-msv
 	msv-xsdlib

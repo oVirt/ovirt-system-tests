@@ -114,6 +114,7 @@ includepkgs = 389-ds-base
 	kpartx
 	krb5-workstation
 	libgfortran
+	libibumad
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
@@ -128,6 +129,7 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
+	libepoxy
 	libvirt
 	libvirt-client
 	libvirt-daemon
@@ -431,6 +433,7 @@ includepkgs = aide
 	mailx
 	make
 	mdadm
+	mesa-libgbm
 	mpfr
 	msv-msv
 	msv-xsdlib

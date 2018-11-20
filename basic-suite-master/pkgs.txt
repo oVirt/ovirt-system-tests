@@ -28,3 +28,6 @@ rh-postgresql10-runtime
 aide
 pam_pkcs11
 pcsc-lite-libs
+mesa-libgbm
+libibumad
+libepoxy

@@ -54,6 +54,11 @@ exclude = ansible
 	python-paramiko
 max_connections = 5
 
+[centos-cr]
+name=CentOS7 - cr
+baseurl=http://mirror.centos.org/centos/7/cr/x86_64/
+enabled=1
+
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64

@@ -31,6 +31,7 @@ from lib.ansiblelib import Playbook
 from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 from testlib import shade_hack
+from testlib import suite
 
 
 IP_ICMP_HEADER_SIZE = 28
@@ -108,7 +109,7 @@ def test_connect_vm_to_external_physnet(system, ovs_cluster,
 
 
 def test_max_mtu_size(system, ovs_cluster, host_in_ovs_cluster, host_0, host_1,
-                      vm_in_ovn_network_up):
+                      ovn_physnet_small_mtu, vm_in_ovn_network_up):
     other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
 
     syncutil.sync(exec_func=_ping_successful,
@@ -127,6 +128,7 @@ def test_max_mtu_size(system, ovs_cluster, host_in_ovs_cluster, host_0, host_1,
                  data_size=MAX_ICMP_DATA_SIZE + 1)
 
 
+@suite.SKIP_SUITE_42
 def test_security_groups_allow_icmp(system, ovs_cluster, host_in_ovs_cluster,
                                     host_0, host_1,
                                     default_ovn_provider_client,

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 prep_suite () {
-    get_orb "https://templates.ovirt.org/bundles/ovirt-demo-tool/4.2/unstable/4.2.4-1.2.g4f465f2/ovirt-orb-4.2.4-1.2.g4f465f2.tar.xz"
+    get_orb "https://templates.ovirt.org/bundles/ovirt-demo-tool/4.2/unstable/4.2.7-1.0/ovirt-orb-4.2.7-1.0.tar.xz"
     sed -i 's/memory: 2047/memory: 8192/g' "${SUITE}/LagoInitFile"
     sed -i '/cpu_model/a\    cpu: 4\n    vcpu: 4' "${SUITE}/LagoInitFile"
 }

@@ -22,6 +22,8 @@ Positional arguments:
 Optional arguments:
     -p,--pkg PKG
         Package/s to include in the config
+    -s,--suite SUITE
+        Suite to create the reposync on
 "
 }
 
@@ -221,6 +223,7 @@ create_updated_reposync_file() {
     local reposync_config="${1:?}"
     local script_path="${2:?}"
     declare -a pkgs=($3)
+    declare -a suites=($4)
     declare -a lago_repo_file_array \
         template_array
     local res=0
@@ -229,12 +232,14 @@ create_updated_reposync_file() {
 
     logger.info "Creating updated reposync file for: $reposync_config_base"
 
-    local suite_list
-    suite_list=$("${script_path}"/change_resolver.py "$reposync_config_base")
-    local suite_array=(${suite_list/ /\n/ })
+    [[ "${#suites[@]}" -eq 0 ]] && {
+        local suite_list
+        suite_list=$("${script_path}"/change_resolver.py "$reposync_config_base")
+        suites=(${suite_list/ /\n/ })
+    }
 
     rm -f "${reposync_config##*/}".modified
-    for suite in "${suite_array[@]}"; do
+    for suite in "${suites[@]}"; do
         [[ -d "$suite" ]] && {
             pkgs+=($(collect_pkgs_from_suite "$suite"))
             template_array+=($(collect_template_name_from_suite "$suite" "$script_path"))
@@ -277,12 +282,13 @@ main() {
     local script=$(readlink -f "$0")
     local script_path=$(dirname "$script")
     declare -a pkgs \
+        suites \
         reposync_config_base_files array_repo_files \
 
     local options=$( \
         getopt \
-            -o hp: \
-            --long help,pkg: \
+            -o hp:s: \
+            --long help,pkg:suite: \
             -n 'build_reposync_config.sh' \
             -- "$@" \
     )
@@ -299,6 +305,10 @@ main() {
                 ;;
             -p|--pkg)
                 pkgs+=("$2")
+                shift 2
+                ;;
+            -s|--suite)
+                suites+=("$2")
                 shift 2
                 ;;
             --)
@@ -322,7 +332,7 @@ main() {
 
         exist_in_array "$reposync" "${array_repo_files[*]}" && continue
         array_repo_files+=("$reposync")
-        create_updated_reposync_file "$reposync" "$script_path" "${pkgs[*]}"
+        create_updated_reposync_file "$reposync" "$script_path" "${pkgs[*]}" "${suites[*]}"
         cleanup "$vm_name" "$prefix"
         continue
     done

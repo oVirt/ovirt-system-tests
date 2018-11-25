@@ -47,23 +47,8 @@ max_connections = 10
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
-	audit
-	audit-libs
-	audit-libs-python
-	augeas
-	augeas-libs
-	bind-libs
-	bind-libs-lite
-	bind-license
-	bind-utils
-	certmonger
-	copy-jdk-configs
-	device-mapper-multipath
-	device-mapper-multipath-libs
-	dracut
-	dracut-config-rescue
-	dracut-fips
-	dracut-network
+	device-mapper-event
+	device-mapper-event-libs
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -99,39 +84,14 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-rest
 	fence-agents-vmware-soap
 	fence-agents-wti
-	firewalld
-	firewalld-filesystem
 	git
-	gsettings-desktop-schemas
-	httpd
-	httpd-tools
-	ipa-client
-	ipa-client-common
-	ipa-common
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	kernel
-	kpartx
-	krb5-workstation
-	libepoxy
-	libgfortran
-	libgudev1
 	libguestfs
 	libguestfs-tools-c
-	libibumad
-	libibverbs
-	libipa_hbac
-	libkadm5
-	libquadmath
-	librdmacm
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libvirt
+	libvirt-bash-completion
 	libvirt-client
 	libvirt-daemon
 	libvirt-daemon-config-network
@@ -155,71 +115,18 @@ includepkgs = 389-ds-base
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
-	libwbclient
-	linux-firmware
-	mod_ssl
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
-	nspr
-	nss
-	nss-softokn
-	nss-softokn-freebl
-	nss-sysinit
-	nss-tools
-	nss-util
-	openldap
-	openldap-clients
-	openscap
-	openscap-containers
-	openscap-scanner
-	openscap-utils
-	patch
+	lvm2
+	lvm2-libs
 	perl-Git
-	postgresql-jdbc
-	postgresql-libs
-	python-configshell
-	python-firewall
 	python-libguestfs
-	python-libipa_hbac
-	python-rtslib
-	python-sss-murmur
-	python-sssdconfig
-	python2-ipaclient
-	python2-ipalib
-	radvd
-	rdma-core
-	samba-client-libs
-	samba-common
-	samba-common-libs
-	scap-security-guide
-	slf4j
+	python-paramiko
 	sos
-	spice-server
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
-	systemd
-	systemd-libs
-	systemd-python
-	systemd-sysv
-	targetcli
+	subscription-manager
+	subscription-manager-rhsm
+	subscription-manager-rhsm-certificates
 	tomcat-servlet-3.0-api
-	tuned
 	tzdata-java
 	virt-v2v
-	xmlrpc-client
-	xmlrpc-common
-	yum-plugin-versionlock
-	yum-utils
 
 [centos-base-el7]
 name = CentOS7 Base
@@ -264,6 +171,9 @@ includepkgs = OVMF
 	apr-util
 	atlas
 	attr
+	audit-libs-python
+	augeas
+	augeas-libs
 	authconfig
 	autofs
 	autogen-libopts
@@ -272,7 +182,11 @@ includepkgs = OVMF
 	avalon-logkit
 	bea-stax
 	bea-stax-api
+	bind-libs
+	bind-utils
 	blas
+	boost-iostreams
+	boost-random
 	boost-system
 	boost-thread
 	bridge-utils
@@ -280,7 +194,9 @@ includepkgs = OVMF
 	c-ares
 	cal10n
 	celt051
+	certmonger
 	checkpolicy
+	copy-jdk-configs
 	cryptsetup
 	cups-libs
 	cyrus-sasl
@@ -288,12 +204,15 @@ includepkgs = OVMF
 	cyrus-sasl-md5
 	cyrus-sasl-plain
 	cyrus-sasl-scram
-	device-mapper-event
-	device-mapper-event-libs
+	dejavu-fonts-common
+	dejavu-sans-fonts
+	device-mapper-multipath
+	device-mapper-multipath-libs
 	device-mapper-persistent-data
 	dnsmasq
 	dom4j
 	dosfstools
+	dracut-fips
 	dwz
 	easymock2
 	elfutils
@@ -314,6 +233,7 @@ includepkgs = OVMF
 	gnutls-dane
 	gnutls-utils
 	gperftools-libs
+	gsettings-desktop-schemas
 	gssproxy
 	hamcrest
 	hesiod
@@ -324,6 +244,11 @@ includepkgs = OVMF
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
+	httpd
+	httpd-tools
+	ipa-client
+	ipa-client-common
+	ipa-common
 	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils
@@ -340,12 +265,12 @@ includepkgs = OVMF
 	joda-convert
 	joda-time
 	jsch
-	json-c
 	json-glib
 	jsr-311
 	junit
 	jzlib
 	keyutils
+	krb5-workstation
 	lapack
 	libICE
 	libSM
@@ -354,7 +279,6 @@ includepkgs = OVMF
 	libXau
 	libXcomposite
 	libXext
-	libXfont
 	libXi
 	libXrender
 	libXtst
@@ -376,14 +300,20 @@ includepkgs = OVMF
 	libcollection
 	libconfig
 	libdhash
+	libepoxy
 	libevent
 	libfontenc
-	libgnome-keyring
+	libgfortran
+	libgudev1
 	libguestfs-winsupport
+	libibumad
+	libibverbs
 	libicu
 	libini_config
+	libipa_hbac
 	libiscsi
 	libjpeg-turbo
+	libkadm5
 	libldb
 	libmodman
 	libnfsidmap
@@ -392,10 +322,11 @@ includepkgs = OVMF
 	libosinfo
 	libpath_utils
 	libpcap
-	libpng
 	libproxy
+	libquadmath
 	librados2
 	librbd1
+	librdmacm
 	libref_array
 	libreport
 	libreport-centos
@@ -407,6 +338,12 @@ includepkgs = OVMF
 	libreport-python
 	libreport-web
 	libsemanage-python
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -419,6 +356,7 @@ includepkgs = OVMF
 	libvirt-python
 	libwayland-client
 	libwayland-server
+	libwbclient
 	libwsman1
 	libxcb
 	libxml2-python
@@ -429,8 +367,6 @@ includepkgs = OVMF
 	lm_sensors-libs
 	log4j
 	lsof
-	lvm2
-	lvm2-libs
 	lzop
 	m2crypto
 	mailcap
@@ -439,10 +375,15 @@ includepkgs = OVMF
 	mdadm
 	mesa-libgbm
 	mesa-libglapi
+	mod_ssl
 	mpfr
 	msv-msv
 	msv-xsdlib
 	mtools
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	netcf-libs
 	nettle
 	newt-python
@@ -457,12 +398,18 @@ includepkgs = OVMF
 	objectweb-asm4
 	oddjob
 	oddjob-mkhomedir
+	openldap-clients
+	openscap
+	openscap-containers
+	openscap-scanner
+	openscap-utils
 	openssl
 	openwsman-python
 	opus
 	osinfo-db
 	osinfo-db-tools
 	pam_pkcs11
+	patch
 	pciutils
 	pcsc-lite-libs
 	perl
@@ -510,6 +457,8 @@ includepkgs = OVMF
 	pexpect
 	pixman
 	policycoreutils-python
+	postgresql-jdbc
+	postgresql-libs
 	psmisc
 	pygobject2
 	pyparsing
@@ -520,6 +469,7 @@ includepkgs = OVMF
 	python-backports-ssl_match_hostname
 	python-cffi
 	python-chardet
+	python-configshell
 	python-dmidecode
 	python-dns
 	python-enum34
@@ -536,6 +486,7 @@ includepkgs = OVMF
 	python-kitchen
 	python-kmod
 	python-ldap
+	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -546,19 +497,28 @@ includepkgs = OVMF
 	python-pycparser
 	python-qrcode-core
 	python-requests
+	python-rtslib
 	python-setuptools
+	python-sss-murmur
+	python-sssdconfig
 	python-suds
 	python-urllib3
 	python-urwid
 	python-webob
 	python-yubico
 	python2-cryptography
+	python2-futures
+	python2-ipaclient
+	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
+	python2-subprocess32
 	pyusb
 	qdox
 	quota
 	quota-nls
+	radvd
+	rdma-core
 	redhat-rpm-config
 	relaxngDatatype
 	resteasy-base-jaxrs
@@ -576,11 +536,15 @@ includepkgs = OVMF
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	samba-client-libs
+	samba-common
+	samba-common-libs
 	sanlock
 	sanlock-lib
 	sanlock-python
 	satyr
 	scannotation
+	scap-security-guide
 	scl-utils
 	screen
 	scrub
@@ -588,17 +552,28 @@ includepkgs = OVMF
 	seavgabios-bin
 	setools-libs
 	sgabios-bin
+	slf4j
 	socat
+	spice-server
 	squashfs-tools
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	stax2-api
-	subscription-manager
-	subscription-manager-rhsm
-	subscription-manager-rhsm-certificates
 	supermin5
 	svrcore
 	syslinux
 	syslinux-extlinux
 	sysstat
+	systemd-python
+	targetcli
 	tcp_wrappers
 	tcpdump
 	telnet
@@ -625,11 +600,15 @@ includepkgs = OVMF
 	xml-commons-resolver
 	xmlrpc-c
 	xmlrpc-c-client
+	xmlrpc-client
+	xmlrpc-common
 	xorg-x11-font-utils
 	xorg-x11-fonts-Type1
 	xpp3
 	xz-java
 	yajl
+	yum-plugin-versionlock
+	yum-utils
 	zip
 
 [centos-extras-el7]
@@ -656,12 +635,6 @@ includepkgs = cockpit
 	python-lockfile
 	sshpass
 
-[centos-cr-el7]
-name = CentOS7 - cr
-baseurl = http://mirror.centos.org/centos/7/cr/x86_64/
-enabled = 1
-exclude = *
-
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
@@ -678,14 +651,15 @@ max_connections = 5
 includepkgs = ansible
 	libtomcrypt
 	libtommath
-	lyx-fonts
-	python-paramiko
+	nbdkit
+	nbdkit-plugin-python-common
+	nbdkit-plugin-python2
+	nbdkit-plugin-vddk
 	python-unittest2
 	python2-crypto
 	python2-mimeparse
 	python2-pbr
 	python2-qpid-proton
-	python2-subprocess32
 	python2-traceback2
 	qpid-proton-c
 	rubygem-multipart-post

@@ -1,4 +1,4 @@
 templates:
-  engine: el7.5-base
-  host: el7.5-base
+  engine: el7.6-base-beta
+  host: el7.6-base-beta
 hostCount: 2

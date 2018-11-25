@@ -36,6 +36,15 @@
         }
       }
     },
+    "el7.6-base-beta": {
+      "versions": {
+        "v1": {
+          "source": "ci-templates-vm", 
+          "handle": "el7.6-base-beta", 
+          "timestamp": 1542889866.4599402
+        }
+      }
+    },
     "el7.5-base": {
       "versions": {
         "v1": {

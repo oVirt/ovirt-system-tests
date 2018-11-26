@@ -101,6 +101,7 @@ includepkgs = 389-ds-base
 	fence-agents-wti
 	firewalld
 	firewalld-filesystem
+	git
 	gsettings-desktop-schemas
 	httpd
 	httpd-tools
@@ -113,11 +114,12 @@ includepkgs = 389-ds-base
 	kernel
 	kpartx
 	krb5-workstation
+	libepoxy
 	libgfortran
-	libibumad
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
+	libibumad
 	libibverbs
 	libipa_hbac
 	libkadm5
@@ -129,7 +131,6 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
-	libepoxy
 	libvirt
 	libvirt-client
 	libvirt-daemon
@@ -175,7 +176,7 @@ includepkgs = 389-ds-base
 	openscap-scanner
 	openscap-utils
 	patch
-	pcsc-lite-libs
+	perl-Git
 	postgresql-jdbc
 	postgresql-libs
 	python-configshell
@@ -225,8 +226,7 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = aide
-	OVMF
+includepkgs = OVMF
 	OpenIPMI-modalias
 	PyYAML
 	abrt
@@ -242,6 +242,7 @@ includepkgs = aide
 	abrt-python
 	abrt-retrace-client
 	abrt-tui
+	aide
 	alsa-lib
 	ant
 	antlr-tool
@@ -377,6 +378,7 @@ includepkgs = aide
 	libdhash
 	libevent
 	libfontenc
+	libgnome-keyring
 	libguestfs-winsupport
 	libicu
 	libini_config
@@ -415,9 +417,9 @@ includepkgs = aide
 	libusbx
 	libverto-libevent
 	libvirt-python
-	libwsman1
-	libwayland-server
 	libwayland-client
+	libwayland-server
+	libwsman1
 	libxcb
 	libxml2-python
 	libxslt
@@ -460,8 +462,9 @@ includepkgs = aide
 	opus
 	osinfo-db
 	osinfo-db-tools
-	pciutils
 	pam_pkcs11
+	pciutils
+	pcsc-lite-libs
 	perl
 	perl-Archive-Tar
 	perl-Carp
@@ -470,6 +473,7 @@ includepkgs = aide
 	perl-DB_File
 	perl-Data-Dumper
 	perl-Encode
+	perl-Error
 	perl-Exporter
 	perl-File-Path
 	perl-File-Temp
@@ -489,6 +493,7 @@ includepkgs = aide
 	perl-Scalar-List-Utils
 	perl-Socket
 	perl-Storable
+	perl-TermReadKey
 	perl-Text-ParseWords
 	perl-Thread-Queue
 	perl-Time-HiRes
@@ -562,6 +567,7 @@ includepkgs = aide
 	rpcbind
 	rpm-build
 	rpmdevtools
+	rsync
 	ruby
 	ruby-irb
 	ruby-libs
@@ -649,6 +655,12 @@ includepkgs = cockpit
 	python-httplib2
 	python-lockfile
 	sshpass
+
+[centos-cr-el7]
+name = CentOS7 - cr
+baseurl = http://mirror.centos.org/centos/7/cr/x86_64/
+enabled = 1
+exclude = *
 
 [epel-el7]
 name = Extra Packages for Enterprise Linux 7 - x86_64

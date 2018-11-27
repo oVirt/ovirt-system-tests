@@ -79,6 +79,7 @@ name = CentOS-7 - oVirt 4.3
 baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
+ost_skip_injection = True
 exclude = ovirt-host*
 
 [centos-ovirt-common-el7]

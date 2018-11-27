@@ -696,38 +696,7 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
 exclude = ovirt-host*
-includepkgs = bouncycastle
-	bouncycastle-pkix
-	ebay-cors-filter
-	jcip-annotations
-	json-smart
-	nimbus-jose-jwt
-	novnc
-	openstack-java-cinder-client
-	openstack-java-cinder-model
-	openstack-java-client
-	openstack-java-glance-client
-	openstack-java-glance-model
-	openstack-java-keystone-client
-	openstack-java-keystone-model
-	openstack-java-quantum-client
-	openstack-java-quantum-model
-	openstack-java-resteasy-connector
-	openvswitch
-	openvswitch-ovn-central
-	openvswitch-ovn-common
-	openvswitch-ovn-host
-	ovirt-cockpit-sso
-	python-websockify
-	python2-extras
-	python2-fixtures
-	python2-netaddr
-	python2-openvswitch
-	python2-ovsdbapp
-	python2-pyOpenSSL
-	python2-six
-	safelease
-	unboundid-ldapsdk
+ost_skip_injection = True
 
 [centos-ovirt-common-el7]
 name = CentOS-7 - oVirt common

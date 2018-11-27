@@ -88,6 +88,7 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
 gpgcheck = 0
 cost = 2000
 enabled = 1
+ost_skip_injection = True
 exclude = ansible
 	ansible-doc
 

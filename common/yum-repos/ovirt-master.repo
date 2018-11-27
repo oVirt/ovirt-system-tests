@@ -704,34 +704,9 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
 gpgcheck = 0
 cost = 2000
 enabled = 1
+ost_skip_injection = True
 exclude = ansible
 	ansible-doc
-includepkgs = archaius-core
-	gofer
-	hystrix-core
-	hystrix-metrics-event-stream
-	jackson-core
-	jctools
-	jemalloc
-	katello-agent
-	katello-host-tools
-	katello-host-tools-fact-plugin
-	mom
-	pulp-rpm-handlers
-	python-daemon
-	python-dateutil
-	python-gofer
-	python-gofer-proton
-	python-linecache2
-	python-nose
-	python-pthreading
-	python-pulp-agent-lib
-	python-pulp-common
-	python-pulp-rpm-common
-	python-testtools
-	python2-jmespath
-	rxjava
-	vhostmd
 
 [centos-qemu-ev-testing-el7]
 name = CentOS-7 - QEMU EV - Testing

@@ -20,6 +20,7 @@ ovirt-engine-extension-aaa-ldap*
 otopi-debug-plugins
 rubygem-fluent-plugin-elasticsearch
 collectd-virt
+python2-coverage
 rh-postgresql10-postgresql
 rh-postgresql10-postgresql-contrib
 rh-postgresql10-postgresql-libs

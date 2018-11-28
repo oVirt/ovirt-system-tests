@@ -668,6 +668,10 @@ enabled = 1
 exclude = novnc
 	ansible
 	python2-ecdsa
+	ovirt-host
+	ovirt-host-deploy
+	otopi-java
+	otopi-debug-plugins
 includepkgs = ansible-doc
 	archaius-core
 	ebay-cors-filter
@@ -730,6 +734,7 @@ baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = ansible
+	otopi
 includepkgs = novnc
 
 [centos-qemu-ev-release-el7]
@@ -788,4 +793,3 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
-

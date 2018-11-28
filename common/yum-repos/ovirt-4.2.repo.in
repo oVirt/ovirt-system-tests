@@ -63,6 +63,10 @@ enabled = 1
 exclude = novnc
         ansible
         python2-ecdsa
+        ovirt-host
+        ovirt-host-deploy
+        otopi-java
+        otopi-debug-plugins
 
 [centos-ovirt-4.2-el7]
 name = CentOS-7 - oVirt 4.2
@@ -70,6 +74,7 @@ baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = ansible
+	otopi
 
 [centos-qemu-ev-release-el7]
 name = CentOS-7 - QEMU EV

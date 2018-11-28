@@ -1,6 +1,7 @@
 *.pyc
 .*.swp
 .bash_history
+coverage/
 deployment-*
 **/LagoInitFile
 logs*

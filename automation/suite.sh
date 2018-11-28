@@ -97,6 +97,9 @@ cleanup() {
     # collect the logs that were collected from lago's vms
     [[ -d "test_logs" ]] && mv test_logs exported-artifacts/
 
+    # collect coverage reports
+    [[ -d "coverage" ]] && mv coverage exported-artifacts/
+
     ./run_suite.sh -o "$run_path" --cleanup "$SUITE"
     exit
 }

@@ -138,6 +138,13 @@ get_engine_version() {
     echo "$version"
 }
 
+generate_vdsm_coverage_report() {
+    [[ "$COVERAGE" = true ]] || return 0
+    declare coverage_dir="${OST_REPO_ROOT}/coverage/vdsm"
+    mkdir -p "$coverage_dir"
+    python "${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py" "$PREFIX" "$coverage_dir"
+}
+
 env_init () {
 
     local template_repo="${1:-$SUITE/template-repo.json}"
@@ -164,6 +171,7 @@ render_jinja_templates () {
 
     # export the suite name so jinja can interpolate it in the template
     export suite_name="${suite_name//./-}"
+    export coverage="${COVERAGE}"
     python "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
     cat "$dest"
 }

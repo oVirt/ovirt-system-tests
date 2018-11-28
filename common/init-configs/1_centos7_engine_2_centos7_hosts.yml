@@ -90,6 +90,15 @@ domains:
         {% if loop.first and install_ovirt_host|default(false) -%}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_1st_host_el7.sh
         {%- endif %}
+        {% if env.coverage == "true" -%}
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_vdsm_coverage.sh
+        {%- endif %}
+    artifacts:
+      - /etc/resolv.conf
+      - /var/log
+      {% if env.coverage == "true" -%}
+      - /var/lib/vdsm/coverage
+      {%- endif %}
 {%- endfor %}
 nets:
   lago-{{ env.suite_name }}-net-management:

@@ -89,6 +89,13 @@ domains:
         {% else -%}
         - $LAGO_INITFILE_PATH/deploy-scripts/install_he_4_additional_host.sh
         {%- endif %}
+        {% if env.coverage == "true" -%}
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_vdsm_coverage.sh
+        {%- endif %}
+    {% if env.coverage == "true" -%}
+    artifacts:
+      - /var/lib/vdsm/coverage
+    {%- endif %}
 {%- endfor %}
 
 nets:

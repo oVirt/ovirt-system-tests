@@ -28,6 +28,9 @@ DEFAULT_RPMS=(ovirt-engine-sdk-python python-ovirt-engine-sdk4)
 #Indicate if image creation is needed
 readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"
 
+# Marker for running with coverage
+readonly COVERAGE_MARKER="$PWD/COVERAGE.marker"
+
 get_run_path() {
     local ram_path="/dev/shm/ost/deployment-${SUITE}"
     local disk_path="${PWD}/deployment-${SUITE}"
@@ -137,6 +140,10 @@ fi
 
 if [[ -e "$CREATE_IMAGES" ]]; then
     extra_cmds+=(-i)
+fi
+
+if [[ -e "$COVERAGE_MARKER" ]]; then
+    extra_cmds+=(--coverage)
 fi
 
 # At first SIGTERM will be sent.

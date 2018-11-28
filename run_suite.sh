@@ -8,6 +8,7 @@ DO_CLEANUP=false
 RECOMMENDED_RAM_IN_MB=8196
 EXTRA_SOURCES=()
 RPMS_TO_INSTALL=()
+COVERAGE=false
 usage () {
     echo "
 Usage:
@@ -66,6 +67,9 @@ Optional arguments:
 
     --ignore-requirements
         Don't fail if the system requirements are not satisfied.
+
+    --coverage
+        Enable coverage
 "
 }
 
@@ -448,6 +452,7 @@ options=$( \
         --long help,output:,engine:,node:,boot-iso:,cleanup,images \
         --long extra-rpm-source,reposync-config:,local-rpms: \
         --long only-verify-requirements,ignore-requirements \
+        --long coverage \
         -n 'run_suite.sh' \
         -- "$@" \
 )
@@ -504,6 +509,10 @@ while true; do
             ;;
         --ignore-requirements)
             readonly IGNORE_REQUIREMENTS=true
+            shift
+            ;;
+        --coverage)
+            readonly COVERAGE=true
             shift
             ;;
         --)

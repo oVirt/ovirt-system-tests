@@ -27,6 +27,7 @@ from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrou
 
 import test_utils
 from test_utils import network_utils_v4
+from test_utils import versioning
 
 
 # Environment (see control.sh and LagoInitFile.in)
@@ -46,7 +47,12 @@ VM_NETWORK_IPv6_MASK = '64'
 VM_NETWORK_VLAN_ID = 100
 
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
-BOND_NAME = 'bond_fancy0'
+
+if versioning.cluster_version_ok(4, 3):
+    BOND_NAME = 'bond_fancy0'
+else:
+    BOND_NAME = 'bond0'
+
 MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
 MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'

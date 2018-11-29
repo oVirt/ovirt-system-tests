@@ -90,6 +90,7 @@ exclude = ansible
 name = CentOS-7 - QEMU EV - Testing
 baseurl = http://buildlogs.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck = 0
+ost_skip_injection = True
 enabled = 1
 
 [centos-opstools-testing-el7]

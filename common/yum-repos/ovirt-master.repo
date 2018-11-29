@@ -686,11 +686,8 @@ exclude = ansible
 name = CentOS-7 - QEMU EV - Testing
 baseurl = http://buildlogs.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck = 0
+ost_skip_injection = True
 enabled = 1
-includepkgs = libcacard
-	qemu-img-ev
-	qemu-kvm-common-ev
-	qemu-kvm-ev
 
 [centos-opstools-testing-el7]
 name = CentOS-7 - OpsTools - testing repo

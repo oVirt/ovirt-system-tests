@@ -111,7 +111,7 @@ get_orb() {
     md5_name="$(basename "$md5_url")"
 
     pushd "$SUITE"
-    wget --progress=dot:giga "$url"
+    wget --no-clobber --progress=dot:giga "$url"
     wget "$md5_url"
 
     md5sum -c "$md5_name" || {

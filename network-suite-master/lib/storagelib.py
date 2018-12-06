@@ -39,7 +39,6 @@ class DiskFormat(object):
 
 class StorageType(object):
 
-    NFS = types.StorageType.NFS
     CINDER = types.StorageType.CINDER
     FCP = types.StorageType.FCP
     GLANCE = types.StorageType.GLANCE
@@ -61,7 +60,6 @@ class StorageDomainType(object):
 
 class NfsVersion(object):
 
-    V4_2 = types.NfsVersion.V4_2
     AUTO = types.NfsVersion.AUTO
     V3 = types.NfsVersion.V3
     V4 = types.NfsVersion.V4

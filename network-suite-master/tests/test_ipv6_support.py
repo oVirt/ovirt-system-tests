@@ -25,6 +25,24 @@ from lib import templatelib
 from lib import virtlib
 
 
+def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
+                                               default_cluster, host_0_up,
+                                               engine_storage_ipv6, lun_id):
+    """
+    This test verifies that:
+        * it is possible to create an iSCSI storage domain over an ipv6 network
+        * it is possible to power up a VM over such a storage domain
+    """
+
+    with ipv6_iscsi_storage_domain(system, host_0_up, engine_storage_ipv6,
+                                   lun_id) as sd:
+        with datacenterlib.attached_storage_domain(default_data_center,
+                                                   sd) as sd_attached:
+            with vm_down(system, default_cluster, sd_attached) as vm:
+                vm.run()
+                vm.wait_for_powering_up_status()
+
+
 def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
                                              default_cluster, host_0_up,
                                              engine_storage_ipv6):
@@ -34,7 +52,7 @@ def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
         * it is possible to power up a VM over such a storage domain
     """
 
-    with ipv6_storage_domain(system, host_0_up, engine_storage_ipv6) as sd:
+    with ipv6_nfs_storage_domain(system, host_0_up, engine_storage_ipv6) as sd:
         with datacenterlib.attached_storage_domain(default_data_center,
                                                    sd) as sd_attached:
             with vm_down(system, default_cluster, sd_attached) as vm:
@@ -43,7 +61,7 @@ def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
 
 
 @contextlib.contextmanager
-def ipv6_storage_domain(system, host, engine_storage_ipv6):
+def ipv6_nfs_storage_domain(system, host, engine_storage_ipv6):
     DOMAIN_NAME = 'nfs-ipv6'
     DEFAULT_DOMAIN_PATH = '/exports/nfs/share2'
 
@@ -54,16 +72,35 @@ def ipv6_storage_domain(system, host, engine_storage_ipv6):
         path=DEFAULT_DOMAIN_PATH,
         nfs_version=storagelib.NfsVersion.V4_2
     )
-    sd.create(
-        name=DOMAIN_NAME,
-        domain_type=storagelib.StorageDomainType.DATA,
-        host=host,
-        host_storage_data=host_storage_data)
-    try:
-        sd.wait_for_unattached_status()
+
+    with establish_sd(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
+                      host, host_storage_data) as sd:
         yield sd
-    finally:
-        sd.destroy_sync()
+
+
+@contextlib.contextmanager
+def ipv6_iscsi_storage_domain(system, host, engine_storage_ipv6, lun_id):
+    DOMAIN_NAME = 'iscsi-ipv6'
+    ISCSI_ADDRESS = engine_storage_ipv6
+    ISCSI_PORT = 3260
+    ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
+
+    lun = storagelib.LogicalUnit(
+        id=lun_id,
+        address=ISCSI_ADDRESS,
+        port=ISCSI_PORT,
+        target=ISCSI_TARGET,
+    )
+
+    host_storage_data = storagelib.HostStorageData(
+        storage_type=storagelib.StorageType.ISCSI,
+        address=None,
+        path=None,
+        logical_units=(lun,))
+
+    with establish_sd(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
+                      host, host_storage_data) as sd:
+        yield sd
 
 
 @contextlib.contextmanager
@@ -79,3 +116,18 @@ def vm_down(system, default_cluster, storage_domain):
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.wait_for_down_status()
         yield vm
+
+
+@contextlib.contextmanager
+def establish_sd(system, name, domain_type, host, host_storage_data):
+    sd = storagelib.StorageDomain(system)
+    sd.create(
+        name=name,
+        domain_type=domain_type,
+        host=host,
+        host_storage_data=host_storage_data)
+    try:
+        sd.wait_for_unattached_status()
+        yield sd
+    finally:
+        sd.destroy_sync()

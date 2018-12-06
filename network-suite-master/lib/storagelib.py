@@ -69,11 +69,21 @@ class NfsVersion(object):
 
 class HostStorageData(object):
 
-    def __init__(self, storage_type, address, path, nfs_version=None):
+    def __init__(self, storage_type, address, path, nfs_version=None,
+                 logical_units=()):
+        """
+        :param storage_type: string indicates the storage type.
+        :param address: string indicates the NFS storage address.
+        :param path: string indicates the NFS storage path.
+        :param nfs_version: string indicates the NFS storage version.
+        :param logical_units: tuple of LogicalUnits.
+        Represent logical units (luns) in case of an iSCSI storage domain.
+        """
         self._type = storage_type
         self._address = address
         self._path = path
         self._nfs_version = nfs_version
+        self._logical_units = logical_units
 
     @property
     def type(self):
@@ -90,6 +100,10 @@ class HostStorageData(object):
     @property
     def nfs_version(self):
         return self._nfs_version
+
+    @property
+    def logical_units(self):
+        return self._logical_units
 
 
 class StorageDomainStatus(object):
@@ -127,7 +141,9 @@ class StorageDomain(SDKRootEntity):
                 type=host_storage_data.type,
                 address=host_storage_data.address,
                 path=host_storage_data.path,
-                nfs_version=host_storage_data.nfs_version
+                nfs_version=host_storage_data.nfs_version,
+                logical_units=self._get_sdk_type_logical_units(
+                    host_storage_data.logical_units)
             )
         )
         self._create_sdk_entity(sdk_type)
@@ -179,6 +195,17 @@ class StorageDomain(SDKRootEntity):
         disk.wait_for_up_status()
         return disk
 
+    def _get_sdk_type_logical_units(self, logical_units):
+        return [
+            types.LogicalUnit(
+                id=lundata.id,
+                address=lundata.address,
+                port=lundata.port,
+                target=lundata.target
+            )
+            for lundata in logical_units
+        ]
+
 
 class Disk(SDKRootEntity):
 
@@ -206,3 +233,28 @@ class Disk(SDKRootEntity):
         syncutil.sync(exec_func=lambda: self.status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == types.DiskStatus.OK)
+
+
+class LogicalUnit(object):
+
+    def __init__(self, id, address, port, target):
+        self._id = id
+        self._address = address
+        self._port = port
+        self._target = target
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def port(self):
+        return self._port
+
+    @property
+    def target(self):
+        return self._target

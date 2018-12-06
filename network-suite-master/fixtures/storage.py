@@ -45,3 +45,11 @@ def default_storage_domain(system, engine, host_0_up, default_data_center):
     default_data_center.wait_for_sd_active_status(storage_domain)
 
     return storage_domain
+
+
+@pytest.fixture(scope='session')
+def lun_id(engine):
+    # Reads a lun id value from the file
+    ret = engine.ssh(['cat', '/root/multipath.txt'])
+    assert ret.code == 0
+    return ret.out.splitlines()[0]

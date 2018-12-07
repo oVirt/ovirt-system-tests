@@ -302,11 +302,13 @@ includepkgs = OVMF
 	libcollection
 	libconfig
 	libdhash
+	libepoxy
 	libevent
 	libfontenc
 	libgfortran
 	libgudev1
 	libguestfs-winsupport
+	libibumad
 	libibverbs
 	libicu
 	libini_config
@@ -355,6 +357,7 @@ includepkgs = OVMF
 	libusbx
 	libverto-libevent
 	libvirt-python
+	libwayland-server
 	libwbclient
 	libwsman1
 	libxcb
@@ -372,6 +375,8 @@ includepkgs = OVMF
 	mailx
 	make
 	mdadm
+	mesa-libgbm
+	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
@@ -643,6 +648,7 @@ gpgcheck = 0
 enabled = 1
 exclude = novnc
 	ansible
+	ansible-doc
 	python2-ecdsa
 includepkgs = archaius-core
 	ebay-cors-filter
@@ -705,6 +711,7 @@ baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = ansible
+	ansible-doc
 includepkgs = novnc
 
 [centos-qemu-ev-release-el7]

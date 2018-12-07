@@ -62,6 +62,7 @@ gpgcheck = 0
 enabled = 1
 exclude = novnc
         ansible
+	ansible-doc
         python2-ecdsa
 
 [centos-ovirt-4.2-el7]
@@ -70,6 +71,7 @@ baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = ansible
+	  ansible-doc
 
 [centos-qemu-ev-release-el7]
 name = CentOS-7 - QEMU EV

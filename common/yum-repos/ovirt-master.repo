@@ -120,6 +120,14 @@ includepkgs = 389-ds-base
 	perl-Git
 	python-libguestfs
 	python-paramiko
+	ruby
+	ruby-irb
+	ruby-libs
+	rubygem-bigdecimal
+	rubygem-io-console
+	rubygem-psych
+	rubygem-rdoc
+	rubygems
 	sos
 	subscription-manager
 	subscription-manager-rhsm
@@ -528,14 +536,6 @@ includepkgs = OVMF
 	rpm-build
 	rpmdevtools
 	rsync
-	ruby
-	ruby-irb
-	ruby-libs
-	rubygem-bigdecimal
-	rubygem-io-console
-	rubygem-psych
-	rubygem-rdoc
-	rubygems
 	samba-client-libs
 	samba-common
 	samba-common-libs
@@ -737,9 +737,4 @@ includepkgs = rh-postgresql10-postgresql
 	rh-postgresql10-postgresql-libs
 	rh-postgresql10-postgresql-server
 	rh-postgresql10-runtime
-	rh-postgresql95-postgresql
-	rh-postgresql95-postgresql-contrib
-	rh-postgresql95-postgresql-libs
-	rh-postgresql95-postgresql-server
-	rh-postgresql95-runtime
 

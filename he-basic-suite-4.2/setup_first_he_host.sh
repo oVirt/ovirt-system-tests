@@ -1,1 +1,1 @@
-../common/deploy-scripts/setup_first_he_host.sh
+../common/deploy-scripts/setup_first_he_host_42.sh

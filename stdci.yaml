@@ -19,7 +19,7 @@ stage:
         - hc-basic_suite_4.2
         - hc-basic_suite_master
         - he-basic-ansible_suite_4.2
-        - he-basic-ansible_suite_master
+        - he-basic_suite_master
         - he-node-ng_suite_master
         - he-node-ng_suite_4.2
         - network_suite_4.2

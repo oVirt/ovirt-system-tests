@@ -24,6 +24,7 @@ stage:
             runtime-requirements:
               support-nesting-level: 2
         - he-basic-ansible_suite_4.2
+        - he-basic-ipv6_suite_master
         - he-basic_suite_master
         - he-basic-iscsi_suite_master
         - he-node-ng_suite_master

@@ -71,4 +71,5 @@ run_suite () {
     run_static_analysis
     start_env
     run_tests
+    generate_vdsm_coverage_report
 }

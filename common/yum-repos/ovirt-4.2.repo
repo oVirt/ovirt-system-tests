@@ -693,6 +693,7 @@ includepkgs = archaius-core
 	python-pulp-rpm-common
 	python-testtools
 	python-websockify
+	python2-coverage
 	python2-extras
 	python2-fixtures
 	python2-jmespath

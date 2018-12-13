@@ -19,7 +19,7 @@
 #
 import os
 import pytest
-import shade
+import openstack
 import yaml
 
 from ovirtlib.providerlib import OpenStackImageProviders
@@ -84,10 +84,10 @@ def openstack_client_config(engine):
 @pytest.fixture(scope='session')
 def default_ovn_provider_client(openstack_client_config):
     """
-    Returns a shade connection configured to connect
+    Returns a openstack connection configured to connect
     to the default ovn provider.
     """
-    return shade.openstack_cloud(cloud=openstack_client_config)
+    return openstack.connect(cloud=openstack_client_config)
 
 
 @pytest.fixture(scope='session')

@@ -30,6 +30,6 @@
 
 def hack_os_put_request(cloud, path, data):
 
-    return cloud._network_client.put(
+    return cloud.network.put(
         path, json=data,
         error_message='Error in PUT request: {path}'.format(path=path))

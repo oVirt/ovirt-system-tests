@@ -26,6 +26,7 @@ ovirt-log-collector
 ovirt-vmconsole-host
 policycoreutils-python
 puppet
+python2-coverage
 python-ordereddict
 rpcbind
 ruby-augeas

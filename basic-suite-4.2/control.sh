@@ -29,4 +29,6 @@ run_suite () {
             return 1
         fi
     done
+
+    generate_vdsm_coverage_report
 }

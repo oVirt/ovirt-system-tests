@@ -158,6 +158,13 @@ class Cluster(SDKRootEntity):
     def _get_parent_service(self, system):
         return system.clusters_service
 
+    @staticmethod
+    def iterate(system):
+        for sdk_obj in system.clusters_service.list():
+            cluster = Cluster(system)
+            cluster.import_by_id(sdk_obj.id)
+            yield cluster
+
 
 class ClusterNetwork(SDKSubEntity):
 

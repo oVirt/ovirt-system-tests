@@ -116,3 +116,19 @@ def test_hot_linking_vnic(running_vm_0):
     vnic.set_linked(True)
     vnic = running_vm_0.get_vnic(NIC_NAME)
     assert vnic.linked is True
+
+
+def test_iterators(running_vm_0, system):
+    vm_names = (vm.name for vm in virtlib.Vm.iterate(system))
+    assert running_vm_0.name in vm_names
+
+    cluster_names = (cluster.name for cluster
+                     in clusterlib.Cluster.iterate(system))
+    assert running_vm_0.cluster.name in cluster_names
+
+    vnic_names = (vnic.name for vnic in running_vm_0.vnics())
+    assert NIC_NAME in vnic_names
+
+    vnic_profile_names = (profile.name for profile
+                          in netlib.VnicProfile.iterate(system))
+    assert next(running_vm_0.vnics()).vnic_profile.name in vnic_profile_names

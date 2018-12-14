@@ -57,6 +57,10 @@ class SnapshotNotInPreviewError(Exception):
 class Vm(SDKRootEntity):
 
     @property
+    def name(self):
+        return self.get_sdk_type().name
+
+    @property
     def host(self):
         return self.get_sdk_type().host
 
@@ -119,6 +123,12 @@ class Vm(SDKRootEntity):
         vnic = netlib.Vnic(self)
         vnic.import_by_name(vnic_name)
         return vnic
+
+    def vnics(self):
+        for nic_service in self._service.nics_service().list():
+            vnic = netlib.Vnic(self)
+            vnic.import_by_id(nic_service.id)
+            yield vnic
 
     def attach_disk(self, disk, interface=types.DiskInterface.VIRTIO,
                     bootable=True, active=True):
@@ -216,9 +226,20 @@ class Vm(SDKRootEntity):
         return disk_attachment_service.get().active
 
     def _get_data_center(self):
+        return self.cluster.get_data_center()
+
+    @property
+    def cluster(self):
         cluster = clusterlib.Cluster(self._parent_sdk_system)
         cluster.import_by_id(self.get_sdk_type().cluster.id)
-        return cluster.get_data_center()
+        return cluster
+
+    @staticmethod
+    def iterate(system):
+        for sdk_obj in system.vms_service.list():
+            vm = Vm(system)
+            vm.import_by_id(sdk_obj.id)
+            yield vm
 
 
 class VmSnapshot(SDKSubEntity):

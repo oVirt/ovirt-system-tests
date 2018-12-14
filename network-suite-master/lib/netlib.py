@@ -151,8 +151,19 @@ class VnicProfile(SDKRootEntity):
             return network_filter.id
         return None
 
+    @staticmethod
+    def iterate(system):
+        for sdk_obj in system.vnic_profiles_service.list():
+            profile = VnicProfile(system)
+            profile.import_by_id(sdk_obj.id)
+            yield profile
+
 
 class Vnic(SDKSubEntity):
+
+    @property
+    def name(self):
+        return self.get_sdk_type().name
 
     @property
     def linked(self):
@@ -205,6 +216,13 @@ class Vnic(SDKSubEntity):
 
     def _get_parent_service(self, vm):
         return vm.service.nics_service()
+
+    @property
+    def vnic_profile(self):
+        profile = VnicProfile(self._parent_sdk_entity._parent_sdk_system)
+        profile_id = self.service.get().vnic_profile.id
+        profile.import_by_id(profile_id)
+        return profile
 
 
 class QoS(SDKSubEntity):

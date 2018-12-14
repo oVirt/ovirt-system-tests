@@ -62,6 +62,11 @@ def ovn_physnet_small_mtu(default_data_center, ovirtmgmt_network, ovs_cluster,
     try:
         cluster_network = clusterlib.ClusterNetwork(ovs_cluster)
         cluster_network.assign(network)
+        provider_network = _get_network_by_name(default_ovn_provider_client,
+                                                OVN_PHYSNET_NAME)
+        _disable_network_port_security(ovirtmgmt_network.name,
+                                       provider_network.id,
+                                       default_ovn_provider_client)
         yield network
     finally:
         network.remove()
@@ -239,3 +244,32 @@ def _provision_icmp_rule(source_ip, action):
         }
     )
     playbook.run()
+
+
+def _disable_network_port_security(physnet_name, network_uuid, ovn_provider):
+    _update_network_port_security(ovn_provider, physnet_name, network_uuid,
+                                  enabled=False)
+
+
+def _update_network_port_security(ovn_provider, physical_network_name,
+                                  network_uuid, enabled):
+    network_path = '/networks/' + str(network_uuid)
+    update_network_payload = _build_update_physnet_port_security_payload(
+        physical_network_name, enabled)
+    shade_hack.hack_os_put_request(ovn_provider, network_path,
+                                   update_network_payload)
+
+
+def _get_network_by_name(ovn_provider, network_name):
+    return ovn_provider.get_network(network_name)
+
+
+def _build_update_physnet_port_security_payload(physical_network_name,
+                                                port_security):
+    return {
+        'network': {
+            'port_security_enabled': port_security,
+            'provider:physical_network': physical_network_name,
+            'provider:network_type': 'flat'
+        }
+    }

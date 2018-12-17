@@ -31,7 +31,7 @@ from textwrap import dedent
 
 import six
 
-from lago import sdk
+from lago import sdk, utils
 
 
 def usage():
@@ -51,31 +51,40 @@ def usage():
 def _stop_vdsm_services(hosts):
     # need to stop gracefully both vdsmd and supervdsmd
     # to make coverage.py dump coverage data
-    for host in hosts:
+    print("Stopping VDSM services...")
+
+    def _stop_vdsm_services_on_host(host):
         host.ssh(['systemctl', 'stop', 'vdsmd', 'supervdsmd'])
 
+    utils.invoke_in_parallel(_stop_vdsm_services_on_host, hosts)
 
-def _collect_coverage_data_file_names(host):
-    # print coverage data files as basenames to reduce output size - someone
-    # (paramiko?) trims ssh's commands outputs when they're very long
-    cmd = ('"ls /var/lib/vdsm/coverage/vdsm.coverage.* |'
-           ' tr \'\\n\' \'\\0\' | xargs -0 -n 1 basename"')
-    args = ['/bin/bash', '-c', cmd]
-    command_status = host.ssh(args)
-    return command_status.out.split()
+
+def _combine_coverage_data_on_hosts(hosts):
+    print("Combining coverage data on hosts...")
+
+    def _combine_coverage_data_on_host(host):
+        host.ssh(['coverage', 'combine',
+                  '--rcfile=/var/lib/vdsm/coverage/coveragerc'])
+
+    utils.invoke_in_parallel(_combine_coverage_data_on_host, hosts)
 
 
 def _copy_coverage_data_to_first_host(first_host, remaining_hosts):
     # coverage.py needs source files at the moment of report generation -
     # that's why we need to do it on one of the hosts
+    print("Copying coverage data to one of the hosts...")
     try:
         tmpdir = tempfile.mkdtemp()
-        for host in remaining_hosts:
-            coverage_data_files = _collect_coverage_data_file_names(host)
-            for coverage_data_file in coverage_data_files:
-                coverage_data_file = os.path.join('/var/lib/vdsm/coverage',
-                                                  coverage_data_file)
-                host.copy_from(coverage_data_file, tmpdir)
+
+        def _copy_coverage_data_from_host(host_idx, host):
+            target_coverage_file_name = 'vdsm.coverage.{}'.format(host_idx)
+            host.copy_from('/var/lib/vdsm/coverage/vdsm.coverage',
+                           os.path.join(tmpdir, target_coverage_file_name))
+
+        utils.invoke_in_parallel(_copy_coverage_data_from_host,
+                                 tuple(range(len(remaining_hosts))),
+                                 remaining_hosts)
+
         for coverage_data_file in os.listdir(tmpdir):
             coverage_data_file = os.path.join(tmpdir, coverage_data_file)
             first_host.copy_to(coverage_data_file, '/var/lib/vdsm/coverage')
@@ -84,7 +93,8 @@ def _copy_coverage_data_to_first_host(first_host, remaining_hosts):
 
 
 def _generate_coverage_report_on_host(host):
-    host.ssh(['coverage', 'combine',
+    print("Generating coverage report on one of the hosts...")
+    host.ssh(['coverage', 'combine', '-a',
               '--rcfile=/var/lib/vdsm/coverage/coveragerc'])
     host.ssh(['coverage', 'html',
               '--directory=/var/lib/vdsm/coverage/html',
@@ -92,6 +102,7 @@ def _generate_coverage_report_on_host(host):
 
 
 def _copy_coverage_report_from_host(host, output_path):
+    print("Copying generated coverage report from one of the hosts...")
     host.copy_from('/var/lib/vdsm/coverage/coveragerc', output_path)
     host.copy_from('/var/lib/vdsm/coverage/vdsm.coverage', output_path)
     host.copy_from('/var/lib/vdsm/coverage/html', output_path)
@@ -102,6 +113,7 @@ def generate_coverage_report(prefix_path, output_path):
     hosts = [h for h in six.itervalues(prefix.get_vms())
              if h.vm_type == 'ovirt-host']
     _stop_vdsm_services(hosts)
+    _combine_coverage_data_on_hosts(hosts)
     _copy_coverage_data_to_first_host(hosts[0], hosts[1:])
     _generate_coverage_report_on_host(hosts[0])
     _copy_coverage_report_from_host(hosts[0], output_path)

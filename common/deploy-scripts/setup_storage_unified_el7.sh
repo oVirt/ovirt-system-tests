@@ -72,11 +72,9 @@ setup_iscsi() {
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
         delete 0.0.0.0 3260
-    IPS=`hostname -I`
-    for ip in $IPS; do \
-        targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
-            create ip_address=$ip ip_port=3260 \
-    ;done
+    targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
+        create ip_address=::0 ip_port=3260
+
 
     create_lun () {
        local ID=$1

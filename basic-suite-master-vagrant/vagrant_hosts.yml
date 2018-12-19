@@ -1,0 +1,33 @@
+- type: "host"
+  box: "centos/7"
+  box_version: "1811.02"
+  hostCount: 2
+  user: root
+  provider:
+  memory: 1024
+  deploy-script: "deploy-scripts/setup_host_el7.sh"
+  disks:
+    - size: "1G"
+      type: "raw"
+      allow_existing: "false"
+      bus: "scsi"
+      device: "sdc"
+    - size: "1G"
+      type: "raw"
+      allow_existing: "false"
+- type: "engine"
+  box: "centos/7"
+  box_version: "1811.02"
+  hostCount: 1
+  memory: 1024
+  user: root
+  deploy-script: "deploy-scripts/setup_engine.sh"
+  disks:
+    - size: "1G"
+      type: "raw"
+      allow_existing: "false"
+      bus: "scsi"
+      device: "sdc"
+    - size: "1G"
+      type: "raw"
+      allow_existing: "false"

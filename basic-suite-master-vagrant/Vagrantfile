@@ -1,0 +1,152 @@
+# -*- mode: ruby -*-
+# vi: ft=ruby :
+
+require 'rbconfig'
+require 'yaml'
+
+VAGRANTFILE_API_VERSION = '2'
+
+#########################################################
+# Functions
+#########################################################
+# Print an error message and stop execution on handled errors
+def handle_error(error_msg)
+    puts "ERROR: #{error_msg}"
+    exit
+end
+
+# host_name
+def configure_hostname(host_count, host_type, idx)
+    if host_count == 1
+              hostname = "#{host_type}"
+              template = "#{host_type}"
+          else
+              hostname = "#{host_type}-#{idx}"
+              template = "#{host_type}-#{idx}"
+          end
+    return hostname, template
+end
+
+
+# Configure basic information a given node
+def config_basic_info(node, hostname, box, box_version)
+    node.vm.hostname = "#{hostname}.vagrant.local"
+    node.vm.box = box
+    node.vm.box_version = box_version
+end
+
+# Shell Provision
+def shell_provision(node, command)
+    node.vm.provision "shell", inline: command
+end
+
+# copy files
+def file_copy(node, source, destination)
+    node.vm.provision "file",
+        source: source,
+        destination: destination
+end
+
+# network options
+def network_options( type, ip, network_name,dhcp_enable,forward_mode)
+    options = {}
+    options[:ip] = ip
+    options[:type] = type
+    options[:libvirt__network_name] = network_name
+    options[:libvirt__dhcp_enabled] = dhcp_enable
+    options[:libvirt__forward_mode] = forward_mode
+    options
+end
+
+## custom disks
+def custom_disks(vm, host)
+    if host.has_key?('disks')
+      disks = host['disks']
+      disks.each do |disk|
+          options = {}
+          if disk.has_key?('size')
+              options[:size] = disk['size']
+          end
+          if disk.has_key?('type')
+              options[:type] = disk['type']
+          end
+          if disk.has_key?('allow_existing')
+              options[:allow_existing] = disk['allow_existing']
+          end
+          if disk.has_key?('bus')
+              options[:bus]= disk['bus']
+          end
+          if disk.has_key?('device')
+              options[:device] = disk['device']
+          end
+          vm.storage :file, options
+      end
+    end
+end
+
+###############################################################################
+# Initialization
+###############################################################################
+# Verify that yml file exists
+root_dir = File.dirname(__FILE__)
+vagrant_yaml_file = "#{root_dir}/vagrant_hosts.yml"
+error_msg = "#{vagrant_yaml_file} does not exist"
+handle_error(error_msg) unless File.exists?(vagrant_yaml_file)
+
+# Load yml file
+hosts = YAML.load_file(vagrant_yaml_file)
+
+error_msg = "#{vagrant_yaml_file} exists, but is empty"
+handle_error(error_msg) unless hosts
+
+######################################################
+# Vagrant Configuration Loop
+######################################################
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  ## Libvirt global configuration
+  config.vm.provider :libvirt do |p|
+      p.management_network_name = 'vagrant-libvirt-new'
+      p.management_network_address = '192.168.124.0/24'
+  end
+
+  ## Disable share folders
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+  ## network configuration
+  config.vm.network :private_network,
+      network_options( "dhcp","192.168.29.0/24","test_network", "true","nat")
+  config.vm.network :private_network,
+      network_options( "dhcp","192.168.27.0/24","storage_network", "true","nat")
+  config.vm.network :private_network,
+      network_options( "dhcp","192.168.28.0/24","bonding_network", "true","nat")
+
+  ## Configure the hosts from yml file
+  hosts.each do |host|
+      type = host['type']
+      (0..host['hostCount']-1).each do |i|
+          hostname, template = configure_hostname(host['hostCount'], type, i)
+          config.vm.define "#{template}" do |node|
+              config_basic_info(node, hostname, host['box'],host['box_version'])
+              shell_provision(node, "echo hello from node #{i}")
+              shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
+              file_copy(node,"reposync-config.repo", "/tmp/reposync-config.repo")
+              shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
+
+              # deploy scripts:
+              file_name = File.basename(host['deploy-script'])
+              #file_copy(node,host['deploy-script'], "/tmp/#{file_name}")
+              #shell_provision(node, "source  /tmp/#{file_name}")
+
+              #node.vm.provision "shell", inline: <<-SHELL
+              #    echo "sudo su -" >> .bashrc
+    #SHELL
+              node.vm.provider :libvirt do |domain|
+                domain.memory = host['memory']
+                custom_disks(domain, host)
+              end
+          end
+      end
+  end
+end

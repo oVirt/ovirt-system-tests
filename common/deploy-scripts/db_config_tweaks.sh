@@ -1,15 +1,29 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
 
 # A script to add debug configuration to postgres logs.
 # Usually usefull in combination with pgbadger for analysis.
 
-# Software collection pg 9.5 locations.
-pg_datadir=/var/opt/rh/rh-postgresql95/lib/pgsql/data
-pg_service=rh-postgresql95-postgresql.service
+# Set locations. If engine uses SCL, use that, otherwise use default.
 
-# If you are using default package installation, unmark this
-#pg_datadir=/var/lib/pgsql/data
-#pg_service=postgresql.service
+get_engine_pg_scl() {
+    local engine_pg_scl_conf=(/etc/ovirt-engine/engine.conf.d/*scl-postgres*.conf)
+    local res=
+    if [[ -e $engine_pg_scl_conf ]]; then
+        # This will only work if there is exactly one file matching above
+        # glob pattern. Ignore other cases for now - they should not
+        # happen normally.
+        . "${engine_pg_scl_conf}"
+        res="${sclenv}"
+    fi
+    echo "${res}"
+}
+pg_datadir=/var/lib/pgsql/data
+pg_service=postgresql.service
+engine_pg_scl=$(get_engine_pg_scl)
+if [[ -n $engine_pg_scl ]]; then
+    pg_datadir=/var/opt/rh/${engine_pg_scl}/lib/pgsql/data
+    pg_service=${engine_pg_scl}-postgresql.service
+fi
 
 sed -i 's/#include_dir/include_dir/' ${pg_datadir}/postgresql.conf
 
@@ -36,3 +50,5 @@ EOF
 # test 200 == $(curl -k https://ovirt/services/health  -o /dev/null -s -w %{http_code})
 #```
 systemctl reload ${pg_service}
+
+# vim: expandtab tabstop=4 shiftwidth=4

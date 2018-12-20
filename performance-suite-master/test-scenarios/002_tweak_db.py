@@ -35,7 +35,6 @@ def tweak_db(prefix):
 
     result = engine.ssh(
         [
-            'bash',
             '/root/db_config_tweaks.sh',
         ],
     )

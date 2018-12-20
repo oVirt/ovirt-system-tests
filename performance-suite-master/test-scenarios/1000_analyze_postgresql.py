@@ -44,8 +44,6 @@ def analyze_postgres(prefix):
 
     result = engine.ssh(
         [
-            'bash',
-            '-ex',
             '/root/analyze_postgresql.sh'
         ],
     )

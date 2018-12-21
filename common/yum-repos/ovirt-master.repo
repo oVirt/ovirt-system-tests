@@ -24,9 +24,9 @@ enabled = 1
 max_connections = 10
 ost_skip_injection = True
 
-[glusterfs-3.12-el7]
+[glusterfs-5-el7]
 name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
+baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-5/
 enabled = 1
 max_connections = 5
 includepkgs = gdeploy
@@ -37,7 +37,6 @@ includepkgs = gdeploy
 	glusterfs-fuse
 	glusterfs-libs
 	glusterfs-rdma
-	python-keyczar
 
 [centos-updates-el7]
 name = CentOS7 Updates

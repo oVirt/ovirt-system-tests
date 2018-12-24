@@ -154,7 +154,7 @@ fi
 # after the duration that was specified to --kill-after.
 timeout \
     --kill-after 5m \
-    100m \
+    180m \
     ./run_suite.sh \
         -o "$run_path" \
         "${extra_cmds[@]}" \

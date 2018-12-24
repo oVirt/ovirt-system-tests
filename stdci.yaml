@@ -9,6 +9,7 @@ stage:
       script:
         fromfile: 'automation/{{ stage }}.{{ substage }}.sh'
   - check-patch:
+      timeout: 180m
       substage:
         - dr_suite_master
         - ansible_suite_master

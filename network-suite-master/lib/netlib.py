@@ -224,6 +224,12 @@ class Vnic(SDKSubEntity):
         profile.import_by_id(profile_id)
         return profile
 
+    @vnic_profile.setter
+    def vnic_profile(self, new_profile):
+        sdk_nic = self.get_sdk_type()
+        sdk_nic.vnic_profile.id = new_profile.id
+        self.service.update(sdk_nic)
+
 
 class QoS(SDKSubEntity):
 

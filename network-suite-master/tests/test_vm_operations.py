@@ -139,3 +139,15 @@ def test_iterators(running_vm_0, system):
 
     assert len(list(datacenterlib.DataCenter.iterate(
         system, search='name = missing'))) == 0
+
+
+def test_modify_vnic(running_vm_0, system, ovirtmgmt_network):
+    with netlib.create_vnic_profile(system,
+                                    'temporary', ovirtmgmt_network) as profile:
+        vnic = next(running_vm_0.vnics())
+        original_profile = vnic.vnic_profile
+        try:
+            vnic.vnic_profile = profile
+            assert vnic.vnic_profile.name == 'temporary'
+        finally:
+            vnic.vnic_profile = original_profile

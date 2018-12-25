@@ -24,6 +24,8 @@ from lib import storagelib
 from lib import templatelib
 from lib import virtlib
 
+from lib.storagelib import storage_domain
+
 
 def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
                                                default_cluster, host_0_up,
@@ -73,8 +75,8 @@ def ipv6_nfs_storage_domain(system, host, engine_storage_ipv6):
         nfs_version=storagelib.NfsVersion.V4_2
     )
 
-    with establish_sd(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
-                      host, host_storage_data) as sd:
+    with storage_domain(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
+                        host, host_storage_data) as sd:
         yield sd
 
 
@@ -98,8 +100,8 @@ def ipv6_iscsi_storage_domain(system, host, engine_storage_ipv6, lun_id):
         path=None,
         logical_units=(lun,))
 
-    with establish_sd(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
-                      host, host_storage_data) as sd:
+    with storage_domain(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
+                        host, host_storage_data) as sd:
         yield sd
 
 
@@ -116,18 +118,3 @@ def vm_down(system, default_cluster, storage_domain):
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.wait_for_down_status()
         yield vm
-
-
-@contextlib.contextmanager
-def establish_sd(system, name, domain_type, host, host_storage_data):
-    sd = storagelib.StorageDomain(system)
-    sd.create(
-        name=name,
-        domain_type=domain_type,
-        host=host,
-        host_storage_data=host_storage_data)
-    try:
-        sd.wait_for_unattached_status()
-        yield sd
-    finally:
-        sd.destroy_sync()

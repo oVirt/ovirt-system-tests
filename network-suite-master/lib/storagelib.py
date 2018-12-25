@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import contextlib
+
 from ovirtsdk4 import types
 
 from lib import error
@@ -258,3 +260,18 @@ class LogicalUnit(object):
     @property
     def target(self):
         return self._target
+
+
+@contextlib.contextmanager
+def storage_domain(system, name, domain_type, host, host_storage_data):
+    sd = StorageDomain(system)
+    sd.create(
+        name=name,
+        domain_type=domain_type,
+        host=host,
+        host_storage_data=host_storage_data)
+    try:
+        sd.wait_for_unattached_status()
+        yield sd
+    finally:
+        sd.destroy_sync()

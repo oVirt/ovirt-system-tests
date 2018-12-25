@@ -19,12 +19,12 @@
 #
 import contextlib
 
-from lib import datacenterlib
-from lib import storagelib
-from lib import templatelib
-from lib import virtlib
+from ovirtlib import datacenterlib
+from ovirtlib import storagelib
+from ovirtlib import templatelib
+from ovirtlib import virtlib
 
-from lib.storagelib import storage_domain
+from ovirtlib.storagelib import storage_domain
 
 
 def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,

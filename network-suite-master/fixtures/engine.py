@@ -22,7 +22,7 @@ import re
 import pytest
 from ovirtsdk4 import Connection
 
-from lib import syncutil
+from ovirtlib import syncutil
 from testlib import suite
 
 

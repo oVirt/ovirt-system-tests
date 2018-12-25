@@ -18,7 +18,7 @@
 #
 import pytest
 
-from lib import netlib
+from ovirtlib import netlib
 
 
 @pytest.fixture(scope='session', autouse=True)

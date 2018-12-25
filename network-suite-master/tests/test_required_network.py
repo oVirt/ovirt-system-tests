@@ -19,9 +19,9 @@
 #
 import pytest
 
-from lib import netlib
-from lib import hostlib
-from lib import clusterlib
+from ovirtlib import netlib
+from ovirtlib import hostlib
+from ovirtlib import clusterlib
 
 
 ETH1 = 'eth1'

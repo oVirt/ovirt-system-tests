@@ -23,10 +23,10 @@ import contextlib
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from lib import datacenterlib
+from ovirtlib import datacenterlib
 
-from lib.sdkentity import SDKRootEntity
-from lib.sdkentity import SDKSubEntity
+from ovirtlib.sdkentity import SDKRootEntity
+from ovirtlib.sdkentity import SDKSubEntity
 
 
 MacPoolRange = collections.namedtuple("MacPoolRange", "start end")

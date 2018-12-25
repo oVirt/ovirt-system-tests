@@ -22,8 +22,8 @@ import os
 
 import pytest
 
-from lib.ansiblelib import Playbook
-from lib import sshlib as ssh
+from ovirtlib.ansiblelib import Playbook
+from ovirtlib import sshlib as ssh
 from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 from testlib import shade_hack

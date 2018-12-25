@@ -26,7 +26,7 @@ run_static_analysis() {
         --rcfile="${SUITE}/pylintrc" \
         --errors-only \
         "${SUITE}/fixtures" \
-        "${SUITE}/lib" \
+        "${SUITE}/ovirtlib" \
         "${SUITE}/testlib" \
         "${SUITE}/tests"
 }

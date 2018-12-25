@@ -21,9 +21,9 @@ import contextlib
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from lib import clusterlib
-from lib import syncutil
-from lib.sdkentity import SDKRootEntity
+from ovirtlib import clusterlib
+from ovirtlib import syncutil
+from ovirtlib.sdkentity import SDKRootEntity
 
 HOST_TIMEOUT_SHORT = 5 * 60
 HOST_TIMEOUT_LONG = 15 * 60

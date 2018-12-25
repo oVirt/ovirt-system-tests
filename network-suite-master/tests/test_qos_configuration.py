@@ -23,11 +23,11 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from lib import clusterlib
-from lib import hostlib
-from lib import netlib
-from lib import templatelib
-from lib import virtlib
+from ovirtlib import clusterlib
+from ovirtlib import hostlib
+from ovirtlib import netlib
+from ovirtlib import templatelib
+from ovirtlib import virtlib
 
 DEFAULT_NAME = 'Default'
 ETH2 = 'eth2'

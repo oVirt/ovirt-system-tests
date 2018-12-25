@@ -19,7 +19,7 @@
 #
 import pytest
 
-from lib import storagelib
+from ovirtlib import storagelib
 
 
 DEFAULT_DOMAIN_NAME = 'nfs1'

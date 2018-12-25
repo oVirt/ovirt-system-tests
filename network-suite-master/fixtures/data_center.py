@@ -18,7 +18,7 @@
 #
 import pytest
 
-from lib import datacenterlib
+from ovirtlib import datacenterlib
 
 
 @pytest.fixture(scope='session', autouse=True)

@@ -23,11 +23,11 @@ import os
 
 import pytest
 
-from lib import clusterlib
-from lib import netlib
-from lib import syncutil
-from lib import virtlib
-from lib.ansiblelib import Playbook
+from ovirtlib import clusterlib
+from ovirtlib import netlib
+from ovirtlib import syncutil
+from ovirtlib import virtlib
+from ovirtlib.ansiblelib import Playbook
 from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 from testlib import shade_hack

@@ -21,10 +21,10 @@ from contextlib import contextmanager
 
 from ovirtsdk4 import types
 
-from lib import syncutil
-from lib.sdkentity import SDKRootEntity
-from lib.sdkentity import SDKSubEntity
-from lib.netlib import Network
+from ovirtlib import syncutil
+from ovirtlib.sdkentity import SDKRootEntity
+from ovirtlib.sdkentity import SDKSubEntity
+from ovirtlib.netlib import Network
 
 
 class OpenStackImageProviders(SDKRootEntity):

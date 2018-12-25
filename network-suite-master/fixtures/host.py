@@ -21,7 +21,7 @@ import time
 
 import pytest
 
-from lib import hostlib
+from ovirtlib import hostlib
 
 from fixtures.engine import SUITE
 

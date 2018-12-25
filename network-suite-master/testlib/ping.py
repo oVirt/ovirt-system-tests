@@ -18,8 +18,8 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from lib import sshlib
-from lib.sshlib import SshException
+from ovirtlib import sshlib
+from ovirtlib.sshlib import SshException
 
 
 class PingFailed(SshException):

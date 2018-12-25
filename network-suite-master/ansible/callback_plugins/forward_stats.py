@@ -19,7 +19,7 @@
 #
 from ansible.plugins.callback import CallbackBase
 
-from lib.ansiblelib import StatsHandlers
+from ovirtlib.ansiblelib import StatsHandlers
 
 
 class CallbackModule(CallbackBase):

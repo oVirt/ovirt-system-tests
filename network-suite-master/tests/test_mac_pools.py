@@ -19,10 +19,10 @@
 #
 import pytest
 
-from lib import clusterlib
-from lib import netlib
-from lib import templatelib
-from lib import virtlib
+from ovirtlib import clusterlib
+from ovirtlib import netlib
+from ovirtlib import templatelib
+from ovirtlib import virtlib
 
 
 MAC_POOL = 'mac_pool'

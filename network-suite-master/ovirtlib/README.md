@@ -1,4 +1,4 @@
-ovirt-sdk wrapper lib
+ovirt-sdk wrapper ovirtlib
 =====================
 
 This package is a general-purpose library wrapping the ovirt sdk. It is
@@ -13,8 +13,8 @@ center.
     >>> PASSWORD = '123'
     >>> USERNAME = 'admin@internal'
     >>>
-    >>> from lib.system import SDKSystemRoot
-    >>> from lib.datacenterlib import DataCenter
+    >>> from ovirtlib.system import SDKSystemRoot
+    >>> from ovirtlib.datacenterlib import DataCenter
     >>>
     >>> system = SDKSystemRoot()
     >>> system.connect(

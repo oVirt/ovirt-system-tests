@@ -21,9 +21,9 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from lib.sdkentity import EntityCreationError
-from lib.sdkentity import SDKSubEntity
-from lib.sdkentity import SDKRootEntity
+from ovirtlib.sdkentity import EntityCreationError
+from ovirtlib.sdkentity import SDKSubEntity
+from ovirtlib.sdkentity import SDKRootEntity
 
 
 OVIRTMGMT = 'ovirtmgmt'

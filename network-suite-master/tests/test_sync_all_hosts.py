@@ -21,10 +21,10 @@ import contextlib
 
 import contextlib2
 
-from lib import clusterlib
-from lib import hostlib
-from lib import netlib
-from lib import sshlib as ssh
+from ovirtlib import clusterlib
+from ovirtlib import hostlib
+from ovirtlib import netlib
+from ovirtlib import sshlib as ssh
 
 ETH2 = 'eth2'
 

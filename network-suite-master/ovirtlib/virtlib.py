@@ -24,11 +24,11 @@ from contextlib import contextmanager
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from lib import netlib
-from lib import clusterlib
-from lib import syncutil
-from lib.sdkentity import SDKRootEntity
-from lib.sdkentity import SDKSubEntity
+from ovirtlib import netlib
+from ovirtlib import clusterlib
+from ovirtlib import syncutil
+from ovirtlib.sdkentity import SDKRootEntity
+from ovirtlib.sdkentity import SDKSubEntity
 
 
 @contextmanager

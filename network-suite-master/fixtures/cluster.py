@@ -18,7 +18,7 @@
 #
 import pytest
 
-from lib import clusterlib
+from ovirtlib import clusterlib
 
 
 @pytest.fixture(scope='session', autouse=True)

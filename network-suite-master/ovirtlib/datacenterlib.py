@@ -21,11 +21,11 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from lib import error
-from lib import netlib
-from lib import storagelib
-from lib import syncutil
-from lib.sdkentity import SDKRootEntity
+from ovirtlib import error
+from ovirtlib import netlib
+from ovirtlib import storagelib
+from ovirtlib import syncutil
+from ovirtlib.sdkentity import SDKRootEntity
 
 
 class DataCenter(SDKRootEntity):

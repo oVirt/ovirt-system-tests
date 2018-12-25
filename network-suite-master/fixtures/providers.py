@@ -22,9 +22,9 @@ import pytest
 import shade
 import yaml
 
-from lib.providerlib import OpenStackImageProviders
-from lib.providerlib import OpenStackNetwork
-from lib.providerlib import OpenStackNetworkProvider
+from ovirtlib.providerlib import OpenStackImageProviders
+from ovirtlib.providerlib import OpenStackNetwork
+from ovirtlib.providerlib import OpenStackNetworkProvider
 
 
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'

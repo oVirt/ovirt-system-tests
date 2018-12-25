@@ -19,12 +19,12 @@
 #
 import pytest
 
-from lib import virtlib
-from lib import netlib
-from lib import hostlib
-from lib import clusterlib
-from lib import datacenterlib
-from lib import templatelib
+from ovirtlib import virtlib
+from ovirtlib import netlib
+from ovirtlib import hostlib
+from ovirtlib import clusterlib
+from ovirtlib import datacenterlib
+from ovirtlib import templatelib
 
 ETH1 = 'eth1'
 VM0 = 'vm0'

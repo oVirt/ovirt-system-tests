@@ -21,9 +21,9 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from lib import error
-from lib import syncutil
-from lib.sdkentity import SDKRootEntity
+from ovirtlib import error
+from ovirtlib import syncutil
+from ovirtlib.sdkentity import SDKRootEntity
 
 
 MiB = 2 ** 20

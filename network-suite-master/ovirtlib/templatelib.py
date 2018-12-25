@@ -19,7 +19,7 @@
 #
 from ovirtsdk4 import types
 
-from lib import syncutil
+from ovirtlib import syncutil
 
 
 TEMPLATE_BLANK = 'Blank'

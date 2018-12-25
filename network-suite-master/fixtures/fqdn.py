@@ -21,7 +21,7 @@ import shutil
 
 import pytest
 
-from lib import syncutil
+from ovirtlib import syncutil
 
 from fixtures.engine import ENGINE_DOMAIN
 from fixtures.engine import ANSWER_FILE_SRC

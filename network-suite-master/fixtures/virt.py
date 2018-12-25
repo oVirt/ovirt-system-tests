@@ -20,8 +20,8 @@ import pytest
 
 from fixtures import providers
 
-from lib import storagelib
-from lib import templatelib
+from ovirtlib import storagelib
+from ovirtlib import templatelib
 
 
 CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'

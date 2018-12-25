@@ -19,7 +19,7 @@
 #
 import pytest
 
-from lib.system import SDKSystemRoot
+from ovirtlib.system import SDKSystemRoot
 
 
 @pytest.fixture(scope='session')

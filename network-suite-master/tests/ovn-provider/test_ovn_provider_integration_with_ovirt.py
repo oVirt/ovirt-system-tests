@@ -17,10 +17,10 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from lib import clusterlib
-from lib import netlib
-from lib import templatelib
-from lib import virtlib
+from ovirtlib import clusterlib
+from ovirtlib import netlib
+from ovirtlib import templatelib
+from ovirtlib import virtlib
 
 
 VNIC0_NAME = 'nic001'

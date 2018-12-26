@@ -96,6 +96,19 @@ class DataCenter(SDKRootEntity):
                       success_criteria=lambda s: s == status,
                       timeout=60 * 5)
 
+    @staticmethod
+    def iterate(system, search=None):
+        """Iterate over `system`'s data centers
+
+        If `search` is None, all data centers are iterated. Otherwise,
+        `search` should be a search query string understood by oVirt.
+        Cf. http://ovirt.github.io/ovirt-engine-api-model/master/#_searching
+        """
+        for sdk_obj in system.data_centers_service.list(search=search):
+            dc = DataCenter(system)
+            dc.import_by_id(sdk_obj.id)
+            yield dc
+
 
 @contextlib.contextmanager
 def attached_storage_domain(data_center, storage_domain):

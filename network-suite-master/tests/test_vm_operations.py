@@ -23,6 +23,7 @@ from lib import virtlib
 from lib import netlib
 from lib import hostlib
 from lib import clusterlib
+from lib import datacenterlib
 from lib import templatelib
 
 ETH1 = 'eth1'
@@ -132,3 +133,9 @@ def test_iterators(running_vm_0, system):
     vnic_profile_names = (profile.name for profile
                           in netlib.VnicProfile.iterate(system))
     assert next(running_vm_0.vnics()).vnic_profile.name in vnic_profile_names
+
+    dc_names = (dc.name for dc in datacenterlib.DataCenter.iterate(system))
+    assert running_vm_0.cluster.get_data_center().name in dc_names
+
+    assert len(list(datacenterlib.DataCenter.iterate(
+        system, search='name = missing'))) == 0

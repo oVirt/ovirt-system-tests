@@ -30,7 +30,7 @@ end
 
 # Configure basic information a given node
 def config_basic_info(node, hostname, box, box_version)
-    node.vm.hostname = "#{hostname}.vagrant.local"
+    node.vm.hostname = "#{hostname}.lago.local"
     node.vm.box = box
     node.vm.box_version = box_version
 end
@@ -48,13 +48,15 @@ def file_copy(node, source, destination)
 end
 
 # network options
-def network_options( type, ip, network_name,dhcp_enable,forward_mode)
+def network_options( type, ip, network_name,dhcp_enable,forward_mode,domain_name)
     options = {}
     options[:ip] = ip
     options[:type] = type
     options[:libvirt__network_name] = network_name
     options[:libvirt__dhcp_enabled] = dhcp_enable
     options[:libvirt__forward_mode] = forward_mode
+    options[:libvirt__domain_name] = domain_name
+
     options
 end
 
@@ -80,6 +82,52 @@ def custom_disks(vm, host)
               options[:device] = disk['device']
           end
           vm.storage :file, options
+      end
+    end
+end
+
+# Convert the shell provisioner arguments from vagrant.yml
+# into an array for the vagrant shell provisioner
+def shell_provisioner_args(yaml_arguments)
+    shell_arguments = Array.new
+
+    # Arguments may or may not be named,
+    # and named arguments may or may not have a value.
+    yaml_arguments.each do |argument|
+      argument.key?('name') && shell_arguments.push(argument['name'])
+      argument.key?('value') && shell_arguments.push(argument['value'])
+    end
+    shell_arguments
+  end
+
+## Deploy scripts
+def deploy_scripts(node, host, type, idx=0)
+    if host.has_key?('deploy-script')
+      scripts = host['deploy-script']
+      scripts.each do |script|
+          options = {}
+          if script.has_key?('script')
+              options[:script] = script['script']
+              file_name = File.basename(options[:script])
+              run_script = 1
+              file_copy(node,options[:script], "/tmp/#{file_name}")
+              if script.has_key?('arguments')
+                args = script['arguments']
+                args.each do |arg|
+                    if arg.has_key?('first_host')
+                        if type == "host" && idx != 0  && arg['first_host'] == 1
+                            run_script = 0
+                        end
+                        if type == "host" && idx == 0  && arg['first_host'] == 0
+                            run_script = 0
+                        end
+                    end
+                end
+              end
+              if run_script == 1
+                  shell_provision(node, "source  /tmp/#{file_name}")
+              end
+          end
       end
     end
 end
@@ -116,11 +164,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ## network configuration
   config.vm.network :private_network,
-      network_options( "dhcp","192.168.29.0/24","test_network", "true","nat")
+      network_options( "dhcp","192.168.29.0/24","test_network", "true","nat","lago.local")
   config.vm.network :private_network,
-      network_options( "dhcp","192.168.27.0/24","storage_network", "true","nat")
+      network_options( "dhcp","192.168.27.0/24","storage_network", "true","nat","")
   config.vm.network :private_network,
-      network_options( "dhcp","192.168.28.0/24","bonding_network", "true","nat")
+      network_options( "dhcp","192.168.28.0/24","bonding_network", "true","nat","")
 
   ## Configure the hosts from yml file
   hosts.each do |host|
@@ -135,13 +183,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
 
               # deploy scripts:
-              file_name = File.basename(host['deploy-script'])
-              #file_copy(node,host['deploy-script'], "/tmp/#{file_name}")
-              #shell_provision(node, "source  /tmp/#{file_name}")
+              deploy_scripts(node, host,type, i)
+             # file_name = File.basename(host['deploy-script'])
+             # file_copy(node,host['deploy-script'], "/tmp/#{file_name}")
+             # shell_provision(node, "source  /tmp/#{file_name}")
 
-              #node.vm.provision "shell", inline: <<-SHELL
-              #    echo "sudo su -" >> .bashrc
-    #SHELL
               node.vm.provider :libvirt do |domain|
                 domain.memory = host['memory']
                 custom_disks(domain, host)

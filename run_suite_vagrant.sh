@@ -158,7 +158,7 @@ env_init () {
 
 
 env_repo_setup () {
-
+    # not needed for vagrant
     local extrasrc
     declare -a extrasrcs
     cd $PREFIX
@@ -190,7 +190,7 @@ env_start () {
     cp ${SUITE}/Vagrantfile .
     cp ${SUITE}/vagrant_hosts.yml .
     cp ${SUITE}/reposync-config.repo .
-    cp ${SUITE}/deploy-scripts/setup-engine.sh .
+    cp ${SUITE}/deploy-scripts/* .
     $CLI up
     cd -
 }

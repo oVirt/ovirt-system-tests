@@ -12,6 +12,9 @@ commit_changes_to_git() {
     git config user.name "jenkins CI"
     git config user.email "jenkins@ovirt.org"
     # end revert
+    git diff --exit-code "$repofile_real_path" && {
+        return 0
+    }
     git add "$repofile_real_path"
     git commit -s -m "Auto create $my_repofile" -m "x-md5: $md5"
 }

@@ -1,0 +1,85 @@
+%if 0%{?fedora} || 0%{?rhel} >= 8
+%global with_python3 1
+%else
+%global with_python3 0
+%endif
+
+%if 0%{?rhel} >= 8
+%global with_python2 0
+%else
+%global with_python2 1
+%endif
+
+Name:		@NAME@
+Version:	@VERSION@
+Release:	@RELEASE_SUFFIX@%{?dist}
+Summary:	Still-incomplete easy-to-use library on top the oVirt SDK
+BuildArch:	noarch
+
+License:	GPLv2+
+URL:		https://gerrit.ovirt.org/gitweb?p=ovirt-system-tests.git
+Source0:	@TARBALL@
+
+%if %{with_python2}
+BuildRequires:	python2
+%endif
+%if %{with_python3}
+BuildRequires:	python3
+%endif
+
+%description
+%{name} is a library to write scripts and applications on top of the
+%oVirt SDK.
+
+%if %{with_python2}
+%package -n python2-%{name}
+Summary:        %{summary}
+
+%description -n python2-%{name}
+%{description}
+%endif
+
+%if %{with_python3}
+%package -n python3-%{name}
+Summary:        %{summary}
+
+%description -n python3-%{name}
+%{description}
+%endif
+
+%prep
+%setup -q
+
+
+%build
+%if %{with_python2}
+make PYTHON=python2
+%endif
+%if %{with_python3}
+make PYTHON=python3
+%endif
+
+
+%install
+%if %{with_python2}
+%make_install PYTHON=python2
+%endif
+%if %{with_python3}
+%make_install PYTHON=python3
+%endif
+
+
+
+%if %{with_python2}
+%files -n python2-%{name} -f INSTALLED_FILES.python2
+%doc README.md
+%endif
+
+%if %{with_python3}
+%files -n python3-%{name} -f INSTALLED_FILES.python3
+%doc README.md
+%endif
+
+
+%changelog
+

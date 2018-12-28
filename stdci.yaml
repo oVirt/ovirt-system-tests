@@ -72,12 +72,22 @@ stage:
               filechanged: ['run_suite.sh', 'automation/suite.sh']
             script:
               fromfile: 'automation/basic_suite_master.sh'
+        - build_ovirtlib:
+            runif:
+              filechanged:
+                - 'automation/build-artifacts*'
+                - 'network-suite-master/ovirtlib*'
+            script:
+              fromfile: 'automation/build-artifacts.sh'
       runif:
         filechanged:
           - '{{ substage|replace("_", "[_-]") }}*'
           - 'automation/{{ substage|replace("_", "[_-]") }}*'
       script:
         fromfile: 'automation/{{ substage }}.sh'
+  - build-artifacts:
+      script:
+        fromfile: 'automation/build-artifacts.sh'
 runtime-requirements:
   support-nesting-level: 2
   isolation_level: container

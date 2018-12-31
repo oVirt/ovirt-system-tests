@@ -17,6 +17,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import collections
 import contextlib
 
 from ovirtsdk4 import types
@@ -136,6 +137,21 @@ class VnicProfile(SDKRootEntity):
             profile = VnicProfile(system)
             profile.import_by_id(sdk_obj.id)
             yield profile
+
+    @property
+    def custom_properties(self):
+        sdk_custom_properties = self.service.get().custom_properties or []
+
+        return [
+            CustomProperty(p.name, p.value) for p in sdk_custom_properties]
+
+    @custom_properties.setter
+    def custom_properties(self, properties):
+        service = self.service.get()
+        service.custom_properties = [
+            types.CustomProperty(name=p.name, value=p.value)
+            for p in properties]
+        self.service.update(service)
 
 
 class Vnic(SDKSubEntity):
@@ -301,3 +317,6 @@ def new_network(name, dc):
         yield network
     finally:
         network.remove()
+
+
+CustomProperty = collections.namedtuple('CustomProperty', ['name', 'value'])

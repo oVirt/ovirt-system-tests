@@ -105,7 +105,7 @@ class OpenStackNetwork(SDKSubEntity):
 
     def create_external_network(self, datacenter):
         self.service.import_(
-            async=False, data_center=types.DataCenter(id=datacenter.id))
+            async_=False, data_center=types.DataCenter(id=datacenter.id))
         ovirt_network = Network(datacenter)
         ovirt_network.import_by_name(self.get_sdk_type().name)
         return ovirt_network

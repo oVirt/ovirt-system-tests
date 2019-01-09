@@ -17,6 +17,7 @@ OVEHOSTED_STORAGE/domainType=str:glusterfs
 OVEHOSTED_STORAGE/storageDomainConnection=str:@HOST1-IP@:/engine
 #OVEHOSTED_STORAGE/mntOptions=str:backup-volfile-servers=@HOST2-IP@:@HOST3-IP@
 OVEHOSTED_VM/vmMemSizeMB=int:3171
+OVEHOSTED_CORE/memCheckRequirements=bool:False
 OVEHOSTED_VM/vmMACAddr=str:00:16:3e:24:d3:63
 OVEHOSTED_VM/vmVCpus=str:2
 OVEHOSTED_VM/ovfArchive=str:@OVAIMAGE@

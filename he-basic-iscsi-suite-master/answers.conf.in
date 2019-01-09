@@ -17,6 +17,7 @@ OVEHOSTED_STORAGE/iSCSIPortalIPAddress=str:@SD_ISCSI_ADDR@
 OVEHOSTED_STORAGE/LunID=str:@HE_LUN_ID@
 OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage
 OVEHOSTED_VM/vmMemSizeMB=int:3171
+OVEHOSTED_CORE/memCheckRequirements=bool:False
 OVEHOSTED_VM/vmMACAddr=str:54:52:c0:a8:c8:63
 OVEHOSTED_VM/vmVCpus=str:2
 OVEHOSTED_VM/ovfArchive=str:@OVAIMAGE@

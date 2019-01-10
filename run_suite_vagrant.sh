@@ -185,13 +185,10 @@ env_repo_setup () {
 
 
 env_start () {
-
-    cd $PREFIX
-    cp ${SUITE}/Vagrantfile .
-    cp ${SUITE}/vagrant_hosts.yml .
-    cp ${SUITE}/reposync-config.repo .
-    cp ${SUITE}/deploy-scripts/* .
-    $CLI up
+    export VAGRANT_CWD="$PREFIX"
+    cd "$PREFIX"
+    cp "${SUITE}/Vagrantfile" .
+    "$CLI" up
     cd -
 }
 
@@ -525,7 +522,7 @@ fi
 export OST_REPO_ROOT="$PWD"
 
 export SUITE="$(realpath --no-symlinks "$1")"
-
+#export VAGRANT_HOME="$SUITE"
 # If no deployment path provided, set the default
 [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
 export PREFIX

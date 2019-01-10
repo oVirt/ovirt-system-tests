@@ -141,6 +141,9 @@ vagrant_yaml_file = "#{root_dir}/vagrant_hosts.yml"
 error_msg = "#{vagrant_yaml_file} does not exist"
 handle_error(error_msg) unless File.exists?(vagrant_yaml_file)
 
+suite_name = File.basename(ENV['SUITE']) || File.basename(Dir.getwd)
+suite_name.gsub!('-','_')
+
 # Load yml file
 hosts = YAML.load_file(vagrant_yaml_file)
 
@@ -155,8 +158,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ## Libvirt global configuration
   config.vm.provider :libvirt do |p|
-      p.management_network_name = 'vagrant-libvirt-new'
+      p.management_network_name = "vagrant-libvirt-#{suite_name}-management"
       p.management_network_address = '192.168.124.0/24'
+      #p.default_prefix = suite_name
   end
 
   ## Disable share folders
@@ -164,11 +168,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ## network configuration
   config.vm.network :private_network,
-      network_options( "dhcp","192.168.29.0/24","test_network", "true","nat","lago.local")
+      network_options( "dhcp","192.168.29.0/24","vagrant-libvirt-#{suite_name}-extra", "true","nat","lago.local")
   config.vm.network :private_network,
-      network_options( "dhcp","192.168.27.0/24","storage_network", "true","nat","")
+      network_options( "dhcp","192.168.27.0/24","vagrant-libvirt-#{suite_name}-storage", "true","nat","")
   config.vm.network :private_network,
-      network_options( "dhcp","192.168.28.0/24","bonding_network", "true","nat","")
+      network_options( "dhcp","192.168.28.0/24","vagrant-libvirt-#{suite_name}-bonding", "true","nat","")
 
   ## Configure the hosts from yml file
   hosts.each do |host|
@@ -176,7 +180,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       (0..host['hostCount']-1).each do |i|
           hostname, template = configure_hostname(host['hostCount'], type, i)
           config.vm.define "#{template}" do |node|
-              config_basic_info(node, hostname, host['box'],host['box_version'])
+              #config_basic_info(node, "#{suite_name}_#{hostname}", host['box'],host['box_version'])
+              config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
               shell_provision(node, "echo hello from node #{i}")
               shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
               file_copy(node,"reposync-config.repo", "/tmp/reposync-config.repo")

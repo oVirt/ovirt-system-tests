@@ -186,6 +186,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
               file_copy(node,"reposync-config.repo", "/tmp/reposync-config.repo")
               shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
+              root_authorized_key_cmd = "mkdir /root/.ssh
+                  cp /home/vagrant/.ssh/authorized_keys /root/.ssh/authorized_keys
+                  chmod 644 /root/.ssh/authorized_keys
+                  chown root:root /root/.ssh/authorized_keys"
+              shell_provision(node, root_authorized_key_cmd)
 
               # deploy scripts:
               deploy_scripts(node, host,type, i)

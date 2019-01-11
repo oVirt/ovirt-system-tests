@@ -323,6 +323,7 @@ includepkgs = OVMF
 	libjpeg-turbo
 	libkadm5
 	libldb
+	liblognorm
 	libmodman
 	libnfsidmap
 	libnl
@@ -536,6 +537,9 @@ includepkgs = OVMF
 	rpm-build
 	rpmdevtools
 	rsync
+	rsyslog-elasticsearch
+	rsyslog-mmjsonparse
+	rsyslog-mmnormalize
 	samba-client-libs
 	samba-common
 	samba-common-libs

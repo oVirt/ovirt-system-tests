@@ -101,16 +101,17 @@ def shell_provisioner_args(yaml_arguments)
   end
 
 ## Deploy scripts
-def deploy_scripts(node, host, type, idx=0)
+def deploy_scripts(node, host, type, suite_path, idx=0)
+
     if host.has_key?('deploy-script')
       scripts = host['deploy-script']
       scripts.each do |script|
           options = {}
           if script.has_key?('script')
               options[:script] = script['script']
-              file_name = File.basename(options[:script])
+              file_name = "#{suite_path}/" + File.dirname(options[:script]) + "/" +  File.basename(options[:script])
               run_script = 1
-              file_copy(node,options[:script], "/tmp/#{file_name}")
+              file_copy(node,file_name, "/tmp/#{file_name}")
               if script.has_key?('arguments')
                 args = script['arguments']
                 args.each do |arg|
@@ -125,7 +126,7 @@ def deploy_scripts(node, host, type, idx=0)
                 end
               end
               if run_script == 1
-                  shell_provision(node, "source  /tmp/#{file_name}")
+                  shell_provision(node, "/bin/sh  /tmp/#{file_name}")
               end
           end
       end
@@ -136,8 +137,9 @@ end
 # Initialization
 ###############################################################################
 # Verify that yml file exists
+suite_path = ENV['SUITE'] || File.dirname(Dir.getwd)
 root_dir = File.dirname(__FILE__)
-vagrant_yaml_file = "#{root_dir}/vagrant_hosts.yml"
+vagrant_yaml_file = "#{suite_path}/vagrant_hosts.yml"
 error_msg = "#{vagrant_yaml_file} does not exist"
 handle_error(error_msg) unless File.exists?(vagrant_yaml_file)
 
@@ -184,7 +186,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
               shell_provision(node, "echo hello from node #{i}")
               shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
-              file_copy(node,"reposync-config.repo", "/tmp/reposync-config.repo")
+              file_copy(node,"#{suite_path}/reposync-config.repo", "/tmp/reposync-config.repo")
               shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
               root_authorized_key_cmd = "mkdir /root/.ssh
                   cp /home/vagrant/.ssh/authorized_keys /root/.ssh/authorized_keys
@@ -193,10 +195,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               shell_provision(node, root_authorized_key_cmd)
 
               # deploy scripts:
-              deploy_scripts(node, host,type, i)
-             # file_name = File.basename(host['deploy-script'])
-             # file_copy(node,host['deploy-script'], "/tmp/#{file_name}")
-             # shell_provision(node, "source  /tmp/#{file_name}")
+              deploy_scripts(node, host, type, suite_path, i)
 
               node.vm.provider :libvirt do |domain|
                 domain.memory = host['memory']

@@ -713,17 +713,11 @@ includepkgs = collectd
 	rubygem-elasticsearch-transport
 	rubygem-excon
 	rubygem-faraday
-	rubygem-fluent-plugin-collectd-nest
 	rubygem-fluent-plugin-elasticsearch
-	rubygem-fluent-plugin-rewrite-tag-filter
-	rubygem-fluent-plugin-secure-forward
-	rubygem-fluent-plugin-viaq_data_model
 	rubygem-http_parser.rb
 	rubygem-json
 	rubygem-msgpack
 	rubygem-multi_json
-	rubygem-proxifier
-	rubygem-resolve-hostname
 	rubygem-sigdump
 	rubygem-string-scrub
 	rubygem-thread_safe

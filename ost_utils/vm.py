@@ -6,12 +6,34 @@ from sh import virsh
 
 from sh import ErrorReturnCode
 from sh import CommandNotFound
+from sh import RunningCommand
 import paramiko
 import subprocess
 import os
 import sys
 import re
+from functools import wraps
+import collections
+import io
 
+def sh_output_result(func):
+    @wraps(func)
+    def func_wrapper(*args,**kwargs):
+        try:
+            ret = func(*args,**kwargs)
+        except ErrorReturnCode as e:
+            ret = e
+        result = CommandStatus( ret.stdout, ret.stderr, ret.exit_code)
+        return result
+    return func_wrapper
+
+_CommandStatus = collections.namedtuple(
+    'CommandStatus', ('out', 'err', 'code')
+)
+
+class CommandStatus(_CommandStatus):
+    def __nonzero__(self):
+        return self.code
 
 class VagrantHosts(object):
 
@@ -67,10 +89,8 @@ class VM(object):
 
     def __init__(self, hostname):
         self._hostname = hostname
-
         ssh_config = self.info()
         conf = paramiko.SSHConfig()
-        conf.parse(ssh_config)
         host_config = conf.lookup(self._hostname)
         self._ip =  host_config["hostname"]
         self._identityfile = host_config["identityfile"][0]
@@ -89,98 +109,93 @@ class VM(object):
     def get_params(self, name):
         return getattr(self, name)
 
+    @sh_output_result
     def ssh(self, command, as_user=None):
         if as_user:
             command = ['sudo', '-u', as_user] + command
         ret = vagrant.ssh(self._hostname, '-c', ' '.join(command))
         return ret
 
+    @sh_output_result
     def status(self):
         """Return vagrant machine status."""
         ret = vagrant.status(self._hostname)
         return ret
 
+    @sh_output_result
     def info(self):
         """Return vagrant machine status."""
         ret = vagrant("ssh-config",self._hostname)
         return ret
 
+    @sh_output_result
     def global_status(self):
         """Return vagrant machine status."""
         ret = vagrant("global-status")
         return ret
 
+    @sh_output_result
     def copy_to(self, local_path, remote_path, recursive=True, as_user='vagrant'):
         recursive_param = ''
-        ssh_config = self.info()
-        conf = paramiko.SSHConfig()
-        conf.parse(ssh_config)
-        host_config = conf.lookup(self._hostname)
-
-        ip =  host_config["hostname"]
-        identityfile = str(host_config["identityfile"][0])
 
         if recursive:
             recursive_param ='-r'
 
-        command = ['-i', str(identityfile), '-o',  'StrictHostKeyChecking=no','-o', 'UserKnownHostsFile=/dev/null' ,  str(local_path), str(as_user) + "@" + str(host_config["hostname"]) + ":" + str(remote_path)]
+        command = ['-i', str(self._identityfile), '-o',  'StrictHostKeyChecking=no','-o',
+            'UserKnownHostsFile=/dev/null' ,  str(local_path),
+            str(as_user) + "@" + str(self._ip) + ":" + str(remote_path)]
         print " ".join(command)
         ret = scp(command)
         return ret
 
-
+    @sh_output_result
     def copy_from(self, remote_path, local_path, recursive=True, as_user='vagrant'):
         recursive_param = ''
-        ssh_config = self.info()
-        conf = paramiko.SSHConfig()
-        conf.parse(ssh_config)
-        host_config = conf.lookup(self._hostname)
-
-        ip =  host_config["hostname"]
-        identityfile = str(host_config["identityfile"][0])
 
         if recursive:
             recursive_param ='-r'
-        command = ['-i', str(identityfile), '-o',  'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', recursive_param, str(as_user) + "@" + str(host_config["hostname"]) + ":" + str(remote_path), str(local_path)]
+        command = ['-i', str(self._identityfile), '-o',  'StrictHostKeyChecking=no', '-o',
+            'UserKnownHostsFile=/dev/null', recursive_param,
+            str(as_user) + "@" + str(self._ip) + ":" + str(remote_path), str(local_path)]
         print " ".join(command)
         ret = scp(command)
         return ret
 
     def nic(self):
-        ssh_config = self.info()
-        #ssh_config = vagrant("ssh-config",self._hostname)
-        conf = paramiko.SSHConfig()
-        conf.parse(ssh_config)
-        host_config = conf.lookup(self._hostname)
+        return self._ip
 
-        return host_config["hostname"]
-
+    @sh_output_result
     def nets(self):
         """Return vagrant machine network cards."""
         command = ['-c', 'qemu:///system', 'domifaddr', self._domain_uuid]
         ret = virsh(command)
         return ret
 
+    @sh_output_result
     def destroy(self):
         """Destroy the vagrant machine."""
         ret = vagrant.destroy(self._hostname, '-f')
         return ret
 
+    @sh_output_result
     def halt(self):
         """Halt the vagrant machine."""
         ret = vagrant.halt(self._hostname, '-f')
         return ret
 
+    @sh_output_result
     def up(self):
         """Start the vagrant machine."""
         ret = vagrant.up(self._hostname)
         return ret
 
+    @sh_output_result
     def suspend(self):
         """Suspend the vagrant machine."""
         ret = vagrant.suspend(self._hostname)
         return ret
 
+    @sh_output_result
     def resume(self):
         """Resume the vagrant machine."""
         ret = vagrant.resume(self._hostname)
@@ -200,7 +215,10 @@ def main():
     print v.engine_vms()
 
     vm = VM('engine')
-    vm.copy_to('/tmp/ost_utils/ost.py', '/tmp' , recursive=True, as_user='root')
+    ret = vm.copy_to('/tmp/ost_utils/ost.py', '/tmp' , recursive=True, as_user='root')
+    print ret.code
+    print ret.out
+    print ret.err
     print 'ip: ' + vm.nic()
     from pprint import pprint
     pprint(vars(vm))

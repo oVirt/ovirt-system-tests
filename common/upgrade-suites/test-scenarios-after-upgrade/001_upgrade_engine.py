@@ -44,7 +44,7 @@ def test_initialize_engine(prefix):
         ]
     )
 
-    engine.ssh(
+    result = engine.ssh(
         [
             'yum',
             '-y',
@@ -52,6 +52,11 @@ def test_initialize_engine(prefix):
             'ovirt-*setup*',
         ]
     )
+
+    nt.eq_(
+        result.code, 0, 'yum update setup packages failed. Exit code is %s' % result.code
+    )
+
 
     result = engine.ssh(
         [

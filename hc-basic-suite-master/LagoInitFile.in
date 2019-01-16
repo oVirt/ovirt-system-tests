@@ -53,7 +53,6 @@ domains:
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
         - $LAGO_INITFILE_PATH/hc_setup_host.sh
         {% if loop.first -%}
-        - $LAGO_INITFILE_PATH/gdeploy-setup.sh
         - $LAGO_INITFILE_PATH/setup_first_host.sh
         {%- endif %}
     artifacts:

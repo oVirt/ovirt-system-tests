@@ -39,21 +39,31 @@ he_deploy() {
         ssh-copy-id -o StrictHostKeyChecking=no -i ${HOST}2
 
     echo "#########################"
-    echo "Running gdeploy on ${HOST}0"
+    echo "Running ansible playbook on ${HOST}0"
     lago copy-to-vm \
         ${HOST}0 \
-        "${SUITE}/robo.conf.in" \
-        /root/robo.conf.in
+        "${SUITE}/ohc_gluster_inventory.yml.in" \
+        /root/ohc_gluster_inventory.yml.in
 
     lago copy-to-vm \
         ${HOST}0 \
-        "${SUITE}/hc-answers.conf.in" \
-        /root/hc-answers.conf.in
+        "${SUITE}/ohc_he_gluster_vars.json.in" \
+        /root/ohc_he_gluster_vars.json.in
 
     lago copy-to-vm \
         ${HOST}0 \
-        "${SUITE}/gdeploy.sh" \
-        /root/gdeploy.sh
+        "${SUITE}/he_deployment.yml" \
+        /root/he_deployment.yml
+    
+    lago copy-to-vm \
+        ${HOST}0 \
+        "${SUITE}/add_hosts_storage_domains.yml" \
+        /root/add_hosts_storage_domains.yml
+
+    lago copy-to-vm \
+        ${HOST}0 \
+        "${SUITE}/exec_playbook.sh" \
+        /root/exec_playbook.sh
 
     lago copy-to-vm \
         ${HOST}0 \
@@ -62,11 +72,11 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        /root/gdeploy.sh ${HOST}0 ${HOST}1 ${HOST}2
+        /root/exec_playbook.sh ${HOST}0 ${HOST}1 ${HOST}2
 
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then
-        echo "gdeploy setup on ${HOST}0 failed with status ${RET_CODE}."
+        echo "ansible setup on ${HOST}0 failed with status ${RET_CODE}."
         exit ${RET_CODE}
     fi
 

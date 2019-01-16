@@ -277,11 +277,11 @@ def he_vm_migrate(prefix):
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
     migrate_params = params.Action(
         host=params.Host(
-            name=sorted(host_names)[2]
+            name=sorted(host_names)[1]
         ),
     )
     api.vms.get(HE_VM_NAME).migrate(migrate_params)
-    host = api.hosts.get(name=sorted(host_names)[2])
+    host = api.hosts.get(name=sorted(host_names)[1])
     testlib.assert_true_within_long(
         lambda: api.vms.get(HE_VM_NAME).host.id == host.id,
     )

@@ -446,3 +446,14 @@ includepkgs=rh-postgresql95-postgresql-9.5.9
  rh-postgresql95-postgresql-server-9.5.9 rh-postgresql95-runtime
  rh-postgresql95-postgresql-libs-9.5.9
  rh-postgresql95-postgresql-contrib-9.5.9
+
+[sac-gluster-ansible-el7]
+name=Copr repo for gluster-ansible owned by sac
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-7-x86_64/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+

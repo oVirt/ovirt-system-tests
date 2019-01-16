@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 yum install -y --nogpgcheck ovirt-engine-appliance
+yum install -y ansible gluster-ansible ovirt-ansible-hosted-engine-setup ovirt-ansible-repositories ovirt-ansible-engine-setup
 rm -rf /dev/shm/*.rpm /dev/shm/yum
 
 #DISK_DEV=disk/by-id/0QEMU_QEMU_HARDDISK_4

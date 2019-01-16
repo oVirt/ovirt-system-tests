@@ -110,16 +110,6 @@ def wait_engine(prefix):
     testlib.assert_true_within(_engine_is_up, timeout=10 * 60)
 
 
-@testlib.with_ovirt_prefix
-def edit_cluster(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    cluster = api.clusters.get(name='Default')
-    cluster.gluster_service = True
-    nt.assert_true(
-        cluster.update()
-    )
-
-
 @testlib.with_ovirt_api
 def add_dc_quota(api):
         dc = api.datacenters.get(name=DC_NAME)
@@ -525,10 +515,6 @@ def sleep(prefix):
 
 _TEST_LIST = [
     wait_engine,
-    edit_cluster,
-    add_master_storage_domain,
-    sleep,
-    add_hosts,
     list_glance_images,
     import_templates,
     add_non_vm_network,
@@ -537,7 +523,6 @@ _TEST_LIST = [
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,
-    install_cockpit_ovirt,
 ]
 
 

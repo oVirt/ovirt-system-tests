@@ -4,6 +4,7 @@ commit_changes_to_git() {
     local repofile_real_path="${1:?}"
     local my_repofile="${2:?}"
     local modified_date=$(stat -c %Y "$repofile_real_path")
+    local automerge="yes"
     local md5=$(echo "$modified_date" | md5sum | cut -d ' ' -f1)
     # To revert after fixing mock_runner
     curl -Lo .git/hooks/commit-msg https://gerrit.ovirt.org/tools/hooks/commit-msg
@@ -16,7 +17,13 @@ commit_changes_to_git() {
         return 0
     }
     git add "$repofile_real_path"
-    git commit -s -m "Auto create $my_repofile" -m "x-md5: $md5"
+    local msg=$(
+        echo "Auto create $my_repofile"
+        echo
+        echo "automerge: $automerge"
+        echo "x-md5: $md5"
+    )
+    git commit -s -m "$msg"
 }
 
 main() {

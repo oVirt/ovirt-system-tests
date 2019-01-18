@@ -95,17 +95,6 @@ generate_vdsm_coverage_report() {
     python "${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py" "$PREFIX" "$coverage_dir"
 }
 
-env_init () {
-
-    # not needed to vagrant
-    local template_repo="${1:-$SUITE/template-repo.json}"
-    local initfile="${2:-$SUITE/init.json}"
-    $CLI init \
-        $PREFIX \
-        "$initfile" \
-        --template-repo-path "$template_repo"
-}
-
 
 env_repo_setup () {
     # not needed for vagrant
@@ -142,11 +131,6 @@ env_start () {
     cd -
 }
 
-env_ovirt_start() {
-    cd "$PREFIX"
-    "$CLI" up
-    cd -
-}
 
 env_stop () {
 

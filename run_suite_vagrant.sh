@@ -158,6 +158,11 @@ env_status () {
 }
 
 
+env_version() {
+    "$CLI" --version
+    "$CLI" plugin list
+}
+
 env_run_test () {
 
     local res=0
@@ -431,8 +436,7 @@ main() {
     trap "on_sigterm" SIGTERM
     trap "on_exit" EXIT
 
-    logger.info "Using $(lago --version 2>&1)"
-    logger.info "Using $(lago ovirt --version 2>&1)"
+    logger.info "Using $(env_version)"
 
     logger.info  "Running suite found in $SUITE"
     logger.info  "Environment will be deployed at $PREFIX"

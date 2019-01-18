@@ -73,7 +73,8 @@ SUBNETS = {
         'name': SUBNET_1,
         'dns_nameservers': ["8.8.8.8"],
         'gateway_ip': '1.1.1.1',
-        'cidr': '1.1.1.0/24'
+        'cidr': '1.1.1.0/24',
+        'ip_version': 4
     }
 
 }

@@ -5,7 +5,6 @@ source common/helpers/logger.sh
 
 CLI="vagrant"
 DO_CLEANUP=false
-RECOMMENDED_RAM_IN_MB=8196
 EXTRA_SOURCES=()
 RPMS_TO_INSTALL=()
 COVERAGE=false
@@ -359,18 +358,6 @@ env_libvirt_cleanup() {
     logger.success "Cleaning with libvirt Done"
 }
 
-
-check_ram() {
-    local recommended="${1:-$RECOMMENDED_RAM_IN_MB}"
-    local cur_ram="$(free -m | grep Mem | awk '{print $2}')"
-    if [[ "$cur_ram" -lt "$recommended" ]]; then
-        logger.warning "It's recommended to have at least ${recommended}MB of RAM" \
-            "installed on the system to run the system tests, if you find" \
-            "issues while running them, consider upgrading your system." \
-            "(only detected ${cur_ram}MB installed)"
-    fi
-}
-
 get_package_manager() {
     [[ -x /bin/dnf ]] && echo dnf || echo yum
 }
@@ -555,7 +542,6 @@ trap "on_exit" EXIT
 logger.info "Using $(lago --version 2>&1)"
 logger.info "Using $(lago ovirt --version 2>&1)"
 
-check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"
 logger.info  "Environment will be deployed at $PREFIX"
 

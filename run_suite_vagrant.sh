@@ -48,9 +48,6 @@ Optional arguments:
         Please note that this option WILL modify the environment it's running
         on and it requires root permissions.
 
-    -i,--images
-        Create qcow2 images of the vms that were created by the tests in SUITE
-
     --only-verify-requirements
         Verify that the system has the correct requirements (Disk Space, RAM, etc...)
         and exit.
@@ -90,17 +87,6 @@ verify_system_requirements() {
         "${SUITE}/vars/main.yml"
 }
 
-
-get_engine_version() {
-    local root_dir="$PWD"
-    cd $PREFIX
-    local version=$(\
-        $CLI --out-format flat ovirt status | \
-        gawk 'match($0, /^global\/version:\s+(.*)$/, a) {print a[1];exit}' \
-    )
-    cd "$root_dir"
-    echo "$version"
-}
 
 generate_vdsm_coverage_report() {
     [[ "$COVERAGE" = true ]] || return 0
@@ -167,33 +153,6 @@ env_stop () {
     cd "$PREFIX"
     "$CLI" halt
     cd -
-}
-
-
-env_create_images () {
-
-    local export_dir="${PWD}/exported_images"
-    local engine_version=$(get_engine_version)
-    [[ -z "$engine_version" ]] && \
-        logger.error "Failed to get the engine's version" && return 1
-    local name="ovirt_${engine_version}_demo_$(date +%Y%m%d%H%M)"
-    local archive_name="${name}.tar.xz"
-    local checksum_name="${name}.md5"
-
-    cd $PREFIX
-    sleep 2 #Make sure that we can put the hosts in maintenance
-    env_stop
-    $CLI --out-format yaml export --dst-dir "$export_dir" --standalone
-    cd -
-    cd $export_dir
-    echo "$engine_version" > version.txt
-    python "${OST_REPO_ROOT}/common/scripts/modify_init.py" LagoInitFile
-    logger.info "Compressing images"
-    local files=($(ls "$export_dir"))
-    tar -cvS "${files[@]}" | xz -T 0 -v --stdout > "$archive_name"
-    md5sum "$archive_name" > "$checksum_name"
-    cd -
-
 }
 
 
@@ -430,10 +389,6 @@ while true; do
             readonly CUSTOM_REPOSYNC=$(realpath "$2")
             shift 2
             ;;
-        -i|--images)
-            readonly CREATE_IMAGES=true
-            shift
-            ;;
         --only-verify-requirements)
             readonly ONLY_VERIFY_REQUIREMENTS=true
             shift
@@ -503,8 +458,4 @@ source "${SUITE}/control_vagrant.sh"
 
 # prep_suite
 run_suite
-if [[ ! -z "$CREATE_IMAGES" ]]; then
-    logger.info "Creating images, this might take some time..."
-    env_create_images
-fi
 logger.success "$SUITE - All tests passed :)"

@@ -347,115 +347,118 @@ EOF
     return 0
 }
 
+main() {
+    options=$( \
+        getopt \
+            -o ho:e:n:b:cs:r:l:i \
+            --long help,output:,engine:,node:,boot-iso:,cleanup,images \
+            --long extra-rpm-source,reposync-config:,local-rpms: \
+            --long only-verify-requirements,ignore-requirements \
+            --long coverage \
+            -n 'run_suite.sh' \
+            -- "$@" \
+    )
+    if [[ "$?" != "0" ]]; then
+        exit 1
+    fi
+    eval set -- "$options"
 
-options=$( \
-    getopt \
-        -o ho:e:n:b:cs:r:l:i \
-        --long help,output:,engine:,node:,boot-iso:,cleanup,images \
-        --long extra-rpm-source,reposync-config:,local-rpms: \
-        --long only-verify-requirements,ignore-requirements \
-        --long coverage \
-        -n 'run_suite.sh' \
-        -- "$@" \
-)
-if [[ "$?" != "0" ]]; then
-    exit 1
-fi
-eval set -- "$options"
+    while true; do
+        case $1 in
+            -o|--output)
+                PREFIX=$(realpath -m $2)
+                shift 2
+                ;;
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            -c|--cleanup)
+                DO_CLEANUP=true
+                shift
+                ;;
+            -s|--extra-rpm-source)
+                EXTRA_SOURCES+=("$2")
+                shift 2
+                ;;
+            -l|--local-rpms)
+                RPMS_TO_INSTALL+=("$2")
+                shift 2
+                ;;
+            -r|--reposync-config)
+                readonly CUSTOM_REPOSYNC=$(realpath "$2")
+                shift 2
+                ;;
+            --only-verify-requirements)
+                readonly ONLY_VERIFY_REQUIREMENTS=true
+                shift
+                ;;
+            --ignore-requirements)
+                readonly IGNORE_REQUIREMENTS=true
+                shift
+                ;;
+            --coverage)
+                readonly COVERAGE=true
+                shift
+                ;;
+            --)
+                shift
+                break
+                ;;
+        esac
+    done
 
-while true; do
-    case $1 in
-        -o|--output)
-            PREFIX=$(realpath -m $2)
-            shift 2
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        -c|--cleanup)
-            DO_CLEANUP=true
-            shift
-            ;;
-        -s|--extra-rpm-source)
-            EXTRA_SOURCES+=("$2")
-            shift 2
-            ;;
-        -l|--local-rpms)
-            RPMS_TO_INSTALL+=("$2")
-            shift 2
-            ;;
-        -r|--reposync-config)
-            readonly CUSTOM_REPOSYNC=$(realpath "$2")
-            shift 2
-            ;;
-        --only-verify-requirements)
-            readonly ONLY_VERIFY_REQUIREMENTS=true
-            shift
-            ;;
-        --ignore-requirements)
-            readonly IGNORE_REQUIREMENTS=true
-            shift
-            ;;
-        --coverage)
-            readonly COVERAGE=true
-            shift
-            ;;
-        --)
-            shift
-            break
-            ;;
-    esac
-done
+    if [[ -z "$1" ]]; then
+        logger.error "No suite passed"
+        usage
+        exit 1
+    fi
 
-if [[ -z "$1" ]]; then
-    logger.error "No suite passed"
-    usage
-    exit 1
-fi
+    export OST_REPO_ROOT="$PWD"
 
-export OST_REPO_ROOT="$PWD"
+    export SUITE="$(realpath --no-symlinks "$1")"
+    #export VAGRANT_HOME="$SUITE"
+    # If no deployment path provided, set the default
+    [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
+    export PREFIX
 
-export SUITE="$(realpath --no-symlinks "$1")"
-#export VAGRANT_HOME="$SUITE"
-# If no deployment path provided, set the default
-[[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
-export PREFIX
+    if "$DO_CLEANUP"; then
+        env_cleanup
+        exit $?
+    fi
 
-if "$DO_CLEANUP"; then
-    env_cleanup
-    exit $?
-fi
+    [[ -e "$PREFIX" ]] && {
+        echo "Failed to run OST. \
+            ${PREFIX} shouldn't exist. Please remove it and retry"
+        exit 1
+    }
 
-[[ -e "$PREFIX" ]] && {
-    echo "Failed to run OST. \
-        ${PREFIX} shouldn't exist. Please remove it and retry"
-    exit 1
+    mkdir -p "$PREFIX"
+    [[ "$IGNORE_REQUIREMENTS" ]] || verify_system_requirements "$PREFIX"
+    [[ $? -ne 0 ]] && { rm -rf "$PREFIX"; exit 1; }
+    [[ "$ONLY_VERIFY_REQUIREMENTS" ]] && { rm -rf "$PREFIX"; exit; }
+
+    [[ -d "$SUITE" ]] \
+    || {
+        logger.error "Suite $SUITE not found or is not a dir"
+        exit 1
+    }
+
+    trap "on_sigterm" SIGTERM
+    trap "on_exit" EXIT
+
+    logger.info "Using $(lago --version 2>&1)"
+    logger.info "Using $(lago ovirt --version 2>&1)"
+
+    logger.info  "Running suite found in $SUITE"
+    logger.info  "Environment will be deployed at $PREFIX"
+
+    export PYTHONPATH="${PYTHONPATH}:${SUITE}"
+    source "${SUITE}/control_vagrant.sh"
+
+    # prep_suite
+    run_suite
+    logger.success "$SUITE - All tests passed :)"
 }
 
-mkdir -p "$PREFIX"
-[[ "$IGNORE_REQUIREMENTS" ]] || verify_system_requirements "$PREFIX"
-[[ $? -ne 0 ]] && { rm -rf "$PREFIX"; exit 1; }
-[[ "$ONLY_VERIFY_REQUIREMENTS" ]] && { rm -rf "$PREFIX"; exit; }
-
-[[ -d "$SUITE" ]] \
-|| {
-    logger.error "Suite $SUITE not found or is not a dir"
-    exit 1
-}
-
-trap "on_sigterm" SIGTERM
-trap "on_exit" EXIT
-
-logger.info "Using $(lago --version 2>&1)"
-logger.info "Using $(lago ovirt --version 2>&1)"
-
-logger.info  "Running suite found in $SUITE"
-logger.info  "Environment will be deployed at $PREFIX"
-
-export PYTHONPATH="${PYTHONPATH}:${SUITE}"
-source "${SUITE}/control_vagrant.sh"
-
-# prep_suite
-run_suite
-logger.success "$SUITE - All tests passed :)"
+[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"

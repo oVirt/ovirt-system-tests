@@ -25,15 +25,6 @@ Optional arguments:
         Path where the new environment will be deployed.
         PATH shouldn't exist.
 
-    -e,--engine PATH
-        Path to ovirt-engine appliance iso image
-
-    -n,--node PATH
-        Path to the ovirt node squashfs iso image
-
-    -b,--boot-iso PATH
-        Path to the boot iso for node creation
-
     -c,--cleanup
         Clean up any generated lago workdirs for the given suite, it will
         remove also from libvirt any domains if the current lago workdir fails
@@ -419,18 +410,6 @@ while true; do
             PREFIX=$(realpath -m $2)
             shift 2
             ;;
-        -n|--node)
-            NODE_ISO=$(realpath $2)
-            shift 2
-            ;;
-        -e|--engine)
-            ENGINE_OVA=$(realpath $2)
-            shift 2
-            ;;
-        -b|--boot-iso)
-            BOOT_ISO=$(realpath $2)
-            shift 2
-            ;;
         -h|--help)
             usage
             exit 0
@@ -522,7 +501,7 @@ logger.info  "Environment will be deployed at $PREFIX"
 export PYTHONPATH="${PYTHONPATH}:${SUITE}"
 source "${SUITE}/control_vagrant.sh"
 
-# prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"
+# prep_suite
 run_suite
 if [[ ! -z "$CREATE_IMAGES" ]]; then
     logger.info "Creating images, this might take some time..."

@@ -88,6 +88,7 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	libgudev1
 	libguestfs
 	libguestfs-tools-c
 	libvirt
@@ -132,6 +133,10 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	systemd
+	systemd-libs
+	systemd-python
+	systemd-sysv
 	tomcat-servlet-3.0-api
 	tzdata-java
 	virt-v2v
@@ -312,7 +317,6 @@ includepkgs = OVMF
 	libevent
 	libfontenc
 	libgfortran
-	libgudev1
 	libguestfs-winsupport
 	libibumad
 	libibverbs
@@ -576,7 +580,6 @@ includepkgs = OVMF
 	syslinux
 	syslinux-extlinux
 	sysstat
-	systemd-python
 	targetcli
 	tcp_wrappers
 	tcpdump
@@ -664,7 +667,6 @@ includepkgs = ansible
 	python2-mimeparse
 	python2-pbr
 	python2-qpid-proton
-	python2-traceback2
 	qpid-proton-c
 	rubygem-multipart-post
 

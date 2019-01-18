@@ -35,7 +35,3 @@ rubygem-fluent-plugin-elasticsearch
 sg3_utils
 targetcli
 tuned
-rsyslog-mmnormalize
-rsyslog-mmjsonparse
-liblognorm
-rsyslog-elasticsearch

@@ -459,9 +459,9 @@ main() {
     logger.info  "Environment will be deployed at $PREFIX"
 
     export PYTHONPATH="${PYTHONPATH}:${SUITE}"
-    source "${SUITE}/control_vagrant.sh"
+    source "${SUITE}/control.sh"
 
-    # prep_suite
+    prep_suite
     run_suite
     logger.success "$SUITE - All tests passed :)"
 }

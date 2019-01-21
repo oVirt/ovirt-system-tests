@@ -1,23 +1,17 @@
 #!/usr/bin/env bash
 
-prep_suite () {
-    render_jinja_templates
+prep_suite() {
+    :
 }
 
-run_suite () {
-    env_init \
-        "$1" \
-        "$SUITE/LagoInitFile"
+run_suite() {
+    env_start
+    env_status
+    return
+
     env_repo_setup
     put_host_image
     install_local_rpms
-    env_start
-    env_status
-    if ! env_deploy; then
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
-        echo "@@@ ERROR: Failed in deploy stage"
-        return 1
-    fi
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
 

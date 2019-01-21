@@ -25,11 +25,11 @@
   disks:
     - size: "101G"
       type: "raw"
-      allow_existing: "false"
+      allow_existing: false
       bus: "scsi"
       device: "sda"
     - size: "105G"
       type: "raw"
-      allow_existing: "false"
+      allow_existing: false
       bus: "scsi"
       device: "sdc"

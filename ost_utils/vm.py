@@ -118,7 +118,7 @@ class VM(object):
         return conf.lookup(hostname)
 
     @sh_output_result
-    def ssh(self, command, as_user=None):
+    def ssh(self, command, as_user='root'):
         if as_user:
             command = ['sudo', '-u', as_user] + command
         ret = vagrant.ssh(self._hostname, '-c', ' '.join(command))

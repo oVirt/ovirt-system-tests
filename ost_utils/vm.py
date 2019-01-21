@@ -89,9 +89,7 @@ class VM(object):
 
     def __init__(self, hostname):
         self._hostname = hostname
-        ssh_config = self.info()
-        conf = paramiko.SSHConfig()
-        host_config = conf.lookup(self._hostname)
+        host_config = self.parse_ssh_config(self._hostname)
         self._ip =  host_config["hostname"]
         self._identityfile = host_config["identityfile"][0]
         self._config_file_path = os.path.dirname(host_config["identityfile"][0])
@@ -108,6 +106,16 @@ class VM(object):
 
     def get_params(self, name):
         return getattr(self, name)
+
+    def parse_ssh_config(self, hostname):
+        buf = io.StringIO()
+        ssh_config = self.info()
+        conf = paramiko.SSHConfig()
+        buf = io.StringIO(unicode(ssh_config.out, 'unicode-escape'))
+        buf.seek(0)
+        conf.parse(buf)
+        buf.close()
+        return conf.lookup(hostname)
 
     @sh_output_result
     def ssh(self, command, as_user=None):

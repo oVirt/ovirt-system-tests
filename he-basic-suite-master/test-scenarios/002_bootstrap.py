@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
+import httplib
 import json
 import os
 import random
@@ -27,6 +28,8 @@ import nose.tools as nt
 from nose import SkipTest
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
+from ovirtsdk4 import Error as sdkError
+
 try:
     import ovirtsdk4 as sdk4
     API_V3_ONLY = os.getenv('API_V3_ONLY', False)
@@ -757,8 +760,13 @@ def list_glance_images_4(api):
         all_images = glance_domain_service.images_service().list()
         if len(all_images):
             GLANCE_AVAIL = True
-    except errors.RequestError:
-        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images_4.__name__ )
+    except sdkError as e:
+        if e.code == httplib.BAD_REQUEST:
+            raise SkipTest('%s: GLANCE is not available: client request error'
+                           % list_glance_images_4.__name__)
+        else:
+            raise
+
 
 
 def add_glance_3(api):
@@ -814,8 +822,9 @@ def add_glance_4(api):
             else:
                 return False
 
-        testlib.assert_true_within_short(func=get, allowed_exceptions=[errors.RequestError])
-    except (AssertionError, errors.RequestError):
+        testlib.assert_true_within_short(func=get,
+                                         allowed_exceptions=[sdkError])
+    except (AssertionError, sdkError):
         # RequestError if add method was failed.
         # AssertionError if add method succeed but we couldn't verify that glance was actually added
         return None
@@ -847,8 +856,11 @@ def check_glance_connectivity_4(api):
         try:
             glance.test_connectivity()
             avail = True
-        except errors.RequestError:
-            pass
+        except sdkError as e:
+            if e.code == httplib.BAD_REQUEST:
+                pass
+            else:
+                raise
 
     return avail
 

@@ -559,8 +559,6 @@ def add_secondary_storage_domains(prefix):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
-                functools.partial(import_non_template_from_glance, prefix),
-                functools.partial(import_template_from_glance, prefix),
                 functools.partial(add_nfs_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
@@ -569,13 +567,23 @@ def add_secondary_storage_domains(prefix):
     else:
         vt = utils.VectorThread(
             [
-                functools.partial(import_non_template_from_glance, prefix),
-                functools.partial(import_template_from_glance, prefix),
                 functools.partial(add_iscsi_storage_domain, prefix),
                 functools.partial(add_iso_storage_domain, prefix),
                 functools.partial(add_templates_storage_domain, prefix),
             ],
         )
+    vt.start_all()
+    vt.join_all()
+
+
+@testlib.with_ovirt_prefix
+def add_glance_storage(prefix):
+    vt = utils.VectorThread(
+        [
+            functools.partial(import_non_template_from_glance, prefix),
+            functools.partial(import_template_from_glance, prefix),
+        ],
+    )
     vt.start_all()
     vt.join_all()
 
@@ -1061,6 +1069,7 @@ _TEST_LIST = [
     add_he_hosts,
     he_check_ha_agent,
     list_glance_images,
+    add_glance_storage,
     add_secondary_storage_domains,
 #    import_templates,
 #    run_log_collector,

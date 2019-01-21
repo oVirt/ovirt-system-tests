@@ -124,7 +124,6 @@ env_repo_setup () {
 
 
 env_start () {
-    export VAGRANT_CWD="$PREFIX"
     cd "$PREFIX"
     cp "${SUITE}/Vagrantfile" .
     "$CLI" up
@@ -207,68 +206,85 @@ env_collect () {
 
 
 env_cleanup() {
-
-    local res=0
-    local uuid
+    local failed=0
 
     logger.info "Cleaning up"
-    if [[ -e "$PREFIX" ]]; then
-        logger.info "Cleaning with lago"
-        $CLI --workdir "$PREFIX" destroy --yes --all-prefixes || res=$?
-        [[ "$res" -eq 0 ]] && logger.success "Cleaning with lago done"
-    elif [[ -e "$PREFIX/uuid" ]]; then
-        uid="$(cat "$PREFIX/uuid")"
-        uid="${uid:0:4}"
-        res=1
+    "$CLI" destroy -f || {
+        logger.info "Fail to destroy env using vagrant, will use virsh"
+    }
+
+    if [[ -d "$VAGRANT_CWD" ]]; then
+        rm -r "$VAGRANT_CWD" || {
+            logger.error "Failed to remove $VAGRANT_CWD"
+            (( failed++ ))
+        }
+    fi
+
+    # Vagrant sometimes fail to remove the networks, we need to remove them.
+    if env_libvirt_cleanup "${SUITE##*/}" "${VAGRANT_CWD##*/}"; then
+        logger.success "Env was destroyed"
     else
-        logger.info "No uuid found, cleaning up any lago-generated vms"
-        res=1
+        (( failed++ ))
+        logger.error "Failed to destroy Env"
     fi
-    if [[ "$res" -ne 0 ]]; then
-        logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
-        env_libvirt_cleanup "${SUITE##*/}" "$uid"
-    fi
-    restore_package_manager_config
-    logger.success "Cleanup done"
+
+    return "$failed"
 }
 
 
-env_libvirt_cleanup() {
+_virsh() {
+    virsh -c qemu:///system "$@"
+}
+
+env_libvirt_get_domains() {
+    local vagrant_cwd="${1?}"
+    local domains
+
+    domains="$(_virsh list --all --name)" || return "$?"
+    echo -e "$domains" | egrep "${vagrant_cwd}.*" || :
+}
+
+
+env_libvirt_get_nets() {
     local suite="${1?}"
-    local uid="${2}"
-    local domain
-    local net
-    if [[ "$uid" != "" ]]; then
-        local domains=($( \
-            virsh -c qemu:///system list --all --name \
-            | egrep "$uid*" \
-        ))
-        local nets=($( \
-            virsh -c qemu:///system net-list --all \
-            | egrep "$uid*" \
-            | awk '{print $1;}' \
-        ))
-    else
-        local domains=($( \
-            virsh -c qemu:///system list --all --name \
-            | egrep "[[:alnum:]]*-lago-${suite}-" \
-            | egrep -v "vdsm-ovirtmgmt" \
-        ))
-        local nets=($( \
-            virsh -c qemu:///system net-list --all \
-            | egrep -w "[[:alnum:]]{4}-.*" \
-            | egrep -v "vdsm-ovirtmgmt" \
-            | awk '{print $1;}' \
-        ))
-    fi
-    logger.info "Cleaning with libvirt"
+    local domains
+
+    nets="$(_virsh net-list --all)" || return "$?"
+    echo -e "$nets" \
+        | egrep -w "vagrant-libvirt-${suite//-/_}.*" \
+        | egrep -v "vdsm-ovirtmgmt" \
+        | awk '{print $1;}' \
+        || :
+}
+
+env_libvirt_cleanup() {
+    # TODO: Add volumes cleanup
+    local suite="${1?}"
+    local vagrant_cwd="${2?}"
+    local failed=0
+    local domain domains net nets
+
+    domains=($(env_libvirt_get_domains "$vagrant_cwd")) || {
+        logger.error "Failed to list running domains"
+        (( failed++ ))
+    }
+
+    nets=($(env_libvirt_get_nets "$suite")) || {
+        logger.error "Failed to list running nets"
+        (( failed++ ))
+    }
+
     for domain in "${domains[@]}"; do
-        virsh -c qemu:///system destroy "$domain"
+        _virsh destroy "$domain" || :
+        _virsh undefine "$domain" || (( failed++ ))
     done
+
     for net in "${nets[@]}"; do
-        virsh -c qemu:///system net-destroy "$net"
+        _virsh net-destroy "$net" || :
+        _virsh net-undefine "$net" || (( failed++ ))
     done
-    logger.success "Cleaning with libvirt Done"
+
+    return "$failed"
 }
 
 get_package_manager() {
@@ -410,6 +426,7 @@ main() {
     # If no deployment path provided, set the default
     [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
     export PREFIX
+    export VAGRANT_CWD="$PREFIX"
 
     if "$DO_CLEANUP"; then
         env_cleanup

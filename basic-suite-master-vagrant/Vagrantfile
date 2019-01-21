@@ -18,12 +18,12 @@ end
 # host_name
 def configure_hostname(host_count, host_type, idx)
     if host_count == 1
-              hostname = "#{host_type}"
-              template = "#{host_type}"
-          else
-              hostname = "#{host_type}-#{idx}"
-              template = "#{host_type}-#{idx}"
-          end
+        hostname = "#{host_type}"
+        template = "#{host_type}"
+    else
+        hostname = "#{host_type}-#{idx}"
+        template = "#{host_type}-#{idx}"
+    end
     return hostname, template
 end
 
@@ -63,26 +63,26 @@ end
 ## custom disks
 def custom_disks(vm, host)
     if host.has_key?('disks')
-      disks = host['disks']
-      disks.each do |disk|
-          options = {}
-          if disk.has_key?('size')
-              options[:size] = disk['size']
-          end
-          if disk.has_key?('type')
-              options[:type] = disk['type']
-          end
-          if disk.has_key?('allow_existing')
-              options[:allow_existing] = disk['allow_existing']
-          end
-          if disk.has_key?('bus')
-              options[:bus]= disk['bus']
-          end
-          if disk.has_key?('device')
-              options[:device] = disk['device']
-          end
-          vm.storage :file, options
-      end
+        disks = host['disks']
+        disks.each do |disk|
+            options = {}
+            if disk.has_key?('size')
+                options[:size] = disk['size']
+            end
+            if disk.has_key?('type')
+                options[:type] = disk['type']
+            end
+            if disk.has_key?('allow_existing')
+                options[:allow_existing] = disk['allow_existing']
+            end
+            if disk.has_key?('bus')
+                options[:bus]= disk['bus']
+            end
+            if disk.has_key?('device')
+                options[:device] = disk['device']
+            end
+            vm.storage :file, options
+        end
     end
 end
 
@@ -94,42 +94,42 @@ def shell_provisioner_args(yaml_arguments)
     # Arguments may or may not be named,
     # and named arguments may or may not have a value.
     yaml_arguments.each do |argument|
-      argument.key?('name') && shell_arguments.push(argument['name'])
-      argument.key?('value') && shell_arguments.push(argument['value'])
+        argument.key?('name') && shell_arguments.push(argument['name'])
+        argument.key?('value') && shell_arguments.push(argument['value'])
     end
     shell_arguments
-  end
+end
 
 ## Deploy scripts
 def deploy_scripts(node, host, type, suite_path, idx=0)
 
     if host.has_key?('deploy-script')
-      scripts = host['deploy-script']
-      scripts.each do |script|
-          options = {}
-          if script.has_key?('script')
-              options[:script] = script['script']
-              file_name = "#{suite_path}/" + File.dirname(options[:script]) + "/" +  File.basename(options[:script])
-              run_script = 1
-              file_copy(node,file_name, "/tmp/#{file_name}")
-              if script.has_key?('arguments')
-                args = script['arguments']
-                args.each do |arg|
-                    if arg.has_key?('first_host')
-                        if type == "host" && idx != 0  && arg['first_host'] == 1
-                            run_script = 0
-                        end
-                        if type == "host" && idx == 0  && arg['first_host'] == 0
-                            run_script = 0
+        scripts = host['deploy-script']
+        scripts.each do |script|
+            options = {}
+            if script.has_key?('script')
+                options[:script] = script['script']
+                file_name = "#{suite_path}/" + File.dirname(options[:script]) + "/" +  File.basename(options[:script])
+                run_script = 1
+                file_copy(node,file_name, "/tmp/#{file_name}")
+                if script.has_key?('arguments')
+                    args = script['arguments']
+                    args.each do |arg|
+                        if arg.has_key?('first_host')
+                            if type == "host" && idx != 0  && arg['first_host'] == 1
+                                run_script = 0
+                            end
+                            if type == "host" && idx == 0  && arg['first_host'] == 0
+                                run_script = 0
+                            end
                         end
                     end
                 end
-              end
-              if run_script == 1
-                  shell_provision(node, "/bin/sh  /tmp/#{file_name}")
-              end
-          end
-      end
+                if run_script == 1
+                    shell_provision(node, "/bin/sh  /tmp/#{file_name}")
+                end
+            end
+        end
     end
 end
 
@@ -158,50 +158,50 @@ handle_error(error_msg) unless hosts
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  ## Libvirt global configuration
-  config.vm.provider :libvirt do |p|
-      p.management_network_name = "vagrant-libvirt-#{suite_name}-management"
-      p.management_network_address = '192.168.124.0/24'
-      #p.default_prefix = suite_name
-  end
+    ## Libvirt global configuration
+    config.vm.provider :libvirt do |p|
+        p.management_network_name = "vagrant-libvirt-#{suite_name}-management"
+        p.management_network_address = '192.168.124.0/24'
+        #p.default_prefix = suite_name
+    end
 
-  ## Disable share folders
-  config.vm.synced_folder '.', '/vagrant', disabled: true
+    ## Disable share folders
+    config.vm.synced_folder '.', '/vagrant', disabled: true
 
-  ## network configuration
-  config.vm.network :private_network,
-      network_options( "dhcp","192.168.29.0/24","vagrant-libvirt-#{suite_name}-extra", "true","nat","lago.local")
-  config.vm.network :private_network,
-      network_options( "dhcp","192.168.27.0/24","vagrant-libvirt-#{suite_name}-storage", "true","nat","")
-  config.vm.network :private_network,
-      network_options( "dhcp","192.168.28.0/24","vagrant-libvirt-#{suite_name}-bonding", "true","nat","")
+    ## network configuration
+    config.vm.network :private_network,
+        network_options( "dhcp","192.168.29.0/24","vagrant-libvirt-#{suite_name}-extra", "true","nat","lago.local")
+    config.vm.network :private_network,
+        network_options( "dhcp","192.168.27.0/24","vagrant-libvirt-#{suite_name}-storage", "true","nat","")
+    config.vm.network :private_network,
+        network_options( "dhcp","192.168.28.0/24","vagrant-libvirt-#{suite_name}-bonding", "true","nat","")
 
-  ## Configure the hosts from yml file
-  hosts.each do |host|
-      type = host['type']
-      (0..host['hostCount']-1).each do |i|
-          hostname, template = configure_hostname(host['hostCount'], type, i)
-          config.vm.define "#{template}" do |node|
-              #config_basic_info(node, "#{suite_name}_#{hostname}", host['box'],host['box_version'])
-              config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
-              shell_provision(node, "echo hello from node #{i}")
-              shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
-              file_copy(node,"#{suite_path}/reposync-config.repo", "/tmp/reposync-config.repo")
-              shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
-              root_authorized_key_cmd = "mkdir /root/.ssh
-                  cp /home/vagrant/.ssh/authorized_keys /root/.ssh/authorized_keys
-                  chmod 644 /root/.ssh/authorized_keys
-                  chown root:root /root/.ssh/authorized_keys"
-              shell_provision(node, root_authorized_key_cmd)
+      ## Configure the hosts from yml file
+    hosts.each do |host|
+        type = host['type']
+        (0..host['hostCount']-1).each do |i|
+            hostname, template = configure_hostname(host['hostCount'], type, i)
+            config.vm.define "#{template}" do |node|
+                #config_basic_info(node, "#{suite_name}_#{hostname}", host['box'],host['box_version'])
+                config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
+                shell_provision(node, "echo hello from node #{i}")
+                shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
+                file_copy(node,"#{suite_path}/reposync-config.repo", "/tmp/reposync-config.repo")
+                shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
+                root_authorized_key_cmd = "mkdir /root/.ssh
+                    cp /home/vagrant/.ssh/authorized_keys /root/.ssh/authorized_keys
+                    chmod 644 /root/.ssh/authorized_keys
+                    chown root:root /root/.ssh/authorized_keys"
+                shell_provision(node, root_authorized_key_cmd)
 
-              # deploy scripts:
-              deploy_scripts(node, host, type, suite_path, i)
+                # deploy scripts:
+                deploy_scripts(node, host, type, suite_path, i)
 
-              node.vm.provider :libvirt do |domain|
-                domain.memory = host['memory']
-                custom_disks(domain, host)
-              end
-          end
-      end
-  end
+                node.vm.provider :libvirt do |domain|
+                    domain.memory = host['memory']
+                    custom_disks(domain, host)
+                end
+            end
+        end
+    end
 end

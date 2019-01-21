@@ -15,6 +15,17 @@ import re
 from functools import wraps
 import collections
 import io
+import service
+
+
+def check_running(func):
+    wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.running():
+            raise "Error: " + self.name
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 def sh_output_result(func):
     @wraps(func)
@@ -103,6 +114,8 @@ class VM(object):
             self._vagrant_cwd = myfile.read()
         with open(self._config_file_path + '/box_meta', 'r') as myfile:
             self._box_meta_data = myfile.read()
+        self._service_class = service.SystemdService
+
 
     def get_params(self, name):
         return getattr(self, name)
@@ -116,6 +129,17 @@ class VM(object):
         conf.parse(buf)
         buf.close()
         return conf.lookup(hostname)
+
+    def service(self, name):
+        return self._service_class(self, name)
+
+    def running(self):
+        ret = self.status()
+        host_status = re.findall(r"^\S+\s+running+\s+\(+libvirt+\)+\s+", ret.out, re.MULTILINE)
+        if host_status:
+            return True
+        else:
+            return False
 
     @sh_output_result
     def ssh(self, command, as_user='root'):
@@ -231,6 +255,10 @@ def main():
     from pprint import pprint
     pprint(vars(vm))
     #print vm.nets()
+    print vm.running()
+    print vm.service('ovirt-engine').alive()
+    print vm.service('ovirt-engine')._request_start()
+    print vm.service('ovirt-enginex')._request_start()
 
 if __name__ == "__main__":
     main()

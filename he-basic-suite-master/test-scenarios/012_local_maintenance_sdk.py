@@ -1,5 +1,5 @@
 #
-# Copyright 2014, 2018 Red Hat, Inc.
+# Copyright 2014-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import ovirtsdk4.types as types
 import json
 
 import test_utils
-from test_utils import network_utils_v4, assert_finished_within_long
+from test_utils import network_utils_v4, assert_finished_within_long, ipv6_utils
 
 import logging
 import time
@@ -33,6 +33,10 @@ import time
 VM_HE_NAME = 'HostedEngine'
 
 wait_value = 300
+
+
+def setup_module():
+    ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
 @testlib.with_ovirt_api4

@@ -42,6 +42,12 @@ he_deploy() {
     cd -
 }
 
+setup_ipv6() {
+    export IPV6_ONLY=True
+    export IPV6_SUBNET=$(python "${OST_REPO_ROOT}/he-basic-ipv6-suite-master/find_ipv6_subnet.py" \
+    "$PREFIX" "lago-${SUITE##*/}-net-mgmt-ipv6")
+}
+
 run_suite(){
     local suite="${SUITE?}"
     local curdir="${PWD?}"
@@ -56,6 +62,11 @@ run_suite(){
     env_repo_setup
     install_local_rpms
     env_start
+
+    if [[ ${suite} == *"ipv6"* ]]; then
+        setup_ipv6
+    fi
+
     env_deploy
     he_deploy || failed=true
     if $failed; then

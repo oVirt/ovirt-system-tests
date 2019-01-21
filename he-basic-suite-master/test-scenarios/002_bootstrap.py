@@ -1,5 +1,5 @@
 #
-# Copyright 2014, 2017 Red Hat, Inc.
+# Copyright 2014-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ from nose import SkipTest
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
 from ovirtsdk4 import Error as sdkError
+from test_utils import ipv6_utils
 
 try:
     import ovirtsdk4 as sdk4
@@ -84,9 +85,23 @@ GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
 
+IPV6_ONLY = os.getenv('IPV6_ONLY', False)
+
+
+def setup_module():
+    ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
+
 
 def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
+
+
+def _create_url_for_host(prefix, host_name):
+    ip = prefix.virt_env.get_vm(host_name).ip()
+    if IPV6_ONLY:
+        return '[%s]' % ip
+    return ip
+
 
 def _hosts_in_dc(api, dc_name=DC_NAME):
     hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
@@ -513,7 +528,7 @@ def add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_p
         host=_random_host_from_dc(api, DC_NAME),
         storage=params.Storage(
             type_='nfs',
-            address=_get_host_ip(prefix, nfs_host_name),
+            address=_create_url_for_host(prefix, nfs_host_name),
             path=mount_path,
             nfs_version=nfs_version,
         ),
@@ -546,7 +561,7 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         host=_random_host_from_dc_4(api, DC_NAME),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
-            address=_get_host_ip(prefix, nfs_host_name),
+            address=_create_url_for_host(prefix, nfs_host_name),
             path=mount_path,
             nfs_version=nfs_vers,
         ),

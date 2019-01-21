@@ -265,7 +265,38 @@ devices {
 EOC
 }
 
+setup_ipv6_and_dns() {
+    HOST_COUNT=2
+    DOMAIN=$(dnsdomainname)
+    LOCAL_HOSTNAME_PREFIX=$(hostname | awk '{gsub(/[^-]*$/,""); print}')
+    IPV6NET="fd8f:1391:3a82:"
+    NIC="eth1"
+    SUBNET=${IPV6_SUBNET}
+    HOST_LOCAL_PREFIX=10
+    ADDR_PREFIX=64
+    HOST_NAME="host"
+    STORAGE_NAME="storage"
+    STORAGE_IP_SUFFIX=200
+    HE_NAME="engine"
+    HE_SUFFIX=250
+
+    nmcli con modify ${NIC} ipv6.addresses ${IPV6NET}${SUBNET}::${STORAGE_IP_SUFFIX}/${ADDR_PREFIX} \
+    ipv6.gateway ${IPV6NET}${SUBNET}::1 ipv6.method manual
+    nmcli con modify ${NIC} ipv4.method disabled
+    nmcli con up ${NIC}
+
+    for ((i=0;i<${HOST_COUNT};i++)); do
+        echo  "${IPV6NET}${SUBNET}::${HOST_LOCAL_PREFIX}${i} ${LOCAL_HOSTNAME_PREFIX}${HOST_NAME}-${i}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${HOST_NAME}-${i}" >> /etc/hosts
+    done
+
+    echo "${IPV6NET}${SUBNET}::${STORAGE_IP_SUFFIX} ${LOCAL_HOSTNAME_PREFIX}${STORAGE_NAME}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${STORAGE_NAME}" >> /etc/hosts
+    echo "${IPV6NET}${SUBNET}::${HE_SUFFIX} ${LOCAL_HOSTNAME_PREFIX}${HE_NAME}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${HE_NAME}" >> /etc/hosts
+}
+
 main() {
+    if [[ $(hostname) == *"ipv6"* ]]; then
+        setup_ipv6_and_dns
+    fi
     # Prepare storage
     install_deps
     setup_services

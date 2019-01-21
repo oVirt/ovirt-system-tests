@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from ovirtlago import testlib
 import ovirtsdk4.types as types
 import test_utils
 import uuid
+from test_utils import ipv6_utils
 
 
 MB = 2 ** 20
@@ -47,6 +48,10 @@ SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
+
+
+def setup_module():
+    ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
 @testlib.with_ovirt_api

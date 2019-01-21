@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Red Hat, Inc.
+# Copyright 2016-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from ovirtsdk.xml import params
 
 from lago import utils
 from ovirtlago import testlib
+from test_utils import ipv6_utils
 
 # DC/Cluster
 DC_NAME = 'Default'
@@ -35,6 +36,10 @@ CLUSTER_NAME = 'Default'
 NETWORK_LABEL = 'NETWORK_LABEL'
 LABELED_NET_NAME = 'Labeled_Network'
 LABELED_NET_VLAN_ID = 600
+
+
+def setup_module():
+    ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
 @testlib.with_ovirt_api

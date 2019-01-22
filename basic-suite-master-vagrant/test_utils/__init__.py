@@ -24,8 +24,11 @@ import functools
 import os
 import ovirtsdk4.types as types
 import uuid
-from ovirtlago import testlib
 
+if os.environ.get('VAGRANT_CWD'):
+    from ost_utils import testlib
+else:
+    from ovirtlago import testlib
 
 def test_gen(tests, generator):
     '''Run the given tests amending their names according to the context.

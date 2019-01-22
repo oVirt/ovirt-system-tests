@@ -26,6 +26,8 @@ HEADDR=$(\
 echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 VMPASS=123456
 ENGINEPASS=123
+INTERFACE=eth0
+PREFIX=24
 
 sed \
     -e "s,@GW@,${HEGW},g" \
@@ -36,6 +38,8 @@ sed \
     -e "s,@MYHOSTNAME@,${MYHOSTNAME},g" \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
     -e "s,@STORAGEHOSTNAME@,${STORAGEHOSTNAME},g" \
+    -e "s,@INTERFACE@,${INTERFACE},g" \
+    -e "s,@PREFIX@,${PREFIX},g" \
     < /root/hosted-engine-deploy-answers-file.conf.in \
     > /root/hosted-engine-deploy-answers-file.conf
 

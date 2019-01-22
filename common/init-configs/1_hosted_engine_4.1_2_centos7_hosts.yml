@@ -8,6 +8,7 @@ domains:
     nics:
       - net: lago-{{ env.suite_name }}-net-management
         ip: 192.168.200.99
+      - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
     metadata:
       ovirt-engine-password: 123
 
@@ -19,6 +20,7 @@ domains:
     service_provider: systemd
     nics:
       - net: lago-{{ env.suite_name }}-net-management
+      - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
     disks:
       - template_name: {{ templates.storage }}
         type: template
@@ -58,6 +60,7 @@ domains:
     cpu_model: SandyBridge
     nics:
       - net: lago-{{ env.suite_name }}-net-management
+      - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
     disks:
       - type: template
         name: root
@@ -106,3 +109,6 @@ nets:
       end: 254
     management: true
     dns_domain_name: lago.local
+
+  lago-{{ env.suite_name }}-net-mgmt-ipv6:
+    type: nat

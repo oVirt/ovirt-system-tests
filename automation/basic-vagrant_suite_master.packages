@@ -11,3 +11,4 @@ libvirt
 libvirt-devel
 ruby-devel
 gcc
+yum

@@ -5,13 +5,13 @@ prep_suite() {
 }
 
 run_suite() {
+    env_repo_setup
+    install_local_rpms
     env_start
     env_status
     return
 
-    env_repo_setup
     put_host_image
-    install_local_rpms
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
 

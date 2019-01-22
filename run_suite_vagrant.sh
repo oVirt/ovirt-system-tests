@@ -96,30 +96,105 @@ generate_vdsm_coverage_report() {
 }
 
 
-env_repo_setup () {
-    # not needed for vagrant
+env_repo_setup() {
+    local dest="${1:-${PREFIX}/internal_repo}"
+    local reposerver_lock="${dest}/reposerver.lock"
+    local reposerver_addr reposerver_lock_fd
+
+    mkdir -p dest
+    compose_test_repo "$dest"
+
+    exec {reposerver_lock_fd}<> "$reposerver_lock"
+    flock --nonblock "$reposerver_lock_fd" || {
+        # if the file is already locked, it means that the user called this
+        # function more than once.
+        logger.warning "Reposerver already running"
+        return 0
+    }
+    reposerver_addr="$(run_reposerver "$dest" "$reposerver_lock")"
+    generate_add_local_repo_script "$reposerver_addr"
+}
+
+
+compose_test_repo () {
+    local dest="${1?}"
     local extrasrc
     declare -a extrasrcs
-    cd $PREFIX
+    local sync_dir="${OST_HOST_CACHE:-${HOME}/.cache}/reposync"
+    local reposync_conf="$SUITE/reposync-config.repo"
+    local user && user="$(id -u)"
+    local group && group="$(id -g)"
+
     for extrasrc in "${EXTRA_SOURCES[@]}"; do
         extrasrcs+=("--custom-source=$extrasrc")
         logger.info "Adding extra source: $extrasrc"
     done
-    local reposync_conf="$SUITE/reposync-config.repo"
+
     if [[ -e "$CUSTOM_REPOSYNC" ]]; then
         reposync_conf="$CUSTOM_REPOSYNC"
     fi
+
     if [[ -n "$OST_SKIP_SYNC" ]]; then
         skipsync="--skip-sync"
     else
         skipsync=""
     fi
+
     logger.info "Using reposync config file: $reposync_conf"
-    http_proxy="" $CLI ovirt reposetup \
-        $skipsync \
-        --reposync-yum-config "$reposync_conf" \
-        "${extrasrcs[@]}"
-    cd -
+
+    docker run \
+        --rm \
+        -v "${PWD}:${PWD}:rw" \
+        -v "${sync_dir}:${sync_dir}:rw" \
+        -v "${dest}:${dest}:rw" \
+        -u "${user}:${group}" \
+        quay.io/gbenhaim/mkrepo:0.1.19 \
+        -l debug \
+        reposetup \
+            $skipsync \
+            --sync-dir "$sync_dir" \
+            --yum-config "$reposync_conf" \
+            --dest "$dest" \
+            "${extrasrcs[@]}"
+}
+
+
+run_reposerver() {
+    local dest="${1?}"
+    local reposerver_lock="${2?}"
+    local reposerver_addr_file="${dest}/reposerver_addr"
+    local log="${dest}/reposerver.log"
+    local tries=10
+    local addr
+
+    "${OST_REPO_ROOT}/common/scripts/reposerver.sh" \
+        "$dest" \
+        "$reposerver_lock" \
+        "$reposerver_addr_file" \
+        &> "$log" \
+        &
+
+    sleep 1
+    for ((i=0; i<"$tries"; i++)); do
+        addr="$(cat "$reposerver_addr_file" || :)"
+        [[ "$addr" ]] && echo "${addr//\n}" && return
+        sleep 10
+    done
+
+    return 1
+}
+
+
+generate_add_local_repo_script() {
+    local reposerver_addr="${1:?}"
+    local base="${SUITE}/deploy-scripts"
+
+    for f in add_local_repo_no_ext_access.sh.in add_local_repo.sh.in; do
+        [[ -f "${base}/${f}" ]] || continue
+        sed "s,@ADDR@,${reposerver_addr},g" \
+            "${base}/${f}" \
+            > "${base}/${f%.in}"
+    done
 }
 
 
@@ -341,7 +416,7 @@ install_local_rpms() {
     cat > "$path_to_config" <<EOF
 [internal_repo]
 name=Lago's internal repo
-baseurl="file://${PREFIX}/current/internal_repo/default/${os}"
+baseurl="file://${PREFIX}/internal_repo/${os}"
 enabled=1
 gpgcheck=0
 skip_if_unavailable=1

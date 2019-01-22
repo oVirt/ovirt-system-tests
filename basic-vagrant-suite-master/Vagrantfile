@@ -197,8 +197,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
                 shell_provision(node, "echo hello from node #{i}")
                 shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
-                file_copy(node,"#{suite_path}/reposync-config.repo", "/tmp/reposync-config.repo")
-                shell_provision(node, "cp /tmp/reposync-config.repo /etc/yum.repos.d/reposync-config.repo")
                 root_authorized_key_cmd = "mkdir /root/.ssh
                     cp /home/vagrant/.ssh/authorized_keys /root/.ssh/authorized_keys
                     chmod 644 /root/.ssh/authorized_keys

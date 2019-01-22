@@ -13,10 +13,11 @@ max_connections = 10
 proxy = _none_
 cost = 100
 ost_skip_injection = True
-gpgcheck = 0
 exclude = ovirt-guest-agent-common
 	ovirt-guest-agent-gdm-plugin
 	ovirt-guest-agent-pam-module
+    ovirt-engine-appliance
+    ovirt-node-ng*
 
 [ovirt-master-snapshot-static-el7]
 name = oVirt Master Nightly Statics
@@ -24,14 +25,12 @@ baseurl = http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
 enabled = 1
 max_connections = 10
 ost_skip_injection = True
-gpgcheck = 0
 
 [glusterfs-3.12-el7]
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled = 1
 max_connections = 5
-gpgcheck = 0
 includepkgs = gdeploy
 	glusterfs
 	glusterfs-api
@@ -47,7 +46,6 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-gpgcheck = 0
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
@@ -145,7 +143,6 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-gpgcheck = 0
 includepkgs = OVMF
 	OpenIPMI-modalias
 	PyYAML
@@ -328,6 +325,7 @@ includepkgs = OVMF
 	libjpeg-turbo
 	libkadm5
 	libldb
+	liblognorm
 	libmodman
 	libnfsidmap
 	libnl
@@ -541,6 +539,9 @@ includepkgs = OVMF
 	rpm-build
 	rpmdevtools
 	rsync
+	rsyslog-elasticsearch
+	rsyslog-mmjsonparse
+	rsyslog-mmnormalize
 	samba-client-libs
 	samba-common
 	samba-common-libs
@@ -620,7 +621,6 @@ includepkgs = OVMF
 name = CentOS7 Extras
 baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
 enabled = 1
-gpgcheck = 0
 exclude = ansible
 	epel-release
 	libtomcrypt
@@ -645,7 +645,6 @@ includepkgs = cockpit
 name = Extra Packages for Enterprise Linux 7 - x86_64
 baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
 enabled = 1
-gpgcheck = 0
 exclude = archaius-core
 	jackson-core
 	jctools
@@ -678,7 +677,6 @@ gpgcheck = 0
 enabled = 1
 ost_skip_injection = True
 exclude = ovirt-host*
-gpgcheck = 0
 
 [centos-ovirt-common-el7]
 name = CentOS-7 - oVirt common
@@ -687,7 +685,6 @@ gpgcheck = 0
 cost = 2000
 enabled = 1
 ost_skip_injection = True
-gpgcheck = 0
 exclude = ansible
 	ansible-doc
 
@@ -696,14 +693,12 @@ name = CentOS-7 - QEMU EV - Testing
 baseurl = http://buildlogs.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck = 0
 ost_skip_injection = True
-gpgcheck = 0
 enabled = 1
 
 [centos-opstools-testing-el7]
 name = CentOS-7 - OpsTools - testing repo
 baseurl = http://buildlogs.centos.org/centos/7/opstools/x86_64/
 enabled = 1
-gpgcheck = 0
 exclude = python2-qpid-proton
 	qpid-proton-c
 max_connections = 10
@@ -720,17 +715,11 @@ includepkgs = collectd
 	rubygem-elasticsearch-transport
 	rubygem-excon
 	rubygem-faraday
-	rubygem-fluent-plugin-collectd-nest
 	rubygem-fluent-plugin-elasticsearch
-	rubygem-fluent-plugin-rewrite-tag-filter
-	rubygem-fluent-plugin-secure-forward
-	rubygem-fluent-plugin-viaq_data_model
 	rubygem-http_parser.rb
 	rubygem-json
 	rubygem-msgpack
 	rubygem-multi_json
-	rubygem-proxifier
-	rubygem-resolve-hostname
 	rubygem-sigdump
 	rubygem-string-scrub
 	rubygem-thread_safe

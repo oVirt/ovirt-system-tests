@@ -17,7 +17,12 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from ovirtlago import testlib
+import os
+if os.environ.get('VAGRANT_CWD'):
+    from ost_utils import testlib
+else:
+    from ovirtlago import testlib
+
 from ovirtsdk4 import Error as sdkError
 from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
                              IpAddressAssignment, IpVersion, Network,

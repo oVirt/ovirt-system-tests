@@ -55,6 +55,7 @@ class VagrantHosts(object):
         self._vms = []
         self._prefix = ""
         self._virt_env = ""
+        self.collect_vms()
 
     def collect_vms(self):
         host_list = []

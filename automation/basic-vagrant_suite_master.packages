@@ -1,0 +1,13 @@
+docker
+grubby
+ovirt-engine-sdk-python
+python2-six
+python-netaddr
+python-ovirt-engine-sdk4
+python-pip
+python-virtualenv
+https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x86_64.rpm
+libvirt
+libvirt-devel
+ruby-devel
+gcc

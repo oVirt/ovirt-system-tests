@@ -152,6 +152,9 @@ hosts = YAML.load_file(vagrant_yaml_file)
 error_msg = "#{vagrant_yaml_file} exists, but is empty"
 handle_error(error_msg) unless hosts
 
+$vagrant_pool = (ENV['VAGRANT_POOL'] unless
+                  (ENV['VAGRANT_POOL'].nil? or ENV['VAGRANT_POOL'].empty?))
+
 ######################################################
 # Vagrant Configuration Loop
 ######################################################
@@ -162,6 +165,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.provider :libvirt do |p|
         p.management_network_name = "vagrant-libvirt-#{suite_name}-management"
         p.management_network_address = '192.168.124.0/24'
+        if $vagrant_pool then
+            p.storage_pool_name = $vagrant_pool
+        end
         #p.default_prefix = suite_name
     end
 

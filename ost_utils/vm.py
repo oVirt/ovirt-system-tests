@@ -125,6 +125,9 @@ class VM(object):
         self._service_class = service.SystemdService
 
 
+    def ip(self):
+        return self._ip
+
     def get_params(self, name):
         return getattr(self, name)
 

@@ -22,7 +22,11 @@ import socket
 
 from tempfile import NamedTemporaryFile
 import nose.tools as nt
-from ovirtlago import testlib
+
+if os.environ.get('VAGRANT_CWD'):
+    from ost_utils import testlib
+else:
+    from ovirtlago import testlib
 
 import test_utils
 

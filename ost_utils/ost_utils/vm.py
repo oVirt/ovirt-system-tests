@@ -16,6 +16,7 @@ from functools import wraps
 import collections
 import io
 import service
+from virt import HostVM, EngineVM
 
 
 def check_running(func):
@@ -26,6 +27,7 @@ def check_running(func):
         return func(self, *args, **kwargs)
 
     return wrapper
+
 
 def sh_output_result(func):
     @wraps(func)
@@ -38,13 +40,16 @@ def sh_output_result(func):
         return result
     return func_wrapper
 
+
 _CommandStatus = collections.namedtuple(
     'CommandStatus', ('out', 'err', 'code')
 )
 
+
 class CommandStatus(_CommandStatus):
     def __nonzero__(self):
         return self.code
+
 
 class VagrantHosts(object):
 
@@ -72,11 +77,11 @@ class VagrantHosts(object):
         all_hosts_statuses = re.findall(r"^\S+\s+\S+\s+\(+libvirt+\)+\s+", out.stdout, re.MULTILINE)
         for host_status in all_hosts_statuses:
             words = re.split('\s+', host_status)
-            host_list.append(VM(words[0]))
+            host_list.append(HostVM(words[0]))
             if "engine" in words[0]:
-                self._engine_vm = VM(words[0])
+                self._engine_vm = EngineVM(words[0])
             if "host" in words[0]:
-                self._host_vms.append(VM(words[0]))
+                self._host_vms.append(HostVM(words[0]))
         self._vms = host_list
 
     def engine_vm(self):
@@ -103,6 +108,7 @@ class VagrantHosts(object):
 
     def get_prefix(self):
         return self._prefix
+
 
 class VM(object):
 

@@ -64,11 +64,11 @@ class VagrantHosts(object):
         all_hosts_statuses = re.findall(r"^\S+\s+\S+\s+\(+libvirt+\)+\s+", out.stdout, re.MULTILINE)
         for host_status in all_hosts_statuses:
             words = re.split('\s+', host_status)
-            host_list.append(words[0])
+            host_list.append(VM(words[0]))
             if "engine" in words[0]:
-                self._engine_vm = words[0]
+                self._engine_vm = VM(words[0])
             if "host" in words[0]:
-                self._host_vms.append(words[0])
+                self._host_vms.append(VM(words[0]))
         self._vms = host_list
 
     def engine_vm(self):

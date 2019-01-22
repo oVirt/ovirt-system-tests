@@ -39,11 +39,7 @@ def initialize_engine(prefix):
         '/tmp/answer-file',
     )
 
-    nics = engine.nics()
-    nets = prefix.get_nets()
-    engine_ip = [
-        nic.get('ip') for nic in nics if nets[nic.get('net')].is_management()
-    ]
+    engine_ip = engine.ip()
 
     host_name = socket.getfqdn()
     host_ip = socket.gethostbyname(host_name)
@@ -53,7 +49,7 @@ def initialize_engine(prefix):
             (
                 'SSO_ALTERNATE_ENGINE_FQDNS='
                 '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0} {1} {2}"\n'
-            ).format(engine_ip.pop(), host_name, host_ip)
+            ).format(engine_ip, host_name, host_ip)
         )
 
     fqdn_conf = '/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf'

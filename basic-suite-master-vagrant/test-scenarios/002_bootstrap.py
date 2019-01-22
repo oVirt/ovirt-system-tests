@@ -32,8 +32,12 @@ from ovirtsdk.xml import params
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
 
-from lago import utils
-from ovirtlago import testlib
+if os.environ.get('VAGRANT_CWD'):
+    from ost_utils import testlib
+    from ost_utils import utils
+else:
+    from lago import utils
+    from ovirtlago import testlib
 
 import test_utils
 from test_utils import network_utils_v4
@@ -832,7 +836,7 @@ def add_role(api):
 def add_affinity_label(api):
     engine = api.system_service()
     affinity_labels_service = engine.affinity_labels_service()
-    with test_utils.TestEvent(engine, 10380): 
+    with test_utils.TestEvent(engine, 10380):
         nt.assert_true(
             affinity_labels_service.add(
                 sdk4.types.AffinityLabel(
@@ -847,7 +851,7 @@ def add_affinity_group(api):
     engine = api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
-    with test_utils.TestEvent(engine, 10350): 
+    with test_utils.TestEvent(engine, 10350):
         nt.assert_true(
             affinity_group_service.add(
                 sdk4.types.AffinityGroup(
@@ -1075,7 +1079,7 @@ def check_update_host(api):
 def add_scheduling_policy(api):
     engine = api.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
-    with test_utils.TestEvent(engine, 9910): 
+    with test_utils.TestEvent(engine, 9910):
         nt.assert_true(
             scheduling_policies_service.add(
                 sdk4.types.SchedulingPolicy(

@@ -57,6 +57,13 @@ class VagrantHosts(object):
         self._virt_env = ""
         self.collect_vms()
 
+    # we add this functionality in order not to change
+    # the tests
+    def __getattr__(self,name):
+        if name == 'virt_env':
+            return self
+        raise AttributeError(name)
+
     def collect_vms(self):
         host_list = []
         """Return the status of the vagrant machine."""

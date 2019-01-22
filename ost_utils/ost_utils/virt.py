@@ -25,13 +25,12 @@ import yaml
 from collections import OrderedDict
 from sh import vagrant
 
-import sdk_utils
 from vm import VM
 import constants
 import testlib
 
 
-from sdk_utils import partial, available_sdks, require_sdk
+from ost_utils.sdk_utils import available_sdks, require_sdk
 
 import ovirtsdk.api
 from ovirtsdk.infrastructure.errors import (RequestError, ConnectionError)

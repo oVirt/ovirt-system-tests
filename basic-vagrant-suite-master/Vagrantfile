@@ -168,6 +168,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         if $vagrant_pool then
             p.storage_pool_name = $vagrant_pool
         end
+
+        # TODO: Take this info from the config and make it domain specific
+        p.cpus = 2
+        p.nested = true
+        p.cpu_mode = "host-passthrough"
         #p.default_prefix = suite_name
     end
 

@@ -55,6 +55,14 @@ ALWAYS_SHOW_TRIGGER_MSG = 'force-show:%s'
 ALWAYS_SHOW_REG = re.compile('force-show:(?P<message>.*)')
 
 
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        self.level = level
+
+    def filter(self, record):
+        return record.levelno >= self.level
+
+
 class ColorFormatter(logging.Formatter):
     """
     Formatter to add colors to log records

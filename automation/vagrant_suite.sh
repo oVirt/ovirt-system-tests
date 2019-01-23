@@ -32,15 +32,13 @@ get_run_path() {
     [[ -d "/dev/shm/ost" ]] && rm -rf "/dev/shm/ost"
     [[ -d "$disk_path" ]] && rm -rf "$disk_path"
 
-    "$run_suite" -o "$ram_path" --only-verify-requirements "$SUITE" && {
-        echo "$ram_path"
-        return
-    }
-
-    "$run_suite" -o "$disk_path" --only-verify-requirements "$SUITE" && {
-        echo "$disk_path"
-        return
-    }
+    for p in "$ram_path" "$disk_path"; do
+        "$run_suite" \
+            -o "$p" \
+            --only-verify-requirements "$SUITE" \
+            &> /dev/null \
+            && { echo "$p"; return 0; }
+    done
 
     return 1
 }

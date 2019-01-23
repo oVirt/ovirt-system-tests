@@ -26,8 +26,9 @@ import unittest.case
 import nose.plugins
 from nose.plugins.skip import SkipTest
 import utils
-import ost_utils
-from vm import VagrantHosts
+
+
+from ost_utils.vm import VagrantHosts
 
 LOGGER = logging.getLogger(__name__)
 SHORT_TIMEOUT = 3 * 60

@@ -57,6 +57,9 @@ Optional arguments:
 
     --coverage
         Enable coverage
+
+    --run-test <test>
+        Only run the specified test
 "
 }
 
@@ -238,13 +241,17 @@ env_version() {
 }
 
 env_run_test () {
-
+    local test_file="${1:?}"
+    local junitxml_path="$PREFIX/${test_file##*/}.junit.xml"
     local res=0
-    cd $PREFIX
-    local junitxml_file="$PREFIX/${1##*/}.junit.xml"
-    $CLI ovirt runtest $1 --junitxml-file "${junitxml_file}"  || res=$?
-    [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
-    cd -
+
+    python -m ost_utils.run_test \
+        --junitxml-path "${junitxml_path}" \
+        "$test_file"  \
+        || res=$?
+
+    [[ "$res" -ne 0 ]] && xmllint --format "${junitxml_path}"
+
     return "$res"
 }
 
@@ -427,6 +434,21 @@ EOF
     return 0
 }
 
+
+create_venv() {
+    local name="ost-venv"
+    local suite_req="${SUITE}/requirements.txt.lock"
+
+    [[ "$VIRTUAL_ENV" ]] && return 0
+    [[ -d "$name" ]] || virtualenv --system-site-packages "$name"
+    source "${name}/bin/activate"
+    pip install -e "ost_utils"
+    if [[ -f "$suite_req" ]]; then
+        pip install -r "$suite_req"
+    fi
+}
+
+
 main() {
     options=$( \
         getopt \
@@ -434,7 +456,7 @@ main() {
             --long help,output:,engine:,node:,boot-iso:,cleanup,images \
             --long extra-rpm-source,reposync-config:,local-rpms: \
             --long only-verify-requirements,ignore-requirements \
-            --long coverage \
+            --long coverage,run-test: \
             -n 'run_suite.sh' \
             -- "$@" \
     )
@@ -481,6 +503,10 @@ main() {
                 readonly COVERAGE=true
                 shift
                 ;;
+            --run-test)
+                local test_to_run="$2"
+                shift 2
+                ;;
             --)
                 shift
                 break
@@ -495,8 +521,8 @@ main() {
     fi
 
     export OST_REPO_ROOT="$PWD"
-
     export SUITE="$(realpath --no-symlinks "$1")"
+    export PYTHONPATH="${PYTHONPATH}:${SUITE}"
     #export VAGRANT_HOME="$SUITE"
     # If no deployment path provided, set the default
     [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
@@ -506,6 +532,13 @@ main() {
     if "$DO_CLEANUP"; then
         env_cleanup
         exit $?
+    fi
+
+    create_venv
+
+    if [[ "$test_to_run" ]]; then
+        env_run_test "$test_to_run"
+        exit "$?"
     fi
 
     [[ -e "$PREFIX" ]] && {
@@ -533,7 +566,6 @@ main() {
     logger.info  "Running suite found in $SUITE"
     logger.info  "Environment will be deployed at $PREFIX"
 
-    export PYTHONPATH="${PYTHONPATH}:${SUITE}"
     source "${SUITE}/control.sh"
 
     prep_suite

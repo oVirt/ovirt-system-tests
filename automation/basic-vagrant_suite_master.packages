@@ -12,3 +12,4 @@ libvirt-devel
 ruby-devel
 gcc
 yum
+openssh-clients

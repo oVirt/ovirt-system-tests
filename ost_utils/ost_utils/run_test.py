@@ -1,4 +1,3 @@
-#
 # Copyright 2014 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,6 +16,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+import click
 
 import functools
 import logging
@@ -42,6 +43,7 @@ LOGGER = logging.getLogger(__name__)
 LogTask = functools.partial(log_utils.LogTask, logger=LOGGER)
 log_task = functools.partial(log_utils.log_task, logger=LOGGER)
 
+
 def exit_handler(signum, frame):
     """
     Catch SIGTERM and SIGHUP and call "sys.exit" which raises
@@ -55,9 +57,39 @@ def exit_handler(signum, frame):
         signum(int): The signal's number
         frame(frame): The current stack frame, can be None
     """
-
     LOGGER.debug('signal {} was caught'.format(signum))
     sys.exit(128 + signum)
+
+
+@click.command()
+@click.argument(
+    'test',
+    type=click.Path(exists=True),
+    required=True,
+    metavar='<test>',
+)
+@click.option(
+    '-j', '--junitxml-path',
+    required=True,
+    help='Test results junitxml path.'
+)
+def cli(test, junitxml_path):
+    signal(SIGTERM, exit_handler)
+    signal(SIGHUP, exit_handler)
+
+    logging.root.handlers = [
+        log_utils.TaskHandler(
+            level=logging.INFO,
+            dump_level=logging.ERROR,
+            formatter=log_utils.ColorFormatter(fmt='%(msg)s', )
+        )
+    ]
+
+    logging.captureWarnings(True)
+    if not run_test(click.format_filename(test), junitxml_path):
+        LOGGER.error('Test {} failed'.format(test))
+        sys.exit(1)
+
 
 def _create_output_filename(
     default_dir, default_filename, output_filename=None
@@ -113,7 +145,7 @@ def run_test(path, junitxml_file=None):
     with LogTask('Run test: %s' % os.path.basename(path)):
         env = os.environ.copy()
         results_path = _create_output_filename(
-            path,
+            os.curdir,
             os.path.basename(path) + ".junit.xml", junitxml_file
         )
         _safe_makedir(os.path.dirname(results_path))
@@ -201,24 +233,6 @@ class TaskLogNosePlugin(nose.plugins.Plugin):
         if issubclass(err[0], unittest.case.SkipTest):
             self.skipped[desc] = err
 
-def main():
-
-    # Trigger cleanup on SIGTERM and SIGHUP
-    signal(SIGTERM, exit_handler)
-    signal(SIGHUP, exit_handler)
-
-    logging.basicConfig(level=logging.DEBUG)
-    logging.root.handlers = [
-        log_utils.TaskHandler(
-                dump_level=logging.ERROR,
-                formatter=log_utils.ColorFormatter(fmt='%(msg)s', )
-            )
-    ]
-
-    logging.captureWarnings(True)
-    run_test("test/001_fail.py", "test/results/001_fail.xml")
-    run_test("test/002_pass.py", "test/results/002_pass.xml")
-
 
 if __name__ == "__main__":
-    main()
+    cli()

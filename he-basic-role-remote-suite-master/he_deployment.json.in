@@ -1,0 +1,21 @@
+{
+    "he_bridge_if": "eth0",
+    "he_fqdn": "@HOSTEDENGINE@.@DOMAIN@",
+    "he_vm_mac_addr": "54:52:c0:a8:c8:63",
+    "he_domain_type": "nfs",
+    "he_storage_domain_addr": "@STORAGEHOSTNAME@",
+    "he_storage_domain_path": "/exports/nfs_he",
+    "he_vm_ip_addr": "@ADDR@",
+    "he_vm_ip_prefix": "24",
+    "he_gateway": "@GW@",
+    "he_dns_addr": "@GW@",
+    "he_vm_etc_hosts": true,
+    "he_appliance_password": "@VMPASS@",
+    "he_admin_password": "@ENGINEPASS@",
+    "he_ansible_host_name": "@TARGETHOST@",
+    "he_host_name": "@MYHOSTNAME@",
+    "he_mem_size_MB": "3171",
+    "he_memory_requirements_check_enabled": false,
+    "he_force_ip4": true,
+    "he_vcpus": "2"
+}

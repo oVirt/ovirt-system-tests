@@ -61,7 +61,6 @@ def initialize_engine(prefix):
     engine.ssh(['chmod', '644', fqdn_conf])
     result = engine.ssh(
         [
-            'OTOPI_DEBUG=1',
             'engine-setup',
             '--config-append=/tmp/answer-file',
             '--accept-defaults',

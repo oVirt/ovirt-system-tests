@@ -96,7 +96,10 @@ cleanup() {
     # collect coverage reports
     [[ -d "coverage" ]] && mv coverage exported-artifacts/
 
-    "$run_suite" -o "$run_path" --cleanup "$SUITE"
+    if ! [[ "$OST_SKIP_CLEANUP" ]]; then
+        "$run_suite" -o "$run_path" --cleanup "$SUITE"
+    fi
+
     exit
 }
 

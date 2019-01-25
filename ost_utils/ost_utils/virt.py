@@ -26,7 +26,6 @@ from collections import OrderedDict
 from sh import vagrant
 
 from vm import VM
-import constants
 import testlib
 
 
@@ -48,13 +47,22 @@ except ImportError:
 class EngineVM(VM):
     def __init__(self, *args, **kwargs):
         super(EngineVM, self).__init__(*args, **kwargs)
+        self._username = kwargs.get('engine-user', 'admin@internal')
+        self._password = str(kwargs.get('engine-password', '123'))
         self._api_v3 = None
         self._api_v4 = None
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def password(self):
+        return self._password
 
     def stop(self):
         super(EngineVM, self).stop()
         self._api_v3 = None
-
 
     def _artifact_paths(self):
         inherited_artifacts = super(EngineVM, self)._artifact_paths()
@@ -67,8 +75,8 @@ class EngineVM(VM):
                 raise RuntimeError('oVirt Python SDK v3 not found.')
             return ovirtsdk.api.API(
                 url=url,
-                username=constants.ENGINE_USER,
-                password=str(constants.ENGINE_PASSWORD),
+                username=self.username,
+                password=self.password,
                 validate_cert_chain=False,
                 insecure=True,
             )
@@ -77,8 +85,8 @@ class EngineVM(VM):
                 raise RuntimeError('oVirt Python SDK v4 not found.')
             return sdk4.Connection(
                 url=url,
-                username=constants.ENGINE_USER,
-                password=str(constants.ENGINE_PASSWORD),
+                username=self.username,
+                password=self.password,
                 insecure=True,
                 debug=True,
             )
@@ -142,19 +150,19 @@ class EngineVM(VM):
         api = self.get_api_v4(False)
         return api.system_service()
 
-
     @require_sdk(version='4')
     def status(self):
         api = self.get_api_v4(check=True)
         sys_service = api.system_service().get()
         info = {'global': {}, 'items': {}}
 
-        info['global']['version'
-                       ] = sys_service.product_info.version.full_version
+        info['global']['version'] = \
+            sys_service.product_info.version.full_version
         info['global']['web_ui'] = OrderedDict(
             [
-                ('url', self.ip()), ('username', constants.ENGINE_USER),
-                ('password', self.metadata['ovirt-engine-password'])
+                ('url', self.ip()),
+                ('username', self.username),
+                ('password', self.password),
             ]
         )
 

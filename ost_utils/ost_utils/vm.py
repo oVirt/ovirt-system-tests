@@ -36,12 +36,14 @@ try:
 except ImportError:
     pass
 
+
+LOGGER = logging.getLogger(__name__)
 # sh is bombing the log, handle it.
 logging.getLogger('sh.command').addFilter(LevelFilter(logging.WARNING))
 
 
 def check_running(func):
-    wraps(func)
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
         if not self.running():
             raise "Error: " + self.name
@@ -52,12 +54,12 @@ def check_running(func):
 
 def sh_output_result(func):
     @wraps(func)
-    def func_wrapper(*args,**kwargs):
+    def func_wrapper(*args, **kwargs):
         try:
-            ret = func(*args,**kwargs)
+            ret = func(*args, **kwargs)
         except ErrorReturnCode as e:
             ret = e
-        result = CommandStatus( ret.stdout, ret.stderr, ret.exit_code)
+        result = CommandStatus(ret.stdout, ret.stderr, ret.exit_code)
         return result
     return func_wrapper
 
@@ -75,42 +77,44 @@ class CommandStatus(_CommandStatus):
 class VagrantHosts(object):
 
     def __init__(self):
-        self._engine_vm = ""
+        self._vms = []
         self._engine_vms = []
         self._host_vms = []
-        self._vms = []
-        self._prefix = ""
-        self._virt_env = ""
+        self._prefix_path = None
+        self._set_prefix_path()
         self.collect_vms()
 
     # we add this functionality in order not to change
     # the tests
-    def __getattr__(self,name):
+    def __getattr__(self, name):
         if name == 'virt_env':
             return self
         raise AttributeError(name)
 
     def collect_vms(self):
-        host_list = []
         """Return the status of the vagrant machine."""
-        out = vagrant("status")
-        #all_hosts_statuses = re.findall(r"^\S+\s+[shutoff|running]+\s+\(+libvirt+\)+\s+", out, re.MULTILINE)
-        all_hosts_statuses = re.findall(r"^\S+\s+\S+\s+\(+libvirt+\)+\s+", out.stdout, re.MULTILINE)
-        for host_status in all_hosts_statuses:
-            words = re.split('\s+', host_status)
-            host_list.append(HostVM(words[0]))
-            if "engine" in words[0]:
-                self._engine_vm = EngineVM(words[0])
-            if "host" in words[0]:
-                self._host_vms.append(HostVM(words[0]))
-        self._vms = host_list
+        domains_dir = os.path.join(self.prefix_path, 'machines')
+        LOGGER.debug('Loading domain from ' + domains_dir)
+        _, domains, _ = next(os.walk(domains_dir))
+        if not domains:
+            raise RuntimeError('Vagrant env does not have any domain')
+
+        for domain in domains:
+            if "engine" in domain:
+                self._engine_vms.append(EngineVM(domain))
+            elif "host" in domain:
+                self._host_vms.append(HostVM(domain))
+            else:
+                self._vms.append(VM(domain))
+
+        self._vms.extend(self._engine_vms)
+        self._vms.extend(self._host_vms)
 
     def engine_vm(self):
-        return self._engine_vm
+        return self._engine_vms[0]
 
-    ## for multiple engine
     def engine_vms(self):
-        return self._engine_vm[:]
+        return self._engine_vms[:]
 
     def host_vms(self):
         return self._host_vms[:]
@@ -118,17 +122,21 @@ class VagrantHosts(object):
     def vms(self):
         return self._vms[:]
 
-    def set_prefix(self):
-        if os.getenv("VAGRANT_CWD"):
-            self._prefix = os.getenv("VAGRANT_CWD")
-        if self._prefix == "None":
-            self._prefix = ""
-            vagrant_dir = os.getcwd() + "/.vagrant"
-            if os.path.exists(vagrant_dir):
-                self._prefix = os.getcwd()
+    def _set_prefix_path(self):
+        for base in (os.getenv("VAGRANT_CWD"), os.curdir):
+            possible_prefix_path = os.path.join(base, '.vagrant')
+            if os.path.isdir(possible_prefix_path):
+                self._prefix_path = possible_prefix_path
+                break
+        else:
+            raise RuntimeError(
+                'Failed to locate Vagarnt env.'
+                ' VAGRANT_CWD is not set and ./vagrant does not exists'
+            )
 
-    def get_prefix(self):
-        return self._prefix
+    @property
+    def prefix_path(self):
+        return self._prefix_path
 
 
 class VM(object):
@@ -403,34 +411,3 @@ class HostVM(VM):
 
 class HEHostVM(HostVM):
     pass
-
-
-def main():
-
-    print "VAGRANT"
-    v = VagrantHosts()
-    v.collect_vms()
-    print v.vms()
-    #v.set_prefix()
-    print v.get_prefix()
-    #print "Host"
-    print v.host_vms()
-    #print "Engine"
-    print v.engine_vms()
-
-    vm = VM('engine')
-    ret = vm.copy_to('/tmp/ost_utils/ost.py', '/tmp' , recursive=True, as_user='root')
-    print ret.code
-    print ret.out
-    print ret.err
-    print 'ip: ' + vm.nic()
-    from pprint import pprint
-    pprint(vars(vm))
-    #print vm.nets()
-    print vm.running()
-    print vm.service('ovirt-engine').alive()
-    print vm.service('ovirt-engine')._request_start()
-    print vm.service('ovirt-enginex')._request_start()
-
-if __name__ == "__main__":
-    main()

@@ -60,14 +60,6 @@ class EngineVM(VM):
     def password(self):
         return self._password
 
-    def stop(self):
-        super(EngineVM, self).stop()
-        self._api_v3 = None
-
-    def _artifact_paths(self):
-        inherited_artifacts = super(EngineVM, self)._artifact_paths()
-        return set(inherited_artifacts + ['/var/log'])
-
     def _create_api(self, api_ver):
         url = 'https://%s/ovirt-engine/api' % self.ip()
         if api_ver == 3:
@@ -179,14 +171,7 @@ class EngineVM(VM):
 
 
 class HostVM(VM):
-    def _artifact_paths(self):
-        inherited_artifacts = super(HostVM, self)._artifact_paths()
-        return set(inherited_artifacts + [
-            '/var/log',
-        ])
-
+    pass
 
 class HEHostVM(HostVM):
-    def _artifact_paths(self):
-        inherited_artifacts = super(HEHostVM, self)._artifact_paths()
-        return set(inherited_artifacts)
+    pass

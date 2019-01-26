@@ -30,7 +30,13 @@ stage:
         - upgrade-from-release_suite_4.2
         - upgrade-from-prevrelease_suite_4.2
         - upgrade-from-release_suite_master
-        - basic-vagrant_suite_master
+        - basic-vagrant_suite_master:
+            runif:
+              filechanged:
+                - '{{ substage|replace("_", "[_-]") }}*'
+                - 'automation/{{ substage|replace("_", "[_-]") }}*'
+                - 'automation/vagrant_suite.sh'
+                - 'ost_utils/*'
         - test-ost-container:
             runif:
               filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']

@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 
 # This script is meant to be run within a mock environment, using
 # mock_runner.sh, from the root of the repository:
@@ -14,7 +14,6 @@ SUITE=${SUITE##*/}
 # Remove file extension
 SUITE=${SUITE%.*}
 
-echo "Running suite: $SUITE"
 
 SUITE_REAL_PATH=$(realpath "$SUITE")
 
@@ -163,10 +162,24 @@ resolve_host_cache() {
 }
 
 
-main () {
+_env_setup() {
     resolve_host_cache
     setup_virt
     setup_vagrant
+}
+
+
+env_setup() {
+    _env_setup &> /dev/null
+    if [[ "$VAGRANT_HOME" ]]; then
+        echo "export VAGRANT_HOME=${VAGRANT_HOME}"
+    fi
+}
+
+
+main () {
+    echo "Running suite: $SUITE"
+    _env_setup
     rm -rf exported-artifacts
     mkdir -p exported-artifacts
 
@@ -219,4 +232,11 @@ main () {
 }
 
 
-[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    if [[ "$#" -gt 0 ]]; then
+        "$1"
+    else
+        set -x
+        main
+    fi
+fi

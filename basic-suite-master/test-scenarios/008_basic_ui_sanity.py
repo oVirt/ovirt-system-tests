@@ -21,6 +21,7 @@ from __future__ import print_function
 import functools
 import os
 import re
+import shutil
 import subprocess
 import time
 from datetime import datetime
@@ -160,6 +161,9 @@ def _get_chrome_capabilities():
 
 def init():
     # make screenshot directory
+    if os.path.exists(SS_PATH):
+        # clean up old directory
+        shutil.rmtree(SS_PATH)
     os.makedirs(SS_PATH)
 
 

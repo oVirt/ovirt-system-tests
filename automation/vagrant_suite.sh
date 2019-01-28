@@ -171,8 +171,14 @@ _env_setup() {
 
 env_setup() {
     _env_setup &> /dev/null
-    if [[ "$VAGRANT_HOME" ]]; then
-        echo "export VAGRANT_HOME=${VAGRANT_HOME}"
+    local vars=()
+
+    for v in VAGRANT_HOME OST_HOST_CACHE; do
+        [[ "$v" ]] && vars+=("${v}=${!v}")
+    done
+
+    if [[ "${#vars[@]}" -gt 0 ]]; then
+        echo "export ${vars[*]}"
     fi
 }
 

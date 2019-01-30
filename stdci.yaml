@@ -17,8 +17,12 @@ stage:
         - basic_suite_master
         - compat-4.1_suite_master
         - compat-4.2_suite_master
-        - hc-basic_suite_4.2
-        - hc-basic_suite_master
+        - hc-basic_suite_4.2:
+            runtime-requirements:
+              support-nesting-level: 2
+        - hc-basic_suite_master:
+            runtime-requirements:
+              support-nesting-level: 2
         - he-basic-ansible_suite_4.2
         - he-basic_suite_master
         - he-basic-iscsi_suite_master
@@ -63,3 +67,4 @@ stage:
         fromfile: 'automation/{{ substage }}.sh'
 runtime-requirements:
   support-nesting-level: 2
+  isolation_level: container

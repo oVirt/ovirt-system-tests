@@ -204,7 +204,24 @@ generate_add_local_repo_script() {
 env_start () {
     cd "$PREFIX"
     cp "${SUITE}/Vagrantfile" .
-    "$CLI" up
+    "$CLI" up --no-provision
+
+    local tmpxml=$(mktemp --suffix .xml)
+    for x in $(virsh -q list | awk '{print $2}' | grep deployment-${SUITE##*/})
+    do
+        virsh dumpxml $x > $tmpxml
+
+        grep lsilogic $tmpxml > /dev/null && {
+            sed -i 's/lsilogic/virtio-scsi/' $tmpxml
+            virsh destroy $x
+            virsh define $tmpxml
+            virsh start $x
+        }
+    done
+    rm $tmpxml
+
+    "$CLI" up --provision
+
     cd -
 }
 

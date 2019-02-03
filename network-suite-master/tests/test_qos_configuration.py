@@ -89,14 +89,6 @@ def qos_net(default_data_center, host_qos):
 
 
 @pytest.fixture(scope='module')
-def cluster_net(default_cluster, qos_net):
-    cluster_network = clusterlib.ClusterNetwork(default_cluster)
-    cluster_network.assign(qos_net, required=False)
-    yield cluster_network
-    cluster_network.remove()
-
-
-@pytest.fixture(scope='module')
 def cluster_host_up(system, default_cluster):
     any_host_id = default_cluster.host_ids()[0]
     host = hostlib.Host(system)
@@ -124,20 +116,21 @@ def vm_down(system, default_cluster, default_storage_domain):
 #
 def test_setup_net_with_qos(system, default_data_center, default_cluster,
                             default_storage_domain, cluster_host_up,
-                            cluster_net, qos_net, vm_qos):
+                            qos_net, vm_qos):
 
     qos_configs = default_data_center.list_qos()
     assert len([qos for qos in qos_configs if qos.name in QOS_NAMES]) == 2
 
-    attach_data = _create_net_attachment_data(qos_net)
-    with hostlib.setup_networks(cluster_host_up, (attach_data,)):
-        with netlib.create_vnic_profile(
-                system, QOS_VP, qos_net, vm_qos) as profile:
-            with vm_down(
-                    system, default_cluster, default_storage_domain) as vm:
-                vm.create_vnic(NIC2, profile)
-                vm.run()
-                vm.wait_for_powering_up_status()
+    with clusterlib.network_assignment(default_cluster, qos_net):
+        attach_data = _create_net_attachment_data(qos_net)
+        with hostlib.setup_networks(cluster_host_up, (attach_data,)):
+            with netlib.create_vnic_profile(
+                    system, QOS_VP, qos_net, vm_qos) as profile:
+                with vm_down(
+                        system, default_cluster, default_storage_domain) as vm:
+                    vm.create_vnic(NIC2, profile)
+                    vm.run()
+                    vm.wait_for_powering_up_status()
 
 
 def _create_net_attachment_data(qos_net):

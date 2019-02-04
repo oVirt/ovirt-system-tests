@@ -69,6 +69,19 @@ includepkgs = cockpit-ovirt-dashboard
 	ovirt-web-ui
 	python-ovirt-engine-sdk4
 	vdsm
+	vdsm-api
+	vdsm-client
+	vdsm-common
+	vdsm-hook-ethtool-options
+	vdsm-hook-fcoe
+	vdsm-hook-openstacknet
+	vdsm-hook-vhostmd
+	vdsm-hook-vmfex-dev
+	vdsm-http
+	vdsm-jsonrpc
+	vdsm-network
+	vdsm-python
+	vdsm-yajsonrpc
 
 [glusterfs-3.12-el7]
 name = GlusterFS repo
@@ -90,8 +103,16 @@ enabled = 1
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
+	augeas
+	augeas-libs
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
+	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
+	device-mapper-libs
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -119,6 +140,7 @@ includepkgs = 389-ds-base
 	fence-agents-ipmilan
 	fence-agents-kdump
 	fence-agents-mpath
+	fence-agents-redfish
 	fence-agents-rhevm
 	fence-agents-rsa
 	fence-agents-rsb
@@ -128,12 +150,24 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-soap
 	fence-agents-wti
 	git
+	ipa-client
+	ipa-client-common
+	ipa-common
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	krb5-libs
+	krb5-workstation
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
+	libipa_hbac
+	libkadm5
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libvirt
 	libvirt-bash-completion
 	libvirt-client
@@ -161,9 +195,27 @@ includepkgs = 389-ds-base
 	libvirt-lock-sanlock
 	lvm2
 	lvm2-libs
+	mesa-libgbm
+	mesa-libglapi
+	openldap
+	openldap-clients
+	osinfo-db
+	perl
 	perl-Git
+	perl-IO-Zlib
+	perl-Package-Constants
+	perl-Pod-Escapes
+	perl-libs
+	perl-macros
+	policycoreutils
+	policycoreutils-python
 	python-libguestfs
+	python-libipa_hbac
 	python-paramiko
+	python-sss-murmur
+	python-sssdconfig
+	python2-ipaclient
+	python2-ipalib
 	ruby
 	ruby-irb
 	ruby-libs
@@ -173,6 +225,16 @@ includepkgs = 389-ds-base
 	rubygem-rdoc
 	rubygems
 	sos
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
@@ -226,8 +288,6 @@ includepkgs = OVMF
 	atlas
 	attr
 	audit-libs-python
-	augeas
-	augeas-libs
 	authconfig
 	autofs
 	autogen-libopts
@@ -236,8 +296,6 @@ includepkgs = OVMF
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-libs
-	bind-utils
 	blas
 	boost-iostreams
 	boost-random
@@ -299,9 +357,6 @@ includepkgs = OVMF
 	httpcomponents-core
 	httpd
 	httpd-tools
-	ipa-client
-	ipa-client-common
-	ipa-common
 	ipmitool
 	iptables-services
 	ipxe-roms-qemu
@@ -324,7 +379,6 @@ includepkgs = OVMF
 	junit
 	jzlib
 	keyutils
-	krb5-workstation
 	lapack
 	libICE
 	libSM
@@ -363,10 +417,8 @@ includepkgs = OVMF
 	libibverbs
 	libicu
 	libini_config
-	libipa_hbac
 	libiscsi
 	libjpeg-turbo
-	libkadm5
 	libldb
 	libmodman
 	libnfsidmap
@@ -393,11 +445,6 @@ includepkgs = OVMF
 	libselinux-ruby
 	libsemanage-python
 	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -426,8 +473,6 @@ includepkgs = OVMF
 	mailx
 	make
 	mdadm
-	mesa-libgbm
-	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
@@ -451,14 +496,11 @@ includepkgs = OVMF
 	objectweb-asm
 	oddjob
 	oddjob-mkhomedir
-	openldap-clients
 	openssl
 	openwsman-python
 	opus
-	osinfo-db
 	osinfo-db-tools
 	pciutils
-	perl
 	perl-Archive-Tar
 	perl-Carp
 	perl-Compress-Raw-Bzip2
@@ -474,12 +516,9 @@ includepkgs = OVMF
 	perl-Getopt-Long
 	perl-HTTP-Tiny
 	perl-IO-Compress
-	perl-IO-Zlib
 	perl-Mozilla-LDAP
 	perl-NetAddr-IP
-	perl-Package-Constants
 	perl-PathTools
-	perl-Pod-Escapes
 	perl-Pod-Perldoc
 	perl-Pod-Simple
 	perl-Pod-Usage
@@ -492,15 +531,12 @@ includepkgs = OVMF
 	perl-Time-Local
 	perl-constant
 	perl-hivex
-	perl-libs
-	perl-macros
 	perl-parent
 	perl-podlators
 	perl-threads
 	perl-threads-shared
 	pexpect
 	pixman
-	policycoreutils-python
 	postgresql-jdbc
 	postgresql-libs
 	psmisc
@@ -528,7 +564,6 @@ includepkgs = OVMF
 	python-kitchen
 	python-kmod
 	python-ldap
-	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -539,16 +574,12 @@ includepkgs = OVMF
 	python-qrcode-core
 	python-rtslib
 	python-setuptools
-	python-sss-murmur
-	python-sssdconfig
 	python-suds
 	python-urwid
 	python-webob
 	python-yubico
 	python2-cryptography
 	python2-futures
-	python2-ipaclient
-	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32
@@ -583,16 +614,6 @@ includepkgs = OVMF
 	socat
 	spice-server
 	squashfs-tools
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	stax2-api
 	supermin5
 	svrcore
@@ -762,20 +783,7 @@ includepkgs = archaius-core
 	rxjava
 	safelease
 	unboundid-ldapsdk
-	vdsm-api
-	vdsm-client
-	vdsm-common
-	vdsm-hook-ethtool-options
-	vdsm-hook-fcoe
-	vdsm-hook-openstacknet
-	vdsm-hook-vhostmd
-	vdsm-hook-vmfex-dev
-	vdsm-http
-	vdsm-jsonrpc
 	vdsm-jsonrpc-java
-	vdsm-network
-	vdsm-python
-	vdsm-yajsonrpc
 	vhostmd
 
 [centos-ovirt-4.2-el7]
@@ -849,4 +857,3 @@ includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server
 	rh-postgresql95-runtime
-

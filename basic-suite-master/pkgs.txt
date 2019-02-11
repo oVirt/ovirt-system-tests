@@ -36,3 +36,6 @@ sg3_utils
 targetcli
 tuned
 pytz
+python2-six
+python2-idna
+pyOpenSSL

@@ -503,7 +503,6 @@ includepkgs = OVMF
 	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
-	python-chardet
 	python-configshell
 	python-dmidecode
 	python-dns
@@ -529,11 +528,9 @@ includepkgs = OVMF
 	python-pwquality
 	python-pycparser
 	python-qrcode-core
-	python-requests
 	python-rtslib
 	python-setuptools
 	python-suds
-	python-urllib3
 	python-urwid
 	python-webob
 	python-yubico
@@ -672,6 +669,7 @@ includepkgs = ansible
 	python2-crypto
 	python2-mimeparse
 	python2-pbr
+	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
 	rubygem-multipart-post

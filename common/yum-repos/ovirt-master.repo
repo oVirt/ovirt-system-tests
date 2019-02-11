@@ -169,6 +169,7 @@ includepkgs = 389-ds-base
 	rubygem-rdoc
 	rubygems
 	sos
+	spice-server
 	sssd
 	sssd-ad
 	sssd-client
@@ -500,10 +501,8 @@ includepkgs = OVMF
 	pyparsing
 	python-IPy
 	python-augeas
-	python-babel
 	python-backports
 	python-backports-ssl_match_hostname
-	python-cffi
 	python-chardet
 	python-configshell
 	python-dmidecode
@@ -511,7 +510,6 @@ includepkgs = OVMF
 	python-enum34
 	python-ethtool
 	python-gssapi
-	python-idna
 	python-inotify
 	python-ipaddr
 	python-ipaddress
@@ -539,11 +537,11 @@ includepkgs = OVMF
 	python-urwid
 	python-webob
 	python-yubico
-	python2-cryptography
 	python2-futures
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32
+	pytz
 	pyusb
 	qdox
 	quota
@@ -580,7 +578,6 @@ includepkgs = OVMF
 	sgabios-bin
 	slf4j
 	socat
-	spice-server
 	squashfs-tools
 	stax2-api
 	supermin5
@@ -671,6 +668,7 @@ includepkgs = ansible
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
 	python-unittest2
+	python2-asn1crypto
 	python2-crypto
 	python2-mimeparse
 	python2-pbr

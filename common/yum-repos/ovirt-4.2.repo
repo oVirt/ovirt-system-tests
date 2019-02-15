@@ -164,6 +164,8 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd

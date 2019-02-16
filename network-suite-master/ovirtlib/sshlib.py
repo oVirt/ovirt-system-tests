@@ -67,7 +67,7 @@ class Node(object):
         self._password = password
 
     def exec_command(self, command):
-        exec_command(
+        return exec_command(
             address=self._address,
             password=self._password,
             command=command,
@@ -77,3 +77,23 @@ class Node(object):
     def set_mtu(self, iface_name, mtu_value):
         self.exec_command('ip link set {iface} mtu {mtu}'
                           .format(iface=iface_name, mtu=mtu_value))
+
+    def assert_default_route(self, expected_v6_route_address):
+        assert expected_v6_route_address == self.get_default_route_v6()
+
+    def get_default_route_v6(self):
+        """
+        :return: the v6 default route as string or None
+        """
+        return self._get_default_route('inet6')
+
+    def _get_default_route(self, family):
+        """
+        :param family: inet for ipv4 or inet6 for ipv6
+        :return: the default route address as string or None
+        """
+        command = 'ip -o -f ' + family + ' r show default'
+        res = self.exec_command(command)
+        if res is not None:
+            res = res[(res.find('via ') + len('via ')):res.find(' dev')]
+        return res

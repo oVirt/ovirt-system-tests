@@ -22,6 +22,8 @@ import ovirtsdk4
 from ovirtsdk4 import types
 
 from ovirtlib import clusterlib
+from ovirtlib import netattachlib
+from ovirtlib import netlib
 from ovirtlib import syncutil
 from ovirtlib.sdkentity import SDKRootEntity
 
@@ -256,6 +258,41 @@ class Host(SDKRootEntity):
     def _removed_net_attachments(self, modified_networks):
         return [attachment for attachment in self._get_existing_attachments()
                 if attachment.network.name not in modified_networks]
+
+    def get_mgmt_net_attachment_data(self):
+        return self._get_attachment_data_for_networks(
+            (self.get_mgmt_network(),))[0]
+
+    def get_mgmt_network(self):
+        mgmt_net_id = self._get_mgmt_cluster_network().id
+        return self._get_network_by_id(mgmt_net_id)
+
+    def _get_attachment_data_for_networks(self, networks):
+        network_attachments = self._get_attachments_for_networks(networks)
+        network_attachments_data = []
+        for attachment in network_attachments:
+            datum = netattachlib.NetworkAttachmentData(
+                self._get_network_by_id(attachment.network.id),
+                self._get_nic_name(attachment.host_nic.id),
+                id=attachment.id,
+                in_sync=attachment.in_sync
+            )
+            datum.set_ip_assignments(attachment)
+            network_attachments_data.append(datum)
+        return network_attachments_data
+
+    def _get_nic_name(self, nic_id):
+        return (self._parent_sdk_system.hosts_service.host_service(self.id)
+                .nics_service().nic_service(nic_id).get().name)
+
+    def _get_network_by_id(self, network_id):
+        dc = self._get_data_center()
+        network = netlib.Network(dc)
+        network.import_by_id(network_id)
+        return network
+
+    def _get_data_center(self):
+        return self.get_cluster().get_data_center()
 
     def _get_mgmt_net_attachment(self):
         mgmt_cluster_network = self._get_mgmt_cluster_network()

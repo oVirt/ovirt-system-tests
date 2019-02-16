@@ -142,3 +142,35 @@ class NetworkAttachmentData(object):
             )
         )
         return ip_address_assignment
+
+    def set_ip_assignments(self, network_attachment):
+        """
+        :param network_attachment: types.NetworkAttachment
+        """
+        self._ip_assignments = self._to_ip_assignments(
+            network_attachment.ip_address_assignments
+        )
+
+    def _to_ip_assignments(self, ip_address_assignments):
+        """
+        :param ip_address_assignments: list(types.IpAddressAssignment)
+        :return: list(netattachlib.IpAssignment)
+        """
+        return [
+            self._to_ip_assignment(ip_address_assignment)
+            for ip_address_assignment
+            in ip_address_assignments
+        ]
+
+    def _to_ip_assignment(self, ip_address_assignment):
+        """
+        :param ip_address_assignment: types.IpAddressAssignment
+        :return: netattachlib.IpAssignment
+        """
+        return IpAssignment(
+            ip_address_assignment.ip.address,
+            ip_address_assignment.ip.netmask,
+            ip_address_assignment.ip.gateway,
+            ip_address_assignment.ip.version,
+            ip_address_assignment.assignment_method
+        )

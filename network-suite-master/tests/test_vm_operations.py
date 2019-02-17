@@ -20,8 +20,8 @@
 import pytest
 
 from ovirtlib import virtlib
+from ovirtlib import netattachlib
 from ovirtlib import netlib
-from ovirtlib import hostlib
 from ovirtlib import clusterlib
 from ovirtlib import datacenterlib
 from ovirtlib import templatelib
@@ -72,9 +72,9 @@ def running_vm_0(system, default_cluster, default_storage_domain,
 
 @pytest.fixture
 def host_0_with_mig_net(migration_network, host_0_up):
-    ip_config = netlib.create_static_ip_config_assignment(
+    ip_config = netattachlib.create_static_ip_config_assignment(
         addr=MIG_NET_IPv4_ADDR_1, mask=MIG_NET_IPv4_MASK)
-    mig_att_data = hostlib.NetworkAttachmentData(
+    mig_att_data = netattachlib.NetworkAttachmentData(
         migration_network, ETH1, [ip_config])
     host_0_up.setup_networks([mig_att_data])
     yield host_0_up
@@ -83,9 +83,9 @@ def host_0_with_mig_net(migration_network, host_0_up):
 
 @pytest.fixture
 def host_1_with_mig_net(migration_network, host_1_up):
-    ip_config = netlib.create_static_ip_config_assignment(
+    ip_config = netattachlib.create_static_ip_config_assignment(
         addr=MIG_NET_IPv4_ADDR_2, mask=MIG_NET_IPv4_MASK)
-    mig_att_data = hostlib.NetworkAttachmentData(
+    mig_att_data = netattachlib.NetworkAttachmentData(
         migration_network, ETH1, [ip_config])
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up

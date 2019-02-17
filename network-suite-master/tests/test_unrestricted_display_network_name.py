@@ -20,7 +20,7 @@
 import pytest
 
 from ovirtlib import clusterlib
-from ovirtlib import hostlib
+from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
@@ -55,9 +55,9 @@ def display_network_attached_to_host_0(host_0_up, display_network):
     DISP_NET_IPv4_ADDR_1 = '192.0.3.1'
     DISP_NET_IPv4_MASK = '255.255.255.0'
 
-    ip_config = netlib.create_static_ip_config_assignment(
+    ip_config = netattachlib.create_static_ip_config_assignment(
         addr=DISP_NET_IPv4_ADDR_1, mask=DISP_NET_IPv4_MASK)
-    disp_att_data = hostlib.NetworkAttachmentData(
+    disp_att_data = netattachlib.NetworkAttachmentData(
         display_network, ETH1, [ip_config])
     host_0_up.setup_networks([disp_att_data])
     yield host_0_up

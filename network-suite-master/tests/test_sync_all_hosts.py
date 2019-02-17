@@ -23,6 +23,7 @@ import contextlib2
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
+from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import sshlib as ssh
 
@@ -48,10 +49,10 @@ def test_sync_across_cluster(default_data_center, default_cluster,
 
 
 def create_attachment(network, i):
-    ip_config = netlib.create_static_ip_config_assignment(
+    ip_config = netattachlib.create_static_ip_config_assignment(
         addr='192.168.125.' + str(i + 2), mask='255.255.255.0'
     )
-    att_datum = hostlib.NetworkAttachmentData(network, ETH2, (ip_config,))
+    att_datum = netattachlib.NetworkAttachmentData(network, ETH2, (ip_config,))
     return att_datum
 
 

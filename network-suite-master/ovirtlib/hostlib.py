@@ -53,26 +53,6 @@ class HostStatusError(Exception):
     pass
 
 
-class NetworkAttachmentData(object):
-
-    def __init__(self, network, nic_name, ip_configuration=None):
-        self._network = network
-        self._nic_name = nic_name
-        self._ip_configuration = ip_configuration
-
-    @property
-    def network(self):
-        return self._network
-
-    @property
-    def nic_name(self):
-        return self._nic_name
-
-    @property
-    def ip_configuration(self):
-        return self._ip_configuration
-
-
 @contextlib.contextmanager
 def change_cluster(host, cluster):
     original_cluster = host.get_cluster()

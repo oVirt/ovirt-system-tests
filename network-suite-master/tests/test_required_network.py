@@ -19,6 +19,7 @@
 #
 import pytest
 
+from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import hostlib
 from ovirtlib import clusterlib
@@ -62,10 +63,10 @@ def cluster_hosts_up(default_cluster, system):
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
         for i, host in enumerate(cluster_hosts_up):
-            ip_config = netlib.create_static_ip_config_assignment(
+            ip_config = netattachlib.create_static_ip_config_assignment(
                 addr=REQ_NET_IPv4_ADDR_PREFIX + str(i + 2),
                 mask=REQ_NET_IPv4_MASK)
-            req_att_data = hostlib.NetworkAttachmentData(
+            req_att_data = netattachlib.NetworkAttachmentData(
                 req_net, ETH1, [ip_config])
             host.setup_networks([req_att_data])
     except Exception as e:

@@ -25,6 +25,7 @@ from ovirtsdk4 import types
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
+from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
@@ -140,8 +141,8 @@ def test_setup_net_with_qos(system, default_data_center, default_cluster,
 
 
 def _create_net_attachment_data(qos_net):
-    ip_config = netlib.create_static_ip_config_assignment(
+    ip_config = netattachlib.create_static_ip_config_assignment(
         addr=QOS_NET_IPv4_ADDR, mask=QOS_NET_IPv4_MASK
     )
-    att_data = hostlib.NetworkAttachmentData(qos_net, ETH2, (ip_config,))
+    att_data = netattachlib.NetworkAttachmentData(qos_net, ETH2, (ip_config,))
     return att_data

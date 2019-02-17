@@ -51,30 +51,9 @@ class NetworkUsage(object):
     VM = types.NetworkUsage.VM
 
 
-class IpVersion(object):
-
-    V4 = types.IpVersion.V4
-    V6 = types.IpVersion.V6
-
-
-DYNAMIC_IP_CONFIG = [
-    types.IpAddressAssignment(assignment_method=types.BootProtocol.DHCP),
-    types.IpAddressAssignment(assignment_method=types.BootProtocol.DHCP,
-                              ip=types.Ip(version=IpVersion.V6))
-]
-
-
 class VnicInterfaceType(object):
 
     VIRTIO = types.NicInterface.VIRTIO
-
-
-def create_static_ip_config_assignment(addr, mask, gateway=None,
-                                       version=IpVersion.V4):
-    ip = types.Ip(address=addr, netmask=mask,
-                  version=version, gateway=gateway)
-    return types.IpAddressAssignment(
-        assignment_method=types.BootProtocol.STATIC, ip=ip)
 
 
 class Network(SDKSubEntity):

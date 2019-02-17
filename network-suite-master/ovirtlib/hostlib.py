@@ -208,13 +208,21 @@ class Host(SDKRootEntity):
         )
 
     def networks_in_sync(self, networks=None):
+        attachments = self._get_attachments_for_networks(networks)
+        return all(att.in_sync for att in attachments)
+
+    def networks_out_of_sync(self, networks=None):
+        attachments = self._get_attachments_for_networks(networks)
+        return all(not att.in_sync for att in attachments)
+
+    def _get_attachments_for_networks(self, networks):
         if networks is None:
             attachments = self._get_existing_attachments()
         else:
             network_ids = {net.id for net in networks}
             attachments = [att for att in self._get_existing_attachments()
                            if att.network.id in network_ids]
-        return all(att.in_sync for att in attachments)
+        return attachments
 
     def clean_networks(self):
         mgmt_net_id = self._get_mgmt_net_attachment().network.id
@@ -246,6 +254,11 @@ class Host(SDKRootEntity):
 
     def wait_for_networks_in_sync(self, networks=None):
         syncutil.sync(exec_func=self.networks_in_sync,
+                      exec_func_args=(networks,),
+                      success_criteria=lambda s: s)
+
+    def wait_for_networks_out_of_sync(self, networks=None):
+        syncutil.sync(exec_func=self.networks_out_of_sync,
                       exec_func_args=(networks,),
                       success_criteria=lambda s: s)
 

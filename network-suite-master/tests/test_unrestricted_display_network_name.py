@@ -55,10 +55,10 @@ def display_network_attached_to_host_0(host_0_up, display_network):
     DISP_NET_IPv4_ADDR_1 = '192.0.3.1'
     DISP_NET_IPv4_MASK = '255.255.255.0'
 
-    ip_config = netattachlib.create_static_ip_config_assignment(
+    ip_assign = netattachlib.StaticIpAssignment(
         addr=DISP_NET_IPv4_ADDR_1, mask=DISP_NET_IPv4_MASK)
     disp_att_data = netattachlib.NetworkAttachmentData(
-        display_network, ETH1, [ip_config])
+        display_network, ETH1, [ip_assign])
     host_0_up.setup_networks([disp_att_data])
     yield host_0_up
     host_0_up.remove_networks([display_network])

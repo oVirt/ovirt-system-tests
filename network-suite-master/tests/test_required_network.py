@@ -63,11 +63,11 @@ def cluster_hosts_up(default_cluster, system):
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
         for i, host in enumerate(cluster_hosts_up):
-            ip_config = netattachlib.create_static_ip_config_assignment(
+            ip_assign = netattachlib.StaticIpAssignment(
                 addr=REQ_NET_IPv4_ADDR_PREFIX + str(i + 2),
                 mask=REQ_NET_IPv4_MASK)
             req_att_data = netattachlib.NetworkAttachmentData(
-                req_net, ETH1, [ip_config])
+                req_net, ETH1, [ip_assign])
             host.setup_networks([req_att_data])
     except Exception as e:
         # if setup fails for some of the hosts roll it back before aborting

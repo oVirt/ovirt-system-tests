@@ -1,5 +1,5 @@
 
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ class Host(SDKRootEntity):
         """
 
         modified_network_attachments = {
-            att_data.network.name: self._create_network_attachment(att_data)
+            att_data.network.name: att_data.to_network_attachment()
             for att_data in attachments_data
         }
         removed_network_attachments = None
@@ -252,18 +252,6 @@ class Host(SDKRootEntity):
                            HostStatus.INSTALL_FAILED):
             raise HostStatusError('{} is {}'.format(self.name, host_status))
         return False
-
-    def _create_network_attachment(self, attachment_data):
-        network = attachment_data.network
-        ip_configuration = attachment_data.ip_configuration
-
-        attachment = types.NetworkAttachment(
-            network=network.get_sdk_type(),
-            host_nic=types.HostNic(name=attachment_data.nic_name)
-        )
-        if ip_configuration is not None:
-            attachment.ip_address_assignments = ip_configuration
-        return attachment
 
     def _removed_net_attachments(self, modified_networks):
         return [attachment for attachment in self._get_existing_attachments()

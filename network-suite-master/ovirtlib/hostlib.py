@@ -277,9 +277,12 @@ class Host(SDKRootEntity):
                 if attachment.network.name not in modified_networks]
 
     def _get_mgmt_net_attachment(self):
-        mgmt_network = self.get_cluster().mgmt_network()
+        mgmt_cluster_network = self._get_mgmt_cluster_network()
         return next(att for att in self._get_existing_attachments()
-                    if att.network.id == mgmt_network.id)
+                    if att.network.id == mgmt_cluster_network.id)
+
+    def _get_mgmt_cluster_network(self):
+        return self.get_cluster().mgmt_network()
 
     def _get_existing_attachments(self):
         return list(self.service.network_attachments_service().list())

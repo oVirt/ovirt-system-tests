@@ -69,10 +69,13 @@ class StaticIpAssignment(IpAssignment):
 
 class NetworkAttachmentData(object):
 
-    def __init__(self, network, nic_name, ip_assignments=()):
+    def __init__(self, network, nic_name, ip_assignments=(), id=None,
+                 in_sync=True):
         self._network = network
         self._nic_name = nic_name
         self._ip_assignments = ip_assignments
+        self._id = id
+        self._in_sync = in_sync
 
     @property
     def network(self):
@@ -86,6 +89,18 @@ class NetworkAttachmentData(object):
     def ip_assignments(self):
         return self._ip_assignments
 
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def in_sync(self):
+        return self._in_sync
+
+    def get_gw6(self):
+        return next((a.gateway for a in self._ip_assignments
+                     if a.version == types.IpVersion.V6), None)
+
     def to_network_attachment(self):
         """
         :param attachment_data: netattachlib.NetworkAttachmentData
@@ -98,6 +113,8 @@ class NetworkAttachmentData(object):
         attachment.ip_address_assignments = self._to_ip_address_assignments(
             self.ip_assignments
         )
+        attachment.id = self.id
+        attachment.in_sync = self.in_sync
         return attachment
 
     def _to_ip_address_assignments(self, ip_assignments):

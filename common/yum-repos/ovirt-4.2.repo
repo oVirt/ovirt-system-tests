@@ -46,13 +46,9 @@ includepkgs = 389-ds-base
 	augeas
 	augeas-libs
 	bind-libs
-	bind-libs-lite
-	bind-license
 	bind-utils
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -96,7 +92,6 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	krb5-libs
 	krb5-workstation
 	libgudev1
 	libguestfs
@@ -137,7 +132,6 @@ includepkgs = 389-ds-base
 	lvm2-libs
 	mesa-libgbm
 	mesa-libglapi
-	openldap
 	openldap-clients
 	osinfo-db
 	perl
@@ -147,7 +141,6 @@ includepkgs = 389-ds-base
 	perl-Pod-Escapes
 	perl-libs
 	perl-macros
-	policycoreutils
 	policycoreutils-python
 	python-libguestfs
 	python-libipa_hbac
@@ -164,8 +157,6 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
-	selinux-policy
-	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -181,10 +172,7 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tomcat-servlet-3.0-api
 	tzdata-java
 	virt-v2v

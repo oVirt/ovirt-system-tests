@@ -39,8 +39,8 @@
     "el7.6-base-beta": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "el7.6-base-beta", 
+          "source": "ci-templates-vm",
+          "handle": "el7.6-base-beta",
           "timestamp": 1542889866.4599402
         }
       }
@@ -51,6 +51,15 @@
           "source": "ci-templates-vm",
           "handle": "el7.5-base",
           "timestamp": 1526202543.7837844
+        }
+      }
+    },
+    "el7.6-base-2": {
+      "versions": {
+        "v1": {
+          "source": "ci-templates-vm",
+          "handle": "el7.6-base-2",
+          "timestamp": 1550566639.2240992
         }
       }
     },

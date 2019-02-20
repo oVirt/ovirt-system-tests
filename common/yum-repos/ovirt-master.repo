@@ -701,6 +701,7 @@ includepkgs = collectd
 	collectd-postgresql
 	collectd-virt
 	collectd-write_http
+	collectd-write_syslog
 	fluentd
 	rubygem-cool.io
 	rubygem-elasticsearch

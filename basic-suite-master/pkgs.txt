@@ -39,3 +39,4 @@ pytz
 python2-six
 python2-idna
 pyOpenSSL
+collectd-write_syslog

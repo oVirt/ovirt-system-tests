@@ -1,0 +1,7 @@
+[ovirt-4.3-tested-el7]
+name = oVirt 4.3 Tested
+# temporary changed 4.3 to master till pkg will be in 4.3
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
+enabled = 1
+cost = 100
+includepkgs = python-ovirt-engine-sdk4

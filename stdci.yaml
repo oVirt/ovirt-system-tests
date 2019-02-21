@@ -32,8 +32,9 @@ stage:
         - he-basic_suite_master
         - he-basic-iscsi_suite_master
         - he-basic-role-remote_suite_master
-        - he-node-ng_suite_master
         - he-node-ng_suite_4.2
+        - he-node-ng_suite_4.3
+        - he-node-ng_suite_master
         - network_suite_4.2
         - network_suite_4.3
         - network_suite_master

@@ -24,6 +24,9 @@ stage:
         - hc-basic_suite_4.2:
             runtime-requirements:
               support-nesting-level: 2
+        - hc-basic_suite_4.3:
+            runtime-requirements:
+              support-nesting-level: 2
         - hc-basic_suite_master:
             runtime-requirements:
               support-nesting-level: 2

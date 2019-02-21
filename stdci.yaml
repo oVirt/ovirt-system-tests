@@ -3,6 +3,7 @@ stage:
   - poll-upstream-sources:
       substage:
         - ovirt-master
+        - ovirt-4.3
         - ovirt-4.2
         - ovirt-4.2-release
         - ovirt-4.1-stable
@@ -14,6 +15,7 @@ stage:
         - dr_suite_master
         - ansible_suite_master
         - basic_suite_4.2
+        - basic_suite_4.3
         - basic_suite_master
         - compat-4.1_suite_master
         - compat-4.2_suite_master

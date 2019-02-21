@@ -18,13 +18,66 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import contextlib
+import socket
 
+from ovirtlib import clusterlib
 from ovirtlib import datacenterlib
+from ovirtlib import hostlib
+from ovirtlib import netattachlib
+from ovirtlib import netlib
 from ovirtlib import storagelib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
 
 from ovirtlib.storagelib import storage_domain
+from testlib import suite
+
+
+@suite.SKIP_SUITE_42
+def test_non_mgmt_display_network_over_ipv6(system, default_data_center,
+                                            default_cluster, host_0_up,
+                                            host0_eth1_ipv6, host0_eth2_ipv6,
+                                            engine_storage_ipv6):
+    """
+    This test verifies that:
+     * it is possible to create a display role over an ipv6 only network
+     * it is possible to connect with a graphic display to a VM over this
+       network
+    Note: host0_eth1_ipv6 fixture is mandatory because if there is no ipv6
+          address on eth1 of the host, connection with the storage server
+          cannot be maintained
+    """
+    assert host0_eth1_ipv6 != ''
+    with netlib.new_network('ipv6-disp_net', default_data_center) as net:
+        with clusterlib.network_assignment(default_cluster, net) as cl_net:
+            cl_net.set_usages((netlib.NetworkUsage.DISPLAY,))
+            no_v4 = netattachlib.NoIpAssignment()
+            v6_no_gw = netattachlib.StaticIpAssignment(
+                version=netattachlib.IpVersion.V6,
+                addr=host0_eth2_ipv6,
+                mask='64',
+            )
+            attach_data = netattachlib.NetworkAttachmentData(
+                net, 'eth2', (no_v4, v6_no_gw)
+            )
+            with hostlib.setup_networks(host_0_up, (attach_data,)):
+                host_0_up.wait_for_networks_in_sync()
+                VM0 = 'vm_non_mgmt_display_net_over_ipv6'
+                DSK = 'disk_non_mgmt_display_net_over_ipv6'
+                with vm_powering_up(system, default_data_center,
+                                    default_cluster, host_0_up,
+                                    engine_storage_ipv6, VM0, DSK) as vm:
+                    _try_spice_console_connect(vm)
+
+
+def _try_spice_console_connect(vm):
+    spice = virtlib.VmSpiceConsole(vm)
+    spice.import_config()
+    sock = socket.socket(socket.AF_INET6)
+    try:
+        sock.connect((spice.host, int(spice.port)))
+    finally:
+        sock.close()
 
 
 def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
@@ -118,3 +171,16 @@ def vm_down(system, default_cluster, storage_domain, vm_name, disk_name):
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.wait_for_down_status()
         yield vm
+
+
+@contextlib.contextmanager
+def vm_powering_up(system, default_data_center, default_cluster,
+                   host, engine_storage_ipv6, vm_name, disk_name):
+    with ipv6_nfs_storage_domain(system, host, engine_storage_ipv6) as sd:
+        with datacenterlib.attached_storage_domain(default_data_center,
+                                                   sd) as sd_attached:
+            with vm_down(system, default_cluster, sd_attached, vm_name,
+                         disk_name) as vm:
+                vm.run()
+                vm.wait_for_powering_up_status()
+                yield vm

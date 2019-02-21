@@ -42,6 +42,8 @@ from fixtures.engine import test_invocation_logger  # NOQA: F401
 
 from fixtures.fqdn import fqdn  # NOQA: F401
 from fixtures.fqdn import engine_storage_ipv6  # NOQA: F401
+from fixtures.fqdn import host0_eth1_ipv6  # NOQA: F401
+from fixtures.fqdn import host0_eth2_ipv6  # NOQA: F401
 
 from fixtures.storage import default_storage_domain  # NOQA: F401
 from fixtures.storage import lun_id  # NOQA: F401

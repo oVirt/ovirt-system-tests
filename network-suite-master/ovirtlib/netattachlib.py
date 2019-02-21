@@ -67,6 +67,13 @@ class StaticIpAssignment(IpAssignment):
                                                  types.BootProtocol.STATIC)
 
 
+class NoIpAssignment(IpAssignment):
+
+    def __init__(self, version=IpVersion.V4):
+        super(NoIpAssignment, self).__init__(None, None, None, version,
+                                             types.BootProtocol.NONE)
+
+
 class NetworkAttachmentData(object):
 
     def __init__(self, network, nic_name, ip_assignments=(), id=None,

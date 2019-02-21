@@ -1,0 +1,7 @@
+templates:
+  engine: el7.6-base-2
+  host: el7.6-base-2
+hostCount: 1
+install_storage_with_lago_deploy: true
+install_ovirt_host: false
+create_local_repo: add_local_repo_no_ext_access.sh

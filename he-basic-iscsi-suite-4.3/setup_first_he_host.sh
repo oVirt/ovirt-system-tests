@@ -1,0 +1,1 @@
+../he-basic-iscsi-suite-master/setup_first_he_host.sh

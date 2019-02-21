@@ -172,7 +172,10 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	systemd
+	systemd-libs
 	systemd-python
+	systemd-sysv
 	tomcat-servlet-3.0-api
 	tzdata-java
 	virt-v2v

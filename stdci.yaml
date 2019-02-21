@@ -20,6 +20,7 @@ stage:
         - basic_suite_master
         - compat-4.1_suite_master
         - compat-4.2_suite_master
+        - compat-4.3_suite_master
         - hc-basic_suite_4.2:
             runtime-requirements:
               support-nesting-level: 2

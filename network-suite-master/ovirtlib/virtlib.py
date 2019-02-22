@@ -17,9 +17,13 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import ConfigParser
+import io
 import time
 
 from contextlib import contextmanager
+
+from six.moves import http_client
 
 import ovirtsdk4
 from ovirtsdk4 import types
@@ -27,6 +31,7 @@ from ovirtsdk4 import types
 from ovirtlib import netlib
 from ovirtlib import clusterlib
 from ovirtlib import syncutil
+from ovirtlib.sdkentity import EntityNotFoundError
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
 
@@ -304,3 +309,59 @@ class VmSnapshot(SDKSubEntity):
         except ovirtsdk4.NotFoundError:
             return False
         return True
+
+
+class VmGraphicsConsole(SDKSubEntity):
+
+    def __init__(self, vm):
+        super(VmGraphicsConsole, self).__init__(vm)
+        self._config = None
+
+    @property
+    def host(self):
+        return next(item[1] for item in self._config if item[0] == 'host')
+
+    @property
+    def port(self):
+        return next(item[1] for item in self._config if item[0] == 'port')
+
+    def _get_parent_service(self, vm):
+        return vm.service.graphics_consoles_service()
+
+    def create(self):
+        pass
+
+    def _import_config(self, protocol):
+        _id = self._get_console_id(protocol)
+        self.import_by_id(_id)
+        parser = self._get_remote_viewer_file_parser()
+        self._config = parser.items('virt-viewer')
+
+    def _get_console_id(self, protocol):
+        return next(gcs.id for gcs in self._parent_service.list()
+                    if gcs.protocol == protocol)
+
+    def _get_remote_viewer_file_parser(self):
+        viewer_file = self._get_remote_viewer_file()
+        parser = ConfigParser.ConfigParser()
+        parser.readfp(io.BytesIO(viewer_file))
+        return parser
+
+    def _get_remote_viewer_file(self):
+        try:
+            return self.service.remote_viewer_connection_file()
+        except ovirtsdk4.Error as e:
+            if e.code == http_client.NO_CONTENT:
+                raise EntityNotFoundError("Vm is down, no content found")
+
+
+class VmSpiceConsole(VmGraphicsConsole):
+
+    def import_config(self):
+        self._import_config(types.GraphicsType.SPICE)
+
+
+class VmVncConsole(VmGraphicsConsole):
+
+    def import_config(self):
+        self._import_config(types.GraphicsType.VNC)

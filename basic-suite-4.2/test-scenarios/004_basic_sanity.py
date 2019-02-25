@@ -743,10 +743,10 @@ def verify_vm_import(api):
 def add_vm1_from_template(api):
     engine = api.system_service()
     templates_service = engine.templates_service()
-    glance_template = templates_service.list(
+    glance_templates = templates_service.list(
         search='name=%s' % TEMPLATE_CIRROS
-    )[0]
-    if glance_template is None:
+    )
+    if not glance_templates:
         raise SkipTest(
             '%s: template %s not available.' % (
                 add_vm1_from_template.__name__,

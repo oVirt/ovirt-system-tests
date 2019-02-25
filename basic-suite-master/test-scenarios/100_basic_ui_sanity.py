@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -106,15 +106,6 @@ global ss_prefix_browser_name
 
 def log(*args):
     print(*args)
-
-
-def _ss_prefix():
-    global ss_prefix_browser_name
-    now = datetime.now()
-    browser = ''
-    if ss_prefix_browser_name != None:
-        browser = '_' + ss_prefix_browser_name
-    return "%d%02d%02d_%02d%02d%02d_%03d%s" % (now.year, now.month, now.day, now.hour, now.minute, now.second, now.microsecond/1000, browser)
 
 
 def _shell(args, message=None):
@@ -227,7 +218,7 @@ def start_grid():
 def initialize_chrome():
     global ss_prefix_browser_name
     ss_prefix_browser_name = "chrome"
-    driver = _init_driver(_get_chrome_capabilities())
+    _init_driver(_get_chrome_capabilities())
 
 
 def initialize_firefox(insecure_certs=True):
@@ -249,6 +240,24 @@ def initialize_firefox(insecure_certs=True):
 
 def initialize_secure_firefox():
     initialize_firefox(False)
+
+
+def _screenshot_file_name_for(description):
+    date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    browser = ''
+    if ss_prefix_browser_name != None:
+        browser = '_' + ss_prefix_browser_name
+    return "{}{}_{}.png".format(date, browser, description)
+
+
+def _screenshot_file_path_for(description):
+    return os.path.join(SS_PATH, _screenshot_file_name_for(description))
+
+
+def save_screenshot(description, delay=1):
+    global ovirt_driver
+
+    ovirt_driver.save_screenshot(_screenshot_file_path_for(description), delay)
 
 
 def _init_driver(capabilities):
@@ -276,12 +285,12 @@ def _init_driver(capabilities):
     log("navigating to engine at %s" % URL)
     try:
         elem = driver.get(URL)
-        ovirt_driver.save_screenshot('%s%s_welcome.png' % (SS_PATH, _ss_prefix()), 5)
+        save_screenshot('welcome', 5)
 
     except WebDriverException as e:
         # In case insecured connection is using
         log("Insecure connection / error getting url")
-        ovirt_driver.save_screenshot('%s%s_missing_ca.png' % (SS_PATH, _ss_prefix()), 5)
+        save_screenshot('missing_ca', 5)
 
     return driver
 
@@ -292,14 +301,14 @@ def login():
     """
     global ovirt_driver
 
-    ovirt_driver.save_screenshot('%s%s_login_screen.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('login_screen')
     elem = ovirt_driver.wait_for_id(SEL_ID_LOGIN_USERNAME)
     elem.send_keys(USERNAME)
     elem = ovirt_driver.wait_for_id(SEL_ID_LOGIN_PASSWORD)
     elem.send_keys(PASSWORD)
-    ovirt_driver.save_screenshot('%s%s_login_screen.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('login_screen_credentials')
     elem.send_keys(Keys.RETURN)
-    ovirt_driver.save_screenshot('%s%s_logged_in.png' % (SS_PATH, _ss_prefix()), 5)
+    save_screenshot('logged_in', 5)
 
 
 def left_nav():
@@ -309,35 +318,35 @@ def left_nav():
     global ovirt_driver
 
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_compute.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_compute')
     ovirt_driver.id_click(SEL_ID_CLUSTERS_MENU)
     time.sleep(1)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_clusters.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_clusters')
 
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_compute.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_compute')
     ovirt_driver.id_click(SEL_ID_HOSTS_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_hosts.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_hosts')
 
     ovirt_driver.hover_to_id(SEL_ID_STORAGE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_storage.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_storage')
     ovirt_driver.id_click(SEL_ID_DOMAINS_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_domains.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_domains')
 
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_compute.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_compute')
     ovirt_driver.id_click(SEL_ID_TEMPLATES_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_templates.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_templates')
 
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_compute.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_compute')
     ovirt_driver.id_click(SEL_ID_POOLS_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_pools.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_pools')
 
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_compute.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_compute')
     ovirt_driver.id_click(SEL_ID_VMS_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_vms.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_vms')
 
 
 def download_engine_cert():
@@ -385,21 +394,21 @@ def image_upload(container_name):
     os.system('docker exec %s bash -c "echo "dummy_disk" >> %s"' % (container_name, image_local_path))
     # Navigate and upload an image
     ovirt_driver.hover_to_id(SEL_ID_STORAGE_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_hover_storage.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_hover_storage')
     ovirt_driver.id_click(SEL_ID_DISKS_MENU)
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_disks.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_disks')
     ovirt_driver.id_click('ActionPanelView_Upload')
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_upload.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_upload')
     ovirt_driver.action_on_element('Start', 'click')
-    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_start.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_clicked_start')
     ovirt_driver.action_on_element('UploadImagePopupView_fileUpload', 'send', image_local_path)
-    ovirt_driver.save_screenshot('%s%s_left_nav_file_uploaded.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_file_uploaded')
     ovirt_driver.action_on_element('VmDiskPopupWidget_alias', 'send', container_name)
-    ovirt_driver.save_screenshot('%s%s_left_nav_add_alias.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_add_alias')
     ovirt_driver.wait_for_id('UploadImagePopupView_Ok').click()
     # wait for image upload
     time.sleep(IMAGE_UPLOAD_DELAY)
-    ovirt_driver.save_screenshot('%s%s_left_nav_ok_clicked.png' % (SS_PATH, _ss_prefix()), 1)
+    save_screenshot('left_nav_ok_clicked')
 
 
 def close_driver():

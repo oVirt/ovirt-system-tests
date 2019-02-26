@@ -8,7 +8,7 @@ install_dependencies() {
     yum install -y python-pip
     pip install -U pip==9.0.3
     pip install flake8==3.1.0
-    pip install pylint==1.6.4
+    pip install isort==4.2.5 pylint==1.6.4
     pip install pytest==3.5
 
     pip install contextlib2

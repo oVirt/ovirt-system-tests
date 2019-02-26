@@ -4,6 +4,7 @@ HOST2IP=$2
 HOST3IP=$3
 HOSTEDENGINE="hc-engine"
 DOMAIN=$(dnsdomainname)
+PLAYBOOK_PATH="/etc/ansible/roles/gluster.ansible/playbooks/hc-ansible-deployment"
 
 sed \
     -e "s,@HOST0@,${HOST1IP},g" \
@@ -12,7 +13,7 @@ sed \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
     -e "s,@DOMAIN@,${DOMAIN},g" \
     < /root/ohc_gluster_inventory.yml.in \
-    > /usr/share/doc/gluster.ansible/playbooks/hc-ansible-deployment/ohc_gluster_inventory.yml
+    > ${PLAYBOOK_PATH}/ohc_gluster_inventory.yml
 
 
 MYADDR=$(\
@@ -59,17 +60,12 @@ sed \
     -e "s,@HOST3-IP@,${HOST3IP},g" \
     -e "s,@HOST0@,${MYHOSTNAME},g" \
     < /root/ohc_he_gluster_vars.json.in \
-    > /usr/share/doc/gluster.ansible/playbooks/hc-ansible-deployment/ohc_he_gluster_vars.json
+    > ${PLAYBOOK_PATH}/ohc_he_gluster_vars.json
 
 # Temporary hack till gluster-ansible is updated
-sed -i '/gather_facts: no/d'  /usr/share/doc/gluster.ansible/playbooks/hc-ansible-deployment/tasks/gluster_deployment.yml
+sed -i '/gather_facts: no/d'  ${PLAYBOOK_PATH}/tasks/gluster_deployment.yml
 
-cd /usr/share/doc/gluster.ansible/playbooks/hc-ansible-deployment/
-mv tasks/he_deployment.yml tasks/he_deployment.yml.bak
-cp /root/he_deployment.yml tasks/he_deployment.yml
-mv tasks/add_hosts_storage_domains.yml tasks/add_hosts_storage_domains.yml.bak
-cp /root/add_hosts_storage_domains.yml tasks/add_hosts_storage_domains.yml
-
+cd ${PLAYBOOK_PATH}
 export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i ohc_gluster_inventory.yml hc_deployment.yml --extra-vars='@ohc_he_gluster_vars.json'
 

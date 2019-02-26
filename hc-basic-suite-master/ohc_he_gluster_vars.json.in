@@ -15,7 +15,6 @@
  "he_enable_hc_gluster_service": true,
  "he_vm_ip_addr": "@ADDR@",
  "he_vm_ip_prefix": "24",
- "he_default_gateway": "@GW@",
  "he_dns_addr": "@GW@",
  "he_vm_etc_hosts": true,
  "he_mem_size_MB": 4096,

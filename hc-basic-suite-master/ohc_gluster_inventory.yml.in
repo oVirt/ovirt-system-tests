@@ -1,4 +1,4 @@
-hc-nodes:
+hc_nodes:
   hosts:
     # Host1
     @HOST0@:
@@ -177,6 +177,7 @@ hc-nodes:
     gluster_infra_disktype: RAID6
     gluster_infra_diskcount: 12
     gluster_infra_stripe_unit_size: 128
+    gluster_features_force_varlogsizecheck: false
 
 ## Auto add hosts vars
 

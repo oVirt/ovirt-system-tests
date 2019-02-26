@@ -52,16 +52,6 @@ he_deploy() {
 
     lago copy-to-vm \
         ${HOST}0 \
-        "${SUITE}/he_deployment.yml" \
-        /root/he_deployment.yml
-    
-    lago copy-to-vm \
-        ${HOST}0 \
-        "${SUITE}/add_hosts_storage_domains.yml" \
-        /root/add_hosts_storage_domains.yml
-
-    lago copy-to-vm \
-        ${HOST}0 \
         "${SUITE}/exec_playbook.sh" \
         /root/exec_playbook.sh
 

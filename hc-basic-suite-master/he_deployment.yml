@@ -1,7 +1,0 @@
----
-- name: Deploy oVirt hosted engine
-  hosts: localhost
-  roles:
-    - role: ovirt.hosted_engine_setup
-
-- include: add_hosts_storage_domains.yml

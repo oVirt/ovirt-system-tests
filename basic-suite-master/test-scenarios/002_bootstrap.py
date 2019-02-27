@@ -1013,7 +1013,7 @@ def get_host_devices(api):
             return True
         else:
             device_list += (device.name + '; ')
-    raise RuntimeError('Could not find block_vda1 device in host devices: {}'.format(device_list))
+    raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
 
 
 @testlib.with_ovirt_api4

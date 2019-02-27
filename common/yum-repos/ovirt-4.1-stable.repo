@@ -178,8 +178,6 @@ includepkgs = OVMF
 	atlas
 	attr
 	audit-libs-python
-	augeas
-	augeas-libs
 	authconfig
 	autofs
 	autogen-libopts
@@ -188,8 +186,6 @@ includepkgs = OVMF
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-libs
-	bind-utils
 	blas
 	boost-iostreams
 	boost-random
@@ -250,9 +246,6 @@ includepkgs = OVMF
 	http-parser
 	httpd
 	httpd-tools
-	ipa-client
-	ipa-client-common
-	ipa-common
 	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils
@@ -272,7 +265,6 @@ includepkgs = OVMF
 	junit
 	jzlib
 	keyutils
-	krb5-workstation
 	lapack
 	libICE
 	libSM
@@ -299,10 +291,8 @@ includepkgs = OVMF
 	libibverbs
 	libicu
 	libini_config
-	libipa_hbac
 	libiscsi
 	libjpeg-turbo
-	libkadm5
 	libldb
 	libmodman
 	libnfsidmap
@@ -328,11 +318,6 @@ includepkgs = OVMF
 	libselinux-ruby
 	libsemanage-python
 	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -359,8 +344,6 @@ includepkgs = OVMF
 	mailcap
 	make
 	mdadm
-	mesa-libgbm
-	mesa-libglapi
 	mod_ssl
 	msv-msv
 	msv-xsdlib
@@ -383,13 +366,10 @@ includepkgs = OVMF
 	objectweb-asm
 	oddjob
 	oddjob-mkhomedir
-	openldap-clients
 	openssl
 	openwsman-python
 	opus
-	osinfo-db
 	pciutils
-	perl
 	perl-Archive-Tar
 	perl-Carp
 	perl-Compress-Raw-Bzip2
@@ -404,12 +384,9 @@ includepkgs = OVMF
 	perl-Getopt-Long
 	perl-HTTP-Tiny
 	perl-IO-Compress
-	perl-IO-Zlib
 	perl-Mozilla-LDAP
 	perl-NetAddr-IP
-	perl-Package-Constants
 	perl-PathTools
-	perl-Pod-Escapes
 	perl-Pod-Perldoc
 	perl-Pod-Simple
 	perl-Pod-Usage
@@ -421,20 +398,18 @@ includepkgs = OVMF
 	perl-Time-Local
 	perl-constant
 	perl-hivex
-	perl-libs
-	perl-macros
 	perl-parent
 	perl-podlators
 	perl-threads
 	perl-threads-shared
 	pexpect
 	pixman
-	policycoreutils-python
 	postgresql
 	postgresql-jdbc
 	postgresql-libs
 	postgresql-server
 	psmisc
+	pyOpenSSL
 	pygobject2
 	pyparsing
 	python-IPy
@@ -460,7 +435,6 @@ includepkgs = OVMF
 	python-kitchen
 	python-kmod
 	python-ldap
-	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netaddr
@@ -473,8 +447,6 @@ includepkgs = OVMF
 	python-requests
 	python-rtslib
 	python-setuptools
-	python-sss-murmur
-	python-sssdconfig
 	python-suds
 	python-urllib3
 	python-urwid
@@ -482,10 +454,9 @@ includepkgs = OVMF
 	python-yubico
 	python2-cryptography
 	python2-futures
-	python2-ipaclient
-	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
+	pytz
 	pyusb
 	qdox
 	quota
@@ -508,18 +479,7 @@ includepkgs = OVMF
 	sgabios-bin
 	slf4j
 	socat
-	spice-server
 	squashfs-tools
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	stax2-api
 	supermin5
 	svrcore
@@ -561,6 +521,10 @@ max_connections = 10
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
+	augeas
+	augeas-libs
+	bind-libs
+	bind-utils
 	device-mapper-event
 	device-mapper-event-libs
 	fence-agents-all
@@ -590,6 +554,7 @@ includepkgs = 389-ds-base
 	fence-agents-ipmilan
 	fence-agents-kdump
 	fence-agents-mpath
+	fence-agents-redfish
 	fence-agents-rhevm
 	fence-agents-rsa
 	fence-agents-rsb
@@ -598,11 +563,22 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-rest
 	fence-agents-vmware-soap
 	fence-agents-wti
+	ipa-client
+	ipa-client-common
+	ipa-common
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	krb5-workstation
 	libguestfs
 	libguestfs-tools-c
+	libipa_hbac
+	libkadm5
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libvirt-bash-completion
 	libvirt-client
 	libvirt-daemon
@@ -627,7 +603,23 @@ includepkgs = 389-ds-base
 	libvirt-lock-sanlock
 	lvm2
 	lvm2-libs
+	mesa-libgbm
+	mesa-libglapi
+	openldap-clients
+	osinfo-db
+	perl
+	perl-IO-Zlib
+	perl-Package-Constants
+	perl-Pod-Escapes
+	perl-libs
+	perl-macros
+	policycoreutils-python
+	python-libipa_hbac
 	python-paramiko
+	python-sss-murmur
+	python-sssdconfig
+	python2-ipaclient
+	python2-ipalib
 	ruby
 	ruby-irb
 	ruby-libs
@@ -637,6 +629,17 @@ includepkgs = 389-ds-base
 	rubygem-rdoc
 	rubygems
 	sos
+	spice-server
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
@@ -676,6 +679,7 @@ includepkgs = ansible
 	nbdkit-plugin-vddk
 	puppet
 	python-ordereddict
+	python2-idna
 	python2-qpid-proton
 	qpid-proton-c
 	ruby-augeas

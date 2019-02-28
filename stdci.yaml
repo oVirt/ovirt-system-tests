@@ -6,6 +6,7 @@ stage:
         - ovirt-4.3
         - ovirt-4.2
         - ovirt-4.2-release
+        - ovirt-4.3-release
         - ovirt-4.1-stable
       script:
         fromfile: 'automation/{{ stage }}.{{ substage }}.sh'

@@ -505,7 +505,6 @@ includepkgs = OVMF
 	python-inotify
 	python-ipaddr
 	python-ipaddress
-	python-isodate
 	python-javapackages
 	python-jinja2
 	python-jwcrypto
@@ -704,6 +703,7 @@ includepkgs = collectd
 	collectd-postgresql
 	collectd-virt
 	collectd-write_http
+	collectd-write_syslog
 	fluentd
 	rubygem-cool.io
 	rubygem-elasticsearch

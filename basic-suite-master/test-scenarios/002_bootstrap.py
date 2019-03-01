@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014, 2017 Red Hat, Inc.
+# Copyright 2014, 2017, 2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import httplib
 import os
 import random
 import ssl
+import time
 
 import nose.tools as nt
 from nose import SkipTest
@@ -1007,12 +1008,14 @@ def get_host_devices(api):
     host_service = _random_host_service_from_dc(api, DC_NAME)
     devices_service = host_service.devices_service()
     devices = sorted(devices_service.list(), key=lambda device: device.name)
-    device_list = ''
-    for device in devices:
-        if device.name == 'block_vda_1': # first virtio-blk disk
-            return True
-        else:
-            device_list += (device.name + '; ')
+    for i in range(10):
+        device_list = ''
+        for device in devices:
+            if device.name == 'block_vda_1': # first virtio-blk disk
+                return True
+            else:
+                device_list += (device.name + '; ')
+        time.sleep(1)
     raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
 
 

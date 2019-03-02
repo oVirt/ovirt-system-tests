@@ -1006,9 +1006,9 @@ def get_domains(api):
 @testlib.with_ovirt_api4
 def get_host_devices(api):
     host_service = _random_host_service_from_dc(api, DC_NAME)
-    devices_service = host_service.devices_service()
-    devices = sorted(devices_service.list(), key=lambda device: device.name)
     for i in range(10):
+        devices_service = host_service.devices_service()
+        devices = sorted(devices_service.list(), key=lambda device: device.name)
         device_list = ''
         for device in devices:
             if device.name == 'block_vda_1': # first virtio-blk disk

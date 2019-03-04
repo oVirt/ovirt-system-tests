@@ -1,0 +1,1 @@
+../../upgrade-from-release-suite-4.3/test-scenarios-after-upgrade/004_basic_sanity.py

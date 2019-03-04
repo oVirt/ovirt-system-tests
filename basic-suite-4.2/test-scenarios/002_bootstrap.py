@@ -23,6 +23,7 @@ import httplib
 import os
 import random
 import ssl
+import time
 
 import nose.tools as nt
 from nose import SkipTest
@@ -1221,15 +1222,17 @@ def get_host_devices(api):
     engine = api.system_service()
     host = _random_host_from_dc_4(api, DC_NAME)
     host_service = engine.hosts_service().host_service(id=host.id)
-    devices_service = host_service.devices_service()
-    devices = sorted(devices_service.list(), key=lambda device: device.name)
-    device_list = ''
-    for device in devices:
-        if device.name == 'block_vda_1': # first virtio-blk disk
-            return True
-        else:
-            device_list += (device.name + '; ')
-    raise RuntimeError('Could not find block_vda1 device in host devices: {}'.format(device_list))
+    for i in range(10):
+        devices_service = host_service.devices_service()
+        devices = sorted(devices_service.list(), key=lambda device: device.name)
+        device_list = ''
+        for device in devices:
+            if device.name == 'block_vda_1': # first virtio-blk disk
+                return True
+            else:
+                device_list += (device.name + '; ')
+            time.sleep(1)
+    raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
 
 
 @testlib.with_ovirt_api4

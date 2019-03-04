@@ -489,7 +489,6 @@ includepkgs = OVMF
 	python-inotify
 	python-ipaddr
 	python-ipaddress
-	python-isodate
 	python-javapackages
 	python-jinja2
 	python-jwcrypto
@@ -677,7 +676,6 @@ includepkgs = archaius-core
 	ovirt-cockpit-sso
 	ovirt-guest-agent-common
 	ovirt-guest-agent-pam-module
-	pulp-rpm-handlers
 	python-daemon
 	python-dateutil
 	python-gofer
@@ -687,9 +685,6 @@ includepkgs = archaius-core
 	python-netaddr
 	python-nose
 	python-pthreading
-	python-pulp-agent-lib
-	python-pulp-common
-	python-pulp-rpm-common
 	python-testtools
 	python-websockify
 	python2-babel

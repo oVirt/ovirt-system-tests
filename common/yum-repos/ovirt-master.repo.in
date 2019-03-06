@@ -24,6 +24,13 @@ enabled = 1
 max_connections = 10
 ost_skip_injection = True
 
+[sac-gluster-ansible-el7] 
+name=Copr repo for gluster-ansible 
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-7-$basearch/ 
+gpgcheck=1 
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg 
+enabled=1 
+
 [glusterfs-5-el7]
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-5/

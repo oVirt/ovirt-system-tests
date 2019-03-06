@@ -190,6 +190,8 @@ includepkgs = 389-ds-base
 	libvirt-lock-sanlock
 	lvm2
 	lvm2-libs
+	mesa-libEGL
+	mesa-libGL
 	mesa-libgbm
 	mesa-libglapi
 	openldap-clients
@@ -279,6 +281,7 @@ includepkgs = OVMF
 	apache-commons-vfs
 	apr
 	apr-util
+	atk
 	atlas
 	attr
 	audit-libs-python
@@ -298,6 +301,7 @@ includepkgs = OVMF
 	bridge-utils
 	bzip2
 	c-ares
+	cairo
 	cal10n
 	celt051
 	certmonger
@@ -326,10 +330,12 @@ includepkgs = OVMF
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
+	fribidi
 	fuse
 	fuse-libs
 	gdb
 	gdisk
+	gdk-pixbuf2
 	genisoimage
 	geronimo-jms
 	giflib
@@ -338,11 +344,16 @@ includepkgs = OVMF
 	gnutls-dane
 	gnutls-utils
 	gperftools-libs
+	graphite2
 	gsettings-desktop-schemas
 	gssproxy
+	gtk-update-icon-cache
+	gtk2
 	hamcrest
+	harfbuzz
 	hesiod
 	hexedit
+	hicolor-icon-theme
 	hivex
 	hmaccalc
 	hsqldb
@@ -359,10 +370,12 @@ includepkgs = OVMF
 	isorelax
 	jackson
 	jakarta-commons-httpclient
+	jasper-libs
 	javamail
 	javapackages-tools
 	javassist
 	jaxen
+	jbigkit-libs
 	jboss-annotations-1.1-api
 	jdom
 	joda-convert
@@ -380,10 +393,17 @@ includepkgs = OVMF
 	libX11-common
 	libXau
 	libXcomposite
+	libXcursor
+	libXdamage
 	libXext
+	libXfixes
+	libXft
 	libXi
+	libXinerama
+	libXrandr
 	libXrender
 	libXtst
+	libXxf86vm
 	libaio
 	libarchive
 	libatasmart
@@ -406,6 +426,9 @@ includepkgs = OVMF
 	libevent
 	libfontenc
 	libgfortran
+	libglvnd
+	libglvnd-egl
+	libglvnd-glx
 	libguestfs-winsupport
 	libibumad
 	libibverbs
@@ -443,17 +466,21 @@ includepkgs = OVMF
 	libtar
 	libtdb
 	libtevent
+	libthai
+	libtiff
 	libtirpc
 	libudisks2
 	libusal
 	libusbx
 	libverto-libevent
 	libvirt-python
+	libwayland-client
 	libwayland-server
 	libwbclient
 	libwsman1
 	libxcb
 	libxml2-python
+	libxshmfence
 	libxslt
 	libyaml
 	lksctp-tools
@@ -494,7 +521,9 @@ includepkgs = OVMF
 	openwsman-python
 	opus
 	osinfo-db-tools
+	pango
 	pciutils
+	pcsc-lite-libs
 	perl-Archive-Tar
 	perl-Carp
 	perl-Compress-Raw-Bzip2
@@ -761,6 +790,7 @@ includepkgs = archaius-core
 	python-websockify
 	python2-babel
 	python2-cffi
+	python2-coverage
 	python2-cryptography
 	python2-extras
 	python2-fixtures

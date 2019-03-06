@@ -130,6 +130,8 @@ includepkgs = 389-ds-base
 	libvirt-lock-sanlock
 	lvm2
 	lvm2-libs
+	mesa-libEGL
+	mesa-libGL
 	mesa-libgbm
 	mesa-libglapi
 	openldap-clients
@@ -200,7 +202,6 @@ includepkgs = OVMF
 	abrt-python
 	abrt-retrace-client
 	abrt-tui
-	aide
 	alsa-lib
 	ant
 	antlr-tool
@@ -220,6 +221,7 @@ includepkgs = OVMF
 	apache-commons-vfs
 	apr
 	apr-util
+	atk
 	atlas
 	attr
 	audit-libs-python
@@ -239,6 +241,7 @@ includepkgs = OVMF
 	bridge-utils
 	bzip2
 	c-ares
+	cairo
 	cal10n
 	celt051
 	certmonger
@@ -267,10 +270,12 @@ includepkgs = OVMF
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
+	fribidi
 	fuse
 	fuse-libs
 	gdb
 	gdisk
+	gdk-pixbuf2
 	genisoimage
 	geronimo-jms
 	giflib
@@ -279,11 +284,16 @@ includepkgs = OVMF
 	gnutls-dane
 	gnutls-utils
 	gperftools-libs
+	graphite2
 	gsettings-desktop-schemas
 	gssproxy
+	gtk-update-icon-cache
+	gtk2
 	hamcrest
+	harfbuzz
 	hesiod
 	hexedit
+	hicolor-icon-theme
 	hivex
 	hmaccalc
 	hsqldb
@@ -300,10 +310,12 @@ includepkgs = OVMF
 	isorelax
 	jackson
 	jakarta-commons-httpclient
+	jasper-libs
 	javamail
 	javapackages-tools
 	javassist
 	jaxen
+	jbigkit-libs
 	jboss-annotations-1.1-api
 	jdom
 	joda-convert
@@ -321,10 +333,17 @@ includepkgs = OVMF
 	libX11-common
 	libXau
 	libXcomposite
+	libXcursor
+	libXdamage
 	libXext
+	libXfixes
+	libXft
 	libXi
+	libXinerama
+	libXrandr
 	libXrender
 	libXtst
+	libXxf86vm
 	libaio
 	libarchive
 	libatasmart
@@ -347,6 +366,9 @@ includepkgs = OVMF
 	libevent
 	libfontenc
 	libgfortran
+	libglvnd
+	libglvnd-egl
+	libglvnd-glx
 	libguestfs-winsupport
 	libibumad
 	libibverbs
@@ -384,6 +406,8 @@ includepkgs = OVMF
 	libtar
 	libtdb
 	libtevent
+	libthai
+	libtiff
 	libtirpc
 	libudisks2
 	libusal
@@ -396,6 +420,7 @@ includepkgs = OVMF
 	libwsman1
 	libxcb
 	libxml2-python
+	libxshmfence
 	libxslt
 	libyaml
 	lksctp-tools
@@ -436,7 +461,7 @@ includepkgs = OVMF
 	openwsman-python
 	opus
 	osinfo-db-tools
-	pam_pkcs11
+	pango
 	pciutils
 	pcsc-lite-libs
 	perl-Archive-Tar
@@ -772,12 +797,7 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs = rh-postgresql10-postgresql
-	rh-postgresql10-postgresql-contrib
-	rh-postgresql10-postgresql-libs
-	rh-postgresql10-postgresql-server
-	rh-postgresql10-runtime
-	rh-postgresql95-postgresql
+includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-contrib
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server

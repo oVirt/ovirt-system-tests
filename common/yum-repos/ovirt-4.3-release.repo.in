@@ -17,6 +17,13 @@ exclude = ovirt-guest-agent-common
 	ovirt-guest-agent-gdm-plugin
 	ovirt-guest-agent-pam-module
 
+[sac-gluster-ansible-el7]
+name=Copr repo for gluster-ansible
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-7-$basearch/
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
+enabled=1
+
 [glusterfs-3.12-el7]
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/

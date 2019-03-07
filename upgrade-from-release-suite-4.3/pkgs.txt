@@ -35,4 +35,4 @@ ansible-doc
 nbdkit-plugin-python2
 nbdkit-plugin-python-common
 nbdkit-plugin-vddk
-
+gluster-ansible-roles

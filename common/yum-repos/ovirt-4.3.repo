@@ -24,6 +24,19 @@ enabled = 1
 max_connections = 10
 ost_skip_injection = True
 
+[sac-gluster-ansible-el7]
+name = Copr repo for gluster-ansible
+baseurl = https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-7-$basearch/
+gpgcheck = 1
+gpgkey = https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
+enabled = 1
+includepkgs = gluster-ansible-cluster
+	gluster-ansible-features
+	gluster-ansible-infra
+	gluster-ansible-maintenance
+	gluster-ansible-repositories
+	gluster-ansible-roles
+
 [glusterfs-3.12-el7]
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
@@ -134,6 +147,8 @@ includepkgs = 389-ds-base
 	libvirt-lock-sanlock
 	lvm2
 	lvm2-libs
+	mesa-libEGL
+	mesa-libGL
 	mesa-libgbm
 	mesa-libglapi
 	openldap-clients
@@ -225,6 +240,7 @@ includepkgs = OVMF
 	apache-commons-vfs
 	apr
 	apr-util
+	atk
 	atlas
 	attr
 	audit-libs-python
@@ -244,6 +260,7 @@ includepkgs = OVMF
 	bridge-utils
 	bzip2
 	c-ares
+	cairo
 	cal10n
 	celt051
 	certmonger
@@ -273,10 +290,12 @@ includepkgs = OVMF
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
+	fribidi
 	fuse
 	fuse-libs
 	gdb
 	gdisk
+	gdk-pixbuf2
 	genisoimage
 	geronimo-jms
 	giflib
@@ -285,11 +304,16 @@ includepkgs = OVMF
 	gnutls-dane
 	gnutls-utils
 	gperftools-libs
+	graphite2
 	gsettings-desktop-schemas
 	gssproxy
+	gtk-update-icon-cache
+	gtk2
 	hamcrest
+	harfbuzz
 	hesiod
 	hexedit
+	hicolor-icon-theme
 	hivex
 	hmaccalc
 	hsqldb
@@ -305,10 +329,12 @@ includepkgs = OVMF
 	isorelax
 	jackson
 	jakarta-commons-httpclient
+	jasper-libs
 	javamail
 	javapackages-tools
 	javassist
 	jaxen
+	jbigkit-libs
 	jboss-annotations-1.1-api
 	jdom
 	joda-convert
@@ -326,10 +352,17 @@ includepkgs = OVMF
 	libX11-common
 	libXau
 	libXcomposite
+	libXcursor
+	libXdamage
 	libXext
+	libXfixes
+	libXft
 	libXi
+	libXinerama
+	libXrandr
 	libXrender
 	libXtst
+	libXxf86vm
 	libaio
 	libarchive
 	libatasmart
@@ -352,6 +385,9 @@ includepkgs = OVMF
 	libevent
 	libfontenc
 	libgfortran
+	libglvnd
+	libglvnd-egl
+	libglvnd-glx
 	libguestfs-winsupport
 	libibumad
 	libibverbs
@@ -390,6 +426,8 @@ includepkgs = OVMF
 	libtar
 	libtdb
 	libtevent
+	libthai
+	libtiff
 	libtirpc
 	libudisks2
 	libusal
@@ -402,6 +440,7 @@ includepkgs = OVMF
 	libwsman1
 	libxcb
 	libxml2-python
+	libxshmfence
 	libxslt
 	libyaml
 	lksctp-tools
@@ -448,6 +487,7 @@ includepkgs = OVMF
 	opus
 	osinfo-db-tools
 	pam_pkcs11
+	pango
 	patch
 	pciutils
 	pcsc-lite-libs

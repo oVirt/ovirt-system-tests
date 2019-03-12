@@ -15,5 +15,5 @@ ovirt-engine-extension-aaa-ldap*
 otopi-debug-plugins
 rubygem-fluent-plugin-elasticsearch
 vdsm-gluster
-gdeploy
+gluster-ansible-roles
 ovirt-engine-appliance

@@ -23,15 +23,19 @@ import nose.tools as nt
 
 import ovirtsdk4.types as types
 
+import test_utils
+import time
+
 MB = 2 ** 20
 GB = 2 ** 30
 
 TEST_CLUSTER = 'test-cluster'
+TEST_DC = 'test-dc'
 TEMPLATE_BLANK = 'Blank'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
-
+VM_WITH_INTERFACE = 'vm-with-iface'
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
@@ -182,7 +186,90 @@ def update_cluster_versions(api):
         )
 
 
+@testlib.with_ovirt_prefix
+def clean_hosts_yum_cache(prefix):
+    hosts = prefix.virt_env.host_vms()
+    for host in hosts:
+        host.ssh(
+            [
+                'yum',
+                'clean',
+                'all',
+            ]
+        )
+
+
+@testlib.with_ovirt_api4
+def run_vm_with_interface(api):
+    engine = api.system_service()
+    vms = engine.vms_service()
+
+    _wait_datacenter_up(api)
+
+    vm = vms.list(search=VM_WITH_INTERFACE)[0]
+    vm_service = vms.vm_service(vm.id)
+
+    vm_service.start()
+    _wait_vm_status(vm_service, types.VmStatus.UP)
+
+    vm_service.stop()
+    _wait_vm_status(vm_service, types.VmStatus.DOWN)
+
+
+def _wait_vm_status(vm, status):
+    testlib.assert_true_within_short(
+        lambda:
+        vm.get().status == status
+    )
+
+
+@testlib.with_ovirt_api4
+def upgrade_hosts(api):
+    engine = api.system_service()
+    hosts = engine.hosts_service()
+
+    host_list = hosts.list()
+
+    for host in host_list:
+        host_service = hosts.host_service(host.id)
+
+        with test_utils.TestEvent(engine, [884, 885]):
+            # HOST_AVAILABLE_UPDATES_STARTED(884)
+            # HOST_AVAILABLE_UPDATES_FINISHED(885)
+            host_service.upgrade_check()
+
+        with test_utils.TestEvent(engine, [840, 15]):
+            # HOST_UPGRADE_STARTED(840)
+            # VDS_MAINTENANCE(15)
+            host_service.upgrade(reboot=True)
+
+    for host in host_list:
+        host_service = hosts.host_service(host.id)
+        _wait_host_status(host_service, types.HostStatus.UP)
+
+    _wait_datacenter_up(api)
+
+
+def _wait_host_status(host, status):
+    testlib.assert_true_within_long(
+        lambda: host.get().status == status
+    )
+
+
+def _wait_datacenter_up(api):
+    engine = api.system_service()
+    dcs = engine.data_centers_service()
+
+    test_dc = dcs.data_center_service(dcs.list(search=TEST_DC)[0].id)
+    testlib.assert_true_within_long(
+        lambda: test_dc.get().status == types.DataCenterStatus.UP
+    )
+
+
 _TEST_LIST = [
+    run_vm_with_interface,
+    clean_hosts_yum_cache,
+    upgrade_hosts,
     add_vm_blank,
     vm_run,
     update_cluster_versions

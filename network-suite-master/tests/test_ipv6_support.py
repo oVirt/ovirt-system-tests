@@ -35,12 +35,13 @@ def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
         * it is possible to create an iSCSI storage domain over an ipv6 network
         * it is possible to power up a VM over such a storage domain
     """
-
+    VM0 = 'vm_over_iscsi_ipv6_storage_domain'
+    DSK = 'disk_over_iscsi_ipv6_storage_domain'
     with ipv6_iscsi_storage_domain(system, host_0_up, engine_storage_ipv6,
                                    lun_id) as sd:
         with datacenterlib.attached_storage_domain(default_data_center,
                                                    sd) as sd_attached:
-            with vm_down(system, default_cluster, sd_attached) as vm:
+            with vm_down(system, default_cluster, sd_attached, VM0, DSK) as vm:
                 vm.run()
                 vm.wait_for_powering_up_status()
 
@@ -53,11 +54,12 @@ def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
         * it is possible to create an NFS storage domain over an ipv6 network
         * it is possible to power up a VM over such a storage domain
     """
-
+    VM0 = 'vm_over_nfs_ipv6_storage_domain'
+    DSK = 'disk_over_nfs_ipv6_storage_domain'
     with ipv6_nfs_storage_domain(system, host_0_up, engine_storage_ipv6) as sd:
         with datacenterlib.attached_storage_domain(default_data_center,
                                                    sd) as sd_attached:
-            with vm_down(system, default_cluster, sd_attached) as vm:
+            with vm_down(system, default_cluster, sd_attached, VM0, DSK) as vm:
                 vm.run()
                 vm.wait_for_powering_up_status()
 
@@ -106,14 +108,12 @@ def ipv6_iscsi_storage_domain(system, host, engine_storage_ipv6, lun_id):
 
 
 @contextlib.contextmanager
-def vm_down(system, default_cluster, storage_domain):
-    DISK0 = 'disk0'
-    VM0 = 'vm_over_ipv6_storage_domain'
+def vm_down(system, default_cluster, storage_domain, vm_name, disk_name):
     with virtlib.vm_pool(system, size=1) as (vm,):
-        vm.create(vm_name=VM0,
+        vm.create(vm_name=vm_name,
                   cluster=default_cluster,
                   template=templatelib.TEMPLATE_BLANK)
-        disk = storage_domain.create_disk(DISK0)
+        disk = storage_domain.create_disk(disk_name)
         disk_att_id = vm.attach_disk(disk=disk)
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.wait_for_down_status()

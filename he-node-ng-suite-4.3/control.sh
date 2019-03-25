@@ -3,7 +3,7 @@ set -o pipefail
 
 HE_ANSIBLE=1
 
-. "${OST_REPO_ROOT}"/he-basic-suite-master/control.sh
+. "${OST_REPO_ROOT}"/he-basic-suite-4.3/control.sh
 
 prep_suite() {
     local suite="${SUITE?}"

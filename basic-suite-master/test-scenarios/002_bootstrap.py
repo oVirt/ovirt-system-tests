@@ -288,10 +288,10 @@ def add_cluster(api):
 
 @testlib.with_ovirt_prefix
 def sync_time(prefix):
-    #TODO: Move to chrony
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
-        host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
+        host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
+        host.ssh(['chronyc', '-4', 'makestep'])
 
 
 @testlib.with_ovirt_prefix

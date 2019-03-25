@@ -342,7 +342,8 @@ def add_cluster_4(prefix):
 def add_hosts(prefix):
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
-        host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
+        host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
+        host.ssh(['chronyc', '-4', 'makestep'])
 
     if API_V4:
         api = prefix.virt_env.engine_vm().get_api_v4()

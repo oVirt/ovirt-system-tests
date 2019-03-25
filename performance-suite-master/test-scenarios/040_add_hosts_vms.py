@@ -248,7 +248,8 @@ def add_hosts(prefix):
     hosts = get_fake_hosts() if USE_VDSMFAKE else prefix.virt_env.host_vms()
     if not USE_VDSMFAKE:
         for host in hosts:
-            host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
+            host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
+            host.ssh(['chronyc', '-4', 'makestep'])
 
     api = prefix.virt_env.engine_vm().get_api_v4()
     add_hosts_4(api, hosts)

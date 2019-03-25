@@ -7,7 +7,6 @@ cat > /etc/yum.repos.d/local-ovirt.repo <<EOF
 name=Latest oVirt nightly
 baseurl=http://$ADDR:8585/default/$DIST/
 enabled=1
-skip_if_unavailable=1
 gpgcheck=0
 repo_gpgcheck=0
 cost=1
@@ -24,4 +23,3 @@ echo "persistdir=/dev/shm" >> /etc/yum.conf
 yum install --disablerepo=\* --enablerepo=alocalsync -y yum-utils
 yum-config-manager --disable \*
 yum-config-manager --enable alocalsync
-

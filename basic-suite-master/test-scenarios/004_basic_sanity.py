@@ -964,8 +964,9 @@ def disk_operations(api):
     vt.join_all()
 
 
-@testlib.with_ovirt_api4
-def hotplug_memory(api):
+@testlib.with_ovirt_prefix
+def hotplug_memory(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory * 2
@@ -978,6 +979,10 @@ def hotplug_memory(api):
         nt.assert_true(
             vm_service.get().memory == new_memory
         )
+    testlib.assert_true_within_short(
+        lambda:
+        _ping(prefix, VM0_PING_DEST) == EX_OK
+    )
 
 
 @testlib.with_ovirt_prefix
@@ -1031,8 +1036,9 @@ def next_run_unplug_cpu(api):
     )
 
 
-@testlib.with_ovirt_api
-def hotplug_nic(api):
+@testlib.with_ovirt_prefix
+def hotplug_nic(prefix):
+    api = prefix.virt_env.engine_vm().get_api()
     nic2_params = params.NIC(
         name='eth1',
         network=params.Network(
@@ -1041,10 +1047,15 @@ def hotplug_nic(api):
         interface='virtio',
     )
     api.vms.get(VM0_NAME).nics.add(nic2_params)
+    testlib.assert_true_within_short(
+        lambda:
+        _ping(prefix, VM0_PING_DEST) == EX_OK
+    )
 
 
-@testlib.with_ovirt_api4
-def hotplug_disk(api):
+@testlib.with_ovirt_prefix
+def hotplug_disk(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
     engine = api.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.add(
@@ -1078,6 +1089,10 @@ def hotplug_disk(api):
     testlib.assert_true_within_short(
         lambda:
         disk_service.get().status == types.DiskStatus.OK
+    )
+    testlib.assert_true_within_short(
+        lambda:
+        _ping(prefix, VM0_PING_DEST) == EX_OK
     )
 
 

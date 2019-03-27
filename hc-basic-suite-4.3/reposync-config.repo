@@ -44,9 +44,7 @@ proxy=_none_
 
 [ovirt-4.3-snapshot-static-el7]
 name=oVirt 4.3 Nightly Statics
-# once we can move to the 4.3 we will move
-#baseurl=http://resources.ovirt.org/pub/ovirt-4.3-snapshot-static/rpm/el7/
-baseurl=http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
+baseurl=http://resources.ovirt.org/pub/ovirt-4.3-snapshot-static/rpm/el7/
 exclude=
  *-doc
  *javadoc*

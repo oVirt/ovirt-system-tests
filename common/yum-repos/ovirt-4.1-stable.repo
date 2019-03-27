@@ -237,9 +237,6 @@ includepkgs = OVMF
 	glusterfs-client-xlators
 	glusterfs-fuse
 	glusterfs-libs
-	gnutls
-	gnutls-dane
-	gnutls-utils
 	gperftools-libs
 	graphite2
 	gssproxy
@@ -303,7 +300,6 @@ includepkgs = OVMF
 	libepoxy
 	libevent
 	libfontenc
-	libgfortran
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
@@ -322,7 +318,6 @@ includepkgs = OVMF
 	libpath_utils
 	libpcap
 	libproxy
-	libquadmath
 	librados2
 	librbd1
 	librdmacm
@@ -353,7 +348,6 @@ includepkgs = OVMF
 	libwayland-client
 	libwayland-server
 	libwbclient
-	libwsman1
 	libxcb
 	libxml2-python
 	libxshmfence
@@ -391,8 +385,6 @@ includepkgs = OVMF
 	objectweb-asm
 	oddjob
 	oddjob-mkhomedir
-	openssl
-	openwsman-python
 	opus
 	pango
 	pciutils
@@ -590,6 +582,9 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-rest
 	fence-agents-vmware-soap
 	fence-agents-wti
+	gnutls
+	gnutls-dane
+	gnutls-utils
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -597,10 +592,12 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
 	krb5-workstation
+	libgfortran
 	libguestfs
 	libguestfs-tools-c
 	libipa_hbac
 	libkadm5
+	libquadmath
 	libsss_autofs
 	libsss_certmap
 	libsss_idmap
@@ -628,6 +625,7 @@ includepkgs = 389-ds-base
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	libwsman1
 	lvm2
 	lvm2-libs
 	mesa-libEGL
@@ -635,6 +633,9 @@ includepkgs = 389-ds-base
 	mesa-libgbm
 	mesa-libglapi
 	openldap-clients
+	openssl
+	openssl-libs
+	openwsman-python
 	osinfo-db
 	perl
 	perl-IO-Zlib
@@ -677,6 +678,7 @@ includepkgs = 389-ds-base
 	systemd-python
 	systemd-sysv
 	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 	virt-v2v
 
@@ -709,8 +711,6 @@ includepkgs = ansible
 	puppet
 	python-ordereddict
 	python2-idna
-	python2-qpid-proton
-	qpid-proton-c
 	ruby-augeas
 	ruby-shadow
 	rubygem-multipart-post
@@ -727,6 +727,8 @@ includepkgs = collectd
 	collectd-virt
 	collectd-write_http
 	fluentd
+	python2-qpid-proton
+	qpid-proton-c
 	rubygem-cool.io
 	rubygem-elasticsearch
 	rubygem-elasticsearch-api

@@ -19,9 +19,7 @@ exclude = ovirt-guest-agent-common
 
 [ovirt-4.3-snapshot-static-el7]
 name = oVirt 4.3 Nightly Statics
-# temporary not in use
-# baseurl = http://resources.ovirt.org/pub/ovirt-4.3-snapshot-static/rpm/el7/
-baseurl = http://resources.ovirt.org/pub/ovirt-4.3/rpm/el7/
+baseurl = http://resources.ovirt.org/pub/ovirt-4.3-snapshot-static/rpm/el7/
 enabled = 1
 max_connections = 10
 ost_skip_injection = True
@@ -33,9 +31,9 @@ gpgcheck=1
 gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
 enabled=1
 
-[glusterfs-3.12-el7]
+[glusterfs-5-el7]
 name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
+baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-5/
 enabled = 1
 max_connections = 5
 

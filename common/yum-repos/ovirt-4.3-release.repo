@@ -35,8 +35,7 @@ name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
 enabled = 1
 max_connections = 5
-includepkgs = gdeploy
-	glusterfs
+includepkgs = glusterfs
 	glusterfs-api
 	glusterfs-cli
 	glusterfs-client-xlators
@@ -59,6 +58,7 @@ includepkgs = 389-ds-base
 	bind-utils
 	device-mapper-event
 	device-mapper-event-libs
+	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -96,6 +96,9 @@ includepkgs = 389-ds-base
 	fence-agents-vmware-soap
 	fence-agents-wti
 	git
+	gnutls
+	gnutls-dane
+	gnutls-utils
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -103,11 +106,13 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
 	krb5-workstation
+	libgfortran
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
 	libipa_hbac
 	libkadm5
+	libquadmath
 	libsss_autofs
 	libsss_certmap
 	libsss_idmap
@@ -138,6 +143,7 @@ includepkgs = 389-ds-base
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	libwsman1
 	lvm2
 	lvm2-libs
 	mesa-libEGL
@@ -145,6 +151,9 @@ includepkgs = 389-ds-base
 	mesa-libgbm
 	mesa-libglapi
 	openldap-clients
+	openssl
+	openssl-libs
+	openwsman-python
 	osinfo-db
 	perl
 	perl-Git
@@ -189,6 +198,7 @@ includepkgs = 389-ds-base
 	systemd-python
 	systemd-sysv
 	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 	virt-v2v
 
@@ -279,7 +289,6 @@ includepkgs = OVMF
 	easymock2
 	elfutils
 	emacs-filesystem
-	fcoe-utils
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
@@ -293,9 +302,6 @@ includepkgs = OVMF
 	geronimo-jms
 	giflib
 	glib-networking
-	gnutls
-	gnutls-dane
-	gnutls-utils
 	gperftools-libs
 	graphite2
 	gsettings-desktop-schemas
@@ -377,7 +383,6 @@ includepkgs = OVMF
 	libepoxy
 	libevent
 	libfontenc
-	libgfortran
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
@@ -398,7 +403,6 @@ includepkgs = OVMF
 	libpath_utils
 	libpcap
 	libproxy
-	libquadmath
 	librados2
 	librbd1
 	librdmacm
@@ -430,7 +434,6 @@ includepkgs = OVMF
 	libwayland-client
 	libwayland-server
 	libwbclient
-	libwsman1
 	libxcb
 	libxml2-python
 	libxshmfence
@@ -475,8 +478,6 @@ includepkgs = OVMF
 	openscap-containers
 	openscap-scanner
 	openscap-utils
-	openssl
-	openwsman-python
 	opus
 	osinfo-db-tools
 	pam_pkcs11

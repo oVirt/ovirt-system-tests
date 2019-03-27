@@ -117,6 +117,13 @@ def _vm_ssh(prefix, vm_name, command, tries=None):
     )
 
 
+def assert_vm_is_alive(prefix, vm_hostname):
+    testlib.assert_true_within_short(
+        lambda:
+        _ping(prefix, vm_hostname) == EX_OK
+    )
+    nt.assert_equals(_vm_ssh(prefix, vm_hostname, ['true'], tries=1).code, EX_OK)
+
 @testlib.with_ovirt_api4
 def add_disks(api):
     engine = api.system_service()
@@ -294,6 +301,7 @@ def verify_transient_folder(prefix):
     nt.assert_true(len(all_volumes) == 1)
 
     nt.assert_true(sd.id in all_volumes[0])
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
 @testlib.with_ovirt_api4
@@ -701,6 +709,7 @@ def run_vms(prefix):
     testlib.assert_true_within_long(
         lambda: api.vms.get(VM0_NAME).status.state == 'up' and api.vms.get(BACKUP_VM_NAME).status.state == 'up',
     )
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
 @testlib.with_ovirt_api4
@@ -709,8 +718,8 @@ def verify_vm2_run(api):
 
 
 @testlib.with_ovirt_prefix
-def ping_vm0(ovirt_prefix):
-    nt.assert_equals(_ping(ovirt_prefix, VM0_PING_DEST), EX_OK)
+def vm0_is_alive(ovirt_prefix):
+    assert_vm_is_alive(ovirt_prefix, VM0_NAME)
 
 
 @testlib.with_ovirt_prefix
@@ -730,15 +739,11 @@ def restore_vm0_networking(ovirt_prefix):
     uri = 'qemu+tls://%s/system' % host.name()
     ret = host.ssh(['virsh', '-c', uri, 'reboot', '--mode', 'acpi', VM0_NAME])
     nt.assert_equals(ret.code, EX_OK)
-    testlib.assert_true_within_long(
-        lambda:
-        _ping(ovirt_prefix, VM0_PING_DEST) == EX_OK
-    )
 
     engine = ovirt_prefix.virt_env.engine_vm().get_api_v4().system_service()
-    _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
 
-    nt.assert_equals(_vm_ssh(ovirt_prefix, VM0_NAME, ['true']).code, 0)
+    assert_vm_is_alive(ovirt_prefix, VM0_NAME)
+    _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
 
 
 @testlib.with_ovirt_prefix
@@ -979,10 +984,7 @@ def hotplug_memory(prefix):
         nt.assert_true(
             vm_service.get().memory == new_memory
         )
-    testlib.assert_true_within_short(
-        lambda:
-        _ping(prefix, VM0_PING_DEST) == EX_OK
-    )
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
 @testlib.with_ovirt_prefix
@@ -1047,10 +1049,7 @@ def hotplug_nic(prefix):
         interface='virtio',
     )
     api.vms.get(VM0_NAME).nics.add(nic2_params)
-    testlib.assert_true_within_short(
-        lambda:
-        _ping(prefix, VM0_PING_DEST) == EX_OK
-    )
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
 @testlib.with_ovirt_prefix
@@ -1090,10 +1089,7 @@ def hotplug_disk(prefix):
         lambda:
         disk_service.get().status == types.DiskStatus.OK
     )
-    testlib.assert_true_within_short(
-        lambda:
-        _ping(prefix, VM0_PING_DEST) == EX_OK
-    )
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
 @testlib.with_ovirt_api4
@@ -1126,6 +1122,8 @@ def suspend_resume_vm0(prefix):
     log_items = ret.out.split()
     global _log_time_before_suspend
     _log_time_before_suspend = log_items[0] + ' ' + log_items[1]  # date + time
+
+    assert_vm_is_alive(prefix, VM0_NAME)
 
     api = prefix.virt_env.engine_vm().get_api_v4()
     vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
@@ -1233,7 +1231,7 @@ _TEST_LIST = [
     attach_snapshot_to_backup_vm,
     verify_transient_folder,
     remove_backup_vm_and_backup_snapshot,
-    ping_vm0,
+    vm0_is_alive,
     suspend_resume_vm0,
     extend_disk1,
     sparsify_disk1,

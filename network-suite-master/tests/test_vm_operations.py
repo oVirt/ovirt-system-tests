@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,12 +32,13 @@ MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
 MIG_NET_IPv4_ADDR_2 = '192.0.3.2'
 MIG_NET_IPv4_MASK = '255.255.255.0'
-NIC_NAME = 'nic1'
+NIC1_NAME = 'nic1'
+NIC2_NAME = 'nic2'
 
 
 def _attach_new_vnic(vm, vnic_profile):
     vnic = netlib.Vnic(vm)
-    vnic.create(name=NIC_NAME, vnic_profile=vnic_profile)
+    vnic.create(name=NIC1_NAME, vnic_profile=vnic_profile)
     vm.wait_for_down_status()
 
 
@@ -107,15 +108,15 @@ def test_live_vm_migration_using_dedicated_network(running_vm_0,
 
 
 def test_hot_linking_vnic(running_vm_0):
-    vnic = running_vm_0.get_vnic(NIC_NAME)
+    vnic = running_vm_0.get_vnic(NIC1_NAME)
     assert vnic.linked is True
 
     vnic.set_linked(False)
-    vnic = running_vm_0.get_vnic(NIC_NAME)
+    vnic = running_vm_0.get_vnic(NIC1_NAME)
     assert not vnic.linked
 
     vnic.set_linked(True)
-    vnic = running_vm_0.get_vnic(NIC_NAME)
+    vnic = running_vm_0.get_vnic(NIC1_NAME)
     assert vnic.linked is True
 
 
@@ -128,7 +129,7 @@ def test_iterators(running_vm_0, system):
     assert running_vm_0.cluster.name in cluster_names
 
     vnic_names = (vnic.name for vnic in running_vm_0.vnics())
-    assert NIC_NAME in vnic_names
+    assert NIC1_NAME in vnic_names
 
     vnic_profile_names = (profile.name for profile
                           in netlib.VnicProfile.iterate(system))
@@ -151,3 +152,15 @@ def test_modify_vnic(running_vm_0, system, ovirtmgmt_network):
             assert vnic.vnic_profile.name == 'temporary'
         finally:
             vnic.vnic_profile = original_profile
+
+
+def test_hot_update_vm_interface(running_vm_0, ovirtmgmt_vnic_profile):
+    vnic = netlib.Vnic(running_vm_0)
+    vnic.create(name=NIC2_NAME, vnic_profile=netlib.EmptyVnicProfile())
+    assert not vnic.vnic_profile.id
+
+    vnic.vnic_profile = ovirtmgmt_vnic_profile
+    assert vnic.vnic_profile.name == ovirtmgmt_vnic_profile.name
+
+    vnic.vnic_profile = netlib.EmptyVnicProfile()
+    assert not vnic.vnic_profile.id

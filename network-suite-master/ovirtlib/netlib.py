@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -198,14 +198,19 @@ class Vnic(SDKSubEntity):
 
     @property
     def vnic_profile(self):
+        sdk_profile = self.get_sdk_type().vnic_profile
+        if sdk_profile is None:
+            return EmptyVnicProfile()
+
         profile = VnicProfile(self._parent_sdk_entity._parent_sdk_system)
-        profile_id = self.service.get().vnic_profile.id
-        profile.import_by_id(profile_id)
+        profile.import_by_id(sdk_profile.id)
         return profile
 
     @vnic_profile.setter
     def vnic_profile(self, new_profile):
         sdk_nic = self.get_sdk_type()
+        if sdk_nic.vnic_profile is None:
+            sdk_nic.vnic_profile = new_profile.get_sdk_type()
         sdk_nic.vnic_profile.id = new_profile.id
         self.service.update(sdk_nic)
 
@@ -247,6 +252,35 @@ class QoS(SDKSubEntity):
 
     def _get_parent_service(self, dc):
         return dc.service.qoss_service()
+
+
+class EmptyVnicProfile(object):
+    """
+    Class needed to mimic the API behaviour.
+    Engine defines an empty vnic profile by assigning no profile
+    to the vnic.
+
+    This class represents an empty API concrete type hidden
+    behind the methods that are needed by other netlib
+    classes.
+
+    There are two flows thad needs to covered with
+    this class:
+
+    1. vnic creation with empty vnic does not need profile
+    to be specified -> profile can be None or empty concrete
+    sdk type
+
+    2. vnic profile change into empty requires
+    profile to be specified with None id
+    """
+
+    @property
+    def id(self):
+        return None
+
+    def get_sdk_type(self):
+        return types.VnicProfile()
 
 
 @contextlib.contextmanager

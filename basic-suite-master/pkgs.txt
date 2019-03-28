@@ -41,3 +41,4 @@ python2-idna
 pyOpenSSL
 collectd-write_syslog
 gluster-ansible-roles
+libcgroup-tools

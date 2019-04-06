@@ -969,7 +969,7 @@ def hotplug_memory(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
     engine = api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    new_memory = vm_service.get().memory * 2
+    new_memory = vm_service.get().memory + 256 * MB
     with test_utils.TestEvent(engine, 2039): # HOT_SET_MEMORY(2,039)
         vm_service.update(
             vm=types.Vm(

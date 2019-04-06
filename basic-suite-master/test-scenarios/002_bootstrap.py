@@ -1344,9 +1344,7 @@ def add_blank_vms(api):
     engine = api.system_service()
     vms_service = engine.vms_service()
 
-    vm_memory = 256 * MB
     vm_params = sdk4.types.Vm(
-        memory=vm_memory,
         os=sdk4.types.OperatingSystem(
             type='other_linux',
         ),
@@ -1371,14 +1369,27 @@ def add_blank_vms(api):
             type=sdk4.types.UsbType.NATIVE,
         ),
         memory_policy=sdk4.types.MemoryPolicy(
-            guaranteed=vm_memory / 2,
+            ballooning=True,
         ),
-        name=VM0_NAME
     )
-    for vm in [VM0_NAME, BACKUP_VM_NAME]:
-        vm_params.name = vm
-        vms_service.add(vm_params)
-        vm_service = test_utils.get_vm_service(engine, vm)
+
+    vm_params.name = BACKUP_VM_NAME
+    vm_params.memory = 256 * MB
+    vm_params.memory_policy.guaranteed = 128 * MB
+    vms_service.add(vm_params)
+    backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
+
+    vm_params.name = VM0_NAME
+    least_hotplug_increment = 256 * MB
+    required_memory = 384 * MB
+    vm_params.memory = required_memory
+    vm_params.memory_policy.guaranteed = required_memory
+    vm_params.memory_policy.max = required_memory + least_hotplug_increment
+
+    vms_service.add(vm_params)
+    vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+
+    for vm_service in [backup_vm_service, vm0_vm_service]:
         testlib.assert_true_within_short(
             lambda:
             vm_service.get().status == sdk4.types.VmStatus.DOWN

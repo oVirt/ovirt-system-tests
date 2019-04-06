@@ -1339,44 +1339,49 @@ def remove_vnic_passthrough_profile(api):
                          None)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_blank_vms(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+
     vm_memory = 256 * MB
-    vm_params = params.VM(
+    vm_params = sdk4.types.Vm(
         memory=vm_memory,
-        os=params.OperatingSystem(
-            type_='other_linux',
+        os=sdk4.types.OperatingSystem(
+            type='other_linux',
         ),
-        type_='server',
-        high_availability=params.HighAvailability(
+        type=sdk4.types.VmType.SERVER,
+        high_availability=sdk4.types.HighAvailability(
             enabled=False,
         ),
-        cluster=params.Cluster(
+        cluster=sdk4.types.Cluster(
             name=CLUSTER_NAME,
         ),
-        template=params.Template(
+        template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
         ),
-        display=params.Display(
+        display=sdk4.types.Display(
             smartcard_enabled=True,
             keyboard_layout='en-us',
             file_transfer_enabled=True,
             copy_paste_enabled=True,
         ),
-        usb=params.Usb(
+        usb=sdk4.types.Usb(
             enabled=True,
-            type_=sdk4.types.UsbType.NATIVE,
+            type=sdk4.types.UsbType.NATIVE,
         ),
-        memory_policy=params.MemoryPolicy(
+        memory_policy=sdk4.types.MemoryPolicy(
             guaranteed=vm_memory / 2,
         ),
         name=VM0_NAME
     )
     for vm in [VM0_NAME, BACKUP_VM_NAME]:
         vm_params.name = vm
-        api.vms.add(vm_params)
+        vms_service.add(vm_params)
+        vm_service = test_utils.get_vm_service(engine, vm)
         testlib.assert_true_within_short(
-            lambda: api.vms.get(vm).status.state == 'down',
+            lambda:
+            vm_service.get().status == sdk4.types.VmStatus.DOWN
         )
 
 

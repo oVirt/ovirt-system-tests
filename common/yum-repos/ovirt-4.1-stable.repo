@@ -691,7 +691,6 @@ includepkgs = libtomcrypt
 	libtommath
 	python-httplib2
 	python-lockfile
-	python2-crypto
 	sshpass
 
 [epel-el7]
@@ -710,6 +709,7 @@ includepkgs = ansible
 	nbdkit-plugin-vddk
 	puppet
 	python-ordereddict
+	python2-crypto
 	python2-idna
 	ruby-augeas
 	ruby-shadow

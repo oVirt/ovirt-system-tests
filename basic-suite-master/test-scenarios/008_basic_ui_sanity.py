@@ -283,11 +283,10 @@ def left_nav():
     ovirt_driver.id_click(SEL_ID_HOSTS_MENU)
     ovirt_driver.save_screenshot('%s%s_left_nav_clicked_hosts.png' % (SS_PATH, _ss_prefix()), 1)
 
-    # TODO(gs) fix storage. The IDs are missing
-    # ovirt_driver.hover_to_id(SEL_ID_STORAGE_MENU)
-    # ovirt_driver.save_screenshot('%s%s_left_nav_hover_storage.png' % (SS_PATH, _ss_prefix()), 1)
-    # ovirt_driver.id_click(SEL_ID_DOMAINS_MENU)
-    # ovirt_driver.save_screenshot('%s%s_left_nav_clicked_domains.png' % (SS_PATH, _ss_prefix()), 1)
+    ovirt_driver.hover_to_id(SEL_ID_STORAGE_MENU)
+    ovirt_driver.save_screenshot('%s%s_left_nav_hover_storage.png' % (SS_PATH, _ss_prefix()), 1)
+    ovirt_driver.id_click(SEL_ID_DOMAINS_MENU)
+    ovirt_driver.save_screenshot('%s%s_left_nav_clicked_domains.png' % (SS_PATH, _ss_prefix()), 1)
 
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
     ovirt_driver.save_screenshot('%s%s_left_nav_hover_compute.png' % (SS_PATH, _ss_prefix()), 1)

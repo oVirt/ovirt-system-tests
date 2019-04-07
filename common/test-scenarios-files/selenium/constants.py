@@ -60,7 +60,7 @@ SEL_ID_NEW__VM = "ActionPanelView_NewVm" # bug
 
 # id-network > MenuView_networksAnchor
 SEL_ID_COMPUTE_MENU = 'compute'
-SEL_ID_STORAGE_MENU = 'storage'
+SEL_ID_STORAGE_MENU = 'MenuView_storageTab'
 SEL_ID_ADMINISTRATION_MENU = 'admin'
 
 SEL_ID_HOSTS_MENU = 'MenuView_hostsAnchor'

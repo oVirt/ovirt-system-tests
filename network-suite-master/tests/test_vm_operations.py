@@ -25,6 +25,7 @@ from ovirtlib import netlib
 from ovirtlib import clusterlib
 from ovirtlib import datacenterlib
 from ovirtlib import templatelib
+from testlib import suite
 
 ETH1 = 'eth1'
 VM0 = 'vm0'
@@ -154,6 +155,7 @@ def test_modify_vnic(running_vm_0, system, ovirtmgmt_network):
             vnic.vnic_profile = original_profile
 
 
+@suite.SKIP_SUITE_42
 def test_hot_update_vm_interface(running_vm_0, ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(running_vm_0)
     vnic.create(name=NIC2_NAME, vnic_profile=netlib.EmptyVnicProfile())

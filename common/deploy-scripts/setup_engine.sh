@@ -85,6 +85,7 @@ firewall-cmd --reload
 # Enable debug logs on the engine
 sed -i \
     -e '/.*logger category="org.ovirt"/{ n; s/INFO/DEBUG/ }' \
+    -e '/.*logger category="org.ovirt.engine.core.bll"/{ n; s/INFO/DEBUG/ }' \
     -e '/.*<root-logger>/{ n; s/INFO/DEBUG/ }' \
     /usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in
 

@@ -54,7 +54,6 @@
     nfs:
       address: "{{ engine_ip }}"
       path: "{{ nfs_path }}"
-      version: v4
       timeout: 100
       retrans: 10
 

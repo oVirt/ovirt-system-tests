@@ -7,7 +7,7 @@ engine_cafile: /etc/pki/ovirt-engine/ca.pem
 
 # Datacenters:
 dc_name: test-dc
-compatibility_version: 4.2
+compatibility_version: 4.4
 quota_name: DC-QUOTA
 
 # Clusters:

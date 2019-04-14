@@ -1,0 +1,93 @@
+[main]
+reposdir = /etc/reposync.repos.d
+max_connections = 10
+ip_resolve = 4
+gpgcheck = 0
+plugins = 1
+
+[ovirt-4.2-tested-el7]
+name = oVirt 4.2 tested repo
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.2/rpm/el7/
+cost = 100
+enabled = 1
+ost_skip_injection = True
+
+[ovirt-4.2-official-el7]
+name = oVirt 4.2 Official release
+baseurl = http://resources.ovirt.org/pub/ovirt-4.2/rpm/el7/
+enabled = 1
+gpgcheck = 1
+ost_skip_injection = True
+exclude = ovirt-imageio-common
+	ovirt-imageio-daemon
+	ovirt-imageio-proxy
+	ovirt-imageio-proxy-setup
+
+[glusterfs-3.12-el7]
+name = GlusterFS repo
+baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
+enabled = 1
+
+[centos-updates-el7]
+name = CentOS7 Updates
+baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
+enabled = 1
+
+[centos-base-el7]
+name = CentOS7 Base
+baseurl = http://mirror.centos.org/centos/7/os/x86_64/
+enabled = 1
+
+[centos-extras-el7]
+name = CentOS7 Extras
+baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
+enabled = 1
+exclude = libtomcrypt
+        libtommath
+        python2-crypto
+
+[epel-el7]
+name = Extra Packages for Enterprise Linux 7 - x86_64
+baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
+enabled = 1
+exclude = collectd
+        collectd-virt
+        collectd-netlink
+        collectd-postgresql
+
+[centos-ovirt-4.2-7.5-temp-el7]
+name = CentOS-7 - oVirt 4.2 (temp virt repo)
+baseurl = https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.2/
+gpgcheck = 0
+enabled = 1
+exclude = novnc
+        ansible
+	ansible-doc
+        python2-ecdsa
+
+[centos-ovirt-4.2-el7]
+name = CentOS-7 - oVirt 4.2
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
+gpgcheck = 0
+enabled = 1
+exclude = ansible
+	  ansible-doc
+
+[centos-qemu-ev-release-el7]
+name = CentOS-7 - QEMU EV
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+gpgcheck = 1
+enabled = 1
+gpgkey = https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676fe220e61ab8e31927feeede1128/SOURCES!RPM-GPG-KEY-CentOS-SIG-Virtualization
+
+[centos-opstools-release-el7]
+name = CentOS-7 - OpsTools - released repo
+baseurl = http://mirror.centos.org/centos/7/opstools/x86_64
+enabled = 1
+
+[centos-sclo-rh-release-el7]
+name = CentOS-7 - SCLo rh
+baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
+gpgcheck = 1
+enabled = 1
+gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo

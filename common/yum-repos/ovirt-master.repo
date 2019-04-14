@@ -124,14 +124,12 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
-	libvirt
 	libvirt-bash-completion
 	libvirt-client
 	libvirt-daemon
 	libvirt-daemon-config-network
 	libvirt-daemon-config-nwfilter
 	libvirt-daemon-driver-interface
-	libvirt-daemon-driver-lxc
 	libvirt-daemon-driver-network
 	libvirt-daemon-driver-nodedev
 	libvirt-daemon-driver-nwfilter
@@ -593,9 +591,6 @@ includepkgs = OVMF
 	samba-client-libs
 	samba-common
 	samba-common-libs
-	sanlock
-	sanlock-lib
-	sanlock-python
 	satyr
 	scannotation
 	scap-security-guide
@@ -667,7 +662,6 @@ max_connections = 5
 includepkgs = cockpit
 	cockpit-bridge
 	cockpit-dashboard
-	cockpit-machines-ovirt
 	cockpit-storaged
 	cockpit-system
 	cockpit-ws

@@ -588,9 +588,6 @@ includepkgs = OVMF
 	samba-client-libs
 	samba-common
 	samba-common-libs
-	sanlock
-	sanlock-lib
-	sanlock-python
 	satyr
 	scannotation
 	scap-security-guide

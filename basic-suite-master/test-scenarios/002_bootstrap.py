@@ -32,6 +32,7 @@ from ovirtsdk.xml import params
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
+import ovirtsdk4.types as types
 
 from lago import utils
 from ovirtlago import testlib
@@ -110,13 +111,19 @@ def _get_host_ips_in_net(prefix, host_name, net_name):
 
 def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
+    all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+    up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
+    dump_hosts=""
+    if up_hosts:
         if random_host:
-            return random.choice(hosts)
+            return random.choice(up_hosts)
         else:
-            return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
+            return sorted(up_hosts, key=lambda host: host.name)
+    hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
+    for host in hosts_status:
+        host_service_info = hosts_service.host_service(host.id)
+        dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+    raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
@@ -138,7 +145,7 @@ def _all_hosts_up(hosts_service, total_num_hosts):
 
 def _single_host_up(hosts_service, total_num_hosts):
     installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
-    if len(installing_hosts) == total_num_hosts: # All hosts still installing
+    if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
@@ -148,7 +155,7 @@ def _single_host_up(hosts_service, total_num_hosts):
     _check_problematic_hosts(hosts_service)
 
 def _check_problematic_hosts(hosts_service):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational or status=installfailed'.format(DC_NAME))
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up)'.format(DC_NAME))
     if len(problematic_hosts):
         dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
         for host in problematic_hosts:
@@ -454,11 +461,13 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
     if sd_format >= 'v4' and \
        not versioning.cluster_version_ok(4, 1):
         kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+    random_host = _random_host_from_dc(api, DC_NAME)
+    print('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
         type=dom_type,
-        host=_random_host_from_dc(api, DC_NAME),
+        host=random_host,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
             address=ips[0],
@@ -833,7 +842,7 @@ def add_role(api):
 def add_affinity_label(api):
     engine = api.system_service()
     affinity_labels_service = engine.affinity_labels_service()
-    with test_utils.TestEvent(engine, 10380): 
+    with test_utils.TestEvent(engine, 10380):
         nt.assert_true(
             affinity_labels_service.add(
                 sdk4.types.AffinityLabel(
@@ -848,7 +857,7 @@ def add_affinity_group(api):
     engine = api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
-    with test_utils.TestEvent(engine, 10350): 
+    with test_utils.TestEvent(engine, 10350):
         nt.assert_true(
             affinity_group_service.add(
                 sdk4.types.AffinityGroup(
@@ -1078,7 +1087,7 @@ def check_update_host(api):
 def add_scheduling_policy(api):
     engine = api.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
-    with test_utils.TestEvent(engine, 9910): 
+    with test_utils.TestEvent(engine, 9910):
         nt.assert_true(
             scheduling_policies_service.add(
                 sdk4.types.SchedulingPolicy(

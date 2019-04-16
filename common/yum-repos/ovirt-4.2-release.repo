@@ -794,13 +794,13 @@ includepkgs = archaius-core
 	python2-jmespath
 	python2-openvswitch
 	python2-ovsdbapp
-	python2-sanlock
 	python2-six
 	python2-traceback2
 	rxjava
 	safelease
 	sanlock
 	sanlock-lib
+	sanlock-python
 	unboundid-ldapsdk
 	vdsm-jsonrpc-java
 	vhostmd

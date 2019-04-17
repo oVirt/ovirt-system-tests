@@ -42,6 +42,8 @@ from test_utils import network_utils_v4
 from test_utils import constants
 from test_utils import versioning
 
+import logging
+LOGGER = logging.getLogger(__name__)
 
 MB = 2 ** 20
 GB = 2 ** 30
@@ -113,16 +115,13 @@ def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
     up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
-    dump_hosts=""
     if up_hosts:
         if random_host:
             return random.choice(up_hosts)
         else:
             return sorted(up_hosts, key=lambda host: host.name)
     hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
-    for host in hosts_status:
-        host_service_info = hosts_service.host_service(host.id)
-        dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
     raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
@@ -175,6 +174,13 @@ def _change_logging_level(host, logger_name, level='DEBUG',
                 .format(logger_name, level))
     host.ssh(['sed', '-i', sed_expr, '/etc/vdsm/logger.conf'])
 
+
+def _host_status_to_print(hosts_service, hosts_list):
+    dump_hosts = ''
+    for host in hosts_list:
+            host_service_info = hosts_service.host_service(host.id)
+            dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+    return dump_hosts
 
 @testlib.with_ovirt_api4
 def add_dc(api):
@@ -332,8 +338,10 @@ def add_hosts(prefix):
 @testlib.with_ovirt_api4
 def verify_add_hosts(api):
     hosts_service = api.system_service().hosts_service()
-    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
-
+    hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    total_hosts = len(hosts_status)
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
     testlib.assert_true_within(
         lambda: _single_host_up(hosts_service, total_hosts),
         timeout=constants.ADD_HOST_TIMEOUT
@@ -464,7 +472,7 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
         elif not versioning.cluster_version_ok(4, 3):
             kwargs['storage_format'] = sdk4.types.StorageFormat.V4
     random_host = _random_host_from_dc(api, DC_NAME)
-    print('random host: {}'.format(random_host.name))
+    LOGGER.debug('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',

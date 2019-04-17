@@ -3,8 +3,11 @@ stage:
   - poll-upstream-sources:
       substage:
         - ovirt-master
+        - ovirt-master-cq
         - ovirt-4.3
+        - ovirt-4.3-cq
         - ovirt-4.2
+        - ovirt-4.2-cq
         - ovirt-4.2-release
         - ovirt-4.3-release
         - ovirt-4.1-stable

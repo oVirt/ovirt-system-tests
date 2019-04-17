@@ -377,6 +377,7 @@ includepkgs = OVMF
 	libblockdev-utils
 	libbytesize
 	libcgroup
+	libcgroup-tools
 	libcollection
 	libconfig
 	libdhash

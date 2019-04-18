@@ -84,9 +84,9 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = versioning.guest_os_image_name()
+GUEST_IMAGE_NAME = versioning.guest_os_image_name()
 GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
-TEMPLATE_CIRROS = versioning.guest_os_template_name()
+TEMPLATE_GUEST = versioning.guest_os_template_name()
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -96,10 +96,6 @@ MIGRATION_NETWORK = 'Migration_Net'
 MANAGEMENT_NETWORK = 'ovirtmgmt'
 PASSTHROUGH_VNIC_PROFILE = 'passthrough_vnic_profile'
 NETWORK_FILTER_NAME = 'clean-traffic'
-NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
-NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
-NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
-
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -645,7 +641,7 @@ def import_templates(api):
 def generic_import_from_glance(glance_provider, as_template=False,
                                dest_storage_domain=MASTER_SD_TYPE,
                                dest_cluster=CLUSTER_NAME):
-    target_image = glance_provider.images.get(name=CIRROS_IMAGE_NAME)
+    target_image = glance_provider.images.get(name=GUEST_IMAGE_NAME)
     import_action = params.Action(
         storage_domain=params.StorageDomain(
             name=dest_storage_domain,
@@ -655,10 +651,10 @@ def generic_import_from_glance(glance_provider, as_template=False,
         ),
         import_as_template=as_template,
         disk=params.Disk(
-            name=(TEMPLATE_CIRROS if as_template else GLANCE_DISK_NAME)
+            name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
         ),
         template=params.Template(
-            name=TEMPLATE_CIRROS,
+            name=TEMPLATE_GUEST,
         ),
     )
 
@@ -1383,7 +1379,7 @@ def add_blank_vms(api):
 
     vm_params = sdk4.types.Vm(
         os=sdk4.types.OperatingSystem(
-            type='other_linux',
+            type='rhel_7x64',
         ),
         type=sdk4.types.VmType.SERVER,
         high_availability=sdk4.types.HighAvailability(
@@ -1665,7 +1661,6 @@ def add_filter(ovirt_api4):
 def add_filter_parameter(prefix):
     engine_vm = prefix.virt_env.engine_vm()
     ovirt_api4 = engine_vm.get_api(api_ver=4)
-    vm_gw = '.'.join(engine_vm.ip().split('.')[0:3] + ['1'])
     engine = ovirt_api4.system_service()
     network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
         engine, VM0_NAME)
@@ -1674,17 +1669,8 @@ def add_filter_parameter(prefix):
         nt.assert_true(
             network_filter_parameters_service.add(
                 sdk4.types.NetworkFilterParameter(
-                    name=NETWORK_FILTER_PARAMETER0_NAME,
-                    value=NETWORK_FILTER_PARAMETER0_VALUE
-                )
-            )
-        )
-
-        nt.assert_true(
-            network_filter_parameters_service.add(
-                sdk4.types.NetworkFilterParameter(
-                    name=NETWORK_FILTER_PARAMETER1_NAME,
-                    value=vm_gw
+                    name='IP',
+                    value=test_utils.get_vm0_ip_address(prefix)
                 )
             )
         )

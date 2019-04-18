@@ -44,11 +44,14 @@ GB = 2 ** 30
 DC_NAME = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_CENTOS7 = 'centos7_template'
-TEMPLATE_CIRROS = versioning.guest_os_template_name()
+TEMPLATE_GUEST = versioning.guest_os_template_name()
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
 SD_ISCSI_NAME = 'iscsi'
+
+VM_USER_NAME = 'root'
+VM_PASSWORD = 'secret'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -56,7 +59,6 @@ VM2_NAME = 'vm2'
 BACKUP_VM_NAME = 'backup_vm'
 IMPORTED_VM_NAME = 'imported_vm'
 OVF_VM_NAME = 'ovf_vm'
-VM0_PING_DEST = VM0_NAME
 VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
@@ -103,26 +105,27 @@ def _verify_vm_state(engine, vm_name, state):
     return vm_service
 
 
-def _vm_ssh(prefix, vm_name, command, tries=None):
-    host = _vm_host(prefix, vm_name)
-    ret = host.ssh(['host', vm_name])
-    match = re.search(r'\s([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', ret.out)
-    ip_address = match.group(1)
+def _vm_ssh(ip_address, command, tries=None):
     return ssh.ssh(
         ip_addr=ip_address,
         command=command,
-        username='cirros',
-        password='gocubsgo',
+        username=VM_USER_NAME,
+        password=VM_PASSWORD,
         tries=tries,
     )
 
 
-def assert_vm_is_alive(prefix, vm_hostname):
+def assert_vm0_is_alive(prefix):
+    assert_vm_is_alive(prefix, test_utils.get_vm0_ip_address(prefix))
+
+
+def assert_vm_is_alive(prefix, ip_address):
     testlib.assert_true_within_short(
         lambda:
-        _ping(prefix, vm_hostname) == EX_OK
+        _ping(prefix, ip_address) == EX_OK
     )
-    nt.assert_equals(_vm_ssh(prefix, vm_hostname, ['true'], tries=1).code, EX_OK)
+    nt.assert_equals(_vm_ssh(ip_address, ['true']).code, EX_OK)
+
 
 @testlib.with_ovirt_api4
 def add_disks(api):
@@ -301,7 +304,7 @@ def verify_transient_folder(prefix):
     nt.assert_true(len(all_volumes) == 1)
 
     nt.assert_true(sd.id in all_volumes[0])
-    assert_vm_is_alive(prefix, VM0_NAME)
+    assert_vm0_is_alive(prefix)
 
 
 @testlib.with_ovirt_api4
@@ -586,9 +589,9 @@ def verify_vm_import(api):
 def add_vm1_from_template(api):
     engine = api.system_service()
     templates_service = engine.templates_service()
-    glance_template = templates_service.list(search='name=%s' % TEMPLATE_CIRROS)[0]
+    glance_template = templates_service.list(search='name=%s' % TEMPLATE_GUEST)[0]
     if glance_template is None:
-        raise SkipTest('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_CIRROS))
+        raise SkipTest('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_GUEST))
 
     vm_memory = 512 * MB
     vms_service = engine.vms_service()
@@ -601,7 +604,7 @@ def add_vm1_from_template(api):
                 name=TEST_CLUSTER,
             ),
             template=types.Template(
-                name=TEMPLATE_CIRROS,
+                name=TEMPLATE_GUEST,
             ),
             use_latest_template_version=True,
             stateless=True,
@@ -613,7 +616,7 @@ def add_vm1_from_template(api):
                 ballooning=False,
             ),
             os=types.OperatingSystem(
-                type='other_lnux',
+                type='rhel_7x64',
             ),
             time_zone=types.TimeZone(
                 name='Etc/GMT',
@@ -652,64 +655,48 @@ def verify_add_vm1_from_template(api):
 
 @testlib.with_ovirt_prefix
 def run_vms(prefix):
-    engine = prefix.virt_env.engine_vm()
-    api = engine.get_api()
-    vm_ip = '.'.join(engine.ip().split('.')[0:3] + ['199'])
-    vm_gw = '.'.join(engine.ip().split('.')[0:3] + ['1'])
-    host_names = [h.name() for h in prefix.virt_env.host_vms()]
+    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
 
-    start_params = params.Action(
-        use_cloud_init=True,
-        vm=params.VM(
-            initialization=params.Initialization(
-                domain=params.Domain(
-                    name='lago.example.com'
-                ),
-                cloud_init=params.CloudInit(
-                    host=params.Host(
-                        address='VM0'
-                    ),
-                    users=params.Users(
-                        active=True,
-                        user=[params.User(
-                            user_name='root',
-                            password='secret'
-                        )]
-                    ),
-                    network_configuration=params.NetworkConfiguration(
-                        nics=params.Nics(
-                            nic=[params.NIC(
-                                name='eth0',
-                                boot_protocol='STATIC',
-                                on_boot=True,
-                                network=params.Network(
-                                    ip=params.IP(
-                                        address=vm_ip,
-                                        netmask='255.255.255.0',
-                                        gateway=vm_gw,
-                                    ),
-                                ),
-                            )]
-                        ),
-                    ),
-                ),
-            ),
-        ),
+    vm_params = types.Vm(
+        initialization=types.Initialization(
+            user_name=VM_USER_NAME,
+            root_password=VM_PASSWORD
+        )
     )
-    api.vms.get(VM0_NAME).start(start_params)
-    api.vms.get(BACKUP_VM_NAME).start(start_params)
 
-    start_params.vm.initialization.cloud_init=params.CloudInit(
-        host=params.Host(
-            address='VM2'
-        ),
-    )
-    api.vms.get(VM2_NAME).start(start_params)
+    vm_params.initialization.host_name = BACKUP_VM_NAME
+    backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
+    backup_vm_service.start(use_cloud_init=True, vm=vm_params)
 
-    testlib.assert_true_within_long(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up' and api.vms.get(BACKUP_VM_NAME).status.state == 'up',
-    )
-    assert_vm_is_alive(prefix, VM0_NAME)
+    vm_params.initialization.host_name = VM2_NAME
+    vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
+    vm2_service.start(use_cloud_init=True, vm=vm_params)
+
+    gw_ip = test_utils.get_management_net(prefix).gw()
+
+    vm_params.initialization.host_name = VM0_NAME
+    vm_params.initialization.dns_search = 'lago.local'
+    vm_params.initialization.domain = 'lago.local'
+    vm_params.initialization.dns_servers = gw_ip
+    vm_params.initialization.nic_configurations = [
+        types.NicConfiguration(
+            name='eth0',
+            boot_protocol=types.BootProtocol.STATIC,
+            on_boot=True,
+            ip=types.Ip(
+                address=test_utils.get_vm0_ip_address(prefix),
+                netmask='255.255.255.0',
+                gateway=gw_ip
+            )
+        )
+    ]
+    vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm0_service.start(use_cloud_init=True, vm=vm_params)
+
+    for vm_name in [VM0_NAME, BACKUP_VM_NAME]:
+        _verify_vm_state(engine, vm_name, types.VmStatus.UP)
+
+    assert_vm0_is_alive(prefix)
 
 
 @testlib.with_ovirt_api4
@@ -719,31 +706,7 @@ def verify_vm2_run(api):
 
 @testlib.with_ovirt_prefix
 def vm0_is_alive(ovirt_prefix):
-    assert_vm_is_alive(ovirt_prefix, VM0_NAME)
-
-
-@testlib.with_ovirt_prefix
-def restore_vm0_networking(ovirt_prefix):
-    # Networking may not work after resume.  We need this pseudo-test for the
-    # purpose of reviving VM networking by rebooting the VM.  We must be
-    # careful to reboot just the guest OS, not to restart the whole VM, to keep
-    # checking for contingent failures after resume.
-    # A better solution might be using a guest OS other than Cirros.
-    try:
-        if _vm_ssh(ovirt_prefix, VM0_NAME, ['true'], tries=1).code == 0:
-            return
-    except getattr(ssh, 'LagoSSHTimeoutException', RuntimeError):
-        # May happen on timeout, e.g. when networking is not working at all.
-        pass
-    host = _vm_host(ovirt_prefix, VM0_NAME)
-    uri = 'qemu+tls://%s/system' % host.name()
-    ret = host.ssh(['virsh', '-c', uri, 'reboot', '--mode', 'acpi', VM0_NAME])
-    nt.assert_equals(ret.code, EX_OK)
-
-    engine = ovirt_prefix.virt_env.engine_vm().get_api_v4().system_service()
-
-    assert_vm_is_alive(ovirt_prefix, VM0_NAME)
-    _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
+    assert_vm0_is_alive(ovirt_prefix)
 
 
 @testlib.with_ovirt_prefix
@@ -796,18 +759,18 @@ def vdsm_recovery(prefix):
 def template_export(api):
     engine = api.system_service()
 
-    template_cirros = test_utils.get_template_service(engine, TEMPLATE_CIRROS)
-    if template_cirros is None:
+    template_guest = test_utils.get_template_service(engine, TEMPLATE_GUEST)
+    if template_guest is None:
         raise SkipTest('{0}: template {1} is missing'.format(
             template_export.__name__,
-            TEMPLATE_CIRROS
+            TEMPLATE_GUEST
             )
         )
 
     storage_domain = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
     with test_utils.TestEvent(engine, 1164):
         # IMPORTEXPORT_STARTING_EXPORT_TEMPLATE event
-        template_cirros.export(
+        template_guest.export(
             storage_domain=types.StorageDomain(
                 id=storage_domain.id,
             ),
@@ -817,7 +780,7 @@ def template_export(api):
         # IMPORTEXPORT_EXPORT_TEMPLATE event
         testlib.assert_true_within_long(
             lambda:
-            template_cirros.get().status == types.TemplateStatus.OK,
+            template_guest.get().status == types.TemplateStatus.OK,
         )
 
 
@@ -826,7 +789,7 @@ def add_vm_pool(api):
     engine = api.system_service()
     pools_service = engine.vm_pools_service()
     pool_cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
-    pool_template = engine.templates_service().list(search='name={}'.format(TEMPLATE_CIRROS))[0]
+    pool_template = engine.templates_service().list(search='name={}'.format(TEMPLATE_GUEST))[0]
     with test_utils.TestEvent(engine, 302):
         pools_service.add(
             pool=types.VmPool(
@@ -849,13 +812,13 @@ def update_template_version(api):
     engine = api.system_service()
     stateless_vm = engine.vms_service().list(search='name={}'.format(VM1_NAME))[0]
     templates_service = engine.templates_service()
-    template = templates_service.list(search='name={}'.format(TEMPLATE_CIRROS))[0]
+    template = templates_service.list(search='name={}'.format(TEMPLATE_GUEST))[0]
 
     nt.assert_true(stateless_vm.memory != template.memory)
 
     templates_service.add(
         template=types.Template(
-            name=TEMPLATE_CIRROS,
+            name=TEMPLATE_GUEST,
             vm=stateless_vm,
             version=types.TemplateVersion(
                 base_template=template,
@@ -933,26 +896,26 @@ def remove_vm_pool(api):
 
 @testlib.with_ovirt_api4
 def template_update(api):
-    template_cirros = test_utils.get_template_service(api.system_service(), TEMPLATE_CIRROS)
+    template_guest = test_utils.get_template_service(api.system_service(), TEMPLATE_GUEST)
 
-    if template_cirros is None:
+    if template_guest is None:
         raise SkipTest('{0}: template {1} is missing'.format(
             template_update.__name__,
-            TEMPLATE_CIRROS
+            TEMPLATE_GUEST
         )
     )
     new_comment = "comment by ovirt-system-tests"
-    template_cirros.update(
+    template_guest.update(
         template = types.Template(
             comment=new_comment
         )
     )
     testlib.assert_true_within_short(
         lambda:
-        template_cirros.get().status == types.TemplateStatus.OK
+        template_guest.get().status == types.TemplateStatus.OK
     )
     nt.assert_true(
-        template_cirros.get().comment == new_comment
+        template_guest.get().comment == new_comment
     )
 
 
@@ -984,7 +947,7 @@ def hotplug_memory(prefix):
         nt.assert_true(
             vm_service.get().memory == new_memory
         )
-    assert_vm_is_alive(prefix, VM0_NAME)
+    assert_vm0_is_alive(prefix)
 
 
 @testlib.with_ovirt_prefix
@@ -1003,7 +966,7 @@ def hotplug_cpu(prefix):
         nt.assert_true(
             vm_service.get().cpu.topology.sockets == 2
         )
-    ret = _vm_ssh(prefix, VM0_NAME, ['lscpu'])
+    ret = _vm_ssh(test_utils.get_vm0_ip_address(prefix), ['lscpu'])
     nt.assert_equals(ret.code, 0)
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out)
     nt.assert_true(match.group('cpus') == '2')
@@ -1049,7 +1012,7 @@ def hotplug_nic(prefix):
         interface='virtio',
     )
     api.vms.get(VM0_NAME).nics.add(nic2_params)
-    assert_vm_is_alive(prefix, VM0_NAME)
+    assert_vm0_is_alive(prefix)
 
 
 @testlib.with_ovirt_prefix
@@ -1089,7 +1052,7 @@ def hotplug_disk(prefix):
         lambda:
         disk_service.get().status == types.DiskStatus.OK
     )
-    assert_vm_is_alive(prefix, VM0_NAME)
+    assert_vm0_is_alive(prefix)
 
 
 @testlib.with_ovirt_api4
@@ -1123,7 +1086,7 @@ def suspend_resume_vm0(prefix):
     global _log_time_before_suspend
     _log_time_before_suspend = log_items[0] + ' ' + log_items[1]  # date + time
 
-    assert_vm_is_alive(prefix, VM0_NAME)
+    assert_vm0_is_alive(prefix)
 
     api = prefix.virt_env.engine_vm().get_api_v4()
     vm_service = test_utils.get_vm_service(api.system_service(), VM0_NAME)
@@ -1157,11 +1120,12 @@ def verify_suspend_resume_vm0(prefix):
         identifier = 'hiberVolHandle'
     nt.assert_equals(log_line_count('START create\(.*' + identifier), 1)
     nt.ok_(log_line_count('CPU running: onResume') >= 1)
+    assert_vm0_is_alive(prefix)
 
 
 @testlib.with_ovirt_api
 def verify_glance_import(api):
-    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_CIRROS):
+    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
         testlib.assert_true_within_long(
             lambda: api.disks.get(disk_name).status.state == 'ok',
         )
@@ -1245,7 +1209,6 @@ _TEST_LIST = [
     template_update,
     verify_vm_import,
     verify_suspend_resume_vm0,
-    restore_vm0_networking,
     hotplug_memory,
     hotplug_disk,
     hotplug_nic,

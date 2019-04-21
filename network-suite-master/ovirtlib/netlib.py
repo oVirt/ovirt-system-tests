@@ -125,11 +125,20 @@ class VnicProfile(SDKRootEntity):
     def _get_parent_service(self, system):
         return system.vnic_profiles_service
 
-    def filter_id(self):
-        network_filter = self.get_sdk_type().network_filter
-        if network_filter:
-            return network_filter.id
+    @property
+    def filter(self):
+        sdk_network_filter = self.get_sdk_type().network_filter
+        if sdk_network_filter:
+            network_filter = NetworkFilter(self._parent_sdk_system)
+            network_filter.import_by_id(sdk_network_filter.id)
+            return network_filter
         return None
+
+    @filter.setter
+    def filter(self, new_filter):
+        new_filter_id = None if new_filter is None else new_filter.id
+        new_sdk_filter = types.NetworkFilter(id=new_filter_id)
+        self.update(network_filter=new_sdk_filter)
 
     @staticmethod
     def iterate(system):
@@ -229,6 +238,26 @@ class Vnic(SDKSubEntity):
             sdk_nic.vnic_profile = new_profile.get_sdk_type()
         sdk_nic.vnic_profile.id = new_profile.id
         self.service.update(sdk_nic)
+
+
+class NetworkFilter(SDKRootEntity):
+
+    @property
+    def name(self):
+        return self.get_sdk_type().name
+
+    def _get_parent_service(self, system):
+        return system.network_filters_service
+
+    def create(self):
+        raise NotImplementedError('oVirt connot create NetworkFilters')
+
+    @staticmethod
+    def iterate(system):
+        for sdk_obj in system.network_filters_service.list():
+            network_filter = NetworkFilter(system)
+            network_filter.import_by_id(sdk_obj.id)
+            yield network_filter
 
 
 class QoS(SDKSubEntity):

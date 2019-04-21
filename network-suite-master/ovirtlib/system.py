@@ -53,6 +53,10 @@ class SDKSystemRoot(object):
         return self._system_service.vnic_profiles_service()
 
     @property
+    def network_filters_service(self):
+        return self._system_service.network_filters_service()
+
+    @property
     def hosts_service(self):
         return self._system_service.hosts_service()
 

@@ -46,7 +46,7 @@ def test_connect_vm_to_external_network(ovirt_external_network, system,
         vnic_profile0 = netlib.VnicProfile(system)
         vnic_profile0.import_by_name(ovirt_external_network.name)
 
-        assert not vnic_profile0.filter_id()
+        assert not vnic_profile0.filter
 
         vm0_vnic_0 = netlib.Vnic(vm_0)
         vm0_vnic_0.create(

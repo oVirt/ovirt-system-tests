@@ -149,6 +149,11 @@ def test_modify_vnic(running_vm_0, system, ovirtmgmt_network, engine):
         uuid = '4c9f6b27-87af-4ab2-b249-ddd97dde326f'
         profile.custom_properties = [
             netlib.CustomProperty('SecurityGroups', uuid)]
+
+        network_filter = netlib.NetworkFilter(system)
+        network_filter.import_by_name('allow-dhcp')
+        profile.filter = network_filter
+
         vnic = next(running_vm_0.vnics())
         original_profile = vnic.vnic_profile
 
@@ -157,6 +162,7 @@ def test_modify_vnic(running_vm_0, system, ovirtmgmt_network, engine):
             assert vnic.vnic_profile.name == 'temporary'
             assert [uuid] == [
                 p.value for p in vnic.vnic_profile.custom_properties]
+            assert vnic.vnic_profile.filter.name == 'allow-dhcp'
         finally:
             vnic.vnic_profile = original_profile
 

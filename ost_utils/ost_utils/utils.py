@@ -43,6 +43,11 @@ import hashlib
 
 LOGGER = logging.getLogger(__name__)
 
+class OSTUserException(Exception):
+    """
+    Exception to throw when a timeout is reached
+    """
+    pass
 
 class TimerException(Exception):
     """

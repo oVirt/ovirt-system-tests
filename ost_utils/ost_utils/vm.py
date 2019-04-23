@@ -213,7 +213,7 @@ class VM(object):
         return ret
 
     @sh_output_result
-    def copy_to(self, local_path, remote_path, recursive=True, as_user='vagrant'):
+    def copy_to(self, local_path, remote_path, recursive=True, as_user='root'):
         recursive_param = ''
 
         if recursive:
@@ -227,7 +227,7 @@ class VM(object):
         return ret
 
     @sh_output_result
-    def copy_from(self, remote_path, local_path, recursive=True, as_user='vagrant'):
+    def copy_from(self, remote_path, local_path, recursive=True, as_user='root'):
         recursive_param = ''
 
         if recursive:

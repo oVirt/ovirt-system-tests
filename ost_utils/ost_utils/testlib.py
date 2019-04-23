@@ -47,7 +47,7 @@ def get_test_prefix():
 def get_prefixed_name(entity_name):
     suite = os.environ.get('SUITE')
     return (
-        os.path.basename(suite).replace('.', '-') + '-' + entity_name
+        os.path.basename(suite).replace('.', '-').replace('-','_') + '-' + entity_name
     )
 
 

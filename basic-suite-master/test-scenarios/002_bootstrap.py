@@ -42,6 +42,8 @@ from test_utils import network_utils_v4
 from test_utils import constants
 from test_utils import versioning
 
+from ost_utils import general_utils
+
 import logging
 LOGGER = logging.getLogger(__name__)
 
@@ -113,7 +115,7 @@ def _get_host_ips_in_net(prefix, host_name, net_name):
 
 def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
-    all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+    all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
     up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
     if up_hosts:
         if random_host:
@@ -181,6 +183,22 @@ def _host_status_to_print(hosts_service, hosts_list):
             host_service_info = hosts_service.host_service(host.id)
             dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
     return dump_hosts
+
+def _wait_for_status(hosts_service, dc_name, status):
+    up_status_seen = False
+    for _ in general_utils.linear_retrier(attempts=120, iteration_sleeptime=1):
+        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+        up_hosts = [host for host in all_hosts if host.status == status]
+        LOGGER.info(_host_status_to_print(hosts_service, all_hosts))
+        # we use up_status_seen because we make sure the status is not flapping
+        if up_hosts:
+            if up_status_seen:
+                break
+            up_status_seen = True
+        else:
+            up_status_seen = False
+    return all_hosts
+
 
 @testlib.with_ovirt_api4
 def add_dc(api):

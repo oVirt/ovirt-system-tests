@@ -20,7 +20,6 @@
   deploy-script:
     - script: "deploy-scripts/add_local_repo.sh"
     - script: "deploy-scripts/setup_engine.sh"
-    - script: "deploy-scripts/setup_storage.sh"
   disks:
     - size: "101G"
       type: "raw"

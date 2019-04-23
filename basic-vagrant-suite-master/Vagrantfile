@@ -194,13 +194,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 #config_basic_info(node, "#{suite_name}_#{hostname}", host['box'],host['box_version'])
                 config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
                 shell_provision(node, "echo hello from node #{i}")
-                shell_provision(node, "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config")
+                ssh_config_cmd = "grep -v 'PasswordAuthentication' /etc/ssh/sshd_config  > /tmp/sshd_config
+                    cp /tmp/sshd_config /etc/ssh/sshd_config
+                    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+                    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config"
+                shell_provision(node, ssh_config_cmd)
                 root_authorized_key_cmd = "mkdir /root/.ssh
                     cp /home/vagrant/.ssh/authorized_keys /root/.ssh/authorized_keys
                     chmod 644 /root/.ssh/authorized_keys
                     chown root:root /root/.ssh/authorized_keys"
                 shell_provision(node, root_authorized_key_cmd)
-
+                shell_provision(node, "service sshd restart")
                 # deploy scripts:
                 deploy_scripts(node, host, type, suite_path, i)
 

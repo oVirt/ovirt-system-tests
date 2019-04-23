@@ -350,7 +350,7 @@ env_libvirt_get_nets() {
 
     nets="$(_virsh net-list --all)" || return "$?"
     echo -e "$nets" \
-        | egrep -w "vagrant-libvirt-${suite//-/_}.*" \
+        | egrep -w "${suite//-/_}.*" \
         | egrep -v "vdsm-ovirtmgmt" \
         | awk '{print $1;}' \
         || :

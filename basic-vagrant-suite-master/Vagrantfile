@@ -163,7 +163,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     ## Libvirt global configuration
     config.vm.provider :libvirt do |p|
-        p.management_network_name = "vagrant-libvirt-#{suite_name}-management"
+        p.management_network_name = "#{suite_name}-net-management"
         p.management_network_address = '192.168.124.0/24'
         if $vagrant_pool then
             p.storage_pool_name = $vagrant_pool
@@ -181,11 +181,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     ## network configuration
     config.vm.network :private_network,
-        network_options( "dhcp","192.168.29.0/24","vagrant-libvirt-#{suite_name}-extra", "true","nat","lago.local")
+        network_options( "dhcp","192.168.27.0/24","#{suite_name}-net-storage", "true","nat","")
     config.vm.network :private_network,
-        network_options( "dhcp","192.168.27.0/24","vagrant-libvirt-#{suite_name}-storage", "true","nat","")
-    config.vm.network :private_network,
-        network_options( "dhcp","192.168.28.0/24","vagrant-libvirt-#{suite_name}-bonding", "true","nat","")
+        network_options( "dhcp","192.168.28.0/24","#{suite_name}-net-bonding", "true","nat","")
 
       ## Configure the hosts from yml file
     hosts.each do |host|

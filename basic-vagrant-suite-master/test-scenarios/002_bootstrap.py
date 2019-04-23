@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014, 2017 Red Hat, Inc.
+# Copyright 2014, 2017, 2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import httplib
 import os
 import random
 import ssl
+import time
 
 import nose.tools as nt
 from nose import SkipTest
@@ -291,10 +292,10 @@ def add_cluster(api):
 
 @testlib.with_ovirt_prefix
 def sync_time(prefix):
-    #TODO: Move to chrony
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
-        host.ssh(['ntpdate', '-4', testlib.get_prefixed_name('engine')])
+        host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
+        host.ssh(['chronyc', '-4', 'makestep'])
 
 
 @testlib.with_ovirt_prefix
@@ -836,7 +837,7 @@ def add_role(api):
 def add_affinity_label(api):
     engine = api.system_service()
     affinity_labels_service = engine.affinity_labels_service()
-    with test_utils.TestEvent(engine, 10380):
+    with test_utils.TestEvent(engine, 10380): 
         nt.assert_true(
             affinity_labels_service.add(
                 sdk4.types.AffinityLabel(
@@ -851,7 +852,7 @@ def add_affinity_group(api):
     engine = api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
-    with test_utils.TestEvent(engine, 10350):
+    with test_utils.TestEvent(engine, 10350): 
         nt.assert_true(
             affinity_group_service.add(
                 sdk4.types.AffinityGroup(
@@ -1009,15 +1010,17 @@ def get_domains(api):
 @testlib.with_ovirt_api4
 def get_host_devices(api):
     host_service = _random_host_service_from_dc(api, DC_NAME)
-    devices_service = host_service.devices_service()
-    devices = sorted(devices_service.list(), key=lambda device: device.name)
-    device_list = ''
-    for device in devices:
-        if device.name == 'block_vda_1': # first virtio-blk disk
-            return True
-        else:
-            device_list += (device.name + '; ')
-    raise RuntimeError('Could not find block_vda1 device in host devices: {}'.format(device_list))
+    for i in range(10):
+        devices_service = host_service.devices_service()
+        devices = sorted(devices_service.list(), key=lambda device: device.name)
+        device_list = ''
+        for device in devices:
+            if device.name in 'block_vda_1': # first virtio-blk disk
+                return True
+            else:
+                device_list += (device.name + '; ')
+        time.sleep(1)
+    raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
 
 
 @testlib.with_ovirt_api4
@@ -1079,7 +1082,7 @@ def check_update_host(api):
 def add_scheduling_policy(api):
     engine = api.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
-    with test_utils.TestEvent(engine, 9910):
+    with test_utils.TestEvent(engine, 9910): 
         nt.assert_true(
             scheduling_policies_service.add(
                 sdk4.types.SchedulingPolicy(
@@ -1340,44 +1343,60 @@ def remove_vnic_passthrough_profile(api):
                          None)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_blank_vms(api):
-    vm_memory = 256 * MB
-    vm_params = params.VM(
-        memory=vm_memory,
-        os=params.OperatingSystem(
-            type_='other_linux',
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+
+    vm_params = sdk4.types.Vm(
+        os=sdk4.types.OperatingSystem(
+            type='other_linux',
         ),
-        type_='server',
-        high_availability=params.HighAvailability(
+        type=sdk4.types.VmType.SERVER,
+        high_availability=sdk4.types.HighAvailability(
             enabled=False,
         ),
-        cluster=params.Cluster(
+        cluster=sdk4.types.Cluster(
             name=CLUSTER_NAME,
         ),
-        template=params.Template(
+        template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
         ),
-        display=params.Display(
+        display=sdk4.types.Display(
             smartcard_enabled=True,
             keyboard_layout='en-us',
             file_transfer_enabled=True,
             copy_paste_enabled=True,
         ),
-        usb=params.Usb(
+        usb=sdk4.types.Usb(
             enabled=True,
-            type_=sdk4.types.UsbType.NATIVE,
+            type=sdk4.types.UsbType.NATIVE,
         ),
-        memory_policy=params.MemoryPolicy(
-            guaranteed=vm_memory / 2,
+        memory_policy=sdk4.types.MemoryPolicy(
+            ballooning=True,
         ),
-        name=VM0_NAME
     )
-    for vm in [VM0_NAME, BACKUP_VM_NAME]:
-        vm_params.name = vm
-        api.vms.add(vm_params)
+
+    vm_params.name = BACKUP_VM_NAME
+    vm_params.memory = 256 * MB
+    vm_params.memory_policy.guaranteed = 128 * MB
+    vms_service.add(vm_params)
+    backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
+
+    vm_params.name = VM0_NAME
+    least_hotplug_increment = 256 * MB
+    required_memory = 384 * MB
+    vm_params.memory = required_memory
+    vm_params.memory_policy.guaranteed = required_memory
+    vm_params.memory_policy.max = required_memory + least_hotplug_increment
+
+    vms_service.add(vm_params)
+    vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+
+    for vm_service in [backup_vm_service, vm0_vm_service]:
         testlib.assert_true_within_short(
-            lambda: api.vms.get(vm).status.state == 'down',
+            lambda:
+            vm_service.get().status == sdk4.types.VmStatus.DOWN
         )
 
 

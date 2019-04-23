@@ -3,6 +3,7 @@
 from sh import vagrant
 from sh import scp
 from sh import virsh
+from sh import grep
 
 from sh import ErrorReturnCode
 from sh import CommandNotFound
@@ -21,21 +22,21 @@ import time
 import warnings
 import logging
 import yaml
+from itertools import chain
 from collections import OrderedDict
-import ost_utils.testlib
+import testlib
 from ost_utils.sdk_utils import available_sdks, require_sdk
 from ost_utils.log_utils import LevelFilter
 
 import ovirtsdk.api
 from ovirtsdk.infrastructure.errors import (RequestError, ConnectionError)
-
+import utils
 
 try:
     import ovirtsdk4 as sdk4
     import ovirtsdk4.types as otypes
 except ImportError:
     pass
-
 
 LOGGER = logging.getLogger(__name__)
 # sh is bombing the log, handle it.
@@ -77,7 +78,7 @@ class CommandStatus(_CommandStatus):
 class VagrantHosts(object):
 
     def __init__(self):
-        self._vms = []
+        self._vms = {}
         self._engine_vms = []
         self._host_vms = []
         self._prefix_path = None
@@ -100,15 +101,11 @@ class VagrantHosts(object):
             raise RuntimeError('Vagrant env does not have any domain')
 
         for domain in domains:
+            self._vms[domain] = VM(domain)
             if "engine" in domain:
                 self._engine_vms.append(EngineVM(domain))
             elif "host" in domain:
                 self._host_vms.append(HostVM(domain))
-            else:
-                self._vms.append(VM(domain))
-
-        self._vms.extend(self._engine_vms)
-        self._vms.extend(self._host_vms)
 
     def engine_vm(self):
         return self._engine_vms[0]
@@ -122,6 +119,34 @@ class VagrantHosts(object):
     def vms(self):
         return self._vms[:]
 
+    def get_vm(self, name):
+        for x in chain(self.host_vms(), self.engine_vms()):
+            suffix = x.name()
+            LOGGER.debug('Suffix ' + suffix)
+            if name.endswith(suffix):
+                return x
+
+    def get_vms(self, vm_names=None):
+        if vm_names is None:
+            vm_names = self._vms.keys()
+        missing_vms = []
+        vms = {}
+        for name in vm_names:
+            try:
+                vms[name] = self._vms[name]
+            except KeyError:
+                # TODO: add resolver by suffix
+                missing_vms.append(name)
+
+        if missing_vms:
+            raise utils.OSTUserException(
+                'The following vms do not exist: \n{}'.format(
+                    '\n'.join(missing_vms)
+                )
+            )
+
+        return vms
+
     def _set_prefix_path(self):
         for base in (os.getenv("VAGRANT_CWD"), os.curdir):
             possible_prefix_path = os.path.join(base, '.vagrant')
@@ -133,6 +158,7 @@ class VagrantHosts(object):
                 'Failed to locate Vagarnt env.'
                 ' VAGRANT_CWD is not set and ./vagrant does not exists'
             )
+
 
     @property
     def prefix_path(self):
@@ -147,7 +173,7 @@ class VM(object):
         self._ip =  host_config["hostname"]
         self._identityfile = host_config["identityfile"][0]
         self._config_file_path = os.path.dirname(host_config["identityfile"][0])
-
+        self._root_password = 'vagrant'
         ### we assume that the files are located in a specific location according to libvirt
         ### vagrant, we don't have api for that
         ### vagrant plugin vagrant-libvirt (0.0.45, global)
@@ -158,10 +184,16 @@ class VM(object):
         with open(self._config_file_path + '/box_meta', 'r') as myfile:
             self._box_meta_data = myfile.read()
         self._service_class = service.SystemdService
-
+        self._nics = self.nics()
 
     def ip(self):
         return self._ip
+
+    def name(self):
+        return self._hostname
+
+    def root_password(self):
+        return self._root_password
 
     def get_params(self, name):
         return getattr(self, name)
@@ -242,12 +274,45 @@ class VM(object):
     def nic(self):
         return self._ip
 
+    def all_ips(self):
+        ips = self.nets().out.split('\n')
+        ips = [x for x in ips if x != '']
+        return ips
+
+    @sh_output_result
+    def get_virsh_nics(self):
+        command = ['-c', 'qemu:///system', 'domiflist', self._domain_uuid ]
+        ret = virsh(command)
+        return ret
+
+    def nics(self):
+        nics = self.get_virsh_nics()
+        pattern = os.path.basename(os.environ.get('SUITE')).replace("-", "_") + '-net-\w*'
+        match = re.findall(pattern,nics.out)
+        return match
+
     @sh_output_result
     def nets(self):
         """Return vagrant machine network cards."""
-        command = ['-c', 'qemu:///system', 'domifaddr', self._domain_uuid]
-        ret = virsh(command)
+        command = ['-c', 'qemu:///system', 'domifaddr', self._domain_uuid ]
+        grep_cmd = ['-oE' ,'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' ]
+        ret = grep(virsh(command),grep_cmd)
         return ret
+
+    @sh_output_result
+    def get_ips_in_net(self, net_name):
+        """Return ip in network."""
+        command = ['-c', 'qemu:///system', 'net-dhcp-leases', net_name ]
+        grep_cmd = ['-w' ,self.name() ]
+        ret = grep(virsh(command),grep_cmd)
+        return ret
+
+    def ips_in_net(self, net_name):
+        """Return list ips in network."""
+        ips_in_net = self.get_ips_in_net(net_name)
+        pattern = '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+        match = re.findall(pattern,ips_in_net.out)
+        return match
 
     @sh_output_result
     def destroy(self):
@@ -283,10 +348,12 @@ class VM(object):
 class EngineVM(VM):
     def __init__(self, *args, **kwargs):
         super(EngineVM, self).__init__(*args, **kwargs)
-        self._username = kwargs.get('engine-user', 'admin@internal')
-        self._password = str(kwargs.get('engine-password', '123'))
+        self._username = kwargs.get('ovirt-engine-user', 'admin@internal')
+        self._password = str(kwargs.get('ovirt-engine-password', u'123'))
         self._api_v3 = None
         self._api_v4 = None
+        self._metadata = {}
+        self._metadata['ovirt-engine-password'] = self._password
 
     @property
     def username(self):
@@ -296,25 +363,31 @@ class EngineVM(VM):
     def password(self):
         return self._password
 
+    @property
+    def metadata(self):
+        return self._metadata
+
     def _create_api(self, api_ver):
         url = 'https://%s/ovirt-engine/api' % self.ip()
         if api_ver == 3:
             if '3' not in available_sdks():
                 raise RuntimeError('oVirt Python SDK v3 not found.')
             return ovirtsdk.api.API(
-                url=url,
+                url=url.encode('ascii'),
                 username=self.username,
-                password=self.password,
+                password=self.password.encode('ascii'),
                 validate_cert_chain=False,
                 insecure=True,
             )
         if api_ver == 4:
+            import logging
+            logging.basicConfig(level=logging.DEBUG,filename='/tmp/x.log')
             if '4' not in available_sdks():
                 raise RuntimeError('oVirt Python SDK v4 not found.')
             return sdk4.Connection(
-                url=url,
+                url= url.encode('ascii'),
                 username=self.username,
-                password=self.password,
+                password=self.password.encode('ascii'),
                 insecure=True,
                 debug=True,
             )
@@ -341,7 +414,6 @@ class EngineVM(VM):
             )
         except AssertionError:
             raise RuntimeError('Failed to connect to the engine')
-
         if api_ver == 3:
             return api_v3.pop()
         else:

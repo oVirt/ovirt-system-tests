@@ -5,6 +5,10 @@
   user: root
   provider:
   memory: 2047
+  nics:
+    - net: net-storage
+    - net: net-bonding
+    - net: net-bonding
   deploy-script:
     - script: "deploy-scripts/add_local_repo.sh"
     - script: "deploy-scripts/setup_host_el7.sh"
@@ -17,6 +21,8 @@
   hostCount: 1
   memory: 4096
   user: root
+  nics:
+    - net: net-storage
   deploy-script:
     - script: "deploy-scripts/add_local_repo.sh"
     - script: "deploy-scripts/setup_engine.sh"

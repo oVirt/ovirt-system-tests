@@ -100,6 +100,27 @@ def shell_provisioner_args(yaml_arguments)
     shell_arguments
 end
 
+## Additional network
+def additional_network(node, host, suite_name)
+
+    if host.has_key?('nics')
+        nets = host['nics']
+        nets.each do |net|
+            options = {}
+            if net.has_key?('net')
+                if net['net'] == "net-storage"
+                    node.vm.network :private_network,
+                        network_options( "dhcp","192.168.27.0/24","#{suite_name}-net-storage", "true","nat","")
+                end
+                if net['net'] == "net-bonding"
+                    node.vm.network :private_network,
+                        network_options( "dhcp","192.168.28.0/24","#{suite_name}-net-bonding", "true","nat","")
+                end
+            end
+        end
+    end
+end
+
 ## Deploy scripts
 def deploy_scripts(node, host, type, suite_path, idx=0)
 
@@ -179,19 +200,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ## Disable share folders
     config.vm.synced_folder '.', '/vagrant', disabled: true
 
-    ## network configuration
-    config.vm.network :private_network,
-        network_options( "dhcp","192.168.27.0/24","#{suite_name}-net-storage", "true","nat","")
-    config.vm.network :private_network,
-        network_options( "dhcp","192.168.28.0/24","#{suite_name}-net-bonding", "true","nat","")
-
-      ## Configure the hosts from yml file
+    ## Configure the hosts from yml file
     hosts.each do |host|
         type = host['type']
         (0..host['hostCount']-1).each do |i|
             hostname, template = configure_hostname(host['hostCount'], type, i)
             config.vm.define "#{template}" do |node|
                 #config_basic_info(node, "#{suite_name}_#{hostname}", host['box'],host['box_version'])
+                additional_network(node, host, suite_name)
                 config_basic_info(node, "#{hostname}", host['box'],host['box_version'])
                 shell_provision(node, "echo hello from node #{i}")
                 ssh_config_cmd = "grep -v 'PasswordAuthentication' /etc/ssh/sshd_config  > /tmp/sshd_config

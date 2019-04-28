@@ -35,6 +35,7 @@ stage:
         - he-basic-role-remote_suite_master
         - he-node-ng_suite_4.3
         - he-node-ng_suite_master
+        - he-node-ng-ssg_suite_master
         - metrics_suite_4.3
         - network_suite_4.2
         - network_suite_4.3

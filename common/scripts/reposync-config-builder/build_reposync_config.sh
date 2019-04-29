@@ -215,8 +215,12 @@ collect_template_name_from_suite() {
 collect_template_repo_json_from_suite() {
     local suite="${1:?}"
     local lago_repo_file="${suite}/template-repo.json"
-    [[ -e "$lago_repo_file" ]] \
-    && realpath "$lago_repo_file"
+    if [[ -e "$lago_repo_file" ]] ; then
+        realpath "$lago_repo_file"
+    else
+        echo ""
+    fi
+
 }
 
 create_updated_reposync_file() {

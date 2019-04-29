@@ -237,7 +237,7 @@ def _provision_icmp_rule(source_ip, action):
                                  action +
                                  '_icmp_rule_on_default_sec_group.yml')
     playbook = Playbook(
-        [playbook_path],
+        playbook_path,
         extra_vars={
             'source_ip': source_ip,
             'cloud_name': 'ovirt'

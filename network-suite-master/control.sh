@@ -12,6 +12,7 @@ install_dependencies() {
     pip install pytest==3.5
 
     pip install contextlib2
+    pip install ansible-runner==1.3.4
 
     yum install -y ansible
 

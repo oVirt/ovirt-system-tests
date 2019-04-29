@@ -163,13 +163,13 @@ def test_ovn_provider_cleanup_scenario(openstack_client_config):
 
 def _test_ovn_provider(playbook_name):
     playbook_path = os.path.join(PLAYBOOK_DIR, playbook_name)
-    playbook = Playbook([playbook_path])
+    playbook = Playbook(playbook_path)
     playbook.run()
 
-    assert not playbook.execution_stats.failures
-    assert not playbook.idempotency_check_stats.failures
-    assert playbook.execution_stats.changed.get('localhost', 0) > 0
-    assert not playbook.idempotency_check_stats.changed
+    assert not playbook.execution_stats['failures']
+    assert not playbook.idempotency_check_stats['failures']
+    assert playbook.execution_stats['changed'].get('localhost', 0) > 0
+    assert not playbook.idempotency_check_stats['changed']
 
 
 @contextmanager

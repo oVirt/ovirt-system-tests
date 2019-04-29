@@ -17,101 +17,19 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from collections import namedtuple
-from contextlib import contextmanager
-
-from ansible.executor.playbook_executor import PlaybookExecutor
-from ansible.inventory.manager import InventoryManager
-from ansible.parsing.dataloader import DataLoader
-from ansible.vars.manager import VariableManager
-
-PbexOptions = namedtuple('PbexOptions',
-                         ['listtags', 'listtasks', 'listhosts', 'syntax',
-                          'connection', 'module_path', 'forks', 'remote_user',
-                          'private_key_file', 'ssh_common_args',
-                          'ssh_extra_args', 'sftp_extra_args',
-                          'scp_extra_args', 'become', 'become_method',
-                          'become_user', 'verbosity', 'check', 'diff'])
-_PBEX_OPTIONS = PbexOptions(listtags=False,
-                            listtasks=False,
-                            listhosts=False,
-                            syntax=False,
-                            connection='local',
-                            module_path=None,
-                            forks=100,
-                            remote_user=None,
-                            private_key_file=None,
-                            ssh_common_args=None,
-                            ssh_extra_args=None,
-                            sftp_extra_args=None,
-                            scp_extra_args=None,
-                            become=False,
-                            become_method=None,
-                            become_user=None,
-                            verbosity=0,
-                            check=False,
-                            diff=False)
+import ansible_runner
 
 
 class AnsibleExecutionFailure(Exception):
     pass
 
 
-class StatsHandlerError(Exception):
-    pass
-
-
-class StatsHandlers(object):
-    funcs = set()
-
-    @staticmethod
-    def execute(stats):
-        """Is called if new stats are available"""
-        for func in StatsHandlers.funcs:
-            func(stats)
-
-    @staticmethod
-    def register(func):
-        """Registers function func to be called if new stats are available
-
-        :param func: function that accepts one argument
-        """
-        StatsHandlers.funcs.add(func)
-
-    @staticmethod
-    def unregister(func):
-        StatsHandlers.funcs.remove(func)
-
-
-@contextmanager
-def register_stats_handler(func):
-    StatsHandlers.register(func)
-    try:
-        yield
-    finally:
-        StatsHandlers.unregister(func)
-
-
 class Playbook(object):
-    def __init__(self, playbooks, extra_vars={}):
+    def __init__(self, playbook, extra_vars={}):
         self._execution_stats = None
         self._idempotency_check_stats = None
-        self._pbex_args = Playbook._create_pbex_args(playbooks, extra_vars)
-
-    @staticmethod
-    def _create_pbex_args(playbooks, extra_vars):
-        loader = DataLoader()
-        inventory = InventoryManager(loader=loader)
-        variable_manager = VariableManager(loader=loader, inventory=inventory)
-        variable_manager.extra_vars = extra_vars
-        return {
-            'playbooks': playbooks,
-            'inventory': inventory,
-            'variable_manager': variable_manager,
-            'loader': loader,
-            'options': _PBEX_OPTIONS,
-            'passwords': {},
-        }
+        self._playbook = playbook
+        self._extra_vars = extra_vars
 
     @property
     def execution_stats(self):
@@ -122,19 +40,33 @@ class Playbook(object):
         return self._idempotency_check_stats
 
     def run(self):
-        stats = []
-        with register_stats_handler(lambda new_stats: stats.append(new_stats)):
-            self._run_playbook_executor()
-            # repeated call to ensure idempotency
-            self._run_playbook_executor()
-
-        if len(stats) != 2:
-            raise StatsHandlerError
-
-        self._execution_stats = stats[0]
-        self._idempotency_check_stats = stats[1]
+        self._execution_stats = self._run_playbook_executor()
+        self._idempotency_check_stats = self._run_playbook_executor()
 
     def _run_playbook_executor(self):
-        pbex = PlaybookExecutor(**self._pbex_args)
-        if pbex.run() != 0:
+        runner = ansible_runner.run(
+            playbook=self._playbook,
+            extravars=self._extra_vars,
+            inventory='localhost ansible_connection=local')
+        if runner.status != 'successful':
             raise AnsibleExecutionFailure
+        return Playbook._stats(runner)
+
+    @staticmethod
+    def _stats(runner):
+            last_event = list(
+                filter(
+                    lambda x:
+                    'event' in x and x['event'] == 'playbook_on_stats',
+                    runner.events
+                )
+            )
+            if not last_event:
+                return None
+            last_event = last_event[0]['event_data']
+            return dict(skipped=last_event['skipped'],
+                        ok=last_event['ok'],
+                        dark=last_event['dark'],
+                        failures=last_event['failures'],
+                        processed=last_event['processed'],
+                        changed=last_event['changed'])

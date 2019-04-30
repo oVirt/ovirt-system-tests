@@ -141,8 +141,7 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = OVMF
-	OpenIPMI-modalias
+includepkgs = OpenIPMI-modalias
 	PyYAML
 	abrt
 	abrt-addon-ccpp
@@ -250,8 +249,6 @@ includepkgs = OVMF
 	hivex
 	hsqldb
 	http-parser
-	httpd
-	httpd-tools
 	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils
@@ -363,7 +360,6 @@ includepkgs = OVMF
 	mailcap
 	make
 	mdadm
-	mod_ssl
 	msv-msv
 	msv-xsdlib
 	mtools
@@ -386,7 +382,6 @@ includepkgs = OVMF
 	oddjob
 	oddjob-mkhomedir
 	opus
-	pango
 	pciutils
 	pcsc-lite-libs
 	perl-Archive-Tar
@@ -540,12 +535,15 @@ max_connections = 10
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
+	OVMF
 	augeas
 	augeas-libs
 	bind-libs
 	bind-utils
+	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
+	device-mapper-libs
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -585,6 +583,8 @@ includepkgs = 389-ds-base
 	gnutls
 	gnutls-dane
 	gnutls-utils
+	httpd
+	httpd-tools
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -632,11 +632,13 @@ includepkgs = 389-ds-base
 	mesa-libGL
 	mesa-libgbm
 	mesa-libglapi
+	mod_ssl
 	openldap-clients
 	openssl
 	openssl-libs
 	openwsman-python
 	osinfo-db
+	pango
 	perl
 	perl-IO-Zlib
 	perl-Package-Constants
@@ -658,6 +660,8 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd

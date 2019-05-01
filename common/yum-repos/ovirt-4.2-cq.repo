@@ -43,12 +43,15 @@ enabled = 1
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
+	OVMF
 	augeas
 	augeas-libs
 	bind-libs
 	bind-utils
+	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
+	device-mapper-libs
 	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
@@ -90,6 +93,8 @@ includepkgs = 389-ds-base
 	gnutls
 	gnutls-dane
 	gnutls-utils
+	httpd
+	httpd-tools
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -141,11 +146,13 @@ includepkgs = 389-ds-base
 	mesa-libGL
 	mesa-libgbm
 	mesa-libglapi
+	mod_ssl
 	openldap-clients
 	openssl
 	openssl-libs
 	openwsman-python
 	osinfo-db
+	pango
 	perl
 	perl-Git
 	perl-IO-Zlib
@@ -161,6 +168,7 @@ includepkgs = 389-ds-base
 	python-sssdconfig
 	python2-ipaclient
 	python2-ipalib
+	rsync
 	ruby
 	ruby-irb
 	ruby-libs
@@ -169,6 +177,8 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -197,8 +207,7 @@ includepkgs = 389-ds-base
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
-includepkgs = OVMF
-	OpenIPMI-modalias
+includepkgs = OpenIPMI-modalias
 	PyYAML
 	abrt
 	abrt-addon-ccpp
@@ -308,8 +317,6 @@ includepkgs = OVMF
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
-	httpd
-	httpd-tools
 	ipmitool
 	iptables-services
 	ipxe-roms-qemu
@@ -440,7 +447,6 @@ includepkgs = OVMF
 	mailx
 	make
 	mdadm
-	mod_ssl
 	mpfr
 	msv-msv
 	msv-xsdlib
@@ -466,7 +472,6 @@ includepkgs = OVMF
 	opus
 	osinfo-db-tools
 	pam_pkcs11
-	pango
 	pciutils
 	pcsc-lite-libs
 	perl-Archive-Tar
@@ -559,7 +564,6 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
-	rsync
 	samba-client-libs
 	samba-common
 	samba-common-libs

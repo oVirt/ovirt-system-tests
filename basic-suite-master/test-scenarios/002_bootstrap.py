@@ -458,9 +458,11 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
     ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
     kwargs = {}
-    if sd_format >= 'v4' and \
-       not versioning.cluster_version_ok(4, 1):
-        kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+    if sd_format >= 'v4':
+        if not versioning.cluster_version_ok(4, 1):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+        elif not versioning.cluster_version_ok(4, 3):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
     random_host = _random_host_from_dc(api, DC_NAME)
     print('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(

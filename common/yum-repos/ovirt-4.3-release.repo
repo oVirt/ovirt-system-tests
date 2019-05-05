@@ -695,8 +695,6 @@ includepkgs = ansible
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	ovirt-guest-agent-common
-	ovirt-guest-agent-pam-module
 	puppet
 	python-ordereddict
 	python-unittest2

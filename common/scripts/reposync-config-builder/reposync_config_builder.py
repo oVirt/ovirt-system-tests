@@ -157,12 +157,8 @@ def set_include(conf_path, repoid_to_pkgs):
     for repoid in repos_to_exclude:
         if repoid in skip_injection:
             continue
-
-        cp.set(repoid, 'exclude', '*')
+        if not cp.has_option(repoid, 'includepkgs'):
+            cp.set(repoid, 'exclude', '*')
 
     with open(conf_path + '.modified', mode='wt') as f:
         cp.write(f)
-
-
-
-

@@ -28,20 +28,27 @@ from ovirtsdk.xml import params
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
+import ovirtsdk4.types as types
 
 from lago import utils
 from ovirtlago import testlib
 
 import test_utils
 from test_utils import network_utils_v4
+from test_utils import constants
+from test_utils import versioning
+
+from ost_utils import general_utils
+
+import logging
+LOGGER = logging.getLogger(__name__)
 
 API_V4 = True
 MB = 2 ** 20
 
 # DC/Cluster
 DC_NAME = 'performance-dc'
-DC_VER_MAJ = 4
-DC_VER_MIN = 2
+DC_VER_MAJ, DC_VER_MIN = versioning.cluster_version()
 SD_FORMAT = 'v4'
 CLUSTER_NAME = 'performance-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'
@@ -82,9 +89,10 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'
-GLANCE_DISK_NAME = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_disk'
-TEMPLATE_CIRROS = CIRROS_IMAGE_NAME.replace(" ", "_") + '_glance_template'
+CIRROS_IMAGE_NAME = versioning.guest_os_image_name()
+GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
+TEMPLATE_CIRROS = versioning.guest_os_template_name()
+
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -129,13 +137,40 @@ def _hosts_in_dc(api, dc_name=DC_NAME):
 
 def _hosts_in_dc_4(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
+    all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
+    up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
+    if up_hosts:
         if random_host:
-            return random.choice(hosts)
+            return random.choice(up_hosts)
         else:
-            return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
+            return sorted(up_hosts, key=lambda host: host.name)
+    hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
+
+
+def _host_status_to_print(hosts_service, hosts_list):
+    dump_hosts = ''
+    for host in hosts_list:
+            host_service_info = hosts_service.host_service(host.id)
+            dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+    return dump_hosts
+
+
+def _wait_for_status(hosts_service, dc_name, status):
+    up_status_seen = False
+    for _ in general_utils.linear_retrier(attempts=120, iteration_sleeptime=1):
+        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+        up_hosts = [host for host in all_hosts if host.status == status]
+        LOGGER.info(_host_status_to_print(hosts_service, all_hosts))
+        # we use up_status_seen because we make sure the status is not flapping
+        if up_hosts:
+            if up_status_seen:
+                break
+            up_status_seen = True
+        else:
+            up_status_seen = False
+    return all_hosts
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc(api, dc_name))
@@ -371,6 +406,13 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    kwargs = {}
+    if sd_format >= 'v4':
+        if not versioning.cluster_version_ok(4, 1):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+        elif not versioning.cluster_version_ok(4, 3):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
+
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
@@ -382,6 +424,7 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
             path=mount_path,
             nfs_version=nfs_vers,
         ),
+        **kwargs
     )
 
     _add_storage_domain_4(api, p)

@@ -23,7 +23,7 @@ from nose import SkipTest
 
 from ovirtsdk.xml import params
 
-from ovirtlago import testlib
+from ost_utils import testlib
 
 
 # TODO: remove once lago can gracefully handle on-demand prefixes
@@ -204,6 +204,7 @@ def snapshot_merge(api):
         (len(api.vms.get(VM0_NAME).snapshots.list()) == 2) and
         (api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status
          == 'ok'),
+        error_message = "Failed testing snapshot deletion"
     )
 
 

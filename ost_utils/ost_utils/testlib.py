@@ -139,7 +139,8 @@ def _instance_of_any(obj, cls_list):
 
 
 def assert_equals_within(
-    func, value, timeout, allowed_exceptions=None, initial_wait=10
+    func, value, timeout, allowed_exceptions=None, initial_wait=10,
+    error_message=None
 ):
     allowed_exceptions = allowed_exceptions or []
     with utils.EggTimer(timeout) as timer:
@@ -162,9 +163,9 @@ def assert_equals_within(
                 time.sleep(initial_wait)
                 initial_wait = 0
     try:
-        raise AssertionError(
-            '%s != %s after %s seconds' % (res, value, timeout)
-        )
+        if error_message is None:
+            error_message = '%s != %s after %s seconds' % (res, value, timeout)
+        raise AssertionError(error_message)
     # if func repeatedly raises any of the allowed exceptions, res remains
     # unbound throughout the function, resulting in an UnboundLocalError.
     except UnboundLocalError:
@@ -174,10 +175,12 @@ def assert_equals_within(
         )
 
 
-def assert_equals_within_short(func, value, allowed_exceptions=None):
+def assert_equals_within_short(func, value, allowed_exceptions=None,
+                               error_message=None):
     allowed_exceptions = allowed_exceptions or []
     assert_equals_within(
-        func, value, SHORT_TIMEOUT, allowed_exceptions=allowed_exceptions
+        func, value, SHORT_TIMEOUT, allowed_exceptions=allowed_exceptions,
+        error_message=error_message
     )
 
 
@@ -192,8 +195,10 @@ def assert_true_within(func, timeout, allowed_exceptions=None):
     assert_equals_within(func, True, timeout, allowed_exceptions)
 
 
-def assert_true_within_short(func, allowed_exceptions=None):
-    assert_equals_within_short(func, True, allowed_exceptions)
+def assert_true_within_short(func, allowed_exceptions=None,
+                             error_message=None):
+    assert_equals_within_short(func, True, allowed_exceptions,
+                               error_message=error_message)
 
 
 def assert_true_within_long(func, allowed_exceptions=None):

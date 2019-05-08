@@ -191,6 +191,8 @@ includepkgs = 389-ds-base
 	rubygem-rdoc
 	rubygems
 	scap-security-guide
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd

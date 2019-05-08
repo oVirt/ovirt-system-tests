@@ -42,3 +42,5 @@ pyOpenSSL
 collectd-write_syslog
 gluster-ansible-roles
 libcgroup-tools
+selinux-policy
+selinux-policy-base

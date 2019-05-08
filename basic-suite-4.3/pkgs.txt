@@ -41,3 +41,5 @@ python2-idna
 pyOpenSSL
 gluster-ansible-roles
 libcgroup-tools
+selinux-policy
+selinux-policy-base

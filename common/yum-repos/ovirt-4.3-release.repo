@@ -30,10 +30,12 @@ includepkgs = gluster-ansible-cluster
 	gluster-ansible-repositories
 	gluster-ansible-roles
 
-[glusterfs-3.12-el7]
-name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
+[glusterfs-5-el7]
+name = GlusterFS 5 repo
+baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-5/
 enabled = 1
+gpgcheck = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Storage
 max_connections = 5
 includepkgs = glusterfs
 	glusterfs-api

@@ -1,5 +1,5 @@
 #
-# Copyright 2014, 2017 Red Hat, Inc.
+# Copyright 2014-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ from test_utils import versioning
 
 # DC/Cluster
 DC_NAME = 'test-dc'
-DC_VER_MAJ, DC_VER_MIN = [4, 1]
+DC_VER_MAJ, DC_VER_MIN = [4, 2]
 SD_FORMAT = 'v4'
 CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'

@@ -175,7 +175,7 @@ def _update_cluster_version(api, new_version):
 
 @testlib.with_ovirt_api4
 def update_cluster_versions(api):
-    versions = [(4, 2), (4, 3)]
+    versions = [(4, 3), (4, 4)]
     for major, minor in versions:
         _update_cluster_version(
             api=api,

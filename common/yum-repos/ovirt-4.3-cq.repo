@@ -176,6 +176,7 @@ includepkgs = 389-ds-base
 	perl-libs
 	perl-macros
 	policycoreutils-python
+	python-jinja2
 	python-libguestfs
 	python-libipa_hbac
 	python-paramiko
@@ -553,7 +554,6 @@ includepkgs = OpenIPMI-modalias
 	python-ipaddr
 	python-ipaddress
 	python-javapackages
-	python-jinja2
 	python-jwcrypto
 	python-kitchen
 	python-kmod

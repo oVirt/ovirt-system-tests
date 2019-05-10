@@ -274,25 +274,13 @@ exclude=python34-* patternfly1 ovirt-guest-agent-* mom puppet
   python-ovirt-engine-sdk4 ioprocess python-ioprocess python2-ioprocess
 max_connections=5
 
-[centos-ovirt-4.2-el7]
-name=CentOS-7 - oVirt 4.2
-baseurl=http://cbs.centos.org/repos/virt7-ovirt-42-testing/x86_64/os/
-gpgcheck=0
-enabled=1
-# If you need to exclude a package from this repo please add a comment here
-# explaining why.
-exclude=
- ansible
- openvswitch-devel
- openvswitch-test
- *-javadoc
- vdsm*
- rubygem-ovirt-engine-sdk4*
- python2-twisted
- ovirt-engine-sdk-java
- openstack-java-ceilometer*
- openstack-java-nova*
- openstack-java-swift*
+[centos-ovirt-4.3-el7]
+name = CentOS-7 - oVirt 4.3
+baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
+gpgcheck = 0
+enabled = 1
+ost_skip_injection = True
+exclude = ovirt-host*
 
 [centos-ovirt-common-el7]
 name=CentOS-7 - oVirt common

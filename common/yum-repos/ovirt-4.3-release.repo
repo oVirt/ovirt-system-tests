@@ -35,7 +35,7 @@ name = GlusterFS 5 repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-5/
 enabled = 1
 gpgcheck = 1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Storage
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Storage
 max_connections = 5
 includepkgs = glusterfs
 	glusterfs-api
@@ -44,7 +44,6 @@ includepkgs = glusterfs
 	glusterfs-fuse
 	glusterfs-libs
 	glusterfs-rdma
-	python-keyczar
 
 [centos-updates-el7]
 name = CentOS7 Updates
@@ -172,6 +171,7 @@ includepkgs = 389-ds-base
 	perl-libs
 	perl-macros
 	policycoreutils-python
+	python-jinja2
 	python-libguestfs
 	python-libipa_hbac
 	python-paramiko
@@ -549,7 +549,6 @@ includepkgs = OpenIPMI-modalias
 	python-ipaddr
 	python-ipaddress
 	python-javapackages
-	python-jinja2
 	python-jwcrypto
 	python-kitchen
 	python-kmod

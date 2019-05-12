@@ -63,10 +63,8 @@ includepkgs = 389-ds-base
 	augeas-libs
 	bind-libs
 	bind-utils
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
@@ -164,7 +162,6 @@ includepkgs = 389-ds-base
 	mod_ssl
 	openldap-clients
 	openssl
-	openssl-libs
 	openwsman-python
 	osinfo-db
 	pango
@@ -209,12 +206,8 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tomcat-servlet-3.0-api
-	tuned
 	tzdata-java
 	virt-v2v
 
@@ -430,7 +423,6 @@ includepkgs = OpenIPMI-modalias
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
-	libselinux-ruby
 	libsemanage-python
 	libsmbclient
 	libtalloc
@@ -472,7 +464,6 @@ includepkgs = OpenIPMI-modalias
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
-	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -691,18 +682,12 @@ exclude = archaius-core
 	rxjava
 max_connections = 5
 includepkgs = ansible
-	ansible-doc
-	facter
-	hiera
 	libtomcrypt
 	libtommath
 	nbdkit
-	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	puppet
-	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
 	python2-crypto
@@ -711,10 +696,7 @@ includepkgs = ansible
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
-	ruby-augeas
-	ruby-shadow
 	rubygem-multipart-post
-	rubygem-rgen
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3

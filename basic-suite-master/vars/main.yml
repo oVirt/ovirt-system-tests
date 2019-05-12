@@ -1,6 +1,6 @@
 templates:
-  engine: el7.6-base-2
-  host: el7.6-base-2
+  engine: el7.6-base-3
+  host: el7.6-base-3
 hostCount: 2
 install_storage_with_lago_deploy: false
 install_ovirt_host: true

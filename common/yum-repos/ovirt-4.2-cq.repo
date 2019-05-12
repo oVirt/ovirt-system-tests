@@ -48,10 +48,8 @@ includepkgs = 389-ds-base
 	augeas-libs
 	bind-libs
 	bind-utils
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
@@ -149,7 +147,6 @@ includepkgs = 389-ds-base
 	mod_ssl
 	openldap-clients
 	openssl
-	openssl-libs
 	openwsman-python
 	osinfo-db
 	pango
@@ -178,8 +175,6 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
-	selinux-policy
-	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -195,12 +190,8 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tomcat-servlet-3.0-api
-	tuned
 	tzdata-java
 	virt-v2v
 

@@ -649,13 +649,7 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = cockpit
-	cockpit-bridge
-	cockpit-dashboard
-	cockpit-storaged
-	cockpit-system
-	cockpit-ws
-	libssh
+includepkgs = libssh
 	python-httplib2
 	python-lockfile
 	sshpass

@@ -423,6 +423,7 @@ includepkgs = OpenIPMI-modalias
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux-ruby
 	libsemanage-python
 	libsmbclient
 	libtalloc
@@ -464,6 +465,7 @@ includepkgs = OpenIPMI-modalias
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
+	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -656,14 +658,7 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = cockpit
-	cockpit-bridge
-	cockpit-dashboard
-	cockpit-machines-ovirt
-	cockpit-storaged
-	cockpit-system
-	cockpit-ws
-	libssh
+includepkgs = libssh
 	python-httplib2
 	python-lockfile
 	sshpass
@@ -682,12 +677,18 @@ exclude = archaius-core
 	rxjava
 max_connections = 5
 includepkgs = ansible
+	ansible-doc
+	facter
+	hiera
 	libtomcrypt
 	libtommath
 	nbdkit
+	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
+	puppet
+	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
 	python2-crypto
@@ -696,7 +697,10 @@ includepkgs = ansible
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
+	ruby-augeas
+	ruby-shadow
 	rubygem-multipart-post
+	rubygem-rgen
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3

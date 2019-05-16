@@ -676,14 +676,7 @@ enabled = 1
 exclude = libtomcrypt
 	libtommath
 	python2-crypto
-includepkgs = cockpit
-	cockpit-bridge
-	cockpit-dashboard
-	cockpit-machines-ovirt
-	cockpit-storaged
-	cockpit-system
-	cockpit-ws
-	libssh
+includepkgs = libssh
 	python-httplib2
 	python-lockfile
 	sshpass
@@ -733,6 +726,13 @@ exclude = novnc
 	vdsm
 	otopi
 includepkgs = archaius-core
+	cockpit
+	cockpit-bridge
+	cockpit-dashboard
+	cockpit-machines-ovirt
+	cockpit-storaged
+	cockpit-system
+	cockpit-ws
 	ebay-cors-filter
 	gofer
 	hystrix-core

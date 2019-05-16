@@ -261,7 +261,6 @@ includepkgs = OpenIPMI-modalias
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	blas
 	boost-iostreams
 	boost-random
 	boost-system
@@ -348,7 +347,6 @@ includepkgs = OpenIPMI-modalias
 	junit
 	jzlib
 	keyutils
-	lapack
 	libICE
 	libSM
 	libX11
@@ -471,7 +469,6 @@ includepkgs = OpenIPMI-modalias
 	ntpdate
 	numactl
 	numad
-	numpy
 	objectweb-asm
 	objectweb-asm4
 	oddjob
@@ -528,14 +525,13 @@ includepkgs = OpenIPMI-modalias
 	postgresql-libs
 	psmisc
 	pygobject2
-	pyparsing
 	python-IPy
 	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
+	python-cffi
 	python-configshell
 	python-dmidecode
-	python-dns
 	python-enum34
 	python-ethtool
 	python-gssapi
@@ -562,6 +558,7 @@ includepkgs = OpenIPMI-modalias
 	python-urwid
 	python-webob
 	python-yubico
+	python2-cryptography
 	python2-futures
 	python2-pyasn1
 	python2-pyasn1-modules
@@ -654,7 +651,8 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = libssh
+includepkgs = dpdk
+	libssh
 	python-httplib2
 	python-lockfile
 	sshpass
@@ -679,19 +677,15 @@ includepkgs = ansible
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	python-unittest2
-	python2-asn1crypto
 	python2-crypto
-	python2-mimeparse
-	python2-pbr
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
 	rubygem-multipart-post
 
-[centos-ovirt-4.3-el7]
-name = CentOS-7 - oVirt 4.3
-baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
+[centos-ovirt-4.4-el7]
+name = CentOS-7 - oVirt 4.4
+baseurl = http://cbs.centos.org/repos/virt7-ovirt-44-testing/x86_64/os/
 gpgcheck = 0
 enabled = 1
 ost_skip_injection = True

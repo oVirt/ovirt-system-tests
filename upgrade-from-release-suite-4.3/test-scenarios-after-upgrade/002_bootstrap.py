@@ -25,6 +25,7 @@ from ovirtsdk.xml import params
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
+import ovirtsdk4.types as types
 
 from lago import utils
 from ovirtlago import testlib
@@ -32,6 +33,11 @@ import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
 from test_utils import versioning
+
+from ost_utils import general_utils
+
+import logging
+LOGGER = logging.getLogger(__name__)
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -61,13 +67,16 @@ def _get_host_ips_in_net(prefix, host_name, net_name):
 
 def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
+    all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
+    up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
+    if up_hosts:
         if random_host:
-            return random.choice(hosts)
+            return random.choice(up_hosts)
         else:
-            return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
+            return sorted(up_hosts, key=lambda host: host.name)
+    hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
@@ -96,6 +105,28 @@ def _check_problematic_hosts(hosts_service):
             host_service = hosts_service.host_service(host.id)
             dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
         raise RuntimeError(dump_hosts)
+
+def _host_status_to_print(hosts_service, hosts_list):
+    dump_hosts = ''
+    for host in hosts_list:
+            host_service_info = hosts_service.host_service(host.id)
+            dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+    return dump_hosts
+
+def _wait_for_status(hosts_service, dc_name, status):
+    up_status_seen = False
+    for _ in general_utils.linear_retrier(attempts=120, iteration_sleeptime=1):
+        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+        up_hosts = [host for host in all_hosts if host.status == status]
+        LOGGER.info(_host_status_to_print(hosts_service, all_hosts))
+        # we use up_status_seen because we make sure the status is not flapping
+        if up_hosts:
+            if up_status_seen:
+                break
+            up_status_seen = True
+        else:
+            up_status_seen = False
+    return all_hosts
 
 @testlib.with_ovirt_api4
 def add_dc(api):
@@ -188,13 +219,14 @@ def add_hosts(prefix):
 @testlib.with_ovirt_api4
 def verify_add_hosts(api):
     hosts_service = api.system_service().hosts_service()
-    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
-
+    hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    total_hosts = len(hosts_status)
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
     testlib.assert_true_within(
         lambda: _single_host_up(hosts_service, total_hosts),
         timeout=constants.ADD_HOST_TIMEOUT
     )
-
 
 def _add_storage_domain(api, p):
     system_service = api.system_service()

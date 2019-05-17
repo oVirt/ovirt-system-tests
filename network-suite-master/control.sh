@@ -14,7 +14,9 @@ install_dependencies() {
     pip install contextlib2
     pip install ansible-runner==1.3.4
 
-    yum install -y ansible
+    # until https://github.com/ansible/ansible/issues/55524 is fixed
+    # yum install -y ansible
+    pip install ansible==2.7.10
 
     # dependency of ansible's os_* modules
     pip install openstacksdk==0.27

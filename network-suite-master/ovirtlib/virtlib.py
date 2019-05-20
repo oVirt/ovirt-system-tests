@@ -101,7 +101,7 @@ class Vm(SDKRootEntity):
         try:
             self._service.stop()
         except ovirtsdk4.Error as e:
-            if VM_IS_NOT_RUNNING in e.message:
+            if VM_IS_NOT_RUNNING in e.args[0]:
                 return
             raise
 

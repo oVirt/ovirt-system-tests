@@ -206,10 +206,11 @@ class Vnic(SDKSubEntity):
         try:
             self._create_sdk_entity(sdk_type)
         except EntityCreationError as err:
-            if 'MAC Address' in err.message and 'in use' in err.message:
-                raise MacAddrInUseError(err.message)
-            elif 'Not enough MAC addresses' in err.message:
-                raise MacPoolIsInFullCapacityError(err.message)
+            message = err.args[0]
+            if 'MAC Address' in message and 'in use' in message:
+                raise MacAddrInUseError(message)
+            elif 'Not enough MAC addresses' in message:
+                raise MacPoolIsInFullCapacityError(message)
             raise
 
     def hotunplug(self):

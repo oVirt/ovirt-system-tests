@@ -312,7 +312,8 @@ class Host(SDKRootEntity):
 
         if not isinstance(error, ovirtsdk4.Error):
             return True
-        if HAS_RUNNING_TASKS in error.msg or HOST_IS_CONTENDING in error.msg:
+        msg = error.args[0]
+        if HAS_RUNNING_TASKS in msg or HOST_IS_CONTENDING in msg:
             return False
         return True
 

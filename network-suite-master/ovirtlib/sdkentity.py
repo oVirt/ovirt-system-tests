@@ -90,7 +90,7 @@ class SDKEntity(object):
         try:
             entity_id = self._parent_service.add(sdk_type).id
         except ovirtsdk4.Error as err:
-            raise EntityCreationError(err.message)
+            raise EntityCreationError(err.args[0])
         service = self._parent_service.service(entity_id)
         self._set_service(service)
 

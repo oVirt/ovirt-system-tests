@@ -90,10 +90,11 @@ class MacPool(SDKRootEntity):
         try:
             self.update(allow_duplicates=allow_duplicates)
         except ovirtsdk4.Error as err:
-            if 'Cannot migrate MACs to another MAC pool' in err.message:
-                raise MigrateMacPoolError(err.message)
-            if 'mac pool contains duplicate macs' in err.message:
-                raise MacPoolContainsDuplicatesError(err.message)
+            message = err.args[0]
+            if 'Cannot migrate MACs to another MAC pool' in message:
+                raise MigrateMacPoolError(message)
+            if 'mac pool contains duplicate macs' in message:
+                raise MacPoolContainsDuplicatesError(message)
             raise
 
     def _get_parent_service(self, system):

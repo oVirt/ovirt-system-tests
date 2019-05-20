@@ -17,6 +17,6 @@
  "he_vm_ip_prefix": "24",
  "he_dns_addr": "@GW@",
  "he_vm_etc_hosts": true,
- "he_mem_size_MB": 4096,
  "he_cluster": "Default",
+ "he_memory_requirements_check_enabled": false
 }

@@ -29,3 +29,4 @@ OVEHOSTED_VM/cloudinitVMDNS=str:@GW@
 OVEHOSTED_VM/rootSshPubkey=str:
 OVEHOSTED_VM/rootSshAccess=str:yes
 OVEHOSTED_VDSM/cpu=str:model_Westmere
+OVEHOSTED_CORE/memCheckRequirements=bool:False

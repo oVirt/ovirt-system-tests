@@ -1,0 +1,1 @@
+../../common/deploy-scripts/setup_1st_host_el7.sh

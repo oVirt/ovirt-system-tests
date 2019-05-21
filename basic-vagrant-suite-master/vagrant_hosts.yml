@@ -1,6 +1,6 @@
 - type: "host"
   box: "centos/7"
-  box_version: "1811.02"
+  box_version: "1902.01"
   hostCount: 2
   user: root
   provider:

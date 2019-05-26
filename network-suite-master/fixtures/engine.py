@@ -22,6 +22,7 @@ import re
 import pytest
 from ovirtsdk4 import Connection
 
+from ovirtlib import eventlib
 from ovirtlib import syncutil
 from testlib import suite
 
@@ -62,3 +63,10 @@ def _get_engine_api(engine):
         return engine.get_api_v4()
     except Exception:
         return None
+
+
+@pytest.fixture(scope='function', autouse=True)
+def test_invocation_logger(system, request):
+    events = eventlib.EngineEvents(system)
+    events.add(description='OST invoked: ' + str(request.node.nodeid),
+               comment='delimiter for test function invocation in engine log')

@@ -69,6 +69,10 @@ class SDKSystemRoot(object):
         return self._system_service.mac_pools_service()
 
     @property
+    def events_service(self):
+        return self._system_service.events_service()
+
+    @property
     def openstack_network_providers_service(self):
         return self._system_service.openstack_network_providers_service()
 

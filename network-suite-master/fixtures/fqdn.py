@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-9 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ from ovirtlib import syncutil
 
 from fixtures.engine import ENGINE_DOMAIN
 from fixtures.engine import ANSWER_FILE_SRC
+from fixtures.host import HOST_0_DOMAIN
 
 HOSTS_FILE = '/etc/hosts'
 
@@ -93,29 +94,68 @@ def _modify_hosts_file(fqdn, address):
 
 
 @pytest.fixture(scope='session')
-def engine_storage_ipv6(engine):
+def host0_eth2_ipv6(env):
     """
-    lago creates a storage network with an ipv6 subnet and connects it to NIC
-    eth1 of its VMs but does not assign an ip (v6) to the NIC.
-    this function connects to the engine VM using its ssh API to:
-    * assign an ipv6 address to the NIC
+    nics created by lago are managed by nmcli and have autoconf ipv6 but have
+    not been assigned an address. this function requests a dynamic assignment
+    of an ipv6 to 'eth2' and retrieves it.
+    :return: the ipv6 address as string
+    :raise: timeout exception if global ipv6 address not found on NIC
+    """
+    host_0 = env.get_vms()[HOST_0_DOMAIN]
+    return _enable_dynamic_ipv6(host_0, 'eth2')
+
+
+@pytest.fixture(scope='session')
+def host0_eth1_ipv6(env):
+    """
+    nics created by lago are managed by nmcli and have autoconf ipv6 but have
+    not been assigned an address. this function requests a dynamic assignment
+    of an ipv6 to 'eth1' and retrieves it.
+    :return: the ipv6 address as string
+    :raise: timeout exception if global ipv6 address not found on NIC
+    """
+    host_0 = env.get_vms()[HOST_0_DOMAIN]
+    return _enable_dynamic_ipv6(host_0, 'eth1')
+
+
+@pytest.fixture(scope='session')
+def engine_storage_ipv6(env):
+    """
+    lago creates a network with an ipv6 subnet and connects it to NIC
+    'eth1' of the engine. It names the network 'storage' but does not assign an
+    ipv6 address to the NIC.
+    this function requests a dynamic assignment of an ipv6 to 'eth1' of the
+    engine machine and retrieves it.
+    :return: the ipv6 address as string
+    :raise: timeout exception if global ipv6 address not found on NIC
+    """
+    engine = env.get_vms()[ENGINE_DOMAIN]
+    ENGINE_STORAGE_NIC = 'eth1'
+    return _enable_dynamic_ipv6(engine, ENGINE_STORAGE_NIC)
+
+
+def _enable_dynamic_ipv6(lago_host, nic_name):
+    """
+    this function connects to the specified lago VM using its ssh API to:
+    * request the host OS to dynamically assign an ipv6 address to the
+      specified NIC
     * wait for the address to be assigned (it might take up to a few seconds)
     * retrieve the address
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
-    STORAGE_NET_NIC_NAME = 'eth1'
-    _assign_ipv6(engine, STORAGE_NET_NIC_NAME)
+    _assign_ipv6(lago_host, nic_name)
     return syncutil.sync(exec_func=_get_ipv6,
-                         exec_func_args=(engine, STORAGE_NET_NIC_NAME),
+                         exec_func_args=(lago_host, nic_name),
                          success_criteria=lambda ipv6: ipv6 != '',
                          timeout=10)
 
 
 def _assign_ipv6(lago_vm, nic_name):
     """
-    lago creates a storage network with an ipv6 subnet and connects it to NIC
-    eth1 of its VMs but does not assign an ip (v6) to the NIC.
+    lago creates ipv6 subnets and sets ipv6 autoconf on its VMs' NICs but does
+    not assign ipv6 addresses to the NICs.
     this function connects to a lago VM using its ssh API and requests an ipv6
     address be assigned to the NIC using nmcli.
     :param lago_vm: any lago vm that exposes an ssh API into itself

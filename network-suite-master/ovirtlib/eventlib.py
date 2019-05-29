@@ -35,7 +35,7 @@ class EngineEvents(SDKRootEntity):
     def add(self, description, comment='', origin='OST-network-suite'):
         self._parent_service.add(ovirtsdk4.types.Event(
             comment=comment,
-            custom_id=int(random.random() * 10000),
+            custom_id=random.randrange(1, 2**31),
             description=description,
             origin=origin,
             severity=ovirtsdk4.types.LogSeverity(

@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import time
 import pytest
 
 from ovirtlib import hostlib
+from ovirtlib.sdkentity import EntityNotFoundError
 
 from fixtures.engine import SUITE
 
@@ -32,11 +33,7 @@ HOST_1_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '1'])
 
 @pytest.fixture(scope='session')
 def host_0(env, system, default_cluster):
-    vm = env.get_vms()[HOST_0_DOMAIN]
-    host = hostlib.Host(system)
-    host.create(
-        default_cluster, vm.name(), vm.ip(), str(vm.root_password()))
-    return host
+    return _create_host(env, system, default_cluster, HOST_0_DOMAIN)
 
 
 @pytest.fixture(scope='session')
@@ -47,11 +44,7 @@ def host_0_up(host_0):
 
 @pytest.fixture(scope='session')
 def host_1(env, system, default_cluster):
-    vm = env.get_vms()[HOST_1_DOMAIN]
-    host = hostlib.Host(system)
-    host.create(
-        default_cluster, vm.name(), vm.ip(), str(vm.root_password()))
-    return host
+    return _create_host(env, system, default_cluster, HOST_1_DOMAIN)
 
 
 @pytest.fixture(scope='session')
@@ -86,3 +79,14 @@ def _wait_for_host_install(host):
 def install_hosts_to_save_time(host_0, host_1):
     """add hosts before any test starts so they can install in parallel"""
     pass
+
+
+def _create_host(env, system, default_cluster, domain_name):
+    vm = env.get_vms()[domain_name]
+    host = hostlib.Host(system)
+    try:
+        host.import_by_name(vm.name())
+    except EntityNotFoundError:
+        host.create(
+            default_cluster, vm.name(), vm.ip(), str(vm.root_password()))
+    return host

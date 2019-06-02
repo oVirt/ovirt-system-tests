@@ -706,6 +706,8 @@ includepkgs = ansible
 	python-ordereddict
 	python2-crypto
 	python2-idna
+	python2-qpid-proton
+	qpid-proton-c
 	ruby-augeas
 	ruby-shadow
 	rubygem-multipart-post
@@ -722,8 +724,6 @@ includepkgs = collectd
 	collectd-virt
 	collectd-write_http
 	fluentd
-	python2-qpid-proton
-	qpid-proton-c
 	rubygem-cool.io
 	rubygem-elasticsearch
 	rubygem-elasticsearch-api

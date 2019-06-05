@@ -21,6 +21,7 @@
 from netaddr.ip import IPAddress
 import nose.tools as nt
 from ovirtlago import testlib
+from ovirtsdk4 import Error as sdkError
 import ovirtsdk4.types as types
 import json
 
@@ -37,6 +38,23 @@ wait_value = 300
 
 def setup_module():
     ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
+
+
+def check_maintenance(host_service):
+    maintenance = None
+    count = 10
+    while maintenance is None and count > 0:
+        count = count - 1
+        try:
+            maintenance = (
+                host_service.get().status == types.HostStatus.MAINTENANCE or
+                host_service.get(all_content=True).hosted_engine.local_maintenance
+            )
+        except sdkError:
+            time.sleep(2)
+    if maintenance is None:
+        raise RuntimeError('Failed checking maintenance status')
+    return maintenance
 
 
 @testlib.with_ovirt_api4
@@ -66,8 +84,7 @@ def local_maintenance(prefix, api):
     host_service.deactivate()
 
     testlib.assert_true_within_long(
-        lambda: host_service.get().status == types.HostStatus.MAINTENANCE or
-        host_service.get(all_content=True).hosted_engine.local_maintenance
+        lambda: check_maintenance(host_service)
     )
 
     logging.info("Performing Activation...")

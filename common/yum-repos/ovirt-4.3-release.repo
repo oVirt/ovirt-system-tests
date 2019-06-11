@@ -57,6 +57,8 @@ includepkgs = 389-ds-base
 	augeas
 	augeas-libs
 	bind-libs
+	bind-libs-lite
+	bind-license
 	bind-utils
 	device-mapper-event
 	device-mapper-event-libs

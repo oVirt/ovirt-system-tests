@@ -53,9 +53,9 @@ exclude=
 enabled=1
 max_connections=10
 
-[glusterfs-5-el7]
+[glusterfs-6-el7]
 name=GlusterFS repo
-baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-5/
+baseurl=http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
 enabled=1
 exclude=*-debuginfo *-devel glusterfs-regression-tests heketi* nfs-ganesha-* libntirpc* glusterfs-ganesha ansible ansible-doc
 max_connections=5

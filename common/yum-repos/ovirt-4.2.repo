@@ -47,6 +47,8 @@ includepkgs = 389-ds-base
 	augeas
 	augeas-libs
 	bind-libs
+	bind-libs-lite
+	bind-license
 	bind-utils
 	device-mapper-event
 	device-mapper-event-libs
@@ -648,6 +650,8 @@ includepkgs = ansible
 	python2-mimeparse
 	python2-pbr
 	python2-pysocks
+	python2-qpid-proton
+	qpid-proton-c
 	ruby-augeas
 	ruby-shadow
 	rubygem-multipart-post
@@ -761,10 +765,8 @@ includepkgs = collectd
 	python2-chardet
 	python2-idna
 	python2-pyOpenSSL
-	python2-qpid-proton
 	python2-requests
 	python2-urllib3
-	qpid-proton-c
 	rubygem-cool.io
 	rubygem-elasticsearch
 	rubygem-elasticsearch-api

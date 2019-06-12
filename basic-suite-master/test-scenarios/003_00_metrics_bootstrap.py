@@ -48,7 +48,7 @@ def configure_vdsm_sos_plugin(prefix):
             plugin_setup,
             '/tmp'
         )
-        host.ssh('/root/vdsm-sos-plugin/install-plugin.sh')
+        host.ssh(['/tmp/vdsm-sos-plugin/install-plugin.sh'])
 
 
 def configure_metrics(prefix):

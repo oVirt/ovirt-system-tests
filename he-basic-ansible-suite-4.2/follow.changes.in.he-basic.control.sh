@@ -1,1 +1,0 @@
-../he-basic-suite-4.2/control.sh

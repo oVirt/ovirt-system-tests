@@ -1,1 +1,0 @@
-../../he-basic-suite-4.2/test-scenarios/002_bootstrap.py

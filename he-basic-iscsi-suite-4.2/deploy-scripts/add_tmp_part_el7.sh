@@ -1,1 +1,0 @@
-../../common/deploy-scripts/add_tmp_part_el7.sh

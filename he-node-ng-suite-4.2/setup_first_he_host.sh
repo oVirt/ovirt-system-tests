@@ -1,1 +1,0 @@
-../he-basic-suite-4.2/setup_first_he_host.sh

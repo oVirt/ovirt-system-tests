@@ -38,7 +38,7 @@ includepkgs = gluster-ansible-cluster
 	gluster-ansible-roles
 
 [glusterfs-6-el7]
-name = GlusterFS 6 repo
+name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
 enabled = 1
 max_connections = 5

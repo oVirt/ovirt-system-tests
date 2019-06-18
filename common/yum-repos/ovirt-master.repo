@@ -42,13 +42,15 @@ name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
 enabled = 1
 max_connections = 5
-includepkgs = glusterfs
-	glusterfs-api
-	glusterfs-cli
-	glusterfs-client-xlators
-	glusterfs-fuse
-	glusterfs-libs
-	glusterfs-rdma
+exclude=*-debuginfo
+       *-devel
+       glusterfs-regression-tests
+       heketi*
+       nfs-ganesha-*
+       libntirpc*
+       glusterfs-ganesha
+       ansible
+       ansible-doc
 
 [centos-updates-el7]
 name = CentOS7 Updates

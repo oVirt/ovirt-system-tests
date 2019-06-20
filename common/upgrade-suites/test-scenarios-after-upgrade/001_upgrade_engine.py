@@ -21,6 +21,7 @@ import os
 
 import nose.tools as nt
 from ovirtlago import testlib
+from ost_utils import general_utils
 
 
 def _execute_on_engine(engine, command, error_message=None, run_ss=False):
@@ -30,6 +31,15 @@ def _execute_on_engine(engine, command, error_message=None, run_ss=False):
     if error_message is not None:
         nt.eq_(result.code, 0,
                "%s failed with exit code %s" % (error_message, result.code,))
+    return result
+
+
+def _wait_for_engine_command(engine, command):
+    for _ in general_utils.linear_retrier(attempts=120, iteration_sleeptime=1):
+        if _execute_on_engine(engine, command).code == 0:
+            break
+    else:
+        raise Exception("Engine command didn't come up: %s" % (command,))
 
 
 @testlib.with_ovirt_prefix
@@ -54,6 +64,15 @@ def test_initialize_engine(prefix):
                         '--accept-defaults'],
                        error_message="engine-setup",
                        run_ss=True)
+
+    # yum update after engine upgrade
+    _execute_on_engine(engine, ['yum', 'clean', 'all'])
+    _execute_on_engine(engine, ['yum', '-y', 'update'],
+                       error_message="yum update")
+
+    # reboot engine and wait for it to start
+    _execute_on_engine(engine, ["reboot"])
+    _wait_for_engine_command(engine, ["uptime"])
 
     # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
     _execute_on_engine(engine,

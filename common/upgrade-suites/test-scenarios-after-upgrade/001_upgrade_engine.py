@@ -23,6 +23,15 @@ import nose.tools as nt
 from ovirtlago import testlib
 
 
+def _execute_on_engine(engine, command, error_message=None, run_ss=False):
+    result = engine.ssh(command)
+    if run_ss:
+        engine.ssh(['ss', '-anp'])
+    if error_message is not None:
+        nt.eq_(result.code, 0,
+               "%s failed with exit code %s" % (error_message, result.code,))
+
+
 @testlib.with_ovirt_prefix
 def test_initialize_engine(prefix):
     engine = prefix.virt_env.engine_vm()
@@ -36,69 +45,24 @@ def test_initialize_engine(prefix):
         '/tmp/answer-file-post',
     )
 
-    engine.ssh(
-        [
-            'yum',
-            'clean',
-            'all',
-        ]
-    )
-
-    result = engine.ssh(
-        [
-            'yum',
-            '-y',
-            'update',
-            'ovirt-*setup*',
-        ]
-    )
-
-    nt.eq_(
-        result.code, 0, 'yum update setup packages failed. Exit code is %s' % result.code
-    )
-
-
-    result = engine.ssh(
-        [
-            'engine-setup',
-            '--config-append=/tmp/answer-file-post',
-            '--accept-defaults',
-        ],
-    )
-
-    engine.ssh(
-        [
-            'ss',
-            '-anp',
-        ],
-    )
-
-    nt.eq_(
-        result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
-    )
+    _execute_on_engine(engine, ['yum', 'clean', 'all'])
+    _execute_on_engine(engine, ['yum', '-y', 'update', 'ovirt-*setup*'],
+                       error_message="yum update of ovirt-*setup packages")
+    _execute_on_engine(engine,
+                       ['engine-setup',
+                        '--config-append=/tmp/answer-file-post',
+                        '--accept-defaults'],
+                       error_message="engine-setup",
+                       run_ss=True)
 
     # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
-    result = engine.ssh(
-        [
-            'rm',
-            '-rf',
-            '/dev/shm/yum',
-            '/dev/shm/yumdb',
-            '/dev/shm/*.rpm',
-        ]
-    )
+    _execute_on_engine(engine,
+                       ['rm', '-rf',
+                        '/dev/shm/yum', '/dev/shm/yumdb', '/dev/shm/*.rpm'])
 
-    #TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
-    result = engine.ssh(
-        [
-            'systemctl',
-            'stop',
-            'firewalld',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'firwalld not stopped. Exit code is %s' % result.code
-    )
+    # TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
+    _execute_on_engine(engine, ['systemctl', 'stop', 'firewalld'],
+                       error_message="Stopping firewalld")
 
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()

@@ -753,3 +753,10 @@ includepkgs = rh-postgresql10-postgresql
 	rh-postgresql10-postgresql-server
 	rh-postgresql10-runtime
 
+[sig-virt-common-el7]
+name = sig virt common
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.3/
+gpgcheck = 0
+enabled = 1
+includepkgs = ansible
+

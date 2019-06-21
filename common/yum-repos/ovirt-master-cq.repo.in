@@ -114,3 +114,11 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
+
+[sig-virt-common-el7]
+name = sig virt common
+baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.3/
+gpgcheck = 0
+enabled = 1
+includepkgs = ansible
+

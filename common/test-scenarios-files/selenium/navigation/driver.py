@@ -36,12 +36,14 @@ from ..selenium_constants import *
 
 DEBUG = False
 
+
 class DriverException(Exception):
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return repr(self.value)
+
 
 class Driver(object):
 
@@ -70,6 +72,30 @@ class Driver(object):
 
         return elem
 
+    def action_on_element(self, text, action, path=None):
+        elem = None
+        find_by = 'id'
+
+        for x in range(1, DRIVER_MAX_RETRIES):
+            try:
+                if DEBUG:
+                    print("self.driver.find_element_by_id(%s)" % text)
+                elif action == 'click':
+                    elem = self.driver.find_element_by_link_text(text)
+                    elem.click()
+                    find_by = 'text'
+                elif action == 'send':
+                    elem = self.driver.find_element_by_id(text)
+                    elem.send_keys(path)
+                break
+            except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:
+                time.sleep(DRIVER_SLEEP_TIME)
+
+        if elem is None:
+            self.driver.save_screenshot('%s could not locate by %s %s.png' % (time.time(), find_by, text))
+            print("could not locate by text: " + text)
+            raise DriverException("could not locate by text: " + text)
+        return elem
 
     def id_click(self, id):
 
@@ -86,7 +112,7 @@ class Driver(object):
                 try:
                     # try to click it. This may or may not work, hence the surrounding wait loop
                     if DEBUG:
-                       print("" + str(ret) + ".click()")
+                        print("" + str(ret) + ".click()")
 
                     ret.click()
                     break
@@ -97,7 +123,6 @@ class Driver(object):
             self.driver.save_screenshot('%s id_click couldnt find element %s.png' % (time.time(), id))
             print('id_click couldnt find element %s' % id)
             raise
-
 
     def hover_to_id(self, id):
 
@@ -129,7 +154,6 @@ class Driver(object):
             print('hover_to_id couldnt find element %s' % id)
             raise
 
-
     def safe_close_dialog(self):
 
         try:
@@ -141,12 +165,13 @@ class Driver(object):
         except NoSuchElementException as e:
             pass
 
-
     def shutdown(self):
-        self.driver.close()
+        self.driver.quit()
 
+    def refresh(self):
+        self.driver.refresh()
 
-    def save_screenshot(self, path, delay = 0):
+    def save_screenshot(self, path, delay=0):
         if delay > 0 and delay <= 10:
             time.sleep(delay)
 

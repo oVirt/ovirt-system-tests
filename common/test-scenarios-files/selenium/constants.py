@@ -28,6 +28,7 @@ class Browser(Enum):
     def __str__(self):
         return self.value
 
+
 DRIVER_MAX_RETRIES = 200
 DRIVER_SLEEP_TIME = .12
 GC_WAIT_TIME = 5
@@ -71,3 +72,4 @@ SEL_ID_CLUSTERS_MENU = 'MenuView_clustersAnchor'
 SEL_ID_DOMAINS_MENU = 'MenuView_domainsAnchor'
 SEL_ID_POOLS_MENU = 'MenuView_poolsAnchor'
 SEL_ID_USERS_MENU = 'MenuView_usersAnchor'
+SEL_ID_DISKS_MENU = 'MenuView_disksAnchor'

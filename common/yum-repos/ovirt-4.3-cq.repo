@@ -677,15 +677,12 @@ exclude = archaius-core
 	rxjava
 max_connections = 5
 includepkgs = ansible
-	libtomcrypt
-	libtommath
 	nbdkit
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
 	python-unittest2
 	python2-asn1crypto
-	python2-crypto
 	python2-mimeparse
 	python2-pbr
 	python2-pysocks

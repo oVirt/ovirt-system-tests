@@ -638,8 +638,6 @@ includepkgs = ansible
 	ansible-doc
 	facter
 	hiera
-	libtomcrypt
-	libtommath
 	nbdkit
 	nbdkit-devel
 	nbdkit-plugin-python-common
@@ -649,7 +647,6 @@ includepkgs = ansible
 	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
-	python2-crypto
 	python2-mimeparse
 	python2-pbr
 	python2-pysocks
@@ -708,7 +705,6 @@ includepkgs = archaius-core
 	python-dateutil
 	python-gofer
 	python-gofer-proton
-	python-keyczar
 	python-linecache2
 	python-netaddr
 	python-nose

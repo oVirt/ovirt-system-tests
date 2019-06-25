@@ -62,6 +62,8 @@ includepkgs = 389-ds-base
 	augeas
 	augeas-libs
 	bind-libs
+	bind-libs-lite
+	bind-license
 	bind-utils
 	device-mapper-event
 	device-mapper-event-libs
@@ -172,7 +174,6 @@ includepkgs = 389-ds-base
 	perl-macros
 	policycoreutils-python
 	python-jinja2
-	python-libguestfs
 	python-libipa_hbac
 	python-paramiko
 	python-sss-murmur

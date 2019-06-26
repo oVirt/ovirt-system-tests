@@ -407,7 +407,6 @@ includepkgs = OpenIPMI-modalias
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
-	libselinux-ruby
 	libsemanage-python
 	libsmbclient
 	libtalloc
@@ -449,7 +448,6 @@ includepkgs = OpenIPMI-modalias
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
-	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -621,7 +619,8 @@ enabled = 1
 exclude = libtomcrypt
 	libtommath
 	python2-crypto
-includepkgs = libssh
+includepkgs = dpdk
+	libssh
 	python-httplib2
 	python-lockfile
 	sshpass
@@ -635,16 +634,10 @@ exclude = collectd
 	collectd-netlink
 	collectd-postgresql
 includepkgs = ansible
-	ansible-doc
-	facter
-	hiera
 	nbdkit
-	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	puppet
-	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
 	python2-mimeparse
@@ -652,10 +645,7 @@ includepkgs = ansible
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
-	ruby-augeas
-	ruby-shadow
 	rubygem-multipart-post
-	rubygem-rgen
 
 [centos-ovirt-4.2-7.5-temp-el7]
 name = CentOS-7 - oVirt 4.2 (temp virt repo)
@@ -699,8 +689,6 @@ includepkgs = archaius-core
 	openvswitch-ovn-common
 	openvswitch-ovn-host
 	ovirt-cockpit-sso
-	ovirt-guest-agent-common
-	ovirt-guest-agent-pam-module
 	python-daemon
 	python-dateutil
 	python-gofer

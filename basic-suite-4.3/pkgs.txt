@@ -44,3 +44,4 @@ libcgroup-tools
 selinux-policy
 selinux-policy-base
 selinux-policy-targeted
+dpdk

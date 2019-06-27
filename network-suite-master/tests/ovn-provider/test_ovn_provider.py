@@ -144,19 +144,6 @@ def _static_routes_request_data(router_name, nexthop, net10_subnet1,
     }}
 
 
-def test_update_network_mtu(default_ovn_provider_client):
-    network10 = default_ovn_provider_client.get_network(NETWORK10_NAME)
-    mtu = 1501
-    path = '/networks/{network_id}'.format(network_id=network10.id)
-    data = {'network': {'mtu': mtu, 'name': network10.name}}
-
-    # HACK: this is a workaround until BZ 1590248 and BZ 1590251 are fixed
-    shade_hack.hack_os_put_request(default_ovn_provider_client, path, data)
-
-    network10 = default_ovn_provider_client.get_network(NETWORK10_NAME)
-    assert network10.mtu == mtu
-
-
 def test_ovn_provider_cleanup_scenario(openstack_client_config):
     _test_ovn_provider('cleanup_scenario.yml')
 

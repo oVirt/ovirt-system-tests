@@ -167,6 +167,12 @@ def init():
     os.makedirs(SS_PATH)
 
 
+def check_dependencies():
+    # verify docker is installed
+    if os.system('docker -v &> /dev/null'):
+        raise RuntimeError("Docker is not found: Is Docker installed?")
+
+
 def start_grid():
     global hub_url
 
@@ -320,6 +326,7 @@ def cleanup():
 
 
 _TEST_LIST = [
+    check_dependencies,
     init,
     start_grid,
     initialize_chrome,

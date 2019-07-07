@@ -540,8 +540,10 @@ includepkgs = 389-ds-base
 	bind-libs-lite
 	bind-license
 	bind-utils
+	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
+	device-mapper-libs
 	fence-agents-all
 	fence-agents-amt-ws
 	fence-agents-apc
@@ -673,7 +675,10 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	systemd
+	systemd-libs
 	systemd-python
+	systemd-sysv
 	tomcat-servlet-3.0-api
 	tzdata-java
 	virt-v2v

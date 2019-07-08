@@ -12,6 +12,8 @@ prep_suite() {
 
     render_jinja_templates
 
+    [[ -f "${suite}/node-ssg.env" ]] && . "${suite}/node-ssg.env" ||:
+
     rm -rf ovirt-node-ng-image "${suite}/images" "${HOME}/ovirt-node"
     mkdir -p "${suite}/images"
 

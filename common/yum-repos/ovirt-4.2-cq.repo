@@ -48,10 +48,8 @@ includepkgs = 389-ds-base
 	augeas-libs
 	bind-libs
 	bind-utils
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
@@ -192,10 +190,7 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tomcat-servlet-3.0-api
 	tzdata-java
 	virt-v2v
@@ -219,6 +214,7 @@ includepkgs = OpenIPMI-modalias
 	abrt-python
 	abrt-retrace-client
 	abrt-tui
+	aide
 	alsa-lib
 	ant
 	antlr-tool
@@ -370,6 +366,7 @@ includepkgs = OpenIPMI-modalias
 	libblockdev-utils
 	libbytesize
 	libcgroup
+	libcgroup-tools
 	libcollection
 	libconfig
 	libdhash
@@ -466,6 +463,7 @@ includepkgs = OpenIPMI-modalias
 	oddjob-mkhomedir
 	opus
 	osinfo-db-tools
+	pam_pkcs11
 	pciutils
 	pcsc-lite-libs
 	perl-Archive-Tar
@@ -621,7 +619,8 @@ enabled = 1
 exclude = libtomcrypt
 	libtommath
 	python2-crypto
-includepkgs = libssh
+includepkgs = dpdk
+	libssh
 	python-httplib2
 	python-lockfile
 	sshpass
@@ -795,7 +794,12 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs = rh-postgresql95-postgresql
+includepkgs = rh-postgresql10-postgresql
+	rh-postgresql10-postgresql-contrib
+	rh-postgresql10-postgresql-libs
+	rh-postgresql10-postgresql-server
+	rh-postgresql10-runtime
+	rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-contrib
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server

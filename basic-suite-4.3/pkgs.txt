@@ -45,3 +45,5 @@ selinux-policy
 selinux-policy-base
 selinux-policy-targeted
 dpdk
+libvirt-admin
+iperf3

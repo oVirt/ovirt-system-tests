@@ -127,6 +127,7 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
+	libvirt-admin
 	libvirt-bash-completion
 	libvirt-client
 	libvirt-daemon
@@ -323,6 +324,7 @@ includepkgs = OpenIPMI-modalias
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
+	iperf3
 	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils

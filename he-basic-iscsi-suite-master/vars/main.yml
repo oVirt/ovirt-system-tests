@@ -1,6 +1,6 @@
 templates:
-  storage: el7.6-base-4
-  host: el7.6-base-4
+  storage: el7.6-base-5
+  host: el7.6-base-5
 hostCount: 2
 system_requirements:
   disk_space_gb: 80

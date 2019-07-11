@@ -42,15 +42,27 @@ name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
 enabled = 1
 max_connections = 5
-exclude=*-debuginfo
-       *-devel
-       glusterfs-regression-tests
-       heketi*
-       nfs-ganesha-*
-       libntirpc*
-       glusterfs-ganesha
-       ansible
-       ansible-doc
+exclude = *-debuginfo
+	*-devel
+	glusterfs-regression-tests
+	heketi*
+	nfs-ganesha-*
+	libntirpc*
+	glusterfs-ganesha
+	ansible
+	ansible-do
+includepkgs = glusterfs
+	glusterfs-api
+	glusterfs-cli
+	glusterfs-client-xlators
+	glusterfs-events
+	glusterfs-fuse
+	glusterfs-geo-replication
+	glusterfs-libs
+	glusterfs-rdma
+	glusterfs-server
+	python2-gluster
+	userspace-rcu
 
 [centos-updates-el7]
 name = CentOS7 Updates
@@ -276,6 +288,7 @@ includepkgs = OpenIPMI-modalias
 	checkpolicy
 	copy-jdk-configs
 	cryptsetup
+	cryptsetup-python
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -287,6 +300,8 @@ includepkgs = OpenIPMI-modalias
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
+	dmraid
+	dmraid-events
 	dnsmasq
 	dom4j
 	dosfstools
@@ -348,6 +363,7 @@ includepkgs = OpenIPMI-modalias
 	junit
 	jzlib
 	keyutils
+	kmod-kvdo
 	libICE
 	libSM
 	libX11
@@ -526,10 +542,13 @@ includepkgs = OpenIPMI-modalias
 	postgresql-libs
 	psmisc
 	pygobject2
+	pykickstart
+	pyparted
 	python-IPy
 	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
+	python-blivet
 	python-cffi
 	python-configshell
 	python-dmidecode
@@ -545,12 +564,15 @@ includepkgs = OpenIPMI-modalias
 	python-kmod
 	python-ldap
 	python-lxml
+	python-magic
 	python-markupsafe
 	python-netifaces
 	python-nss
 	python-ply
+	python-prettytable
 	python-psycopg2
 	python-pwquality
+	python-pyblock
 	python-pycparser
 	python-qrcode-core
 	python-rtslib
@@ -559,6 +581,7 @@ includepkgs = OpenIPMI-modalias
 	python-urwid
 	python-webob
 	python-yubico
+	python2-blockdev
 	python2-cryptography
 	python2-futures
 	python2-pyasn1
@@ -594,6 +617,7 @@ includepkgs = OpenIPMI-modalias
 	seavgabios-bin
 	setools-libs
 	sgabios-bin
+	sgpio
 	slf4j
 	socat
 	squashfs-tools
@@ -618,6 +642,7 @@ includepkgs = OpenIPMI-modalias
 	usbredir
 	usermode
 	uuid
+	vdo
 	virt-install
 	virt-manager-common
 	volume_key-libs

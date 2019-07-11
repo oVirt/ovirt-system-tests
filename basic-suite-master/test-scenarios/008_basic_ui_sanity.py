@@ -193,12 +193,12 @@ def start_grid():
     if hub_ip == "":
         raise RuntimeError("could not get ip address of selenium hub. See previous messages for probable docker failure")
 
-    _shell(["docker", "run", "--add-host=" + dns_entry, "-d", "-p", "5900:5900", "--net", NETWORK_NAME, "-e", "HUB_HOST=" + hub_ip, "-v", "/dev/shm:/dev/shm", "--name", CHROME_CONTAINER_NAME, CHROME_CONTAINER_IMAGE],
+    _shell(["docker", "run", "--add-host=" + dns_entry, "-d", "--net", NETWORK_NAME, "-e", "HUB_HOST=" + hub_ip, "-v", "/dev/shm:/dev/shm", "--name", CHROME_CONTAINER_NAME, CHROME_CONTAINER_IMAGE],
            "starting chrome")
     log("getting ip of chrome")
     chrome_ip = _get_ip(CHROME_CONTAINER_NAME)
 
-    _shell(["docker", "run",  "--add-host=" + dns_entry, "-d", "-p", "5901:5900", "--net", NETWORK_NAME, "-e", "HUB_HOST=" + hub_ip, "-v", "/dev/shm:/dev/shm", "--name", FIREFOX_CONTAINER_NAME, FIREFOX_CONTAINER_IMAGE],
+    _shell(["docker", "run", "--add-host=" + dns_entry, "-d", "--net", NETWORK_NAME, "-e", "HUB_HOST=" + hub_ip, "-v", "/dev/shm:/dev/shm", "--name", FIREFOX_CONTAINER_NAME, FIREFOX_CONTAINER_IMAGE],
            "starting firefox")
     log("getting ip of firefox")
     firefox_ip = _get_ip(FIREFOX_CONTAINER_NAME)

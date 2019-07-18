@@ -213,32 +213,11 @@ def add_glusterfs_storage_domain(prefix, sdname, volname):
     _add_storage_domain(api, p)
 
 @testlib.with_ovirt_prefix
-def add_hosts(prefix):
-    if API_V4:
-        add_hosts_4(prefix)
-    else:
-	assert_false('Adding hosts requires API v4.')
-
-def add_hosts_4(prefix):
+def wait_hosts(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
     hosts_service = api.system_service().hosts_service()
 
-    def _add_host_4(vm):
-        return hosts_service.add(
-            sdk4.types.Host(
-                name=vm.name(),
-                description='host %s' % vm.name(),
-                address=vm.name(),
-                root_password=str(vm.root_password()),
-                override_iptables=True,
-                cluster=sdk4.types.Cluster(
-                    name=CLUSTER_NAME,
-                ),
-            ),
-            deploy_hosted_engine=True,
-        )
-
-    def _host_is_up_4():
+    def _host_is_up():
         host_service = hosts_service.host_service(api_host.id)
         host_obj = host_service.get()
         if host_obj.status == sdk4.types.HostStatus.UP:
@@ -251,21 +230,9 @@ def add_hosts_4(prefix):
         if host_obj.status == sdk4.types.HostStatus.NON_RESPONSIVE:
             raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
-    hosts = sorted(
-        prefix.virt_env.host_vms(),
-        key=lambda vm: vm.name()
-    )
-    vec = utils.func_vector(_add_host_4, [(h,) for h in hosts[1:]])
-    vt = utils.VectorThread(vec)
-    vt.start_all()
-    nt.assert_true(all(vt.join_all()))
-
     api_hosts = hosts_service.list()
     for api_host in api_hosts:
-        testlib.assert_true_within(_host_is_up_4, timeout=15*60)
-
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+        testlib.assert_true_within(_host_is_up, timeout=15*60)
 
 
 @testlib.with_ovirt_prefix
@@ -515,6 +482,7 @@ def sleep(prefix):
 
 _TEST_LIST = [
     wait_engine,
+    wait_hosts,
     list_glance_images,
     import_templates,
     add_non_vm_network,

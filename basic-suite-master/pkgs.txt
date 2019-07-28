@@ -4,6 +4,7 @@ collectd-virt
 dmidecode
 firewalld
 iscsi-initiator-utils
+java-11-openjdk-headless
 libepoxy
 libibumad
 libwayland-client

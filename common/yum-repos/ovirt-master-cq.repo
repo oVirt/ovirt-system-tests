@@ -55,81 +55,19 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	NetworkManager-config-server
-	OVMF
-	augeas
-	augeas-libs
-	bind-libs
-	bind-libs-lite
-	bind-license
-	bind-utils
-	device-mapper-event
-	device-mapper-event-libs
-	fcoe-utils
-	fence-agents-all
-	fence-agents-amt-ws
-	fence-agents-apc
-	fence-agents-apc-snmp
-	fence-agents-bladecenter
-	fence-agents-brocade
-	fence-agents-cisco-mds
-	fence-agents-cisco-ucs
-	fence-agents-common
-	fence-agents-compute
-	fence-agents-drac5
-	fence-agents-eaton-snmp
-	fence-agents-emerson
-	fence-agents-eps
-	fence-agents-heuristics-ping
-	fence-agents-hpblade
-	fence-agents-ibmblade
-	fence-agents-ifmib
-	fence-agents-ilo-moonshot
-	fence-agents-ilo-mp
-	fence-agents-ilo-ssh
-	fence-agents-ilo2
-	fence-agents-intelmodular
-	fence-agents-ipdu
-	fence-agents-ipmilan
-	fence-agents-kdump
-	fence-agents-mpath
-	fence-agents-redfish
-	fence-agents-rhevm
-	fence-agents-rsa
-	fence-agents-rsb
-	fence-agents-sbd
-	fence-agents-scsi
-	fence-agents-vmware-rest
-	fence-agents-vmware-soap
-	fence-agents-wti
-	git
-	gnutls
-	gnutls-dane
-	gnutls-utils
-	httpd
-	httpd-tools
-	ipa-client
-	ipa-client-common
-	ipa-common
+includepkgs = NetworkManager-config-server
+	firewalld
+	firewalld-filesystem
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	java-11-openjdk-headless
+	krb5-libs
 	krb5-workstation
-	libgfortran
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
-	libipa_hbac
 	libkadm5
-	libquadmath
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libvirt-admin
 	libvirt-bash-completion
 	libvirt-client
@@ -154,79 +92,26 @@ includepkgs = 389-ds-base
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
-	libwbclient
-	libwsman1
-	lvm2
-	lvm2-libs
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
-	mod_ssl
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
-	openldap-clients
-	openssl
-	openwsman-python
-	osinfo-db
 	pango
-	perl
-	perl-Git
-	perl-IO-Zlib
-	perl-Package-Constants
-	perl-Pod-Escapes
-	perl-libs
-	perl-macros
-	policycoreutils-python
-	python-jinja2
-	python-libipa_hbac
-	python-paramiko
-	python-sss-murmur
-	python-sssdconfig
-	python2-ipaclient
-	python2-ipalib
-	rsync
-	ruby
-	ruby-irb
-	ruby-libs
-	rubygem-bigdecimal
-	rubygem-io-console
-	rubygem-psych
-	rubygem-rdoc
-	rubygems
-	samba-client-libs
-	samba-common
-	samba-common-libs
-	scap-security-guide
+	python-firewall
+	python-syspurpose
+	rsyslog
+	rsyslog-elasticsearch
+	rsyslog-mmjsonparse
+	rsyslog-mmnormalize
 	selinux-policy
 	selinux-policy-targeted
+	sg3_utils
+	sg3_utils-libs
 	sos
-	spice-server
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	sysstat
 	systemd
 	systemd-libs
 	systemd-python
 	systemd-sysv
-	tomcat-servlet-3.0-api
 	tuned
-	tzdata-java
 	virt-v2v
 
 [centos-base-el7]
@@ -234,7 +119,12 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = OpenIPMI-modalias
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	OVMF
+	OpenIPMI
+	OpenIPMI-libs
+	OpenIPMI-modalias
 	PyYAML
 	abrt
 	abrt-addon-ccpp
@@ -272,7 +162,11 @@ includepkgs = OpenIPMI-modalias
 	atk
 	atlas
 	attr
+	audit
+	audit-libs
 	audit-libs-python
+	augeas
+	augeas-libs
 	authconfig
 	autofs
 	autogen-libopts
@@ -281,6 +175,11 @@ includepkgs = OpenIPMI-modalias
 	avalon-logkit
 	bea-stax
 	bea-stax-api
+	bind-export-libs
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
 	boost-iostreams
 	boost-random
 	boost-system
@@ -295,6 +194,7 @@ includepkgs = OpenIPMI-modalias
 	checkpolicy
 	copy-jdk-configs
 	cryptsetup
+	cryptsetup-libs
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -303,17 +203,67 @@ includepkgs = OpenIPMI-modalias
 	cyrus-sasl-scram
 	dejavu-fonts-common
 	dejavu-sans-fonts
+	device-mapper
+	device-mapper-event
+	device-mapper-event-libs
+	device-mapper-libs
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
+	dhclient
+	dhcp-common
+	dhcp-libs
+	dmidecode
 	dnsmasq
 	dom4j
 	dosfstools
+	dracut
+	dracut-config-rescue
 	dracut-fips
+	dracut-network
 	dwz
 	easymock2
 	elfutils
+	elfutils-libelf
+	elfutils-libs
 	emacs-filesystem
+	fcoe-utils
+	fence-agents-all
+	fence-agents-amt-ws
+	fence-agents-apc
+	fence-agents-apc-snmp
+	fence-agents-bladecenter
+	fence-agents-brocade
+	fence-agents-cisco-mds
+	fence-agents-cisco-ucs
+	fence-agents-common
+	fence-agents-compute
+	fence-agents-drac5
+	fence-agents-eaton-snmp
+	fence-agents-emerson
+	fence-agents-eps
+	fence-agents-heuristics-ping
+	fence-agents-hpblade
+	fence-agents-ibmblade
+	fence-agents-ifmib
+	fence-agents-ilo-moonshot
+	fence-agents-ilo-mp
+	fence-agents-ilo-ssh
+	fence-agents-ilo2
+	fence-agents-intelmodular
+	fence-agents-ipdu
+	fence-agents-ipmilan
+	fence-agents-kdump
+	fence-agents-mpath
+	fence-agents-redfish
+	fence-agents-rhevm
+	fence-agents-rsa
+	fence-agents-rsb
+	fence-agents-sbd
+	fence-agents-scsi
+	fence-agents-vmware-rest
+	fence-agents-vmware-soap
+	fence-agents-wti
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
@@ -326,7 +276,11 @@ includepkgs = OpenIPMI-modalias
 	genisoimage
 	geronimo-jms
 	giflib
+	git
 	glib-networking
+	gnutls
+	gnutls-dane
+	gnutls-utils
 	gperftools-libs
 	graphite2
 	gsettings-desktop-schemas
@@ -344,6 +298,11 @@ includepkgs = OpenIPMI-modalias
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
+	httpd
+	httpd-tools
+	ipa-client
+	ipa-client-common
+	ipa-common
 	iperf3
 	ipmitool
 	ipxe-roms-qemu
@@ -368,6 +327,7 @@ includepkgs = OpenIPMI-modalias
 	junit
 	jzlib
 	keyutils
+	kpartx
 	libICE
 	libSM
 	libX11
@@ -407,6 +367,7 @@ includepkgs = OpenIPMI-modalias
 	libepoxy
 	libevent
 	libfontenc
+	libgfortran
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
@@ -415,6 +376,7 @@ includepkgs = OpenIPMI-modalias
 	libibverbs
 	libicu
 	libini_config
+	libipa_hbac
 	libiscsi
 	libjpeg-turbo
 	libldb
@@ -427,6 +389,7 @@ includepkgs = OpenIPMI-modalias
 	libpath_utils
 	libpcap
 	libproxy
+	libquadmath
 	librados2
 	librbd1
 	librdmacm
@@ -441,6 +404,12 @@ includepkgs = OpenIPMI-modalias
 	libreport-python
 	libreport-web
 	libsemanage-python
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -455,6 +424,8 @@ includepkgs = OpenIPMI-modalias
 	libvirt-python
 	libwayland-client
 	libwayland-server
+	libwbclient
+	libwsman1
 	libxcb
 	libxml2-python
 	libxshmfence
@@ -466,16 +437,33 @@ includepkgs = OpenIPMI-modalias
 	lm_sensors-libs
 	log4j
 	lsof
+	lvm2
+	lvm2-libs
 	lzop
 	m2crypto
 	mailcap
 	mailx
 	make
 	mdadm
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
+	mod_ssl
 	mpfr
 	msv-msv
 	msv-xsdlib
 	mtools
+	nbdkit
+	nbdkit-plugin-python-common
+	nbdkit-plugin-python2
+	nbdkit-plugin-vddk
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	netcf-libs
 	nettle
 	newt-python
@@ -489,16 +477,22 @@ includepkgs = OpenIPMI-modalias
 	objectweb-asm4
 	oddjob
 	oddjob-mkhomedir
+	openldap-clients
 	openscap
 	openscap-containers
 	openscap-scanner
 	openscap-utils
+	openssl
+	openssl-libs
+	openwsman-python
 	opus
+	osinfo-db
 	osinfo-db-tools
 	pam_pkcs11
 	patch
 	pciutils
 	pcsc-lite-libs
+	perl
 	perl-Archive-Tar
 	perl-Carp
 	perl-Compress-Raw-Bzip2
@@ -512,11 +506,15 @@ includepkgs = OpenIPMI-modalias
 	perl-File-Temp
 	perl-Filter
 	perl-Getopt-Long
+	perl-Git
 	perl-HTTP-Tiny
 	perl-IO-Compress
+	perl-IO-Zlib
 	perl-Mozilla-LDAP
 	perl-NetAddr-IP
+	perl-Package-Constants
 	perl-PathTools
+	perl-Pod-Escapes
 	perl-Pod-Perldoc
 	perl-Pod-Simple
 	perl-Pod-Usage
@@ -530,6 +528,8 @@ includepkgs = OpenIPMI-modalias
 	perl-Time-Local
 	perl-constant
 	perl-hivex
+	perl-libs
+	perl-macros
 	perl-parent
 	perl-podlators
 	perl-srpm-macros
@@ -537,6 +537,8 @@ includepkgs = OpenIPMI-modalias
 	perl-threads-shared
 	pexpect
 	pixman
+	policycoreutils
+	policycoreutils-python
 	postgresql-jdbc
 	postgresql-libs
 	psmisc
@@ -555,14 +557,17 @@ includepkgs = OpenIPMI-modalias
 	python-ipaddr
 	python-ipaddress
 	python-javapackages
+	python-jinja2
 	python-jwcrypto
 	python-kitchen
 	python-kmod
 	python-ldap
+	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
 	python-nss
+	python-paramiko
 	python-ply
 	python-psycopg2
 	python-pwquality
@@ -570,12 +575,17 @@ includepkgs = OpenIPMI-modalias
 	python-qrcode-core
 	python-rtslib
 	python-setuptools
+	python-srpm-macros
+	python-sss-murmur
+	python-sssdconfig
 	python-suds
 	python-urwid
 	python-webob
 	python-yubico
 	python2-cryptography
 	python2-futures
+	python2-ipaclient
+	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32
@@ -592,13 +602,30 @@ includepkgs = OpenIPMI-modalias
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
+	rpm
 	rpm-build
+	rpm-build-libs
+	rpm-libs
+	rpm-python
 	rpmdevtools
-	rsyslog-elasticsearch
-	rsyslog-mmjsonparse
-	rsyslog-mmnormalize
+	rsync
+	ruby
+	ruby-irb
+	ruby-libs
+	rubygem-bigdecimal
+	rubygem-io-console
+	rubygem-psych
+	rubygem-rdoc
+	rubygems
+	samba-client-libs
+	samba-common
+	samba-common-libs
+	sanlock
+	sanlock-lib
+	sanlock-python
 	satyr
 	scannotation
+	scap-security-guide
 	scl-utils
 	screen
 	scrub
@@ -608,19 +635,33 @@ includepkgs = OpenIPMI-modalias
 	sgabios-bin
 	slf4j
 	socat
+	spice-server
 	squashfs-tools
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	stax2-api
 	supermin5
 	svrcore
 	syslinux
 	syslinux-extlinux
+	sysstat
 	targetcli
 	tcp_wrappers
 	tcpdump
 	telnet
+	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
+	tzdata-java
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2
@@ -663,7 +704,13 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = dpdk
+includepkgs = cockpit
+	cockpit-bridge
+	cockpit-dashboard
+	cockpit-storaged
+	cockpit-system
+	cockpit-ws
+	dpdk
 	libssh
 	python-httplib2
 	python-lockfile
@@ -685,10 +732,6 @@ max_connections = 5
 includepkgs = ansible
 	libtomcrypt
 	libtommath
-	nbdkit
-	nbdkit-plugin-python-common
-	nbdkit-plugin-python2
-	nbdkit-plugin-vddk
 	python2-crypto
 	python2-pysocks
 	python2-qpid-proton

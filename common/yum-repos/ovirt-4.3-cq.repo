@@ -685,8 +685,7 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = ansible
-	nbdkit
+includepkgs = nbdkit
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
@@ -714,8 +713,6 @@ gpgcheck = 0
 cost = 2000
 enabled = 1
 ost_skip_injection = True
-exclude = ansible
-	ansible-doc
 
 [centos-qemu-ev-testing-el7]
 name = CentOS-7 - QEMU EV - Testing

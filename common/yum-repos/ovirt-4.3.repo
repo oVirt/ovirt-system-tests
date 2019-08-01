@@ -42,15 +42,27 @@ name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
 enabled = 1
 max_connections = 5
-exclude=*-debuginfo
-       *-devel
-       glusterfs-regression-tests
-       heketi*
-       nfs-ganesha-*
-       libntirpc*
-       glusterfs-ganesha
-       ansible
-       ansible-doc
+exclude = *-debuginfo
+	*-devel
+	glusterfs-regression-tests
+	heketi*
+	nfs-ganesha-*
+	libntirpc*
+	glusterfs-ganesha
+	ansible
+	ansible-do
+includepkgs = glusterfs
+	glusterfs-api
+	glusterfs-cli
+	glusterfs-client-xlators
+	glusterfs-events
+	glusterfs-fuse
+	glusterfs-geo-replication
+	glusterfs-libs
+	glusterfs-rdma
+	glusterfs-server
+	python2-gluster
+	userspace-rcu
 
 [centos-updates-el7]
 name = CentOS7 Updates
@@ -64,6 +76,8 @@ includepkgs = 389-ds-base
 	augeas
 	augeas-libs
 	bind-libs
+	bind-libs-lite
+	bind-license
 	bind-utils
 	device-mapper-event
 	device-mapper-event-libs
@@ -124,6 +138,7 @@ includepkgs = 389-ds-base
 	libipa_hbac
 	libkadm5
 	libquadmath
+	libsmbclient
 	libsss_autofs
 	libsss_certmap
 	libsss_idmap
@@ -155,6 +170,7 @@ includepkgs = 389-ds-base
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	libwbclient
 	libwsman1
 	lvm2
 	lvm2-libs
@@ -163,6 +179,10 @@ includepkgs = 389-ds-base
 	mesa-libgbm
 	mesa-libglapi
 	mod_ssl
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	openldap-clients
 	openssl
 	openwsman-python
@@ -193,7 +213,12 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	samba-client-libs
+	samba-common
+	samba-common-libs
 	scap-security-guide
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -209,8 +234,13 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	sysstat
+	systemd
+	systemd-libs
 	systemd-python
+	systemd-sysv
 	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 	virt-v2v
 
@@ -281,6 +311,7 @@ includepkgs = OpenIPMI-modalias
 	checkpolicy
 	copy-jdk-configs
 	cryptsetup
+	cryptsetup-python
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -292,6 +323,8 @@ includepkgs = OpenIPMI-modalias
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
+	dmraid
+	dmraid-events
 	dnsmasq
 	dom4j
 	dosfstools
@@ -354,6 +387,7 @@ includepkgs = OpenIPMI-modalias
 	junit
 	jzlib
 	keyutils
+	kmod-kvdo
 	lapack
 	libICE
 	libSM
@@ -427,8 +461,8 @@ includepkgs = OpenIPMI-modalias
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux-ruby
 	libsemanage-python
-	libsmbclient
 	libtalloc
 	libtar
 	libtdb
@@ -443,7 +477,6 @@ includepkgs = OpenIPMI-modalias
 	libvirt-python
 	libwayland-client
 	libwayland-server
-	libwbclient
 	libxcb
 	libxml2-python
 	libxshmfence
@@ -464,10 +497,7 @@ includepkgs = OpenIPMI-modalias
 	msv-msv
 	msv-xsdlib
 	mtools
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
+	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -534,11 +564,14 @@ includepkgs = OpenIPMI-modalias
 	postgresql-libs
 	psmisc
 	pygobject2
+	pykickstart
 	pyparsing
+	pyparted
 	python-IPy
 	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
+	python-blivet
 	python-configshell
 	python-dmidecode
 	python-dns
@@ -554,12 +587,15 @@ includepkgs = OpenIPMI-modalias
 	python-kmod
 	python-ldap
 	python-lxml
+	python-magic
 	python-markupsafe
 	python-netifaces
 	python-nss
 	python-ply
+	python-prettytable
 	python-psycopg2
 	python-pwquality
+	python-pyblock
 	python-pycparser
 	python-qrcode-core
 	python-rtslib
@@ -568,6 +604,7 @@ includepkgs = OpenIPMI-modalias
 	python-urwid
 	python-webob
 	python-yubico
+	python2-blockdev
 	python2-futures
 	python2-pyasn1
 	python2-pyasn1-modules
@@ -590,9 +627,6 @@ includepkgs = OpenIPMI-modalias
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
 	rsyslog-mmnormalize
-	samba-client-libs
-	samba-common
-	samba-common-libs
 	satyr
 	scannotation
 	scl-utils
@@ -602,6 +636,7 @@ includepkgs = OpenIPMI-modalias
 	seavgabios-bin
 	setools-libs
 	sgabios-bin
+	sgpio
 	slf4j
 	socat
 	squashfs-tools
@@ -610,7 +645,6 @@ includepkgs = OpenIPMI-modalias
 	svrcore
 	syslinux
 	syslinux-extlinux
-	sysstat
 	targetcli
 	tcp_wrappers
 	tcpdump
@@ -626,6 +660,7 @@ includepkgs = OpenIPMI-modalias
 	usbredir
 	usermode
 	uuid
+	vdo
 	virt-install
 	virt-manager-common
 	volume_key-libs
@@ -679,11 +714,15 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = ansible
+includepkgs = facter
+	hiera
 	nbdkit
+	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
+	puppet
+	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
 	python2-mimeparse
@@ -691,7 +730,10 @@ includepkgs = ansible
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
+	ruby-augeas
+	ruby-shadow
 	rubygem-multipart-post
+	rubygem-rgen
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3
@@ -708,8 +750,6 @@ gpgcheck = 0
 cost = 2000
 enabled = 1
 ost_skip_injection = True
-exclude = ansible
-	ansible-doc
 
 [centos-qemu-ev-testing-el7]
 name = CentOS-7 - QEMU EV - Testing

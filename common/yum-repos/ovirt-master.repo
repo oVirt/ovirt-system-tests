@@ -76,6 +76,8 @@ includepkgs = 389-ds-base
 	augeas
 	augeas-libs
 	bind-libs
+	bind-libs-lite
+	bind-license
 	bind-utils
 	device-mapper-event
 	device-mapper-event-libs
@@ -136,6 +138,7 @@ includepkgs = 389-ds-base
 	libipa_hbac
 	libkadm5
 	libquadmath
+	libsmbclient
 	libsss_autofs
 	libsss_certmap
 	libsss_idmap
@@ -164,6 +167,7 @@ includepkgs = 389-ds-base
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	libwbclient
 	libwsman1
 	lvm2
 	lvm2-libs
@@ -172,6 +176,10 @@ includepkgs = 389-ds-base
 	mesa-libgbm
 	mesa-libglapi
 	mod_ssl
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	openldap-clients
 	openssl
 	openwsman-python
@@ -201,6 +209,9 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	samba-client-libs
+	samba-common
+	samba-common-libs
 	scap-security-guide
 	sos
 	spice-server
@@ -217,8 +228,13 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	sysstat
+	systemd
+	systemd-libs
 	systemd-python
+	systemd-sysv
 	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 	virt-v2v
 
@@ -437,7 +453,6 @@ includepkgs = OpenIPMI-modalias
 	libreport-python
 	libreport-web
 	libsemanage-python
-	libsmbclient
 	libtalloc
 	libtar
 	libtdb
@@ -452,7 +467,6 @@ includepkgs = OpenIPMI-modalias
 	libvirt-python
 	libwayland-client
 	libwayland-server
-	libwbclient
 	libxcb
 	libxml2-python
 	libxshmfence
@@ -473,10 +487,6 @@ includepkgs = OpenIPMI-modalias
 	msv-msv
 	msv-xsdlib
 	mtools
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
 	netcf-libs
 	nettle
 	newt-python
@@ -605,9 +615,6 @@ includepkgs = OpenIPMI-modalias
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
 	rsyslog-mmnormalize
-	samba-client-libs
-	samba-common
-	samba-common-libs
 	satyr
 	scannotation
 	scl-utils
@@ -626,7 +633,6 @@ includepkgs = OpenIPMI-modalias
 	svrcore
 	syslinux
 	syslinux-extlinux
-	sysstat
 	targetcli
 	tcp_wrappers
 	tcpdump

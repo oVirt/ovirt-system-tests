@@ -69,6 +69,7 @@ domains:
       - /etc/resolv.conf
       - /tmp/ovirt*
       - /tmp/otopi*
+      - /etc/yum.repos.d
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
@@ -98,6 +99,7 @@ domains:
     artifacts:
       - /etc/resolv.conf
       - /var/log
+      - /etc/yum.repos.d
       {% if env.coverage == "true" -%}
       - /var/lib/vdsm/coverage
       {%- endif %}

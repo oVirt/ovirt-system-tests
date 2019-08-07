@@ -923,7 +923,6 @@ def template_update(api):
 def disk_operations(api):
     vt = utils.VectorThread(
         [
-            functools.partial(live_storage_migration),
             functools.partial(cold_storage_migration),
             functools.partial(snapshot_cold_merge),
         ],
@@ -1215,6 +1214,7 @@ _TEST_LIST = [
     hotplug_cpu,
     next_run_unplug_cpu,
     disk_operations,
+    live_storage_migration,
     remove_vm2_lease,
     hotunplug_disk,
     make_snapshot_with_memory,

@@ -495,7 +495,7 @@ def cold_storage_migration(api):
 def live_storage_migration(api):
     engine = api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
-    correlation_id = uuid.uuid4()
+    correlation_id = 'live_storage_migration'
     disk_service.move(
         async=False,
         filter=False,

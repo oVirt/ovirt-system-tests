@@ -24,11 +24,12 @@ import functools
 import os
 import ovirtsdk4.types as types
 import uuid
-
 if os.environ.get('VAGRANT_CWD'):
     from ost_utils import testlib
 else:
     from ovirtlago import testlib
+from test_utils.constants import VM0_IP_HOST_PART
+
 
 def test_gen(tests, generator):
     '''Run the given tests amending their names according to the context.
@@ -290,3 +291,12 @@ def get_luns(prefix, host, port, target, from_lun, to_lun=None):
             luns.append(lun)
 
     return luns
+
+
+def get_vm0_ip_address(prefix):
+    gw_address = get_management_net(prefix).gw()
+    return '.'.join(gw_address.split('.')[0:3] + [VM0_IP_HOST_PART])
+
+
+def get_management_net(prefix):
+    return prefix.virt_env.get_net()

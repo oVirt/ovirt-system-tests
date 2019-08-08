@@ -25,12 +25,10 @@ if os.environ.get('VAGRANT_CWD'):
 else:
     from ovirtlago import testlib
 
-from ovirtsdk4 import Error as sdkError
 from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
                              IpAddressAssignment, IpVersion, Network,
                              NetworkAttachment, Cluster, VnicProfile, Nic)
-import httplib
-import test_utils
+
 from test_utils import constants
 
 
@@ -46,13 +44,10 @@ def attach_network_to_host(host, nic_name, network_name, ip_configuration,
         host_nic=HostNic(name=nic_name),
         ip_address_assignments=ip_configuration)
 
-    testlib.assert_equals_within_short(
-        lambda:
-        _setup_host_networks_without_conflict(
-            host=host,
-            modified_bonds=bonds,
-            modified_network_attachments=[attachment],
-            check_connectivity=True), True, [])
+    return host.setup_networks(
+        modified_bonds=bonds,
+        modified_network_attachments=[attachment],
+        check_connectivity=True)
 
 
 def detach_network_from_host(engine, host, network_name, bond_name=None):
@@ -64,13 +59,10 @@ def detach_network_from_host(engine, host, network_name, bond_name=None):
     bonds = [nic for nic in host.nics_service().list() if bond_name and
              nic.name == bond_name]  # there is no more than one bond
 
-    testlib.assert_equals_within_short(
-        lambda:
-        _setup_host_networks_without_conflict(
-            host=host,
-            removed_bonds=bonds,
-            removed_network_attachments=[attachment],
-            check_connectivity=True), True, [])
+    return host.setup_networks(
+        removed_bonds=bonds,
+        removed_network_attachments=[attachment],
+        check_connectivity=True)
 
 
 def modify_ip_config(engine, host, network_name, ip_configuration):
@@ -81,12 +73,8 @@ def modify_ip_config(engine, host, network_name, ip_configuration):
     attachment = _get_attachment_by_id(host, network_id)
     attachment.ip_address_assignments = ip_configuration
 
-    testlib.assert_equals_within_short(
-        lambda:
-        _setup_host_networks_without_conflict(
-            host=host,
-            modified_network_attachments=[attachment],
-            check_connectivity=True), True, [])
+    return host.setup_networks(modified_network_attachments=[attachment],
+                               check_connectivity=True)
 
 
 def create_dhcp_ip_configuration():
@@ -279,25 +267,3 @@ def remove_networks(engine, networks, predicate):
 
 def _filter_named_item(name, collection):
     return next(item for item in collection if item.name == name)
-
-
-def _setup_host_networks_without_conflict(
-        host,
-        removed_bonds=None,
-        modified_bonds=None,
-        modified_network_attachments=None,
-        removed_network_attachments=None,
-        check_connectivity=False):
-    try:
-        host.setup_networks(
-            removed_bonds=removed_bonds,
-            modified_bonds=modified_bonds,
-            modified_network_attachments=modified_network_attachments,
-            removed_network_attachments=removed_network_attachments,
-            check_connectivity=check_connectivity)
-        return True
-    except sdkError as e:
-        if e.code == httplib.CONFLICT:
-            return False
-        else:
-            raise

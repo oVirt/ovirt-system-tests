@@ -32,19 +32,23 @@ from ovirtsdk.xml import params
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
-
+import ovirtsdk4.types as types
+import os
 if os.environ.get('VAGRANT_CWD'):
     from ost_utils import testlib
     from ost_utils import utils
 else:
     from lago import utils
     from ovirtlago import testlib
-
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
 from test_utils import versioning
 
+from ost_utils import general_utils
+
+import logging
+LOGGER = logging.getLogger(__name__)
 
 MB = 2 ** 20
 GB = 2 ** 30
@@ -83,9 +87,9 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = versioning.guest_os_image_name()
+GUEST_IMAGE_NAME = versioning.guest_os_image_name()
 GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
-TEMPLATE_CIRROS = versioning.guest_os_template_name()
+TEMPLATE_GUEST = versioning.guest_os_template_name()
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -98,7 +102,6 @@ NETWORK_FILTER_NAME = 'clean-traffic'
 NETWORK_FILTER_PARAMETER0_NAME = 'CTRL_IP_LEARNING'
 NETWORK_FILTER_PARAMETER0_VALUE = 'dhcp'
 NETWORK_FILTER_PARAMETER1_NAME = 'DHCPSERVER'
-
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -114,13 +117,16 @@ def _get_host_ips_in_net(prefix, host_name, net_name):
 
 def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
+    all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
+    up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
+    if up_hosts:
         if random_host:
-            return random.choice(hosts)
+            return random.choice(up_hosts)
         else:
-            return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
+            return sorted(up_hosts, key=lambda host: host.name)
+    hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
@@ -142,7 +148,7 @@ def _all_hosts_up(hosts_service, total_num_hosts):
 
 def _single_host_up(hosts_service, total_num_hosts):
     installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
-    if len(installing_hosts) == total_num_hosts: # All hosts still installing
+    if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
@@ -152,7 +158,7 @@ def _single_host_up(hosts_service, total_num_hosts):
     _check_problematic_hosts(hosts_service)
 
 def _check_problematic_hosts(hosts_service):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational or status=installfailed'.format(DC_NAME))
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up)'.format(DC_NAME))
     if len(problematic_hosts):
         dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
         for host in problematic_hosts:
@@ -171,6 +177,29 @@ def _change_logging_level(host, logger_name, level='DEBUG',
     sed_expr = ('/logger_{}/,/level=/s/level=INFO/level={}/'
                 .format(logger_name, level))
     host.ssh(['sed', '-i', sed_expr, '/etc/vdsm/logger.conf'])
+
+
+def _host_status_to_print(hosts_service, hosts_list):
+    dump_hosts = ''
+    for host in hosts_list:
+            host_service_info = hosts_service.host_service(host.id)
+            dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+    return dump_hosts
+
+def _wait_for_status(hosts_service, dc_name, status):
+    up_status_seen = False
+    for _ in general_utils.linear_retrier(attempts=120, iteration_sleeptime=1):
+        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+        up_hosts = [host for host in all_hosts if host.status == status]
+        LOGGER.info(_host_status_to_print(hosts_service, all_hosts))
+        # we use up_status_seen because we make sure the status is not flapping
+        if up_hosts:
+            if up_status_seen:
+                break
+            up_status_seen = True
+        else:
+            up_status_seen = False
+    return all_hosts
 
 
 @testlib.with_ovirt_api4
@@ -329,8 +358,10 @@ def add_hosts(prefix):
 @testlib.with_ovirt_api4
 def verify_add_hosts(api):
     hosts_service = api.system_service().hosts_service()
-    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
-
+    hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    total_hosts = len(hosts_status)
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
     testlib.assert_true_within(
         lambda: _single_host_up(hosts_service, total_hosts),
         timeout=constants.ADD_HOST_TIMEOUT
@@ -455,14 +486,18 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
     ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
     kwargs = {}
-    if sd_format >= 'v4' and \
-       not versioning.cluster_version_ok(4, 1):
-        kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+    if sd_format >= 'v4':
+        if not versioning.cluster_version_ok(4, 1):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+        elif not versioning.cluster_version_ok(4, 3):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
+    random_host = _random_host_from_dc(api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
         type=dom_type,
-        host=_random_host_from_dc(api, DC_NAME),
+        host=random_host,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
             address=ips[0],
@@ -612,7 +647,7 @@ def import_templates(api):
 def generic_import_from_glance(glance_provider, as_template=False,
                                dest_storage_domain=MASTER_SD_TYPE,
                                dest_cluster=CLUSTER_NAME):
-    target_image = glance_provider.images.get(name=CIRROS_IMAGE_NAME)
+    target_image = glance_provider.images.get(name=GUEST_IMAGE_NAME)
     import_action = params.Action(
         storage_domain=params.StorageDomain(
             name=dest_storage_domain,
@@ -622,10 +657,10 @@ def generic_import_from_glance(glance_provider, as_template=False,
         ),
         import_as_template=as_template,
         disk=params.Disk(
-            name=(TEMPLATE_CIRROS if as_template else GLANCE_DISK_NAME)
+            name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
         ),
         template=params.Template(
-            name=TEMPLATE_CIRROS,
+            name=TEMPLATE_GUEST,
         ),
     )
 
@@ -837,7 +872,7 @@ def add_role(api):
 def add_affinity_label(api):
     engine = api.system_service()
     affinity_labels_service = engine.affinity_labels_service()
-    with test_utils.TestEvent(engine, 10380): 
+    with test_utils.TestEvent(engine, 10380):
         nt.assert_true(
             affinity_labels_service.add(
                 sdk4.types.AffinityLabel(
@@ -852,7 +887,7 @@ def add_affinity_group(api):
     engine = api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
-    with test_utils.TestEvent(engine, 10350): 
+    with test_utils.TestEvent(engine, 10350):
         nt.assert_true(
             affinity_group_service.add(
                 sdk4.types.AffinityGroup(
@@ -1082,7 +1117,7 @@ def check_update_host(api):
 def add_scheduling_policy(api):
     engine = api.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
-    with test_utils.TestEvent(engine, 9910): 
+    with test_utils.TestEvent(engine, 9910):
         nt.assert_true(
             scheduling_policies_service.add(
                 sdk4.types.SchedulingPolicy(
@@ -1350,7 +1385,7 @@ def add_blank_vms(api):
 
     vm_params = sdk4.types.Vm(
         os=sdk4.types.OperatingSystem(
-            type='other_linux',
+            type='rhel_7x64',
         ),
         type=sdk4.types.VmType.SERVER,
         high_availability=sdk4.types.HighAvailability(
@@ -1601,7 +1636,6 @@ def add_graphics_console(api):
         len(consoles_service.list()) == 2
     )
 
-
 @testlib.with_ovirt_api4
 def add_filter(ovirt_api4):
     engine = ovirt_api4.system_service()
@@ -1652,6 +1686,51 @@ def add_filter_parameter(prefix):
                 sdk4.types.NetworkFilterParameter(
                     name=NETWORK_FILTER_PARAMETER1_NAME,
                     value=vm_gw
+                )
+            )
+        )
+
+
+@testlib.with_ovirt_api4
+def add_filter_new(ovirt_api4):
+    engine = ovirt_api4.system_service()
+    nics_service = test_utils.get_nics_service(engine, VM0_NAME)
+    nic = nics_service.list()[0]
+    network = ovirt_api4.follow_link(nic.vnic_profile).network
+    network_filters_service = engine.network_filters_service()
+    network_filter = next(
+        network_filter for network_filter in network_filters_service.list()
+        if network_filter.name == NETWORK_FILTER_NAME
+    )
+    vnic_profiles_service = engine.vnic_profiles_service()
+
+    vnic_profile = vnic_profiles_service.add(
+        sdk4.types.VnicProfile(
+            name='{}_profile'.format(network_filter.name),
+            network=network,
+            network_filter=network_filter
+        )
+    )
+    nic.vnic_profile = vnic_profile
+    nt.assert_true(
+        nics_service.nic_service(nic.id).update(nic)
+    )
+
+
+@testlib.with_ovirt_prefix
+def add_filter_parameter_new(prefix):
+    engine_vm = prefix.virt_env.engine_vm()
+    ovirt_api4 = engine_vm.get_api(api_ver=4)
+    engine = ovirt_api4.system_service()
+    network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
+        engine, VM0_NAME)
+
+    with test_utils.TestEvent(engine, 10912):
+        nt.assert_true(
+            network_filter_parameters_service.add(
+                sdk4.types.NetworkFilterParameter(
+                    name='IP',
+                    value=test_utils.get_vm0_ip_address(prefix)
                 )
             )
         )
@@ -1789,9 +1868,6 @@ _TEST_LIST = [
     add_disk_profile,
     get_cluster_enabled_features,
     get_host_numa_nodes,
-    get_host_devices,
-    get_host_hooks,
-    get_host_stats,
     add_glance_images,
     add_fence_agent,
     verify_engine_backup,
@@ -1808,6 +1884,9 @@ _TEST_LIST = [
     add_event,
     verify_add_all_hosts,
     complete_hosts_setup,
+    get_host_devices,
+    get_host_hooks,
+    get_host_stats,
     add_secondary_storage_domains,
     resize_and_refresh_storage_domain,
     add_vm2_lease,

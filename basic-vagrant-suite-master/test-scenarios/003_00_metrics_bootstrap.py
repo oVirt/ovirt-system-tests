@@ -30,8 +30,30 @@ else:
     from ovirtlago import testlib
 
 import test_utils
-import logging
-LOGGER = logging.getLogger(__name__)
+
+
+@testlib.with_ovirt_prefix
+def configure_vdsm_sos_plugin(prefix):
+    """
+     VDSM SOS plugin has been moved from VDSM to SOS as a part of:
+        sos-3.7-3 in CentOS/RHEL 7.7
+        sos-3.7.1 in Fedora
+     In the transition period we need to ensure that VDSM SOS plugin exists
+     on hosts for metrics to configure properly, so we will need to copy it
+     manually to hosts if not exists (ie installed by sos package)
+    """
+    plugin_setup = os.path.join(
+        os.environ.get('SUITE'),
+        '../common/test-scenarios-files/vdsm-sos-plugin'
+    )
+    hosts = prefix.virt_env.host_vms()
+    for host in hosts:
+        host.copy_to(
+            plugin_setup,
+            '/tmp'
+        )
+        host.ssh(['/tmp/vdsm-sos-plugin/install-plugin.sh'])
+
 
 def configure_metrics(prefix):
     """
@@ -86,24 +108,16 @@ def configure_metrics(prefix):
     for host in hosts:
         host.ssh(['rm', '-rf', '/dev/shm/yum*', '/dev/shm/*.rpm'])
 
+
 def run_log_collector(prefix):
     engine = prefix.virt_env.engine_vm()
-    answer_file = os.path.join(
-        os.environ.get('SUITE'),
-        '../common/test-scenarios-files/metrics_bootstrap/ovirt-log-collector-answer'
-    )
-    engine.copy_to(answer_file, '/tmp/ovirt-log-collector-answer')
-
     result = engine.ssh(
         [
-           'ovirt-log-collector',
+            'ovirt-log-collector',
             '--verbose',
             '--conf-file=/root/ovirt-log-collector.conf',
-            '<',
-            '/tmp/ovirt-log-collector-answer',
         ],
     )
-
     # log collector returns status code == 2 for warnings
     nt.assert_true(
         result.code in (0, 2),
@@ -132,6 +146,7 @@ def metrics_and_log_collector(prefix):
 
 
 _TEST_LIST = [
+    configure_vdsm_sos_plugin,
     metrics_and_log_collector,
 ]
 

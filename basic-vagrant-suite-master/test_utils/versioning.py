@@ -49,7 +49,7 @@ def require_version(major, minor):
 
 def guest_os_image_name():
     if cluster_version_ok(4, 1):
-        return 'CirrOS 0.4.0 for x86_64'
+        return 'CentOS 7 Generic Cloud Image v1901 for x86_64'
     else:
         return 'CirrOS 0.4.0 (qcow2 v0.10) for x86_64'
 

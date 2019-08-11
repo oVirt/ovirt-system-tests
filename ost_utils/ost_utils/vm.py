@@ -252,7 +252,7 @@ class VM(object):
             recursive_param ='-r'
 
         command = ['-i', str(self._identityfile), '-o',  'StrictHostKeyChecking=no','-o',
-            'UserKnownHostsFile=/dev/null' ,  str(local_path),
+            'UserKnownHostsFile=/dev/null', recursive_param, str(local_path),
             str(as_user) + "@" + str(self._ip) + ":" + str(remote_path)]
         print " ".join(command)
         ret = scp(command)

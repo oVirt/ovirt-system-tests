@@ -1,6 +1,6 @@
 - type: "host"
   box: "centos/7"
-  box_version: "1902.01"
+  box_version: "1905.01"
   hostCount: 2
   user: root
   provider:
@@ -17,7 +17,7 @@
         - first_host: 1
 - type: "engine"
   box: "centos/7"
-  box_version: "1811.02"
+  box_version: "1905.01"
   hostCount: 1
   memory: 4096
   user: root

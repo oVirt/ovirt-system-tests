@@ -59,7 +59,8 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 TEMPLATE_BLANK = 'Blank'
 
 # Storage
-MASTER_SD_TYPE = 'iscsi'
+# TODO temporarily use nfs instead of iscsi. Revert back once iscsi works in vdsm 4.4!
+MASTER_SD_TYPE = 'nfs'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'

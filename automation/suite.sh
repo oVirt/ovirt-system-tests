@@ -32,16 +32,9 @@ readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"
 readonly COVERAGE_MARKER="$PWD/COVERAGE.marker"
 
 get_run_path() {
-    local ram_path="/dev/shm/ost/deployment-${SUITE}"
     local disk_path="${PWD}/deployment-${SUITE}"
 
-    [[ -d "/dev/shm/ost" ]] && rm -rf "/dev/shm/ost"
     [[ -d "$disk_path" ]] && rm -rf "$disk_path"
-
-    ./run_suite.sh -o "$ram_path" --only-verify-requirements "$SUITE" && {
-        echo "$ram_path"
-        return
-    }
 
     ./run_suite.sh -o "$disk_path" --only-verify-requirements "$SUITE" && {
         echo "$disk_path"

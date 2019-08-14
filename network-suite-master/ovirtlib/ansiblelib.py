@@ -50,23 +50,4 @@ class Playbook(object):
             inventory='localhost ansible_connection=local')
         if runner.status != 'successful':
             raise AnsibleExecutionFailure
-        return Playbook._stats(runner)
-
-    @staticmethod
-    def _stats(runner):
-            last_event = list(
-                filter(
-                    lambda x:
-                    'event' in x and x['event'] == 'playbook_on_stats',
-                    runner.events
-                )
-            )
-            if not last_event:
-                return None
-            last_event = last_event[0]['event_data']
-            return dict(skipped=last_event['skipped'],
-                        ok=last_event['ok'],
-                        dark=last_event['dark'],
-                        failures=last_event['failures'],
-                        processed=last_event['processed'],
-                        changed=last_event['changed'])
+        return runner.stats

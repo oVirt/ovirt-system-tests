@@ -77,8 +77,10 @@ SS_PATH = os.path.join(
 )
 
 HUB_CONTAINER_IMAGE = 'selenium/hub:3.141.59-neon'
-FIREFOX_CONTAINER_IMAGE = 'selenium/node-firefox-debug:3.141.59-neon'
-CHROME_CONTAINER_IMAGE = 'selenium/node-chrome-debug:3.141.59-neon'
+# This image is based on "selenium/node-firefox-debug:3.141.59-neon" include libnss3-tools package
+FIREFOX_CONTAINER_IMAGE = 'quay.io/arachman/selenium-firefox-debug:3.141.59-neon'
+# This image is based on "selenium/node-chrome-debug:3.141.59-neon" include libnss3-tools package
+CHROME_CONTAINER_IMAGE = 'quay.io/arachman/selenium-chrome-debug:3.141.59-neon'
 NETWORK_NAME = 'grid'
 # selenium grid neon release uses these versions:
 FIREFOX_VERSION = '66.0.3'
@@ -353,9 +355,6 @@ def load_firefox_cert():
 
 
 def load_cert(container_name):
-    os.system('docker exec %s sudo apt-get update -y' % container_name)
-    os.system('docker exec %s sudo apt-get install -y libnss3-tools' % container_name)
-    os.system('docker exec %s sudo apt-get install -y vim' % container_name)
     os.system('docker cp %s %s:%s' % (CA_PATH, container_name, CA_PATH))
 
     import_ca_script = os.path.join(

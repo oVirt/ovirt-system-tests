@@ -35,3 +35,14 @@ rubygem-fluent-plugin-elasticsearch
 sg3_utils
 targetcli
 tuned
+pytz
+python2-six
+python2-idna
+pyOpenSSL
+collectd-write_syslog
+gluster-ansible-roles
+libcgroup-tools
+selinux-policy
+selinux-policy-base
+libvirt-admin
+iperf3

@@ -28,7 +28,7 @@ else:
 from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
                              IpAddressAssignment, IpVersion, Network,
                              NetworkAttachment, Cluster, VnicProfile, Nic)
-
+import test_utils
 from test_utils import constants
 
 

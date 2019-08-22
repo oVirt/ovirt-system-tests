@@ -76,6 +76,10 @@ class SDKSystemRoot(object):
     def openstack_network_providers_service(self):
         return self._system_service.openstack_network_providers_service()
 
+    @property
+    def networks_service(self):
+        return self._system_service.networks_service()
+
     def connect(self, url, username, password, ca_file=None, insecure=True):
         conn = Connection(url=url, username=username,
                           password=password, insecure=insecure,

@@ -106,6 +106,11 @@ class Network(SDKSubEntity):
     def _get_parent_service(self, dc):
         return dc.service.networks_service()
 
+    def labels(self):
+        network_service = self.system.networks_service.network_service(
+            self.id)
+        return network_service.network_labels_service().list()
+
 
 class VnicProfile(SDKRootEntity):
 

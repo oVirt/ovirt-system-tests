@@ -235,7 +235,7 @@ class Vm(SDKRootEntity):
 
     @property
     def cluster(self):
-        cluster = clusterlib.Cluster(self._parent_sdk_system)
+        cluster = clusterlib.Cluster(self.system)
         cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster
 

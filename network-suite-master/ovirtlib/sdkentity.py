@@ -42,6 +42,7 @@ class SDKEntity(object):
     def __init__(self):
         self._service = None
         self._parent_service = None
+        self._parent_sdk_system = None
 
     @property
     def id(self):
@@ -50,6 +51,10 @@ class SDKEntity(object):
     @property
     def service(self):
         return self._service
+
+    @property
+    def system(self):
+        return self._parent_sdk_system
 
     def get_sdk_type(self):
         return self._service.get()
@@ -122,6 +127,7 @@ class SDKSubEntity(SDKEntity):
 
     def __init__(self, parent_sdk_entity):
         super(SDKSubEntity, self).__init__()
+        self._parent_sdk_system = parent_sdk_entity.system
         self._parent_sdk_entity = parent_sdk_entity
         self._parent_service = self._get_parent_service(parent_sdk_entity)
 

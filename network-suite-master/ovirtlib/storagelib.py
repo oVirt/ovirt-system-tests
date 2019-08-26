@@ -192,7 +192,7 @@ class StorageDomain(SDKRootEntity):
         )
 
     def create_disk(self, name):
-        disk = Disk(self._parent_sdk_system)
+        disk = Disk(self.system)
         disk.create(disk_name=name, sd_name=self.name)
         disk.wait_for_up_status()
         return disk

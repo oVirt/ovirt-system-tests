@@ -38,8 +38,7 @@ class OpenStackImageProviders(SDKRootEntity):
         self._create_sdk_entity(sdk_type)
 
     def is_provider_available(self, provider_name):
-        providers_service = \
-            self._parent_sdk_system.openstack_image_providers_service
+        providers_service = self.system.openstack_image_providers_service
         try:
             provider = next(provider for provider in providers_service.list()
                             if provider.name == provider_name)

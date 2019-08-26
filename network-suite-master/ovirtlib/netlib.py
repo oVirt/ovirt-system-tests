@@ -129,7 +129,7 @@ class VnicProfile(SDKRootEntity):
     def filter(self):
         sdk_network_filter = self.get_sdk_type().network_filter
         if sdk_network_filter:
-            network_filter = NetworkFilter(self._parent_sdk_system)
+            network_filter = NetworkFilter(self.system)
             network_filter.import_by_id(sdk_network_filter.id)
             return network_filter
         return None

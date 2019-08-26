@@ -115,12 +115,12 @@ class Cluster(SDKRootEntity):
         self._create_sdk_entity(sdk_type)
 
     def get_mac_pool(self):
-        mac_pool = MacPool(self._parent_sdk_system)
+        mac_pool = MacPool(self.system)
         mac_pool.import_by_id(self.get_sdk_type().mac_pool.id)
         return mac_pool
 
     def get_data_center(self):
-        dc = datacenterlib.DataCenter(self._parent_sdk_system)
+        dc = datacenterlib.DataCenter(self.system)
         dc.import_by_id(self.get_sdk_type().data_center.id)
         return dc
 
@@ -135,7 +135,7 @@ class Cluster(SDKRootEntity):
     def host_ids(self):
         return [
             sdk_host.id
-            for sdk_host in self._parent_sdk_system.hosts_service.list()
+            for sdk_host in self.system.hosts_service.list()
             if sdk_host.cluster.id == self.id
         ]
 

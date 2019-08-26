@@ -127,7 +127,7 @@ class Host(SDKRootEntity):
         self.wait_for_up_status()
 
     def get_cluster(self):
-        cluster = clusterlib.Cluster(self._parent_sdk_system)
+        cluster = clusterlib.Cluster(self.system)
         cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster
 
@@ -282,7 +282,7 @@ class Host(SDKRootEntity):
         return network_attachments_data
 
     def _get_nic_name(self, nic_id):
-        return (self._parent_sdk_system.hosts_service.host_service(self.id)
+        return (self.system.hosts_service.host_service(self.id)
                 .nics_service().nic_service(nic_id).get().name)
 
     def _get_network_by_id(self, network_id):

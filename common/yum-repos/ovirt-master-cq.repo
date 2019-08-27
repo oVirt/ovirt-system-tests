@@ -679,7 +679,8 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = libtomcrypt
+includepkgs = ansible
+	libtomcrypt
 	libtommath
 	nbdkit
 	nbdkit-plugin-python-common

@@ -2,11 +2,11 @@
  "he_appliance_password": "@VMPASS@",
  "he_admin_password": "@ENGINEPASS@",
  "he_domain_type": "glusterfs",
- "he_fqdn": "@HOSTEDENGINE@",
+ "he_fqdn": "@HOSTEDENGINE@.@DOMAIN@",
  "he_vm_mac_addr": "00:16:3e:24:d3:63",
  "he_default_gateway": "@GW@",
  "he_mgmt_network": "ovirtmgmt",
- "he_host_name": "@HOST0@",
+ "he_host_name": "@MYHOSTNAME@",
  "he_storage_domain_name": "HostedEngine",
  "he_storage_domain_path": "/engine",
  "he_storage_domain_addr": "@HOST1-IP@",
@@ -18,5 +18,9 @@
  "he_dns_addr": "@GW@",
  "he_vm_etc_hosts": true,
  "he_cluster": "Default",
- "he_memory_requirements_check_enabled": false
+ "he_mem_size_MB": "3171",
+ "he_memory_requirements_check_enabled": false,
+ "he_force_ip4": true,
+ "he_vcpus": "2"
+
 }

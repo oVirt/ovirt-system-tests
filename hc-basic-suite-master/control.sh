@@ -55,11 +55,6 @@ he_deploy() {
         "${SUITE}/exec_playbook.sh" \
         /root/exec_playbook.sh
 
-    lago copy-to-vm \
-        ${HOST}0 \
-        "${SUITE}/generate-hc-answerfile.sh" \
-        /root/generate-hc-answerfile.sh
-
     lago shell \
         ${HOST}0 \
         /root/exec_playbook.sh ${HOST}0 ${HOST}1 ${HOST}2

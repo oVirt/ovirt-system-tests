@@ -394,14 +394,14 @@ _TEST_LIST = [
     add_vm_blank,
     add_nic,
     add_disk,
-    snapshot_merge,
-    add_vm_template,
-    vm_run,
-    vm_migrate,
-    snapshot_live_merge,
-    hotplug_nic,
-    hotplug_disk,
-    he_vm_migrate
+    #snapshot_merge,
+    #add_vm_template,
+    #vm_run,
+    #vm_migrate,
+    #snapshot_live_merge,
+    #hotplug_nic,
+    #hotplug_disk,
+    #he_vm_migrate
 ]
 
 

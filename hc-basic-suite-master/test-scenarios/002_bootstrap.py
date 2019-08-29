@@ -231,6 +231,7 @@ def wait_hosts(prefix):
             raise RuntimeError('Host %s is in non responsive state' % api_host.name)
 
     api_hosts = hosts_service.list()
+    nt.assert_equals(len(api_hosts), 3)
     for api_host in api_hosts:
         testlib.assert_true_within(_host_is_up, timeout=15*60)
 

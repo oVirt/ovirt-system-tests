@@ -4,7 +4,10 @@ HOST2IP=$2
 HOST3IP=$3
 HOSTEDENGINE="hc-engine"
 DOMAIN=$(dnsdomainname)
+MYHOSTNAME=$(hostname | sed s/_/-/g)
 PLAYBOOK_PATH="/etc/ansible/roles/gluster.ansible/playbooks/hc-ansible-deployment"
+VMPASS=123456
+ENGINEPASS=123
 
 sed \
     -e "s,@HOST0@,${HOST1IP},g" \
@@ -21,7 +24,6 @@ MYADDR=$(\
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
     | awk -F/ '{print $1}'\
 )
-MYHOSTNAME=$(hostname | sed s/_/-/g)
 
 echo "${MYADDR} ${MYHOSTNAME}.${DOMAIN} ${MYHOSTNAME}" >> /etc/hosts
 HEGW=$(\
@@ -40,17 +42,9 @@ echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 ssh root@${HOST2IP} "echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts"
 ssh root@${HOST3IP} "echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts"
 
-OVAIMAGE=$(\
-    ls /usr/share/ovirt-engine-appliance/ovirt-engine-appliance-*.ova \
-    | tail -11\
-)
-VMPASS=123456
-ENGINEPASS=123
-
 sed \
     -e "s,@GW@,${HEGW},g" \
     -e "s,@ADDR@,${HEADDR},g" \
-    -e "s,@OVAIMAGE@,${OVAIMAGE},g" \
     -e "s,@VMPASS@,${VMPASS},g" \
     -e "s,@ENGINEPASS@,${ENGINEPASS},g" \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
@@ -58,7 +52,7 @@ sed \
     -e "s,@HOST1-IP@,${HOST1IP},g" \
     -e "s,@HOST2-IP@,${HOST2IP},g" \
     -e "s,@HOST3-IP@,${HOST3IP},g" \
-    -e "s,@HOST0@,${MYHOSTNAME},g" \
+    -e "s,@MYHOSTNAME@,${MYHOSTNAME},g" \
     < /root/ohc_he_gluster_vars.json.in \
     > ${PLAYBOOK_PATH}/ohc_he_gluster_vars.json
 

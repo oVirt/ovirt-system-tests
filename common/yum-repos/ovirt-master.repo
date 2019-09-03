@@ -171,6 +171,8 @@ includepkgs = 389-ds-base
 	libwsman1
 	lvm2
 	lvm2-libs
+	mesa-dri-drivers
+	mesa-filesystem
 	mesa-libEGL
 	mesa-libGL
 	mesa-libgbm
@@ -474,6 +476,7 @@ includepkgs = OpenIPMI-modalias
 	libyaml
 	lksctp-tools
 	lldpad
+	llvm-private
 	lm_sensors-libs
 	log4j
 	lsof
@@ -702,7 +705,8 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = libtomcrypt
+includepkgs = ansible
+	libtomcrypt
 	libtommath
 	nbdkit
 	nbdkit-plugin-python-common

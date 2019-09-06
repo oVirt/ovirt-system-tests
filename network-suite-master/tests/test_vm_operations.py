@@ -143,13 +143,9 @@ def test_iterators(running_vm_0, system):
         system, search='name = missing'))) == 0
 
 
-def test_modify_vnic(running_vm_0, system, ovirtmgmt_network, engine):
-    with netlib.create_vnic_profile(system,
-                                    'temporary', ovirtmgmt_network) as profile:
-        uuid = '4c9f6b27-87af-4ab2-b249-ddd97dde326f'
-        profile.custom_properties = [
-            netlib.CustomProperty('SecurityGroups', uuid)]
-
+def test_assign_network_filter(running_vm_0, system, ovirtmgmt_network):
+    with netlib.create_vnic_profile(system, 'temporary',
+                                    ovirtmgmt_network) as profile:
         network_filter = netlib.NetworkFilter(system)
         network_filter.import_by_name('allow-dhcp')
         profile.filter = network_filter
@@ -160,8 +156,6 @@ def test_modify_vnic(running_vm_0, system, ovirtmgmt_network, engine):
         try:
             vnic.vnic_profile = profile
             assert vnic.vnic_profile.name == 'temporary'
-            assert [uuid] == [
-                p.value for p in vnic.vnic_profile.custom_properties]
             assert vnic.vnic_profile.filter.name == 'allow-dhcp'
         finally:
             vnic.vnic_profile = original_profile

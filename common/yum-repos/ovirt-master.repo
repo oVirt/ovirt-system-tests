@@ -144,6 +144,7 @@ includepkgs = 389-ds-base
 	libsss_idmap
 	libsss_nss_idmap
 	libsss_sudo
+	libvirt-admin
 	libvirt-bash-completion
 	libvirt-client
 	libvirt-daemon
@@ -215,6 +216,8 @@ includepkgs = 389-ds-base
 	samba-common
 	samba-common-libs
 	scap-security-guide
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -358,6 +361,7 @@ includepkgs = OpenIPMI-modalias
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
+	iperf3
 	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils

@@ -114,8 +114,8 @@ def run_log_collector(prefix):
     result = engine.ssh(
         [
             'ovirt-log-collector',
-            '--no-hypervisors',
             '-vvv',
+            '--batch',
             '--conf-file=/root/ovirt-log-collector.conf',
         ],
     )

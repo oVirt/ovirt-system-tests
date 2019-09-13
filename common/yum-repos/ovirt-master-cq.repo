@@ -113,7 +113,6 @@ includepkgs = 389-ds-base
 	ipa-client
 	ipa-client-common
 	ipa-common
-	java-11-openjdk-headless
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
@@ -354,7 +353,6 @@ includepkgs = OpenIPMI-modalias
 	jackson
 	jakarta-commons-httpclient
 	jasper-libs
-	java-11-openjdk-headless
 	javamail
 	javapackages-tools
 	javassist

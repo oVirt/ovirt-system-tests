@@ -425,6 +425,7 @@ includepkgs = 389-ds-base
 	libwayland-client
 	libwayland-server
 	libwbclient
+	libwebp
 	libwsman1
 	libxcb
 	libxml2-python
@@ -550,6 +551,7 @@ includepkgs = 389-ds-base
 	python-cffi
 	python-configshell
 	python-dmidecode
+	python-docutils
 	python-enum34
 	python-ethtool
 	python-gssapi
@@ -568,6 +570,7 @@ includepkgs = 389-ds-base
 	python-netifaces
 	python-nss
 	python-paramiko
+	python-pillow
 	python-ply
 	python-psycopg2
 	python-pwquality
@@ -713,7 +716,6 @@ includepkgs = cockpit
 	dpdk
 	libssh
 	python-httplib2
-	python-lockfile
 	sshpass
 
 [epel-el7]
@@ -729,8 +731,7 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = ansible
-	libtomcrypt
+includepkgs = libtomcrypt
 	libtommath
 	python2-crypto
 	python2-pysocks

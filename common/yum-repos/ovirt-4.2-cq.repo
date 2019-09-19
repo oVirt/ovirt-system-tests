@@ -23,9 +23,9 @@ exclude = ovirt-imageio-common
 	ovirt-imageio-proxy
 	ovirt-imageio-proxy-setup
 
-[glusterfs-3.12-el7]
+[glusterfs-3.12-7.6-el7]
 name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.12/
+baseurl = http://mirror.centos.org/centos/7.6.1810/storage/x86_64/gluster-3.12/
 enabled = 1
 includepkgs = gdeploy
 	glusterfs
@@ -36,9 +36,9 @@ includepkgs = gdeploy
 	glusterfs-libs
 	glusterfs-rdma
 
-[centos-updates-el7]
+[centos-updates-7.6-el7]
 name = CentOS7 Updates
-baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
+baseurl = http://mirror.centos.org/centos/7.6.1810/updates/x86_64/
 enabled = 1
 includepkgs = 389-ds-base
 	389-ds-base-libs
@@ -214,9 +214,9 @@ includepkgs = 389-ds-base
 	tzdata-java
 	virt-v2v
 
-[centos-base-el7]
+[centos-base-7.6-el7]
 name = CentOS7 Base
-baseurl = http://mirror.centos.org/centos/7/os/x86_64/
+baseurl = http://mirror.centos.org/centos/7.6.1810/os/x86_64/
 enabled = 1
 includepkgs = OpenIPMI-modalias
 	PyYAML
@@ -622,9 +622,9 @@ includepkgs = OpenIPMI-modalias
 	yum-plugin-versionlock
 	yum-utils
 
-[centos-extras-el7]
+[centos-extras-7.6-el7]
 name = CentOS7 Extras
-baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
+baseurl = http://mirror.centos.org/centos/7.6.1810/extras/x86_64/
 enabled = 1
 exclude = libtomcrypt
 	libtommath
@@ -739,18 +739,18 @@ includepkgs = archaius-core
 	unboundid-ldapsdk
 	vhostmd
 
-[centos-ovirt-4.2-el7]
+[centos-ovirt-4.2-7.6-el7]
 name = CentOS-7 - oVirt 4.2
-baseurl = http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.2/
+baseurl = http://mirror.centos.org/centos/7.6.1810/virt/x86_64/ovirt-4.2/
 gpgcheck = 0
 enabled = 1
 exclude = ansible
 	ansible-doc
 includepkgs = novnc
 
-[centos-qemu-ev-release-el7]
+[centos-qemu-ev-release-7.6-el7]
 name = CentOS-7 - QEMU EV
-baseurl = http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+baseurl = http://mirror.centos.org/centos/7.6.1810/virt/x86_64/kvm-common/
 gpgcheck = 1
 enabled = 1
 gpgkey = https://git.centos.org/raw/rpms!centos-release-virt-common/56a0a05d06676fe220e61ab8e31927feeede1128/SOURCES!RPM-GPG-KEY-CentOS-SIG-Virtualization
@@ -759,9 +759,9 @@ includepkgs = libcacard
 	qemu-kvm-common-ev
 	qemu-kvm-ev
 
-[centos-opstools-release-el7]
+[centos-opstools-release-7.6-el7]
 name = CentOS-7 - OpsTools - released repo
-baseurl = http://mirror.centos.org/centos/7/opstools/x86_64
+baseurl = http://mirror.centos.org/centos/7.6.1810/opstools/x86_64
 enabled = 1
 includepkgs = collectd
 	collectd-disk
@@ -798,9 +798,9 @@ includepkgs = collectd
 	rubygem-tzinfo
 	rubygem-yajl-ruby
 
-[centos-sclo-rh-release-el7]
+[centos-sclo-rh-release-7.6-el7]
 name = CentOS-7 - SCLo rh
-baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
+baseurl = http://mirror.centos.org/centos/7.6.1810/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo

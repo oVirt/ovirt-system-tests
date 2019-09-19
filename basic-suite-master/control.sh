@@ -4,6 +4,50 @@ prep_suite () {
     render_jinja_templates
 }
 
+env_copy_config_file() {
+
+    cd "$PREFIX"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+       "$CLI" copy-to-vm "$vm" "$SUITE/vars/main.yml" "/tmp/vars_main.yml"
+    done
+}
+
+env_copy_repo_file() {
+
+    cd "$PREFIX"
+    ## ENGINE
+    local reposync_file="reposync-config-engine.repo"
+    local reqsubstr="engine"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [ -z "${vm##*$reqsubstr*}" ] ;then
+            "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
+        fi
+    done
+
+    ## HOST
+    local reposync_file="reposync-config-host.repo"
+    local reqsubstr="host"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [ -z "${vm##*$reqsubstr*}" ] ;then
+            "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
+        fi
+    done
+
+    cd -
+}
+
 run_suite () {
     cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     env_init \
@@ -13,7 +57,10 @@ run_suite () {
     put_host_image
     install_local_rpms
     env_start
+    env_copy_repo_file
+    env_copy_config_file
     env_status
+    cd "$OST_REPO_ROOT"
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
         echo "@@@ ERROR: Failed in deploy stage"
@@ -26,6 +73,7 @@ run_suite () {
     venv=$(mktemp -d)
     virtualenv --system-site-packages "$venv"
     source $venv/bin/activate
+    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     pip install -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
     export PYTHONPATH="${PYTHONPATH}:${venv}/lib/python2.7/site-packages"
 

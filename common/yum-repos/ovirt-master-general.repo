@@ -1,0 +1,12 @@
+[main]
+reposdir = /etc/reposync.repos.d
+max_connections = 50
+ip_resolve = 4
+gpgcheck = 0
+plugins = 1
+
+[test-el7]
+name = Test oVirt Master Nightly Statics
+baseurl = https://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
+enabled = 0
+max_connections = 10

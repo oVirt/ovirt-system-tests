@@ -54,7 +54,8 @@ def engine(fqdn, env, artifacts_path):
         )
         syncutil.sync(exec_func=_get_engine_api,
                       exec_func_args=(engine,),
-                      success_criteria=lambda api: isinstance(api, Connection))
+                      success_criteria=lambda api: isinstance(api, Connection),
+                      timeout=10*60)
         yield engine
 
 

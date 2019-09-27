@@ -107,6 +107,7 @@ includepkgs = NetworkManager-config-server
 	systemd-python
 	systemd-sysv
 	tuned
+	tzdata-java
 	virt-v2v
 
 [centos-base-el7]
@@ -662,7 +663,6 @@ includepkgs = 389-ds-base
 	tree
 	trousers
 	ttmkfdir
-	tzdata-java
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2

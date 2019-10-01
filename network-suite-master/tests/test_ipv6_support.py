@@ -34,6 +34,7 @@ from testlib import suite
 
 
 @suite.SKIP_SUITE_42
+@suite.XFAIL_SUITE_MASTER('TODO')
 def test_non_mgmt_display_network_over_ipv6(system, default_data_center,
                                             default_cluster, host_0_up,
                                             host0_eth1_ipv6, host0_eth2_ipv6,
@@ -80,6 +81,7 @@ def _try_spice_console_connect(vm):
         sock.close()
 
 
+@suite.XFAIL_SUITE_MASTER('iSCSI not yet working on RHEL8')
 def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
                                                default_cluster, host_0_up,
                                                engine_storage_ipv6, lun_id):
@@ -99,6 +101,7 @@ def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
                 vm.wait_for_powering_up_status()
 
 
+@suite.XFAIL_SUITE_MASTER('depends on https://gerrit.ovirt.org/#/c/103385/')
 def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
                                              default_cluster, host_0_up,
                                              engine_storage_ipv6):

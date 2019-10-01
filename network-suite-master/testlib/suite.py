@@ -30,6 +30,14 @@ SKIP_SUITE_42 = pytest.mark.skipif(SUITE_NAME.endswith('4.2'),
                                    reason='Not supported on 4.2 suite')
 
 
+def XFAIL_SUITE_MASTER(reason):
+    return pytest.mark.xfail(
+            condition=SUITE_NAME.endswith('master'),
+            reason=reason,
+            run=False
+            )
+
+
 @contextlib.contextmanager
 def collect_artifacts(env, artifacts_path, module_name):
     try:

@@ -767,7 +767,9 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = facter
+includepkgs = ansible
+	ansible-doc
+	facter
 	hiera
 	puppet
 	python-ordereddict

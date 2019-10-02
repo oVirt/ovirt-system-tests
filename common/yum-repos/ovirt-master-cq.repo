@@ -731,7 +731,8 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = libtomcrypt
+includepkgs = ansible
+	libtomcrypt
 	libtommath
 	python2-crypto
 	python2-pysocks

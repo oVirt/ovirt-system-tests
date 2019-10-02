@@ -735,7 +735,8 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = python-unittest2
+includepkgs = ansible
+	python-unittest2
 	python2-asn1crypto
 	python2-mimeparse
 	python2-pbr

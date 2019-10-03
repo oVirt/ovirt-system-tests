@@ -193,6 +193,11 @@ includepkgs = 389-ds-base
 	celt051
 	certmonger
 	checkpolicy
+	clevis
+	clevis-dracut
+	clevis-luks
+	clevis-systemd
+	coolkey
 	copy-jdk-configs
 	cryptsetup
 	cryptsetup-libs
@@ -222,12 +227,10 @@ includepkgs = 389-ds-base
 	dracut-config-rescue
 	dracut-fips
 	dracut-network
-	dwz
 	easymock2
 	elfutils
 	elfutils-libelf
 	elfutils-libs
-	emacs-filesystem
 	fcoe-utils
 	fence-agents-all
 	fence-agents-amt-ws
@@ -322,6 +325,7 @@ includepkgs = 389-ds-base
 	jdom
 	joda-convert
 	joda-time
+	jose
 	jsch
 	json-glib
 	jsr-311
@@ -379,9 +383,11 @@ includepkgs = 389-ds-base
 	libini_config
 	libipa_hbac
 	libiscsi
+	libjose
 	libjpeg-turbo
 	libldb
 	liblognorm
+	libluksmeta
 	libmodman
 	libnfsidmap
 	libnl
@@ -439,6 +445,7 @@ includepkgs = 389-ds-base
 	lm_sensors-libs
 	log4j
 	lsof
+	luksmeta
 	lvm2
 	lvm2-libs
 	lzop
@@ -480,10 +487,9 @@ includepkgs = 389-ds-base
 	oddjob
 	oddjob-mkhomedir
 	openldap-clients
+	opensc
 	openscap
-	openscap-containers
 	openscap-scanner
-	openscap-utils
 	openssl
 	openssl-libs
 	openwsman-python
@@ -491,8 +497,9 @@ includepkgs = 389-ds-base
 	osinfo-db
 	osinfo-db-tools
 	pam_pkcs11
-	patch
 	pciutils
+	pcsc-lite
+	pcsc-lite-ccid
 	pcsc-lite-libs
 	perl
 	perl-Archive-Tar
@@ -525,7 +532,6 @@ includepkgs = 389-ds-base
 	perl-Storable
 	perl-TermReadKey
 	perl-Text-ParseWords
-	perl-Thread-Queue
 	perl-Time-HiRes
 	perl-Time-Local
 	perl-constant
@@ -534,7 +540,6 @@ includepkgs = 389-ds-base
 	perl-macros
 	perl-parent
 	perl-podlators
-	perl-srpm-macros
 	perl-threads
 	perl-threads-shared
 	pexpect
@@ -579,7 +584,6 @@ includepkgs = 389-ds-base
 	python-qrcode-core
 	python-rtslib
 	python-setuptools
-	python-srpm-macros
 	python-sss-murmur
 	python-sssdconfig
 	python-suds
@@ -600,18 +604,11 @@ includepkgs = 389-ds-base
 	quota-nls
 	radvd
 	rdma-core
-	redhat-rpm-config
 	relaxngDatatype
 	resteasy-base-jaxrs
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
-	rpm
-	rpm-build
-	rpm-build-libs
-	rpm-libs
-	rpm-python
-	rpmdevtools
 	rsync
 	ruby
 	ruby-irb
@@ -631,7 +628,6 @@ includepkgs = 389-ds-base
 	scannotation
 	scap-security-guide
 	scl-utils
-	screen
 	scrub
 	seabios-bin
 	seavgabios-bin
@@ -661,7 +657,11 @@ includepkgs = 389-ds-base
 	tcp_wrappers
 	tcpdump
 	telnet
+	tmux
 	tomcat-servlet-3.0-api
+	tpm2-abrmd
+	tpm2-tools
+	tpm2-tss
 	tree
 	trousers
 	ttmkfdir
@@ -694,7 +694,6 @@ includepkgs = 389-ds-base
 	yajl
 	yum-plugin-versionlock
 	yum-utils
-	zip
 
 [centos-extras-el7]
 name = CentOS7 Extras

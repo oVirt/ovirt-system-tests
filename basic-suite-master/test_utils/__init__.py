@@ -23,9 +23,25 @@ import contextlib
 import functools
 import os
 import ovirtsdk4.types as types
+import random
 import uuid
 from ovirtlago import testlib
 from test_utils.constants import VM0_IP_HOST_PART
+
+
+@testlib.with_ovirt_api4
+def test_invocation_logger(api, test_id):
+    engine = api.system_service()
+    events = engine.events_service()
+    events.add(types.Event(
+        comment='delimiter for test function invocation in engine log',
+        custom_id=random.randrange(1, 2**31),
+        description='OST invoked: ' + test_id,
+        origin='OST-basic-suite',
+        severity=types.LogSeverity(
+            types.LogSeverity.NORMAL
+        )
+    ))
 
 
 def test_gen(tests, generator):

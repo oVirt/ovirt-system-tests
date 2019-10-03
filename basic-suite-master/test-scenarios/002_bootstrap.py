@@ -1890,4 +1890,5 @@ _TEST_LIST = [
 
 def test_gen():
     for t in test_utils.test_gen(_TEST_LIST, test_gen):
+        test_utils.test_invocation_logger(__name__ + '#' + t.description)
         yield t

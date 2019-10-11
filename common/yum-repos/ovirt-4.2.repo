@@ -116,7 +116,6 @@ includepkgs = 389-ds-base
 	libsss_nss_idmap
 	libsss_sudo
 	libvirt
-	libvirt-admin
 	libvirt-bash-completion
 	libvirt-client
 	libvirt-daemon
@@ -187,8 +186,6 @@ includepkgs = 389-ds-base
 	samba-client-libs
 	samba-common
 	samba-common-libs
-	selinux-policy
-	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -233,7 +230,6 @@ includepkgs = OpenIPMI-modalias
 	abrt-python
 	abrt-retrace-client
 	abrt-tui
-	aide
 	alsa-lib
 	ant
 	antlr-tool
@@ -328,7 +324,6 @@ includepkgs = OpenIPMI-modalias
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
-	iperf3
 	ipmitool
 	iptables-services
 	ipxe-roms-qemu
@@ -386,7 +381,6 @@ includepkgs = OpenIPMI-modalias
 	libblockdev-utils
 	libbytesize
 	libcgroup
-	libcgroup-tools
 	libcollection
 	libconfig
 	libdhash
@@ -477,7 +471,6 @@ includepkgs = OpenIPMI-modalias
 	oddjob-mkhomedir
 	opus
 	osinfo-db-tools
-	pam_pkcs11
 	pciutils
 	pcsc-lite-libs
 	perl-Archive-Tar
@@ -629,8 +622,7 @@ enabled = 1
 exclude = libtomcrypt
 	libtommath
 	python2-crypto
-includepkgs = dpdk
-	libssh
+includepkgs = libssh
 	python-httplib2
 	python-lockfile
 	sshpass
@@ -722,7 +714,6 @@ includepkgs = archaius-core
 	python-websockify
 	python2-babel
 	python2-cffi
-	python2-coverage
 	python2-cryptography
 	python2-extras
 	python2-fixtures
@@ -804,12 +795,7 @@ baseurl = http://vault.centos.org/7.6.1810/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-includepkgs = rh-postgresql10-postgresql
-	rh-postgresql10-postgresql-contrib
-	rh-postgresql10-postgresql-libs
-	rh-postgresql10-postgresql-server
-	rh-postgresql10-runtime
-	rh-postgresql95-postgresql
+includepkgs = rh-postgresql95-postgresql
 	rh-postgresql95-postgresql-contrib
 	rh-postgresql95-postgresql-libs
 	rh-postgresql95-postgresql-server

@@ -23,7 +23,7 @@ from nose import SkipTest
 
 from ovirtsdk.xml import params
 
-from ost_utils import testlib
+from ovirtlago import testlib
 
 
 # TODO: remove once lago can gracefully handle on-demand prefixes

@@ -52,6 +52,7 @@ def engine(fqdn, env, artifacts_path):
                 '--accept-defaults',
             ]
         )
+        _exec_engine_config(engine, 'VdsmUseNmstate', 'true')
         syncutil.sync(exec_func=_get_engine_api,
                       exec_func_args=(engine,),
                       success_criteria=lambda api: isinstance(api, Connection),
@@ -64,6 +65,21 @@ def _get_engine_api(engine):
         return engine.get_api_v4()
     except Exception:
         return None
+
+
+def _exec_engine_config(engine, key, value):
+    result = engine.ssh(
+        [
+            'engine-config',
+            '--set',
+            '{0}={1}'.format(key, value),
+        ],
+    )
+    assert result.code == 0, (
+        'setting {0}:{1} via engine-config failed with {2}'.format(
+            key, value, result.code
+        )
+    )
 
 
 @pytest.fixture(scope='function', autouse=True)

@@ -17,7 +17,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import re
-import time
 
 import pytest
 
@@ -70,9 +69,6 @@ def host_in_ovs_cluster(
 
 def _wait_for_host_install(host):
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
-    # TODO: There's currently a NPE (bz#1514853) in Engine's
-    # scheduling logic (CPU usage). Once it is resolved, remove this
-    time.sleep(20)
 
 
 @pytest.fixture(scope='session', autouse=True)

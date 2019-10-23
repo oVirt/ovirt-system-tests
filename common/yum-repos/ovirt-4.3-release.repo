@@ -51,8 +51,16 @@ baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
 includepkgs = NetworkManager-config-server
+	device-mapper
+	device-mapper-event
+	device-mapper-event-libs
+	device-mapper-libs
+	dnsmasq
 	firewalld
 	firewalld-filesystem
+	ipa-client
+	ipa-client-common
+	ipa-common
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
@@ -88,10 +96,14 @@ includepkgs = NetworkManager-config-server
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	lvm2
+	lvm2-libs
 	pango
 	python-firewall
 	python-libguestfs
 	python-syspurpose
+	python2-ipaclient
+	python2-ipalib
 	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
@@ -200,10 +212,6 @@ includepkgs = 389-ds-base
 	cyrus-sasl-scram
 	dejavu-fonts-common
 	dejavu-sans-fonts
-	device-mapper
-	device-mapper-event
-	device-mapper-event-libs
-	device-mapper-libs
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
@@ -211,7 +219,6 @@ includepkgs = 389-ds-base
 	dhcp-common
 	dhcp-libs
 	dmidecode
-	dnsmasq
 	dom4j
 	dosfstools
 	dracut
@@ -297,9 +304,6 @@ includepkgs = 389-ds-base
 	httpcomponents-core
 	httpd
 	httpd-tools
-	ipa-client
-	ipa-client-common
-	ipa-common
 	iperf3
 	ipmitool
 	ipxe-roms-qemu
@@ -436,8 +440,6 @@ includepkgs = 389-ds-base
 	lm_sensors-libs
 	log4j
 	lsof
-	lvm2
-	lvm2-libs
 	lzop
 	m2crypto
 	mailcap
@@ -586,8 +588,6 @@ includepkgs = 389-ds-base
 	python-webob
 	python-yubico
 	python2-futures
-	python2-ipaclient
-	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32

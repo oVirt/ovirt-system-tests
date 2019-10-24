@@ -104,6 +104,7 @@ includepkgs = NetworkManager-config-server
 	lvm2
 	lvm2-libs
 	pango
+	patch
 	python-firewall
 	python-libguestfs
 	python-syspurpose
@@ -497,7 +498,6 @@ includepkgs = 389-ds-base
 	osinfo-db
 	osinfo-db-tools
 	pam_pkcs11
-	patch
 	pciutils
 	pcsc-lite-libs
 	perl

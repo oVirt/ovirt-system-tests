@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 from contextlib import contextmanager
+import time
 
 import pytest
 
@@ -125,6 +126,9 @@ def _setup_vnic_profile(vnic, profile):
     try:
         yield
     finally:
+        # ensure that the guest OS has enough time to initialize the vNIC,
+        # before the request to hotunplug is sent
+        time.sleep(2)
         _update_vnic_profile(vnic, original_profile)
 
 

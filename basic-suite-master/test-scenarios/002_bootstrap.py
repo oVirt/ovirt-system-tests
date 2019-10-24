@@ -1810,19 +1810,23 @@ def add_instance_type(api):
         )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_event(api):
-    event_params = params.Event(
-        description='ovirt-system-tests description',
-        custom_id=int('01234567890'),
-        severity='NORMAL',
-        origin='ovirt-system-tests',
-        cluster=params.Cluster(
-            name=CLUSTER_NAME,
-        ),
+    events_service = api.system_service().events_service()
+    nt.assert_true(
+        # Add a new event to the system
+        events_service.add(
+            types.Event(
+                description='ovirt-system-tests description',
+                custom_id=int('01234567890'),
+                severity=types.LogSeverity.NORMAL,
+                origin='ovirt-system-tests',
+                cluster=types.Cluster(
+                    name=CLUSTER_NAME,
+                )
+            ),
+        )
     )
-
-    nt.assert_true(api.events.add(event_params))
 
 
 @testlib.with_ovirt_prefix

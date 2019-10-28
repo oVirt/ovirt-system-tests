@@ -40,6 +40,7 @@ VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM_WITH_INTERFACE = 'vm-with-iface'
 
+
 @testlib.with_ovirt_prefix
 def verify_all_hosts(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
@@ -51,46 +52,63 @@ def verify_all_hosts(prefix):
         timeout=constants.ADD_HOST_TIMEOUT
     )
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm_blank(api):
-    vm_memory = 256 * MB
-    vm_params = params.VM(
+
+    # Get the vms service
+    vms_service=api.system_service().vms_service()
+
+    #Create VM from blank template
+    vm_memory=256*MB
+    vm=types.Vm(
+        name=VM0_NAME,
         memory=vm_memory,
-        os=params.OperatingSystem(
-            type_='other_linux',
-            boot=[params.Boot(dev=types.BootDevice.HD),
-                  params.Boot(dev=types.BootDevice.NETWORK)
-                  ],
+        type=types.VmType.SERVER,
+        os=types.OperatingSystem(
+            type='other_linux',
+            boot=types.Boot(
+                devices=[types.BootDevice.HD, types.BootDevice.NETWORK]
+            ),
         ),
-        type_='server',
-        high_availability=params.HighAvailability(
-            enabled=False,
+        high_availability=types.HighAvailability(
+            enabled=False
         ),
-        cluster=params.Cluster(
-            name=TEST_CLUSTER,
+        cluster=types.Cluster(
+            name=TEST_CLUSTER
         ),
-        template=params.Template(
-            name=TEMPLATE_BLANK,
+        template=types.Template(
+            name=TEMPLATE_BLANK
         ),
-        display=params.Display(
+        display=types.Display(
             smartcard_enabled=True,
             keyboard_layout='en-us',
             file_transfer_enabled=True,
-            copy_paste_enabled=True,
+            copy_paste_enabled=True
         ),
-        memory_policy=params.MemoryPolicy(
-            guaranteed=vm_memory / 2,
-        ),
-        name=VM0_NAME
+        memory_policy=types.MemoryPolicy(
+            guaranteed=vm_memory//2
+        )
     )
-    api.vms.add(vm_params)
+
+    #Add this VM
+    vm=vms_service.add(vm)
+
+    #Check that VM was added
+    vm_service=vms_service.vm_service(vm.id)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'down',
+        lambda: vm_service.get().status == types.VmStatus.DOWN
     )
-    vm_params.name = VM1_NAME
-    api.vms.add(vm_params)
+
+    #Add another VM
+    vm.id=None
+    vm.name=VM1_NAME
+    vm.initialization=None
+    vm=vms_service.add(vm)
+
+    #Check that the second VM was added
+    vm_service=vms_service.vm_service(vm.id)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM1_NAME).status.state == 'down',
+        lambda: vm_service.get().status == types.VmStatus.DOWN
     )
 
 

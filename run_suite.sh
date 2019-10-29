@@ -333,6 +333,8 @@ env_cleanup() {
         logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
         env_libvirt_cleanup "${SUITE##*/}" "$uid"
     fi
+    export LIBGUESTFS_PATH=/tmp/appliance
+    rm -rf "$LIBGUESTFS_PATH"
     restore_package_manager_config
     logger.success "Cleanup done"
 }

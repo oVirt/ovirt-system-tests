@@ -427,6 +427,34 @@ restore_package_manager_config() {
     rm "$path_to_config_bak"
 }
 
+install_local_rpms_without_reposync() {
+    local pkg_manager os path_to_config
+
+    [[ ${#RPMS_TO_INSTALL[@]} -le 0 ]] && return
+
+    pkg_manager="$(get_package_manager)"
+    path_to_config="$(get_package_manager_config)"
+
+    os=$(rpm -E %{dist})
+    os=${os#.}
+    os=${os%.*}
+
+    backup_package_manager_config
+
+    cat > "$path_to_config" <<EOF
+[internal_repo]
+name=Lago's internal repo
+baseurl="file://${PREFIX}/current/internal_repo/default/${os}"
+enabled=1
+gpgcheck=0
+skip_if_unavailable=1
+EOF
+    cat "$SUITE/reposync-config-sdk4.repo"  >> "$path_to_config"
+    $pkg_manager -y install "${RPMS_TO_INSTALL[@]}" || return 1
+
+    return 0
+}
+
 install_local_rpms() {
     local pkg_manager os path_to_config
 

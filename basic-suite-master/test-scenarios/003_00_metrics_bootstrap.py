@@ -111,6 +111,8 @@ def run_log_collector(prefix):
         [
             'ovirt-log-collector',
             '--verbose',
+            '--batch',
+            '--no-hypervisors',
             '--conf-file=/root/ovirt-log-collector.conf',
         ],
     )

@@ -6,7 +6,14 @@ gpgcheck = 0
 plugins = 1
 
 [test-el7]
-name = Test oVirt Master Nightly Statics
+name = Test oVirt Master Nightly Statics 7
 baseurl = https://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
-enabled = 0
+enabled = 1
 max_connections = 10
+
+[test-el8]
+name = Test oVirt Master Nightly Statics 8
+baseurl = https://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el8/
+enabled = 1
+max_connections = 10
+

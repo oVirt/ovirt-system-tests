@@ -26,6 +26,7 @@ from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import syncutil
 from ovirtlib.sdkentity import SDKRootEntity
+from ovirtlib.sdkentity import SDKSubEntity
 
 HOST_TIMEOUT_SHORT = 5 * 60
 HOST_TIMEOUT_LONG = 15 * 60
@@ -217,6 +218,9 @@ class Host(SDKRootEntity):
     def sync_all_networks(self):
         self.service.sync_all_networks()
 
+    def copy_networks_from(self, source_host):
+        self.service.copy_host_networks(source_host=source_host.get_sdk_type())
+
     def wait_for_up_status(self, timeout=HOST_TIMEOUT_SHORT):
         syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
                       exec_func_args=(),
@@ -320,6 +324,27 @@ class Host(SDKRootEntity):
     def refresh_capabilities(self):
         self.service.refresh()
 
+    def compare_nics_except_mgmt(self, other, comparator):
+        self_nics = self._get_sorted_nics_without_mgmt()
+        other_nics = other._get_sorted_nics_without_mgmt()
+        return all(comparator(nic0, nic1)
+                   for (nic0, nic1) in zip(self_nics, other_nics))
+
+    def _get_sorted_nics_without_mgmt(self):
+        mgmt_net_id = self.get_mgmt_network().id
+        nics = filter(
+            lambda nic: nic.get_network_id() != mgmt_net_id, self.nics()
+        )
+        return sorted(nics, key=lambda x: (x.name, x.get_network_id()))
+
+    def nics(self):
+        nics = []
+        for sdk_nic in self._service.nics_service().list():
+            nic = HostNic(self)
+            nic.import_by_id(sdk_nic.id)
+            nics.append(nic)
+        return nics
+
 
 @contextlib.contextmanager
 def setup_networks(host, attach_data, remove_other_networks=True,
@@ -334,3 +359,52 @@ def setup_networks(host, attach_data, remove_other_networks=True,
     finally:
         networks = [attach_datum.network for attach_datum in attach_data]
         host.remove_networks(networks)
+
+
+class HostNic(SDKSubEntity):
+
+    def create(self):
+        pass
+
+    def _get_parent_service(self, host):
+        return host.service.nics_service()
+
+    @property
+    def name(self):
+        return self.get_sdk_type().name
+
+    @property
+    def boot_protocol(self):
+        return self.get_sdk_type().boot_protocol
+
+    @property
+    def ipv6_boot_protocol(self):
+        return self.get_sdk_type().ipv6_boot_protocol
+
+    def boot_protocol_equals(self, other):
+        return self.boot_protocol == other.boot_protocol
+
+    def ipv6_boot_protocol_equals(self, other):
+        return self.ipv6_boot_protocol == other.ipv6_boot_protocol
+
+    def is_static_ipv4(self):
+        return self.boot_protocol == types.BootProtocol.STATIC
+
+    def is_disabled_ipv4(self):
+        return self.boot_protocol == types.BootProtocol.NONE
+
+    def is_static_ipv6(self):
+        return self.ipv6_boot_protocol == types.BootProtocol.STATIC
+
+    def is_disabled_ipv6(self):
+        return self.ipv6_boot_protocol == types.BootProtocol.NONE
+
+    def is_same_network_attachment(self, other):
+        return self.get_network_id() == other.get_network_id()
+
+    def is_network_attached(self):
+        return self.get_network_id() is not None
+
+    def get_network_id(self):
+        network = self.get_sdk_type().network
+        return network.id if network else None

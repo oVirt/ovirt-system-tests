@@ -483,6 +483,50 @@ EOF
     return 0
 }
 
+env_copy_config_file() {
+
+    cd "$PREFIX"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+       "$CLI" copy-to-vm "$vm" "$SUITE/vars/main.yml" "/tmp/vars_main.yml"
+    done
+    cd -
+}
+
+env_copy_repo_file() {
+
+    cd "$PREFIX"
+    ## ENGINE
+    local reposync_file="reposync-config-engine.repo"
+    local reqsubstr="engine"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [ -z "${vm##*$reqsubstr*}" ] ;then
+            "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
+        fi
+    done
+
+    ## HOST
+    local reposync_file="reposync-config-host.repo"
+    local reqsubstr="host"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [ -z "${vm##*$reqsubstr*}" ] ;then
+            "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
+        fi
+    done
+
+    cd -
+}
 
 options=$( \
     getopt \

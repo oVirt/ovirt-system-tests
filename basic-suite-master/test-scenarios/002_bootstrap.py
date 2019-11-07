@@ -256,19 +256,22 @@ def remove_default_cluster(api):
         cl_service.remove()
 
 
-@testlib.with_ovirt_prefix
-def add_dc_quota(prefix):
-#FIXME - add API_v4 add_dc_quota_4() function
-    api = prefix.virt_env.engine_vm().get_api()
-    dc = api.datacenters.get(name=DC_NAME)
-    quota = params.Quota(
-        name=DC_QUOTA_NAME,
-        description='DC-QUOTA-DESCRIPTION',
-        data_center=dc,
-        cluster_soft_limit_pct=99,
+@testlib.with_ovirt_api4
+def add_dc_quota(api):
+    datacenters_service = api.system_service().data_centers_service()
+    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
+    datacenter_service = datacenters_service.data_center_service(datacenter.id)
+    quotas_service = datacenter_service.quotas_service()
+    nt.assert_true(
+        quotas_service.add(
+            types.Quota (
+                name=DC_QUOTA_NAME,
+                description='DC-QUOTA-DESCRIPTION',
+                data_center=datacenter,
+                cluster_soft_limit_pct=99
+            )
+        )
     )
-    nt.assert_true(dc.quotas.add(quota))
-
 
 @testlib.with_ovirt_api4
 def add_cluster(api):

@@ -23,7 +23,8 @@ from ovirtlib import clusterlib
 from ovirtlib import netlib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
-
+from ovirtlib.sdkentity import EntityCreationError
+from testlib import suite
 
 MAC_POOL = 'mac_pool'
 MAC_ADDR_1 = '00:1a:4a:16:01:50'
@@ -36,6 +37,7 @@ MAC_POOL_RANGE = clusterlib.MacPoolRange(
 MAC_POOL_RANGE_1 = clusterlib.MacPoolRange(
     start=MAC_ADDR_3, end=MAC_ADDR_4
 )
+OVERLAP_REGEX = r".*MAC pool cannot contain ranges which overlap.*"
 
 NIC_NAME_1 = 'nic001'
 NIC_NAME_2 = 'nic002'
@@ -171,6 +173,40 @@ def test_mac_pools_in_different_clusters_dont_overlap(
                 vm_1.create_vnic(
                     NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1
                 )
+
+
+@suite.SKIP_SUITE_42
+@suite.SKIP_SUITE_43
+def test_add_overlapping_mac_pool_same_cluster(system, cluster_0,
+                                               default_cluster):
+    POOL_0 = 'mac_pool_0'
+    POOL_1 = 'mac_pool_1'
+    default_cluster_mac_pool = clusterlib.mac_pool(
+        system, default_cluster, POOL_0, (MAC_POOL_RANGE,)
+    )
+    default_cluster_mac_pool_1 = clusterlib.mac_pool(
+        system, default_cluster, POOL_1, (MAC_POOL_RANGE,)
+    )
+    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX):
+        with default_cluster_mac_pool, default_cluster_mac_pool_1:
+            pass
+
+
+@suite.SKIP_SUITE_42
+@suite.SKIP_SUITE_43
+def test_add_overlapping_mac_pool_other_cluster(system, cluster_0,
+                                                default_cluster):
+    POOL_0 = 'mac_pool_0'
+    POOL_1 = 'mac_pool_1'
+    default_cluster_mac_pool = clusterlib.mac_pool(
+        system, default_cluster, POOL_0, (MAC_POOL_RANGE,)
+    )
+    cluster_0_mac_pool = clusterlib.mac_pool(
+        system, cluster_0, POOL_1, (MAC_POOL_RANGE,)
+    )
+    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX):
+        with default_cluster_mac_pool, cluster_0_mac_pool:
+            pass
 
 
 def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(

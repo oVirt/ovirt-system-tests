@@ -28,8 +28,13 @@ from ovirtlib import virtlib
 MAC_POOL = 'mac_pool'
 MAC_ADDR_1 = '00:1a:4a:16:01:50'
 MAC_ADDR_2 = '00:1a:4a:16:01:51'
+MAC_ADDR_3 = '00:1a:4a:16:01:60'
+MAC_ADDR_4 = '00:1a:4a:16:01:61'
 MAC_POOL_RANGE = clusterlib.MacPoolRange(
     start=MAC_ADDR_1, end=MAC_ADDR_2
+)
+MAC_POOL_RANGE_1 = clusterlib.MacPoolRange(
+    start=MAC_ADDR_3, end=MAC_ADDR_4
 )
 
 NIC_NAME_1 = 'nic001'
@@ -144,13 +149,13 @@ def test_mac_pools_in_different_clusters_dont_overlap(
     # range, i.e. it is possible to assign addresses outside the range to
     # vNics (this causes the static address to be added to the pool if it is
     # not already present). However, specifying ranges is required for MAC pool
-    # initialization, and as such, arbitrary ranges are used.
+    # initialization, and as such, non-overlapping ranges are used.
 
     default_cluster_mac_pool = clusterlib.mac_pool(
         system, default_cluster, MAC_POOL_0, (MAC_POOL_RANGE,)
     )
     cluster_0_mac_pool = clusterlib.mac_pool(
-        system, cluster_0, MAC_POOL_1, (MAC_POOL_RANGE,)
+        system, cluster_0, MAC_POOL_1, (MAC_POOL_RANGE_1,)
     )
     with default_cluster_mac_pool, cluster_0_mac_pool:
         with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):

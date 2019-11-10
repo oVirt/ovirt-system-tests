@@ -11,8 +11,10 @@ run_suite () {
         "$SUITE/LagoInitFile"
     env_repo_setup
     put_host_image
-    install_local_rpms
+    install_local_rpms_without_reposync
     env_start
+    env_copy_repo_file
+    env_copy_config_file
     env_status
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"

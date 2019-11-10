@@ -1,0 +1,16 @@
+[main]
+reposdir = /etc/reposync.repos.d
+max_connections = 50
+ip_resolve = 4
+gpgcheck = 0
+plugins = 1
+
+[ovirt-4.3-tested-el7]
+name = oVirt 4.3 Tested
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.3/rpm/el7/
+enabled = 1
+max_connections = 10
+proxy = _none_
+cost = 100
+gpgcheck = 0
+

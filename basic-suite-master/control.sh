@@ -5,17 +5,7 @@ prep_suite () {
 }
 
 run_suite () {
-    cd /tmp
-    /var/lib/ci_toolbox/safe_download.sh \
-        -s ec284cf371566983084a5e0427ed4f7ee48bd981 \
-        appliance.lock \
-        http://download.libguestfs.org/binaries/appliance/appliance-1.38.0.tar.xz \
-        /var/lib/lago/appliance-1.38.0.tar.xz
-
-    tar xvf /var/lib/lago/appliance-1.38.0.tar.xz
-    cd -
-    export LIBGUESTFS_PATH=/tmp/appliance
-
+    install_libguestfs
     cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     env_init \
         "$1" \

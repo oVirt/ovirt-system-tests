@@ -564,7 +564,6 @@ includepkgs = 389-ds-base
 	perl-podlators
 	perl-threads
 	perl-threads-shared
-	pexpect
 	pixman
 	policycoreutils
 	policycoreutils-python
@@ -759,10 +758,10 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = ansible
-	libtomcrypt
+includepkgs = libtomcrypt
 	libtommath
 	python2-crypto
+	python2-ptyprocess
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c

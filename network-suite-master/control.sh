@@ -17,7 +17,7 @@ install_dependencies() {
     yum install -y ansible
 
     # dependency of ansible's os_* modules
-    pip install openstacksdk==0.27
+    pip install openstacksdk==0.37
 }
 
 run_static_analysis() {

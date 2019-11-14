@@ -568,13 +568,10 @@ def resize_and_refresh_storage_domain(prefix):
 
 @testlib.with_ovirt_prefix
 def add_glance_images(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-
     vt = utils.VectorThread(
         [
-            functools.partial(import_non_template_from_glance, glance_provider),
-            functools.partial(import_template_from_glance, glance_provider),
+            functools.partial(import_non_template_from_glance, prefix),
+            functools.partial(import_template_from_glance, prefix),
         ],
     )
     vt.start_all()
@@ -616,29 +613,32 @@ def add_iso_storage_domain(prefix):
 def add_templates_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
 
-def generic_import_from_glance(glance_provider, as_template=False,
+def generic_import_from_glance(prefix=None, as_template=False,
                                dest_storage_domain=MASTER_SD_TYPE,
                                dest_cluster=CLUSTER_NAME):
-    target_image = glance_provider.images.get(name=GUEST_IMAGE_NAME)
-    import_action = params.Action(
-        storage_domain=params.StorageDomain(
-            name=dest_storage_domain,
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    storage_domains_service = api.system_service().storage_domains_service()
+    glance_storage_domain = storage_domains_service.list(search='name={}'.format(SD_GLANCE_NAME))[0]
+    images = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().list()
+    image = [x for x in images if x.name == GUEST_IMAGE_NAME][0]
+    image_service = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().image_service(image.id)
+    result = image_service.import_(
+        storage_domain=types.StorageDomain(
+           name=dest_storage_domain,
         ),
-        cluster=params.Cluster(
-            name=dest_cluster,
-        ),
-        import_as_template=as_template,
-        disk=params.Disk(
-            name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
-        ),
-        template=params.Template(
+        template=types.Template(
             name=TEMPLATE_GUEST,
         ),
+        cluster=types.Cluster(
+           name=dest_cluster,
+        ),
+        import_as_template=as_template,
+        disk=types.Disk(
+            name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
+        ),
     )
-
-    nt.assert_true(
-        target_image.import_image(import_action)
-    )
+    disk = api.system_service().disks_service().list(search='name={}'.format(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME))[0]
+    nt.assert_true(disk)
 
 
 @testlib.with_ovirt_api4
@@ -726,16 +726,16 @@ def check_glance_connectivity(engine):
     return avail
 
 
-def import_non_template_from_glance(glance_provider):
+def import_non_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
-    generic_import_from_glance(glance_provider)
+    generic_import_from_glance(prefix=prefix_param)
 
 
-def import_template_from_glance(glance_provider):
+def import_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(glance_provider, as_template=True)
+        raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )    
+    generic_import_from_glance(prefix=prefix_param, as_template=True)
 
 
 @testlib.with_ovirt_api4

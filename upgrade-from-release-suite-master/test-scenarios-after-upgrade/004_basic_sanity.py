@@ -24,6 +24,9 @@ import nose.tools as nt
 import ovirtsdk4.types as types
 
 import test_utils
+from test_utils import versioning
+from test_utils import host_status_utils
+from test_utils import constants
 import time
 
 MB = 2 ** 20
@@ -36,6 +39,17 @@ TEMPLATE_BLANK = 'Blank'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM_WITH_INTERFACE = 'vm-with-iface'
+
+@testlib.with_ovirt_prefix
+def verify_all_hosts(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    hosts_service = api.system_service().hosts_service()
+    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
+
+    testlib.assert_true_within(
+        lambda: host_status_utils._all_hosts_up(hosts_service, total_hosts),
+        timeout=constants.ADD_HOST_TIMEOUT
+    )
 
 @testlib.with_ovirt_api
 def add_vm_blank(api):
@@ -243,17 +257,9 @@ def upgrade_hosts(api):
             # VDS_MAINTENANCE(15)
             host_service.upgrade(reboot=True)
 
-    for host in host_list:
-        host_service = hosts.host_service(host.id)
-        _wait_host_status(host_service, types.HostStatus.UP)
-
+    verify_all_hosts
     _wait_datacenter_up(api)
 
-
-def _wait_host_status(host, status):
-    testlib.assert_true_within_long(
-        lambda: host.get().status == status
-    )
 
 
 def _wait_datacenter_up(api):

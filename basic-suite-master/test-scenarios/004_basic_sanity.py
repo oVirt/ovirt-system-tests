@@ -1015,15 +1015,16 @@ def next_run_unplug_cpu(api):
 
 @testlib.with_ovirt_prefix
 def hotplug_nic(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    nic2_params = params.NIC(
-        name='eth1',
-        network=params.Network(
-            name=VM_NETWORK,
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+    nics_service = vms_service.vm_service(vm.id).nics_service()
+    nics_service.add(
+        types.Nic(
+            name='eth1',
+            interface=types.NicInterface.VIRTIO
         ),
-        interface='virtio',
     )
-    api.vms.get(VM0_NAME).nics.add(nic2_params)
     assert_vm0_is_alive(prefix)
 
 

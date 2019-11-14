@@ -34,6 +34,8 @@ import ovirtsdk4.types as types
 
 import test_utils
 from test_utils import versioning
+from test_utils import host_status_utils
+from test_utils import constants
 
 import uuid
 
@@ -76,6 +78,17 @@ SNAPSHOT_FOR_BACKUP_VM = 'backup_snapshot'
 SNAPSHOT_DESC_MEM = 'memory_snap'
 
 VDSM_LOG = '/var/log/vdsm/vdsm.log'
+
+@testlib.with_ovirt_prefix
+def verify_add_all_hosts(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    hosts_service = api.system_service().hosts_service()
+    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
+
+    testlib.assert_true_within(
+        lambda: host_status_utils._all_hosts_up(hosts_service, total_hosts),
+        timeout=constants.ADD_HOST_TIMEOUT
+    )
 
 
 def _ping(ovirt_prefix, destination):
@@ -1184,6 +1197,7 @@ def ovf_import(api):
 
 
 _TEST_LIST = [
+    verify_add_all_hosts,
     verify_glance_import,
     reconstruct_master_domain,
     add_vm1_from_template,

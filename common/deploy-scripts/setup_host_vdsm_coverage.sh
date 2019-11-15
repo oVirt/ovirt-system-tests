@@ -3,13 +3,19 @@
 # Need redundancy here - shebang line is ignored when ran through ssh
 set -ex
 
-if grep -q 'Fedora' /etc/redhat-release; then
+if [[ -x /usr/bin/dnf ]]; then
     DNF=dnf
 else
     DNF=yum
 fi
 
-$DNF install -y python-coverage
+if grep -qe '\(Red Hat\|CentOS\).*release 7' /etc/redhat-release; then
+    PYTHON_VERSION=""
+else
+    PYTHON_VERSION="3"
+fi
+
+$DNF install -y python${PYTHON_VERSION}-coverage
 
 VDSM_CONF_DIR="/etc/vdsm/vdsm.conf.d"
 VDSM_COVERAGE_CONF="${VDSM_CONF_DIR}/coverage.conf"

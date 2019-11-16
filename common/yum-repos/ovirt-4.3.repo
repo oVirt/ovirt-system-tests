@@ -767,15 +767,14 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = ansible
-	ansible-doc
-	facter
+includepkgs = facter
 	hiera
 	puppet
 	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
 	python2-mimeparse
+	python2-passlib
 	python2-pbr
 	python2-pysocks
 	python2-qpid-proton

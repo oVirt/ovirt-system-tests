@@ -761,7 +761,7 @@ max_connections = 5
 includepkgs = libtomcrypt
 	libtommath
 	python2-crypto
-	python2-ptyprocess
+	python2-passlib
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c

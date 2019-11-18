@@ -1,4 +1,5 @@
 templates:
   engine: el7.6-base-5
-  host: el7.6-base-5
+  host: el8-base-1
 hostCount: 2
+create_local_repo: global_add_local_repo_no_ext_access.sh

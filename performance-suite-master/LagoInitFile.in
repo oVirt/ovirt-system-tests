@@ -47,8 +47,26 @@ domains:
           - /root/fluentd
           - /var/opt/rh/rh-postgresql95/lib/pgsql/data/pg_log
           - /var/cache/ovirt-engine
-
-
+          - /var/log
+          - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
+          - /var/lib/ovirt-engine/setup/answers
+          - /etc/ovirt-engine
+          - /etc/ovirt-engine-dwh
+          - /etc/ovirt-engine-metrics
+          - /etc/ovirt-engine-setup.conf.d
+          - /etc/ovirt-engine-setup.env.d
+          - /etc/ovirt-host-deploy.conf.d
+          - /etc/ovirt-imageio-proxy
+          - /etc/ovirt-provider-ovn
+          - /etc/ovirt-vmconsole
+          - /etc/ovirt-web-ui
+          - /etc/dnf
+          - /etc/firewalld
+          - /etc/httpd
+          - /etc/sysconfig
+          - /etc/yum
+          - /etc/resolv.conf
+          - /etc/yum.repos.d
 {% if not env.OST_USE_VDSMFAKE is defined %}
 {%- for i in range( env.OST_HOST_COUNT|default(hostCount)|int ) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
@@ -73,6 +91,10 @@ domains:
         {% if not loop.first -%}
         - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_1st_host_el7.sh
         {%- endif %}
+    artifacts:
+      - /etc/resolv.conf
+      - /var/log
+      - /etc/yum.repos.d
 {%- endfor %}
 {% endif %}
 nets:

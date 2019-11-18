@@ -67,8 +67,6 @@ domains:
       - /etc/sysconfig
       - /etc/yum
       - /etc/resolv.conf
-      - /tmp/ovirt*
-      - /tmp/otopi*
       - /etc/yum.repos.d
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:

@@ -49,6 +49,7 @@ setup_ipv6() {
 }
 
 run_suite(){
+    install_libguestfs
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     declare failed=false
@@ -60,8 +61,17 @@ run_suite(){
         --reposync-yum-config ${suite}/reposync-he.repo
     cd -
     env_repo_setup
-    install_local_rpms
+    if [[ "${SUITE##*/}" == "he-basic-suite-master" ]]; then
+        install_local_rpms_without_reposync
+    else
+        install_local_rpms
+    fi
     env_start
+    if [[ "${SUITE##*/}" == "he-basic-suite-master" ]]; then
+        env_copy_repo_file
+    fi
+    env_copy_config_file
+    cd "$OST_REPO_ROOT"
 
     if [[ ${suite} == *"ipv6"* ]]; then
         setup_ipv6

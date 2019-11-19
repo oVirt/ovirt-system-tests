@@ -489,40 +489,38 @@ env_copy_config_file() {
     for vm in $(lago --out-format flat status | \
         gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
         ; do
+        # verify VM is configure
 
         echo "$vm"
-       "$CLI" copy-to-vm "$vm" "$SUITE/vars/main.yml" "/tmp/vars_main.yml"
+        if [[ $(lago --out-format flat status | \
+                grep "^VMs\/$vm\/metadata\/deploy-scripts:") &&
+              -f "$SUITE/vars/main.yml" ]] ; then
+            "$CLI" copy-to-vm "$vm" "$SUITE/vars/main.yml" "/tmp/vars_main.yml"
+        fi
     done
     cd -
 }
 
 env_copy_repo_file() {
-
     cd "$PREFIX"
-    ## ENGINE
-    local reposync_file="reposync-config-engine.repo"
-    local reqsubstr="engine"
-    for vm in $(lago --out-format flat status | \
-        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
-        ; do
+    ## declare an array variable
+    declare -a vm_types_arr=("engine" "host" "storage")
 
-        echo "$vm"
-        if [ -z "${vm##*$reqsubstr*}" ] ;then
-            "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
-        fi
-    done
+    ## now loop through the above array
+    for vm_type in "${vm_types_arr[@]}"
+    do
+        echo "$vm_type"
+        local reposync_file="reposync-config-${vm_type}.repo"
+        local reqsubstr="$vm_type"
+        for vm in $(lago --out-format flat status | \
+            gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+            ; do
 
-    ## HOST
-    local reposync_file="reposync-config-host.repo"
-    local reqsubstr="host"
-    for vm in $(lago --out-format flat status | \
-        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
-        ; do
-
-        echo "$vm"
-        if [ -z "${vm##*$reqsubstr*}" ] ;then
-            "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
-        fi
+            echo "$vm"
+            if [[ -f "$SUITE/$reposync_file" && -z "${vm##*$reqsubstr*}" ]] ;then
+                "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
+            fi
+        done
     done
 
     cd -

@@ -15,6 +15,7 @@ stage:
   - check-patch:
       timeout: 180m
       substage:
+        - ansible_suite_master
         - dr_suite_master
         - basic_suite_4.2
         - basic_suite_4.3

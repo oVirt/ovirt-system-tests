@@ -11,13 +11,18 @@ cleanup_run() {
 }
 
 run_suite () {
+    install_libguestfs
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
+    install_local_rpms_without_reposync
     env_start
+    env_copy_repo_file
+    env_copy_config_file
     env_status
     env_ansible
+    cd "$OST_REPO_ROOT"
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
         echo "@@@ ERROR: Failed in deploy stage"
@@ -44,6 +49,12 @@ run_suite () {
 
     # Verify the ansible_hosts file
     $CLI ansible_hosts >> ansible_hosts_file
+
+
+    ## update ansible hosts file with the path of python3 for hosts
+    local suite_name="${SUITE##*/}"
+    sed -i "s/^lago-${suite_name}-host.*id_rsa$/ & ansible_python_interpreter=\/usr\/bin\/python3/" ansible_hosts_file
+
     if ansible-playbook \
         --list-hosts \
         -i ansible_hosts_file \

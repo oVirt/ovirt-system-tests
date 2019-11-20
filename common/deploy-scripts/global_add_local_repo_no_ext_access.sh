@@ -64,6 +64,7 @@ INSTALL_PKG=("tar")
 python="$(command -v python)" || res=$?
 [[ "$res" -ne 0 ]] && {
     INSTALL_PKG+=("python3")
+    INSTALL_PKG+=("wget")
 }
 yum install -y "${INSTALL_PKG[@]}"
 

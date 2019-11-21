@@ -464,31 +464,6 @@ def add_templates_storage_domain(prefix):
 
 
 @testlib.with_ovirt_api
-def import_templates(api):
-    #TODO: Fix the exported domain generation
-    raise SkipTest('Exported domain generation not supported yet')
-    templates = api.storagedomains.get(
-        SD_TEMPLATES_NAME,
-    ).templates.list(
-        unregistered=True,
-    )
-
-    for template in templates:
-        template.register(
-            action=params.Action(
-                cluster=params.Cluster(
-                    name=CLUSTER_NAME,
-                ),
-            ),
-        )
-
-    for template in api.templates.list():
-        testlib.assert_true_within_short(
-            lambda: api.templates.get(template.name).status.state == 'ok',
-        )
-
-
-@testlib.with_ovirt_api
 def set_dc_quota_audit(api):
     dc = api.datacenters.get(name=DC_NAME)
     dc.set_quota_mode('audit')

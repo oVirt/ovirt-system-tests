@@ -210,40 +210,21 @@ def _check_problematic_hosts(hosts_service):
         raise RuntimeError(dump_hosts)
 
 
-@testlib.with_ovirt_prefix
-def add_dc(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        add_dc_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        add_dc_3(api)
-
-
-def add_dc_3(api):
-    p = params.DataCenter(
-        name=DC_NAME,
-        local=False,
-        version=params.Version(
-            major=DC_VER_MAJ,
-            minor=DC_VER_MIN,
-        ),
-    )
-    nt.assert_true(api.datacenters.add(p))
-
-
-def add_dc_4(api):
-    dcs_service = api.system_service().data_centers_service()
-    nt.assert_true(
-        dcs_service.add(
-            sdk4.types.DataCenter(
-                name=DC_NAME,
-                description='APIv4 DC',
-                local=False,
-                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
-            ),
+@testlib.with_ovirt_api4
+def add_dc(api):
+    engine = api.system_service()
+    dcs_service = engine.data_centers_service()
+    with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
+        nt.assert_true(
+            dcs_service.add(
+                sdk4.types.DataCenter(
+                    name=DC_NAME,
+                    description='APIv4 DC',
+                    local=False,
+                    version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
+                ),
+            )
         )
-    )
 
 
 @testlib.with_ovirt_prefix

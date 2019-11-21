@@ -95,32 +95,32 @@ def add_vm_blank(api):
 @testlib.with_ovirt_prefix
 def vm_run(prefix):
     engine = prefix.virt_env.engine_vm()
-    api = engine.get_api()
+    api = engine.get_api_v4()
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
 
-    start_params = params.Action(
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+    vm_service = vms_service.vm_service(vm.id)
+    vm_service.start(
         use_cloud_init=True,
-        vm=params.VM(
-            placement_policy=params.VmPlacementPolicy(
-                host=params.Host(
+        vm=types.Vm(
+            placement_policy=types.VmPlacementPolicy(
+                hosts=[types.Host(
                     name=sorted(host_names)[0]
-                ),
+                )],
             ),
-            initialization=params.Initialization(
-                domain=params.Domain(
-                    name='lago.example.com'
-                ),
-                cloud_init=params.CloudInit(
-                    host=params.Host(
+            initialization=types.Initialization(
+                domain='lago.example.com',
+                cloud_init=types.CloudInit(
+                    host=types.Host(
                         address='VM0'
                     ),
                 ),
-            ),
-        ),
+            )
+        )
     )
-    api.vms.get(VM0_NAME).start(start_params)
     testlib.assert_true_within_long(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+        lambda: (vms_service.list(search='name=%s' % VM0_NAME)[0]).status == types.VmStatus.UP,
     )
 
 

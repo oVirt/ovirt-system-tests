@@ -472,13 +472,60 @@ def set_dc_quota_audit(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_quota_storage_limits(api):
-    dc = api.datacenters.get(DC_NAME)
-    quota = dc.quotas.get(name=DC_QUOTA_NAME)
-    quota_storage = params.QuotaStorageLimit(limit=500)
+
+    # Find the data center and the service that manages it:
+    dcs_service = api.system_service().data_centers_service()
+    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
+
+    # Find the storage domain and the service that manages it:
+    sds_service = api.system_service().storage_domains_service()
+    sd = sds_service.list()[0]
+
+    # Find the quota and the service that manages it.
+    # If the quota doesn't exist,create it.
+    quotas_service = dc_service.quotas_service()
+    quotas = quotas_service.list()
+
+    quota = next(
+        (q for q in quotas if q.name == DC_QUOTA_NAME ),
+        None
+    )
+    if quota is None:
+        quota = quotas_service.add(
+            quota=types.Quota(
+                name=DC_QUOTA_NAME,
+                description='DC-QUOTA-DESCRIPTION',
+                cluster_hard_limit_pct=20,
+                cluster_soft_limit_pct=80,
+                storage_hard_limit_pct=20,
+                storage_soft_limit_pct=80
+            )
+        )
+    quota_service = quotas_service.quota_service(quota.id)
+
+    # Find the quota limit for the storage domain that we are interested on:
+    limits_service = quota_service.quota_storage_limits_service()
+    limits = limits_service.list()
+    limit = next(
+        (l for l in limits if l.id == sd.id),
+        None
+    )
+
+    # If that limit exists we will delete it:
+    if limit is not None:
+        limit_service = limits_service.limit_service(limit.id)
+        limit_service.remove()
+
+    # Create the limit again, with the desired value
     nt.assert_true(
-        quota.quotastoragelimits.add(quota_storage)
+        limits_service.add(
+            limit=types.QuotaStorageLimit(
+                limit=500,
+            )
+        )
     )
 
 

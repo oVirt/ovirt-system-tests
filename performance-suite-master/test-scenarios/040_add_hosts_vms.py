@@ -552,39 +552,60 @@ def add_quota_cluster_limits(api):
 
 
 @testlib.with_ovirt_api4
-def add_vm_blank(api):
-    vm_memory = 512 * MB
-    vm_params = params.VM(
-        memory=vm_memory,
-        os=params.OperatingSystem(
-            type_='other_linux',
+def add_blank_vms(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+
+    vm_params = sdk4.types.Vm(
+        os=sdk4.types.OperatingSystem(
+            type='rhel_7x64',
         ),
-        type_='server',
-        high_availability=params.HighAvailability(
-            enabled=True,
+        type=sdk4.types.VmType.SERVER,
+        high_availability=sdk4.types.HighAvailability(
+            enabled=False,
         ),
-        cluster=params.Cluster(
+        cluster=sdk4.types.Cluster(
             name=CLUSTER_NAME,
         ),
-        template=params.Template(
+        template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
         ),
-        display=params.Display(
+        display=sdk4.types.Display(
             smartcard_enabled=True,
             keyboard_layout='en-us',
             file_transfer_enabled=True,
             copy_paste_enabled=True,
         ),
-        memory_policy=params.MemoryPolicy(
-            guaranteed=vm_memory / 2,
+        usb=sdk4.types.Usb(
+            enabled=True,
+            type=sdk4.types.UsbType.NATIVE,
+        ),
+        memory_policy=sdk4.types.MemoryPolicy(
+            ballooning=True,
         ),
     )
 
-    vm_params.name = VM_TEMPLATE
-    api.vms.add(vm_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM_TEMPLATE).status.state == 'down',
-    )
+    vm_params.name = BACKUP_VM_NAME
+    vm_params.memory = 256 * MB
+    vm_params.memory_policy.guaranteed = 128 * MB
+    vms_service.add(vm_params)
+    backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
+
+    vm_params.name = VM0_NAME
+    least_hotplug_increment = 256 * MB
+    required_memory = 384 * MB
+    vm_params.memory = required_memory
+    vm_params.memory_policy.guaranteed = required_memory
+    vm_params.memory_policy.max = required_memory + least_hotplug_increment
+
+    vms_service.add(vm_params)
+    vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+
+    for vm_service in [backup_vm_service, vm0_vm_service]:
+        testlib.assert_true_within_short(
+            lambda:
+            vm_service.get().status == sdk4.types.VmStatus.DOWN
+        )
 
 
 @testlib.with_ovirt_api4

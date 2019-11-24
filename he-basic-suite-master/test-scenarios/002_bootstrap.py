@@ -123,29 +123,8 @@ def _random_host_from_dc_4(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc_4(api, dc_name))
 
 
-@testlib.with_ovirt_prefix
-def add_dc(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        add_dc_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        add_dc_3(api)
-
-
-def add_dc_3(api):
-    p = params.DataCenter(
-        name=DC_NAME,
-        local=False,
-        version=params.Version(
-            major=DC_VER_MAJ,
-            minor=DC_VER_MIN,
-        ),
-    )
-    nt.assert_true(api.datacenters.add(p))
-
-
-def add_dc_4(api):
+@testlib.with_ovirt_api4
+def add_dc(api):
     dcs_service = api.system_service().data_centers_service()
     nt.assert_true(
          dcs_service.add(

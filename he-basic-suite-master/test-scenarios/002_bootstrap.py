@@ -451,31 +451,6 @@ def add_templates_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export')
 
 
-@testlib.with_ovirt_api
-def import_templates(api):
-    #TODO: Fix the exported domain generation
-    raise SkipTest('Exported domain generation not supported yet')
-    templates = api.storagedomains.get(
-        SD_TEMPLATES_NAME,
-    ).templates.list(
-        unregistered=True,
-    )
-
-    for template in templates:
-        template.register(
-            action=params.Action(
-                cluster=params.Cluster(
-                    name=CLUSTER_NAME,
-                ),
-            ),
-        )
-
-    for template in api.templates.list():
-        testlib.assert_true_within_short(
-            lambda: api.templates.get(template.name).status.state == 'ok',
-        )
-
-
 def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     target_image = glance_provider.images.get(name=image_name)
@@ -873,7 +848,6 @@ _TEST_LIST = [
     list_glance_images,
     add_glance_storage,
     add_secondary_storage_domains,
-#    import_templates,
 #    run_log_collector,
     add_non_vm_network,
     add_vm_network,

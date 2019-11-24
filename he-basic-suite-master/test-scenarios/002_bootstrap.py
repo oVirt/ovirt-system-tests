@@ -249,41 +249,32 @@ def _add_storage_domain_3(api, p):
     )
 
 
-def _add_storage_domain_4(api, p):
-    sds_service = api.system_service().storage_domains_service()
-    sd = sds_service.add(p)
+def _add_storage_domain(api, p):
+    system_service = api.system_service()
+    sds_service = system_service.storage_domains_service()
+    with test_utils.TestEvent(system_service, 956): # USER_ADD_STORAGE_DOMAIN(956)
+        sd = sds_service.add(p)
 
-    sd_service = sds_service.storage_domain_service(sd.id)
+        sd_service = sds_service.storage_domain_service(sd.id)
+        testlib.assert_true_within_long(
+            lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
+        )
 
-    def _is_sd_unattached():
-        usd = sd_service.get()
-        if usd.status == sdk4.types.StorageDomainStatus.UNATTACHED:
-            return True
-
-    testlib.assert_true_within_long(
-        _is_sd_unattached
-    )
-
-    dcs_service = api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
-    dc_service = dcs_service.data_center_service(dc.id)
+    dc_service = test_utils.data_center_service(system_service, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
-    attached_sds_service.add(
-        sdk4.types.StorageDomain(
-            id=sd.id,
-        ),
-    )
 
-    attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-
-    def _is_sd_active():
-        asd = attached_sd_service.get()
-        if asd.status == sdk4.types.StorageDomainStatus.ACTIVE:
-            return True
-
-    testlib.assert_true_within_long(
-        _is_sd_active
-    )
+    with test_utils.TestEvent(system_service, [966, 962]):
+        # USER_ACTIVATED_STORAGE_DOMAIN(966)
+        # USER_ATTACH_STORAGE_DOMAIN_TO_POOL(962)
+        attached_sds_service.add(
+            sdk4.types.StorageDomain(
+                id=sd.id,
+            ),
+        )
+        attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
+        testlib.assert_true_within_long(
+            lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
+        )
 
 
 @testlib.with_ovirt_prefix
@@ -295,37 +286,10 @@ def add_master_storage_domain(prefix):
 
 
 def add_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
+    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
-    if API_V4:
-        add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
-    else:
-        add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format, sd_type, nfs_version)
-
-
-def add_generic_nfs_storage_domain_3(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.StorageDomain(
-        name=sd_nfs_name,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_=sd_type,
-        storage_format=sd_format,
-        host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='nfs',
-            address=_create_url_for_host(prefix, nfs_host_name),
-            path=mount_path,
-            nfs_version=nfs_version,
-        ),
-    )
-    _add_storage_domain_3(api, p)
-
-
-def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_1'):
+def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_2'):
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':
@@ -339,24 +303,36 @@ def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_p
         nfs_vers = sdk4.types.NfsVersion.V4
     elif nfs_version == 'v4_1':
         nfs_vers = sdk4.types.NfsVersion.V4_1
+    elif nfs_version == 'v4_2':
+        nfs_vers = sdk4.types.NfsVersion.V4_2
     else:
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
+    kwargs = {}
+    if sd_format >= 'v4':
+        if not versioning.cluster_version_ok(4, 1):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+        elif not versioning.cluster_version_ok(4, 3):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
+    random_host = _random_host_from_dc(api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
         type=dom_type,
-        host=_random_host_from_dc_4(api, DC_NAME),
+        host=random_host,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
-            address=_create_url_for_host(prefix, nfs_host_name),
+            address=ips[0],
             path=mount_path,
             nfs_version=nfs_vers,
         ),
+        **kwargs
     )
 
-    _add_storage_domain_4(api, p)
+    _add_storage_domain(api, p)
 
 @testlib.with_ovirt_prefix
 def add_secondary_storage_domains(prefix):

@@ -141,28 +141,6 @@ def add_dc(api):
 
 
 @testlib.with_ovirt_prefix
-def remove_default_dc(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        remove_default_dc_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        remove_default_dc_3(api)
-
-
-def remove_default_dc_3(api):
-    nt.assert_true(api.datacenters.get(name='Default').delete())
-
-
-def remove_default_dc_4(api):
-    dcs_service = api.system_service().data_centers_service()
-    search_query='name=Default'
-    dc = dcs_service.list(search=search_query)[0]
-    dc_service = dcs_service.data_center_service(dc.id)
-    dc_service.remove()
-
-
-@testlib.with_ovirt_prefix
 def remove_default_cluster(prefix):
     if API_V4:
         api = prefix.virt_env.engine_vm().get_api(api_ver=4)
@@ -1068,7 +1046,6 @@ _TEST_LIST = [
     add_non_vm_network,
     add_vm_network,
     add_dc_quota,
-#    remove_default_dc,
 #    remove_default_cluster,
     add_quota_storage_limits,
     add_quota_cluster_limits,

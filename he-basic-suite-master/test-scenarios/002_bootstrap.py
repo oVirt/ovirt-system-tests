@@ -140,28 +140,6 @@ def add_dc(api):
     )
 
 
-@testlib.with_ovirt_prefix
-def remove_default_cluster(prefix):
-    if API_V4:
-        api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-        remove_default_cluster_4(api)
-    else:
-        api = prefix.virt_env.engine_vm().get_api()
-        remove_default_cluster_3(api)
-
-
-def remove_default_cluster_3(api):
-    nt.assert_true(api.clusters.get(name='Default').delete())
-
-
-def remove_default_cluster_4(api):
-    clusters_services = api.system_service().clusters_service()
-    search_query='name=Default'
-    cluster=clusters_services.list(search=search_query)[0]
-    cl_service = clusters_services.cluster_service(cluster.id)
-    cl_service.remove()
-
-
 @testlib.with_ovirt_api4
 def add_dc_quota(api):
     datacenters_service = api.system_service().data_centers_service()
@@ -1046,7 +1024,6 @@ _TEST_LIST = [
     add_non_vm_network,
     add_vm_network,
     add_dc_quota,
-#    remove_default_cluster,
     add_quota_storage_limits,
     add_quota_cluster_limits,
     set_dc_quota_audit,

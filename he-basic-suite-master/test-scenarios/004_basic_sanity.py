@@ -79,17 +79,43 @@ def add_vm_blank(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_nic(api):
     NIC_NAME = 'eth0'
-    nic_params = params.NIC(
-        name=NIC_NAME,
-        interface='virtio',
-        network=params.Network(
-            name='ovirtmgmt',
+    # Locate the vnic profiles service and use it to find the ovirmgmt
+    # network's profile id:
+    profiles_service = api.system_service().vnic_profiles_service()
+    profile_id = next(
+        (
+            profile.id for profile in profiles_service.list()
+            if profile.name == MANAGEMENT_NETWORK
+        ),
+        None
+    )
+
+    # Empty profile id would cause fail in later tests (e.g. add_filter):
+    nt.assert_is_not_none(profile_id)
+
+    # Locate the virtual machines service and use it to find the virtual
+    # machine:
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+
+    # Locate the service that manages the network interface cards of the
+    # virtual machine:
+    nics_service = vms_service.vm_service(vm.id).nics_service()
+
+    # Use the "add" method of the network interface cards service to add the
+    # new network interface card:
+    nics_service.add(
+        types.Nic(
+            name=NIC_NAME,
+            interface=types.NicInterface.VIRTIO,
+            vnic_profile=types.VnicProfile(
+                id=profile_id
+            ),
         ),
     )
-    api.vms.get(VM0_NAME).nics.add(nic_params)
 
 
 @testlib.with_ovirt_api

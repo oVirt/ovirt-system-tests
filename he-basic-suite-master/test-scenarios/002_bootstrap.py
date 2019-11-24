@@ -159,56 +159,6 @@ def add_dc_quota(api):
 
 
 @testlib.with_ovirt_prefix
-def add_cluster(prefix):
-    if API_V4:
-        add_cluster_4(prefix)
-    else:
-        add_cluster_3(prefix)
-
-
-def add_cluster_3(prefix):
-    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.Cluster(
-        name=CLUSTER_NAME,
-        cpu=params.CPU(
-            id=cpu_family,
-        ),
-        version=params.Version(
-            major=DC_VER_MAJ,
-            minor=DC_VER_MIN,
-        ),
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        ballooning_enabled=True,
-    )
-    nt.assert_true(api.clusters.add(p))
-
-
-def add_cluster_4(prefix):
-    cpu_family = prefix.virt_env.get_ovirt_cpu_family()
-    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-    clusters_service = api.system_service().clusters_service()
-    nt.assert_true(
-        clusters_service.add(
-            sdk4.types.Cluster(
-                name=CLUSTER_NAME,
-                description='APIv4 Cluster',
-                cpu=sdk4.types.Cpu(
-                    architecture=sdk4.types.Architecture.X86_64,
-                    type=cpu_family,
-                ),
-                data_center=sdk4.types.DataCenter(
-                    name=DC_NAME,
-                ),
-                ballooning_enabled=True,
-            ),
-        )
-    )
-
-
-@testlib.with_ovirt_prefix
 def add_hosts(prefix):
     if API_V4:
         add_hosts_4(prefix)
@@ -1009,7 +959,6 @@ def he_check_ha_agent(prefix):
 _TEST_LIST = [
     wait_engine,
 #    add_dc,
-#    add_cluster,
     add_master_storage_domain,
     he_vm_status,
     he_get_shared_config,

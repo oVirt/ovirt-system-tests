@@ -31,6 +31,8 @@ from ovirtsdk.xml import params
 from ovirtsdk4 import Error as sdkError
 import ovirtsdk4.types as types
 
+import test_utils
+from test_utils import versioning
 from test_utils import ipv6_utils
 from test_utils import network_utils_v4
 
@@ -228,27 +230,6 @@ def install_cockpit_ovirt(prefix):
     nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
 
 
-def _add_storage_domain_3(api, p):
-    dc = api.datacenters.get(DC_NAME)
-    sd = api.storagedomains.add(p)
-    nt.assert_true(sd)
-    nt.assert_true(
-        api.datacenters.get(
-            DC_NAME,
-        ).storagedomains.add(
-            api.storagedomains.get(
-                sd.name,
-            ),
-        )
-    )
-
-    if dc.storagedomains.get(sd.name).status.state == 'maintenance':
-        sd.activate()
-    testlib.assert_true_within_long(
-        lambda: dc.storagedomains.get(sd.name).status.state == 'active'
-    )
-
-
 def _add_storage_domain(api, p):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
@@ -369,56 +350,32 @@ def add_glance_storage(prefix):
 
 
 def add_iscsi_storage_domain(prefix):
-    # FIXME
-    # if API_V4:
-    #    return add_iscsi_storage_domain_4(prefix)
+    luns = test_utils.get_luns(
+        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
 
-    api = prefix.virt_env.engine_vm().get_api()
-
-    # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-
-    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
-
-    p = params.StorageDomain(
+    v4_domain = versioning.cluster_version_ok(4, 1)
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
-        data_center=params.DataCenter(
+        description='iSCSI Storage Domain',
+        type=sdk4.types.StorageDomainType.DATA,
+        discard_after_delete=v4_domain,
+        data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
-        type_='data',
-        storage_format=SD_FORMAT,
         host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='iscsi',
-            volume_group=params.VolumeGroup(
-                logical_unit=[
-                    params.LogicalUnit(
-                        id=lun_id,
-                        address=_get_host_ip(
-                            prefix,
-                            SD_ISCSI_HOST_NAME,
-                        ),
-                        port=SD_ISCSI_PORT,
-                        target=SD_ISCSI_TARGET,
-                        username='username',
-                        password='password',
-                    ) for lun_id in lun_guids
-                ]
-
+        storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.ISCSI,
+            override_luns=True,
+            volume_group=sdk4.types.VolumeGroup(
+                logical_units=luns
             ),
         ),
     )
-    _add_storage_domain_3(api, p)
 
+    _add_storage_domain(api, p)
 
-def add_iscsi_storage_domain_4(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-
-    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
-    #FIXME
 
 def add_iso_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')

@@ -385,6 +385,10 @@ def complete_hosts_setup(prefix):
             _change_logging_level(host, logger)
         _change_logging_level(host, 'schema_inconsistency', 'DEBUG',
                               'schema.inconsistency')
+        # use /etc/hosts instead of the DNS server, to avoid that the
+        # hostnames are resolved to unexpected IPv6 addresses
+        for h in hosts:
+            host.ssh(['echo', h.ip(), h.name(), '>>', '/etc/hosts'])
 
 
 @testlib.with_ovirt_prefix

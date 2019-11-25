@@ -108,17 +108,15 @@ def migrate_vm(prefix, api):
 
         return vm_id not in parsed_output
 
-    # TODO CENTOS 8 - problem with networks. Destination host not reachable so migration fails
-    # testlib.assert_true_within_short(vm_is_not_on_host)
+    testlib.assert_true_within_short(vm_is_not_on_host)
 
     testlib.assert_true_within_short(
         lambda: vm_service.get().status == VmStatus.UP
     )
 
-    # TODO CENTOS 8 - problem with networks. Destination host not reachable so migration fails
-    # nt.assert_equals(
-    #     _current_running_host(), dst_host
-    # )
+    nt.assert_equals(
+        _current_running_host(), dst_host
+    )
 
 
 @testlib.with_ovirt_api4

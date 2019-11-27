@@ -23,7 +23,6 @@ import random
 
 import nose.tools as nt
 from nose import SkipTest
-from ovirtsdk.xml import params
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4

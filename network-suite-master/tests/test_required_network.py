@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import time
+
 import pytest
 
 from ovirtlib import netattachlib
@@ -100,5 +102,7 @@ def test_required_network_host_non_operational(req_net,
     optionally_non_spm_host.remove_networks((req_net,))
     optionally_non_spm_host.wait_for_non_operational_status()
     cluster_net.update(required=False)
+    # workaround for BZ 1752282
+    time.sleep(2)
     optionally_non_spm_host.activate()
     optionally_non_spm_host.wait_for_up_status()

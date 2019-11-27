@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import time
+
 import pytest
 
 from ovirtlib import storagelib
@@ -28,6 +30,8 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 @pytest.fixture(scope='session')
 def default_storage_domain(system, engine, host_0_up, default_data_center):
+    # workaround for BZ 1779280
+    time.sleep(5)
     storage_domain = storagelib.StorageDomain(system)
     storage_domain.create(name=DEFAULT_DOMAIN_NAME,
                           domain_type=storagelib.StorageDomainType.DATA,

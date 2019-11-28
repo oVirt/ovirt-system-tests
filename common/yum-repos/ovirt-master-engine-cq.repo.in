@@ -5,22 +5,11 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
-[ovirt-master-tested-el7]
-name = oVirt Master Latest Tested
-baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
-enabled = 1
-max_connections = 10
-proxy = _none_
-cost = 100
-skip_if_unavailable=1
-gpgcheck = 0
-
 [ovirt-master-snapshot-static-el7]
 name = oVirt Master Nightly Statics
 baseurl = http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
 enabled = 1
 max_connections = 10
-skip_if_unavailable=1
 gpgcheck = 0
 
 [sac-gluster-ansible-el7]
@@ -29,14 +18,12 @@ baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel
 gpgcheck=1
 gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
 enabled=1
-skip_if_unavailable=1
 
 [glusterfs-6-el7]
 name = GlusterFS repo
 baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
 enabled = 1
 max_connections = 5
-skip_if_unavailable=1
 gpgcheck = 0
 
 [centos-updates-el7]
@@ -44,7 +31,6 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-skip_if_unavailable=1
 gpgcheck = 0
 
 [centos-base-el7]
@@ -52,7 +38,6 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-skip_if_unavailable=1
 gpgcheck = 0
 
 [centos-extras-el7]
@@ -66,7 +51,6 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-skip_if_unavailable=1
 gpgcheck = 0
 
 [epel-el7]
@@ -102,7 +86,6 @@ includepkgs=
 	rubygem-rgen
 	ruby-shadow
 max_connections = 5
-skip_if_unavailable=1
 gpgcheck = 0
 
 [centos-ovirt-4.4-testing-el7]
@@ -112,7 +95,6 @@ gpgcheck = 0
 enabled = 1
 ost_skip_injection = True
 exclude = ovirt-host*
-skip_if_unavailable=1
 
 [centos-ovirt-common-el7]
 name = CentOS-7 - oVirt common
@@ -120,14 +102,12 @@ baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
 gpgcheck = 0
 cost = 2000
 enabled = 1
-skip_if_unavailable=1
 
 [centos-qemu-ev-testing-el7]
 name = CentOS-7 - QEMU EV - Testing
 baseurl = http://buildlogs.centos.org/centos/7/virt/x86_64/kvm-common/
 gpgcheck = 0
 enabled = 1
-skip_if_unavailable=1
 
 [centos-opstools-testing-el7]
 name = CentOS-7 - OpsTools - testing repo
@@ -136,7 +116,6 @@ enabled = 1
 exclude = python2-qpid-proton
 	qpid-proton-c
 max_connections = 10
-skip_if_unavailable=1
 gpgcheck = 0
 
 [centos-sclo-rh-release-el7]
@@ -145,4 +124,3 @@ baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
 gpgcheck = 1
 enabled = 1
 gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-skip_if_unavailable=1

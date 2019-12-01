@@ -32,6 +32,7 @@ from ovirtsdk4 import Error as sdkError
 import ovirtsdk4.types as types
 
 from test_utils import ipv6_utils
+from test_utils import network_utils_v4
 
 try:
     import ovirtsdk4 as sdk4
@@ -707,24 +708,28 @@ def add_quota_cluster_limits(api):
 )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm_network(api):
-    VLAN100 = params.Network(
-        name=VLAN100_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        description='VM Network on VLAN 100',
-        vlan=params.VLAN(
-            id='100',
+    engine = api.system_service()
+
+    network = network_utils_v4.create_network_params(
+        VM_NETWORK,
+        DC_NAME,
+        description='VM Network (originally on VLAN {})'.format(
+            VM_NETWORK_VLAN_ID),
+        vlan=sdk4.types.Vlan(
+            id=VM_NETWORK_VLAN_ID,
         ),
     )
 
+    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+        nt.assert_true(
+            engine.networks_service().add(network)
+        )
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
-        api.networks.add(VLAN100)
-    )
-    nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN100)
+        cluster_service.networks_service().add(network)
     )
 
 

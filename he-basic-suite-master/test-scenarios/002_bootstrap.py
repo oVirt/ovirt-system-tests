@@ -733,26 +733,29 @@ def add_vm_network(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_non_vm_network(api):
-    VLAN200 = params.Network(
-        name=VLAN200_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
+    engine = api.system_service()
+
+    network = network_utils_v4.create_network_params(
+        MIGRATION_NETWORK,
+        DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
-        vlan=params.VLAN(
+        vlan=sdk4.types.Vlan(
             id='200',
         ),
-        usages=params.Usages(),
+        usages=[],
         mtu=9000,
     )
 
+    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+        nt.assert_true(
+            engine.networks_service().add(network)
+        )
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
-        api.networks.add(VLAN200)
-    )
-    nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+        cluster_service.networks_service().add(network)
     )
 
 

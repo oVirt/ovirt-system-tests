@@ -684,14 +684,27 @@ def add_quota_storage_limits(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_quota_cluster_limits(api):
-    dc = api.datacenters.get(DC_NAME)
-    quota = dc.quotas.get(name=DC_QUOTA_NAME)
-    quota_cluster = params.QuotaClusterLimit(vcpu_limit=20, memory_limit=10000)
-    nt.assert_true(
-        quota.quotaclusterlimits.add(quota_cluster)
+    datacenters_service = api.system_service().data_centers_service()
+    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
+    datacenter_service = datacenters_service.data_center_service(datacenter.id)
+    quotas_service = datacenter_service.quotas_service()
+    quotas = quotas_service.list()
+    quota = next(
+        (q for q in quotas if q.name == DC_QUOTA_NAME),
+        None
     )
+    quota_service = quotas_service.quota_service(quota.id)
+    quota_cluster_limits_service = quota_service.quota_cluster_limits_service()
+    nt.assert_true(
+        quota_cluster_limits_service.add(
+            types.QuotaClusterLimit(
+                vcpu_limit=20,
+                memory_limit=10000.0
+            )
+        )
+)
 
 
 @testlib.with_ovirt_api

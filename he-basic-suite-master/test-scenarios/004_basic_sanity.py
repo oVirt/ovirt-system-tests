@@ -146,40 +146,32 @@ def add_disk(api):
 
 @testlib.with_ovirt_prefix
 def add_directlun(prefix):
-    # Find LUN GUIDs
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-
-    all_guids = ret.out.splitlines()
-    # Take the first unused LUN. 0-(SD_ISCSI_NR_LUNS) are used by iSCSI SD
-    lun_guid = all_guids[SD_ISCSI_NR_LUNS]
-
-    dlun_params = params.Disk(
+    luns = test_utils.get_luns(
+        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=SD_ISCSI_NR_LUNS+1)
+    dlun_params = sdk4.types.Disk(
         name=DLUN_DISK_NAME,
-        interface='virtio_scsi',
-        format='raw',
-        lun_storage=params.Storage(
-            type_='iscsi',
-            logical_unit=[
-                params.LogicalUnit(
-                    id=lun_guid,
-                    address=prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ip(),
-                    port=SD_ISCSI_PORT,
-                    target=SD_ISCSI_TARGET,
-                    username='username',
-                    password='password',
-                )
-            ]
+        format=sdk4.types.DiskFormat.RAW,
+        lun_storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.ISCSI,
+            logical_units=luns,
         ),
     )
 
-    api = prefix.virt_env.engine_vm().get_api()
-    api.vms.get(VM0_NAME).disks.add(dlun_params)
-    nt.assert_not_equal(
-        api.vms.get(VM0_NAME).disks.get(DLUN_DISK_NAME),
-        None,
-        'Direct LUN disk not attached'
-    )
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api.system_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    with test_utils.TestEvent(engine, 97):
+        disk_attachments_service.add(sdk4.types.DiskAttachment(
+            disk=dlun_params,
+            interface=sdk4.types.DiskInterface.VIRTIO_SCSI))
+
+        disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
+        attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
+        nt.assert_not_equal(
+            attachment_service.get(),
+            None,
+            'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
+        )
 
 
 @testlib.with_ovirt_api4

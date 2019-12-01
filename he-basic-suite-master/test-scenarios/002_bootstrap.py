@@ -599,13 +599,18 @@ def import_template_from_glance(prefix):
     generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def set_dc_quota_audit(api):
-    dc = api.datacenters.get(name=DC_NAME)
-    dc.set_quota_mode('audit')
+    dcs_service = api.system_service().data_centers_service()
+    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
     nt.assert_true(
-        dc.update()
-    )
+        dc_service.update(
+            types.DataCenter(
+                quota_mode=types.QuotaModeType.AUDIT,
+            ),
+        )
+   )
 
 
 @testlib.with_ovirt_api

@@ -1015,6 +1015,7 @@ def next_run_unplug_cpu(api):
 
 @testlib.with_ovirt_prefix
 def hotplug_nic(prefix):
+    raise SkipTest('https://bugzilla.redhat.com/1776317')
     api = prefix.virt_env.engine_vm().get_api_v4()
     vms_service = api.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]

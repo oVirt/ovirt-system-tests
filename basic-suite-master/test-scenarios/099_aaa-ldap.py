@@ -22,7 +22,6 @@ import nose.tools as nt
 import os
 import tempfile
 
-from ovirtsdk.xml import params
 import ovirtsdk4.types as types
 
 from ovirtlago import testlib
@@ -87,15 +86,19 @@ def add_ldap_provider(prefix):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_ldap_user(api):
-    p = params.User(
-        user_name=AAA_LDAP_USER,
-        domain=params.Domain(
-            name=AAA_LDAP_AUTHZ_PROVIDER
-        ),
-    )
-    nt.assert_true(api.users.add(p))
+    engine = api.system_service()
+    users_service = engine.users_service()
+    with test_utils.TestEvent(engine, 149): # USER_ADD(149)
+        users_service.add(
+            types.User(
+                user_name=AAA_LDAP_USER,
+                domain=types.Domain(
+                    name=AAA_LDAP_AUTHZ_PROVIDER
+                ),
+            ),
+        )
 
 
 @testlib.with_ovirt_api4

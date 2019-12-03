@@ -27,7 +27,6 @@ import time
 
 import nose.tools as nt
 from nose import SkipTest
-from ovirtsdk.infrastructure import errors
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
@@ -698,8 +697,8 @@ def add_glance(api):
             else:
                 return False
 
-        testlib.assert_true_within_short(func=get, allowed_exceptions=[errors.RequestError])
-    except (AssertionError, errors.RequestError):
+        testlib.assert_true_within_short(func=get, allowed_exceptions=[sdk4.RequestError])
+    except (AssertionError, sdk4.RequestError):
         # RequestError if add method was failed.
         # AssertionError if add method succeed but we couldn't verify that glance was actually added
         return None

@@ -1137,11 +1137,12 @@ def verify_suspend_resume_vm0(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def verify_glance_import(api):
     for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
+        disks_service = api.system_service().disks_service()
         testlib.assert_true_within_long(
-            lambda: api.disks.get(disk_name).status.state == 'ok',
+            lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
         )
 
 @testlib.with_ovirt_api4

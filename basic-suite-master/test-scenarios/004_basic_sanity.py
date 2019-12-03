@@ -25,8 +25,6 @@ import re
 import nose.tools as nt
 from nose import SkipTest
 
-from ovirtsdk.xml import params
-
 from lago import utils, ssh
 from ovirtlago import testlib
 

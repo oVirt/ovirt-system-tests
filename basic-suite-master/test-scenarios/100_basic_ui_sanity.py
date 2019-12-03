@@ -33,7 +33,6 @@ import test_utils
 from lago import utils
 from nose import SkipTest
 from ovirtlago import testlib
-from ovirtsdk.xml import params
 from test_utils.constants import *
 from test_utils.selenium_constants import *
 from test_utils.navigation.driver import *

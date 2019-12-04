@@ -1,9 +1,1 @@
-docker
-grubby
-lago
-lago-ovirt
-python2-six
-python-netaddr
-python-ovirt-engine-sdk4
-python-pip
-python-virtualenv
+basic_suite_master.packages

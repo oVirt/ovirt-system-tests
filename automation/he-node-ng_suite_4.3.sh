@@ -1,1 +1,1 @@
-suite.sh
+suite_with_sdk3.sh

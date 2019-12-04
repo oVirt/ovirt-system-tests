@@ -5,7 +5,6 @@ grubby
 lago
 lago-ovirt
 libselinux-python
-ovirt-engine-sdk-python
 python-ovirt-engine-sdk4
 script
 virt-install

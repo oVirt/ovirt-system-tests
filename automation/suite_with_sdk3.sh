@@ -23,7 +23,7 @@ SUITE_REAL_PATH=$(realpath "$SUITE")
 # Default RPMs to install in the mock env.
 # Unlike the RPMs from .packages file, this RPMs will be taken from lago's
 # internal repo (assuming that we have a newer version in the internal repo).
-DEFAULT_RPMS=(python-ovirt-engine-sdk4)
+DEFAULT_RPMS=(ovirt-engine-sdk-python python-ovirt-engine-sdk4)
 
 #Indicate if image creation is needed
 readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"

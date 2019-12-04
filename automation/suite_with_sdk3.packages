@@ -2,6 +2,7 @@ docker
 grubby
 lago
 lago-ovirt
+ovirt-engine-sdk-python
 python2-six
 python-netaddr
 python-ovirt-engine-sdk4

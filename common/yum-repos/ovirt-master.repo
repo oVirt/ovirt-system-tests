@@ -53,75 +53,33 @@ exclude = *-debuginfo
 	ansible-do
 includepkgs = glusterfs
 	glusterfs-api
-	glusterfs-cli
 	glusterfs-client-xlators
-	glusterfs-events
-	glusterfs-fuse
-	glusterfs-geo-replication
 	glusterfs-libs
-	glusterfs-rdma
-	glusterfs-server
-	python2-gluster
-	userspace-rcu
 
 [centos-updates-el7]
 name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = NetworkManager-config-server
+includepkgs = 389-ds-base
+	389-ds-base-libs
 	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
 	device-mapper-libs
-	dnsmasq
 	firewalld
 	firewalld-filesystem
-	ipa-client
-	ipa-client-common
-	ipa-common
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
 	java-11-openjdk-headless
-	kernel
-	krb5-libs
-	krb5-workstation
-	libgudev1
-	libguestfs
-	libguestfs-tools-c
-	libkadm5
 	libvirt-admin
 	libvirt-bash-completion
-	libvirt-client
-	libvirt-daemon
-	libvirt-daemon-config-network
-	libvirt-daemon-config-nwfilter
-	libvirt-daemon-driver-interface
-	libvirt-daemon-driver-network
-	libvirt-daemon-driver-nodedev
-	libvirt-daemon-driver-nwfilter
-	libvirt-daemon-driver-qemu
-	libvirt-daemon-driver-secret
-	libvirt-daemon-driver-storage
-	libvirt-daemon-driver-storage-core
-	libvirt-daemon-driver-storage-disk
-	libvirt-daemon-driver-storage-gluster
-	libvirt-daemon-driver-storage-iscsi
-	libvirt-daemon-driver-storage-logical
-	libvirt-daemon-driver-storage-mpath
-	libvirt-daemon-driver-storage-rbd
-	libvirt-daemon-driver-storage-scsi
-	libvirt-daemon-kvm
 	libvirt-libs
-	libvirt-lock-sanlock
 	lvm2
 	lvm2-libs
 	pango
 	python-firewall
-	python-syspurpose
-	python2-ipaclient
-	python2-ipalib
 	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
@@ -131,42 +89,19 @@ includepkgs = NetworkManager-config-server
 	sg3_utils
 	sg3_utils-libs
 	sos
-	subscription-manager
-	subscription-manager-rhsm
-	subscription-manager-rhsm-certificates
 	systemd
 	systemd-libs
 	systemd-python
 	systemd-sysv
 	tuned
 	tzdata-java
-	virt-v2v
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	OVMF
-	OpenIPMI
-	OpenIPMI-libs
-	OpenIPMI-modalias
-	PyYAML
-	abrt
-	abrt-addon-ccpp
-	abrt-addon-kerneloops
-	abrt-addon-pstoreoops
-	abrt-addon-python
-	abrt-addon-vmcore
-	abrt-addon-xorg
-	abrt-cli
-	abrt-dbus
-	abrt-libs
-	abrt-python
-	abrt-retrace-client
-	abrt-tui
+includepkgs = PyYAML
 	aide
 	alsa-lib
 	ant
@@ -189,14 +124,9 @@ includepkgs = 389-ds-base
 	apr-util
 	atk
 	atlas
-	attr
 	audit
 	audit-libs
 	audit-libs-python
-	augeas
-	augeas-libs
-	authconfig
-	autofs
 	autogen-libopts
 	avahi-libs
 	avalon-framework
@@ -212,104 +142,34 @@ includepkgs = 389-ds-base
 	boost-random
 	boost-system
 	boost-thread
-	bridge-utils
 	bzip2
-	c-ares
 	cairo
 	cal10n
-	celt051
-	certmonger
 	checkpolicy
-	clevis
-	clevis-dracut
-	clevis-luks
-	clevis-systemd
-	coolkey
 	copy-jdk-configs
-	cryptsetup
-	cryptsetup-libs
-	cryptsetup-python
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
 	cyrus-sasl-md5
 	cyrus-sasl-plain
-	cyrus-sasl-scram
 	dejavu-fonts-common
 	dejavu-sans-fonts
-	device-mapper-multipath
-	device-mapper-multipath-libs
 	device-mapper-persistent-data
 	dhclient
 	dhcp-common
 	dhcp-libs
 	dmidecode
-	dmraid
-	dmraid-events
 	dom4j
-	dosfstools
-	dracut
-	dracut-config-rescue
-	dracut-fips
-	dracut-network
 	easymock2
-	elfutils
-	elfutils-libelf
-	elfutils-libs
-	fcoe-utils
-	fence-agents-all
-	fence-agents-amt-ws
-	fence-agents-apc
-	fence-agents-apc-snmp
-	fence-agents-bladecenter
-	fence-agents-brocade
-	fence-agents-cisco-mds
-	fence-agents-cisco-ucs
-	fence-agents-common
-	fence-agents-compute
-	fence-agents-drac5
-	fence-agents-eaton-snmp
-	fence-agents-emerson
-	fence-agents-eps
-	fence-agents-heuristics-ping
-	fence-agents-hpblade
-	fence-agents-ibmblade
-	fence-agents-ifmib
-	fence-agents-ilo-moonshot
-	fence-agents-ilo-mp
-	fence-agents-ilo-ssh
-	fence-agents-ilo2
-	fence-agents-intelmodular
-	fence-agents-ipdu
-	fence-agents-ipmilan
-	fence-agents-kdump
-	fence-agents-mpath
-	fence-agents-redfish
-	fence-agents-rhevm
-	fence-agents-rsa
-	fence-agents-rsb
-	fence-agents-sbd
-	fence-agents-scsi
-	fence-agents-vmware-rest
-	fence-agents-vmware-soap
-	fence-agents-wti
-	fence-virt
 	fontconfig
 	fontpackages-filesystem
 	fribidi
-	fuse
-	fuse-libs
-	gdb
-	gdisk
 	gdk-pixbuf2
-	genisoimage
 	geronimo-jms
 	giflib
 	git
 	glib-networking
 	gnutls
-	gnutls-dane
-	gnutls-utils
 	gperftools-libs
 	graphite2
 	gsettings-desktop-schemas
@@ -318,20 +178,13 @@ includepkgs = 389-ds-base
 	gtk2
 	hamcrest
 	harfbuzz
-	hesiod
-	hexedit
 	hicolor-icon-theme
-	hivex
-	hmaccalc
 	hsqldb
-	http-parser
 	httpcomponents-client
 	httpcomponents-core
 	httpd
 	httpd-tools
 	iperf3
-	ipmitool
-	ipxe-roms-qemu
 	iscsi-initiator-utils
 	iscsi-initiator-utils-iscsiuio
 	isorelax
@@ -347,15 +200,12 @@ includepkgs = 389-ds-base
 	jdom
 	joda-convert
 	joda-time
-	jose
 	jsch
 	json-glib
 	jsr-311
 	junit
 	jzlib
 	keyutils
-	kmod-kvdo
-	kpartx
 	libICE
 	libSM
 	libX11
@@ -374,24 +224,10 @@ includepkgs = 389-ds-base
 	libXtst
 	libXxf86vm
 	libaio
-	libarchive
-	libatasmart
 	libbasicobjects
-	libblockdev
-	libblockdev-crypto
-	libblockdev-fs
-	libblockdev-loop
-	libblockdev-lvm
-	libblockdev-mdraid
-	libblockdev-part
-	libblockdev-swap
-	libblockdev-utils
-	libbytesize
 	libcgroup
 	libcgroup-tools
 	libcollection
-	libconfig
-	libdhash
 	libepoxy
 	libevent
 	libfontenc
@@ -399,129 +235,63 @@ includepkgs = 389-ds-base
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
-	libguestfs-winsupport
 	libibumad
-	libibverbs
 	libicu
 	libini_config
-	libipa_hbac
 	libiscsi
-	libjose
 	libjpeg-turbo
-	libldb
 	liblognorm
-	libluksmeta
 	libmodman
 	libnfsidmap
 	libnl
-	libogg
-	libosinfo
 	libpath_utils
 	libpcap
 	libproxy
 	libquadmath
 	librados2
 	librbd1
-	librdmacm
 	libref_array
-	libreport
-	libreport-centos
-	libreport-cli
-	libreport-filesystem
-	libreport-plugin-mantisbt
-	libreport-plugin-rhtsupport
-	libreport-plugin-ureport
-	libreport-python
-	libreport-web
 	libsemanage-python
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
-	libtalloc
-	libtar
-	libtdb
-	libtevent
 	libthai
 	libtiff
 	libtirpc
-	libudisks2
-	libusal
-	libusbx
 	libverto-libevent
-	libvirt-python
 	libwayland-client
 	libwayland-server
-	libwbclient
 	libwebp
-	libwsman1
 	libxcb
 	libxml2-python
 	libxshmfence
 	libxslt
 	libyaml
-	linux-firmware
 	lksctp-tools
-	lldpad
-	llvm-private
 	lm_sensors-libs
 	log4j
-	lsof
-	luksmeta
-	lzop
 	m2crypto
 	mailcap
-	mailx
 	make
-	mdadm
-	mesa-dri-drivers
-	mesa-filesystem
 	mesa-libEGL
 	mesa-libGL
 	mesa-libgbm
 	mesa-libglapi
 	mod_ssl
-	mpfr
 	msv-msv
 	msv-xsdlib
-	mtools
-	nbdkit
-	nbdkit-plugin-python-common
-	nbdkit-plugin-python2
-	nbdkit-plugin-vddk
 	net-snmp
 	net-snmp-agent-libs
 	net-snmp-libs
-	net-snmp-utils
-	netcf-libs
 	nettle
-	newt-python
 	nfs-utils
 	nmap-ncat
 	ntp
 	ntpdate
-	numactl
-	numad
 	objectweb-asm
 	objectweb-asm4
-	oddjob
-	oddjob-mkhomedir
 	openldap-clients
-	opensc
-	openscap
-	openscap-scanner
 	openssl
 	openssl-libs
-	openwsman-python
-	opus
-	osinfo-db
-	osinfo-db-tools
 	pam_pkcs11
 	pciutils
-	pcsc-lite
-	pcsc-lite-ccid
 	pcsc-lite-libs
 	perl
 	perl-Archive-Tar
@@ -557,7 +327,6 @@ includepkgs = 389-ds-base
 	perl-Time-HiRes
 	perl-Time-Local
 	perl-constant
-	perl-hivex
 	perl-libs
 	perl-macros
 	perl-parent
@@ -569,71 +338,43 @@ includepkgs = 389-ds-base
 	policycoreutils-python
 	postgresql-jdbc
 	postgresql-libs
-	psmisc
-	pygobject2
-	pykickstart
-	pyparted
 	python-IPy
-	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
-	python-blivet
 	python-cffi
 	python-configshell
-	python-dmidecode
 	python-docutils
 	python-enum34
 	python-ethtool
-	python-gssapi
-	python-inotify
-	python-ipaddr
 	python-ipaddress
 	python-javapackages
 	python-jinja2
-	python-jwcrypto
-	python-kitchen
 	python-kmod
 	python-ldap
-	python-libipa_hbac
 	python-lxml
-	python-magic
 	python-markupsafe
-	python-netifaces
-	python-nss
 	python-paramiko
 	python-pillow
 	python-ply
-	python-prettytable
 	python-psycopg2
 	python-pwquality
-	python-pyblock
 	python-pycparser
-	python-qrcode-core
 	python-rtslib
 	python-setuptools
-	python-sss-murmur
-	python-sssdconfig
-	python-suds
 	python-urwid
 	python-webob
-	python-yubico
-	python2-blockdev
 	python2-cryptography
 	python2-futures
 	python2-pyasn1
-	python2-pyasn1-modules
 	python2-subprocess32
 	pytz
-	pyusb
 	qdox
 	quota
 	quota-nls
-	radvd
 	rdma-core
 	relaxngDatatype
 	resteasy-base-jaxrs
 	resteasy-base-jaxrs-api
-	rng-tools
 	rpcbind
 	rsync
 	ruby
@@ -644,75 +385,25 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
-	samba-client-libs
-	samba-common
-	samba-common-libs
-	sanlock
-	sanlock-lib
-	sanlock-python
-	satyr
 	scannotation
-	scap-security-guide
 	scl-utils
-	scrub
-	seabios-bin
-	seavgabios-bin
 	setools-libs
-	sgabios-bin
-	sgpio
 	slf4j
-	socat
-	spice-server
-	squashfs-tools
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	stax2-api
-	supermin5
 	svrcore
-	syslinux
-	syslinux-extlinux
-	sysstat
 	targetcli
 	tcp_wrappers
-	tcpdump
-	telnet
-	tmux
 	tomcat-servlet-3.0-api
-	tpm2-abrmd
-	tpm2-tools
-	tpm2-tss
-	tree
 	trousers
 	ttmkfdir
-	udisks2
-	udisks2-iscsi
-	udisks2-lvm2
 	unbound-libs
-	unzip
-	usbredir
-	usermode
 	uuid
-	vdo
-	virt-install
-	virt-manager-common
-	volume_key-libs
 	ws-commons-util
 	ws-jaxme
 	xalan-j2
 	xerces-j2
-	xml-common
 	xml-commons-apis
 	xml-commons-resolver
-	xmlrpc-c
-	xmlrpc-c-client
 	xmlrpc-client
 	xmlrpc-common
 	xorg-x11-font-utils
@@ -721,7 +412,6 @@ includepkgs = 389-ds-base
 	xz-java
 	yajl
 	yum-plugin-versionlock
-	yum-utils
 
 [centos-extras-el7]
 name = CentOS7 Extras
@@ -734,11 +424,7 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = cockpit
-	cockpit-bridge
-	cockpit-dashboard
-	cockpit-storaged
-	cockpit-system
+includepkgs = cockpit-dashboard
 	cockpit-ws
 	dpdk
 	libssh
@@ -758,13 +444,9 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = libtomcrypt
-	libtommath
-	python2-crypto
+includepkgs = python2-click
 	python2-passlib
 	python2-pysocks
-	python2-qpid-proton
-	qpid-proton-c
 	rubygem-multipart-post
 
 [centos-ovirt-4.4-el7]
@@ -799,7 +481,6 @@ exclude = python2-qpid-proton
 max_connections = 10
 includepkgs = collectd
 	collectd-disk
-	collectd-netlink
 	collectd-postgresql
 	collectd-virt
 	collectd-write_http

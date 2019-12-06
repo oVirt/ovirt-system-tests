@@ -69,7 +69,9 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = NetworkManager-config-server
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	NetworkManager-config-server
 	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
@@ -89,7 +91,14 @@ includepkgs = NetworkManager-config-server
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
+	libipa_hbac
 	libkadm5
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libvirt
 	libvirt-admin
 	libvirt-bash-completion
@@ -116,12 +125,17 @@ includepkgs = NetworkManager-config-server
 	libvirt-daemon-kvm
 	libvirt-libs
 	libvirt-lock-sanlock
+	libwbclient
 	lvm2
 	lvm2-libs
+	numactl
 	pango
 	patch
 	python-firewall
 	python-libguestfs
+	python-libipa_hbac
+	python-sss-murmur
+	python-sssdconfig
 	python-syspurpose
 	python2-ipaclient
 	python2-ipalib
@@ -129,11 +143,24 @@ includepkgs = NetworkManager-config-server
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
 	rsyslog-mmnormalize
+	samba-client-libs
+	samba-common
+	samba-common-libs
 	selinux-policy
 	selinux-policy-targeted
 	sg3_utils
 	sg3_utils-libs
 	sos
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
@@ -141,6 +168,7 @@ includepkgs = NetworkManager-config-server
 	systemd-libs
 	systemd-python
 	systemd-sysv
+	tcpdump
 	tuned
 	tzdata-java
 	virt-v2v
@@ -150,9 +178,7 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	OVMF
+includepkgs = OVMF
 	OpenIPMI
 	OpenIPMI-libs
 	OpenIPMI-modalias
@@ -405,7 +431,6 @@ includepkgs = 389-ds-base
 	libibverbs
 	libicu
 	libini_config
-	libipa_hbac
 	libiscsi
 	libjpeg-turbo
 	libldb
@@ -434,12 +459,6 @@ includepkgs = 389-ds-base
 	libreport-web
 	libselinux-ruby
 	libsemanage-python
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -454,7 +473,6 @@ includepkgs = 389-ds-base
 	libvirt-python
 	libwayland-client
 	libwayland-server
-	libwbclient
 	libwsman1
 	libxcb
 	libxml2-python
@@ -502,7 +520,6 @@ includepkgs = 389-ds-base
 	nmap-ncat
 	ntp
 	ntpdate
-	numactl
 	numad
 	numpy
 	objectweb-asm
@@ -597,7 +614,6 @@ includepkgs = 389-ds-base
 	python-kitchen
 	python-kmod
 	python-ldap
-	python-libipa_hbac
 	python-lxml
 	python-magic
 	python-markupsafe
@@ -614,8 +630,6 @@ includepkgs = 389-ds-base
 	python-rtslib
 	python-setuptools
 	python-srpm-macros
-	python-sss-murmur
-	python-sssdconfig
 	python-suds
 	python-urwid
 	python-webob
@@ -653,9 +667,6 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
-	samba-client-libs
-	samba-common
-	samba-common-libs
 	sanlock
 	sanlock-lib
 	sanlock-python
@@ -674,16 +685,6 @@ includepkgs = 389-ds-base
 	socat
 	spice-server
 	squashfs-tools
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	stax2-api
 	supermin5
 	svrcore
@@ -692,7 +693,6 @@ includepkgs = 389-ds-base
 	sysstat
 	targetcli
 	tcp_wrappers
-	tcpdump
 	telnet
 	tomcat-servlet-3.0-api
 	tree

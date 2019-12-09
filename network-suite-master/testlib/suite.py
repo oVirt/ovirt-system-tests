@@ -41,6 +41,10 @@ def XFAIL_SUITE_MASTER(reason):
             )
 
 
+def is_master():
+    return SUITE_NAME.endswith('master')
+
+
 @contextlib.contextmanager
 def collect_artifacts(env, artifacts_path, module_name):
     try:

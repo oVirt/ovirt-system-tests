@@ -61,7 +61,9 @@ enabled = 1
 
 [epel-el8]
 name=epel
-mirrorlist = https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64
+baseurl=http://mirrors.mit.edu/epel/8/Everything/x86_64/
+ https://mirror.pnl.gov/epel/8/Everything/x86_64/
+ https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/
 failovermethod=priority
 includepkgs=
     ansible
@@ -117,7 +119,8 @@ gpgcheck=0
 
 [ovirt-master-epel-testing-el8]
 name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch
-metalink = https://mirrors.fedoraproject.org/metalink?repo=testing-epel8&arch=x86_64
+baseurl = http://mirrors.mit.edu/epel/testing/8/Everything/x86_64/
+ https://dl.fedoraproject.org/pub/epel/testing/8/Everything/x86_64/
 failovermethod=priority
 enabled=1
 gpgcheck=1

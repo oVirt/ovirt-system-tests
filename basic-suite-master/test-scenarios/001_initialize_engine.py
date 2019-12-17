@@ -131,7 +131,6 @@ def engine_config(prefix):
 
     _exec_engine_config(engine, 'VdsLocalDisksLowFreeSpace', '400')
     _exec_engine_config(engine, 'OvfUpdateIntervalInMinutes', '10')
-    _exec_engine_config(engine, 'VdsmUseNmstate', 'true')
 
 
 @testlib.with_ovirt_prefix

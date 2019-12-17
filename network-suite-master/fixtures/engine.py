@@ -53,9 +53,6 @@ def engine(fqdn, env, artifacts_path):
             ]
         )
 
-        if suite.is_master():
-            _exec_engine_config(engine, 'VdsmUseNmstate', 'true')
-
         syncutil.sync(exec_func=_get_engine_api,
                       exec_func_args=(engine,),
                       success_criteria=lambda api: isinstance(api, Connection),

@@ -69,6 +69,7 @@ includepkgs = 389-ds-base
 	device-mapper-libs
 	firewalld
 	firewalld-filesystem
+	fribidi
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
@@ -163,7 +164,6 @@ includepkgs = PyYAML
 	easymock2
 	fontconfig
 	fontpackages-filesystem
-	fribidi
 	gdk-pixbuf2
 	geronimo-jms
 	giflib

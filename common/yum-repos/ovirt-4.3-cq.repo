@@ -65,6 +65,7 @@ includepkgs = 389-ds-base
 	dnsmasq
 	firewalld
 	firewalld-filesystem
+	fribidi
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -305,7 +306,6 @@ includepkgs = OVMF
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
-	fribidi
 	fuse
 	fuse-libs
 	gdb

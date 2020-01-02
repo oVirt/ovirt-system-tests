@@ -529,12 +529,12 @@ env_copy_repo_file() {
 install_libguestfs() {
     cd /tmp
     /var/lib/ci_toolbox/safe_download.sh \
-        -s ec284cf371566983084a5e0427ed4f7ee48bd981 \
+        -s 525522aaf4fcc4f5212cc2a9e98ee873d125536e \
         appliance.lock \
-        http://download.libguestfs.org/binaries/appliance/appliance-1.38.0.tar.xz \
-        /var/lib/lago/appliance-1.38.0.tar.xz
+        http://download.libguestfs.org/binaries/appliance/appliance-1.40.1.tar.xz \
+        /var/lib/lago/appliance-1.40.1.tar.xz
 
-    tar xvf /var/lib/lago/appliance-1.38.0.tar.xz
+    tar xvf /var/lib/lago/appliance-1.40.1.tar.xz
     cd -
     export LIBGUESTFS_PATH=/tmp/appliance
 }

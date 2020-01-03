@@ -46,24 +46,31 @@ def setup_module():
 def _hosts_in_cluster(api, cluster_name):
     return api.hosts.list(query='cluster={}'.format(cluster_name))
 
-@testlib.with_ovirt_api
+
+@testlib.with_ovirt_api4
 def assign_hosts_network_label(api):
     """
     Assigns NETWORK_LABEL to first network interface of every host in cluster
     """
+    engine = api.system_service()
 
     def _assign_host_network_label(host):
-        nics = host.nics.list()
+        host_service = engine.hosts_service().host_service(id=host.id)
+        nics_service = host_service.nics_service()
+        nics = sorted(nics_service.list(),
+                      key=lambda n: n.name)
         nt.assert_greater_equal(len(nics), 1)
         nic = nics[0]
-        return nic.labels.add(
-                params.Label(
+        nic_service = nics_service.nic_service(id=nic.id)
+        labels_service = nic_service.network_labels_service()
+        return labels_service.add(
+                NetworkLabel(
                     id=NETWORK_LABEL,
                     host_nic=nic
                 )
             )
 
-    hosts = _hosts_in_cluster(CLUSTER_NAME)
+    hosts = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)
     vec = utils.func_vector(_assign_host_network_label, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()

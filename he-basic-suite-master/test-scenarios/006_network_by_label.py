@@ -56,9 +56,10 @@ def setup_module():
     ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def _hosts_in_cluster(api, cluster_name):
-    return api.hosts.list(query='cluster={}'.format(cluster_name))
+    hosts_service = api.system_service().hosts_service()
+    return hosts_service.list(search='cluster={}'.format(cluster_name))
 
 
 @testlib.with_ovirt_api4

@@ -92,28 +92,49 @@ def setup_module():
     ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm_blank(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+
     vm_memory = 512 * MB
-    vm_params = params.VM(
+    vm_params = sdk4.types.Vm(
         name=VM0_NAME,
         memory=vm_memory,
-        cluster=params.Cluster(
+        os=sdk4.types.OperatingSystem(
+            type='rhel_7x64',
+        ),
+        type=sdk4.types.VmType.SERVER,
+        high_availability=sdk4.types.HighAvailability(
+            enabled=False,
+        ),
+        cluster=sdk4.types.Cluster(
             name=TEST_CLUSTER,
         ),
-        template=params.Template(
+        template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
         ),
-        display=params.Display(
-            type_='spice',
+        display=sdk4.types.Display(
+            smartcard_enabled=True,
+            keyboard_layout='en-us',
+            file_transfer_enabled=True,
+            copy_paste_enabled=True,
+            type=sdk4.types.DisplayType.SPICE
         ),
-        memory_policy=params.MemoryPolicy(
+        usb=sdk4.types.Usb(
+            enabled=True,
+            type=sdk4.types.UsbType.NATIVE,
+        ),
+        memory_policy=sdk4.types.MemoryPolicy(
+            ballooning=True,
             guaranteed=vm_memory / 2,
         ),
     )
-    api.vms.add(vm_params)
+
+    vms_service.add(vm_params)
+    vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'down',
+        lambda: vm0_vm_service.get().status == sdk4.types.VmStatus.DOWN
     )
 
 

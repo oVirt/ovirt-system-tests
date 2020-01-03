@@ -668,7 +668,7 @@ def add_quota_storage_limits(api):
             )
         )
     )
-                                                                                              790,17        40%
+
 
 @testlib.with_ovirt_api4
 def add_quota_cluster_limits(api):

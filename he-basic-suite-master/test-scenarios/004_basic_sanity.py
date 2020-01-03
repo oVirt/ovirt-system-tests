@@ -177,29 +177,42 @@ def add_nic(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_disk(api):
-    disk_params = params.Disk(
-        name=DISK0_NAME,
-        size=10 * GB,
-        provisioned_size=1,
-        interface='virtio',
-        format='cow',
-        storage_domains=params.StorageDomains(
-            storage_domain=[
-                params.StorageDomain(
-                    name='nfs',
-                ),
-            ],
+    engine = api.system_service()
+    vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm0_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+
+    vm0_disk_attachments_service.add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                name=DISK0_NAME,
+                format=types.DiskFormat.COW,
+                initial_size=10 * GB,
+                provisioned_size=1,
+                sparse=True,
+                storage_domains=[
+                    types.StorageDomain(
+                        name=SD_NFS_NAME,
+                    ),
+                ],
+            ),
+            interface=types.DiskInterface.VIRTIO,
+            active=True,
+            bootable=True,
         ),
-        status=None,
-        sparse=True,
-        bootable=True,
     )
-    api.vms.get(VM0_NAME).disks.add(disk_params)
-    testlib.assert_true_within_short(
+
+    disk0_service = test_utils.get_disk_service(engine, DISK0_NAME)
+    disk0_attachment_service = vm0_disk_attachments_service.attachment_service(disk0_service.get().id)
+
+    testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+        disk0_attachment_service.get().active == True
+    )
+    testlib.assert_true_within_long(
+        lambda:
+        disk0_service.get().status == types.DiskStatus.OK
     )
 
 

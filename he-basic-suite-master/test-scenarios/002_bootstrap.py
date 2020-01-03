@@ -109,12 +109,6 @@ def _create_url_for_host(prefix, host_name):
 
 
 def _hosts_in_dc(api, dc_name=DC_NAME):
-    hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
-        return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
-
-def _hosts_in_dc_4(api, dc_name=DC_NAME):
     hosts_service = api.system_service().hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if hosts:
@@ -123,9 +117,6 @@ def _hosts_in_dc_4(api, dc_name=DC_NAME):
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc(api, dc_name))
-
-def _random_host_from_dc_4(api, dc_name=DC_NAME):
-    return random.choice(_hosts_in_dc_4(api, dc_name))
 
 
 @testlib.with_ovirt_api4

@@ -119,29 +119,30 @@ def add_labeled_network(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def assign_labeled_network(api):
     """
     Adds the labeled network to the cluster and asserts the hosts are attached
     """
+    engine = api.system_service()
 
-    labeled_net = api.networks.get(name=LABELED_NET_NAME)
-
-    def _host_is_in_labled_network():
-        for networkattachment in host.networkattachments.list():
-            network = api.networks.get(id=networkattachment.network.get_id())
-            if network.name == LABELED_NET_NAME:
-                return True
-        return False
+    labeled_net = engine.networks_service().list(
+        search='name={}'.format(LABELED_NET_NAME))[0]
 
     # the logical network will be automatically assigned to all host network
     # interfaces with that label asynchronously
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(labeled_net)
+        cluster_service.networks_service().add(labeled_net)
     )
 
-    for host in _hosts_in_cluster(CLUSTER_NAME):
-        testlib.assert_true_within_short(_host_is_in_labled_network)
+    hosts_service = engine.hosts_service()
+    for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
+        host_service = hosts_service.host_service(id=host.id)
+        testlib.assert_true_within_short(
+            functools.partial(_host_is_attached_to_network, engine,
+                              host_service, LABELED_NET_NAME))
 
 
 _TEST_LIST = [

@@ -86,7 +86,9 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'
+GUEST_IMAGE_NAME = versioning.guest_os_image_name()
+GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
+TEMPLATE_GUEST = versioning.guest_os_template_name()
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -461,34 +463,33 @@ def add_templates_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export')
 
 
-def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_TYPE, dest_cluster=CLUSTER_NAME):
-    glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-    target_image = glance_provider.images.get(name=image_name)
-    disk_name = image_name.replace(" ", "_") + image_ext
-    template_name = image_name.replace(" ", "_") + template_ext
-    import_action = params.Action(
-        storage_domain=params.StorageDomain(
-            name=dest_storage_domain,
+def generic_import_from_glance(prefix=None, as_template=False,
+                               dest_storage_domain=MASTER_SD_TYPE,
+                               dest_cluster=CLUSTER_NAME):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    storage_domains_service = api.system_service().storage_domains_service()
+    glance_storage_domain = storage_domains_service.list(search='name={}'.format(SD_GLANCE_NAME))[0]
+    images = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().list()
+    image = [x for x in images if x.name == GUEST_IMAGE_NAME][0]
+    image_service = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().image_service(image.id)
+    result = image_service.import_(
+        storage_domain=types.StorageDomain(
+           name=dest_storage_domain,
         ),
-        cluster=params.Cluster(
-            name=dest_cluster,
+        template=types.Template(
+            name=TEMPLATE_GUEST,
+        ),
+        cluster=types.Cluster(
+           name=dest_cluster,
         ),
         import_as_template=as_template,
-        disk=params.Disk(
-            name=disk_name,
-        ),
-        template=params.Template(
-            name=template_name,
+        disk=types.Disk(
+            name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
         ),
     )
+    disk = api.system_service().disks_service().list(search='name={}'.format(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME))[0]
+    nt.assert_true(disk)
 
-    nt.assert_true(
-        target_image.import_image(import_action)
-    )
-
-    testlib.assert_true_within_long(
-        lambda: api.disks.get(disk_name).status.state == 'ok',
-    )
 
 @testlib.with_ovirt_prefix
 def wait_engine(prefix):
@@ -594,18 +595,16 @@ def check_glance_connectivity(api):
     return avail
 
 
-def import_non_template_from_glance(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
+def import_non_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
-    generic_import_from_glance(api)
+    generic_import_from_glance(prefix=prefix_param)
 
 
-def import_template_from_glance(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
+def import_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
-    generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
+    generic_import_from_glance(prefix=prefix_param, as_template=True)
 
 
 @testlib.with_ovirt_api4

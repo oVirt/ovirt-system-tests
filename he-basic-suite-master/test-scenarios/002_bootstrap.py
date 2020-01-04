@@ -101,6 +101,10 @@ def _get_host_ip(prefix, host_name):
     return prefix.virt_env.get_vm(host_name).ip()
 
 
+def _get_host_ips_in_net(prefix, host_name, net_name):
+    return prefix.virt_env.get_vm(host_name).ips_in_net(net_name)
+
+
 def _create_url_for_host(prefix, host_name):
     ip = prefix.virt_env.get_vm(host_name).ip()
     if IPV6_ONLY:

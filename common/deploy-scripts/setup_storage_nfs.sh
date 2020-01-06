@@ -18,12 +18,11 @@ echo '/dev/vdc1			        /exports/nfs_exported   ext4    defaults        0 0' >
 mount -a
 
 mkdir -p 				\
-	/exports/nfs_clean/share1/ 	\
-	/exports/nfs_clean/iso/
+	/exports/nfs_clean/share1/
 
 chmod a+rwx 				\
 	/exports/nfs_clean/share1/	\
-	/exports/nfs_clean/iso/
+	/exports/nfs_clean/exported/
 
 echo '/exports/nfs_clean/share1 *(rw,sync,anonuid=36,anongid=36,all_squash)' >> /etc/exports
 echo '/exports/nfs_exported/ *(rw,sync,anonuid=36,anongid=36,all_squash)' >> /etc/exports

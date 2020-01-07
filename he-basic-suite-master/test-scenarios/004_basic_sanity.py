@@ -38,6 +38,7 @@ TEST_CLUSTER = 'Default'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
 
+MANAGEMENT_NETWORK = 'ovirtmgmt'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME

@@ -49,6 +49,8 @@ except ImportError:
 from lago import utils
 from ovirtlago import testlib
 
+import logging
+LOGGER = logging.getLogger(__name__)
 
 # DC/Cluster
 DC_NAME = 'Default'
@@ -111,16 +113,26 @@ def _create_url_for_host(prefix, host_name):
         return '[%s]' % ip
     return ip
 
-
 def _hosts_in_dc(api, dc_name=DC_NAME):
+    hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
+    if hosts:
+        return sorted(hosts, key=lambda host: host.name)
+    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
+
+def _hosts_in_dc_4(api, dc_name=DC_NAME):
     hosts_service = api.system_service().hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if hosts:
         return sorted(hosts, key=lambda host: host.name)
     raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
 
+
 def _random_host_from_dc(api, dc_name=DC_NAME):
     return random.choice(_hosts_in_dc(api, dc_name))
+
+
+def _random_host_from_dc_4(api, dc_name=DC_NAME):
+    return random.choice(_hosts_in_dc_4(api, dc_name))
 
 
 @testlib.with_ovirt_api4
@@ -292,7 +304,7 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
             kwargs['storage_format'] = sdk4.types.StorageFormat.V3
         elif not versioning.cluster_version_ok(4, 3):
             kwargs['storage_format'] = sdk4.types.StorageFormat.V4
-    random_host = _random_host_from_dc(api, DC_NAME)
+    random_host = _random_host_from_dc_4(api, DC_NAME)
     LOGGER.debug('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
@@ -345,6 +357,70 @@ def add_glance_storage(prefix):
 
 
 def add_iscsi_storage_domain(prefix):
+    # FIXME
+    # if API_V4:
+    #    return add_iscsi_storage_domain_4(prefix)
+
+    api = prefix.virt_env.engine_vm().get_api()
+
+    # Find LUN GUIDs
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
+    nt.assert_equals(ret.code, 0)
+
+    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
+
+    p = params.StorageDomain(
+        name=SD_ISCSI_NAME,
+        data_center=params.DataCenter(
+            name=DC_NAME,
+        ),
+        type_='data',
+        storage_format=SD_FORMAT,
+        host=_random_host_from_dc(api, DC_NAME),
+        storage=params.Storage(
+            type_='iscsi',
+            volume_group=params.VolumeGroup(
+                logical_unit=[
+                    params.LogicalUnit(
+                        id=lun_id,
+                        address=_get_host_ip(
+                            prefix,
+                            SD_ISCSI_HOST_NAME,
+                        ),
+                        port=SD_ISCSI_PORT,
+                        target=SD_ISCSI_TARGET,
+                        username='username',
+                        password='password',
+                    ) for lun_id in lun_guids
+                ]
+
+            ),
+        ),
+    )
+    _add_storage_domain_3(api, p)
+
+def _add_storage_domain_3(api, p):
+    dc = api.datacenters.get(DC_NAME)
+    sd = api.storagedomains.add(p)
+    nt.assert_true(sd)
+    nt.assert_true(
+        api.datacenters.get(
+            DC_NAME,
+        ).storagedomains.add(
+            api.storagedomains.get(
+                sd.name,
+            ),
+        )
+    )
+
+    if dc.storagedomains.get(sd.name).status.state == 'maintenance':
+        sd.activate()
+    testlib.assert_true_within_long(
+        lambda: dc.storagedomains.get(sd.name).status.state == 'active'
+    )
+
+
+def add_iscsi_storage_domain_bad(prefix):
     luns = test_utils.get_luns(
         prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
 

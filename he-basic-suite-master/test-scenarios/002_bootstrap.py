@@ -685,7 +685,7 @@ def add_quota_cluster_limits(api):
                 memory_limit=10000.0
             )
         )
-)
+    )
 
 
 @testlib.with_ovirt_api4

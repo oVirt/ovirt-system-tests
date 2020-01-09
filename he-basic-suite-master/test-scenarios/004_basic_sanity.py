@@ -24,7 +24,9 @@ from nose import SkipTest
 from ovirtsdk.xml import params
 
 from ovirtlago import testlib
+import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
+
 import test_utils
 import uuid
 from test_utils import ipv6_utils

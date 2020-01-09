@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright 2014-2019 Red Hat, Inc.
 #
@@ -93,6 +94,10 @@ VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
 
 IPV6_ONLY = os.getenv('IPV6_ONLY', False)
+# Network
+VM_NETWORK = u'VM Network with a very long name and עברית'
+VM_NETWORK_VLAN_ID = 100
+MIGRATION_NETWORK = 'Migration_Net'
 
 
 def setup_module():
@@ -297,7 +302,7 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
     api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-    ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
+    ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-management'))
     kwargs = {}
     if sd_format >= 'v4':
         if not versioning.cluster_version_ok(4, 1):

@@ -1,4 +1,3 @@
-#
 # Copyright 2014-2019 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,11 +17,13 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import os
+from os import EX_OK
 import nose.tools as nt
 from nose import SkipTest
 
 from ovirtsdk.xml import params
 
+from lago import ssh
 from ovirtlago import testlib
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
@@ -46,11 +47,45 @@ VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 
+SD_NFS_NAME = 'nfs'
+
 SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('storage')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
+VM_USER_NAME='cirros'
+VM_PASSWORD='gocubsgo'
+
+def _ping(ovirt_prefix, destination):
+    """
+    Ping a given destination.
+    """
+    host = ovirt_prefix.virt_env.host_vms()[0]
+    cmd = ['ping', '-4', '-c', '1']
+    ret = host.ssh(cmd + [destination])
+    return ret.code
+
+
+def _vm_ssh(ip_address, command, tries=None):
+    return ssh.ssh(
+        ip_addr=ip_address,
+        command=command,
+        username=VM_USER_NAME,
+        password=VM_PASSWORD,
+        tries=tries,
+    )
+
+def assert_vm0_is_alive(prefix):
+    assert_vm_is_alive(prefix, test_utils.get_vm0_ip_address(prefix))
+
+
+def assert_vm_is_alive(prefix, ip_address):
+    testlib.assert_true_within_short(
+        lambda:
+        _ping(prefix, ip_address) == EX_OK
+    )
+    nt.assert_equals(_vm_ssh(ip_address, ['true']).code, EX_OK)
 
 
 def setup_module():
@@ -391,44 +426,30 @@ def hotplug_nic(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@testlib.with_ovirt_prefix
-def hotplug_disk(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api.system_service()
-    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
-    disk_attachment = disk_attachments_service.add(
-        types.DiskAttachment(
-            disk=types.Disk(
-                name=DISK1_NAME,
-                provisioned_size=10 * GB,
-                format=types.DiskFormat.COW,
-                storage_domains=[
-                    types.StorageDomain(
-                        name=SD_NFS_NAME,
-                    ),
-                ],
-                status=None,
-                sparse=True,
-            ),
-            interface=types.DiskInterface.VIRTIO,
-            bootable=False,
-            active=True
-        )
+@testlib.with_ovirt_api
+def hotplug_disk(api):
+    disk2_params = params.Disk(
+        name=DISK1_NAME,
+        size=10 * GB,
+        provisioned_size=1,
+        interface='virtio',
+        format='cow',
+        storage_domains=params.StorageDomains(
+            storage_domain=[
+                params.StorageDomain(
+                    name='nfs',
+                ),
+            ],
+        ),
+        status=None,
+        sparse=True,
+        bootable=False,
     )
-
-    disks_service = engine.disks_service()
-    disk_service = disks_service.disk_service(disk_attachment.disk.id)
-    attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
-
+    api.vms.get(VM0_NAME).disks.add(disk2_params)
     testlib.assert_true_within_short(
         lambda:
-        attachment_service.get().active == True
+        api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
     )
-    testlib.assert_true_within_short(
-        lambda:
-        disk_service.get().status == types.DiskStatus.OK
-    )
-    assert_vm0_is_alive(prefix)
 
 
 _TEST_LIST = [

@@ -26,6 +26,7 @@ from ovirtsdk.xml import params
 
 from lago import utils
 from ovirtlago import testlib
+import test_utils
 from test_utils import ipv6_utils
 
 # DC/Cluster

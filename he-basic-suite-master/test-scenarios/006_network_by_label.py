@@ -23,11 +23,12 @@ import time
 import functools
 import nose.tools as nt
 from ovirtsdk.xml import params
+from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
 from lago import utils
 from ovirtlago import testlib
 import test_utils
-from test_utils import ipv6_utils
+from test_utils import ipv6_utils, network_utils_v4
 
 # DC/Cluster
 DC_NAME = 'Default'
@@ -37,6 +38,18 @@ CLUSTER_NAME = 'Default'
 NETWORK_LABEL = 'NETWORK_LABEL'
 LABELED_NET_NAME = 'Labeled_Network'
 LABELED_NET_VLAN_ID = 600
+
+
+def _host_is_attached_to_network(engine, host, network_name):
+    try:
+        attachment = network_utils_v4.get_network_attachment(
+            engine, host, network_name, DC_NAME)
+    except StopIteration:  # there is no attachment of the network to the host
+        return False
+
+    # 'return attachment' cannot be used because assert_true_within_short
+    # seems to require True and not just a bool(value) that evaluates as True
+    return True
 
 
 def setup_module():

@@ -1,0 +1,6 @@
+[main]
+reposdir = /etc/reposync.repos.d
+max_connections = 50
+ip_resolve = 4
+gpgcheck = 0
+plugins = 1

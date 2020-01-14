@@ -1,1 +1,1 @@
-../../common/deploy-scripts/add_local_repo.sh
+../../common/deploy-scripts/pre_upgrade_suite_general_add_local_repo.sh

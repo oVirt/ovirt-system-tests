@@ -3,7 +3,7 @@ set -ex
 
 HUGEPAGES=3
 
-yum update -y iptables
+yum update -y iptables 
 
 # Reserving port 54322 for ovirt-imageio-daemon service
 # ToDo: this workaround can be removed once either of
@@ -54,3 +54,8 @@ setup_ipv6() {
 if [[ $(hostname) == *"ipv6"* ]]; then
     setup_ipv6
 fi
+
+# increase ISCSI timeouts, see setup_storage_unified_el7.sh
+yum install -y iscsi-initiator-utils
+sed -i 's/node.conn\[0\].timeo.noop_out_timeout = 5/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf
+

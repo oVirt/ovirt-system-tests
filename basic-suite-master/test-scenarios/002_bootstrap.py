@@ -349,6 +349,9 @@ def add_hosts(prefix):
             nt.assert_true(
                 _add_host(host)
             )
+            # TODO: Adding a delay between adding hosts to bypass certificate
+            # issue: https://bugzilla.redhat.com/1787195
+            time.sleep(60)
 
 
 @testlib.with_ovirt_api4

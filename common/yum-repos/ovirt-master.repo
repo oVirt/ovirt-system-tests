@@ -236,6 +236,7 @@ includepkgs = PyYAML
 	libglvnd-egl
 	libglvnd-glx
 	libibumad
+	libibverbs
 	libicu
 	libini_config
 	libiscsi

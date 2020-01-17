@@ -77,6 +77,8 @@ he_deploy() {
 }
 
 run_suite(){
+    install_libguestfs
+    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     declare failed=false
@@ -88,8 +90,11 @@ run_suite(){
         --reposync-yum-config ${suite}/reposync-he.repo
     cd -
     env_repo_setup
-    install_local_rpms
+    install_local_rpms_without_reposync
     env_start
+    env_copy_repo_file
+    env_copy_config_file
+    cd "$OST_REPO_ROOT"
     env_deploy
     he_deploy || failed=true
     if $failed; then

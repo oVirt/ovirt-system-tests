@@ -73,9 +73,7 @@ run_suite(){
         install_local_rpms
     fi
     env_start
-    if [[ -e "${SUITE}/reposync-config-sdk4.repo" ]]; then
-        env_copy_repo_file
-    fi
+    env_copy_repo_file
     env_copy_config_file
     cd "$OST_REPO_ROOT"
 

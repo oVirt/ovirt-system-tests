@@ -4,6 +4,65 @@ prep_suite () {
     render_jinja_templates
 }
 
+env_copy_config_file() {
+
+    local file_name="$1"
+    local dest_file="$2"
+    local run_file="$3"
+    cd "$PREFIX"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+       if [[ -e "$file_name" ]] ;then
+           "$CLI" copy-to-vm "$vm" "$file_name" "$dest_file"
+       fi
+       if [[ -e "$run_file" ]] ;then
+           "source $dest_path/${file_name##*/}"
+       fi
+    done
+}
+
+env_copy_repo_file() {
+
+    local engine_repo_file="$1"
+    local host_repo_file="$2"
+    local copy_to_path="$3"
+    cd "$PREFIX"
+    ## ENGINE
+    local reposync_file="$engine_repo_file"
+    local reqsubstr="engine"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
+            if [[ -e "$reposync_file" ]] ;then
+                "$CLI" copy-to-vm "$vm" "$reposync_file" "$copy_to_path/${reposync_file##*/}"
+            fi
+        fi
+    done
+
+    ## HOST
+    local reposync_file="$host_repo_file"
+    local reqsubstr="host"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
+            if [[ -e "$reposync_file" ]] ;then
+                "$CLI" copy-to-vm "$vm" "$reposync_file" "$copy_to_path/${reposync_file##*/}"
+            fi
+        fi
+    done
+
+    cd -
+}
+
 env_repo_setup_base_version () {
     #This function is setting up the env with stable release repo
     echo "######## Setting up repos (init)"
@@ -22,6 +81,18 @@ env_repo_setup_destination_version () {
     env_repo_setup
 }
 
+run_cli_on_vms () {
+
+    local command="$1"
+    cd "$PREFIX"
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+       "$CLI" shell "$vm" -c "$command"
+    done
+}
 
 clean_internal_repo () {
     echo "Cleaning internal repo"
@@ -34,8 +105,18 @@ run_suite () {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup_base_version
-    install_local_rpms
+    if [[ -e "$SUITE/reposync-config-sdk4.repo" ]] ;then
+        install_local_rpms_without_reposync
+    else
+        install_local_rpms
+    fi
+    #install_local_rpms
     env_start
+    env_copy_config_file "$SUITE/vars/main.yml" "/tmp/vars_main.yml" false
+    env_copy_repo_file "$SUITE"/pre-reposync-config-engine.repo \
+        "$SUITE"/pre-reposync-config-host.repo \
+        "/etc/yum.repos.d"
+    cd "$OST_REPO_ROOT"
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
         echo "@@@ ERROR: Failed in deploy stage"
@@ -58,6 +139,25 @@ run_suite () {
 
     #Clean internal repo
     clean_internal_repo
+    if [[ -e "$SUITE/pre-reposync*.repo" ]] ; then
+        # disable old repos
+        run_cli_on_vms "yum-config-manager --disable \*"
+        # remove old repo files
+        run_cli_on_vms "rm /etc/yum.repos.d/pre-reposync*.repo"
+    fi
+    # copy repo file to VM's
+    env_copy_repo_file "$SUITE"/reposync-config-engine.repo \
+        "$SUITE"/reposync-config-host.repo \
+        "/etc/yum.repos.d"
+    # install the new release_rpm
+    if [[ -e "$SUITE/deploy-scripts/post_general_add_local_repo.sh" ]] ; then
+        env_copy_config_file "$SUITE/deploy-scripts/post_general_add_local_repo.sh" \
+            "/tmp/post_add_local_repo.sh" \
+            true
+
+        # run the script
+        run_cli_on_vms "source /tmp/post_add_local_repo.sh"
+    fi
     #Prepare env for upgrade
     env_repo_setup_destination_version
     #This loop runs the engine upgrade and the tests following it

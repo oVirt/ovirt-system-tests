@@ -11,6 +11,10 @@ domains:
       - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
     metadata:
       ovirt-engine-password: 123
+    artifacts:
+      - /etc/resolv.conf
+      - /var/log
+      - /etc/yum.repos.d
 
   lago-{{ env.suite_name }}-storage:
     memory: 750
@@ -99,10 +103,13 @@ domains:
         {% if env.coverage == "true" -%}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_vdsm_coverage.sh
         {%- endif %}
-    {% if env.coverage == "true" -%}
     artifacts:
+      - /etc/resolv.conf
+      - /var/log
+      - /etc/yum.repos.d
+      {% if env.coverage == "true" -%}
       - /var/lib/vdsm/coverage
-    {%- endif %}
+      {%- endif %}
 {%- endfor %}
 
 nets:

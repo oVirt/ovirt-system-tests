@@ -5,6 +5,15 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
+[ovirt-4.3-tested-el7]
+name = oVirt 4.3 Tested
+baseurl = http://resources.ovirt.org/repos/ovirt/tested/4.3/rpm/el7/
+enabled = 1
+max_connections = 10
+proxy = _none_
+cost = 1
+gpgcheck = 0
+
 [ovirt-4.3-snapshot-static-el7]
 name = oVirt 4.3 Nightly Statics
 baseurl = http://resources.ovirt.org/pub/ovirt-4.3-snapshot-static/rpm/el7/

@@ -4,7 +4,7 @@ baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
 enabled = 1
 max_connections = 10
 proxy = _none_
-cost = 100
+cost = 1
 skip_if_unavailable=1
 gpgcheck = 0
 

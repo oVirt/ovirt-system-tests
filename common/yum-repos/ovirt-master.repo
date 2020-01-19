@@ -70,6 +70,7 @@ includepkgs = 389-ds-base
 	firewalld
 	firewalld-filesystem
 	fribidi
+	git
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
@@ -80,6 +81,7 @@ includepkgs = 389-ds-base
 	lvm2
 	lvm2-libs
 	pango
+	perl-Git
 	python-firewall
 	rsyslog
 	rsyslog-elasticsearch
@@ -167,7 +169,6 @@ includepkgs = PyYAML
 	gdk-pixbuf2
 	geronimo-jms
 	giflib
-	git
 	glib-networking
 	gnutls
 	gperftools-libs
@@ -308,7 +309,6 @@ includepkgs = PyYAML
 	perl-File-Temp
 	perl-Filter
 	perl-Getopt-Long
-	perl-Git
 	perl-HTTP-Tiny
 	perl-IO-Compress
 	perl-IO-Zlib

@@ -61,6 +61,7 @@ includepkgs = 389-ds-base
 	firewalld
 	firewalld-filesystem
 	fribidi
+	git
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -112,6 +113,7 @@ includepkgs = 389-ds-base
 	numactl
 	pango
 	patch
+	perl-Git
 	python-firewall
 	python-libguestfs
 	python-libipa_hbac
@@ -312,7 +314,6 @@ includepkgs = OVMF
 	genisoimage
 	geronimo-jms
 	giflib
-	git
 	glib-networking
 	gnutls
 	gnutls-dane
@@ -539,7 +540,6 @@ includepkgs = OVMF
 	perl-File-Temp
 	perl-Filter
 	perl-Getopt-Long
-	perl-Git
 	perl-HTTP-Tiny
 	perl-IO-Compress
 	perl-IO-Zlib

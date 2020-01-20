@@ -22,6 +22,7 @@ import json
 import nose.tools as nt
 from ovirtlago import testlib
 from test_utils import ipv6_utils
+from test_utils import constants
 
 import logging
 import time
@@ -193,11 +194,14 @@ def _start_he_vm(host):
 
 def _wait_for_engine_health(host):
     logging.info("Waiting for engine to start...")
-    testlib.assert_true_within_long(lambda: any(
-        v["engine-status"]["health"] == "good"
-        for k, v in _get_he_status(host).items()
-        if k.isdigit()
-    ))
+    testlib.assert_true_within(
+        lambda: any(
+            v["engine-status"]["health"] == "good"
+            for k, v in _get_he_status(host).items()
+            if k.isdigit()
+        ),
+        constants.ENGINE_VM_RESTART_TIMEOUT,
+    )
 
     logging.info("Engine is running.")
 

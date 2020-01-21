@@ -3,7 +3,8 @@ set -ex
 
 HUGEPAGES=3
 
-yum update -y iptables 
+# Update all packages before adding host to engine
+yum update -y
 
 # Reserving port 54322 for ovirt-imageio-daemon service
 # ToDo: this workaround can be removed once either of

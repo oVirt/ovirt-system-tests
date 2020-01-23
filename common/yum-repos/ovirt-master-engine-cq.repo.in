@@ -5,6 +5,14 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
+[ovirt-master-tested-el7]
+name = oVirt Master Latest Tested
+baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
+enabled = 1
+max_connections = 10
+gpgcheck = 0
+proxy = _none_
+
 [ovirt-master-snapshot-static-el7]
 name = oVirt Master Nightly Statics
 baseurl = http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/

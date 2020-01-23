@@ -56,14 +56,14 @@ run_suite(){
     env_init \
         "$1" \
         "$suite/LagoInitFile"
-    cd $PREFIX
-    lago ovirt reposetup \
-        --reposync-yum-config ${suite}/reposync-he.repo
-    cd -
     env_repo_setup
     if [[ "${SUITE##*/}" == "he-basic-suite-master" ]]; then
         install_local_rpms_without_reposync
     else
+        cd $PREFIX
+        lago ovirt reposetup \
+            --reposync-yum-config ${suite}/reposync-he.repo
+        cd -
         install_local_rpms
     fi
     env_start

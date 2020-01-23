@@ -5,20 +5,3 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
-[ovirt-master-tested-el7]
-name = oVirt Master Latest Tested
-baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
-enabled = 1
-max_connections = 10
-cost = 101
-gpgcheck = 0
-proxy = _none_
-
-[ovirt-master-tested-el8]
-name = oVirt Master Latest Tested
-baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el8/
-enabled = 1
-max_connections = 10
-cost = 100
-gpgcheck = 0
-

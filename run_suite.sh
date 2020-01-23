@@ -159,8 +159,11 @@ put_host_image() {
     # Place a symlink to th host's base image in dest
     # The default is to place a symlink named "host_image"
     # in the internal repo.
-    local dest="${1:-$PREFIX/current/internal_repo/host_image}"
-
+    local internal_repo_dir="$PREFIX/current/internal_repo"
+    local dest="${1:-$internal_repo_dir/host_image}"
+    if [[ ! -e "$internal_repo_dir" ]]; then
+        mkdir  "$internal_repo_dir"
+    fi
     python "${OST_REPO_ROOT}/common/scripts/put_host_image.py" "$PREFIX" "$dest"
 }
 

@@ -15,7 +15,6 @@ stage:
   - check-patch:
       timeout: 180m
       substage:
-        - ansible_suite_master
         - dr_suite_master
         - basic_suite_4.2
         - basic_suite_4.3
@@ -24,7 +23,6 @@ stage:
         - compat-4.3_suite_master
         - he-basic-ipv6_suite_4.3
         - he-basic_suite_4.3
-        - he-basic_suite_master
         - he-basic-iscsi_suite_4.3
         - he-basic-role-remote_suite_4.3
         - he-node-ng_suite_4.3

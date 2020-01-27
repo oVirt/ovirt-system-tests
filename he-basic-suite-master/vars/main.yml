@@ -3,4 +3,4 @@ templates:
   host: el8-base-1
 hostCount: 2
 system_requirements:
-  disk_space_gb: 15
+  disk_space_gb: 20

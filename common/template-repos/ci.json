@@ -99,6 +99,15 @@
         }
       }
     },
+    "el7.7-base-2": {
+      "versions": {
+        "v1": {
+          "source": "ci-templates-vm",
+          "handle": "el7.7-base-2",
+          "timestamp": 1580278439.5182588
+        }
+      }
+    },
     "el8-base-1": {
       "versions": {
         "v1": {

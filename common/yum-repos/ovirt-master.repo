@@ -63,6 +63,7 @@ enabled = 1
 max_connections = 10
 includepkgs = 389-ds-base
 	389-ds-base-libs
+	apache-commons-beanutils
 	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
@@ -110,7 +111,6 @@ includepkgs = PyYAML
 	ant
 	antlr-tool
 	aopalliance
-	apache-commons-beanutils
 	apache-commons-codec
 	apache-commons-collections
 	apache-commons-compress

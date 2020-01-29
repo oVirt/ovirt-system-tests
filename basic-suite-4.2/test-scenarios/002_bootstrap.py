@@ -364,7 +364,7 @@ def verify_add_hosts(prefix):
         api = prefix.virt_env.engine_vm().get_api()
         verify_add_hosts_3(api, hosts)
         for host in hosts:
-            host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+            host.ssh(['rm', '-rf', '/var/cache/yum.*'])
 
 
 
@@ -449,7 +449,7 @@ def verify_add_all_hosts(prefix):
 
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+        host.ssh(['rm', '-rf', '/var/cache/yum.*'])
 
 
 @testlib.with_ovirt_prefix

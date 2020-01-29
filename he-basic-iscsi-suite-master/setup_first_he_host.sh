@@ -54,12 +54,12 @@ sed \
     > /root/hosted-engine-deploy-answers-file.conf
 
 fstrim -va
-rm -rf /dev/shm/yum
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
-rm -rf /dev/shm/yum /dev/shm/*.rpm
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 fstrim -va

@@ -46,9 +46,6 @@ EOF
 
 fi
 
-sed -i "s/var\/cache/dev\/shm/g" /etc/yum.conf
-echo "persistdir=/dev/shm" >> /etc/yum.conf
-
 
 # disable any other repos to avoid downloading metadata
 cd  /etc/yum.repos.d/

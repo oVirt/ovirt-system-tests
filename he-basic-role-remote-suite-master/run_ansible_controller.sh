@@ -39,7 +39,7 @@ sed \
     > /root/hosted_engine_deploy.yml
 
 fstrim -va
-rm -rf /dev/shm/yum
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 ANSIBLE_SSH_ARGS="-C -o ControlMaster=auto -o ControlPersist=60m" \
     ANSIBLE_SSH_CONTROL_PATH_DIR="~/.ansible/cp" \
     ANSIBLE_SSH_CONTROL_PATH="%(directory)s/ansible-ssh-%%h-%%p-%%r" \
@@ -50,5 +50,5 @@ if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${TARGETHOST} failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
-rm -rf /dev/shm/yum /dev/shm/*.rpm
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 fstrim -va

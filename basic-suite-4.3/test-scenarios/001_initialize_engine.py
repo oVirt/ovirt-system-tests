@@ -87,14 +87,12 @@ def initialize_engine(prefix):
         result.code, 0, 'engine-ovirt-notifier failed. Exit code is %s' % result.code
     )
 
-    # Remove YUM leftovers that are in /dev/shm/* - just takes up memory.
+    # Remove YUM leftovers that are in /var/cache/yum/* - just takes up space.
     result = engine.ssh(
         [
             'rm',
             '-rf',
-            '/dev/shm/yum',
-            '/dev/shm/yumdb',
-            '/dev/shm/*.rpm',
+            '/var/cache/yum/*',
         ]
     )
 

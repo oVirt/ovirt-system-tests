@@ -57,7 +57,7 @@ pkgs_to_install=(
 install_firewalld
 
 if [[ "$DIST" == "el7" ]]; then
-    install_cmd="yum install --nogpgcheck --downloaddir=/dev/shm -y"
+    install_cmd="yum install --nogpgcheck -y"
 elif [[ "$DIST" =~ $FC_REGEX ]]; then
     install_cmd="dnf install -y"
 else
@@ -74,7 +74,7 @@ $install_cmd "${pkgs_to_install[@]}" || {
 systemctl enable crond
 systemctl start crond
 
-rm -rf /dev/shm/yum /dev/shm/*.rpm
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 fstrim -va
 echo "restrict 192.168.0.0 mask 255.255.0.0 nomodify notrap nopeer" >> /etc/ntp.conf
 systemctl enable ntpd

@@ -16,8 +16,6 @@ max_connections=10
 deltarpm=0
 EOF
 
-sed -i "s/var\/cache/dev\/shm/g" /etc/yum.conf
-echo "persistdir=/dev/shm" >> /etc/yum.conf
 
 # disable any other repos to avoid downloading metadata
 yum install --disablerepo=\* --enablerepo=alocalsync -y yum-utils

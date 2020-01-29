@@ -99,11 +99,11 @@ def configure_metrics(prefix):
                             ' Exit code is %s' % result.code
         )
 
-    # clean /dev/shm from yum leftovers. Frees up ~65M
-    engine.ssh(['rm', '-rf', '/dev/shm/yum*', '/dev/shm/*.rpm'])
+    # clean /var/cache from yum leftovers. Frees up ~65M
+    engine.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum*', '/dev/shm/*.rpm'])
+        host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
 
 
 def run_log_collector(prefix):

@@ -377,7 +377,7 @@ def verify_add_all_hosts(prefix):
 def complete_hosts_setup(prefix):
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+        host.ssh(['rm', '-rf', '/var/cache/yum/*'])
         host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level=DEBUG'])
         for logger in ('root', 'vds', 'virt',):
             _change_logging_level(host, logger)

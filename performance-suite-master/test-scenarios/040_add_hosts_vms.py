@@ -318,7 +318,7 @@ def verify_add_all_hosts(prefix):
 
     if not USE_VDSMFAKE:
         for host in prefix.virt_env.host_vms():
-            host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+            host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
 
 
 def _add_storage_domain_4(api, p):

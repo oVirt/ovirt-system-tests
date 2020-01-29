@@ -41,7 +41,7 @@ main() {
     systemctl stop firewalld || true
     systemctl disable firewalld || true
     setup_he
-    rm -rf /dev/shm/*.rpm
+    rm -rf /var/cache/yum/* /var/cache/dnf/*
 }
 
 main

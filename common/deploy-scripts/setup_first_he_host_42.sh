@@ -44,7 +44,7 @@ sed \
     > /root/hosted-engine-deploy-answers-file.conf
 
 fstrim -va
-rm -rf /dev/shm/yum
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 if [ -n "$1" ]; then
     ANSIBLE="--ansible"
 else
@@ -56,5 +56,5 @@ if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
-rm -rf /dev/shm/yum /dev/shm/*.rpm
+rm -rf /var/cache/yum/* /var/cache/dnf/*
 fstrim -va

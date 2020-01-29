@@ -227,7 +227,7 @@ def add_he_hosts_4(prefix):
         testlib.assert_true_within(_he_host_is_up_4, timeout=15*60)
 
     for host in hosts:
-        host.ssh(['rm', '-rf', '/dev/shm/yum', '/dev/shm/*.rpm'])
+        host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
 
 
 @testlib.with_ovirt_prefix

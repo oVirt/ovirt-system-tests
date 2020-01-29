@@ -69,4 +69,4 @@ if [ ${RET_CODE} -ne 0 ]; then
     exit ${RET_CODE}
 fi
 
-rm -rf /dev/shm/*.rpm /dev/shm/yum
+rm -rf /var/cache/yum/* /var/cache/dnf/*

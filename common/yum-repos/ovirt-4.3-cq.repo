@@ -58,6 +58,7 @@ max_connections = 10
 includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
+	apache-commons-beanutils
 	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
@@ -75,6 +76,7 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk-headless
 	krb5-libs
 	krb5-workstation
+	libarchive
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
@@ -189,7 +191,6 @@ includepkgs = OVMF
 	ant
 	antlr-tool
 	aopalliance
-	apache-commons-beanutils
 	apache-commons-codec
 	apache-commons-collections
 	apache-commons-compress
@@ -383,7 +384,6 @@ includepkgs = OVMF
 	libXtst
 	libXxf86vm
 	libaio
-	libarchive
 	libatasmart
 	libbasicobjects
 	libblockdev

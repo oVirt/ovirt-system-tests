@@ -54,13 +54,9 @@ includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
 	apache-commons-beanutils
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	dnsmasq
-	firewalld
-	firewalld-filesystem
 	fribidi
 	git
 	ipa-client
@@ -69,7 +65,6 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	krb5-libs
 	krb5-workstation
 	libarchive
 	libgudev1
@@ -116,7 +111,6 @@ includepkgs = 389-ds-base
 	pango
 	patch
 	perl-Git
-	python-firewall
 	python-libguestfs
 	python-libipa_hbac
 	python-sss-murmur
@@ -124,15 +118,12 @@ includepkgs = 389-ds-base
 	python-syspurpose
 	python2-ipaclient
 	python2-ipalib
-	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
 	rsyslog-mmnormalize
 	samba-client-libs
 	samba-common
 	samba-common-libs
-	sg3_utils
-	sg3_utils-libs
 	sos
 	sssd
 	sssd-ad
@@ -147,12 +138,8 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tcpdump
-	tuned
 	tzdata-java
 	virt-v2v
 
@@ -161,7 +148,8 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = OVMF
+includepkgs = GeoIP
+	OVMF
 	OpenIPMI
 	OpenIPMI-libs
 	OpenIPMI-modalias
@@ -201,8 +189,6 @@ includepkgs = OVMF
 	atk
 	atlas
 	attr
-	audit
-	audit-libs
 	audit-libs-python
 	augeas
 	augeas-libs
@@ -214,7 +200,6 @@ includepkgs = OVMF
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-export-libs
 	bind-libs
 	bind-libs-lite
 	bind-license
@@ -239,7 +224,6 @@ includepkgs = OVMF
 	coolkey
 	copy-jdk-configs
 	cryptsetup
-	cryptsetup-libs
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -251,21 +235,12 @@ includepkgs = OVMF
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
-	dhclient
-	dhcp-common
-	dhcp-libs
-	dmidecode
 	dom4j
 	dosfstools
-	dracut
-	dracut-config-rescue
 	dracut-fips
-	dracut-network
 	dwz
 	easymock2
 	elfutils
-	elfutils-libelf
-	elfutils-libs
 	emacs-filesystem
 	fcoe-utils
 	fence-agents-all
@@ -313,6 +288,7 @@ includepkgs = OVMF
 	gdisk
 	gdk-pixbuf2
 	genisoimage
+	geoipupdate
 	geronimo-jms
 	giflib
 	glib-networking
@@ -363,7 +339,6 @@ includepkgs = OVMF
 	junit
 	jzlib
 	keyutils
-	kpartx
 	lapack
 	libICE
 	libSM
@@ -516,7 +491,6 @@ includepkgs = OVMF
 	openscap-scanner
 	openscap-utils
 	openssl
-	openssl-libs
 	openwsman-python
 	opus
 	osinfo-db
@@ -570,7 +544,6 @@ includepkgs = OVMF
 	perl-threads-shared
 	pexpect
 	pixman
-	policycoreutils
 	policycoreutils-python
 	postgresql-jdbc
 	postgresql-libs
@@ -630,11 +603,7 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
-	rpm
 	rpm-build
-	rpm-build-libs
-	rpm-libs
-	rpm-python
 	rpmdevtools
 	rsync
 	ruby

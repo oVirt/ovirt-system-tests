@@ -55,14 +55,9 @@ includepkgs = glusterfs
 	glusterfs-api
 	glusterfs-cli
 	glusterfs-client-xlators
-	glusterfs-events
 	glusterfs-fuse
-	glusterfs-geo-replication
 	glusterfs-libs
 	glusterfs-rdma
-	glusterfs-server
-	python2-gluster
-	userspace-rcu
 
 [centos-updates-el7]
 name = CentOS7 Updates
@@ -73,13 +68,9 @@ includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
 	apache-commons-beanutils
-	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	device-mapper-libs
 	dnsmasq
-	firewalld
-	firewalld-filesystem
 	fribidi
 	git
 	ipa-client
@@ -88,8 +79,6 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	kernel
-	krb5-libs
 	krb5-workstation
 	libarchive
 	libgudev1
@@ -136,7 +125,6 @@ includepkgs = 389-ds-base
 	pango
 	patch
 	perl-Git
-	python-firewall
 	python-libguestfs
 	python-libipa_hbac
 	python-sss-murmur
@@ -144,17 +132,12 @@ includepkgs = 389-ds-base
 	python-syspurpose
 	python2-ipaclient
 	python2-ipalib
-	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
 	rsyslog-mmnormalize
 	samba-client-libs
 	samba-common
 	samba-common-libs
-	selinux-policy
-	selinux-policy-targeted
-	sg3_utils
-	sg3_utils-libs
 	sos
 	sssd
 	sssd-ad
@@ -169,12 +152,8 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
 	systemd-python
-	systemd-sysv
 	tcpdump
-	tuned
 	tzdata-java
 	virt-v2v
 
@@ -183,7 +162,8 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = OVMF
+includepkgs = GeoIP
+	OVMF
 	OpenIPMI
 	OpenIPMI-libs
 	OpenIPMI-modalias
@@ -223,8 +203,6 @@ includepkgs = OVMF
 	atk
 	atlas
 	attr
-	audit
-	audit-libs
 	audit-libs-python
 	augeas
 	augeas-libs
@@ -236,7 +214,6 @@ includepkgs = OVMF
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-export-libs
 	bind-libs
 	bind-libs-lite
 	bind-license
@@ -256,8 +233,6 @@ includepkgs = OVMF
 	checkpolicy
 	copy-jdk-configs
 	cryptsetup
-	cryptsetup-libs
-	cryptsetup-python
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -269,23 +244,12 @@ includepkgs = OVMF
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
-	dhclient
-	dhcp-common
-	dhcp-libs
-	dmidecode
-	dmraid
-	dmraid-events
 	dom4j
 	dosfstools
-	dracut
-	dracut-config-rescue
 	dracut-fips
-	dracut-network
 	dwz
 	easymock2
 	elfutils
-	elfutils-libelf
-	elfutils-libs
 	emacs-filesystem
 	fcoe-utils
 	fence-agents-all
@@ -333,6 +297,7 @@ includepkgs = OVMF
 	gdisk
 	gdk-pixbuf2
 	genisoimage
+	geoipupdate
 	geronimo-jms
 	giflib
 	glib-networking
@@ -382,8 +347,6 @@ includepkgs = OVMF
 	junit
 	jzlib
 	keyutils
-	kmod-kvdo
-	kpartx
 	lapack
 	libICE
 	libSM
@@ -458,7 +421,6 @@ includepkgs = OVMF
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
-	libselinux-ruby
 	libsemanage-python
 	libtalloc
 	libtar
@@ -480,7 +442,6 @@ includepkgs = OVMF
 	libxshmfence
 	libxslt
 	libyaml
-	linux-firmware
 	lksctp-tools
 	lldpad
 	llvm-private
@@ -505,7 +466,6 @@ includepkgs = OVMF
 	msv-xsdlib
 	mtools
 	nbdkit
-	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
@@ -513,7 +473,6 @@ includepkgs = OVMF
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
-	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -533,7 +492,6 @@ includepkgs = OVMF
 	openscap-scanner
 	openscap-utils
 	openssl
-	openssl-libs
 	openwsman-python
 	opus
 	osinfo-db
@@ -585,20 +543,16 @@ includepkgs = OVMF
 	perl-threads-shared
 	pexpect
 	pixman
-	policycoreutils
 	policycoreutils-python
 	postgresql-jdbc
 	postgresql-libs
 	psmisc
 	pygobject2
-	pykickstart
 	pyparsing
-	pyparted
 	python-IPy
 	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
-	python-blivet
 	python-configshell
 	python-dmidecode
 	python-dns
@@ -615,16 +569,13 @@ includepkgs = OVMF
 	python-kmod
 	python-ldap
 	python-lxml
-	python-magic
 	python-markupsafe
 	python-netifaces
 	python-nss
 	python-paramiko
 	python-ply
-	python-prettytable
 	python-psycopg2
 	python-pwquality
-	python-pyblock
 	python-pycparser
 	python-qrcode-core
 	python-rtslib
@@ -634,7 +585,6 @@ includepkgs = OVMF
 	python-urwid
 	python-webob
 	python-yubico
-	python2-blockdev
 	python2-futures
 	python2-pyasn1
 	python2-pyasn1-modules
@@ -652,11 +602,7 @@ includepkgs = OVMF
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
-	rpm
 	rpm-build
-	rpm-build-libs
-	rpm-libs
-	rpm-python
 	rpmdevtools
 	rsync
 	ruby
@@ -680,7 +626,6 @@ includepkgs = OVMF
 	seavgabios-bin
 	setools-libs
 	sgabios-bin
-	sgpio
 	slf4j
 	socat
 	spice-server
@@ -706,7 +651,6 @@ includepkgs = OVMF
 	usbredir
 	usermode
 	uuid
-	vdo
 	virt-install
 	virt-manager-common
 	volume_key-libs
@@ -767,11 +711,7 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = facter
-	hiera
-	puppet
-	python-ordereddict
-	python-unittest2
+includepkgs = python-unittest2
 	python2-asn1crypto
 	python2-mimeparse
 	python2-passlib
@@ -779,10 +719,7 @@ includepkgs = facter
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
-	ruby-augeas
-	ruby-shadow
 	rubygem-multipart-post
-	rubygem-rgen
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3

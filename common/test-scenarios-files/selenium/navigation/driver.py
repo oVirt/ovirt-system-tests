@@ -24,7 +24,8 @@ import time
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
                                         NoSuchElementException,
-                                        WebDriverException)
+                                        WebDriverException,
+                                        StaleElementReferenceException)
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -154,6 +155,31 @@ class Driver(object):
             print('hover_to_id couldnt find element %s' % id)
             raise
 
+    def retry_if_stale(self, method_to_retry):
+        success = False
+        return_value = None
+        exception = None
+
+        for x in range(1, DRIVER_MAX_RETRIES):
+            try:
+                if DEBUG:
+                    print("self.driver.retry_if_stale(%s)" % method_to_retry)
+
+                return_value = method_to_retry()
+                success = True
+                break
+            except StaleElementReferenceException as e:
+                time.sleep(DRIVER_SLEEP_TIME)
+                exception = e
+
+        if not success:
+            self.save_screenshot("stale-element")
+            print("StaleElementReferenceException occurred max times, stop retrying")
+            raise exception
+
+        return return_value
+
+
     def safe_close_dialog(self):
 
         try:
@@ -177,3 +203,12 @@ class Driver(object):
 
         print("saving screenshot " + path)
         self.driver.save_screenshot(path)
+
+    def save_page_source(self, path, delay=0):
+        if delay > 0 and delay <= 10:
+            time.sleep(delay)
+
+        print("saving page source " + path)
+        with open(path, "w") as text_file:
+            text_file.write(self.driver.page_source)
+

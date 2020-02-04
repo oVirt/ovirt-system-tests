@@ -36,7 +36,7 @@ from ovirtlago import testlib
 from test_utils.constants import *
 from test_utils.selenium_constants import *
 from test_utils.navigation.driver import *
-
+from test_utils.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
@@ -145,6 +145,8 @@ def _get_firefox_capabilities(insecure_certs=True):
     capabilities['version'] = FIREFOX_VERSION
     capabilities['browserName'] = 'firefox'
     capabilities['acceptInsecureCerts'] = insecure_certs
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1538486
+    capabilities['moz:useNonSpecCompliantPointerOrigin'] = True
     return capabilities
 
 
@@ -258,6 +260,18 @@ def save_screenshot(description, delay=1):
 
     ovirt_driver.save_screenshot(_screenshot_file_path_for(description), delay)
 
+def _page_source_file_name_for(description):
+    date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    browser = ''
+    if ss_prefix_browser_name is not None:
+        browser = '_' + ss_prefix_browser_name
+    return "{}{}_{}.html".format(date, browser, description)
+
+def _page_source_file_path_for(description):
+    return os.path.join(SS_PATH, _page_source_file_name_for(description))
+
+def save_page_source(description, delay=1):
+    ovirt_driver.save_page_source(_page_source_file_path_for(description), delay)
 
 def _init_driver(capabilities):
     global ovirt_driver
@@ -347,6 +361,30 @@ def left_nav():
     ovirt_driver.id_click(SEL_ID_VMS_MENU)
     save_screenshot('left_nav_clicked_vms')
 
+def virtual_machines():
+    try:
+        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+        vm_list_view = webadmin_menu.open_vm_list_view()
+
+        vms = vm_list_view.get_vms()
+        assert 'vm0' in vms
+
+        vm_detail_view = vm_list_view.open_detail_view('vm0')
+        assert vm_detail_view.get_name() == 'vm0'
+        assert vm_detail_view.get_status() == 'Up'
+
+        vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
+        vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
+
+        assert vm_vgpu_dialog.get_title() == 'Manage vGPU'
+        save_screenshot('vms-vgpu')
+
+        vm_vgpu_dialog.cancel()
+        save_screenshot('vms-success')
+    except:
+        save_screenshot('vms-failed')
+        save_page_source('vms-failed')
+        raise
 
 def download_engine_cert():
     URL = "https://%s/ovirt-engine/" % get_engine_ip()
@@ -432,11 +470,13 @@ _TEST_LIST = [
     initialize_chrome,
     login,
     left_nav,
+    virtual_machines,
     # TODO: chrome_image_upload,
     close_driver,
     initialize_secure_firefox,
     login,
     left_nav,
+    virtual_machines,
     firefox_image_upload,
     cleanup,
 ]

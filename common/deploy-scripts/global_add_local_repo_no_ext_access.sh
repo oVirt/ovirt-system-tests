@@ -73,3 +73,12 @@ yum install -y "${INSTALL_PKG[@]}"
 }
 
 yum repolist -v > /var/log/rst_yum_repos.log
+
+## collect general info on the lago vm
+yum install -y libvirt sos
+systemctl start libvirtd
+virsh capabilities > /var/log/virsh_capabilities.log || res=$?
+virsh domcapabilities kvm > /var/log/virsh_domcapabilities.log || res=$?
+lscpu >  /var/log/lscpu.log
+cat /proc/cpuinfo > /var/cpuinfo.log
+sosreport --tmp-dir=/tmp --name=sosreport_for_vm.log

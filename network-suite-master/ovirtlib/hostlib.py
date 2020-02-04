@@ -1,5 +1,5 @@
 
-# Copyright 2017-2019 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ class Host(SDKRootEntity):
         By default sets a desired network configuration state on the host
         which means that unspecified network attachments are removed.
         To prevent removal of unspecified attachments specify
-        remove_other_networks=True.
+        remove_other_networks=False.
 
         By default out-of-sync networks are not synced. This might fail the
         whole request because engine API forbids modifying an out-of-sync
@@ -151,13 +151,13 @@ class Host(SDKRootEntity):
         """
 
         modified_network_attachments = {
-            att_data.network.name: att_data.to_network_attachment()
+            att_data.network.id: att_data.to_network_attachment()
             for att_data in attachments_data
         }
         removed_network_attachments = None
         if remove_other_networks:
             mgmt_attachment = self._get_mgmt_net_attachment()
-            modified_network_attachments[mgmt_attachment.network.name] = \
+            modified_network_attachments[mgmt_attachment.network.id] = \
                 mgmt_attachment
             removed_network_attachments = self._removed_net_attachments(
                 set(modified_network_attachments)
@@ -257,7 +257,7 @@ class Host(SDKRootEntity):
 
     def _removed_net_attachments(self, modified_networks):
         return [attachment for attachment in self._get_existing_attachments()
-                if attachment.network.name not in modified_networks]
+                if attachment.network.id not in modified_networks]
 
     def get_mgmt_net_attachment_data(self):
         return self._get_attachment_data_for_networks(

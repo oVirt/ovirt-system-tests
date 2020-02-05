@@ -704,8 +704,8 @@ def add_glance(api):
             else:
                 return False
 
-        testlib.assert_true_within_short(func=get, allowed_exceptions=[sdk4.RequestError])
-    except (AssertionError, sdk4.RequestError):
+        testlib.assert_true_within_short(func=get, allowed_exceptions=[sdk4.NotFoundError])
+    except (AssertionError, sdk4.NotFoundError):
         # RequestError if add method was failed.
         # AssertionError if add method succeed but we couldn't verify that glance was actually added
         return None
@@ -739,7 +739,7 @@ def import_non_template_from_glance(prefix_param):
 
 def import_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )    
+        raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
     generic_import_from_glance(prefix=prefix_param, as_template=True)
 
 

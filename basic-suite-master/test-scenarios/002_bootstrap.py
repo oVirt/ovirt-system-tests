@@ -18,12 +18,15 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
+
 import functools
-import httplib
 import os
 import random
 import ssl
 import time
+
+from six.moves import http_client
 
 import nose.tools as nt
 from nose import SkipTest
@@ -1346,7 +1349,7 @@ def download_engine_certs(prefix):
     engine_ssh_url = engine_base_url + 'OPENSSH-PUBKEY'
 
     # We use an unverified connection, as L0 host cannot resolve '...engine.lago.local'
-    conn = httplib.HTTPSConnection(engine_ip, context=ssl._create_unverified_context())
+    conn = http_client.HTTPSConnection(engine_ip, context=ssl._create_unverified_context())
 
     def _download_file(url, path=None, compare_string=None):
         conn.request("GET", url)
@@ -1375,7 +1378,7 @@ def download_engine_certs(prefix):
     # TODO: verify public key. Either use it, or run:
     # 'ssh-keygen -l -f engine-rsa.pub'
 
-    healthy = "DB Up!Welcome to Health Status!"
+    healthy = b"DB Up!Welcome to Health Status!"
     testlib.assert_true_within_short(
         lambda: _download_file('/ovirt-engine/services/health', path=None, compare_string=healthy)
     )
@@ -1579,15 +1582,15 @@ def configure_high_perf_vm2(api):
     vm2_numanodes_service = vm2_service.numa_nodes_service()
     topology = vm2_service.get().cpu.topology
     total_vcpus = topology.sockets * topology.cores * topology.threads
-    total_memory = vm2_service.get().memory / MB
+    total_memory = vm2_service.get().memory // MB
     raise SkipTest('Skipping until vNUMA and pinning to hosts work together')
-    for i in xrange(total_vcpus):
+    for i in range(total_vcpus):
         nt.assert_true(
             vm2_numanodes_service.add(
                 node=sdk4.types.VirtualNumaNode(
                     index=i,
                     name='{0} vnuma node {1}'.format(VM2_NAME, i),
-                    memory= int(total_memory / total_vcpus),
+                    memory= total_memory // total_vcpus,
                     cpu=sdk4.types.Cpu(
                         cores=[
                             sdk4.types.Core(

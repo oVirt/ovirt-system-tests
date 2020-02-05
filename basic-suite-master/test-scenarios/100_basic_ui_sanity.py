@@ -17,7 +17,9 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
 from __future__ import print_function
+
 import functools
 import os
 import re

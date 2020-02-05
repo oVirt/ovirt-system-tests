@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import sys
 import yaml
@@ -28,6 +30,6 @@ def render(template):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
 
-        print ("Usage: %s [path to jinja2 template]" % sys.argv[0])
+        print("Usage: %s [path to jinja2 template]" % sys.argv[0])
         sys.exit(1)
-    print render(sys.argv[1])
+    print(render(sys.argv[1]))

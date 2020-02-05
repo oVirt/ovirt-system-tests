@@ -17,13 +17,15 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
 
 import copy
-import urlparse
 from contextlib import contextmanager
 
 import ovirtsdk4
 import requests
+
+from six.moves.urllib import parse as urlparse
 
 import nose.tools as nt
 

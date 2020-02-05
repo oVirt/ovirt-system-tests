@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
+
 import os
 import socket
 
@@ -48,7 +50,7 @@ def initialize_engine(prefix):
     host_name = socket.getfqdn()
     host_ip = socket.gethostbyname(host_name)
 
-    with NamedTemporaryFile(delete=False) as sso_conf:
+    with NamedTemporaryFile(mode='w', delete=False) as sso_conf:
         sso_conf.write(
             (
                 'SSO_ALTERNATE_ENGINE_FQDNS='

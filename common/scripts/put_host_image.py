@@ -20,7 +20,7 @@ def usage():
 
 def _itr_hosts(prefix):
     return (
-        h for h in prefix.get_vms().itervalues()
+        h for h in prefix.get_vms().values()
         if h.vm_type == 'ovirt-host'
     )
 

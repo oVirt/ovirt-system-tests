@@ -18,6 +18,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
+
 import functools
 import os
 from os import EX_OK
@@ -623,7 +625,7 @@ def add_vm1_from_template(api):
                 type=types.DisplayType.VNC,
             ),
             memory_policy=types.MemoryPolicy(
-                guaranteed=vm_memory / 2,
+                guaranteed=vm_memory // 2,
                 ballooning=False,
             ),
             os=types.OperatingSystem(

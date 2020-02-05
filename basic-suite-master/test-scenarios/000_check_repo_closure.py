@@ -17,18 +17,28 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
 
 import glob
 import os
 import subprocess
-import ConfigParser
+
 from nose import SkipTest
 from pwd import getpwuid
 from shutil import rmtree
-from yum.misc import getCacheDir
+from six.moves import configparser
 from ovirtlago import (testlib, constants)
 
 import test_utils
+
+
+def _get_cache_dir(*args, **kwargs):
+    if test_utils.on_centos(7):
+        from yum.misc import getCacheDir
+        return getCacheDir(*args, **kwargs)
+    else:
+        from dnf.yum.misc import getCacheDir
+        return getCacheDir()
 
 
 @testlib.with_ovirt_prefix
@@ -55,7 +65,7 @@ def gen_config_file_and_params(
         ip=internal_repo_ip, port=internal_repo_port
     )
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.readfp(cfg_in)
     for section in config.sections():
         if section == "main":
@@ -72,9 +82,9 @@ def gen_config_file_and_params(
     config.add_section(TEST_REPO_SECTION)
     config.set(TEST_REPO_SECTION, 'name', 'Local repo')
     config.set(TEST_REPO_SECTION, 'baseurl', internal_repo_url)
-    config.set(TEST_REPO_SECTION, 'enabled', 1)
-    config.set(TEST_REPO_SECTION, 'ip_resolve', 4)
-    config.set(TEST_REPO_SECTION, 'gpgcheck', 0)
+    config.set(TEST_REPO_SECTION, 'enabled', '1')
+    config.set(TEST_REPO_SECTION, 'ip_resolve', '4')
+    config.set(TEST_REPO_SECTION, 'gpgcheck', '0')
     config.set(TEST_REPO_SECTION, 'proxy', '_none_')
     command.append('--repoid={}'.format(TEST_REPO_SECTION))
     config.write(cfg_out)
@@ -125,7 +135,7 @@ def check_repo_closure():
     if not configs:
         raise RuntimeError("Could not find reposync config file.")
     for config in configs:
-        tmp_cache_dir = getCacheDir('/var/tmp/', reuse=False)
+        tmp_cache_dir = _get_cache_dir('/var/tmp/', reuse=False)
         command = reposync_config_file(config, tmp_cache_dir)
         try:
             subprocess.check_output(command, stderr=subprocess.STDOUT)

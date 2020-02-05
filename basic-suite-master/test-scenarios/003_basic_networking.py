@@ -18,6 +18,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
 
 from lago import utils
 from netaddr.ip import IPAddress
@@ -200,7 +201,7 @@ def bond_nics(prefix, api):
             [bond])
 
     hosts = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)
-    utils.invoke_in_parallel(_bond_nics, range(1, len(hosts) + 1), hosts)
+    utils.invoke_in_parallel(_bond_nics, list(range(1, len(hosts) + 1)), hosts)
 
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
         host_service = engine.hosts_service().host_service(id=host.id)

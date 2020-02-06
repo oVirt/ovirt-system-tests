@@ -77,8 +77,10 @@ yum repolist -v > /var/log/rst_yum_repos.log
 ## collect general info on the lago vm
 yum install --nogpgcheck -y libvirt sos
 systemctl start libvirtd
-virsh capabilities > /var/log/virsh_capabilities.log || res=$?
-virsh domcapabilities kvm > /var/log/virsh_domcapabilities.log || res=$?
-lscpu >  /var/log/lscpu.log
-cat /proc/cpuinfo > /var/cpuinfo.log
-sosreport --tmp-dir=/tmp --name=sosreport_for_vm.log
+lscpu >  /var/log/lscpu.log || res=$?
+cat /proc/cpuinfo > /var/log/cpuinfo.log || res=$?
+sosreport --batch --tmp-dir=/tmp --name=sosreport_for_vm.log || res=$?
+reqsubstr="host"
+if [[ -z "${hostname##*$reqsubstr*}" ]] ;then
+    virsh capabilities > /var/log/virsh_capabilities.log || res=$?
+fi

@@ -63,7 +63,7 @@ run_suite(){
         "$1" \
         "$suite/LagoInitFile"
     env_repo_setup
-    if [[ "${SUITE##*/}" == "he-basic-suite-master" ]]; then
+    if [[ -e "${SUITE}/reposync-config-sdk4.repo" ]]; then
         install_local_rpms_without_reposync
     else
         cd $PREFIX
@@ -73,7 +73,7 @@ run_suite(){
         install_local_rpms
     fi
     env_start
-    if [[ "${SUITE##*/}" == "he-basic-suite-master" ]]; then
+    if [[ -e "${SUITE}/reposync-config-sdk4.repo" ]]; then
         env_copy_repo_file
     fi
     env_copy_config_file

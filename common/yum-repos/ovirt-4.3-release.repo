@@ -57,6 +57,8 @@ includepkgs = 389-ds-base
 	device-mapper-event
 	device-mapper-event-libs
 	dnsmasq
+	firewalld
+	firewalld-filesystem
 	fribidi
 	git
 	ipa-client
@@ -107,10 +109,22 @@ includepkgs = 389-ds-base
 	libwbclient
 	lvm2
 	lvm2-libs
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	numactl
 	pango
 	patch
 	perl-Git
+	postgresql-libs
+	python-firewall
 	python-libguestfs
 	python-libipa_hbac
 	python-sss-murmur
@@ -124,6 +138,8 @@ includepkgs = 389-ds-base
 	samba-client-libs
 	samba-common
 	samba-common-libs
+	sg3_utils
+	sg3_utils-libs
 	sos
 	sssd
 	sssd-ad
@@ -138,7 +154,10 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	systemd
+	systemd-libs
 	systemd-python
+	systemd-sysv
 	tcpdump
 	tzdata-java
 	virt-v2v
@@ -450,12 +469,6 @@ includepkgs = GeoIP
 	mailx
 	make
 	mdadm
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
@@ -466,10 +479,6 @@ includepkgs = GeoIP
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
 	net-tools
 	netcf-libs
 	nettle
@@ -546,7 +555,6 @@ includepkgs = GeoIP
 	pixman
 	policycoreutils-python
 	postgresql-jdbc
-	postgresql-libs
 	psmisc
 	pygobject2
 	pyparsing

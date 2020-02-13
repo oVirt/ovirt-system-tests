@@ -66,7 +66,7 @@ python="$(command -v python)" || res=$?
     INSTALL_PKG+=("python3")
     INSTALL_PKG+=("wget")
 }
-yum install -y "${INSTALL_PKG[@]}"
+yum install --nogpgcheck -y "${INSTALL_PKG[@]}"
 
 [[ "$curl_res" -eq 0 ]] && {
     yum-config-manager --enable alocalsync
@@ -75,7 +75,7 @@ yum install -y "${INSTALL_PKG[@]}"
 yum repolist -v > /var/log/rst_yum_repos.log
 
 ## collect general info on the lago vm
-yum install -y libvirt sos
+yum install --nogpgcheck -y libvirt sos
 systemctl start libvirtd
 virsh capabilities > /var/log/virsh_capabilities.log || res=$?
 virsh domcapabilities kvm > /var/log/virsh_domcapabilities.log || res=$?

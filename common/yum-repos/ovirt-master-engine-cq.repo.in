@@ -1,3 +1,4 @@
+
 [main]
 reposdir = /etc/reposync.repos.d
 max_connections = 50
@@ -5,130 +6,192 @@ ip_resolve = 4
 gpgcheck = 0
 plugins = 1
 
-[ovirt-master-tested-el7]
+[ovirt-master-tested-el8]
 name = oVirt Master Latest Tested
-baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/
-enabled = 1
-max_connections = 10
-gpgcheck = 0
-proxy = _none_
-
-[ovirt-master-snapshot-static-el7]
-name = oVirt Master Nightly Statics
-baseurl = http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el7/
+baseurl = https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el8/
 enabled = 1
 max_connections = 10
 gpgcheck = 0
 
-[sac-gluster-ansible-el7]
-name=Copr repo for gluster-ansible
-baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-7-$basearch/
+[centos-base-el8]
+name=base
+baseurl = http://mirror.centos.org/centos-8/8/BaseOS/x86_64/os/
+gpgcheck = 0
+enabled = 1
+
+[centos-appstream-el8]
+name=appstream
+baseurl = http://mirror.centos.org/centos-8/8/AppStream/x86_64/os/
+gpgcheck = 0
+enabled = 1
+
+[centos-extras-el8]
+name=extras
+baseurl = http://mirror.centos.org/centos-8/8/extras/x86_64/os/
+exclude = *-release
+    ansible
+    libtomcrypt
+    libtommath
+    python2-crypto
+    python-paramiko
+gpgcheck = 0
+enabled = 1
+
+[centos-powertools-el8]
+name=powertools
+baseurl = http://mirror.centos.org/centos-8/8/PowerTools/x86_64/os/
+gpgcheck = 0
+enabled = 1
+
+## end centos repos
+
+## from release rpm
+
+[epel-el8]
+name=epel
+baseurl=http://mirrors.mit.edu/epel/8/Everything/x86_64/
+ https://mirror.pnl.gov/epel/8/Everything/x86_64/
+ https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/
+failovermethod=priority
+includepkgs=
+    ansible
+    ansible-doc
+    epel-release
+    facter
+    golang
+    golang-github-stretchr-testify-devel
+    golang-bin
+    golang-github-davecgh-go-spew-devel
+    golang-github-pmezard-go-difflib-devel
+    golang-github-stretchr-objx-devel
+    golang-src
+    hiera
+    libsodium
+    libtomcrypt
+    libtommath
+    nbdkit
+    nbdkit-devel
+    nbdkit-plugin-python2
+    nbdkit-plugin-python-common
+    nbdkit-plugin-vddk
+    puppet
+    python2-crypto
+    python2-ecdsa
+    python-ordereddict
+    ruby-augeas
+    rubygem-rgen
+    ruby-shadow
+    sshpass
+    qpid-proton-c
+    python3-bcrypt
+    python3-qpid-proton
+    python3-lockfile
+    python3-paramiko
+    python3-pynacl
+exclude = archaius-core
+    jackson-core
+    jctools
+    python-daemon
+    python-keyczar
+    python-linecache2
+    python-pthreading
+    rxjava
+gpgcheck = 0
+enabled = 1
+
+[ovirt-master-glusterfs-7-testing-el8]
+name=GlusterFS 7 testing packages for $basearch
+baseurl=https://cbs.centos.org/repos/storage8-gluster-7-testing/x86_64/os/
+enabled=1
+gpgcheck=0
+
+[ovirt-master-virtio-win-latest-el8]
+name=virtio-win builds roughly matching what will be shipped in upcoming RHEL
+baseurl = http://fedorapeople.org/groups/virt/virtio-win/repo/latest
+enabled=1
+gpgcheck=0
+
+[ovirt-master-copr-sbonazzo-collection-el8]
+name=Copr repo for EL8_collection owned by sbonazzo
+baseurl = https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-x86_64/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+
+[ovirt-master-copr:copr.fedorainfracloud.org:sac:gluster-ansible-el8]
+name=Copr repo for gluster-ansible owned by sac
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-8-x86_64/
+type=rpm-md
 gpgcheck=1
 gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+
+[ovirt-master-copr:copr.fedorainfracloud.org:mdbarroso:ovsdbapp-el8]
+name=Copr repo for ovsdbapp owned by mdbarroso
+baseurl=https://copr-be.cloud.fedoraproject.org/results/mdbarroso/ovsdbapp/epel-8-$basearch/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/mdbarroso/ovsdbapp/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+
+[ovirt-master-copr-nmstate-0.2-el8]
+name=Copr repo for nmstate-0.2 owned by nmstate
+baseurl=https://copr-be.cloud.fedoraproject.org/results/nmstate/nmstate-0.2/epel-8-$basearch/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/nmstate/nmstate-0.2/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+
+[ovirt-master-copr-NetworkManager-1.22-el8]
+name=Copr repo for NetworkManager-1.22 owned by networkmanager
+baseurl=https://copr-be.cloud.fedoraproject.org/results/networkmanager/NetworkManager-1.22/epel-8-$basearch/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/networkmanager/NetworkManager-1.22/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+
+[copr-fedorainfracloud.org-sbonazzo-AdvancedVirtualization-el8]
+name=Copr repo for AdvancedVirtualization owned by sbonazzo
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/AdvancedVirtualization/centos-stream-$basearch/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/AdvancedVirtualization/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+module_hotfixes=1
+
+[ovirt-master-centos-ovirt44-testing-el8]
+name=CentOS-8 - oVirt 4.4 - testing
+baseurl=http://cbs.centos.org/repos/virt8-ovirt-44-testing/$basearch/os/
+gpgcheck=0
 enabled=1
 
-[glusterfs-6-el7]
-name = GlusterFS repo
-baseurl = http://mirror.centos.org/centos/7/storage/x86_64/gluster-6/
-enabled = 1
-max_connections = 5
-gpgcheck = 0
+[ovirt-master-snapshot-el8]
+name=Latest oVirt master nightly snapshot
+baseurl = https://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/el8/
+enabled=1
+gpgcheck=0
 
-[centos-updates-el7]
-name = CentOS7 Updates
-baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
-enabled = 1
-max_connections = 10
-gpgcheck = 0
+[ovirt-master-snapshot-static-el8]
+name=Latest oVirt master additional nightly snapshot
+baseurl=https://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el8/
+enabled=1
+gpgcheck=0
 
-[centos-base-el7]
-name = CentOS7 Base
-baseurl = http://mirror.centos.org/centos/7/os/x86_64/
-enabled = 1
-max_connections = 10
-gpgcheck = 0
-
-[centos-extras-el7]
-name = CentOS7 Extras
-baseurl = http://mirror.centos.org/centos/7/extras/x86_64/
-enabled = 1
-exclude = ansible
-	epel-release
-	libtomcrypt
-	libtommath
-	python2-crypto
-	python-paramiko
-max_connections = 5
-gpgcheck = 0
-
-[epel-el7]
-name = Extra Packages for Enterprise Linux 7 - x86_64
-baseurl = http://download.fedoraproject.org/pub/epel/7/x86_64
-enabled = 1
-includepkgs=
- 	ansible
-	ansible-doc
-	epel-release
-	facter
-	golang
-	golang-github-stretchr-testify-devel
-	golang-bin
-	golang-github-davecgh-go-spew-devel
-	golang-github-pmezard-go-difflib-devel
-	golang-github-stretchr-objx-devel
-	golang-src
-	hiera
-	libtomcrypt
-	libtommath
-	nbdkit
-	nbdkit-devel
-	nbdkit-plugin-python2
-	nbdkit-plugin-python-common
-	nbdkit-plugin-vddk
-	ovirt-guest-agent*
-	puppet
-	python2-crypto
-	python2-ecdsa
-	python-ordereddict
-	ruby-augeas
-	rubygem-rgen
-	ruby-shadow
-max_connections = 5
-gpgcheck = 0
-
-[centos-ovirt-4.4-testing-el7]
-name = CentOS-7 - oVirt 4.4
-baseurl = http://cbs.centos.org/repos/virt7-ovirt-44-testing/x86_64/os/
-gpgcheck = 0
-enabled = 1
-ost_skip_injection = True
-exclude = ovirt-host*
-
-[centos-ovirt-common-el7]
-name = CentOS-7 - oVirt common
-baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
-gpgcheck = 0
-cost = 2000
-enabled = 1
-
-[centos-qemu-ev-testing-el7]
-name = CentOS-7 - QEMU EV - Testing
-baseurl = http://buildlogs.centos.org/centos/7/virt/x86_64/kvm-common/
-gpgcheck = 0
-enabled = 1
-
-[centos-opstools-testing-el7]
-name = CentOS-7 - OpsTools - testing repo
-baseurl = http://buildlogs.centos.org/centos/7/opstools/x86_64/
-enabled = 1
-exclude = python2-qpid-proton
-	qpid-proton-c
-max_connections = 10
-gpgcheck = 0
-
-[centos-sclo-rh-release-el7]
-name = CentOS-7 - SCLo rh
-baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
-gpgcheck = 1
-enabled = 1
-gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
+[olc-el8]
+name = temp ovirt-log-collector
+baseurl=https://jenkins.ovirt.org/job/ovirt-log-collector_standard-check-patch/14/artifact/check-patch.el8.x86_64/
+enabled=1
+gpgcheck=0

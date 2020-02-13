@@ -719,10 +719,40 @@ def add_vms(api):
         ),
     )
 
+@testlib.with_ovirt_prefix
+def copy_storage_script(prefix):
+    engine = prefix.virt_env.engine_vm()
+    storage_script = os.path.join(
+        os.environ.get('SUITE'),
+        'deploy-scripts',
+        'setup_storage.sh',
+    )
+    engine.copy_to(
+        storage_script,
+        '/tmp/setup_storage.sh',
+    )
+
+
+@testlib.with_ovirt_prefix
+def configure_storage(prefix):
+    engine = prefix.virt_env.engine_vm()
+    result = engine.ssh(
+        [
+            '/tmp/setup_storage.sh',
+        ],
+    )
+    nt.eq_(
+        result.code, 0, 'setup_storage.sh failed. Exit code is %s' % result.code 
+    )
+
+
+
 _TEST_LIST = [
+    copy_storage_script,
     add_dc,
     add_cluster,
     add_hosts,
+    configure_storage,
     verify_add_hosts,
     add_master_storage_domain,
     add_vm_template,

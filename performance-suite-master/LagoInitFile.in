@@ -41,7 +41,9 @@ domains:
       ovirt-engine-password: 123
       deploy-scripts:
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_el7.sh
+        {%- if install_storage_with_lago_deploy|default(true) %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage.sh
+        {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_engine.sh
     artifacts:
           - /root/fluentd

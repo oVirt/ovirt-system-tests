@@ -176,6 +176,7 @@ setup_services() {
 }
 
 install_deps_389ds() {
+    dnf module -y enable 389-ds
     yum install --nogpgcheck -y 389-ds-base 389-ds-base-legacy-tools
 }
 

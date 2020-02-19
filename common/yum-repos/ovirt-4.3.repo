@@ -55,9 +55,14 @@ includepkgs = glusterfs
 	glusterfs-api
 	glusterfs-cli
 	glusterfs-client-xlators
+	glusterfs-events
 	glusterfs-fuse
+	glusterfs-geo-replication
 	glusterfs-libs
 	glusterfs-rdma
+	glusterfs-server
+	python2-gluster
+	userspace-rcu
 
 [centos-updates-el7]
 name = CentOS7 Updates
@@ -71,6 +76,8 @@ includepkgs = 389-ds-base
 	device-mapper-event
 	device-mapper-event-libs
 	dnsmasq
+	firewalld
+	firewalld-filesystem
 	fribidi
 	git
 	ipa-client
@@ -121,10 +128,22 @@ includepkgs = 389-ds-base
 	libwbclient
 	lvm2
 	lvm2-libs
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	numactl
 	pango
 	patch
 	perl-Git
+	postgresql-libs
+	python-firewall
 	python-libguestfs
 	python-libipa_hbac
 	python-sss-murmur
@@ -138,6 +157,8 @@ includepkgs = 389-ds-base
 	samba-client-libs
 	samba-common
 	samba-common-libs
+	sg3_utils
+	sg3_utils-libs
 	sos
 	sssd
 	sssd-ad
@@ -152,7 +173,10 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	systemd
+	systemd-libs
 	systemd-python
+	systemd-sysv
 	tcpdump
 	tzdata-java
 	virt-v2v
@@ -233,6 +257,7 @@ includepkgs = GeoIP
 	checkpolicy
 	copy-jdk-configs
 	cryptsetup
+	cryptsetup-python
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -244,6 +269,8 @@ includepkgs = GeoIP
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
+	dmraid
+	dmraid-events
 	dom4j
 	dosfstools
 	dracut-fips
@@ -347,6 +374,7 @@ includepkgs = GeoIP
 	junit
 	jzlib
 	keyutils
+	kmod-kvdo
 	lapack
 	libICE
 	libSM
@@ -421,6 +449,7 @@ includepkgs = GeoIP
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux-ruby
 	libsemanage-python
 	libtalloc
 	libtar
@@ -454,25 +483,17 @@ includepkgs = GeoIP
 	mailx
 	make
 	mdadm
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
 	msv-xsdlib
 	mtools
 	nbdkit
+	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
+	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -483,7 +504,6 @@ includepkgs = GeoIP
 	numad
 	numpy
 	objectweb-asm
-	objectweb-asm4
 	oddjob
 	oddjob-mkhomedir
 	openldap-clients
@@ -545,14 +565,16 @@ includepkgs = GeoIP
 	pixman
 	policycoreutils-python
 	postgresql-jdbc
-	postgresql-libs
 	psmisc
 	pygobject2
+	pykickstart
 	pyparsing
+	pyparted
 	python-IPy
 	python-augeas
 	python-backports
 	python-backports-ssl_match_hostname
+	python-blivet
 	python-configshell
 	python-dmidecode
 	python-dns
@@ -569,13 +591,16 @@ includepkgs = GeoIP
 	python-kmod
 	python-ldap
 	python-lxml
+	python-magic
 	python-markupsafe
 	python-netifaces
 	python-nss
 	python-paramiko
 	python-ply
+	python-prettytable
 	python-psycopg2
 	python-pwquality
+	python-pyblock
 	python-pycparser
 	python-qrcode-core
 	python-rtslib
@@ -585,6 +610,7 @@ includepkgs = GeoIP
 	python-urwid
 	python-webob
 	python-yubico
+	python2-blockdev
 	python2-futures
 	python2-pyasn1
 	python2-pyasn1-modules
@@ -626,6 +652,7 @@ includepkgs = GeoIP
 	seavgabios-bin
 	setools-libs
 	sgabios-bin
+	sgpio
 	slf4j
 	socat
 	spice-server
@@ -651,6 +678,7 @@ includepkgs = GeoIP
 	usbredir
 	usermode
 	uuid
+	vdo
 	virt-install
 	virt-manager-common
 	volume_key-libs
@@ -711,7 +739,11 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = python-unittest2
+includepkgs = facter
+	hiera
+	puppet
+	python-ordereddict
+	python-unittest2
 	python2-asn1crypto
 	python2-mimeparse
 	python2-passlib
@@ -719,7 +751,10 @@ includepkgs = python-unittest2
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
+	ruby-augeas
+	ruby-shadow
 	rubygem-multipart-post
+	rubygem-rgen
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3

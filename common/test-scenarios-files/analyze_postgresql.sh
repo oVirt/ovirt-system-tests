@@ -35,6 +35,17 @@ if [[ -n $engine_pg_scl ]]; then
             exit 1;
             ;;
     esac
+else
+    pgver=$(rpm -q postgresql)
+    case "${pgver}" in
+        postgresql-10.6*el8*)
+            pgdg=https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-8-x86_64/pgdg-redhat-repo-42.0-6.noarch.rpm
+            ;;
+        *)
+            echo "unknown engine pg version ${pgver}, please update $0"
+            exit 1;
+            ;;
+    esac
 fi
 [[ -n $pgdg ]] && yum install -y "${pgdg}"
 yum install -y pgbadger pgcluu

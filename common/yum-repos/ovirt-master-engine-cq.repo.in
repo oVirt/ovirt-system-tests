@@ -88,6 +88,8 @@ includepkgs=
     python3-lockfile
     python3-paramiko
     python3-pynacl
+    perl-Text-CSV_XS
+    perl-UNIVERSAL-isa
 exclude = archaius-core
     jackson-core
     jctools

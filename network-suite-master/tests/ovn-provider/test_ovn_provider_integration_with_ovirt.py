@@ -74,6 +74,7 @@ def test_connect_vm_to_external_network(running_vm_0,
 
 
 @suite.SKIP_SUITE_42
+@suite.XFAIL_SUITE_MASTER('BZ 1805142')
 def test_modify_vnic_sec_groups_on_ext_networks(running_vm_0, system,
                                                 ovirt_external_network,
                                                 default_ovn_provider_client):

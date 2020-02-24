@@ -25,8 +25,8 @@ run_suite () {
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
 
-    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
-    pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
+    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
+    "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
 
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"

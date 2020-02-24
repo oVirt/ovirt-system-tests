@@ -2,6 +2,7 @@
 
 # Imports
 source common/helpers/logger.sh
+source common/helpers/python.sh
 
 CLI="lago"
 DO_CLEANUP=false
@@ -95,7 +96,7 @@ on_sigterm() {
 verify_system_requirements() {
     local prefix="${1:?}"
 
-    "${OST_REPO_ROOT}/common/scripts/verify_system_requirements.py" \
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/verify_system_requirements.py" \
         --prefix-path "$prefix" \
         "${SUITE}/vars/main.yml"
 }
@@ -142,7 +143,7 @@ generate_vdsm_coverage_report() {
     [[ "$COVERAGE" = true ]] || return 0
     declare coverage_dir="${OST_REPO_ROOT}/coverage/vdsm"
     mkdir -p "$coverage_dir"
-    python "${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py" "$PREFIX" "$coverage_dir"
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py" "$PREFIX" "$coverage_dir"
 }
 
 env_init () {
@@ -164,7 +165,7 @@ put_host_image() {
     if [[ ! -e "$internal_repo_dir" ]]; then
         mkdir  "$internal_repo_dir"
     fi
-    python "${OST_REPO_ROOT}/common/scripts/put_host_image.py" "$PREFIX" "$dest"
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/put_host_image.py" "$PREFIX" "$dest"
 }
 
 render_jinja_templates () {
@@ -175,7 +176,7 @@ render_jinja_templates () {
     # export the suite name so jinja can interpolate it in the template
     export suite_name="${suite_name//./-}"
     export coverage="${COVERAGE}"
-    python "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
     cat "$dest"
 }
 
@@ -244,7 +245,7 @@ env_create_images () {
     cd -
     cd $export_dir
     echo "$engine_version" > version.txt
-    python "${OST_REPO_ROOT}/common/scripts/modify_init.py" LagoInitFile
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/modify_init.py" LagoInitFile
     logger.info "Compressing images"
     local files=($(ls "$export_dir"))
     tar -cvS "${files[@]}" | xz -T 0 -v --stdout > "$archive_name"

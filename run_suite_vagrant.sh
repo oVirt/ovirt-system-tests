@@ -2,6 +2,7 @@
 
 # Imports
 source common/helpers/logger.sh
+source common/helpers/python.sh
 
 CLI="vagrant"
 DO_CLEANUP=false
@@ -85,7 +86,7 @@ on_sigterm() {
 verify_system_requirements() {
     local prefix="${1:?}"
 
-    "${OST_REPO_ROOT}/common/scripts/verify_system_requirements.py" \
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/verify_system_requirements.py" \
         --prefix-path "$prefix" \
         "${SUITE}/vars/main.yml"
 }
@@ -95,7 +96,7 @@ generate_vdsm_coverage_report() {
     [[ "$COVERAGE" = true ]] || return 0
     declare coverage_dir="${OST_REPO_ROOT}/coverage/vdsm"
     mkdir -p "$coverage_dir"
-    python "${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py" "$PREFIX" "$coverage_dir"
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py" "$PREFIX" "$coverage_dir"
 }
 
 
@@ -262,7 +263,7 @@ env_run_test () {
     local junitxml_path="$PREFIX/${test_file##*/}.junit.xml"
     local res=0
 
-    python -m ost_utils.run_test \
+    "${PYTHON}" -m ost_utils.run_test \
         --junitxml-path "${junitxml_path}" \
         "$test_file"  \
         || res=$?

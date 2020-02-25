@@ -6,7 +6,6 @@ prep_suite () {
 
 run_suite () {
     install_libguestfs
-    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
@@ -26,13 +25,8 @@ run_suite () {
     declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
 
-    # use a virtualenv and install selenium via pip, because there is no maintained rpm available
-    venv=$(mktemp -d)
-    virtualenv --system-site-packages "$venv"
-    source $venv/bin/activate
     cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
-    pip install -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
-    export PYTHONPATH="${PYTHONPATH}:${venv}/lib/python2.7/site-packages"
+    pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
 
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"
@@ -51,5 +45,4 @@ run_suite () {
     done
 
     generate_vdsm_coverage_report
-    deactivate
 }

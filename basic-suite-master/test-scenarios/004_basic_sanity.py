@@ -639,6 +639,7 @@ def add_vm1_from_template(api):
             ),
             cpu=types.Cpu(
                 architecture=types.Architecture.X86_64,
+                type='Intel Westmere Family',
                 topology=types.CpuTopology(
                     sockets=1,
                     cores=1,

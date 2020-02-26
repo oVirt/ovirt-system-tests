@@ -118,10 +118,9 @@ def add_ldap_group(api):
 
 
 _TEST_LIST = [
-#TODO el8
-#    add_ldap_provider,
-#    add_ldap_group,
-#    add_ldap_user,
+    add_ldap_provider,
+    add_ldap_group,
+    add_ldap_user,
 ]
 
 

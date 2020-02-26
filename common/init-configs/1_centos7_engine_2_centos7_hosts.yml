@@ -64,7 +64,9 @@ domains:
       - /etc/ovirt-web-ui
       - /etc/dnf
       - /etc/firewalld
-      - /etc/httpd
+      - /etc/httpd/conf
+      - /etc/httpd/conf.d
+      - /etc/httpd/conf.modules.d
       - /etc/sysconfig
       - /etc/yum
       - /etc/resolv.conf

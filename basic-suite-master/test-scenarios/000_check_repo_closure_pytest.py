@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,11 +23,17 @@ import glob
 import os
 import subprocess
 
-from nose import SkipTest
 from pwd import getpwuid
 from shutil import rmtree
+
+import pytest
+
+import ovirtlago
+import ovirtlago.prefix
+
+from ovirtlago import constants
+from ovirtlago import testlib
 from six.moves import configparser
-from ovirtlago import (testlib, constants)
 
 import test_utils
 
@@ -122,12 +128,12 @@ def clean_tmp_cache(tmp_cache_dir):
     rmtree(tmp_cache_dir)
 
 
-def check_repo_closure():
+def test_check_repo_closure():
     """Find reposync config file(s) and check repoclosure against the internal
      repo with the repos in the config(s) as lookaside repos
     """
     if os.getenv('OST_SKIP_SYNC', False):
-        raise SkipTest('OST_SKIP_SYNC is set, skipping repo closure check')
+        pytest.skip('OST_SKIP_SYNC is set, skipping repo closure check')
 
     configs = glob.glob(
         os.path.join(os.environ.get('SUITE'), '*reposync*.repo')
@@ -145,19 +151,7 @@ def check_repo_closure():
                        "## Exist status: {es}\n"
                        "## Output: {out}\n\n"
                        ).format(com=e.cmd, es=e.returncode, out=e.output,)
-            raise SkipTest(err_msg)
+            pytest.skip(err_msg)
             #raise RuntimeError(err_msg)
         finally:
             clean_tmp_cache(tmp_cache_dir)
-
-
-_TEST_LIST = [
-    # [02/07/17] The test will be skipped in case of an error instead of failing
-    # This change is temporary only, until the test will be stable
-    check_repo_closure
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        yield t

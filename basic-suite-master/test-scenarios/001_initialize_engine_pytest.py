@@ -23,14 +23,14 @@ import os
 import socket
 
 from tempfile import NamedTemporaryFile
-import nose.tools as nt
 from ovirtlago import testlib
 
 import test_utils
 
+from ost_utils.pytest.fixtures import prefix
 
-@testlib.with_ovirt_prefix
-def initialize_engine(prefix):
+
+def test_initialize_engine(prefix):
     engine = prefix.virt_env.engine_vm()
 
     answer_file_src = os.path.join(
@@ -74,9 +74,8 @@ def initialize_engine(prefix):
             '-anp',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'engine-setup failed. Exit code is %s' % result.code
-    )
+    assert result.code == 0, \
+        'engine-setup failed. Exit code is %s' % result.code
 
     result = engine.ssh(
         [
@@ -85,9 +84,8 @@ def initialize_engine(prefix):
             'ovirt-engine-notifier',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'engine-ovirt-notifier failed. Exit code is %s' % result.code
-    )
+    assert result.code == 0, \
+        'engine-ovirt-notifier failed. Exit code is %s' % result.code
 
     # Remove YUM leftovers that are in /var/cache/[dnf/yum]* - free disk space.
     result = engine.ssh(
@@ -119,23 +117,19 @@ def _exec_engine_config(engine, key, value):
             '{0}={1}'.format(key, value),
         ],
     )
-    nt.eq_(
-        result.code,
-        0,
-        'setting {0}:{1} via engine-config failed with {2}'.format(key, value, result.code)
-    )
+    assert result.code == 0, \
+        'setting {0}:{1} via engine-config failed with {2}'.format(
+            key, value, result.code)
 
 
-@testlib.with_ovirt_prefix
-def engine_config(prefix):
+def test_engine_config(prefix):
     engine = prefix.virt_env.engine_vm()
 
     _exec_engine_config(engine, 'VdsLocalDisksLowFreeSpace', '400')
     _exec_engine_config(engine, 'OvfUpdateIntervalInMinutes', '10')
 
 
-@testlib.with_ovirt_prefix
-def engine_restart(prefix):
+def test_engine_restart(prefix):
     engine = prefix.virt_env.engine_vm()
 
     engine.service('ovirt-engine')._request_stop()
@@ -147,15 +141,3 @@ def engine_restart(prefix):
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()
     )
-
-
-_TEST_LIST = [
-    initialize_engine,
-    engine_config,
-    engine_restart,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        yield t

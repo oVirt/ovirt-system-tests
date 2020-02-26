@@ -27,10 +27,20 @@ run_suite () {
 
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
     "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
+    "${PYTHON}" -m pip install --user \
+        "pytest==4.6.9" \
+        "pytest-ordering==0.6" \
+        "zipp==1.2.0"
 
     for scenario in "${test_scenarios[@]}"; do
-        echo "Running test scenario ${scenario##*/}"
-        env_run_test "$scenario" || failed=true
+        if [[ "$scenario" == *pytest* ]]; then
+            echo "Running test scenario ${scenario##*/} with pytest"
+            env_run_pytest "$scenario" || failed=true
+        else
+            echo "Running test scenario ${scenario##*/}"
+            env_run_test "$scenario" || failed=true
+        fi
+
         if [[ -n "$OST_SKIP_COLLECT" ]]; then
             if [[ "$failed" == "true" ]]; then
                 env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"

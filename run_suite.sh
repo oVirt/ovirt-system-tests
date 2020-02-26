@@ -283,6 +283,26 @@ env_run_test () {
     return "$res"
 }
 
+
+env_run_pytest () {
+
+    local res=0
+    cd $PREFIX
+    local junitxml_file="$PREFIX/${1##*/}.junit.xml"
+
+    "${PYTHON}" -B -m pytest \
+        -s \
+        -v \
+        -x \
+        --junit-xml="${junitxml_file}" \
+        "$1" || res=$?
+
+    [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
+    cd -
+    return "$res"
+}
+
+
 env_ansible () {
 
     # Ensure latest Ansible modules are tested:

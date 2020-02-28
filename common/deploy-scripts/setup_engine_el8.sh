@@ -69,8 +69,6 @@ fi
 
 if [[ "$DIST" =~ "el8" ]]; then
     # rpm -ivh https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
-#TODO el8
-    rpm -ivh --nodeps https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el7/noarch/ovirt-ansible-disaster-recovery-1.2.1-1.2.master.20190729054802.el7.noarch.rpm
     yum module enable -y javapackages-tools pki-deps 389-ds
 fi
 

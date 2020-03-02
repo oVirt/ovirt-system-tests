@@ -313,7 +313,7 @@ def verify_transient_folder(prefix):
     ret = host.ssh(['ls', '/var/lib/vdsm/transient'])
     nt.assert_equals(ret.code, 0)
 
-    all_volumes = ret.out.splitlines()
+    all_volumes = ret.out.decode('utf-8').splitlines()
     nt.assert_true(len(all_volumes) == 1)
 
     nt.assert_true(sd.id in all_volumes[0])
@@ -731,7 +731,7 @@ def ha_recovery(prefix):
         # VDS_INITIATED_RUN_VM event(506)
         vm_host = _vm_host(prefix, VM2_NAME)
         pid = vm_host.ssh(['pgrep', '-f', 'qemu.*guest=vm2'])
-        vm_host.ssh(['kill', '-KILL', pid.out])
+        vm_host.ssh(['kill', '-KILL', pid.out.decode('utf-8')])
 
     vm_service = test_utils.get_vm_service(engine, VM2_NAME)
     testlib.assert_true_within_long(
@@ -980,7 +980,7 @@ def hotplug_cpu(prefix):
         )
     ret = _vm_ssh(test_utils.get_vm0_ip_address(prefix), ['lscpu'])
     nt.assert_equals(ret.code, 0)
-    match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out)
+    match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out.decode('utf-8'))
     nt.assert_true(match.group('cpus') == '2')
 
 
@@ -1096,7 +1096,7 @@ def suspend_resume_vm0(prefix):
     vm_host = _vm_host(prefix, VM0_NAME)
     ret = vm_host.ssh(['tail', '-1', VDSM_LOG])
     nt.assert_equals(ret.code, EX_OK)
-    log_items = ret.out.split()
+    log_items = ret.out.decode('utf-8').split()
     global _log_time_before_suspend
     _log_time_before_suspend = log_items[0] + ' ' + log_items[1]  # date + time
 

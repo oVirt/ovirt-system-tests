@@ -24,6 +24,7 @@ import functools
 import os
 import ovirtsdk4.types as types
 import random
+import six
 import uuid
 from ovirtlago import testlib
 from test_utils.constants import VM0_IP_HOST_PART
@@ -290,11 +291,13 @@ def TestEvent(engine, event_id):
 
 
 def get_luns(prefix, host, port, target, from_lun, to_lun=None):
-    ret = prefix.virt_env.get_vm(host).ssh(['cat', '/root/multipath.txt'])
+    out = prefix.virt_env.get_vm(host).ssh(['cat', '/root/multipath.txt']).out
+    if six.PY3:
+        out = out.decode('utf-8')
     if to_lun is not None: # take a range of LUNs
-        lun_guids = ret.out.splitlines()[from_lun:to_lun]
+        lun_guids = out.splitlines()[from_lun:to_lun]
     else: # take a single LUN from the list.
-        lun_guids = [ret.out.splitlines()[from_lun]]
+        lun_guids = [out.splitlines()[from_lun]]
     ips = prefix.virt_env.get_vm(host).all_ips()
     luns = []
     for lun_id in lun_guids:

@@ -81,7 +81,7 @@ def configure_metrics(prefix):
     )
 
     # Configure the engine-vm as the fluentd aggregator
-    if os.environ.has_key('OST_FLUENTD_AGGREGATOR'):
+    if 'OST_FLUENTD_AGGREGATOR' in os.environ:
         metrics_bootstrap = os.path.join(
             os.environ.get('SUITE'),
             '../common/test-scenarios-files/metrics_bootstrap'

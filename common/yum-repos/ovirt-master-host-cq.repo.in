@@ -12,21 +12,7 @@ enabled = 1
 max_connections = 10
 gpgcheck = 0
 
-[ovirt-master-snapshot-static-el8]
-name = oVirt Master Nightly Statics
-baseurl = http://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el8/
-enabled = 1
-max_connections = 10
-gpgcheck = 0
-
-[sac-gluster-ansible-el8]
-name=Copr repo for gluster-ansible
-baseurl = https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-8-x86_64/
-gpgcheck=1
-gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
-enabled=1
-
-# repos
+# centos repos
 [centos-base-el8]
 name=base
 baseurl = http://mirror.centos.org/centos-8/8/BaseOS/x86_64/os/
@@ -39,105 +25,73 @@ baseurl = http://mirror.centos.org/centos-8/8/AppStream/x86_64/os/
 gpgcheck = 0
 enabled = 1
 
-[centos-extras-el8]
-name=extras
-baseurl = http://mirror.centos.org/centos-8/8/extras/x86_64/os/
-exclude = *-release
-    ansible
-    libtomcrypt
-    libtommath
-    python2-crypto
-    python-paramiko
-gpgcheck = 0
-enabled = 1
-
 [centos-powertools-el8]
 name=powertools
 baseurl = http://mirror.centos.org/centos-8/8/PowerTools/x86_64/os/
 gpgcheck = 0
 enabled = 1
 
-[epel-el8]
-name=epel
-baseurl=http://mirrors.mit.edu/epel/8/Everything/x86_64/
- https://mirror.pnl.gov/epel/8/Everything/x86_64/
- https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/
-failovermethod=priority
-includepkgs=
-    ansible
-    ansible-doc
-    epel-release
-    facter
-    golang
-    golang-github-stretchr-testify-devel
-    golang-bin
-    golang-github-davecgh-go-spew-devel
-    golang-github-pmezard-go-difflib-devel
-    golang-github-stretchr-objx-devel
-    golang-src
-    hiera
-    libtomcrypt
-    libtommath
-    nbdkit
-    nbdkit-devel
-    nbdkit-plugin-python2
-    nbdkit-plugin-python-common
-    nbdkit-plugin-vddk
-    puppet
-    python2-crypto
-    python2-ecdsa
-    python-ordereddict
-    ruby-augeas
-    rubygem-rgen
-    ruby-shadow
-    sshpass
-    qpid-proton-c
-    python3-qpid-proton
-    python3-lockfile
-exclude = archaius-core
-    jackson-core
-    jctools
-    python-daemon
-    python-keyczar
-    python-linecache2
-    python-pthreading
-    rxjava
-gpgcheck = 0
-enabled = 1
-
 ## end centos repos
 
-## from release rpm
+## el8 dependencies from release rpm
 
-[ovirt-master-snapshot-el8]
-name=Latest oVirt master nightly snapshot
-baseurl = https://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/el8/
+[epel-8]
+name=Extra Packages for Enterprise Linux 8 - $basearch
+#baseurl=http://download.fedoraproject.org/pub/epel/8/$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-8&arch=$basearch
+failovermethod=priority
+enabled=1
+includepkgs=
+ ansible
+ ansible-doc
+ epel-release
+ facter
+ golang
+ golang-github-stretchr-testify-devel
+ golang-bin
+ golang-github-davecgh-go-spew-devel
+ golang-github-pmezard-go-difflib-devel
+ golang-github-stretchr-objx-devel
+ golang-src
+ hiera
+ libsodium
+ libtomcrypt
+ libtommath
+ nbdkit
+ nbdkit-devel
+ nbdkit-plugin-python2
+ nbdkit-plugin-python-common
+ nbdkit-plugin-vddk
+ puppet
+ python2-crypto
+ python2-ecdsa
+ python-ordereddict
+ ruby-augeas
+ rubygem-rgen
+ ruby-shadow
+ sshpass
+ qpid-proton-c
+ python3-bcrypt
+ python3-qpid-proton
+ python3-lockfile
+ python3-paramiko
+ python3-pynacl
+
+gpgcheck=1
+gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8
+
+[ovirt-master-glusterfs-7-noarch-el8]
+name=GlusterFS 7 testing packages for $basearch
+baseurl=https://cbs.centos.org/repos/storage8-gluster-7-testing/$basearch/os/
 enabled=1
 gpgcheck=0
 
-[ovirt-master-epel-testing-el8]
-name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch
-baseurl = http://mirrors.mit.edu/epel/testing/8/Everything/x86_64/
- https://dl.fedoraproject.org/pub/epel/testing/8/Everything/x86_64/
-failovermethod=priority
+[ovirt-master-virt8-advanced-virtualization-candidate]
+name=Advanced Virtualization candidate packages for $basearch
+baseurl=https://cbs.centos.org/repos/virt8-advanced-virtualization-candidate/$basearch/os/
 enabled=1
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
-includepkgs=collectd*
-
-[ovirt-master-glusterfs-6-el8]
-name=GlusterFS 6 packages for $basearch
-baseurl = https://download.gluster.org/pub/gluster/glusterfs/6/LATEST/RHEL/el-8/x86_64/
-enabled=1
-gpgcheck=1
-gpgkey=https://download.gluster.org/pub/gluster/glusterfs/6/rsa.pub
-
-[ovirt-master-glusterfs-6-noarch-el8]
-name=GlusterFS 6 noarch packages
-baseurl = https://download.gluster.org/pub/gluster/glusterfs/6/LATEST/RHEL/el-8/noarch
-enabled=1
-gpgcheck=1
-gpgkey=https://download.gluster.org/pub/gluster/glusterfs/6/rsa.pub
+gpgcheck=0
+module_hotfixes=1
 
 [ovirt-master-virtio-win-latest-el8]
 name=virtio-win builds roughly matching what will be shipped in upcoming RHEL
@@ -151,6 +105,16 @@ baseurl = https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collectio
 type=rpm-md
 gpgcheck=1
 gpgkey=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+
+[sac-gluster-ansible-el8]
+name=Copr repo for gluster-ansible
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-8-x86_64/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
 repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
@@ -186,4 +150,9 @@ enabled=1
 enabled_metadata=1
 module_hotfixes=1
 
-## end from release rpm
+[ovirt-master-centos-ovirt44-testing]
+name=CentOS-8 - oVirt 4.4 - testing
+baseurl=http://cbs.centos.org/repos/virt8-ovirt-44-testing/$basearch/os/
+gpgcheck=0
+enabled=1
+

@@ -1,4 +1,3 @@
-
 [main]
 reposdir = /etc/reposync.repos.d
 max_connections = 50
@@ -13,6 +12,7 @@ enabled = 1
 max_connections = 10
 gpgcheck = 0
 
+## centos repos
 [centos-base-el8]
 name=base
 baseurl = http://mirror.centos.org/centos-8/8/BaseOS/x86_64/os/
@@ -25,18 +25,6 @@ baseurl = http://mirror.centos.org/centos-8/8/AppStream/x86_64/os/
 gpgcheck = 0
 enabled = 1
 
-[centos-extras-el8]
-name=extras
-baseurl = http://mirror.centos.org/centos-8/8/extras/x86_64/os/
-exclude = *-release
-    ansible
-    libtomcrypt
-    libtommath
-    python2-crypto
-    python-paramiko
-gpgcheck = 0
-enabled = 1
-
 [centos-powertools-el8]
 name=powertools
 baseurl = http://mirror.centos.org/centos-8/8/PowerTools/x86_64/os/
@@ -46,61 +34,58 @@ enabled = 1
 ## end centos repos
 
 ## from release rpm
+# Note:
+# Adding trailing dependencies needed for performance test:
+# - perl-Text-CSV_XS
+# - perl-UNIVERSAL-isa
+# Required by commit 1ad04fb06bc75f68e6567767a79fd44c365f195f
 
 [epel-el8]
-name=epel
-baseurl=http://mirrors.mit.edu/epel/8/Everything/x86_64/
- https://mirror.pnl.gov/epel/8/Everything/x86_64/
- https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/
+name=Extra Packages for Enterprise Linux 8 - $basearch
+#baseurl=http://download.fedoraproject.org/pub/epel/8/$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-8&arch=$basearch
 failovermethod=priority
+enabled=1
 includepkgs=
-    ansible
-    ansible-doc
-    epel-release
-    facter
-    golang
-    golang-github-stretchr-testify-devel
-    golang-bin
-    golang-github-davecgh-go-spew-devel
-    golang-github-pmezard-go-difflib-devel
-    golang-github-stretchr-objx-devel
-    golang-src
-    hiera
-    libsodium
-    libtomcrypt
-    libtommath
-    nbdkit
-    nbdkit-devel
-    nbdkit-plugin-python2
-    nbdkit-plugin-python-common
-    nbdkit-plugin-vddk
-    puppet
-    python2-crypto
-    python2-ecdsa
-    python-ordereddict
-    ruby-augeas
-    rubygem-rgen
-    ruby-shadow
-    sshpass
-    qpid-proton-c
-    python3-bcrypt
-    python3-qpid-proton
-    python3-lockfile
-    python3-paramiko
-    python3-pynacl
-    python3-websocket-client
-    perl-Text-CSV_XS
-    perl-UNIVERSAL-isa
-exclude = archaius-core
-    jackson-core
-    jctools
-    python-daemon
-    python-keyczar
-    python-linecache2
-    python-pthreading
-    rxjava
-gpgcheck = 0
-enabled = 1
+ ansible
+ ansible-doc
+ epel-release
+ facter
+ golang
+ golang-github-stretchr-testify-devel
+ golang-bin
+ golang-github-davecgh-go-spew-devel
+ golang-github-pmezard-go-difflib-devel
+ golang-github-stretchr-objx-devel
+ golang-src
+ hiera
+ libsodium
+ libtomcrypt
+ libtommath
+ nbdkit
+ nbdkit-devel
+ nbdkit-plugin-python2
+ nbdkit-plugin-python-common
+ nbdkit-plugin-vddk
+ puppet
+ python2-crypto
+ python2-ecdsa
+ python-ordereddict
+ ruby-augeas
+ rubygem-rgen
+ ruby-shadow
+ sshpass
+ qpid-proton-c
+ python3-bcrypt
+ python3-qpid-proton
+ python3-lockfile
+ python3-paramiko
+ python3-pynacl
+ perl-Text-CSV_XS
+ perl-UNIVERSAL-isa
+
+gpgcheck=1
+gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8
 
 [ovirt-master-glusterfs-7-testing-el8]
 name=GlusterFS 7 testing packages for $basearch
@@ -116,7 +101,7 @@ gpgcheck=0
 
 [ovirt-master-copr-sbonazzo-collection-el8]
 name=Copr repo for EL8_collection owned by sbonazzo
-baseurl = https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-x86_64/
+baseurl=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-x86_64/
 type=rpm-md
 gpgcheck=1
 gpgkey=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/pubkey.gpg
@@ -181,20 +166,3 @@ baseurl=http://cbs.centos.org/repos/virt8-ovirt-44-testing/$basearch/os/
 gpgcheck=0
 enabled=1
 
-[ovirt-master-snapshot-el8]
-name=Latest oVirt master nightly snapshot
-baseurl = https://resources.ovirt.org/pub/ovirt-master-snapshot/rpm/el8/
-enabled=1
-gpgcheck=0
-
-[ovirt-master-snapshot-static-el8]
-name=Latest oVirt master additional nightly snapshot
-baseurl=https://resources.ovirt.org/pub/ovirt-master-snapshot-static/rpm/el8/
-enabled=1
-gpgcheck=0
-
-[olc-el8]
-name = temp ovirt-log-collector
-baseurl=https://jenkins.ovirt.org/job/ovirt-log-collector_standard-check-patch/14/artifact/check-patch.el8.x86_64/
-enabled=1
-gpgcheck=0

@@ -50,7 +50,7 @@ def add_ldap_provider(prefix):
         content = f.read()
         content = content.replace('@389DS_IP@', machine_389ds.ip())
 
-    with tempfile.NamedTemporaryFile(delete=False) as temp:
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
         temp.write(content)
     engine.copy_to(temp.name, '/root/aaa-ldap-answer-file.conf')
     os.unlink(temp.name)

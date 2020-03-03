@@ -20,17 +20,13 @@
 from __future__ import absolute_import
 
 import functools
-import nose.tools as nt
 import os
 
 from lago import utils
-from ovirtlago import testlib
 
-import test_utils
+from ost_utils.pytest.fixtures import prefix
 
-
-@testlib.with_ovirt_prefix
-def configure_vdsm_sos_plugin(prefix):
+def test_configure_vdsm_sos_plugin(prefix):
     """
      VDSM SOS plugin has been moved from VDSM to SOS as a part of:
         sos-3.7-3 in CentOS/RHEL 7.7
@@ -75,9 +71,9 @@ def configure_metrics(prefix):
           'configure_ovirt_machines_for_metrics.sh',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'Configuring ovirt machines for metrics failed.'
-                        ' Exit code is %s' % result.code
+    assert result.code == 0, (
+        'Configuring ovirt machines for metrics failed.'
+        ' Exit code is %s' % result.code
     )
 
     # Configure the engine-vm as the fluentd aggregator
@@ -94,9 +90,9 @@ def configure_metrics(prefix):
                 '/root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml',
             ],
         )
-        nt.eq_(
-            result.code, 0, 'Configuring ovirt-engine as fluentd aggregator failed.'
-                            ' Exit code is %s' % result.code
+        assert result.code == 0, (
+            'Configuring ovirt-engine as fluentd aggregator failed.'
+            ' Exit code is %s' % result.code
         )
 
     # clean /var/cache from yum leftovers. Frees up ~65M
@@ -118,10 +114,8 @@ def run_log_collector(prefix):
         ],
     )
     # log collector returns status code == 2 for warnings
-    nt.assert_true(
-        result.code in (0, 2),
+    assert result.code in (0, 2), \
         'log collector failed. Exit code is %s' % result.code
-    )
 
     engine.ssh(
         [
@@ -132,8 +126,7 @@ def run_log_collector(prefix):
     )
 
 
-@testlib.with_ovirt_prefix
-def metrics_and_log_collector(prefix):
+def test_metrics_and_log_collector(prefix):
     vt = utils.VectorThread(
             [
                 functools.partial(configure_metrics, prefix),
@@ -142,15 +135,3 @@ def metrics_and_log_collector(prefix):
         )
     vt.start_all()
     vt.join_all()
-
-
-_TEST_LIST = [
-    configure_vdsm_sos_plugin,
-    metrics_and_log_collector,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t

@@ -24,6 +24,7 @@ import functools
 import os
 import ovirtsdk4.types as types
 import random
+import re
 import six
 import uuid
 from ovirtlago import testlib
@@ -163,7 +164,8 @@ def get_storage_domain_service(engine, sd_name):
 @memoized
 def on_centos(ver=''):
     with open('/etc/redhat-release') as f:
-        return 'CentOS Linux release {}'.format(ver) in f.readline()
+        contents = f.readline()
+        return re.match('(Red Hat|CentOS).*release {}'.format(ver), contents)
 
 
 def get_storage_domain_vm_service_by_name(sd_service, vm_name):

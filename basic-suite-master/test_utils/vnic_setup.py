@@ -18,10 +18,12 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+from __future__ import absolute_import
+
 from ovirtsdk4.types import (VnicProfile, Network, RegistrationConfiguration,
                              RegistrationVnicProfileMapping)
 
-import network_utils_v4 as nu
+from test_utils import network_utils_v4 as nu
 import nose.tools as nt
 
 

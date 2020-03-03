@@ -28,12 +28,10 @@ import time
 
 from six.moves import http_client
 
-import nose.tools as nt
-from nose import SkipTest
-
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
+import pytest
 
 from lago import utils
 from ovirtlago import testlib
@@ -44,6 +42,8 @@ from test_utils import constants
 from test_utils import versioning
 
 from ost_utils import general_utils
+from ost_utils.pytest.fixtures import api_v4
+from ost_utils.pytest.fixtures import prefix
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -198,34 +198,32 @@ def _wait_for_status(hosts_service, dc_name, status):
     return all_hosts
 
 
-@testlib.with_ovirt_api4
-def add_dc(api):
-    engine = api.system_service()
+@pytest.mark.run(order=2)
+def test_add_dc(api_v4):
+    engine = api_v4.system_service()
     dcs_service = engine.data_centers_service()
     with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
-        nt.assert_true(
-            dcs_service.add(
-                sdk4.types.DataCenter(
-                    name=DC_NAME,
-                    description='APIv4 DC',
-                    local=False,
-                    version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
-                ),
-            )
+        assert dcs_service.add(
+            sdk4.types.DataCenter(
+                name=DC_NAME,
+                description='APIv4 DC',
+                local=False,
+                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def remove_default_dc(api):
-    engine = api.system_service()
+@pytest.mark.run(order=20)
+def test_remove_default_dc(api_v4):
+    engine = api_v4.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
     with test_utils.TestEvent(engine, 954): # USER_REMOVE_STORAGE_POOL event
         dc_service.remove()
 
 
-@testlib.with_ovirt_api4
-def update_default_dc(api):
-    engine = api.system_service()
+@pytest.mark.run(order=17)
+def test_update_default_dc(api_v4):
+    engine = api_v4.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
     with test_utils.TestEvent(engine, 952): # USER_UPDATE_STORAGE_POOL event
         dc_service.update(
@@ -235,9 +233,9 @@ def update_default_dc(api):
         )
 
 
-@testlib.with_ovirt_api4
-def update_default_cluster(api):
-    engine = api.system_service()
+@pytest.mark.run(order=18)
+def test_update_default_cluster(api_v4):
+    engine = api_v4.system_service()
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
     with test_utils.TestEvent(engine, 811): # USER_UPDATE_CLUSTER event
         cluster_service.update(
@@ -249,85 +247,81 @@ def update_default_cluster(api):
         )
 
 
-@testlib.with_ovirt_api4
-def remove_default_cluster(api):
-    engine = api.system_service()
+@pytest.mark.run(order=21)
+def test_remove_default_cluster(api_v4):
+    engine = api_v4.system_service()
     cl_service = test_utils.get_cluster_service(engine, 'Default')
     with test_utils.TestEvent(engine, 813): # USER_REMOVE_CLUSTER event
         cl_service.remove()
 
 
-@testlib.with_ovirt_api4
-def add_dc_quota(api):
-    datacenters_service = api.system_service().data_centers_service()
+@pytest.mark.run(order=16)
+def test_add_dc_quota(api_v4):
+    datacenters_service = api_v4.system_service().data_centers_service()
     datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
-    nt.assert_true(
-        quotas_service.add(
-            types.Quota (
-                name=DC_QUOTA_NAME,
-                description='DC-QUOTA-DESCRIPTION',
-                data_center=datacenter,
-                cluster_soft_limit_pct=99
-            )
+    assert quotas_service.add(
+        types.Quota (
+            name=DC_QUOTA_NAME,
+            description='DC-QUOTA-DESCRIPTION',
+            data_center=datacenter,
+            cluster_soft_limit_pct=99
         )
     )
 
-@testlib.with_ovirt_api4
-def add_cluster(api):
-    engine = api.system_service()
+@pytest.mark.run(order=3)
+def test_add_cluster(api_v4):
+    engine = api_v4.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
     with test_utils.TestEvent(engine, 809):
-        nt.assert_true(
-            clusters_service.add(
-                sdk4.types.Cluster(
-                    name=CLUSTER_NAME,
-                    description='APIv4 Cluster',
-                    data_center=sdk4.types.DataCenter(
-                        name=DC_NAME,
-                    ),
-                    version=sdk4.types.Version(
-                        major=DC_VER_MAJ,
-                        minor=DC_VER_MIN
-                    ),
-                    ballooning_enabled=True,
-                    ksm=sdk4.types.Ksm(
-                        enabled=True,
-                        merge_across_nodes=False,
-                    ),
-                    scheduling_policy=sdk4.types.SchedulingPolicy(
-                        name='evenly_distributed',
-                    ),
-                    optional_reason=True,
-                    memory_policy=sdk4.types.MemoryPolicy(
-                        ballooning=True,
-                        over_commit=sdk4.types.MemoryOverCommit(
-                            percent=150,
-                        ),
-                    ),
-                    ha_reservation=True,
-                    external_network_providers=[
-                        sdk4.types.ExternalProvider(
-                            id=provider_id,
-                        )
-                    ],
+        assert clusters_service.add(
+            sdk4.types.Cluster(
+                name=CLUSTER_NAME,
+                description='APIv4 Cluster',
+                data_center=sdk4.types.DataCenter(
+                    name=DC_NAME,
                 ),
-            )
+                version=sdk4.types.Version(
+                    major=DC_VER_MAJ,
+                    minor=DC_VER_MIN
+                ),
+                ballooning_enabled=True,
+                ksm=sdk4.types.Ksm(
+                    enabled=True,
+                    merge_across_nodes=False,
+                ),
+                scheduling_policy=sdk4.types.SchedulingPolicy(
+                    name='evenly_distributed',
+                ),
+                optional_reason=True,
+                memory_policy=sdk4.types.MemoryPolicy(
+                    ballooning=True,
+                    over_commit=sdk4.types.MemoryOverCommit(
+                        percent=150,
+                    ),
+                ),
+                ha_reservation=True,
+                external_network_providers=[
+                    sdk4.types.ExternalProvider(
+                        id=provider_id,
+                    )
+                ],
+            ),
         )
 
 
-@testlib.with_ovirt_prefix
-def sync_time(prefix):
+@pytest.mark.run(order=5)
+def test_sync_time(prefix):
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
         host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
         host.ssh(['chronyc', '-4', 'makestep'])
 
 
-@testlib.with_ovirt_prefix
-def add_hosts(prefix):
+@pytest.mark.run(order=4)
+def test_add_hosts(prefix):
     hosts = prefix.virt_env.host_vms()
     api = prefix.virt_env.engine_vm().get_api_v4()
     engine = api.system_service()
@@ -349,17 +343,15 @@ def add_hosts(prefix):
 
     with test_utils.TestEvent(engine, 42):
         for host in hosts:
-            nt.assert_true(
-                _add_host(host)
-            )
+            assert _add_host(host)
             # TODO: Adding a delay between adding hosts to bypass certificate
             # issue: https://bugzilla.redhat.com/1787195
             time.sleep(60)
 
 
-@testlib.with_ovirt_api4
-def verify_add_hosts(api):
-    hosts_service = api.system_service().hosts_service()
+@pytest.mark.run(order=30)
+def test_verify_add_hosts(api_v4):
+    hosts_service = api_v4.system_service().hosts_service()
     hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
     total_hosts = len(hosts_status)
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)
@@ -369,8 +361,8 @@ def verify_add_hosts(api):
         timeout=constants.ADD_HOST_TIMEOUT
     )
 
-@testlib.with_ovirt_prefix
-def verify_add_all_hosts(prefix):
+@pytest.mark.run(order=53)
+def test_verify_add_all_hosts(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
     hosts_service = api.system_service().hosts_service()
     total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
@@ -381,8 +373,8 @@ def verify_add_all_hosts(prefix):
     )
 
 
-@testlib.with_ovirt_prefix
-def complete_hosts_setup(prefix):
+@pytest.mark.run(order=54)
+def test_complete_hosts_setup(prefix):
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
         host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
@@ -397,8 +389,8 @@ def complete_hosts_setup(prefix):
             host.ssh(['echo', h.ip(), h.name(), '>>', '/etc/hosts'])
 
 
-@testlib.with_ovirt_prefix
-def copy_storage_script(prefix):
+@pytest.mark.run(order=0)
+def test_copy_storage_script(prefix):
     engine = prefix.virt_env.engine_vm()
     storage_script = os.path.join(
         os.environ.get('SUITE'),
@@ -411,17 +403,15 @@ def copy_storage_script(prefix):
     )
 
 
-@testlib.with_ovirt_prefix
-def configure_storage(prefix):
+@pytest.mark.run(order=14)
+def test_configure_storage(prefix):
     engine = prefix.virt_env.engine_vm()
     result = engine.ssh(
         [
             '/tmp/setup_storage.sh',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'setup_storage.sh failed. Exit code is %s' % result.code
-    )
+    assert result.code == 0, 'setup_storage.sh failed. Exit code is %s' % result.code
 
 
 def _add_storage_domain(api, p):
@@ -452,8 +442,8 @@ def _add_storage_domain(api, p):
         )
 
 
-@testlib.with_ovirt_prefix
-def add_master_storage_domain(prefix):
+@pytest.mark.run(order=31)
+def test_add_master_storage_domain(prefix):
     if MASTER_SD_TYPE == 'iscsi':
         add_iscsi_storage_domain(prefix)
     else:
@@ -515,8 +505,8 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
 
     _add_storage_domain(api, p)
 
-@testlib.with_ovirt_prefix
-def add_secondary_storage_domains(prefix):
+@pytest.mark.run(order=58)
+def test_add_secondary_storage_domains(prefix):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
@@ -545,8 +535,8 @@ def add_secondary_storage_domains(prefix):
     vt.join_all()
 
 
-@testlib.with_ovirt_prefix
-def resize_and_refresh_storage_domain(prefix):
+@pytest.mark.run(order=59)
+def test_resize_and_refresh_storage_domain(prefix):
     storage_vm = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME)
     result = storage_vm.ssh(
         [
@@ -556,11 +546,7 @@ def resize_and_refresh_storage_domain(prefix):
             '/dev/mapper/vg1_storage-lun0_bdev',
         ],
     )
-    nt.eq_(
-        result.code,
-        0,
-        'Failed to resize lun0. Code: {0}, output: {1}'.format(result.code, result.out)
-    )
+    assert result.code == 0, 'Failed to resize lun0. Code: {0}, output: {1}'.format(result.code, result.out)
 
     api = prefix.virt_env.engine_vm().get_api_v4()
     engine = api.system_service()
@@ -574,8 +560,8 @@ def resize_and_refresh_storage_domain(prefix):
         )
 
 
-@testlib.with_ovirt_prefix
-def add_glance_images(prefix):
+@pytest.mark.run(order=39)
+def test_add_glance_images(prefix):
     vt = utils.VectorThread(
         [
             functools.partial(import_non_template_from_glance, prefix),
@@ -646,25 +632,25 @@ def generic_import_from_glance(prefix=None, as_template=False,
         ),
     )
     disk = api.system_service().disks_service().list(search='name={}'.format(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME))[0]
-    nt.assert_true(disk)
+    assert disk
 
 
-@testlib.with_ovirt_api4
-def list_glance_images(api):
+@pytest.mark.run(order=15)
+def test_list_glance_images(api_v4):
     global GLANCE_AVAIL
     search_query = 'name={}'.format(SD_GLANCE_NAME)
-    engine = api.system_service()
+    engine = api_v4.system_service()
     storage_domains_service = engine.storage_domains_service()
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
         openstack_glance = add_glance(api)
         if not openstack_glance:
-            raise SkipTest('GLANCE storage domain is not available.')
+            pytest.skip('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not check_glance_connectivity(engine):
-        raise SkipTest('GLANCE connectivity test failed')
+        pytest.skip('GLANCE connectivity test failed')
 
     glance_domain = glance_domain_list.pop()
     glance_domain_service = storage_domains_service.storage_domain_service(
@@ -677,7 +663,7 @@ def list_glance_images(api):
         if len(all_images):
             GLANCE_AVAIL = True
     except sdk4.Error:
-        raise SkipTest('GLANCE is not available: client request error')
+        pytest.skip('GLANCE is not available: client request error')
 
 
 def add_glance(api):
@@ -736,40 +722,38 @@ def check_glance_connectivity(engine):
 
 def import_non_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
+        pytest.skip('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
     generic_import_from_glance(prefix=prefix_param)
 
 
 def import_template_from_glance(prefix_param):
     if not GLANCE_AVAIL:
-        raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
+        pytest.skip('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
     generic_import_from_glance(prefix=prefix_param, as_template=True)
 
 
-@testlib.with_ovirt_api4
-def set_dc_quota_audit(api):
-    dcs_service = api.system_service().data_centers_service()
+@pytest.mark.run(order=24)
+def test_set_dc_quota_audit(api_v4):
+    dcs_service = api_v4.system_service().data_centers_service()
     dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
     dc_service = dcs_service.data_center_service(dc.id)
-    nt.assert_true(
-        dc_service.update(
-            types.DataCenter(
-                quota_mode=types.QuotaModeType.AUDIT,
-            ),
-        )
-   )
+    assert dc_service.update(
+        types.DataCenter(
+            quota_mode=types.QuotaModeType.AUDIT,
+        ),
+    )
 
 
-@testlib.with_ovirt_api4
-def add_quota_storage_limits(api):
+@pytest.mark.run(order=22)
+def test_add_quota_storage_limits(api_v4):
 
     # Find the data center and the service that manages it:
-    dcs_service = api.system_service().data_centers_service()
+    dcs_service = api_v4.system_service().data_centers_service()
     dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
     dc_service = dcs_service.data_center_service(dc.id)
 
     # Find the storage domain and the service that manages it:
-    sds_service = api.system_service().storage_domains_service()
+    sds_service = api_v4.system_service().storage_domains_service()
     sd = sds_service.list()[0]
 
     # Find the quota and the service that manages it.
@@ -808,17 +792,15 @@ def add_quota_storage_limits(api):
         limit_service.remove()
 
     # Create the limit again, with the desired value
-    nt.assert_true(
-        limits_service.add(
-            limit=types.QuotaStorageLimit(
-                limit=500,
-            )
+    assert limits_service.add(
+        limit=types.QuotaStorageLimit(
+            limit=500,
         )
     )
 
-@testlib.with_ovirt_api4
-def add_quota_cluster_limits(api):
-    datacenters_service = api.system_service().data_centers_service()
+@pytest.mark.run(order=23)
+def test_add_quota_cluster_limits(api_v4):
+    datacenters_service = api_v4.system_service().data_centers_service()
     datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
@@ -829,18 +811,16 @@ def add_quota_cluster_limits(api):
     )
     quota_service = quotas_service.quota_service(quota.id)
     quota_cluster_limits_service = quota_service.quota_cluster_limits_service()
-    nt.assert_true(
-        quota_cluster_limits_service.add(
-            types.QuotaClusterLimit(
-                vcpu_limit=20,
-                memory_limit=10000.0
-            )
+    assert quota_cluster_limits_service.add(
+        types.QuotaClusterLimit(
+            vcpu_limit=20,
+            memory_limit=10000.0
         )
-)
+    )
 
-@testlib.with_ovirt_api4
-def add_vm_network(api):
-    engine = api.system_service()
+@pytest.mark.run(order=62)
+def test_add_vm_network(api_v4):
+    engine = api_v4.system_service()
 
     network = network_utils_v4.create_network_params(
         VM_NETWORK,
@@ -853,19 +833,15 @@ def add_vm_network(api):
     )
 
     with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
-        nt.assert_true(
-            engine.networks_service().add(network)
-        )
+        assert engine.networks_service().add(network)
 
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
-    nt.assert_true(
-        cluster_service.networks_service().add(network)
-    )
+    assert cluster_service.networks_service().add(network)
 
 
-@testlib.with_ovirt_api4
-def add_non_vm_network(api):
-    engine = api.system_service()
+@pytest.mark.run(order=61)
+def test_add_non_vm_network(api_v4):
+    engine = api_v4.system_service()
 
     network = network_utils_v4.create_network_params(
         MIGRATION_NETWORK,
@@ -879,176 +855,152 @@ def add_non_vm_network(api):
     )
 
     with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
-        nt.assert_true(
-            engine.networks_service().add(network)
-        )
+        assert engine.networks_service().add(network)
 
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
-    nt.assert_true(
-        cluster_service.networks_service().add(network)
-    )
+    assert cluster_service.networks_service().add(network)
 
 
-@testlib.with_ovirt_api4
-def add_role(api):
-    engine = api.system_service()
+@pytest.mark.run(order=25)
+def test_add_role(api_v4):
+    engine = api_v4.system_service()
     roles_service = engine.roles_service()
     with test_utils.TestEvent(engine, 864): # USER_ADD_ROLE_WITH_ACTION_GROUP event
-        nt.assert_true(
-            roles_service.add(
-                sdk4.types.Role(
-                    name='MyRole',
-                    administrative=False,
-                    description='My custom role to create virtual machines',
-                    permits=[
-                        # create_vm permit
-                        sdk4.types.Permit(id='1'),
-                        # login permit
-                        sdk4.types.Permit(id='1300'),
-                    ],
-                ),
-            )
+        assert roles_service.add(
+            sdk4.types.Role(
+                name='MyRole',
+                administrative=False,
+                description='My custom role to create virtual machines',
+                permits=[
+                    # create_vm permit
+                    sdk4.types.Permit(id='1'),
+                    # login permit
+                    sdk4.types.Permit(id='1300'),
+                ],
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def add_affinity_label(api):
-    engine = api.system_service()
+@pytest.mark.run(order=27)
+def test_add_affinity_label(api_v4):
+    engine = api_v4.system_service()
     affinity_labels_service = engine.affinity_labels_service()
     with test_utils.TestEvent(engine, 10380):
-        nt.assert_true(
-            affinity_labels_service.add(
-                sdk4.types.AffinityLabel(
-                    name='my_affinity_label',
-                ),
-            )
+        assert affinity_labels_service.add(
+            sdk4.types.AffinityLabel(
+                name='my_affinity_label',
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def add_affinity_group(api):
-    engine = api.system_service()
+@pytest.mark.run(order=11)
+def test_add_affinity_group(api_v4):
+    engine = api_v4.system_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
     with test_utils.TestEvent(engine, 10350):
-        nt.assert_true(
-            affinity_group_service.add(
-                sdk4.types.AffinityGroup(
-                    name='my_affinity_group',
+        assert affinity_group_service.add(
+            sdk4.types.AffinityGroup(
+                name='my_affinity_group',
+                enforcing=False,
+                positive=True,
+                hosts_rule=sdk4.types.AffinityRule(
+                    enabled=False,
                     enforcing=False,
                     positive=True,
-                    hosts_rule=sdk4.types.AffinityRule(
-                        enabled=False,
-                        enforcing=False,
-                        positive=True,
-                    ),
                 ),
-            )
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def add_bookmark(api):
-    engine = api.system_service()
+@pytest.mark.run(order=13)
+def test_add_bookmark(api_v4):
+    engine = api_v4.system_service()
     bookmarks_service = engine.bookmarks_service()
     with test_utils.TestEvent(engine, 350):
-        nt.assert_true(
-            bookmarks_service.add(
-                sdk4.types.Bookmark(
-                    name='my_bookmark',
-                    value='vm:name=vm*',
-                ),
-            )
+        assert bookmarks_service.add(
+            sdk4.types.Bookmark(
+                name='my_bookmark',
+                value='vm:name=vm*',
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def add_cpu_profile(api):
-    engine = api.system_service()
+@pytest.mark.run(order=29)
+def test_add_cpu_profile(api_v4):
+    engine = api_v4.system_service()
     cpu_profiles_service = engine.cpu_profiles_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     with test_utils.TestEvent(engine, 10130): # USER_ADDED_CPU_PROFILE event
-        nt.assert_true(
-            cpu_profiles_service.add(
-                sdk4.types.CpuProfile(
-                    name='my_cpu_profile',
-                    cluster=sdk4.types.Cluster(
-                        id=cluster_service.get().id,
-                    ),
+        assert cpu_profiles_service.add(
+            sdk4.types.CpuProfile(
+                name='my_cpu_profile',
+                cluster=sdk4.types.Cluster(
+                    id=cluster_service.get().id,
                 ),
-            )
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def add_qos(api):
-    engine = api.system_service()
+@pytest.mark.run(order=12)
+def test_add_qos(api_v4):
+    engine = api_v4.system_service()
     dc_service = test_utils.data_center_service(engine, DC_NAME)
     qoss = dc_service.qoss_service()
     with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
-        nt.assert_true(
-            qoss.add(
-                sdk4.types.Qos(
-                    name='my_cpu_qos',
-                    type=sdk4.types.QosType.CPU,
-                    cpu_limit=99,
-                ),
-            )
+        assert qoss.add(
+            sdk4.types.Qos(
+                name='my_cpu_qos',
+                type=sdk4.types.QosType.CPU,
+                cpu_limit=99,
+            ),
         )
     with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
-        nt.assert_true(
-            qoss.add(
-                sdk4.types.Qos(
-                    name='my_storage_qos',
-                    type=sdk4.types.QosType.STORAGE,
-                    max_iops=999999,
-                    description='max_iops_qos',
-                ),
-            )
+        assert qoss.add(
+            sdk4.types.Qos(
+                name='my_storage_qos',
+                type=sdk4.types.QosType.STORAGE,
+                max_iops=999999,
+                description='max_iops_qos',
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def add_disk_profile(api):
-    engine = api.system_service()
+@pytest.mark.run(order=36)
+def test_add_disk_profile(api_v4):
+    engine = api_v4.system_service()
     disk_profiles_service = engine.disk_profiles_service()
     dc_service = test_utils.data_center_service(engine, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
     attached_sd = attached_sds_service.list()[0]
 
     with test_utils.TestEvent(engine, 10120): # USER_ADDED_DISK_PROFILE event
-        nt.assert_true(
-            disk_profiles_service.add(
-                sdk4.types.DiskProfile(
-                    name='my_disk_profile',
-                    storage_domain=sdk4.types.StorageDomain(
-                        id=attached_sd.id,
-                    ),
+        assert disk_profiles_service.add(
+            sdk4.types.DiskProfile(
+                name='my_disk_profile',
+                storage_domain=sdk4.types.StorageDomain(
+                    id=attached_sd.id,
                 ),
-            )
+            ),
         )
 
 
-@testlib.with_ovirt_api4
-def get_version(api):
-    product_info = api.system_service().get().product_info
+@pytest.mark.run(order=6)
+def test_get_version(api_v4):
+    product_info = api_v4.system_service().get().product_info
     name = product_info.name
     major_version = product_info.version.major
-    nt.assert_true(
-        name in ('oVirt Engine', 'Red Hat Virtualization Manager')
-    )
-    nt.assert_true(
-        major_version == 4
-    )
+    assert name in ('oVirt Engine', 'Red Hat Virtualization Manager')
+    assert major_version == 4
 
 
-@testlib.with_ovirt_api4
-def get_cluster_enabled_features(api):
-    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
+@pytest.mark.run(order=37)
+def test_get_cluster_enabled_features(api_v4):
+    cluster_service = test_utils.get_cluster_service(api_v4.system_service(), CLUSTER_NAME)
     enabled_features_service = cluster_service.enabled_features_service()
     features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
     #TODO: Fix the below - why is features null?
-    raise SkipTest('skipping - features is []')
+    pytest.skip('skipping - features is []')
     feature_list = ''
     for feature in features:
         if feature.name == 'XYZ':
@@ -1058,11 +1010,11 @@ def get_cluster_enabled_features(api):
     raise RuntimeError('Feature XYZ is not in cluster enabled features: {0}'.format(feature_list))
 
 
-@testlib.with_ovirt_api4
-def get_cluster_levels(api):
-    cluster_levels_service = api.system_service().cluster_levels_service()
+@pytest.mark.run(order=10)
+def test_get_cluster_levels(api_v4):
+    cluster_levels_service = api_v4.system_service().cluster_levels_service()
     cluster_levels = sorted(cluster_levels_service.list(), key=lambda level:level.id)
-    nt.assert_true(cluster_levels)
+    assert cluster_levels
     levels = ''
     for level in cluster_levels:
         if level.id == '4.2':
@@ -1075,9 +1027,9 @@ def get_cluster_levels(api):
     raise RuntimeError('Could not find 4.2 in cluster_levels: {0}'.format(levels))
 
 
-@testlib.with_ovirt_api4
-def get_domains(api):
-    domains_service = api.system_service().domains_service()
+@pytest.mark.run(order=7)
+def test_get_domains(api_v4):
+    domains_service = api_v4.system_service().domains_service()
     domains = sorted(domains_service.list(), key=lambda domain: domain.name)
     for domain in domains:
         if domain.name == 'internal-authz':
@@ -1085,9 +1037,9 @@ def get_domains(api):
     raise RuntimeError('Could not find internal-authz domain in domains list')
 
 
-@testlib.with_ovirt_api4
-def get_host_devices(api):
-    host_service = _random_host_service_from_dc(api, DC_NAME)
+@pytest.mark.run(order=55)
+def test_get_host_devices(api_v4):
+    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
     for i in range(10):
         devices_service = host_service.devices_service()
         devices = sorted(devices_service.list(), key=lambda device: device.name)
@@ -1101,9 +1053,9 @@ def get_host_devices(api):
     raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
 
 
-@testlib.with_ovirt_api4
-def get_host_hooks(api):
-    host_service = _random_host_service_from_dc(api, DC_NAME)
+@pytest.mark.run(order=56)
+def test_get_host_hooks(api_v4):
+    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
     hooks_list = ''
@@ -1115,9 +1067,9 @@ def get_host_hooks(api):
     raise RuntimeError('could not find 50_vhostmd hook in host hooks: {0}'.format(hooks_list))
 
 
-@testlib.with_ovirt_api4
-def get_host_stats(api):
-    host_service = _random_host_service_from_dc(api, DC_NAME)
+@pytest.mark.run(order=57)
+def test_get_host_stats(api_v4):
+    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
     stats_list = ''
@@ -1129,26 +1081,22 @@ def get_host_stats(api):
     raise RuntimeError('boot.time stat not in stats: {0}'.format(stats_list))
 
 
-@testlib.with_ovirt_api4
-def get_host_numa_nodes(api):
-    host_service = _random_host_service_from_dc(api, DC_NAME)
+@pytest.mark.run(order=38)
+def test_get_host_numa_nodes(api_v4):
+    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
     # The below is too simplistic.
-    raise SkipTest(' [2018-02-08] test itself identified as possibly faulty')
-    nt.assert_true(
-        nodes[0].index == 0
-    )
-    nt.assert_true(
-        len(nodes) > 1
-    )
+    pytest.skip(' [2018-02-08] test itself identified as possibly faulty')
+    assert nodes[0].index == 0
+    assert len(nodes) > 1
 
 
-@testlib.with_ovirt_api4
-def check_update_host(api):
-    engine = api.system_service()
-    host_service = _random_host_service_from_dc(api, DC_NAME)
+@pytest.mark.run(order=43)
+def test_check_update_host(api_v4):
+    engine = api_v4.system_service()
+    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
     events_service = engine.events_service()
     with test_utils.TestEvent(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
@@ -1156,49 +1104,47 @@ def check_update_host(api):
         host_service.upgrade_check()
 
 
-@testlib.with_ovirt_api4
-def add_scheduling_policy(api):
-    engine = api.system_service()
+@pytest.mark.run(order=26)
+def test_add_scheduling_policy(api_v4):
+    engine = api_v4.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
     with test_utils.TestEvent(engine, 9910):
-        nt.assert_true(
-            scheduling_policies_service.add(
-                sdk4.types.SchedulingPolicy(
-                    name='my_scheduling_policy',
-                    default_policy=False,
-                    locked=False,
-                    balances=[
-                        sdk4.types.Balance(
-                            name='OptimalForEvenDistribution',
-                        ),
-                    ],
-                    filters=[
-                        sdk4.types.Filter(
-                            name='Migration',
-                        ),
-                    ],
-                    weight=[
-                        sdk4.types.Weight(
-                            name='HA',
-                            factor=2,
-                        ),
-                    ],
-                )
+        assert scheduling_policies_service.add(
+            sdk4.types.SchedulingPolicy(
+                name='my_scheduling_policy',
+                default_policy=False,
+                locked=False,
+                balances=[
+                    sdk4.types.Balance(
+                        name='OptimalForEvenDistribution',
+                    ),
+                ],
+                filters=[
+                    sdk4.types.Filter(
+                        name='Migration',
+                    ),
+                ],
+                weight=[
+                    sdk4.types.Weight(
+                        name='HA',
+                        factor=2,
+                    ),
+                ],
             )
         )
 
 
-@testlib.with_ovirt_api4
-def get_system_options(api):
+@pytest.mark.run(order=9)
+def test_get_system_options(api_v4):
     #TODO: get some option
-    options_service = api.system_service().options_service()
+    options_service = api_v4.system_service().options_service()
 
 
-@testlib.with_ovirt_api4
-def get_operating_systems(api):
-    operating_systems_service = api.system_service().operating_systems_service()
+@pytest.mark.run(order=8)
+def test_get_operating_systems(api_v4):
+    operating_systems_service = api_v4.system_service().operating_systems_service()
     os_list = sorted(operating_systems_service.list(), key=lambda os:os.name)
-    nt.assert_true(os_list)
+    assert os_list
     os_string = ''
     for os in os_list:
         if os.name == 'rhel_7x64':
@@ -1208,51 +1154,47 @@ def get_operating_systems(api):
     raise RuntimeError('Could not find rhel_7x64 in operating systems list: {0}'.format(os_string))
 
 
-@testlib.with_ovirt_api4
-def add_fence_agent(api):
+@pytest.mark.run(order=40)
+def test_add_fence_agent(api_v4):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
-    host_service = _random_host_service_from_dc(api, DC_NAME)
+    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
 
     fence_agents_service = host_service.fence_agents_service()
-    raise SkipTest('Enabling this may affect tests. Needs further tests')
-    nt.assert_true(
-        fence_agents_service.add(
-            sdk4.types.Agent(
-                address='1.2.3.4',
-                type='ipmilan',
-                username='myusername',
-                password='mypassword',
-                options=[
-                    sdk4.types.Option(
-                        name='myname',
-                        value='myvalue',
-                    ),
-                ],
-                order=0,
-            )
+    pytest.skip('Enabling this may affect tests. Needs further tests')
+    assert fence_agents_service.add(
+        sdk4.types.Agent(
+            address='1.2.3.4',
+            type='ipmilan',
+            username='myusername',
+            password='mypassword',
+            options=[
+                sdk4.types.Option(
+                    name='myname',
+                    value='myvalue',
+                ),
+            ],
+            order=0,
         )
     )
 
 
-@testlib.with_ovirt_api4
-def add_tag(api):
-    engine = api.system_service()
+@pytest.mark.run(order=28)
+def test_add_tag(api_v4):
+    engine = api_v4.system_service()
     tags_service = engine.tags_service()
-    nt.assert_true(
-        tags_service.add(
-            sdk4.types.Tag(
-                name='mytag',
-                description='My custom tag',
-            ),
-        )
+    assert tags_service.add(
+        sdk4.types.Tag(
+            name='mytag',
+            description='My custom tag',
+        ),
     )
 
 
-@testlib.with_ovirt_api4
-def add_mac_pool(api):
-    engine = api.system_service()
+@pytest.mark.run(order=19)
+def test_add_mac_pool(api_v4):
+    engine = api_v4.system_service()
     pools_service = engine.mac_pools_service()
     with test_utils.TestEvent(engine, 10700): # MAC_POOL_ADD_SUCCESS event
         pool = pools_service.add(
@@ -1266,23 +1208,21 @@ def add_mac_pool(api):
                 ],
             ),
         )
-        nt.assert_true(pool)
+        assert pool
 
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
     with test_utils.TestEvent(engine, 811):
-        nt.assert_true(
-            cluster_service.update(
-                cluster=sdk4.types.Cluster(
-                    mac_pool=sdk4.types.MacPool(
-                        id=pool.id,
-                    )
+        assert cluster_service.update(
+            cluster=sdk4.types.Cluster(
+                mac_pool=sdk4.types.MacPool(
+                    id=pool.id,
                 )
             )
         )
 
 
-@testlib.with_ovirt_prefix
-def verify_notifier(prefix):
+@pytest.mark.run(order=42)
+def test_verify_notifier(prefix):
     engine = prefix.virt_env.engine_vm()
     result = engine.ssh(
         [
@@ -1291,17 +1231,14 @@ def verify_notifier(prefix):
             '/var/log/messages',
         ],
     )
-    nt.eq_(
-        result.code,
-        0,
+    assert result.code == 0, \
         'Failed grep for USER_VDC_LOGIN with code {0}. Output: {1}'.format(result.code, result.out)
-    )
     engine.service('ovirt-engine-notifier')._request_stop()
     engine.service('snmptrapd')._request_stop()
 
 
-@testlib.with_ovirt_prefix
-def verify_engine_backup(prefix):
+@pytest.mark.run(order=41)
+def test_verify_engine_backup(prefix):
     engine_vm = prefix.virt_env.engine_vm()
     engine_vm.ssh(
         [
@@ -1321,11 +1258,9 @@ def verify_engine_backup(prefix):
                 '--log=/var/log/ost-engine-backup/log.txt',
             ],
         )
-        nt.eq_(
-            result.code,
-            0,
+        assert result.code == 0, \
             'Failed to run engine-backup with code {0}. Output: {1}'.format(result.code, result.out)
-        )
+
     result = engine_vm.ssh(
         [
             'engine-backup',
@@ -1334,15 +1269,12 @@ def verify_engine_backup(prefix):
             '--log=/var/log/ost-engine-backup/verify-log.txt',
         ],
     )
-    nt.eq_(
-        result.code,
-        0,
+    assert result.code == 0, \
         'Failed to verify backup with code {0}. Output: {1}'.format(result.code, result.out)
-    )
 
 
-@testlib.with_ovirt_prefix
-def download_engine_certs(prefix):
+@pytest.mark.run(order=1)
+def test_download_engine_certs(prefix):
     engine_ip = prefix.virt_env.engine_vm().ip()
     engine_base_url = '/ovirt-engine/services/pki-resource?resource=ca-certificate&format='
     engine_ca_url = engine_base_url + 'X509-PEM-CA'
@@ -1361,9 +1293,7 @@ def download_engine_certs(prefix):
             with open(path, 'wb') as outfile:
                 outfile.write(data)
         if compare_string:
-            nt.assert_true(
-                data == compare_string
-            )
+            assert data == compare_string
         return True
 
     testlib.assert_true_within_short(
@@ -1386,9 +1316,9 @@ def download_engine_certs(prefix):
     conn.close()
 
 
-@testlib.with_ovirt_api4
-def add_vnic_passthrough_profile(api):
-    engine = api.system_service()
+@pytest.mark.run(order=44)
+def test_add_vnic_passthrough_profile(api_v4):
+    engine = api_v4.system_service()
     vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
     with test_utils.TestEvent(engine, 1122):
@@ -1400,14 +1330,12 @@ def add_vnic_passthrough_profile(api):
                 )
             )
         )
-        nt.assert_equals(
-            vnic_profile.pass_through.mode, sdk4.types.VnicPassThroughMode.ENABLED
-        )
+        assert vnic_profile.pass_through.mode == sdk4.types.VnicPassThroughMode.ENABLED
 
 
-@testlib.with_ovirt_api4
-def remove_vnic_passthrough_profile(api):
-    engine = api.system_service()
+@pytest.mark.run(order=45)
+def test_remove_vnic_passthrough_profile(api_v4):
+    engine = api_v4.system_service()
     vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
     vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
@@ -1416,14 +1344,13 @@ def remove_vnic_passthrough_profile(api):
 
     with test_utils.TestEvent(engine, 1126):
         vnic_service.profile_service(vnic_profile.id).remove()
-        nt.assert_equals(next((vnic_profile for vnic_profile in vnic_service.list()
-                               if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE), None),
-                         None)
+        assert next((vp for vp in vnic_service.list()
+                     if vp.name == PASSTHROUGH_VNIC_PROFILE), None) is None
 
 
-@testlib.with_ovirt_api4
-def add_blank_vms(api):
-    engine = api.system_service()
+@pytest.mark.run(order=32)
+def test_add_blank_vms(api_v4):
+    engine = api_v4.system_service()
     vms_service = engine.vms_service()
 
     vm_params = sdk4.types.Vm(
@@ -1478,9 +1405,9 @@ def add_blank_vms(api):
         )
 
 
-@testlib.with_ovirt_api4
-def add_blank_high_perf_vm2(api):
-    engine = api.system_service()
+@pytest.mark.run(order=34)
+def test_add_blank_high_perf_vm2(api_v4):
+    engine = api_v4.system_service()
     hosts_service = engine.hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
 
@@ -1569,9 +1496,9 @@ def add_blank_high_perf_vm2(api):
     )
 
 
-@testlib.with_ovirt_api4
-def configure_high_perf_vm2(api):
-    engine = api.system_service()
+@pytest.mark.run(order=35)
+def test_configure_high_perf_vm2(api_v4):
+    engine = api_v4.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
     vm2_graphics_consoles_service = vm2_service.graphics_consoles_service()
     vm2_graphics_consoles = vm2_graphics_consoles_service.list()
@@ -1583,39 +1510,35 @@ def configure_high_perf_vm2(api):
     topology = vm2_service.get().cpu.topology
     total_vcpus = topology.sockets * topology.cores * topology.threads
     total_memory = vm2_service.get().memory // MB
-    raise SkipTest('Skipping until vNUMA and pinning to hosts work together')
+    pytest.skip('Skipping until vNUMA and pinning to hosts work together')
     for i in range(total_vcpus):
-        nt.assert_true(
-            vm2_numanodes_service.add(
-                node=sdk4.types.VirtualNumaNode(
-                    index=i,
-                    name='{0} vnuma node {1}'.format(VM2_NAME, i),
-                    memory= total_memory // total_vcpus,
-                    cpu=sdk4.types.Cpu(
-                        cores=[
-                            sdk4.types.Core(
-                                index=i,
-                            ),
-                        ],
-                    ),
-                    numa_node_pins=[
-                        sdk4.types.NumaNodePin(
+        assert vm2_numanodes_service.add(
+            node=sdk4.types.VirtualNumaNode(
+                index=i,
+                name='{0} vnuma node {1}'.format(VM2_NAME, i),
+                memory= total_memory // total_vcpus,
+                cpu=sdk4.types.Cpu(
+                    cores=[
+                        sdk4.types.Core(
                             index=i,
                         ),
                     ],
-                )
+                ),
+                numa_node_pins=[
+                    sdk4.types.NumaNodePin(
+                        index=i,
+                    ),
+                ],
             )
         )
 
-    nt.assert_true(
-        len(vm2_service.numa_nodes_service().list()) == total_vcpus
-    )
+    assert len(vm2_service.numa_nodes_service().list()) == total_vcpus
 
 
 @versioning.require_version(4, 1)
-@testlib.with_ovirt_api4
-def add_vm2_lease(api):
-    engine = api.system_service()
+@pytest.mark.run(order=60)
+def test_add_vm2_lease(api_v4):
+    engine = api_v4.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
 
@@ -1637,12 +1560,12 @@ def add_vm2_lease(api):
     )
 
 
-@testlib.with_ovirt_api4
-def add_nic(api):
+@pytest.mark.run(order=46)
+def test_add_nic(api_v4):
     NIC_NAME = 'eth0'
     # Locate the vnic profiles service and use it to find the ovirmgmt
     # network's profile id:
-    profiles_service = api.system_service().vnic_profiles_service()
+    profiles_service = api_v4.system_service().vnic_profiles_service()
     profile_id = next(
         (
             profile.id for profile in profiles_service.list()
@@ -1652,11 +1575,11 @@ def add_nic(api):
     )
 
     # Empty profile id would cause fail in later tests (e.g. add_filter):
-    nt.assert_is_not_none(profile_id)
+    assert profile_id is not None
 
     # Locate the virtual machines service and use it to find the virtual
     # machine:
-    vms_service = api.system_service().vms_service()
+    vms_service = api_v4.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
 
     # Locate the service that manages the network interface cards of the
@@ -1689,10 +1612,10 @@ def add_nic(api):
     )
 
 
-@testlib.with_ovirt_api4
-def add_graphics_console(api):
+@pytest.mark.run(order=47)
+def test_add_graphics_console(api_v4):
     # remove VNC
-    engine = api.system_service()
+    engine = api_v4.system_service()
     vm = test_utils.get_vm_service(engine, VM0_NAME)
     consoles_service = vm.graphics_consoles_service()
     if len(consoles_service.list()) == 2:
@@ -1715,12 +1638,12 @@ def add_graphics_console(api):
     )
 
 
-@testlib.with_ovirt_api4
-def add_filter(ovirt_api4):
-    engine = ovirt_api4.system_service()
+@pytest.mark.run(order=48)
+def test_add_filter(api_v4):
+    engine = api_v4.system_service()
     nics_service = test_utils.get_nics_service(engine, VM0_NAME)
     nic = nics_service.list()[0]
-    network = ovirt_api4.follow_link(nic.vnic_profile).network
+    network = api_v4.follow_link(nic.vnic_profile).network
     network_filters_service = engine.network_filters_service()
     network_filter = next(
         network_filter for network_filter in network_filters_service.list()
@@ -1736,13 +1659,11 @@ def add_filter(ovirt_api4):
         )
     )
     nic.vnic_profile = vnic_profile
-    nt.assert_true(
-        nics_service.nic_service(nic.id).update(nic)
-    )
+    assert nics_service.nic_service(nic.id).update(nic)
 
 
-@testlib.with_ovirt_prefix
-def add_filter_parameter(prefix):
+@pytest.mark.run(order=49)
+def test_add_filter_parameter(prefix):
     engine_vm = prefix.virt_env.engine_vm()
     ovirt_api4 = engine_vm.get_api(api_ver=4)
     engine = ovirt_api4.system_service()
@@ -1750,19 +1671,17 @@ def add_filter_parameter(prefix):
         engine, VM0_NAME)
 
     with test_utils.TestEvent(engine, 10912):
-        nt.assert_true(
-            network_filter_parameters_service.add(
-                sdk4.types.NetworkFilterParameter(
-                    name='IP',
-                    value=test_utils.get_vm0_ip_address(prefix)
-                )
+        assert network_filter_parameters_service.add(
+            sdk4.types.NetworkFilterParameter(
+                name='IP',
+                value=test_utils.get_vm0_ip_address(prefix)
             )
         )
 
 
-@testlib.with_ovirt_api4
-def add_serial_console_vm2(api):
-    engine = api.system_service()
+@pytest.mark.run(order=50)
+def test_add_serial_console_vm2(api_v4):
+    engine = api_v4.system_service()
     # Find the virtual machine. Note the use of the `all_content` parameter, it is
     # required in order to obtain additional information that isn't retrieved by
     # default, like the configuration of the serial console.
@@ -1779,55 +1698,50 @@ def add_serial_console_vm2(api):
             )
 
 
-@testlib.with_ovirt_api4
-def add_instance_type(api):
-    engine = api.system_service()
+@pytest.mark.run(order=51)
+def test_add_instance_type(api_v4):
+    engine = api_v4.system_service()
     instance_types_service = engine.instance_types_service()
     with test_utils.TestEvent(engine, 29):
-        nt.assert_true(
-            instance_types_service.add(
-                sdk4.types.InstanceType(
-                    name='myinstancetype',
-                    description='My instance type',
-                    memory=1 * GB,
-                    memory_policy=sdk4.types.MemoryPolicy(
-                        max=1 * GB,
-                    ),
-                    high_availability=sdk4.types.HighAvailability(
-                        enabled=True,
-                    ),
-                    cpu=sdk4.types.Cpu(
-                        topology=sdk4.types.CpuTopology(
-                            cores=2,
-                            sockets=2,
-                        ),
+        assert instance_types_service.add(
+            sdk4.types.InstanceType(
+                name='myinstancetype',
+                description='My instance type',
+                memory=1 * GB,
+                memory_policy=sdk4.types.MemoryPolicy(
+                    max=1 * GB,
+                ),
+                high_availability=sdk4.types.HighAvailability(
+                    enabled=True,
+                ),
+                cpu=sdk4.types.Cpu(
+                    topology=sdk4.types.CpuTopology(
+                        cores=2,
+                        sockets=2,
                     ),
                 ),
-            )
-        )
-
-
-@testlib.with_ovirt_api4
-def add_event(api):
-    events_service = api.system_service().events_service()
-    nt.assert_true(
-        # Add a new event to the system
-        events_service.add(
-            types.Event(
-                description='ovirt-system-tests description',
-                custom_id=int('01234567890'),
-                severity=types.LogSeverity.NORMAL,
-                origin='ovirt-system-tests',
-                cluster=types.Cluster(
-                    name=CLUSTER_NAME,
-                )
             ),
         )
+
+
+@pytest.mark.run(order=52)
+def test_add_event(api_v4):
+    events_service = api_v4.system_service().events_service()
+    assert events_service.add( # Add a new event to the system
+        types.Event(
+            description='ovirt-system-tests description',
+            custom_id=int('01234567890'),
+            severity=types.LogSeverity.NORMAL,
+            origin='ovirt-system-tests',
+            cluster=types.Cluster(
+                name=CLUSTER_NAME,
+            )
+        ),
     )
 
 
-@testlib.with_ovirt_prefix
-def add_direct_lun_vm0(prefix):
+@pytest.mark.run(order=33)
+def test_add_direct_lun_vm0(prefix):
     luns = test_utils.get_luns(
         prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=SD_ISCSI_NR_LUNS+1)
     dlun_params = sdk4.types.Disk(
@@ -1849,81 +1763,5 @@ def add_direct_lun_vm0(prefix):
 
         disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
         attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
-        nt.assert_not_equal(
-            attachment_service.get(),
-            None,
+        assert attachment_service.get() is not None, \
             'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
-        )
-
-
-_TEST_LIST = [
-    copy_storage_script,
-    download_engine_certs,
-    add_dc,
-    add_cluster,
-    add_hosts,
-    sync_time,
-    get_version,
-    get_domains,
-    get_operating_systems,
-    get_system_options,
-    get_cluster_levels,
-    add_affinity_group,
-    add_qos,
-    add_bookmark,
-    configure_storage,
-    list_glance_images,
-    add_dc_quota,
-    update_default_dc,
-    update_default_cluster,
-    add_mac_pool,
-    remove_default_dc,
-    remove_default_cluster,
-    add_quota_storage_limits,
-    add_quota_cluster_limits,
-    set_dc_quota_audit,
-    add_role,
-    add_scheduling_policy,
-    add_affinity_label,
-    add_tag,
-    add_cpu_profile,
-    verify_add_hosts,
-    add_master_storage_domain,
-    add_blank_vms,
-    add_direct_lun_vm0,
-    add_blank_high_perf_vm2,
-    configure_high_perf_vm2,
-    add_disk_profile,
-    get_cluster_enabled_features,
-    get_host_numa_nodes,
-    add_glance_images,
-    add_fence_agent,
-    verify_engine_backup,
-    verify_notifier,
-    check_update_host,
-    add_vnic_passthrough_profile,
-    remove_vnic_passthrough_profile,
-    add_nic,
-    add_graphics_console,
-    add_filter,
-    add_filter_parameter,
-    add_serial_console_vm2,
-    add_instance_type,
-    add_event,
-    verify_add_all_hosts,
-    complete_hosts_setup,
-    get_host_devices,
-    get_host_hooks,
-    get_host_stats,
-    add_secondary_storage_domains,
-    resize_and_refresh_storage_domain,
-    add_vm2_lease,
-    add_non_vm_network,
-    add_vm_network,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t

@@ -42,8 +42,9 @@ enabled = 1
 
 [epel-el8]
 name=Extra Packages for Enterprise Linux 8 - $basearch
-#baseurl=http://download.fedoraproject.org/pub/epel/8/$basearch
-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-8&arch=$basearch
+baseurl=http://mirrors.mit.edu/epel/8/Everything/x86_64/
+ https://mirror.pnl.gov/epel/8/Everything/x86_64/
+ https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/
 failovermethod=priority
 enabled=1
 includepkgs=

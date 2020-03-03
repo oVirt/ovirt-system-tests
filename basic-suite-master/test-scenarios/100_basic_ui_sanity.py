@@ -127,7 +127,7 @@ def _get_ip(hostname):
                               stderr=subprocess.PIPE)
     out, err = process.communicate()
     pattern = re.compile(r'\s+')
-    ip = re.sub(pattern, '', out)
+    ip = re.sub(pattern, '', out.decode('utf-8'))
     return ip
 
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2016-2017 Red Hat, Inc.
+# Copyright 2016-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ from __future__ import absolute_import
 import functools
 
 from lago import utils
-import nose.tools as nt
+from ost_utils.pytest.fixtures import api_v4, prefix
 from ovirtlago import testlib
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
@@ -52,19 +52,18 @@ def _host_is_attached_to_network(engine, host, network_name):
     return True
 
 
-@testlib.with_ovirt_api4
-def assign_hosts_network_label(api):
+def test_assign_hosts_network_label(api_v4):
     """
     Assigns NETWORK_LABEL to first network interface of every host in cluster
     """
-    engine = api.system_service()
+    engine = api_v4.system_service()
 
     def _assign_host_network_label(host):
         host_service = engine.hosts_service().host_service(id=host.id)
         nics_service = host_service.nics_service()
         nics = sorted(nics_service.list(),
                       key=lambda n: n.name)
-        nt.assert_greater_equal(len(nics), 1)
+        assert len(nics) >= 1
         nic = nics[0]
         nic_service = nics_service.nic_service(id=nic.id)
         labels_service = nic_service.network_labels_service()
@@ -79,11 +78,10 @@ def assign_hosts_network_label(api):
     vec = utils.func_vector(_assign_host_network_label, [(h,) for h in hosts])
     vt = utils.VectorThread(vec)
     vt.start_all()
-    nt.assert_true(all(vt.join_all()))
+    assert all(vt.join_all())
 
 
-@testlib.with_ovirt_api4
-def add_labeled_network(api):
+def test_add_labeled_network(api_v4):
     """
     Creates a labeled network
     """
@@ -102,34 +100,29 @@ def add_labeled_network(api):
             id=LABELED_NET_VLAN_ID,
         ),
     )
-    networks_service = api.system_service().networks_service()
+    networks_service = api_v4.system_service().networks_service()
     net = networks_service.add(labeled_net)
-    nt.assert_true(net)
+    assert net
 
     network_service = networks_service.network_service(id=net.id)
     labels_service = network_service.network_labels_service()
 
     # assign label to the network
-    nt.assert_true(
-        labels_service.add(
-            NetworkLabel(
-                id=NETWORK_LABEL
-            )
+    assert labels_service.add(
+        NetworkLabel(
+            id=NETWORK_LABEL
         )
     )
-    nt.assert_equal(
-        len(list(label for label in labels_service.list()
-                 if label.id == NETWORK_LABEL)),
-        1
-    )
+
+    labels = [l for l in labels_service.list() if l.id == NETWORK_LABEL]
+    assert len(labels) == 1
 
 
-@testlib.with_ovirt_api4
-def assign_labeled_network(api):
+def test_assign_labeled_network(api_v4):
     """
     Adds the labeled network to the cluster and asserts the hosts are attached
     """
-    engine = api.system_service()
+    engine = api_v4.system_service()
 
     labeled_net = engine.networks_service().list(
         search='name={}'.format(LABELED_NET_NAME))[0]
@@ -138,9 +131,7 @@ def assign_labeled_network(api):
     # interfaces with that label asynchronously
 
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
-    nt.assert_true(
-        cluster_service.networks_service().add(labeled_net)
-    )
+    assert cluster_service.networks_service().add(labeled_net)
 
     hosts_service = engine.hosts_service()
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
@@ -148,16 +139,3 @@ def assign_labeled_network(api):
         testlib.assert_true_within_short(
             functools.partial(_host_is_attached_to_network, engine,
                               host_service, LABELED_NET_NAME))
-
-
-_TEST_LIST = [
-    assign_hosts_network_label,
-    add_labeled_network,
-    assign_labeled_network,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t

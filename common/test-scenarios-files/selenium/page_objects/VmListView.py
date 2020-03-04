@@ -24,6 +24,14 @@ class VmListView(Displayable,WithBreadcrumbs):
         else:
             raise Exception("No virtual machine with the name " + vm_name + " found")
 
+    def select_vm(self, vm_name):
+        names_to_ids = self.ovirt_driver.retry_if_stale(self._get_vm_names_to_ids)
+
+        if vm_name in names_to_ids:
+            self.ovirt_driver.retry_if_stale(self._xpath_click, '//*[@id="' + names_to_ids[vm_name]  + '"]/..')
+        else:
+            raise Exception("No virtual machine with the name " + vm_name + " found")
+
     def get_vms(self):
         names_to_ids = self.ovirt_driver.retry_if_stale(self._get_vm_names_to_ids)
         vms = []
@@ -31,10 +39,52 @@ class VmListView(Displayable,WithBreadcrumbs):
             vms.append(name)
         return vms
 
+    def is_new_button_enabled(self):
+        return self.ovirt_driver.retry_if_stale(self._is_button_enabled, 'New')
+
+    def is_edit_button_enabled(self):
+        return self.ovirt_driver.retry_if_stale(self._is_button_enabled, 'Edit')
+
+    def is_shutdown_button_enabled(self):
+        return self.ovirt_driver.retry_if_stale(self._is_button_enabled, 'Shutdown')
+
+    def is_export_button_enabled(self):
+        return self.ovirt_driver.retry_if_stale(self._is_button_enabled, 'Export')
+
+    def is_migrate_button_enabled(self):
+        return self.ovirt_driver.retry_if_stale(self._is_button_enabled, 'Migrate')
+
+    def poweroff(self):
+        self.close_notification_safely()
+        self.ovirt_driver.retry_if_stale(self._xpath_click, '//div[@id="ActionPanelView_Shutdown"]/button[@data-toggle="dropdown"]')
+        self.ovirt_driver.retry_if_stale(self._xpath_click, '//div[@id="ActionPanelView_Shutdown"]//a[text()="Power Off"]')
+        self.ovirt_driver.wait_until(self._is_button_enabled, 'OK')
+        self.ovirt_driver.retry_if_stale(self._button_click, "OK")
+        self.ovirt_driver.wait_while(self.is_shutdown_button_enabled)
+        self.close_notification_safely()
+
+    def close_notification_safely(self):
+        try:
+            self._xpath_click('//a[@class="notif_dismissButton"]')
+        except:
+            pass
+
     def _get_vm_names_to_ids(self):
-        elements = self.ovirt_driver.driver.find_elements_by_css_selector('a[id^="MainVirtualMachineView_table_content_col2_row"')
+        elements = self.ovirt_driver.driver.find_elements_by_css_selector('a[id^="MainVirtualMachineView_table_content_col2_row"]')
         names_to_ids = {}
         for element in elements:
             names_to_ids[element.text] = element.get_attribute('id')
 
         return names_to_ids
+
+    def _is_button_enabled(self, text):
+        return self._is_xpath_enabled('//button[text()="' + text + '"]')
+
+    def _is_xpath_enabled(self, xpath):
+        return self.ovirt_driver.driver.find_element_by_xpath(xpath).is_enabled()
+
+    def _button_click(self, xpath):
+        self._xpath_click('//button[text()="' + xpath + '"]')
+
+    def _xpath_click(self, xpath):
+        self.ovirt_driver.driver.find_element_by_xpath(xpath).click()

@@ -363,6 +363,16 @@ def left_nav():
     ovirt_driver.id_click(SEL_ID_VMS_MENU)
     save_screenshot('left_nav_clicked_vms')
 
+@testlib.with_ovirt_prefix
+def setup_virtual_machines(prefix):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    vm_service = test_utils.get_vm_service(api.system_service(), 'vm0')
+    if vm_service.get().status == types.VmStatus.DOWN:
+        vm_service.start()
+        testlib.assert_true_within_long(
+            lambda: vm_service.get().status == types.VmStatus.UP
+        )
+
 def virtual_machines():
     try:
         webadmin_menu = WebAdminLeftMenu(ovirt_driver)
@@ -370,11 +380,29 @@ def virtual_machines():
 
         vms = vm_list_view.get_vms()
         assert 'vm0' in vms
+        assert vm_list_view.is_new_button_enabled() is True
+        assert vm_list_view.is_edit_button_enabled() is False
+        assert vm_list_view.is_shutdown_button_enabled() is False
+        assert vm_list_view.is_export_button_enabled() is False
+        assert vm_list_view.is_migrate_button_enabled() is False
+
+        vm_list_view.select_vm('vm0')
+        assert vm_list_view.is_new_button_enabled() is True
+        assert vm_list_view.is_edit_button_enabled() is True
+        assert vm_list_view.is_shutdown_button_enabled() is True
+        assert vm_list_view.is_export_button_enabled() is False
+        assert vm_list_view.is_migrate_button_enabled() is True
+
+        vm_list_view.poweroff()
+        assert vm_list_view.is_new_button_enabled() is True
+        assert vm_list_view.is_edit_button_enabled() is True
+        assert vm_list_view.is_shutdown_button_enabled() is False
+        assert vm_list_view.is_export_button_enabled() is True
+        assert vm_list_view.is_migrate_button_enabled() is False
 
         vm_detail_view = vm_list_view.open_detail_view('vm0')
         assert vm_detail_view.get_name() == 'vm0'
-        assert vm_detail_view.get_status() == 'Up'
-
+        assert vm_detail_view.get_status() == 'Down'
         vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
         vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
 
@@ -472,12 +500,14 @@ _TEST_LIST = [
     initialize_chrome,
     login,
     left_nav,
+    setup_virtual_machines,
     virtual_machines,
     # TODO: chrome_image_upload,
     close_driver,
     initialize_secure_firefox,
     login,
     left_nav,
+    setup_virtual_machines,
     virtual_machines,
     firefox_image_upload,
     cleanup,

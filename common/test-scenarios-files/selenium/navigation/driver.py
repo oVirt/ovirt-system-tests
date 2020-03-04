@@ -155,7 +155,7 @@ class Driver(object):
             print('hover_to_id couldnt find element %s' % id)
             raise
 
-    def retry_if_stale(self, method_to_retry):
+    def retry_if_stale(self, method_to_retry, *args):
         success = False
         return_value = None
         exception = None
@@ -165,7 +165,7 @@ class Driver(object):
                 if DEBUG:
                     print("self.driver.retry_if_stale(%s)" % method_to_retry)
 
-                return_value = method_to_retry()
+                return_value = method_to_retry(*args)
                 success = True
                 break
             except StaleElementReferenceException as e:
@@ -178,7 +178,6 @@ class Driver(object):
             raise exception
 
         return return_value
-
 
     def safe_close_dialog(self):
 
@@ -212,3 +211,26 @@ class Driver(object):
         with open(path, "w") as text_file:
             text_file.write(self.driver.page_source)
 
+    def wait_until(self, condition_method, *args):
+        WebDriverWait(self.driver, 10).until(ConditionClass(False, condition_method, *args))
+
+    def wait_while(self, condition_method, *args):
+        WebDriverWait(self.driver, 10).until(ConditionClass(True, condition_method, *args))
+
+class ConditionClass(object):
+    def __init__(self, while_condition, condition_method, *args):
+        self.while_condition = while_condition
+        self.condition_method = condition_method
+        self.args = args
+
+    def __call__(self, driver):
+        result = self.execute_condition()
+        if self.while_condition:
+            result = not result
+        return result
+
+    def execute_condition(self):
+        try:
+            return self.condition_method(*self.args)
+        except:
+            return False

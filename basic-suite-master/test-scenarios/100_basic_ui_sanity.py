@@ -69,7 +69,8 @@ ENGINE_FQDN = 'engine'
 URL = "https://%s/ovirt-engine/webadmin" % ENGINE_FQDN
 USERNAME = 'admin'
 PASSWORD = get_engine_admin_password()
-CA_PATH = '/tmp/pki-resource'
+CA_PATH = os.path.join(
+    os.environ.get('LAGO_PREFIX_PATH'), 'pki-resource')
 
 SS_PATH = os.path.join(
     os.environ.get('OST_REPO_ROOT'),
@@ -77,15 +78,13 @@ SS_PATH = os.path.join(
     (os.environ.get('OST_DC_VERSION', ''),)
 )
 
-HUB_CONTAINER_IMAGE = 'selenium/hub:3.141.59-neon'
-# This image is based on "selenium/node-firefox-debug:3.141.59-neon" include libnss3-tools package
-FIREFOX_CONTAINER_IMAGE = 'quay.io/arachman/selenium-firefox-debug:3.141.59-neon'
-# This image is based on "selenium/node-chrome-debug:3.141.59-neon" include libnss3-tools package
-CHROME_CONTAINER_IMAGE = 'quay.io/arachman/selenium-chrome-debug:3.141.59-neon'
+HUB_CONTAINER_IMAGE = 'selenium/hub:3.141.59-zirconium'
+FIREFOX_CONTAINER_IMAGE = 'selenium/node-firefox-debug:3.141.59-zirconium'
+CHROME_CONTAINER_IMAGE = 'selenium/node-chrome-debug:3.141.59-zirconium'
 NETWORK_NAME = 'grid'
-# selenium grid neon release uses these versions:
-FIREFOX_VERSION = '66.0.3'
-CHROME_VERSION = '74.0.3729.108'
+# selenium grid zirconium release uses these versions:
+FIREFOX_VERSION = '73.0'
+CHROME_VERSION = '80.0.3987.106'
 
 HUB_CONTAINER_NAME = 'selenium-hub'
 FIREFOX_CONTAINER_NAME = 'grid_node_firefox'
@@ -156,6 +155,7 @@ def _get_chrome_capabilities():
     capabilities = DesiredCapabilities.CHROME.copy()
     capabilities['platform'] = BROWSER_PLATFORM
     capabilities['version'] = CHROME_VERSION
+    capabilities['acceptInsecureCerts'] = True
     return capabilities
 
 
@@ -431,15 +431,11 @@ def load_firefox_cert():
 
 
 def load_cert(container_name):
-    os.system('docker cp %s %s:%s' % (CA_PATH, container_name, CA_PATH))
-
-    import_ca_script = os.path.join(
+    inject_script = os.path.join(
             os.environ.get('SUITE'),
-            '../common/test-scenarios-files/import_ca_to_browsers.sh'
+            '../common/test-scenarios-files/inject_cert.sh'
         )
-
-    os.system('docker cp %s %s:/tmp/import_ca_to_browsers.sh' % (import_ca_script, container_name))
-    os.system('docker exec %s bash -c ./tmp/import_ca_to_browsers.sh' % container_name)
+    os.system('%s %s %s %s %s' % (inject_script, container_name, ENGINE_FQDN, os.environ.get('LAGO_PREFIX_PATH'), CA_PATH))
 
 
 def chrome_image_upload():

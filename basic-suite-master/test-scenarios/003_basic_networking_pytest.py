@@ -22,7 +22,8 @@ from __future__ import absolute_import
 
 from lago import utils
 from netaddr.ip import IPAddress
-import nose.tools as nt
+from ost_utils.pytest.fixtures import api_v4
+from ost_utils.pytest.fixtures import prefix
 from ovirtlago import testlib
 from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
 
@@ -82,8 +83,8 @@ def _ping(host, ip_address):
         cmd += ['-6']
 
     ret = host.ssh(cmd + [ip_address])
-    nt.assert_equals(ret.code, 0, 'Cannot ping {} from {}: {}'.format(
-        ip_address, host.name(), ret))
+    assert ret.code == 0, 'Cannot ping {} from {}: {}'.format(
+        ip_address, host.name(), ret)
 
 
 def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
@@ -96,20 +97,8 @@ def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
     if nic_name:
         host_nic = next(nic for nic in host.nics_service().list()
                         if nic.id == attachment.host_nic.id)
-        nt.assert_equals(nic_name, host_nic.name)
+        assert nic_name == host_nic.name
     return attachment
-
-
-@testlib.with_ovirt_api4
-@testlib.with_ovirt_prefix
-def attach_vm_network_to_host_0_static_config(prefix, api):
-    _attach_vm_network_to_host_static_config(prefix, api, host_num=0)
-
-
-@testlib.with_ovirt_api4
-@testlib.with_ovirt_prefix
-def attach_vm_network_to_host_1_static_config(prefix, api):
-    _attach_vm_network_to_host_static_config(prefix, api, host_num=1)
 
 
 def _attach_vm_network_to_host_static_config(prefix, api, host_num):
@@ -134,15 +123,20 @@ def _attach_vm_network_to_host_static_config(prefix, api, host_num):
 
     host_nic = next(nic for nic in host_service.nics_service().list() if
                     nic.name == '{}.{}'.format(nic_name, VM_NETWORK_VLAN_ID))
-    nt.assert_equals(IPAddress(host_nic.ip.address),
-                     IPAddress(VM_NETWORK_IPv4_ADDR.format(host_num+1)))
-    nt.assert_equals(IPAddress(host_nic.ipv6.address),
-                     IPAddress(VM_NETWORK_IPv6_ADDR.format(host_num+1)))
+
+    assert IPAddress(host_nic.ip.address) == \
+        IPAddress(VM_NETWORK_IPv4_ADDR.format(host_num+1))
+
+    assert IPAddress(host_nic.ipv6.address) == \
+         IPAddress(VM_NETWORK_IPv6_ADDR.format(host_num+1))
 
 
-@testlib.with_ovirt_api4
-def modify_host_0_ip_to_dhcp(api):
-    engine = api.system_service()
+def test_attach_vm_network_to_host_0_static_config(prefix, api_v4):
+    _attach_vm_network_to_host_static_config(prefix, api_v4, host_num=0)
+
+
+def test_modify_host_0_ip_to_dhcp(api_v4):
+    engine = api_v4.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)
@@ -156,9 +150,8 @@ def modify_host_0_ip_to_dhcp(api):
     # verify ip configuration.
 
 
-@testlib.with_ovirt_api4
-def detach_vm_network_from_host_0(api):
-    engine = api.system_service()
+def test_detach_vm_network_from_host_0(api_v4):
+    engine = api_v4.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)
@@ -167,14 +160,11 @@ def detach_vm_network_from_host_0(api):
         engine, VM_NETWORK, CLUSTER_NAME, False)
     network_utils_v4.detach_network_from_host(engine, host_service, VM_NETWORK)
 
-    nt.assert_false(_host_is_attached_to_network(engine, host_service,
-                                                 VM_NETWORK))
+    assert not _host_is_attached_to_network(engine, host_service, VM_NETWORK)
 
 
-@testlib.with_ovirt_api4
-@testlib.with_ovirt_prefix
-def bond_nics(prefix, api):
-    engine = api.system_service()
+def test_bond_nics(prefix, api_v4):
+    engine = api_v4.system_service()
 
     def _bond_nics(number, host):
         slaves = [HostNic(name=nic) for nic in _host_vm_nics(  # eth2, eth3
@@ -205,25 +195,22 @@ def bond_nics(prefix, api):
 
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
         host_service = engine.hosts_service().host_service(id=host.id)
-        nt.assert_true(_host_is_attached_to_network(
-            engine, host_service, MIGRATION_NETWORK, nic_name=BOND_NAME))
+        assert _host_is_attached_to_network(
+            engine, host_service, MIGRATION_NETWORK, nic_name=BOND_NAME)
 
 
-@testlib.with_ovirt_prefix
-def verify_interhost_connectivity_ipv4(prefix):
+def test_verify_interhost_connectivity_ipv4(prefix):
     first_host = prefix.virt_env.host_vms()[0]
     _ping(first_host, MIGRATION_NETWORK_IPv4_ADDR.format(2))
 
 
-@testlib.with_ovirt_prefix
-def verify_interhost_connectivity_ipv6(prefix):
+def test_verify_interhost_connectivity_ipv6(prefix):
     first_host = prefix.virt_env.host_vms()[0]
     _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR.format(2))
 
 
-@testlib.with_ovirt_api4
-def remove_bonding(api):
-    engine = api.system_service()
+def test_remove_bonding(api_v4):
+    engine = api_v4.system_service()
 
     def _remove_bonding(host):
         host_service = engine.hosts_service().host_service(id=host.id)
@@ -237,26 +224,11 @@ def remove_bonding(api):
 
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
         host_service = engine.hosts_service().host_service(id=host.id)
-        nt.assert_false(_host_is_attached_to_network(engine, host_service,
-                                                     MIGRATION_NETWORK))
+        assert not _host_is_attached_to_network(engine, host_service,
+                                                MIGRATION_NETWORK)
 
 
-_TEST_LIST = [
-    attach_vm_network_to_host_0_static_config,
-    modify_host_0_ip_to_dhcp,
-    detach_vm_network_from_host_0,
-    bond_nics,
-    verify_interhost_connectivity_ipv4,
-    verify_interhost_connectivity_ipv6,
-    remove_bonding,
-
+def test_attach_vm_network_to_both_hosts_static_config(prefix, api_v4):
     # preparation for 004 and 006
-    attach_vm_network_to_host_0_static_config,
-    attach_vm_network_to_host_1_static_config,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t
+    _attach_vm_network_to_host_static_config(prefix, api_v4, host_num=0)
+    _attach_vm_network_to_host_static_config(prefix, api_v4, host_num=1)

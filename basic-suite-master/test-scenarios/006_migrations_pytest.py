@@ -21,13 +21,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from netaddr.ip import IPAddress
-import nose.tools as nt
 from ovirtlago import testlib
 from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
 import json
 
+import pytest
 import test_utils
 from test_utils import network_utils_v4, assert_finished_within_long
+from ost_utils.pytest.fixtures import api_v4, prefix
 
 
 DC_NAME = 'test-dc'
@@ -49,26 +50,21 @@ VM0_NAME = 'vm0'
 # Migration policy UUIDs are hard-coded
 MIGRATION_POLICY_POSTCOPY='a7aeedb2-8d66-4e51-bb22-32595027ce71'
 
-@testlib.with_ovirt_api4
-def prepare_migration_vlan(api):
-    engine = api.system_service()
 
-    nt.assert_true(
-        network_utils_v4.set_network_usages_in_cluster(
-            engine, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
-    )
+@pytest.fixture(scope="module")
+def prepare_migration_vlan(api_v4):
+    engine = api_v4.system_service()
+
+    assert network_utils_v4.set_network_usages_in_cluster(
+        engine, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
-    nt.assert_true(
-        network_utils_v4.set_network_mtu(
-            engine, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
-    )
+    assert network_utils_v4.set_network_mtu(
+        engine, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
 
 
-@testlib.with_ovirt_api4
-@testlib.with_ovirt_prefix
-def migrate_vm(prefix, api):
-    engine = api.system_service()
+def migrate_vm(prefix, api_v4):
+    engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     vm_id = vm_service.get().id
     hosts_service = engine.hosts_service()
@@ -116,14 +112,11 @@ def migrate_vm(prefix, api):
         lambda: vm_service.get().status == VmStatus.UP
     )
 
-    nt.assert_equals(
-        _current_running_host(), dst_host
-    )
+    assert _current_running_host() == dst_host
 
 
-@testlib.with_ovirt_api4
-def prepare_migration_attachments_ipv4(api):
-    engine = api.system_service()
+def prepare_migration_attachments_ipv4(api_v4):
+    engine = api_v4.system_service()
     hosts_service = engine.hosts_service()
 
     for index, host in enumerate(
@@ -142,12 +135,11 @@ def prepare_migration_attachments_ipv4(api):
 
         actual_address = next(nic for nic in host_service.nics_service().list()
                               if nic.name == VLAN200_IF_NAME).ip.address
-        nt.assert_equals(IPAddress(actual_address), IPAddress(ip_address))
+        assert IPAddress(actual_address) == IPAddress(ip_address)
 
 
-@testlib.with_ovirt_api4
-def prepare_migration_attachments_ipv6(api):
-    engine = api.system_service()
+def prepare_migration_attachments_ipv6(api_v4):
+    engine = api_v4.system_service()
     hosts_service = engine.hosts_service()
 
     for index, host in enumerate(
@@ -166,12 +158,11 @@ def prepare_migration_attachments_ipv6(api):
 
         actual_address = next(nic for nic in host_service.nics_service().list()
                               if nic.name == VLAN200_IF_NAME).ipv6.address
-        nt.assert_equals(IPAddress(actual_address), IPAddress(ip_address))
+        assert IPAddress(actual_address) == IPAddress(ip_address)
 
 
-@testlib.with_ovirt_api4
-def set_postcopy_migration_policy(api):
-    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
+def set_postcopy_migration_policy(api_v4):
+    cluster_service = test_utils.get_cluster_service(api_v4.system_service(), CLUSTER_NAME)
     cluster_service.update(
         cluster=Cluster(
             migration=MigrationOptions(
@@ -182,21 +173,13 @@ def set_postcopy_migration_policy(api):
         )
     )
 
-_TEST_LIST = [
-    prepare_migration_vlan,
 
-    prepare_migration_attachments_ipv4,
-    migrate_vm,
-
-    # NOTE: IPv6 migration now trivially works, as ip6tables replace firewalld
-    #       and leave ports open. See https://bugzilla.redhat.com/1414524
-    prepare_migration_attachments_ipv6,
-    set_postcopy_migration_policy,
-    migrate_vm,
-]
+def test_ipv4_migration(prefix, api_v4, prepare_migration_vlan):
+    prepare_migration_attachments_ipv4(api_v4)
+    migrate_vm(prefix, api_v4)
 
 
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t
+def test_ipv6_migration(prefix, api_v4, prepare_migration_vlan):
+    prepare_migration_attachments_ipv6(api_v4)
+    set_postcopy_migration_policy(api_v4)
+    migrate_vm(prefix, api_v4)

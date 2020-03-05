@@ -61,6 +61,7 @@ includepkgs = 389-ds-base
 	firewalld-filesystem
 	fribidi
 	git
+	http-parser
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -328,7 +329,6 @@ includepkgs = GeoIP
 	hivex
 	hmaccalc
 	hsqldb
-	http-parser
 	httpcomponents-client
 	httpcomponents-core
 	httpd

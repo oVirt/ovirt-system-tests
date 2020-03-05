@@ -19,7 +19,6 @@
 #
 from __future__ import absolute_import
 
-import nose.tools as nt
 import os
 import tempfile
 
@@ -28,6 +27,7 @@ import ovirtsdk4.types as types
 from ovirtlago import testlib
 
 import test_utils
+from ost_utils.pytest.fixtures import api_v4, prefix
 
 # AAA
 AAA_LDAP_USER = 'user1'
@@ -36,8 +36,7 @@ AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
 HOSTNAME_389DS = testlib.get_prefixed_name('engine')
 
 
-@testlib.with_ovirt_prefix
-def add_ldap_provider(prefix):
+def test_add_ldap_provider(prefix):
     engine = prefix.virt_env.engine_vm()
     machine_389ds = prefix.virt_env.get_vm(HOSTNAME_389DS)
 
@@ -62,9 +61,8 @@ def add_ldap_provider(prefix):
             'dirsrv@lago',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'Failed to start LDAP server. Exit code %s' % result.code
-    )
+    assert result.code == 0, \
+        'Failed to start LDAP server. Exit code %s' % result.code
 
     result = engine.ssh(
         [
@@ -73,9 +71,8 @@ def add_ldap_provider(prefix):
             '--log=/var/log/ovirt-engine-extension-aaa-ldap-setup.log',
         ],
     )
-    nt.eq_(
-        result.code, 0, 'aaa-ldap-setup failed. Exit code is %s' % result.code
-    )
+    assert result.code == 0, \
+        'aaa-ldap-setup failed. Exit code is %s' % result.code
 
     engine.service('ovirt-engine')._request_stop()
     testlib.assert_true_within_long(
@@ -87,24 +84,8 @@ def add_ldap_provider(prefix):
     )
 
 
-@testlib.with_ovirt_api4
-def add_ldap_user(api):
-    engine = api.system_service()
-    users_service = engine.users_service()
-    with test_utils.TestEvent(engine, 149): # USER_ADD(149)
-        users_service.add(
-            types.User(
-                user_name=AAA_LDAP_USER,
-                domain=types.Domain(
-                    name=AAA_LDAP_AUTHZ_PROVIDER
-                ),
-            ),
-        )
-
-
-@testlib.with_ovirt_api4
-def add_ldap_group(api):
-    engine = api.system_service()
+def test_add_ldap_group(api_v4):
+    engine = api_v4.system_service()
     groups_service = engine.groups_service()
     with test_utils.TestEvent(engine, 149): # USER_ADD(149)
         groups_service.add(
@@ -117,14 +98,15 @@ def add_ldap_group(api):
         )
 
 
-_TEST_LIST = [
-    add_ldap_provider,
-    add_ldap_group,
-    add_ldap_user,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t
+def test_add_ldap_user(api_v4):
+    engine = api_v4.system_service()
+    users_service = engine.users_service()
+    with test_utils.TestEvent(engine, 149): # USER_ADD(149)
+        users_service.add(
+            types.User(
+                user_name=AAA_LDAP_USER,
+                domain=types.Domain(
+                    name=AAA_LDAP_AUTHZ_PROVIDER
+                ),
+            ),
+        )

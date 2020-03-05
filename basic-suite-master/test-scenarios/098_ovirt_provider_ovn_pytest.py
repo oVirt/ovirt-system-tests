@@ -27,12 +27,11 @@ import requests
 
 from six.moves.urllib import parse as urlparse
 
-import nose.tools as nt
-
 from ovirtlago import testlib
 from ovirtsdk4 import types
 
 import test_utils
+from ost_utils.pytest.fixtures import api_v4, prefix
 from test_utils import network_utils_v4
 from test_utils import versioning
 
@@ -271,8 +270,8 @@ def _validate_network(token_id, engine_ip, name, id):
     networks = _get_networks(token_id, engine_ip)['networks']
     for network in networks:
         if network['id'] == id:
-            nt.assert_equals(network['id'], id)
-            nt.assert_equals(network['name'], NETWORKS[name]['name'])
+            assert network['id'] == id
+            assert network['name'] == NETWORKS[name]['name']
             return
     raise Exception('Expected network is not present in results')
 
@@ -281,8 +280,8 @@ def _validate_port(token_id, engine_ip, name, id, network_id):
     ports = _get_ports(token_id, engine_ip)['ports']
     for port in ports:
         if port['id'] == id:
-            nt.assert_equals(port['id'], id)
-            nt.assert_equals(port['network_id'], network_id)
+            assert port['id'] == id
+            assert port['network_id'] == network_id
             return
     raise Exception('Expected port is not present in results')
 
@@ -291,20 +290,20 @@ def _validate_subnet(token_id, engine_ip, name, id, network_id):
     subnets = _get_subnets(token_id, engine_ip)['subnets']
     for subnet in subnets:
         if subnet['id'] == id:
-            nt.assert_equals(subnet['id'], id)
-            nt.assert_equals(subnet['name'], SUBNETS[name]['name'])
-            nt.assert_equals(subnet['network_id'], network_id)
+            assert subnet['id'] == id
+            assert subnet['name'] == SUBNETS[name]['name']
+            assert subnet['network_id'] == network_id
             return
     raise Exception('Expected subnet is not present in results')
 
 
 def _validate_db_empty(token_id, engine_ip):
     networks = _get_networks(token_id, engine_ip)['networks']
-    nt.assert_false(networks)
+    assert not networks
     ports = _get_ports(token_id, engine_ip)['ports']
-    nt.assert_false(ports)
+    assert not ports
     subnets = _get_subnets(token_id, engine_ip)['subnets']
-    nt.assert_false(subnets)
+    assert not subnets
 
 
 def _get_datacenter_id(api):
@@ -382,13 +381,11 @@ def _add_network_to_cluster(api, datacenter_id, ovirt_network_id):
     cluster_service = test_utils.get_cluster_service(
         api.system_service(), CLUSTER_NAME)
 
-    nt.assert_true(
-        cluster_service.networks_service().add(
-            network=types.Network(
-                id=ovirt_network_id,
-                required=False
-            ),
-        )
+    assert cluster_service.networks_service().add(
+        network=types.Network(
+            id=ovirt_network_id,
+            required=False
+        ),
     )
 
 
@@ -423,10 +420,8 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 
 @versioning.require_version(4, 2)
-@testlib.with_ovirt_api4
-@testlib.with_ovirt_prefix
-def use_ovn_provider(prefix, api):
-    engine = api.system_service()
+def test_use_ovn_provider(prefix, api_v4):
+    engine = api_v4.system_service()
     engine_ip = prefix.virt_env.engine_vm().ip()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
 
@@ -434,7 +429,7 @@ def use_ovn_provider(prefix, api):
 
     _validate_db_empty(token_id, engine_ip)
 
-    with _disable_auto_sync(api, provider_id):
+    with _disable_auto_sync(api_v4, provider_id):
         network1_id = _add_network(
             token_id,
             engine_ip,
@@ -459,27 +454,16 @@ def use_ovn_provider(prefix, api):
         _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
         _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
 
-        datacenter_id = _get_datacenter_id(api)
-        _import_network_to_ovirt(api, provider_id, network1_id, datacenter_id)
-        ovirt_network_id = _get_ovirt_network(api, datacenter_id, NETWORK_1)
-        _add_network_to_cluster(api, datacenter_id, ovirt_network_id)
-        _hotplug_network_to_vm(api, VM0_NAME, NETWORK_1, IFACE_NAME)
-        _remove_iface_from_vm(api, VM0_NAME, IFACE_NAME)
-        _remove_network_from_ovirt(api, datacenter_id, ovirt_network_id)
+        datacenter_id = _get_datacenter_id(api_v4)
+        _import_network_to_ovirt(api_v4, provider_id, network1_id, datacenter_id)
+        ovirt_network_id = _get_ovirt_network(api_v4, datacenter_id, NETWORK_1)
+        _add_network_to_cluster(api_v4, datacenter_id, ovirt_network_id)
+        _hotplug_network_to_vm(api_v4, VM0_NAME, NETWORK_1, IFACE_NAME)
+        _remove_iface_from_vm(api_v4, VM0_NAME, IFACE_NAME)
+        _remove_network_from_ovirt(api_v4, datacenter_id, ovirt_network_id)
 
         _delete_port(token_id, engine_ip, port1_id)
         _delete_subnet(token_id, engine_ip, subnet1_id)
         _delete_network(token_id, engine_ip, network1_id)
 
     _validate_db_empty(token_id, engine_ip)
-
-
-_TEST_LIST = [
-    use_ovn_provider,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t

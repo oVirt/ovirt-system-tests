@@ -19,12 +19,12 @@
 #
 from __future__ import absolute_import
 
-import nose.tools as nt
 from ovirtlago import testlib
 import ovirtsdk4
-from nose import SkipTest
+import pytest
 
 import test_utils
+from ost_utils.pytest.fixtures import api_v4, prefix
 from test_utils.vnic_setup import VnicSetup
 
 DC_NAME = 'test-dc'
@@ -55,12 +55,11 @@ def _get_vm_service(root, name, unregistered=None):
     return virtual_machines.vm_service(vm.id)
 
 
-@testlib.with_ovirt_api4
-def deactivate_storage_domain(connection):
-    raise SkipTest('skipping until reattach test fixed. Jira OVIRT-2264')
-    VnicSetup.vnic_setup().init(connection.system_service(),
+def test_deactivate_storage_domain(api_v4):
+    pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
+    VnicSetup.vnic_setup().init(api_v4.system_service(),
                                 VM2_NAME, DC_NAME, CLUSTER_NAME)
-    dc = test_utils.data_center_service(connection.system_service(), DC_NAME)
+    dc = test_utils.data_center_service(api_v4.system_service(), DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).deactivate()
 
@@ -69,10 +68,9 @@ def deactivate_storage_domain(connection):
         ovirtsdk4.types.StorageDomainStatus.MAINTENANCE)
 
 
-@testlib.with_ovirt_api4
-def detach_storage_domain(connection):
-    raise SkipTest('skipping until reattach test fixed. Jira OVIRT-2264')
-    engine = connection.system_service()
+def test_detach_storage_domain(api_v4):
+    pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
+    engine = api_v4.system_service()
     dc = test_utils.data_center_service(engine, DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).remove()
@@ -82,11 +80,10 @@ def detach_storage_domain(connection):
         ovirtsdk4.types.StorageDomainStatus.UNATTACHED)
 
 
-@testlib.with_ovirt_api4
-def reattach_storage_domain(connection):
-    raise SkipTest('skipping until reattach test fixed. Jira OVIRT-2264')
+def test_reattach_storage_domain(api_v4):
+    pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
     VnicSetup.vnic_setup().remove_some_profiles_and_networks()
-    engine = connection.system_service()
+    engine = api_v4.system_service()
     dc = test_utils.data_center_service(engine, DC_NAME)
     sd = _get_storage_domain(engine, SD_SECOND_NFS_NAME)
 
@@ -97,10 +94,9 @@ def reattach_storage_domain(connection):
         ovirtsdk4.types.StorageDomainStatus.ACTIVE)
 
 
-@testlib.with_ovirt_api4
-def import_lost_vm(connection):
-    raise SkipTest('skipping until reattach test fixed. Jira OVIRT-2264')
-    engine = connection.system_service()
+def test_import_lost_vm(api_v4):
+    pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
+    engine = api_v4.system_service()
     sd = _get_storage_domain(engine, SD_SECOND_NFS_NAME, service=True)
     lost_vm = _get_vm_service(sd, VM2_NAME, unregistered=True)
 
@@ -119,20 +115,6 @@ def import_lost_vm(connection):
     default_mac_pool = engine.mac_pools_service().list()[0]
     mac_range = default_mac_pool.ranges[0]
 
-    nt.assert_greater_equal(mac_address, _mac_value(mac_range.from_))
-    nt.assert_less_equal(mac_address, _mac_value(mac_range.to))
+    assert mac_address >= _mac_value(mac_range.from_)
+    assert mac_address <= _mac_value(mac_range.to)
     VnicSetup.vnic_setup().assert_results(VM2_NAME, CLUSTER_NAME)
-
-
-_TEST_LIST = [
-    deactivate_storage_domain,
-    detach_storage_domain,
-    reattach_storage_domain,
-    import_lost_vm,
-]
-
-
-def test_gen():
-    for t in test_utils.test_gen(_TEST_LIST, test_gen):
-        test_utils.test_invocation_logger(__name__ + '#' + t.description)
-        yield t

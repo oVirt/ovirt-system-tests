@@ -33,6 +33,16 @@ SKIP_SUITE_43 = pytest.mark.skipif(SUITE_NAME.endswith('4.3'),
                                    reason='Not supported on 4.3 suite')
 
 
+def SKIP_SUITES_BELOW(version):
+    if is_master():
+        reason = 'Always run master'
+        skip = False
+    else:
+        skip = float(SUITE_NAME.split('-')[-1]) < version
+        reason = 'Only supported upwards of suite {}'.format(version)
+    return pytest.mark.skipif(skip, reason=reason)
+
+
 def XFAIL_SUITE_MASTER(reason):
     return pytest.mark.xfail(
             condition=SUITE_NAME.endswith('master'),

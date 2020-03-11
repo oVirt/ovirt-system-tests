@@ -26,11 +26,10 @@ pam_pkcs11
 pcsc-lite-libs
 policycoreutils-python
 python2-coverage
-rh-postgresql10-postgresql
-rh-postgresql10-postgresql-contrib
-rh-postgresql10-postgresql-libs
-rh-postgresql10-postgresql-server
-rh-postgresql10-runtime
+postgresql12
+postgresql12-contrib
+postgresql12-libs
+postgresql12-server
 rpcbind
 rubygem-fluent-plugin-elasticsearch
 sg3_utils

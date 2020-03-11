@@ -132,10 +132,3 @@ max_connections = 10
 skip_if_unavailable=1
 gpgcheck = 0
 
-[centos-sclo-rh-release-el7]
-name = CentOS-7 - SCLo rh
-baseurl = http://mirror.centos.org/centos/7/sclo/x86_64/rh
-gpgcheck = 1
-enabled = 1
-gpgkey = https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-SCLo
-skip_if_unavailable=1

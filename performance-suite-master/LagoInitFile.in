@@ -50,7 +50,7 @@ domains:
           - /var/opt/rh/rh-postgresql95/lib/pgsql/data/pg_log
           - /var/cache/ovirt-engine
           - /var/log
-          - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
+          - /var/lib/pgsql/data/log
           - /var/lib/ovirt-engine/setup/answers
           - /etc/ovirt-engine
           - /etc/ovirt-engine-dwh

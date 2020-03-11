@@ -69,6 +69,9 @@ fi
 if [[ "$DIST" =~ "el8" ]]; then
     # rpm -ivh https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
     yum module enable -y javapackages-tools pki-deps 389-ds
+    # disable installed PG 10 module and enable PG 12 module
+    dnf module reset -y postgresql
+    dnf module enable -y postgresql:12
 fi
 
 $install_cmd "${pkgs_to_install[@]}" || {

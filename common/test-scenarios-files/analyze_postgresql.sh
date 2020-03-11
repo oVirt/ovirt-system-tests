@@ -41,6 +41,9 @@ else
         postgresql-10.6*el8*)
             pgdg=https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-8-x86_64/pgdg-redhat-repo-42.0-6.noarch.rpm
             ;;
+        postgresql-12*el8*)
+            pgdg=https://download.postgresql.org/pub/repos/yum/12/redhat/rhel-8-x86_64/pgdg-redhat-repo-42.0-6.noarch.rpm
+            ;;
         *)
             echo "unknown engine pg version ${pgver}, please update $0"
             exit 1;
@@ -63,7 +66,7 @@ pglog=$(su - postgres -c "${scl_enable}psql  postgres postgres -t -c 'show log_f
 pglog=$(date +${pglog//[[:blank:]]/})
 
 mkdir pgbadger
-pgbadger $pglog --outdir pgbadger
+pgbadger -f stderr $pglog --outdir pgbadger
 
 
 # 2. Run PgCluu

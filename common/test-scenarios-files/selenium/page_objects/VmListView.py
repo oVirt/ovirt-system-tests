@@ -64,10 +64,12 @@ class VmListView(Displayable,WithBreadcrumbs):
         self.close_notification_safely()
 
     def close_notification_safely(self):
-        try:
-            self._xpath_click('//a[@class="notif_dismissButton"]')
-        except:
-            pass
+        xpath = '//a[@class="notif_dismissButton"]'
+        if self._is_xpath_present(xpath) and self._is_xpath_displayed(xpath):
+            print('Notification is present')
+            self.ovirt_driver.retry_if_stale(self._xpath_click, xpath)
+            self.ovirt_driver.wait_while(self._is_xpath_displayed, xpath)
+            print('Notification was closed')
 
     def _get_vm_names_to_ids(self):
         elements = self.ovirt_driver.driver.find_elements_by_css_selector('a[id^="MainVirtualMachineView_table_content_col2_row"]')
@@ -76,6 +78,16 @@ class VmListView(Displayable,WithBreadcrumbs):
             names_to_ids[element.text] = element.get_attribute('id')
 
         return names_to_ids
+
+    def _is_xpath_present(self, xpath):
+        try:
+            self.ovirt_driver.driver.find_element_by_xpath(xpath)
+            return True
+        except NoSuchElementException:
+            return False
+
+    def _is_xpath_displayed(self, xpath):
+        return self.ovirt_driver.driver.find_element_by_xpath(xpath).is_displayed()
 
     def _is_button_enabled(self, text):
         return self._is_xpath_enabled('//button[text()="' + text + '"]')

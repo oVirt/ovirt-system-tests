@@ -394,7 +394,7 @@ def hotplug_disk(api):
 _TEST_LIST = [
     add_vm_blank,
     add_nic,
-    add_disk,
+    #add_disk,
     #snapshot_merge,
     #add_vm_template,
     #vm_run,

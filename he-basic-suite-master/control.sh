@@ -15,6 +15,12 @@ he_deploy() {
     HOST=lago-${suite_name}-host-
     cd $PREFIX
     echo "#########################"
+
+    echo "Disabling alocalsync repository"
+    lago shell \
+        ${HOST}0 \
+        "dnf config-manager --set-disabled alocalsync"
+
     echo "Deploying on ${HOST}0"
     lago copy-to-vm \
         ${HOST}0 \
@@ -80,6 +86,7 @@ run_suite(){
     env_deploy
     he_deploy || failed=true
     if $failed; then
+        sleep 600
         env_collect "$curdir/test_logs/${suite##*/}/post-he_deploy"
         echo "@@@@ ERROR: Failed running he_deploy"
         return 1

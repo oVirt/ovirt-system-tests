@@ -184,7 +184,7 @@ def _host_status_to_print(hosts_service, hosts_list):
 
 def _wait_for_status(hosts_service, dc_name, status):
     up_status_seen = False
-    for _ in general_utils.linear_retrier(attempts=120, iteration_sleeptime=1):
+    for _ in general_utils.linear_retrier(attempts=12, iteration_sleeptime=10):
         all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
         up_hosts = [host for host in all_hosts if host.status == status]
         LOGGER.info(_host_status_to_print(hosts_service, all_hosts))

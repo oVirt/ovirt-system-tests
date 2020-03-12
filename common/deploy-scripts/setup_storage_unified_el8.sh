@@ -170,6 +170,7 @@ setup_services() {
     # Configure lockd to use ports 32803/tcp and 32769/udp
     sed -i '/\[lockd\]/aport=32803\nudp-port=32769' /etc/nfs.conf
 
+    systemctl restart rpcbind.service
     systemctl enable --now rpcbind.service
     systemctl enable --now  nfs-server.service
     systemctl start nfs-idmapd.service

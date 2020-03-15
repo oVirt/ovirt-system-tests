@@ -243,6 +243,74 @@ def install_cockpit_ovirt(prefix):
     vt.start_all()
     nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
 
+def add_iscsi_storage_domain_4(prefix ):
+    api = prefix.virt_env.engine_vm().get_api_v4()
+
+    # Find LUN GUIDs
+    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
+    nt.assert_equals(ret.code, 0)
+
+    lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
+    ips = []
+    ips.append(_get_host_ip(prefix, SD_ISCSI_HOST_NAME))
+
+    luns = []
+    for lun_id in lun_guids:
+        for ip in ips:
+            lun=sdk4.types.LogicalUnit(
+                id=lun_id,
+                address=ip,
+                port=SD_ISCSI_PORT,
+                target=SD_ISCSI_TARGET,
+                username='username',
+                password='password',
+            )
+            luns.append(lun)
+
+    p = sdk4.types.StorageDomain(
+        name=SD_ISCSI_NAME,
+        description='iSCSI Storage Domain',
+        type=sdk4.types.StorageDomainType.DATA,
+        discard_after_delete=True,
+        data_center=sdk4.types.DataCenter(
+            name=DC_NAME,
+        ),
+        host=_random_host_from_dc_4(api, DC_NAME),
+        storage_format=sdk4.types.StorageFormat.V4,
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.ISCSI,
+            override_luns=True,
+            volume_group=sdk4.types.VolumeGroup(
+                logical_units=luns
+            ),
+        ),
+    )
+
+    _add_storage_domain_4(api, p)
+
+def _add_storage_domain_4(api, p):
+    system_service = api.system_service()
+    sds_service = system_service.storage_domains_service()
+    sd = sds_service.add(p)
+
+    sd_service = sds_service.storage_domain_service(sd.id)
+    testlib.assert_true_within_long(
+        lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
+    )
+
+    dc_service = test_utils.data_center_service(system_service, DC_NAME)
+    attached_sds_service = dc_service.storage_domains_service()
+    attached_sds_service.add(
+        sdk4.types.StorageDomain(
+            id=sd.id,
+        ),
+    )
+
+    attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
+    testlib.assert_true_within_long(
+        lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
+    )
+
 
 def _add_storage_domain(api, p):
     system_service = api.system_service()
@@ -275,7 +343,7 @@ def _add_storage_domain(api, p):
 @testlib.with_ovirt_prefix
 def add_master_storage_domain(prefix):
     if MASTER_SD_TYPE == 'iscsi':
-        add_iscsi_storage_domain(prefix)
+        add_iscsi_storage_domain_4(prefix)
     else:
         add_nfs_storage_domain(prefix)
 
@@ -303,7 +371,7 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
     else:
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
-    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    api = prefix.virt_env.engine_vm().get_api_v4()
     ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-management'))
     kwargs = {}
     if sd_format >= 'v4':
@@ -350,9 +418,10 @@ def add_secondary_storage_domains(prefix):
     vt.start_all()
     vt.join_all()
 
-
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
-def add_glance_storage(prefix):
+def add_glance_storage(prefix,api):
+    engine = api.system_service()
     vt = utils.VectorThread(
         [
             functools.partial(import_non_template_from_glance, prefix),
@@ -362,13 +431,15 @@ def add_glance_storage(prefix):
     vt.start_all()
     vt.join_all()
 
+    with test_utils.TestEvent(engine, 3018):
+        print('done adding disk')
 
 def add_iscsi_storage_domain(prefix):
     # FIXME
     # if API_V4:
     #    return add_iscsi_storage_domain_4(prefix)
 
-    api = prefix.virt_env.engine_vm().get_api()
+    api = prefix.virt_env.engine_vm().get_api_v4()
 
     # Find LUN GUIDs
     ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
@@ -383,7 +454,7 @@ def add_iscsi_storage_domain(prefix):
         ),
         type_='data',
         storage_format=SD_FORMAT,
-        host=_random_host_from_dc(api, DC_NAME),
+        host=_random_host_from_dc_4(api, DC_NAME),
         storage=params.Storage(
             type_='iscsi',
             volume_group=params.VolumeGroup(
@@ -404,7 +475,7 @@ def add_iscsi_storage_domain(prefix):
             ),
         ),
     )
-    _add_storage_domain_3(api, p)
+    _add_storage_domain(api, p)
 
 def _add_storage_domain_3(api, p):
     dc = api.datacenters.get(DC_NAME)
@@ -498,7 +569,7 @@ def wait_engine(prefix):
         print('API_V4: %s' % API_V4)
         engine = prefix.virt_env.engine_vm()
         try:
-            if engine and engine.get_api():
+            if engine and engine.get_api_v4():
                 return True
         except:
             return

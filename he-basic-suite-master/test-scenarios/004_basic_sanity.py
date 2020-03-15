@@ -28,10 +28,13 @@ from ovirtlago import testlib
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 
+import json
+
 import test_utils
 import uuid
-from test_utils import ipv6_utils
-
+from test_utils import versioning
+from test_utils import ipv6_utils,assert_finished_within_long
+from ovirtsdk4.types import Host
 
 MB = 2 ** 20
 GB = 2 ** 30
@@ -46,6 +49,7 @@ VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
+GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 
 SD_NFS_NAME = 'nfs'
 
@@ -176,21 +180,21 @@ def add_nic(api):
         ),
     )
 
-
 @testlib.with_ovirt_api4
 def add_disk(api):
     engine = api.system_service()
     vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
+    glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
+
+    nt.assert_true(vm0_service and glance_disk)
+
+
     vm0_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
 
     vm0_disk_attachments_service.add(
         types.DiskAttachment(
             disk=types.Disk(
-                name=DISK0_NAME,
-                format=types.DiskFormat.COW,
-                initial_size=10 * GB,
-                provisioned_size=1,
-                sparse=True,
+                id=glance_disk.get().id,
                 storage_domains=[
                     types.StorageDomain(
                         name=SD_NFS_NAME,
@@ -203,16 +207,11 @@ def add_disk(api):
         ),
     )
 
-    disk0_service = test_utils.get_disk_service(engine, DISK0_NAME)
-    disk0_attachment_service = vm0_disk_attachments_service.attachment_service(disk0_service.get().id)
+    disk_service = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
 
-    testlib.assert_true_within_long(
+    testlib.assert_true_within_short(
         lambda:
-        disk0_attachment_service.get().active == True
-    )
-    testlib.assert_true_within_long(
-        lambda:
-        disk0_service.get().status == types.DiskStatus.OK
+        disk_service.get().status == types.DiskStatus.OK
     )
 
 
@@ -251,7 +250,7 @@ def snapshot_merge(api):
     engine = api.system_service()
     vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
 
-    disk = engine.disks_service().list(search='name={}'.format(DISK0_NAME))[0]
+    disk = engine.disks_service().list(search='name={}'.format(GLANCE_DISK_NAME))[0]
 
     dead_snap1_params = types.Snapshot(
         description='dead_snap1',
@@ -315,7 +314,7 @@ def snapshot_merge(api):
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm_template(api):
     #TODO: Fix the exported domain generation
     raise SkipTest('Exported domain generation not supported yet')
@@ -342,45 +341,109 @@ def add_vm_template(api):
         api.vms.get(VM1_NAME).disks.get(disk_name).status.state == 'ok'
     )
 
-
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
-def vm_run(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
+def vm_run(prefix,api):
     host_names = [h.name() for h in prefix.virt_env.host_vms()]
 
-    start_params = params.Action(
-        vm=params.VM(
-            placement_policy=params.VmPlacementPolicy(
-                host=params.Host(
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+
+    gw_ip = test_utils.get_management_net(prefix).gw()
+    vm_params = types.Vm(
+            placement_policy=types.VmPlacementPolicy(
+                hosts=[types.Host(
                     name=sorted(host_names)[0]
-                ),
+                )],
             ),
-        ),
-    )
-    api.vms.get(VM0_NAME).start(start_params)
-    testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
-    )
+            initialization=types.Initialization(
+                user_name=VM_USER_NAME,
+                root_password=VM_PASSWORD
+            )
+        )
+
+    vm_params.initialization.host_name = 'VM0'
+    vm_params.initialization.dns_search = 'lago.local'
+    vm_params.initialization.domain = 'lago.local'
+    vm_params.initialization.dns_servers = gw_ip
+    vm_params.initialization.nic_configurations = [
+        types.NicConfiguration(
+            name='eth0',
+            boot_protocol=types.BootProtocol.STATIC,
+            on_boot=True,
+            ip=types.Ip(
+                address=test_utils.get_vm0_ip_address(prefix),
+                netmask='255.255.255.0',
+                gateway=gw_ip
+            )
+        )
+    ]
 
 
+    vm_service = vms_service.vm_service(vm.id)
+    vm_service.start(use_cloud_init=True,vm=vm_params)
+
+    testlib.assert_true_within_long(
+        lambda: (vms_service.list(search='name=%s' % VM0_NAME)[0]).status == types.VmStatus.UP,
+    )
+
+@testlib.with_ovirt_api4
 @testlib.with_ovirt_prefix
-def vm_migrate(prefix):
-    api = prefix.virt_env.engine_vm().get_api()
-    host_names = [h.name() for h in prefix.virt_env.host_vms()]
+def vm_migrate(prefix, api):
+    engine = api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm_id = vm_service.get().id
+    hosts_service = engine.hosts_service()
 
-    migrate_params = params.Action(
-        host=params.Host(
-            name=sorted(host_names)[1]
-        ),
+    def _current_running_host():
+        host_id = vm_service.get().host.id
+        host = hosts_service.list(
+            search='id={}'.format(host_id))[0]
+        return host.name
+
+    src_host = _current_running_host()
+    dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
+                       if h.name() != src_host])[0]
+
+    print('source host: {}'.format(src_host))
+    print('destination host: {}'.format(dst_host))
+
+    assert_finished_within_long(
+        vm_service.migrate,
+        engine,
+        host=Host(name=dst_host)
     )
-    api.vms.get(VM0_NAME).migrate(migrate_params)
+
+    # Verify that VDSM cleaned the vm in the source host
+    def vm_is_not_on_host():
+        src_host_obj = [
+            h for h in prefix.virt_env.host_vms()
+            if h.name() == src_host
+        ][0]
+
+        ret = src_host_obj.ssh(['vdsm-client', 'Host', 'getVMList'])
+        if ret:
+            raise RuntimeError('Failed to call vdsm-client in {}, {}'.format(
+                src_host, str(ret.err)
+                )
+            )
+
+        parsed_output = json.loads(ret.out)
+
+        return vm_id not in parsed_output
+
+    testlib.assert_true_within_short(vm_is_not_on_host)
+
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'up',
+        lambda: vm_service.get().status == sdk4.types.VmStatus.UP
     )
 
+    nt.assert_equals(
+        _current_running_host(), dst_host
+    )
 
 @testlib.host_capability(['snapshot-live-merge'])
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def snapshot_live_merge(api):
     disk = api.vms.get(VM0_NAME).disks.list()[0]
     disk_id = disk.id
@@ -460,30 +523,44 @@ def hotplug_nic(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@testlib.with_ovirt_api
-def hotplug_disk(api):
-    disk2_params = params.Disk(
-        name=DISK1_NAME,
-        size=10 * GB,
-        provisioned_size=1,
-        interface='virtio',
-        format='cow',
-        storage_domains=params.StorageDomains(
-            storage_domain=[
-                params.StorageDomain(
-                    name='nfs',
-                ),
-            ],
-        ),
-        status=None,
-        sparse=True,
-        bootable=False,
+@testlib.with_ovirt_api4
+@testlib.with_ovirt_prefix
+def hotplug_disk(prefix,api):
+    engine = api.system_service()
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    disk_attachment = disk_attachments_service.add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                name=DISK1_NAME,
+                provisioned_size=10 * GB,
+                format=types.DiskFormat.COW,
+                storage_domains=[
+                    types.StorageDomain(
+                        name=SD_NFS_NAME,
+                    ),
+                ],
+                status=None,
+                sparse=True,
+            ),
+            interface=types.DiskInterface.VIRTIO,
+            bootable=False,
+            active=True
+        )
     )
-    api.vms.get(VM0_NAME).disks.add(disk2_params)
+
+    disks_service = engine.disks_service()
+    disk_service = disks_service.disk_service(disk_attachment.disk.id)
+    attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
+
     testlib.assert_true_within_short(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK1_NAME).status.state == 'ok'
+        attachment_service.get().active == True
     )
+    testlib.assert_true_within_short(
+        lambda:
+        disk_service.get().status == types.DiskStatus.OK
+    )
+    assert_vm0_is_alive(prefix)
 
 
 _TEST_LIST = [

@@ -60,16 +60,29 @@ class VmListView(Displayable,WithBreadcrumbs):
         self.ovirt_driver.retry_if_stale(self._xpath_click, '//div[@id="ActionPanelView_Shutdown"]//a[text()="Power Off"]')
         self.ovirt_driver.wait_until(self._is_button_enabled, 'OK')
         self.ovirt_driver.retry_if_stale(self._button_click, "OK")
+        self.wait_and_close_success_notification_safely()
         self.ovirt_driver.wait_while(self.is_shutdown_button_enabled)
-        self.close_notification_safely()
 
     def close_notification_safely(self):
         xpath = '//a[@class="notif_dismissButton"]'
-        if self._is_xpath_present(xpath) and self._is_xpath_displayed(xpath):
+        if self._is_notification_displayed():
             print('Notification is present')
             self.ovirt_driver.retry_if_stale(self._xpath_click, xpath)
             self.ovirt_driver.wait_while(self._is_xpath_displayed, xpath)
             print('Notification was closed')
+
+    def wait_and_close_success_notification_safely(self):
+        print('Wait for notification')
+        xpath = '//a[@class="notif_dismissButton"]'
+        self.ovirt_driver.wait_long_until(self._is_notification_displayed)
+        self.ovirt_driver.retry_if_stale(self._xpath_click, xpath)
+        self.ovirt_driver.wait_while(self._is_notification_displayed)
+        print('Notification closed')
+
+    def _is_notification_displayed(self):
+        xpath = '//a[@class="notif_dismissButton"]'
+        result = self._is_xpath_present(xpath) and self._is_xpath_displayed(xpath)
+        return result
 
     def _get_vm_names_to_ids(self):
         elements = self.ovirt_driver.driver.find_elements_by_css_selector('a[id^="MainVirtualMachineView_table_content_col2_row"]')

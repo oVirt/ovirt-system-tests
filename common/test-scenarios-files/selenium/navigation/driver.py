@@ -212,10 +212,16 @@ class Driver(object):
             text_file.write(self.driver.page_source)
 
     def wait_until(self, condition_method, *args):
-        WebDriverWait(self.driver, 10).until(ConditionClass(False, condition_method, *args))
+        WebDriverWait(self.driver, 60).until(ConditionClass(False, condition_method, *args))
+
+    def wait_long_until(self, condition_method, *args):
+        WebDriverWait(self.driver, 300).until(ConditionClass(False, condition_method, *args))
 
     def wait_while(self, condition_method, *args):
-        WebDriverWait(self.driver, 10).until(ConditionClass(True, condition_method, *args))
+        WebDriverWait(self.driver, 60).until(ConditionClass(True, condition_method, *args))
+
+    def wait_long_while(self, condition_method, *args):
+        WebDriverWait(self.driver, 300).until(ConditionClass(True, condition_method, *args))
 
 class ConditionClass(object):
     def __init__(self, while_condition, condition_method, *args):

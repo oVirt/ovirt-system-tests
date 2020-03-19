@@ -26,13 +26,6 @@ import pytest
 SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
 
 
-SKIP_SUITE_42 = pytest.mark.skipif(SUITE_NAME.endswith('4.2'),
-                                   reason='Not supported on 4.2 suite')
-
-SKIP_SUITE_43 = pytest.mark.skipif(SUITE_NAME.endswith('4.3'),
-                                   reason='Not supported on 4.3 suite')
-
-
 def SKIP_SUITES_BELOW(version):
     if is_master():
         reason = 'Always run master'

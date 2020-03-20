@@ -493,7 +493,6 @@ includepkgs = GeoIP
 	numad
 	numpy
 	objectweb-asm
-	objectweb-asm4
 	oddjob
 	oddjob-mkhomedir
 	openldap-clients

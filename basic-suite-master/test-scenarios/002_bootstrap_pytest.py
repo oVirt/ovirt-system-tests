@@ -411,7 +411,13 @@ def test_configure_storage(prefix):
             '/tmp/setup_storage.sh',
         ],
     )
-    assert result.code == 0, 'setup_storage.sh failed. Exit code is %s' % result.code
+    if result.code != 0:
+        msg = (
+            'setup_storage.sh failed with exit code: {}.\n'
+            'stdout:\n{}'
+            'stderr:\n{}'
+        ).format(result.code, result.out, result.err)
+        raise RuntimeError(msg)
 
 
 def _add_storage_domain(api, p):

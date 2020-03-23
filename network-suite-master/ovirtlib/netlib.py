@@ -353,9 +353,9 @@ def create_vnic_profile(system, name, network, qos=None):
 
 
 @contextlib.contextmanager
-def new_network(name, dc):
+def new_network(name, dc, vlan=None):
     network = Network(dc)
-    network.create(name=name)
+    network.create(name=name, vlan=vlan)
     try:
         yield network
     finally:

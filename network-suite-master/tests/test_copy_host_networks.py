@@ -19,9 +19,17 @@
 #
 import pytest
 
+from ovirtlib import clusterlib
 from ovirtlib import hostlib
+from ovirtlib import netattachlib
 
 from testlib import suite
+
+ETH1 = 'eth1'
+ETH2 = 'eth2'
+
+VM_NET_NAME = 'vm-net'
+VLAN_10_NET_NAME = 'vlan-10-net'
 
 
 @suite.skip_suites_below('4.4')
@@ -37,25 +45,52 @@ def test_copy_host_networks(configured_hosts):
 
 
 @pytest.fixture(
-    scope='function', params=[('one', 'one')], ids=['scenario_one_to_one'],
+    scope='function',
+    params=[('ovirtmgmt_only', 'ovirtmgmt_only'),
+            ('vlan_and_nonvlan', 'single_network')],
+    ids=['copy_nothing_to_host_with_nothing',
+         'copy_vlan_and_nonvlan_to_host_with_single_network'],
 )
-def configured_hosts(request, host_scenarios, host_0_up, host_1_up):
-    source_attach_data = host_scenarios[request.param[0]]
-    destination_attach_data = host_scenarios[request.param[1]]
+def configured_hosts(request, host_attachments, host_0_up, host_1_up):
+    source_attach_data = host_attachments[request.param[0]]
+    destination_attach_data = host_attachments[request.param[1]]
 
-    with hostlib.setup_networks(
-        host_0_up, source_attach_data
-    ), hostlib.setup_networks(
-        host_1_up, destination_attach_data
-    ):
+    setup_host0 = hostlib.setup_networks(host_0_up, source_attach_data)
+    setup_host1 = hostlib.setup_networks(host_1_up, destination_attach_data)
+    with setup_host0, setup_host1:
         yield (host_0_up, host_1_up)
+
+    host_1_up.clean_networks()
 
 
 @pytest.fixture(scope='module')
-def host_scenarios():
+def host_attachments(networks):
     return {
-        'one': [],
+        'ovirtmgmt_only': [],
+        'single_network': [
+            netattachlib.NetworkAttachmentData(networks[VM_NET_NAME], ETH1)
+        ],
+        'vlan_and_nonvlan': [
+            netattachlib.NetworkAttachmentData(
+                networks[VLAN_10_NET_NAME], ETH1),
+            netattachlib.NetworkAttachmentData(networks[VM_NET_NAME], ETH2),
+        ],
     }
+
+
+@pytest.fixture(scope='module')
+def networks(default_data_center, default_cluster):
+    vm_net_ctx = clusterlib.new_assigned_network(
+        VM_NET_NAME, default_data_center, default_cluster)
+
+    vm_vlan_10_net_ctx = clusterlib.new_assigned_network(
+        VLAN_10_NET_NAME, default_data_center, default_cluster, vlan=10)
+
+    with vm_net_ctx as vm_network, vm_vlan_10_net_ctx as vm_vlan_10_network:
+        yield {
+            VM_NET_NAME: vm_network,
+            VLAN_10_NET_NAME: vm_vlan_10_network,
+        }
 
 
 class CopyHostComparator(object):

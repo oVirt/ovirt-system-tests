@@ -203,7 +203,7 @@ def network_assignment(cluster, network, required=False):
 
 
 @contextlib.contextmanager
-def new_assigned_network(name, data_center, cluster):
-    with netlib.new_network(name, data_center) as network:
+def new_assigned_network(name, data_center, cluster, vlan=None):
+    with netlib.new_network(name, data_center, vlan) as network:
         with network_assignment(cluster, network):
             yield network

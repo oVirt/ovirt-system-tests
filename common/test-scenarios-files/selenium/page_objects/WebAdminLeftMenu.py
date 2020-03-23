@@ -7,6 +7,7 @@ class WebAdminLeftMenu:
         self.ovirt_driver = ovirt_driver
 
     def open_vm_list_view(self):
+        print('Open VM list view')
         self.ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
         self.ovirt_driver.id_click(SEL_ID_VMS_MENU)
 

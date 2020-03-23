@@ -211,32 +211,28 @@ class Driver(object):
         with open(path, "w") as text_file:
             text_file.write(self.driver.page_source)
 
-    def wait_until(self, condition_method, *args):
-        WebDriverWait(self.driver, 60).until(ConditionClass(False, condition_method, *args))
+    def wait_until(self, message, condition_method, *args):
+        self._wait_until(message, 60, condition_method, *args)
 
-    def wait_long_until(self, condition_method, *args):
-        WebDriverWait(self.driver, 300).until(ConditionClass(False, condition_method, *args))
+    def wait_long_until(self, message, condition_method, *args):
+        self._wait_until(message, 300, condition_method, *args)
 
-    def wait_while(self, condition_method, *args):
-        WebDriverWait(self.driver, 60).until(ConditionClass(True, condition_method, *args))
+    def _wait_until(self, message, timeout, condition_method, *args):
+        WebDriverWait(self.driver, timeout).until(ConditionClass(condition_method, *args), message)
 
-    def wait_long_while(self, condition_method, *args):
-        WebDriverWait(self.driver, 300).until(ConditionClass(True, condition_method, *args))
+    def wait_while(self, message, condition_method, *args):
+        self._wait_while(message, 60, condition_method, *args)
+
+    def wait_long_while(self, message, condition_method, *args):
+        self._wait_while(message, 300, condition_method, *args)
+
+    def _wait_while(self, message, timeout, condition_method, *args):
+        WebDriverWait(self.driver, timeout).until_not(ConditionClass(condition_method, *args), message)
 
 class ConditionClass(object):
-    def __init__(self, while_condition, condition_method, *args):
-        self.while_condition = while_condition
+    def __init__(self, condition_method, *args):
         self.condition_method = condition_method
         self.args = args
 
     def __call__(self, driver):
-        result = self.execute_condition()
-        if self.while_condition:
-            result = not result
-        return result
-
-    def execute_condition(self):
-        try:
-            return self.condition_method(*self.args)
-        except:
-            return False
+        return self.condition_method(*self.args)

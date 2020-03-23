@@ -251,7 +251,7 @@ def setup_virtual_machines(api_v4):
     if vm_service.get().status == types.VmStatus.DOWN:
         vm_service.start()
         testlib.assert_true_within_long(
-            lambda: vm_service.get().status == types.VmStatus.UP
+            lambda: vm_service.get().status == types.VmStatus.POWERING_UP
         )
 
 
@@ -286,6 +286,14 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
         vm_detail_view = vm_list_view.open_detail_view('vm0')
         assert vm_detail_view.get_name() == 'vm0'
         assert vm_detail_view.get_status() == 'Down'
+
+        vm_list_view.run_once()
+        # Waiting for Powering Up instead of Up to speed up the test execution
+        vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
+        vm_status = vm_detail_view.get_status()
+        assert vm_status == 'Powering Up' or vm_status == 'Up'
+        save_screenshot('vms-after-run-once')
+
         vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
         vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
 

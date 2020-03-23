@@ -7,7 +7,7 @@ AUTOKILL_SECONDS=7200
 # Collection interval (seconds)
 COLLECT_INTERVAL=1
 
-yum -y install sysstat || exit 0
+rpm -q sysstat || yum -y install sysstat || exit 0
 
 sar -o /var/log/sarstats.bin $COLLECT_INTERVAL >/dev/null 2>&1 &
 

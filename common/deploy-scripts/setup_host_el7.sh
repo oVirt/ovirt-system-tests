@@ -57,6 +57,6 @@ if [[ $(hostname) == *"ipv6"* ]]; then
 fi
 
 # increase ISCSI timeouts, see setup_storage_unified_el7.sh
-yum install -y iscsi-initiator-utils
+rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils
 sed -i 's/node.conn\[0\].timeo.noop_out_timeout = 5/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf
 

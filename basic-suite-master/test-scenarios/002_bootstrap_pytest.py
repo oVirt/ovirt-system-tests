@@ -650,7 +650,7 @@ def test_list_glance_images(api_v4):
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
-        openstack_glance = add_glance(api)
+        openstack_glance = add_glance(api_v4)
         if not openstack_glance:
             pytest.skip('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)

@@ -1,55 +1,58 @@
 ---
-- name: Check if ovirt-engine running (health page)
-  uri:
-    url: "http://engine/ovirt-engine/services/health"
-    status_code: 200
-  register: health_status
-  retries: 3
-  delay: 5
-  until: health_status|success
-  ignore_errors: true
-
-- name: Login to oVirt
-  ovirt_auth:
-    url: "{{ engine_url }}"
-    username: "{{ engine_user }}"
-    password: "{{ engine_password }}"
-    ca_file: "{{ engine_cafile }}"
-  tags:
-    - always
-
-- name: Set VM facts
-  include: vm_facts.yml
-  tags:
-    - always
-
 - block:
-  - name: Include bootstrap tasks
-    include: bootstrap.yml
-    tags:
-      - bootstrap
+  - name: Check if ovirt-engine running (health page)
+    uri:
+      url: "http://engine/ovirt-engine/services/health"
+      status_code: 200
+    register: health_status
+    retries: 3
+    delay: 5
+    until: health_status|success
+    ignore_errors: true
 
-  always:
-    - name: Collect bootstrap tasks logs
-      include: log.yml task_name=bootstrap
+  - name: Login to oVirt
+    ovirt_auth:
+      url: "{{ engine_url }}"
+      username: "{{ engine_user }}"
+      password: "{{ engine_password }}"
+      ca_file: "{{ engine_cafile }}"
+    tags:
+      - always
+
+  - name: Set VM facts
+    include: vm_facts.yml
+    tags:
+      - always
+
+  - block:
+    - name: Include bootstrap tasks
+      include: bootstrap.yml
       tags:
         - bootstrap
 
-- block:
-  - name: Include sanity tasks
-    include: sanity.yml
-    tags:
-      - sanity
+    always:
+      - name: Collect bootstrap tasks logs
+        include: log.yml task_name=bootstrap
+        tags:
+          - bootstrap
 
-  always:
-    - name: Collect sanity tasks logs
-      include: log.yml task_name=sanity
+  - block:
+    - name: Include sanity tasks
+      include: sanity.yml
       tags:
         - sanity
 
-- name: Logout from oVirt
-  ovirt_auth:
-    state: absent
-    ovirt_auth: "{{ ovirt_auth }}"
-  tags:
-    - always
+    always:
+      - name: Collect sanity tasks logs
+        include: log.yml task_name=sanity
+        tags:
+          - sanity
+
+  - name: Logout from oVirt
+    ovirt_auth:
+      state: absent
+      ovirt_auth: "{{ ovirt_auth }}"
+    tags:
+      - always
+  collections:
+    - ovirt.ovirt

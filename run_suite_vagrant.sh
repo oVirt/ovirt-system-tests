@@ -281,7 +281,7 @@ env_ansible () {
     mkdir -p $SUITE/ovirt-deploy/library
     mkdir -p $SUITE/ovirt-deploy/module_utils
     cd $SUITE/ovirt-deploy/library
-    ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/cloud/ovirt/ovirt_"
+    ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/modules/ovirt_"
     for module in vm disk cluster datacenter host network quota storage_domain template vmpool nic
     do
       OVIRT_MODULES_FILES="$OVIRT_MODULES_FILES $ANSIBLE_URL_PREFIX$module.py "
@@ -290,7 +290,7 @@ env_ansible () {
     wget -N $OVIRT_MODULES_FILES
     cd -
 
-    wget https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/module_utils/ovirt.py -O $SUITE/ovirt-deploy/module_utils/ovirt.py
+    wget https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/ovirt.py -O $SUITE/ovirt-deploy/module_utils/ovirt.py
 }
 
 

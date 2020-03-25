@@ -88,9 +88,9 @@ includepkgs=
 gpgcheck=1
 gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8
 
-[ovirt-master-glusterfs-7-testing-el8]
-name=GlusterFS 7 testing packages for $basearch
-baseurl=https://cbs.centos.org/repos/storage8-gluster-7-testing/x86_64/os/
+[ovirt-master-glusterfs-7-el8]
+name=GlusterFS 7 $basearch
+baseurl=https://buildlogs.centos.org/centos/8/storage/x86_64/gluster-7/
 enabled=1
 gpgcheck=0
 
@@ -150,6 +150,19 @@ repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
 
+[ovirt-master-centos-advanced-virtualization-el8]
+name=CentOS-8 Advanced virtualization
+baseurl=https://buildlogs.centos.org/centos/8/virt/x86_64/advanced-virtualization/
+gpgcheck=0
+enabled=1
+exclude=libvirt*
+
+[ovirt-master-centos-ovirt44-el8]
+name=CentOS-8 - oVirt 4.4
+baseurl=https://buildlogs.centos.org/centos/8/virt/x86_64/ovirt-44/
+gpgcheck=0
+enabled=1
+
 [copr-fedorainfracloud.org-sbonazzo-AdvancedVirtualization-el8]
 name=Copr repo for AdvancedVirtualization owned by sbonazzo
 baseurl=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/AdvancedVirtualization/centos-stream-$basearch/
@@ -160,10 +173,3 @@ repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
 module_hotfixes=1
-
-[ovirt-master-centos-ovirt44-testing-el8]
-name=CentOS-8 - oVirt 4.4 - testing
-baseurl=http://cbs.centos.org/repos/virt8-ovirt-44-testing/$basearch/os/
-gpgcheck=0
-enabled=1
-

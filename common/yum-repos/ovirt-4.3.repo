@@ -73,6 +73,8 @@ includepkgs = 389-ds-base
 	389-ds-base-libs
 	NetworkManager-config-server
 	apache-commons-beanutils
+	augeas
+	augeas-libs
 	device-mapper-event
 	device-mapper-event-libs
 	dnsmasq
@@ -92,6 +94,7 @@ includepkgs = 389-ds-base
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
+	libicu
 	libipa_hbac
 	libkadm5
 	libsmbclient
@@ -152,6 +155,7 @@ includepkgs = 389-ds-base
 	python-syspurpose
 	python2-ipaclient
 	python2-ipalib
+	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
 	rsyslog-mmnormalize
@@ -174,11 +178,13 @@ includepkgs = 389-ds-base
 	subscription-manager
 	subscription-manager-rhsm
 	subscription-manager-rhsm-certificates
+	sysstat
 	systemd
 	systemd-libs
 	systemd-python
 	systemd-sysv
 	tcpdump
+	tomcat-servlet-3.0-api
 	tzdata-java
 	virt-v2v
 
@@ -229,8 +235,6 @@ includepkgs = GeoIP
 	atlas
 	attr
 	audit-libs-python
-	augeas
-	augeas-libs
 	authconfig
 	autofs
 	autogen-libopts
@@ -421,7 +425,6 @@ includepkgs = GeoIP
 	libguestfs-winsupport
 	libibumad
 	libibverbs
-	libicu
 	libini_config
 	libiscsi
 	libjpeg-turbo
@@ -662,11 +665,9 @@ includepkgs = GeoIP
 	svrcore
 	syslinux
 	syslinux-extlinux
-	sysstat
 	targetcli
 	tcp_wrappers
 	telnet
-	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
@@ -739,7 +740,9 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = facter
+includepkgs = ansible
+	ansible-doc
+	facter
 	hiera
 	puppet
 	python-ordereddict

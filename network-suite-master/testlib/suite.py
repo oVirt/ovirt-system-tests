@@ -41,6 +41,14 @@ def XFAIL_SUITE_MASTER(reason):
             )
 
 
+def XFAIL_SUITE_43(reason):
+    return pytest.mark.xfail(
+            condition=SUITE_NAME.endswith('4.3'),
+            reason=reason,
+            run=False
+            )
+
+
 def is_master():
     return SUITE_NAME.endswith('master')
 

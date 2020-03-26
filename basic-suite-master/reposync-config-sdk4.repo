@@ -98,9 +98,9 @@ max_connections = 5
 skip_if_unavailable=1
 gpgcheck = 0
 
-[centos-ovirt-4.4-el7]
-name = CentOS-7 - oVirt 4.4
-baseurl = https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.4/
+[centos-ovirt-4.3-el7]
+name = CentOS-7 - oVirt 4.3
+baseurl = https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.3/
 gpgcheck = 0
 enabled = 1
 ost_skip_injection = True

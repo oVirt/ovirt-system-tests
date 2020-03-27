@@ -155,7 +155,7 @@ name=CentOS-8 Advanced virtualization
 baseurl=https://buildlogs.centos.org/centos/8/virt/x86_64/advanced-virtualization/
 gpgcheck=0
 enabled=1
-exclude=libvirt*
+module_hotfixes=1
 
 [ovirt-master-centos-ovirt44-el8]
 name=CentOS-8 - oVirt 4.4
@@ -163,13 +163,3 @@ baseurl=https://buildlogs.centos.org/centos/8/virt/x86_64/ovirt-44/
 gpgcheck=0
 enabled=1
 
-[copr-fedorainfracloud.org-sbonazzo-AdvancedVirtualization-el8]
-name=Copr repo for AdvancedVirtualization owned by sbonazzo
-baseurl=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/AdvancedVirtualization/centos-stream-$basearch/
-type=rpm-md
-gpgcheck=1
-gpgkey=https://copr-be.cloud.fedoraproject.org/results/sbonazzo/AdvancedVirtualization/pubkey.gpg
-repo_gpgcheck=0
-enabled=1
-enabled_metadata=1
-module_hotfixes=1

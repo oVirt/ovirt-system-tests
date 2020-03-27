@@ -33,7 +33,7 @@ from ost_utils.pytest.fixtures.engine import engine_ip
 
 
 def _has_podman():
-    return os.system("podman -v &> /dev/null") == 0
+    return os.system("podman --version &> /dev/null") == 0
 
 
 def _has_docker():

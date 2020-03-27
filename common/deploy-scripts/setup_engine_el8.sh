@@ -44,6 +44,7 @@ NIC=$(ip route | awk '$1=="default" {print $5; exit}')
 ADDR=$(/sbin/ip -4 -o addr show dev $NIC | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1}')
 echo "$ADDR engine" >> /etc/hosts
 
+# if you want to add anything here, please try to preinstall it first
 pkgs_to_install=(
     "net-snmp"
     "ovirt-engine"
@@ -74,7 +75,7 @@ if [[ "$DIST" =~ "el8" ]]; then
     dnf module enable -y postgresql:12
 fi
 
-$install_cmd "${pkgs_to_install[@]}" || {
+rpm -q "${pkgs_to_install[@]}" >/dev/null || $install_cmd "${pkgs_to_install[@]}" || {
     ret=$?
     echo "install failed with status $ret"
     exit $ret

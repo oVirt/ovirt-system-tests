@@ -61,7 +61,6 @@ install_deps() {
                    targetcli \
                    sg3_utils \
                    iscsi-initiator-utils \
-                   lsscsi \
                    policycoreutils-python-utils
 }
 
@@ -112,7 +111,7 @@ setup_iscsi() {
     iscsiadm -m discovery -t sendtargets -p $IP
     iscsiadm -m node -L all
     rescan-scsi-bus.sh
-    lsscsi -i |grep 36 |awk '{print $NF}' |sort > /root/multipath.txt
+    ls /dev/disk/by-id/scsi-36* | cut -d - -f 3 | sort > /root/multipath.txt
     iscsiadm -m node -U all
     iscsiadm -m node -o delete
     systemctl disable --now iscsi.service

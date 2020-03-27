@@ -132,7 +132,7 @@ def _random_host_service_from_dc(api, dc_name=DC_NAME):
     return api.system_service().hosts_service().host_service(id=host.id)
 
 def _all_hosts_up(hosts_service, total_num_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing or status=connecting'.format(DC_NAME))
     if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
@@ -140,10 +140,18 @@ def _all_hosts_up(hosts_service, total_num_hosts):
     if len(up_hosts) == total_num_hosts:
         return True
 
+    # sometimes a second host is fast enough to go up without master SD, it then goes NonOperational with 5min autorecovery, let's poke it
+    nonop_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational'.format(DC_NAME))
+    if len(nonop_hosts):
+        for host in nonop_hosts:
+            host_service = hosts_service.host_service(host.id)
+            host_service.activate()
+        return False
+
     _check_problematic_hosts(hosts_service)
 
 def _single_host_up(hosts_service, total_num_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing or status=connecting'.format(DC_NAME))
     if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
@@ -352,9 +360,6 @@ def add_hosts(prefix):
             nt.assert_true(
                 _add_host(host)
             )
-            # TODO: Adding a delay between adding hosts to bypass certificate
-            # issue: https://bugzilla.redhat.com/1787195
-            time.sleep(60)
 
 
 @testlib.with_ovirt_api4

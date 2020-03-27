@@ -20,7 +20,7 @@ def render(template):
 
     # Load vars
     with open(os.path.join(envDir, 'vars', 'main.yml')) as _:
-        context = yaml.load(_)
+        context = yaml.safe_load(_)
 
     # Make the shell environment accessible as variable 'env'
     context['env'] = os.environ

@@ -75,6 +75,7 @@ includepkgs = 389-ds-base
 	libgudev1
 	libguestfs
 	libguestfs-tools-c
+	libicu
 	libipa_hbac
 	libkadm5
 	libsmbclient
@@ -407,7 +408,6 @@ includepkgs = GeoIP
 	libguestfs-winsupport
 	libibumad
 	libibverbs
-	libicu
 	libini_config
 	libiscsi
 	libjose
@@ -723,9 +723,7 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = ansible
-	ansible-doc
-	facter
+includepkgs = facter
 	hiera
 	puppet
 	python-ordereddict
@@ -744,19 +742,11 @@ includepkgs = ansible
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3
-baseurl = http://cbs.centos.org/repos/virt7-ovirt-43-testing/x86_64/os/
+baseurl = https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.3/
 gpgcheck = 0
 enabled = 1
 ost_skip_injection = True
 exclude = ovirt-host*
-
-[centos-ovirt-common-el7]
-name = CentOS-7 - oVirt common
-baseurl = http://cbs.centos.org/repos/virt7-ovirt-common-testing/x86_64/os/
-gpgcheck = 0
-cost = 2000
-enabled = 1
-ost_skip_injection = True
 
 [centos-qemu-ev-testing-el7]
 name = CentOS-7 - QEMU EV - Testing

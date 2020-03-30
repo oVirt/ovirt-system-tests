@@ -52,6 +52,13 @@ pkgs_to_install=(
     "ovirt-engine-extension-aaa-ldap*"
     "otopi-debug-plugins"
     "cronie"
+    "nfs-utils"
+    "rpcbind"
+    "lvm2"
+    "targetcli"
+    "sg3_utils"
+    "iscsi-initiator-utils"
+    "policycoreutils-python-utils"
 )
 
 install_firewalld

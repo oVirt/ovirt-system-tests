@@ -402,33 +402,6 @@ def complete_hosts_setup(prefix):
             host.ssh(['echo', h.ip(), h.name(), '>>', '/etc/hosts'])
 
 
-@testlib.with_ovirt_prefix
-def copy_storage_script(prefix):
-    engine = prefix.virt_env.engine_vm()
-    storage_script = os.path.join(
-        os.environ.get('SUITE'),
-        'deploy-scripts',
-        'setup_storage.sh',
-    )
-    engine.copy_to(
-        storage_script,
-        '/tmp/setup_storage.sh',
-    )
-
-
-@testlib.with_ovirt_prefix
-def configure_storage(prefix):
-    engine = prefix.virt_env.engine_vm()
-    result = engine.ssh(
-        [
-            '/tmp/setup_storage.sh',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'setup_storage.sh failed. Exit code is %s' % result.code
-    )
-
-
 def _add_storage_domain(api, p):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
@@ -1862,7 +1835,6 @@ def add_direct_lun_vm0(prefix):
 
 
 _TEST_LIST = [
-    copy_storage_script,
     download_engine_certs,
     add_dc,
     add_cluster,
@@ -1876,7 +1848,6 @@ _TEST_LIST = [
     add_affinity_group,
     add_qos,
     add_bookmark,
-    configure_storage,
     list_glance_images,
     add_dc_quota,
     update_default_dc,

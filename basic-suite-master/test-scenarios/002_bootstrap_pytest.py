@@ -149,7 +149,6 @@ _TEST_LIST = [
     "test_get_host_numa_nodes",
     "test_add_glance_images",
     "test_add_fence_agent",
-    "test_verify_engine_backup",
     "test_verify_notifier",
     "test_check_update_host",
     "test_add_vnic_passthrough_profile",
@@ -171,6 +170,7 @@ _TEST_LIST = [
     "test_add_vm2_lease",
     "test_add_non_vm_network",
     "test_add_vm_network",
+    "test_verify_engine_backup",
 ]
 
 
@@ -1313,6 +1313,37 @@ def test_verify_engine_backup(prefix):
     )
     assert result.code == 0, \
         'Failed to verify backup with code {0}. Output: {1}'.format(result.code, result.out)
+
+    result = engine_vm.ssh(
+        [
+            'engine-cleanup',
+            '--otopi-environment="OVESETUP_CORE/remove=bool:True OVESETUP_CORE/engineStop=bool:True"',
+        ],
+    )
+    assert result.code == 0, \
+        'Failed to cleanup engine with code {0}. Output: {1}'.format(result.code, result.out)
+
+    result = engine_vm.ssh(
+        [
+            'engine-backup',
+            '--mode=restore',
+            '--provision-all-databases',
+            '--file=/var/log/ost-engine-backup/backup.tgz',
+            '--log=/var/log/ost-engine-backup/verify-restore-log.txt',
+        ],
+    )
+    assert result.code == 0, \
+        'Failed to verify restore with code {0}. Output: {1}'.format(result.code, result.out)
+
+    result = engine_vm.ssh(
+        [
+            'engine-setup',
+            '--accept-defaults',
+            '--offline',
+        ],
+    )
+    assert result.code == 0, \
+        'Failed to setup after restore with code {0}. Output: {1}'.format(result.code, result.out)
 
 
 @order_by(_TEST_LIST)

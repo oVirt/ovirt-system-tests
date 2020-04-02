@@ -563,6 +563,47 @@ def hotplug_disk(prefix,api):
     assert_vm0_is_alive(prefix)
 
 
+@testlib.with_ovirt_prefix
+def verify_engine_backup(prefix):
+    engine_vm = prefix.virt_env.engine_vm()
+    engine_vm.ssh(
+        [
+            'mkdir',
+            '/var/log/ost-engine-backup',
+        ],
+    )
+    api = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api.system_service()
+
+    with test_utils.TestEvent(engine, [9024, 9025]): #backup started event, completed
+        result = engine_vm.ssh(
+            [
+                'engine-backup',
+                '--mode=backup',
+                '--file=/var/log/ost-engine-backup/backup.tgz',
+                '--log=/var/log/ost-engine-backup/log.txt',
+            ],
+        )
+        nt.eq_(
+            result.code,
+            0,
+            'Failed to run engine-backup with code {0}. Output: {1}'.format(result.code, result.out)
+        )
+    result = engine_vm.ssh(
+        [
+            'engine-backup',
+            '--mode=verify',
+            '--file=/var/log/ost-engine-backup/backup.tgz',
+            '--log=/var/log/ost-engine-backup/verify-log.txt',
+        ],
+    )
+    nt.eq_(
+        result.code,
+        0,
+        'Failed to verify backup with code {0}. Output: {1}'.format(result.code, result.out)
+    )
+
+
 _TEST_LIST = [
     add_vm_blank,
     add_nic,
@@ -575,6 +616,7 @@ _TEST_LIST = [
     snapshot_live_merge,
     hotplug_nic,
     hotplug_disk,
+    verify_engine_backup,
 ]
 
 

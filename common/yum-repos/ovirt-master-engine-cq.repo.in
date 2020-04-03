@@ -110,7 +110,7 @@ repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
 
-[ovirt-master-copr:copr.fedorainfracloud.org:sac:gluster-ansible-el8]
+[sac-gluster-ansible-el8]
 name=Copr repo for gluster-ansible owned by sac
 baseurl=https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-8-x86_64/
 type=rpm-md
@@ -120,7 +120,7 @@ repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
 
-[ovirt-master-copr:copr.fedorainfracloud.org:mdbarroso:ovsdbapp-el8]
+[ovirt-master-copr-ovsdbapp-el8]
 name=Copr repo for ovsdbapp owned by mdbarroso
 baseurl=https://copr-be.cloud.fedoraproject.org/results/mdbarroso/ovsdbapp/epel-8-$basearch/
 type=rpm-md

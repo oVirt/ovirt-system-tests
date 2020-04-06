@@ -39,6 +39,7 @@ from test_utils import versioning
 from test_utils import host_status_utils
 from test_utils import constants
 
+import time
 import uuid
 
 
@@ -1063,12 +1064,16 @@ def test_hotunplug_disk(api_v4):
 
     with test_utils.TestEvent(engine, 2002):
         # USER_HOTUNPLUG_DISK(2,002)
-        assert disk_attachment.update(types.DiskAttachment(active=False))
+        correlation_id = 'test_hotunplug_disk'
+        assert disk_attachment.update(types.DiskAttachment(active=False),
+                                      query={'correlation_id': correlation_id})
 
         testlib.assert_true_within_short(
             lambda:
             disk_attachment.get().active == False
         )
+    # TODO disk lock is held and leaks into the next test. Nedds to be fixed (tnisan)
+    time.sleep(3)
 
 
 _log_time_before_suspend = None

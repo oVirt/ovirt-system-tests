@@ -1473,7 +1473,7 @@ def add_blank_high_perf_vm2(api):
             template=sdk4.types.Template(
                 name=TEMPLATE_BLANK,
             ),
-            custom_emulated_machine = 'pc-i440fx-rhel7.4.0',
+            custom_emulated_machine = 'pc-q35-rhel8.0.0',
             cpu=sdk4.types.Cpu(
                 topology=sdk4.types.CpuTopology(
                     cores=1,

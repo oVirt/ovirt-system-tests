@@ -5,30 +5,31 @@ prep_suite () {
 }
 
 install_dependencies() {
-    pip install -U pip==9.0.3
-    pip install flake8==3.1.0
-    pip install isort==4.2.5 pylint==1.6.4
-    pip install pytest==3.5
-
-    pip install contextlib2
-    pip install ansible-runner==1.4.4
-
-    # dependency of ansible's os_* modules
-    pip install openstacksdk==0.37
-    pip install decorator==4.4.0
-
+    "${PYTHON}" -m pip install -U pip==9.0.3
+    "${PYTHON}" -m pip install contextlib2
+    "${PYTHON}" -m pip install \
+        "flake8==3.1.0" \
+        "isort==4.2.5" \
+        "pytest==3.5" \
+        "ansible-runner==1.4.4" \
+        "decorator==4.4.0" \
+        "openstacksdk==0.37"
     install_libguestfs
 }
 
-run_static_analysis() {
-    flake8 --statistics --show-source "${SUITE}"
-    pylint \
+run_static_analysis_pylint() {
+    "${PYTHON}" -m pip install pylint==2.5.3
+    "${PYTHON}" -m pylint \
         --rcfile="${SUITE}/pylintrc" \
         --errors-only \
         "${SUITE}/fixtures" \
         "${SUITE}/ovirtlib" \
         "${SUITE}/testlib" \
         "${SUITE}/tests"
+}
+
+run_static_analysis_flake() {
+    "${PYTHON}" -m flake8 --statistics --show-source "${SUITE}"
 }
 
 setup_env() {
@@ -60,7 +61,7 @@ run_tests() {
     local artifacts_path="${OST_REPO_ROOT}/exported-artifacts"
     local junit_xml_path="${artifacts_path}/pytest.junit.xml"
 
-    python -B -m pytest \
+    "${PYTHON}" -B -m pytest \
         -s \
         -v \
         --durations=0 \
@@ -74,7 +75,10 @@ run_tests() {
 run_suite () {
     install_dependencies
     setup_env
-    run_static_analysis
+    run_static_analysis_flake
+    if [[ "${PYTHON}" !=  "python2" ]]; then
+        run_static_analysis_pylint
+    fi
     start_env
     run_tests
     generate_vdsm_coverage_report

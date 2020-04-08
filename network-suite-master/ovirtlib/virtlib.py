@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,12 +17,12 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import ConfigParser
 import io
 import time
 
 from contextlib import contextmanager
 
+from six.moves import configparser
 from six.moves import http_client
 
 import ovirtsdk4
@@ -343,7 +343,7 @@ class VmGraphicsConsole(SDKSubEntity):
 
     def _get_remote_viewer_file_parser(self):
         viewer_file = self._get_remote_viewer_file()
-        parser = ConfigParser.ConfigParser()
+        parser = configparser.ConfigParser()
         parser.readfp(io.BytesIO(viewer_file))
         return parser
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,10 +17,11 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import BaseHTTPServer
 import os
 import threading
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+
+from six.moves import BaseHTTPServer
+from six.moves.SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
 def create_repo_server(workdir, lago_env):

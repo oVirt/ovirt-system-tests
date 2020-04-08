@@ -164,12 +164,12 @@ class Host(SDKRootEntity):
                 set(modified_network_attachments)
             )
         synced_net_attachment_values = None
+        modified_network_attachments_val = list(
+                modified_network_attachments.values())
         if sync_networks:
-            synced_net_attachment_values = (
-                modified_network_attachments.values()
-            )
+            synced_net_attachment_values = modified_network_attachments_val
         return self.service.setup_networks(
-            modified_network_attachments=modified_network_attachments.values(),
+            modified_network_attachments=modified_network_attachments_val,
             removed_network_attachments=removed_network_attachments,
             synchronized_network_attachments=synced_net_attachment_values,
             check_connectivity=True

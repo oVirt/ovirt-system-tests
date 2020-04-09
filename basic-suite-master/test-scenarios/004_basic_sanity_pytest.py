@@ -1116,13 +1116,20 @@ def test_hotunplug_disk(api_v4):
         correlation_id = 'test_hotunplug_disk'
         assert disk_attachment.update(types.DiskAttachment(active=False),
                                       query={'correlation_id': correlation_id})
+        testlib.assert_true_within_long(
+            lambda:
+            test_utils.all_jobs_finished(engine, correlation_id)
+        )
+
+        testlib.assert_true_within_short(
+            lambda:
+            disk_service.get().status == types.DiskStatus.OK
+        )
 
         testlib.assert_true_within_short(
             lambda:
             disk_attachment.get().active == False
         )
-    # TODO disk lock is held and leaks into the next test. Nedds to be fixed (tnisan)
-    time.sleep(10)
 
 
 _log_time_before_suspend = None

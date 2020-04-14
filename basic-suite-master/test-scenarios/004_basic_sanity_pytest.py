@@ -28,6 +28,7 @@ import re
 import pytest
 
 from lago import utils, ssh
+from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
 from ovirtlago import testlib
@@ -82,7 +83,55 @@ SNAPSHOT_DESC_MEM = 'memory_snap'
 
 VDSM_LOG = '/var/log/vdsm/vdsm.log'
 
-@pytest.mark.run(order=0)
+
+_TEST_LIST = [
+    "test_verify_add_all_hosts",
+    "test_verify_glance_import",
+    "test_reconstruct_master_domain",
+    "test_add_vm1_from_template",
+    "test_verify_add_vm1_from_template",
+    "test_add_disks",
+    "test_add_snapshot_for_backup",
+    "test_run_vms",
+    "test_attach_snapshot_to_backup_vm",
+    "test_verify_transient_folder",
+    "test_remove_backup_vm_and_backup_snapshot",
+    "test_vm0_is_alive",
+    "test_suspend_resume_vm0",
+    "test_extend_disk1",
+    "test_sparsify_disk1",
+    "test_export_vm1",
+    "test_verify_backup_snapshot_removed",
+    "test_verify_vm2_run",
+    "test_ha_recovery",
+    "test_verify_vm1_exported",
+    "test_import_vm_as_clone",
+    "test_template_export",
+    "test_template_update",
+    "test_verify_vm_import",
+    "test_verify_suspend_resume_vm0",
+    "test_hotplug_memory",
+    "test_hotplug_disk",
+    "test_hotplug_nic",
+    "test_hotplug_cpu",
+    "test_next_run_unplug_cpu",
+    "test_disk_operations",
+    "test_live_storage_migration",
+    "test_remove_vm2_lease",
+    "test_hotunplug_disk",
+    "test_make_snapshot_with_memory",
+    "test_add_vm_pool",
+    "test_preview_snapshot_with_memory",
+    "test_update_template_version",
+    "test_update_vm_pool",
+    "test_remove_vm_pool",
+    "test_check_snapshot_with_memory",
+    "test_ovf_import",
+    "test_vdsm_recovery",
+]
+
+
+@order_by(_TEST_LIST)
 def test_verify_add_all_hosts(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
     hosts_service = api.system_service().hosts_service()
@@ -143,7 +192,7 @@ def assert_vm_is_alive(prefix, ip_address):
     assert _vm_ssh(ip_address, ['true']).code == EX_OK
 
 
-@pytest.mark.run(order=5)
+@order_by(_TEST_LIST)
 def test_add_disks(api_v4):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -203,7 +252,7 @@ def test_add_disks(api_v4):
     # test_utils.test_for_event(engine, 97, last_event)
 
 
-@pytest.mark.run(order=13)
+@order_by(_TEST_LIST)
 def test_extend_disk1(api_v4):
     engine = api_v4.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM1_NAME)
@@ -227,7 +276,7 @@ def test_extend_disk1(api_v4):
        )
 
 
-@pytest.mark.run(order=14)
+@order_by(_TEST_LIST)
 def test_sparsify_disk1(api_v4):
     engine = api_v4.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
@@ -243,7 +292,7 @@ def test_sparsify_disk1(api_v4):
     # test_utils.test_for_event(engine, 1326, last_event)
 
 
-@pytest.mark.run(order=6)
+@order_by(_TEST_LIST)
 def test_add_snapshot_for_backup(api_v4):
     engine = api_v4.system_service()
 
@@ -281,7 +330,7 @@ def test_add_snapshot_for_backup(api_v4):
         )
 
 
-@pytest.mark.run(order=8)
+@order_by(_TEST_LIST)
 def test_attach_snapshot_to_backup_vm(api_v4):
     engine = api_v4.system_service()
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
@@ -305,7 +354,7 @@ def test_attach_snapshot_to_backup_vm(api_v4):
         )
         assert len(disk_attachments_service.list()) > 0
 
-@pytest.mark.run(order=9)
+@order_by(_TEST_LIST)
 def test_verify_transient_folder(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
@@ -321,7 +370,7 @@ def test_verify_transient_folder(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=10)
+@order_by(_TEST_LIST)
 def test_remove_backup_vm_and_backup_snapshot(api_v4):
     engine = api_v4.system_service()
     backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
@@ -345,7 +394,7 @@ def test_remove_backup_vm_and_backup_snapshot(api_v4):
         vm2_snapshots_service.snapshot_service(vm2_snapshot.id).remove()
 
 
-@pytest.mark.run(order=16)
+@order_by(_TEST_LIST)
 def test_verify_backup_snapshot_removed(api_v4):
     engine = api_v4.system_service()
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
@@ -426,7 +475,7 @@ def snapshot_cold_merge(api_v4):
     )
 
 
-@pytest.mark.run(order=34)
+@order_by(_TEST_LIST)
 def test_make_snapshot_with_memory(api_v4):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -448,7 +497,7 @@ def test_make_snapshot_with_memory(api_v4):
         snapshots_service.add(snapshot_params)
 
 
-@pytest.mark.run(order=36)
+@order_by(_TEST_LIST)
 def test_preview_snapshot_with_memory(api_v4):
     engine = api_v4.system_service()
     events = engine.events_service()
@@ -464,7 +513,7 @@ def test_preview_snapshot_with_memory(api_v4):
                                 restore_memory=True)
 
 
-@pytest.mark.run(order=40)
+@order_by(_TEST_LIST)
 def test_check_snapshot_with_memory(api_v4):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -503,7 +552,7 @@ def cold_storage_migration(api_v4):
             )
 
 
-@pytest.mark.run(order=31)
+@order_by(_TEST_LIST)
 def test_live_storage_migration(api_v4):
     pytest.skip("TODO: el8 fails all the time")
 
@@ -536,7 +585,7 @@ def test_live_storage_migration(api_v4):
         lambda: disk_service.get().status == types.DiskStatus.OK
     )
 
-@pytest.mark.run(order=15)
+@order_by(_TEST_LIST)
 def test_export_vm1(api_v4):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
@@ -550,7 +599,7 @@ def test_export_vm1(api_v4):
         )
 
 
-@pytest.mark.run(order=19)
+@order_by(_TEST_LIST)
 def test_verify_vm1_exported(api_v4):
     engine = api_v4.system_service()
     _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
@@ -564,7 +613,7 @@ def test_verify_vm1_exported(api_v4):
     )
 
 
-@pytest.mark.run(order=20)
+@order_by(_TEST_LIST)
 def test_import_vm_as_clone(api_v4):
     engine = api_v4.system_service()
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
@@ -588,7 +637,7 @@ def test_import_vm_as_clone(api_v4):
         )
 
 
-@pytest.mark.run(order=23)
+@order_by(_TEST_LIST)
 def test_verify_vm_import(api_v4):
     engine = api_v4.system_service()
     vm_service = _verify_vm_state(engine, IMPORTED_VM_NAME, types.VmStatus.DOWN)
@@ -599,7 +648,7 @@ def test_verify_vm_import(api_v4):
     assert len(engine.vms_service().list()) == (num_of_vms-1)
 
 
-@pytest.mark.run(order=3)
+@order_by(_TEST_LIST)
 def test_add_vm1_from_template(api_v4):
     engine = api_v4.system_service()
     templates_service = engine.templates_service()
@@ -652,7 +701,7 @@ def test_add_vm1_from_template(api_v4):
     )
 
 
-@pytest.mark.run(order=4)
+@order_by(_TEST_LIST)
 def test_verify_add_vm1_from_template(api_v4):
     engine = api_v4.system_service()
     _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
@@ -667,7 +716,7 @@ def test_verify_add_vm1_from_template(api_v4):
         )
 
 
-@pytest.mark.run(order=7)
+@order_by(_TEST_LIST)
 def test_run_vms(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
 
@@ -713,17 +762,17 @@ def test_run_vms(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=17)
+@order_by(_TEST_LIST)
 def test_verify_vm2_run(api_v4):
     _verify_vm_state(api_v4.system_service(), VM2_NAME, types.VmStatus.UP)
 
 
-@pytest.mark.run(order=11)
+@order_by(_TEST_LIST)
 def test_vm0_is_alive(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=18)
+@order_by(_TEST_LIST)
 def test_ha_recovery(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
     with test_utils.TestEvent(engine, [119, 9602, 506]):
@@ -743,7 +792,7 @@ def test_ha_recovery(prefix):
         vm_service.stop()
 
 
-@pytest.mark.run(order=42)
+@order_by(_TEST_LIST)
 def test_vdsm_recovery(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -769,7 +818,7 @@ def test_vdsm_recovery(prefix):
     )
 
 
-@pytest.mark.run(order=21)
+@order_by(_TEST_LIST)
 def test_template_export(api_v4):
     engine = api_v4.system_service()
 
@@ -798,7 +847,7 @@ def test_template_export(api_v4):
         )
 
 
-@pytest.mark.run(order=35)
+@order_by(_TEST_LIST)
 def test_add_vm_pool(api_v4):
     engine = api_v4.system_service()
     pools_service = engine.vm_pools_service()
@@ -821,7 +870,7 @@ def test_add_vm_pool(api_v4):
     )
 
 
-@pytest.mark.run(order=37)
+@order_by(_TEST_LIST)
 def test_update_template_version(api_v4):
     engine = api_v4.system_service()
     stateless_vm = engine.vms_service().list(search='name={}'.format(VM1_NAME))[0]
@@ -847,7 +896,7 @@ def test_update_template_version(api_v4):
     )
 
 
-@pytest.mark.run(order=38)
+@order_by(_TEST_LIST)
 def test_update_vm_pool(api_v4):
     engine = api_v4.system_service()
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
@@ -866,7 +915,7 @@ def test_update_vm_pool(api_v4):
 
 
 @versioning.require_version(4, 1)
-@pytest.mark.run(order=32)
+@order_by(_TEST_LIST)
 def test_remove_vm2_lease(api_v4):
     engine = api_v4.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
@@ -887,7 +936,7 @@ def test_remove_vm2_lease(api_v4):
     )
 
 
-@pytest.mark.run(order=39)
+@order_by(_TEST_LIST)
 def test_remove_vm_pool(api_v4):
     engine = api_v4.system_service()
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
@@ -904,7 +953,7 @@ def test_remove_vm_pool(api_v4):
     )
 
 
-@pytest.mark.run(order=22)
+@order_by(_TEST_LIST)
 def test_template_update(api_v4):
     template_guest = test_utils.get_template_service(api_v4.system_service(), TEMPLATE_GUEST)
 
@@ -927,7 +976,7 @@ def test_template_update(api_v4):
     assert template_guest.get().comment == new_comment
 
 
-@pytest.mark.run(order=30)
+@order_by(_TEST_LIST)
 def test_disk_operations(api_v4):
     vt = utils.VectorThread(
         [
@@ -939,7 +988,7 @@ def test_disk_operations(api_v4):
     vt.join_all()
 
 
-@pytest.mark.run(order=25)
+@order_by(_TEST_LIST)
 def test_hotplug_memory(prefix):
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
     engine = api_v4.system_service()
@@ -955,7 +1004,7 @@ def test_hotplug_memory(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=28)
+@order_by(_TEST_LIST)
 def test_hotplug_cpu(prefix):
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
     engine = api_v4.system_service()
@@ -975,7 +1024,7 @@ def test_hotplug_cpu(prefix):
     assert match.group('cpus') == '2'
 
 
-@pytest.mark.run(order=29)
+@order_by(_TEST_LIST)
 def test_next_run_unplug_cpu(api_v4):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -999,7 +1048,7 @@ def test_next_run_unplug_cpu(api_v4):
     assert vm_service.get().cpu.topology.sockets == 1
 
 
-@pytest.mark.run(order=27)
+@order_by(_TEST_LIST)
 def test_hotplug_nic(prefix):
     pytest.skip('https://bugzilla.redhat.com/1776317')
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
@@ -1015,7 +1064,7 @@ def test_hotplug_nic(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=26)
+@order_by(_TEST_LIST)
 def test_hotplug_disk(prefix):
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
     engine = api_v4.system_service()
@@ -1055,7 +1104,7 @@ def test_hotplug_disk(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=33)
+@order_by(_TEST_LIST)
 def test_hotunplug_disk(api_v4):
     engine = api_v4.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
@@ -1079,7 +1128,7 @@ def test_hotunplug_disk(api_v4):
 _log_time_before_suspend = None
 
 
-@pytest.mark.run(order=12)
+@order_by(_TEST_LIST)
 def test_suspend_resume_vm0(prefix):
     vm_host = _vm_host(prefix, VM0_NAME)
     ret = vm_host.ssh(['tail', '-1', VDSM_LOG])
@@ -1100,7 +1149,7 @@ def test_suspend_resume_vm0(prefix):
     vm_service.start()
 
 
-@pytest.mark.run(order=24)
+@order_by(_TEST_LIST)
 def test_verify_suspend_resume_vm0(prefix):
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
     _verify_vm_state(api_v4.system_service(), VM0_NAME, types.VmStatus.UP)
@@ -1125,7 +1174,7 @@ def test_verify_suspend_resume_vm0(prefix):
     assert_vm0_is_alive(prefix)
 
 
-@pytest.mark.run(order=1)
+@order_by(_TEST_LIST)
 def test_verify_glance_import(api_v4):
     for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
         disks_service = api_v4.system_service().disks_service()
@@ -1133,7 +1182,7 @@ def test_verify_glance_import(api_v4):
             lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
         )
 
-@pytest.mark.run(order=2)
+@order_by(_TEST_LIST)
 def test_reconstruct_master_domain(api_v4):
     pytest.skip('TODO:Handle case where tasks are running')
     system_service = api_v4.system_service()
@@ -1155,7 +1204,7 @@ def test_reconstruct_master_domain(api_v4):
         )
 
 
-@pytest.mark.run(order=41)
+@order_by(_TEST_LIST)
 def test_ovf_import(api_v4):
     # Read the OVF file and replace the disk id
     engine = api_v4.system_service()

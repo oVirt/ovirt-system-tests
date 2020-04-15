@@ -56,7 +56,13 @@ def _pod(hub_port):
 
 @contextlib.contextmanager
 def _hub(image, pod_name):
-    name = shell(["podman", "run", "-d", "--pod", pod_name, image]).strip()
+    name = shell([
+        "podman", "run",
+        "-d",
+        "-v", "/dev/shm:/dev/shm",
+        "--pod", pod_name,
+        image
+    ]).strip()
     try:
         yield name
     finally:
@@ -76,6 +82,7 @@ def _nodes(images, hub_port, pod_name, engine_dns_entry):
     for image in images:
         name = shell([
             "podman", "run", "-d",
+            "-v", "/dev/shm:/dev/shm",
             "--add-host={}".format(engine_dns_entry),
             "-e", "HUB_HOST={}".format(HUB_IP),
             "-e", "HUB_PORT={}".format(hub_port),

@@ -1122,7 +1122,7 @@ def test_hotunplug_disk(api_v4):
             disk_attachment.get().active == False
         )
     # TODO disk lock is held and leaks into the next test. Nedds to be fixed (tnisan)
-    time.sleep(3)
+    time.sleep(10)
 
 
 _log_time_before_suspend = None

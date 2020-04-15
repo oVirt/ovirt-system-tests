@@ -26,3 +26,24 @@ mocker-*
 *.retry
 failure_msg.txt
 **/ovirt-deploy/library
+
+# ost-images files
+###############
+ost-images/*.iso
+ost-images/*.ks
+ost-images/*.qcow2
+ost-images/*.qcow2.tmp
+ost-images/*.tar.gz
+ost-images/*-provision-*.sh
+ost-images/COPYING
+ost-images/INSTALL
+ost-images/Makefile
+ost-images/Makefile.in
+ost-images/aclocal.m4
+ost-images/autom4te.cache/
+ost-images/build-aux/
+ost-images/config.log
+ost-images/config.status
+ost-images/configure
+ost-images/install-sh
+ost-images/missing

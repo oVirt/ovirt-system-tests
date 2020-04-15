@@ -1,0 +1,8 @@
+autoconf
+automake
+libguestfs-tools-c
+libvirt-client
+libvirt-daemon-config-network
+make
+qemu-img
+virt-install

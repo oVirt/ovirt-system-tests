@@ -1,0 +1,66 @@
+text --non-interactive
+lang en_US.UTF-8
+keyboard us
+rootpw  --plaintext 123456
+firewall --service=ssh
+authconfig --enableshadow --passalgo=sha512 --enablefingerprint
+selinux --enforcing
+timezone Europe/Prague
+network --bootproto=dhcp
+poweroff
+
+# storage
+bootloader --location=mbr --driveorder=vda --append="crashkernel=auto consoleblank=0 net.ifnames=0 console=ttyS0,115200n8"
+zerombr
+clearpart --all
+part /boot --size=256
+part / --grow --size=8192 --fsoptions="noatime"
+part swap --size 1024
+
+# repos
+repo --name=rhel-8-baseos-rpms --baseurl=%REPO_ROOT%/BaseOS/x86_64/os/
+repo --name=rhel-8-appstream-rpms --baseurl=%REPO_ROOT%/AppStream/x86_64/os/
+module --name 389-ds
+
+
+## PACKAGES
+%packages
+-plymouth
+bind-utils
+net-snmp
+python3
+sysstat
+tar
+tcpdump
+vim
+wget
+yum-utils
+# for storage setup
+iscsi-initiator-utils
+lvm2
+targetcli
+# for aaa tests from 389-ds module
+389-ds-base
+389-ds-base-legacy-tools
+%end
+
+## OS POSTINSTALL
+%post --nochroot
+cp /etc/resolv.conf /mnt/sysimage/etc/resolv.conf
+%end
+
+%post
+# get kernel arguments
+set -- `cat /proc/cmdline`
+for I in $*; do case "$I" in *=*) eval $I;; esac; done
+
+# install rpm gpg key
+for I in /etc/pki/rpm-gpg/*; do rpm --import $I; done
+
+# openssh
+sed -i 's/\(^GSSAPI[[:alpha:]]*\).*/\1 no/g;s/^#UseDNS.*/UseDNS no/g;' /etc/ssh/sshd_config
+
+# history
+echo "export HISTTIMEFORMAT='%F %T '" >> /etc/profile
+
+%end

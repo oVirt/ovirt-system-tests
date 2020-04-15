@@ -1,0 +1,6 @@
+#!/bin/bash -xe
+dnf install -y "https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm"
+dnf -y --nogpgcheck install ovirt-host
+# We install NetworkManager-config-server by default with vdsm which stops automatic DHCP assignments to interfaces. We use that in OST deploy so let's just disable that and let DHCP do its job 
+rm "/usr/lib/NetworkManager/conf.d/00-server.conf"
+dnf clean all

@@ -205,8 +205,6 @@ class Vm(SDKRootEntity):
             template=types.Template(name=template),
             stateless=stateless,
             memory=MB256,
-            # workaround for BZ 1823674
-            custom_emulated_machine='pc-i440fx-rhel7.4.0',
             memory_policy=types.MemoryPolicy(guaranteed=MB256 // 2)
         )
         self._create_sdk_entity(sdk_type)

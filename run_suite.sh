@@ -306,12 +306,12 @@ env_run_pytest () {
 env_ansible () {
 
     # Ensure latest Ansible modules are tested:
-    COLLECTION_DIR = $SUITE/ovirt-deploy/collections/ansible_collections/ovirt/ovirt/plugins
-    rm -rf $COLLECTION_DIR/modules || true
-    rm -rf $COLLECTION_DIR/module_utils || true
-    mkdir -p $COLLECTION_DIR/modules
-    mkdir -p $COLLECTION_DIR/module_utils
-    cd $COLLECTION_DIR/modules
+    local collection_dir=$SUITE/ovirt-deploy/collections/ansible_collections/ovirt/ovirt/plugins
+    rm -rf $collection_dir/modules || true
+    rm -rf $collection_dir/module_utils || true
+    mkdir -p $collection_dir/modules
+    mkdir -p $collection_dir/module_utils
+    cd $collection_dir/modules
     ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/modules/ovirt_"
     for module in vm disk cluster datacenter host network quota storage_domain template vmpool nic
     do
@@ -321,7 +321,7 @@ env_ansible () {
     wget -N $OVIRT_MODULES_FILES
     cd -
 
-    wget https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/ovirt.py -O $COLLECTION_DIR/module_utils/ovirt.py
+    wget https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/ovirt.py -O $collection_dir/module_utils/ovirt.py
 }
 
 

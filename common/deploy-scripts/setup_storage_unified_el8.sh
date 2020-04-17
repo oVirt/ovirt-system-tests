@@ -176,8 +176,10 @@ setup_services() {
 }
 
 install_deps_389ds() {
-    dnf module -y enable 389-ds
-    yum install --nogpgcheck -y 389-ds-base 389-ds-base-legacy-tools
+    if  ! rpm -q 389-ds-base 389-ds-base-legacy-tools > /dev/null; then
+        dnf module -y enable 389-ds
+        yum install --nogpgcheck -y 389-ds-base 389-ds-base-legacy-tools
+    fi
 }
 
 setup_389ds() {

@@ -1,6 +1,6 @@
 templates:
-  storage: el8.1-base-beta-2
-  host: el8.1-base-beta-2
+  storage: el8.1-base-beta-3
+  host: el8.1-base-beta-3
 hostCount: 2
 system_requirements:
   disk_space_gb: 20

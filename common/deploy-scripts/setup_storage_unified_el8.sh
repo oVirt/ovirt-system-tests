@@ -66,13 +66,14 @@ install_deps() {
 
 
 setup_iscsi() {
+    IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet ).*(?=/)")
     pvcreate --zero n /dev/${ISCSI_DEV}
     vgcreate --zero n vg1_storage /dev/${ISCSI_DEV}
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
         delete 0.0.0.0 3260
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1/portals \
-        create ip_address=::0 ip_port=3260
+        create ip_address=$IP ip_port=3260
 
 
     create_lun () {
@@ -107,7 +108,6 @@ setup_iscsi() {
     sed -i 's/#node.session.auth.password = password/node.session.auth.password = password/g' /etc/iscsi/iscsid.conf
     sed -i 's/node.conn\[0\].timeo.noop_out_timeout = 5/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf
 
-    IP=`hostname -I | awk '{print $1}'`
     iscsiadm -m discovery -t sendtargets -p $IP
     iscsiadm -m node -L all
     rescan-scsi-bus.sh

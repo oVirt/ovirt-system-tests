@@ -300,7 +300,10 @@ def get_luns(prefix, host, port, target, from_lun, to_lun=None):
         lun_guids = out.splitlines()[from_lun:to_lun]
     else: # take a single LUN from the list.
         lun_guids = [out.splitlines()[from_lun]]
-    ips = prefix.virt_env.get_vm(host).all_ips()
+    if prefix.virt_env.get_net(testlib.get_prefixed_name('net-storage')): # use -net-storage network
+       ips = prefix.virt_env.get_vm(host).ips_in_net(testlib.get_prefixed_name('net-storage'))
+    else: # or get all IPs if suite doesn't have net-storage network
+       ips = prefix.virt_env.get_vm(host).all_ips()
     luns = []
     for lun_id in lun_guids:
         for ip in ips:

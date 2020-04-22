@@ -3,7 +3,7 @@ domains:
     vm-provider: ssh
     vm-type: ovirt-engine
     ssh-password: 123456
-    distro: el7
+    distro: el8
     service_provider: systemd
     nics:
       - net: lago-{{ env.suite_name}}-net-management
@@ -16,7 +16,7 @@ domains:
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     vm-type: ovirt-host
-    distro: el7
+    distro: el8
     memory: 5120
     nics:
       - net: lago-{{ env.suite_name}}-net-management
@@ -28,7 +28,7 @@ domains:
         format: qcow2
       - comment: Used for brick
         name: brick
-        size: 150G
+        size: 170G
         type: empty
         dev: sda
         format: qcow2

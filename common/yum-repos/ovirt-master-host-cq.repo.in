@@ -146,3 +146,8 @@ baseurl=https://buildlogs.centos.org/centos/8/virt/x86_64/ovirt-44/
 gpgcheck=0
 enabled=1
 
+[ovirt-master-glusterfs-7-testing-el8]
+name=GlusterFS 7 testing packages for $basearch
+baseurl=https://buildlogs.centos.org/centos/8/storage/x86_64/gluster-7/
+enabled=1
+gpgcheck=0

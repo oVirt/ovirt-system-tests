@@ -15,8 +15,8 @@ sed \
     -e "s,@HOST2@,${HOST3IP},g" \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
     -e "s,@DOMAIN@,${DOMAIN},g" \
-    < /root/ohc_gluster_inventory.yml.in \
-    > ${PLAYBOOK_PATH}/ohc_gluster_inventory.yml
+    < /root/gluster_inventory.yml.in \
+    > ${PLAYBOOK_PATH}/gluster_inventory.yml
 
 
 MYADDR=$(\
@@ -61,7 +61,7 @@ sed -i '/gather_facts: no/d'  ${PLAYBOOK_PATH}/tasks/gluster_deployment.yml
 
 cd ${PLAYBOOK_PATH}
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i ohc_gluster_inventory.yml hc_deployment.yml --extra-vars='@ohc_he_gluster_vars.json'
+ansible-playbook -i gluster_inventory.yml hc_deployment.yml --extra-vars='@ohc_he_gluster_vars.json'
 
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then

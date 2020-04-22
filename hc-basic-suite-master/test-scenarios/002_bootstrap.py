@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright 2014, 2017 Red Hat, Inc.
 #
@@ -17,6 +18,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from __future__ import absolute_import
+
 import functools
 import os
 import random
@@ -26,20 +29,24 @@ import threading
 import nose.tools as nt
 from nose.tools import assert_false
 from nose import SkipTest
+
 from ovirtsdk.infrastructure import errors
 from ovirtsdk.xml import params
-try:
-    import ovirtsdk4 as sdk4
-    API_V3_ONLY = os.getenv('API_V3_ONLY', False)
-    if API_V3_ONLY:
-        API_V4 = False
-    else:
-        API_V4 = True
-except ImportError:
-    API_V4 = False
+
+# TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
+import ovirtsdk4 as sdk4
+import ovirtsdk4.types as types
 
 from lago import utils
 from ovirtlago import testlib
+
+import test_utils
+from test_utils import network_utils_v4
+from test_utils import constants
+from test_utils import versioning
+
+import logging
+LOGGER = logging.getLogger(__name__)
 
 # DC/Cluster
 DC_NAME = 'Default'
@@ -74,11 +81,23 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
+GUEST_IMAGE_NAME = versioning.guest_os_image_name()
+GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
+TEMPLATE_GUEST = versioning.guest_os_template_name()
+GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
+
 CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'
 
 # Network
 VLAN200_NET = 'VLAN200_Network'
 VLAN100_NET = 'VLAN100_Network'
+
+VM_NETWORK = u'VM Network with a very long name and עברית'
+VM_NETWORK_VLAN_ID = 100
+MIGRATION_NETWORK = 'Migration_Net'
+
+def _get_host_ips_in_net(prefix, host_name, net_name):
+    return prefix.virt_env.get_vm(host_name).ips_in_net(net_name)
 
 def _get_host_ip(prefix, host_name):
     vm = prefix.virt_env.get_vm(host_name)
@@ -102,24 +121,29 @@ def wait_engine(prefix):
     def _engine_is_up():
         engine = prefix.virt_env.engine_vm()
         try:
-            if engine and engine.get_api():
+            if engine and engine.get_api_v4():
                 return True
         except:
             return
 
-    testlib.assert_true_within(_engine_is_up, timeout=10 * 60)
+    testlib.assert_true_within(_engine_is_up, timeout=35 * 60)
 
-
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_dc_quota(api):
-        dc = api.datacenters.get(name=DC_NAME)
-        quota = params.Quota(
-            name=DC_QUOTA_NAME,
-            description='DC-QUOTA-DESCRIPTION',
-            data_center=dc,
-            cluster_soft_limit_pct=99,
+    datacenters_service = api.system_service().data_centers_service()
+    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
+    datacenter_service = datacenters_service.data_center_service(datacenter.id)
+    quotas_service = datacenter_service.quotas_service()
+    nt.assert_true(
+        quotas_service.add(
+            types.Quota (
+                name=DC_QUOTA_NAME,
+                description='DC-QUOTA-DESCRIPTION',
+                data_center=datacenter,
+                cluster_soft_limit_pct=99
+            )
         )
-        nt.assert_true(dc.quotas.add(quota))
+    )
 
 
 @testlib.with_ovirt_prefix
@@ -171,21 +195,47 @@ def add_nfs_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH)
 
 def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
-    api = prefix.virt_env.engine_vm().get_api()
-    p = params.StorageDomain(
-       name=sd_nfs_name,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
-        type_=sd_type,
-        storage_format=sd_format,
-        host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='nfs',
-            address=_get_host_ip(prefix, nfs_host_name),
+    if sd_type == 'data':
+        dom_type = sdk4.types.StorageDomainType.DATA
+    elif sd_type == 'iso':
+        dom_type = sdk4.types.StorageDomainType.ISO
+    elif sd_type == 'export':
+        dom_type = sdk4.types.StorageDomainType.EXPORT
+
+    if nfs_version == 'v3':
+        nfs_vers = sdk4.types.NfsVersion.V3
+    elif nfs_version == 'v4':
+        nfs_vers = sdk4.types.NfsVersion.V4
+    elif nfs_version == 'v4_1':
+        nfs_vers = sdk4.types.NfsVersion.V4_1
+    elif nfs_version == 'v4_2':
+        nfs_vers = sdk4.types.NfsVersion.V4_2
+    else:
+        nfs_vers = sdk4.types.NfsVersion.AUTO
+
+    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
+    ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
+    kwargs = {}
+    if sd_format >= 'v4':
+        if not versioning.cluster_version_ok(4, 1):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
+        elif not versioning.cluster_version_ok(4, 3):
+            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
+    random_host = _random_host_from_dc(api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
+
+    p = sdk4.types.StorageDomain(
+        name=sd_nfs_name,
+        description='APIv4 NFS storage domain',
+        type=dom_type,
+        host=random_host,
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.NFS,
+            address=ips[0],
             path=mount_path,
-            nfs_version=nfs_version,
+            nfs_version=nfs_vers,
         ),
+        **kwargs
     )
     _add_storage_domain(api, p)
 
@@ -233,7 +283,7 @@ def wait_hosts(prefix):
     api_hosts = hosts_service.list()
     nt.assert_equals(len(api_hosts), 3)
     for api_host in api_hosts:
-        testlib.assert_true_within(_host_is_up, timeout=15*60)
+        testlib.assert_true_within(_host_is_up, timeout=35*60)
 
 
 @testlib.with_ovirt_prefix
@@ -298,32 +348,6 @@ def add_templates_storage_domain(prefix):
     raise SkipTest('TBD:Change to glusterfs export domain')
     add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export')
 
-
-@testlib.with_ovirt_api
-def import_templates(api):
-    #TODO: Fix the exported domain generation
-    raise SkipTest('Exported domain generation not supported yet')
-    templates = api.storagedomains.get(
-        SD_TEMPLATES_NAME,
-    ).templates.list(
-        unregistered=True,
-    )
-
-    for template in templates:
-        template.register(
-            action=params.Action(
-                cluster=params.Cluster(
-                    name=CLUSTER_NAME,
-                ),
-            ),
-        )
-
-    for template in api.templates.list():
-        testlib.assert_true_within_short(
-            lambda: api.templates.get(template.name).status.state == 'ok',
-        )
-
-
 def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=False, image_ext='_glance_disk', template_ext='_glance_template', dest_storage_domain=MASTER_SD_NAME, dest_cluster=CLUSTER_NAME):
     glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
     target_image = glance_provider.images.get(name=image_name)
@@ -354,19 +378,89 @@ def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=Fa
     )
 
 
-@testlib.with_ovirt_api
+def check_glance_connectivity(engine):
+    avail = False
+    providers_service = engine.openstack_image_providers_service()
+    providers = [
+        provider for provider in providers_service.list()
+        if provider.name == SD_GLANCE_NAME
+    ]
+    if providers:
+        glance = providers_service.provider_service(providers.pop().id)
+        try:
+            glance.test_connectivity()
+            avail = True
+        except sdk4.Error:
+            pass
+
+    return avail
+
+
+@testlib.with_ovirt_api4
 def list_glance_images(api):
     global GLANCE_AVAIL
-    glance_provider = api.storagedomains.get(SD_GLANCE_NAME)
-    if glance_provider is None:
-        raise SkipTest('%s: GLANCE is not available.' % list_glance_images.__name__ )
+    search_query = 'name={}'.format(SD_GLANCE_NAME)
+    engine = api.system_service()
+    storage_domains_service = engine.storage_domains_service()
+    glance_domain_list = storage_domains_service.list(search=search_query)
+
+    if not glance_domain_list:
+        openstack_glance = add_glance(api)
+        if not openstack_glance:
+            raise SkipTest('GLANCE storage domain is not available.')
+        glance_domain_list = storage_domains_service.list(search=search_query)
+
+    if not check_glance_connectivity(engine):
+        raise SkipTest('GLANCE connectivity test failed')
+
+    glance_domain = glance_domain_list.pop()
+    glance_domain_service = storage_domains_service.storage_domain_service(
+        glance_domain.id
+    )
 
     try:
-        all_images = glance_provider.images.list()
+        with test_utils.TestEvent(engine, 998):
+            all_images = glance_domain_service.images_service().list()
         if len(all_images):
             GLANCE_AVAIL = True
-    except errors.RequestError:
-        raise SkipTest('%s: GLANCE is not available: client request error' % list_glance_images.__name__ )
+    except sdk4.Error:
+        raise SkipTest('GLANCE is not available: client request error')
+
+
+def add_glance(api):
+    target_server = sdk4.types.OpenStackImageProvider(
+        name=SD_GLANCE_NAME,
+        description=SD_GLANCE_NAME,
+        url=GLANCE_SERVER_URL,
+        requires_authentication=False
+    )
+
+    try:
+        providers_service = api.system_service().openstack_image_providers_service()
+        providers_service.add(target_server)
+        glance = []
+
+        def get():
+            providers = [
+                provider for provider in providers_service.list()
+                if provider.name == SD_GLANCE_NAME
+            ]
+            if not providers:
+                return False
+            instance = providers_service.provider_service(providers.pop().id)
+            if instance:
+                glance.append(instance)
+                return True
+            else:
+                return False
+
+        testlib.assert_true_within_short(func=get, allowed_exceptions=[sdk4.NotFoundError])
+    except (AssertionError, sdk4.NotFoundError):
+        # RequestError if add method was failed.
+        # AssertionError if add method succeed but we couldn't verify that glance was actually added
+        return None
+
+    return glance.pop()
 
 
 def import_non_template_from_glance(prefix):
@@ -382,77 +476,147 @@ def import_template_from_glance(prefix):
         raise SkipTest('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
     generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, image_ext='_glance_template', as_template=True)
 
-
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def set_dc_quota_audit(api):
-    dc = api.datacenters.get(name=DC_NAME)
-    dc.set_quota_mode('audit')
+    dcs_service = api.system_service().data_centers_service()
+    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
     nt.assert_true(
-        dc.update()
-    )
+        dc_service.update(
+            types.DataCenter(
+                quota_mode=types.QuotaModeType.AUDIT,
+            ),
+        )
+   )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_quota_storage_limits(api):
-    dc = api.datacenters.get(DC_NAME)
-    quota = dc.quotas.get(name=DC_QUOTA_NAME)
-    quota_storage = params.QuotaStorageLimit(limit=500)
-    nt.assert_true(
-        quota.quotastoragelimits.add(quota_storage)
+
+    # Find the data center and the service that manages it:
+    dcs_service = api.system_service().data_centers_service()
+    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc_service = dcs_service.data_center_service(dc.id)
+
+    # Find the storage domain and the service that manages it:
+    sds_service = api.system_service().storage_domains_service()
+    sd = sds_service.list()[0]
+
+    # Find the quota and the service that manages it.
+    # If the quota doesn't exist,create it.
+    quotas_service = dc_service.quotas_service()
+    quotas = quotas_service.list()
+
+    quota = next(
+        (q for q in quotas if q.name == DC_QUOTA_NAME ),
+        None
+    )
+    if quota is None:
+        quota = quotas_service.add(
+            quota=types.Quota(
+                name=DC_QUOTA_NAME,
+                description='DC-QUOTA-DESCRIPTION',
+                cluster_hard_limit_pct=20,
+                cluster_soft_limit_pct=80,
+                storage_hard_limit_pct=20,
+                storage_soft_limit_pct=80
+            )
+        )
+    quota_service = quotas_service.quota_service(quota.id)
+
+    # Find the quota limit for the storage domain that we are interested on:
+    limits_service = quota_service.quota_storage_limits_service()
+    limits = limits_service.list()
+    limit = next(
+        (l for l in limits if l.id == sd.id),
+        None
     )
 
+    # If that limit exists we will delete it:
+    if limit is not None:
+        limit_service = limits_service.limit_service(limit.id)
+        limit_service.remove()
 
-@testlib.with_ovirt_api
+    # Create the limit again, with the desired value
+    nt.assert_true(
+        limits_service.add(
+            limit=types.QuotaStorageLimit(
+                limit=500,
+            )
+        )
+    )
+
+@testlib.with_ovirt_api4
 def add_quota_cluster_limits(api):
-    dc = api.datacenters.get(DC_NAME)
-    quota = dc.quotas.get(name=DC_QUOTA_NAME)
-    quota_cluster = params.QuotaClusterLimit(vcpu_limit=20, memory_limit=10000)
-    nt.assert_true(
-        quota.quotaclusterlimits.add(quota_cluster)
+    datacenters_service = api.system_service().data_centers_service()
+    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
+    datacenter_service = datacenters_service.data_center_service(datacenter.id)
+    quotas_service = datacenter_service.quotas_service()
+    quotas = quotas_service.list()
+    quota = next(
+        (q for q in quotas if q.name == DC_QUOTA_NAME),
+        None
     )
+    quota_service = quotas_service.quota_service(quota.id)
+    quota_cluster_limits_service = quota_service.quota_cluster_limits_service()
+    nt.assert_true(
+        quota_cluster_limits_service.add(
+            types.QuotaClusterLimit(
+                vcpu_limit=20,
+                memory_limit=10000.0
+            )
+        )
+)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_vm_network(api):
-    VLAN100 = params.Network(
-        name=VLAN100_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
+    engine = api.system_service()
+
+    network = network_utils_v4.create_network_params(
+        VM_NETWORK,
+        DC_NAME,
+        description='VM Network (originally on VLAN {})'.format(
+            VM_NETWORK_VLAN_ID),
+        vlan=sdk4.types.Vlan(
+            id=VM_NETWORK_VLAN_ID,
         ),
-        description='VM Network on VLAN 100',
-        vlan=params.VLAN(
-            id='100',
-        ),
     )
 
+    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+        nt.assert_true(
+            engine.networks_service().add(network)
+        )
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
-        api.networks.add(VLAN100)
-    )
-    nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN100)
+        cluster_service.networks_service().add(network)
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_non_vm_network(api):
-    VLAN200 = params.Network(
-        name=VLAN200_NET,
-        data_center=params.DataCenter(
-            name=DC_NAME,
-        ),
+    engine = api.system_service()
+
+    network = network_utils_v4.create_network_params(
+        MIGRATION_NETWORK,
+        DC_NAME,
         description='Non VM Network on VLAN 200, MTU 9000',
-        vlan=params.VLAN(
+        vlan=sdk4.types.Vlan(
             id='200',
         ),
-        usages=params.Usages(),
+        usages=[],
         mtu=9000,
     )
 
+    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+        nt.assert_true(
+            engine.networks_service().add(network)
+        )
+
+    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     nt.assert_true(
-        api.networks.add(VLAN200)
-    )
-    nt.assert_true(
-        api.clusters.get(CLUSTER_NAME).networks.add(VLAN200)
+        cluster_service.networks_service().add(network)
     )
 
 
@@ -483,9 +647,8 @@ def sleep(prefix):
 
 _TEST_LIST = [
     wait_engine,
-    wait_hosts,
+    #wait_hosts,
     list_glance_images,
-    import_templates,
     add_non_vm_network,
     add_vm_network,
     add_dc_quota,

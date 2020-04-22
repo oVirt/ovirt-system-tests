@@ -25,6 +25,10 @@ from ovirtsdk.xml import params
 
 from ovirtlago import testlib
 
+import ovirtsdk4 as sdk4
+import ovirtsdk4.types as types
+
+import test_utils
 
 # TODO: remove once lago can gracefully handle on-demand prefixes
 def _get_prefixed_name(entity_name):
@@ -53,74 +57,138 @@ DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 MASTER_SD_NAME = 'vmstore'
 
+SD_NFS_NAME = 'nfs'
+
 SD_ISCSI_HOST_NAME = _get_prefixed_name('storage')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
 
+MANAGEMENT_NETWORK = 'ovirtmgmt'
 
-@testlib.with_ovirt_api
+
+@testlib.with_ovirt_api4
 def add_vm_blank(api):
+    engine = api.system_service()
+    vms_service = engine.vms_service()
+
     vm_memory = 512 * MB
-    vm_params = params.VM(
+    vm_params = sdk4.types.Vm(
         name=VM0_NAME,
         memory=vm_memory,
-        cluster=params.Cluster(
+        os=sdk4.types.OperatingSystem(
+            type='spice',
+        ),
+        type=sdk4.types.VmType.SERVER,
+        high_availability=sdk4.types.HighAvailability(
+            enabled=False,
+        ),
+        cluster=sdk4.types.Cluster(
             name=TEST_CLUSTER,
         ),
-        template=params.Template(
+        template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
         ),
-        display=params.Display(
-            type_='spice',
+        display=sdk4.types.Display(
+            smartcard_enabled=True,
+            keyboard_layout='en-us',
+            file_transfer_enabled=True,
+            copy_paste_enabled=True,
+            type=sdk4.types.DisplayType.SPICE
         ),
-        memory_policy=params.MemoryPolicy(
+        usb=sdk4.types.Usb(
+            enabled=True,
+            type=sdk4.types.UsbType.NATIVE,
+        ),
+        memory_policy=sdk4.types.MemoryPolicy(
+            ballooning=True,
             guaranteed=vm_memory / 2,
         ),
     )
-    api.vms.add(vm_params)
+
+    vms_service.add(vm_params)
+    vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     testlib.assert_true_within_short(
-        lambda: api.vms.get(VM0_NAME).status.state == 'down',
+        lambda: vm0_vm_service.get().status == sdk4.types.VmStatus.DOWN
     )
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_nic(api):
     NIC_NAME = 'eth0'
-    nic_params = params.NIC(
-        name=NIC_NAME,
-        interface='virtio',
-        network=params.Network(
-            name='ovirtmgmt',
+    # Locate the vnic profiles service and use it to find the ovirmgmt
+    # network's profile id:
+    profiles_service = api.system_service().vnic_profiles_service()
+    profile_id = next(
+        (
+            profile.id for profile in profiles_service.list()
+            if profile.name == MANAGEMENT_NETWORK
+        ),
+        None
+    )
+
+    # Empty profile id would cause fail in later tests (e.g. add_filter):
+    nt.assert_is_not_none(profile_id)
+
+    # Locate the virtual machines service and use it to find the virtual
+    # machine:
+    vms_service = api.system_service().vms_service()
+    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+
+    # Locate the service that manages the network interface cards of the
+    # virtual machine:
+    nics_service = vms_service.vm_service(vm.id).nics_service()
+
+    # Use the "add" method of the network interface cards service to add the
+    # new network interface card:
+    nics_service.add(
+        types.Nic(
+            name=NIC_NAME,
+            interface=types.NicInterface.VIRTIO,
+            vnic_profile=types.VnicProfile(
+                id=profile_id
+            ),
         ),
     )
-    api.vms.get(VM0_NAME).nics.add(nic_params)
 
 
-@testlib.with_ovirt_api
+@testlib.with_ovirt_api4
 def add_disk(api):
-    disk_params = params.Disk(
-        name=DISK0_NAME,
-        size=10 * GB,
-        provisioned_size=1,
-        interface='virtio',
-        format='cow',
-        storage_domains=params.StorageDomains(
-            storage_domain=[
-                params.StorageDomain(
-                    name=MASTER_SD_NAME,
-                ),
-            ],
+    engine = api.system_service()
+    vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
+    vm0_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+
+    vm0_disk_attachments_service.add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                name=DISK0_NAME,
+                format=types.DiskFormat.COW,
+                initial_size=10 * GB,
+                provisioned_size=1,
+                sparse=True,
+                storage_domains=[
+                    types.StorageDomain(
+                        name=MASTER_SD_NAME,
+                    ),
+                ],
+            ),
+            interface=types.DiskInterface.VIRTIO,
+            active=True,
+            bootable=True,
         ),
-        status=None,
-        sparse=True,
-        bootable=True,
     )
-    api.vms.get(VM0_NAME).disks.add(disk_params)
-    testlib.assert_true_within_short(
+
+    disk0_service = test_utils.get_disk_service(engine, DISK0_NAME)
+    disk0_attachment_service = vm0_disk_attachments_service.attachment_service(disk0_service.get().id)
+
+    testlib.assert_true_within_long(
         lambda:
-        api.vms.get(VM0_NAME).disks.get(DISK0_NAME).status.state == 'ok'
+        disk0_attachment_service.get().active == True
+    )
+    testlib.assert_true_within_long(
+        lambda:
+        disk0_service.get().status == types.DiskStatus.OK
     )
 
 

@@ -5,6 +5,42 @@ prep_suite () {
     render_jinja_templates
 }
 
+env_copy_config_file() {
+
+    cd "$PREFIX"
+    reqsubstr=$1
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
+            "$CLI" copy-to-vm "$vm" "$SUITE/vars/main.yml" "/tmp/vars_main.yml"
+        fi
+    done
+    cd -
+}
+
+env_copy_repo_file() {
+
+    cd "$PREFIX"
+    host_type=$1
+    local reposync_file="reposync-config-${host_type}.repo"
+    local reqsubstr=$host_type
+    for vm in $(lago --out-format flat status | \
+        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
+        ; do
+
+        echo "$vm"
+        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
+            if [[ -e "$SUITE/$reposync_file" ]]; then
+                "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
+            fi
+        fi
+    done
+    cd -
+}
+
 he_deploy() {
     local suite="${SUITE?}"
     local curdir="${PWD?}"
@@ -38,12 +74,35 @@ he_deploy() {
         -p "${VMPASS}" \
         ssh-copy-id -o StrictHostKeyChecking=no -i ${HOST}2
 
+    lago shell \
+        ${HOST}0 \
+        mkdir \
+        /etc/ovirt-host-deploy.conf.d/
+
+    lago shell \
+        ${HOST}1 \
+        mkdir \
+        /etc/ovirt-host-deploy.conf.d/
+
+    lago shell \
+        ${HOST}2 \
+        mkdir \
+        /etc/ovirt-host-deploy.conf.d/
+
     echo "#########################"
     echo "Running ansible playbook on ${HOST}0"
-    lago copy-to-vm \
-        ${HOST}0 \
-        "${SUITE}/ohc_gluster_inventory.yml.in" \
-        /root/ohc_gluster_inventory.yml.in
+    if [[ -e "${SUITE}/gluster_inventory.yml.in" ]]; then
+        lago copy-to-vm \
+            ${HOST}0 \
+            "${SUITE}/gluster_inventory.yml.in" \
+            /root/gluster_inventory.yml.in
+    fi
+    if [[ -e "${SUITE}/ohc_gluster_inventory.yml.in" ]]; then
+        lago copy-to-vm \
+            ${HOST}0 \
+            "${SUITE}/ohc_gluster_inventory.yml.in" \
+            /root/ohc_gluster_inventory.yml.in
+    fi
 
     lago copy-to-vm \
         ${HOST}0 \
@@ -84,12 +143,21 @@ run_suite () {
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     declare failed=false
+    install_libguestfs
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
-    install_local_rpms
+    if [[ -e "$SUITE/reposync-config-sdk4.repo" ]]; then
+        install_local_rpms_without_reposync
+    else
+        install_local_rpms
+    fi
     env_start
+    env_copy_config_file "host"
+    env_copy_repo_file "host"
+    env_status
+    cd "$OST_REPO_ROOT"
     env_deploy
     he_deploy || failed=true
     if $failed; then

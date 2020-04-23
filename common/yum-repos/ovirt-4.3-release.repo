@@ -136,6 +136,7 @@ includepkgs = 389-ds-base
 	python-syspurpose
 	python2-ipaclient
 	python2-ipalib
+	python3-pip
 	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
@@ -600,6 +601,9 @@ includepkgs = GeoIP
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32
+	python3
+	python3-libs
+	python3-setuptools
 	pytz
 	pyusb
 	qdox
@@ -723,12 +727,15 @@ exclude = archaius-core
 	python-pthreading
 	rxjava
 max_connections = 5
-includepkgs = facter
+includepkgs = ansible
+	ansible-doc
+	facter
 	hiera
 	puppet
 	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
+	python2-jmespath
 	python2-mimeparse
 	python2-passlib
 	python2-pbr

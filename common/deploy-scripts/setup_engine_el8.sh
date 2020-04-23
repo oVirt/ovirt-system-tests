@@ -49,7 +49,7 @@ pkgs_to_install=(
     "net-snmp"
     "ovirt-engine"
     "ovirt-log-collector"
-    "ovirt-engine-extension-aaa-ldap*"
+    "ovirt-engine-extension-aaa-ldap-setup"
     "otopi-debug-plugins"
     "cronie"
     "nfs-utils"

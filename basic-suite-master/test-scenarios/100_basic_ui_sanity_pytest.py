@@ -213,6 +213,15 @@ def test_left_nav(ovirt_driver, save_screenshot):
     """
     click around on a few main views
     """
+
+    try:
+        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+        webadmin_menu.wait_for_displayed()
+    except:
+        save_screenshot('menu-failed')
+        save_page_source('menu-failed')
+        raise
+
     ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
     save_screenshot('left_nav_hover_compute')
     ovirt_driver.id_click(SEL_ID_CLUSTERS_MENU)

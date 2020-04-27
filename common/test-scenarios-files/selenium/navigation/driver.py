@@ -211,6 +211,13 @@ class Driver(object):
         with open(path, "w") as text_file:
             text_file.write(self.driver.page_source)
 
+    def is_class_name_present(self, class_name):
+        try:
+            self.driver.find_element_by_class_name(class_name)
+            return True
+        except NoSuchElementException:
+            return False
+
     def wait_until(self, message, condition_method, *args):
         self._wait_until(message, 60, condition_method, *args)
 

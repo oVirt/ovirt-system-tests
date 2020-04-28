@@ -24,6 +24,7 @@ import os
 
 import pytest
 
+import ost_utils.network_utils as network_utils
 import ost_utils.selenium.docker as docker
 import ost_utils.selenium.podman as podman
 
@@ -65,7 +66,8 @@ def hub_url(engine_fqdn, engine_ip):
     else:
         backend = _grid_backend()
         if backend == "podman":
-            with podman.grid(engine_fqdn, engine_ip) as hub_url:
+            hub_port = network_utils.find_free_port(4444, 4544)
+            with podman.grid(engine_fqdn, engine_ip, hub_port=hub_port) as hub_url:
                 yield hub_url
         elif backend == "docker":
             with docker.grid(engine_fqdn, engine_ip) as hub_url:

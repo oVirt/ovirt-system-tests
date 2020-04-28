@@ -51,14 +51,15 @@ def _pod(hub_port):
     try:
         yield name
     finally:
-        shell(["podman", "pod", "rm", name])
+        shell(["podman", "pod", "rm", "-f", name])
 
 
 @contextlib.contextmanager
-def _hub(image, pod_name):
+def _hub(image, hub_port, pod_name):
     name = shell([
         "podman", "run",
         "-d",
+        "-e", "SE_OPTS=-port {}".format(hub_port),
         "-v", "/dev/shm:/dev/shm",
         "--pod", pod_name,
         image
@@ -110,7 +111,7 @@ def grid(engine_fqdn, engine_ip, node_images=None,
 
     with common.http_proxy_disabled():
         with _pod(hub_port) as pod_name:
-            with _hub(hub_image, pod_name) as hub_name:
+            with _hub(hub_image, hub_port, pod_name) as hub_name:
                 with _nodes(node_images, hub_port, pod_name,
                             engine_dns_entry) as node_names:
                     url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)

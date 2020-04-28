@@ -306,6 +306,22 @@ def _validate_db_empty(token_id, engine_ip):
     assert not subnets
 
 
+def _validate_vnic_profile(api, vnic_profile_name):
+    def _get_vnic_profile(profiles_service, vnic_profile_name):
+      return next(
+              (
+                  profile for profile in profiles_service.list()
+                  if profile.name == vnic_profile_name
+              ),
+              None)
+
+    profiles_service = api.system_service().vnic_profiles_service()
+    testlib.assert_true_within_short(
+        lambda:
+        _get_vnic_profile(profiles_service, vnic_profile_name) is not None
+    )
+
+
 def _get_datacenter_id(api):
     return api.system_service().data_centers_service().list()[0].id
 
@@ -456,6 +472,7 @@ def test_use_ovn_provider(prefix, api_v4):
 
         datacenter_id = _get_datacenter_id(api_v4)
         _import_network_to_ovirt(api_v4, provider_id, network1_id, datacenter_id)
+        _validate_vnic_profile(api_v4, NETWORK_1)
         ovirt_network_id = _get_ovirt_network(api_v4, datacenter_id, NETWORK_1)
         _add_network_to_cluster(api_v4, datacenter_id, ovirt_network_id)
         _hotplug_network_to_vm(api_v4, VM0_NAME, NETWORK_1, IFACE_NAME)

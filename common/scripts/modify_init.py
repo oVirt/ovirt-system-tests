@@ -1,3 +1,4 @@
+from __future__ import print_function
 import yaml
 import os
 import sys
@@ -5,13 +6,13 @@ import sys
 
 def main():
     if len(sys.argv) < 2:
-        print 'Missing init file path'
+        print('Missing init file path')
         sys.exit(1)
 
     init_file_path = sys.argv[1]
 
     if not os.path.exists(init_file_path):
-        print '{} does not exist'.format(init_file_path)
+        print('{} does not exist'.format(init_file_path))
         sys.exit(1)
 
     with open(init_file_path, 'rt') as fd:

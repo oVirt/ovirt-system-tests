@@ -83,13 +83,13 @@ def linear_retrier(
 
 
 def main():
-    print ("linear")
+    print("linear")
     for sleep_time in linear_retrier(attempts=5, iteration_sleeptime=1):
-        print (sleep_time)
-    print ("exponential")
+        print(sleep_time)
+    print("exponential")
     for sleep_time in exponential_retrier(
             attempts=5, base_coefficient=1, max_iteration_sleeptime=200):
-        print (sleep_time)
+        print(sleep_time)
 
 
 if __name__ == "__main__":

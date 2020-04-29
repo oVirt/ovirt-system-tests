@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+
 from sh import vagrant
 from sh import scp
 from sh import virsh
@@ -254,7 +256,7 @@ class VM(object):
         command = ['-i', str(self._identityfile), '-o',  'StrictHostKeyChecking=no','-o',
             'UserKnownHostsFile=/dev/null', recursive_param, str(local_path),
             str(as_user) + "@" + str(self._ip) + ":" + str(remote_path)]
-        print " ".join(command)
+        print(" ".join(command))
         ret = scp(command)
         return ret
 
@@ -267,7 +269,7 @@ class VM(object):
         command = ['-i', str(self._identityfile), '-o',  'StrictHostKeyChecking=no', '-o',
             'UserKnownHostsFile=/dev/null', recursive_param,
             str(as_user) + "@" + str(self._ip) + ":" + str(remote_path), str(local_path)]
-        print " ".join(command)
+        print(" ".join(command))
         ret = scp(command)
         return ret
 

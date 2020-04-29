@@ -1,5 +1,7 @@
 #!/bin/env python
 
+from __future__ import print_function
+
 import os
 from re import compile
 from subprocess import check_output
@@ -24,7 +26,7 @@ def main():
         change_set = CONF['default_suites']
     exclude_set = CONF['exclude']
     LOGGER.debug('excluding: {}'.format(','.join(change_set & exclude_set)))
-    print "\n".join(str(e) for e in change_set - exclude_set)
+    print("\n".join(str(e) for e in change_set - exclude_set))
 
 def get_changes(x):
     f = os.path.realpath(x)

@@ -17,6 +17,9 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+from __future__ import print_function
+
 import datetime
 import functools
 import logging
@@ -205,7 +208,7 @@ def assert_true_within_long(func, allowed_exceptions=None):
     assert_equals_within_long(func, True, allowed_exceptions)
 
 def main():
-    print "testlib"
+    print("testlib")
 
 
 

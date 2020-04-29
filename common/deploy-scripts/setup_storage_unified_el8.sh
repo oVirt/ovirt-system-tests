@@ -78,7 +78,12 @@ install_deps() {
 
 
 setup_iscsi() {
-    IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet ).*(?=/)")
+    # this is ugly, assumes that dedicated storage VMs (lago-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master). And in both cases these are assumed to be ipv4, ipv6-only suite should probably change that
+    if [[ $(hostname) == *"-storage" ]]; then
+        IP=$(ip -4 addr show eth0 | grep -oP "(?<=inet ).*(?=/)")
+    else
+        IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet ).*(?=/)")
+    fi
     pvcreate --zero n /dev/${ISCSI_DEV}
     vgcreate --zero n vg1_storage /dev/${ISCSI_DEV}
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage

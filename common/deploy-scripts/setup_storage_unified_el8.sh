@@ -54,14 +54,26 @@ set_selinux_on_nfs() {
 
 install_deps() {
     systemctl disable --now kdump.service
-    yum install --nogpgcheck -y \
-                   nfs-utils \
-                   rpcbind \
-                   lvm2 \
-                   targetcli \
-                   sg3_utils \
-                   iscsi-initiator-utils \
-                   policycoreutils-python-utils
+    pkgs_to_install=(
+    "net-snmp"
+    "ovirt-engine"
+    "ovirt-log-collector"
+    "ovirt-engine-extension-aaa-ldap-setup"
+    "otopi-debug-plugins"
+    "cronie"
+    "nfs-utils"
+    "rpcbind"
+    "lvm2"
+    "targetcli"
+    "sg3_utils"
+    "iscsi-initiator-utils"
+    "policycoreutils-python-utils"
+    )
+    rpm -q "${pkgs_to_install[@]}" >/dev/null || yum install --nogpgcheck -y "${pkgs_to_install[@]}" || {
+        ret=$?
+        echo "install failed with status $ret"
+        exit $ret
+    }
 }
 
 

@@ -209,7 +209,7 @@ class Driver(object):
 
         print("saving page source " + path)
         with open(path, "w") as text_file:
-            text_file.write(self.driver.page_source)
+            text_file.write(self.driver.page_source.encode('utf-8'))
 
     def is_class_name_present(self, class_name):
         try:
@@ -217,6 +217,64 @@ class Driver(object):
             return True
         except NoSuchElementException:
             return False
+
+    def button_wait_and_click(self, text):
+        return self.xpath_wait_and_click('Button ' + text, '//button[text()="' + text + '"]')
+
+    def is_button_displayed(self, text):
+        return self.is_xpath_displayed('//button[text()="' + text + '"]')
+
+    def is_button_enabled(self, text):
+        return self.is_xpath_enabled('//button[text()="' + text + '"]')
+
+    def button_click(self, xpath):
+        self.xpath_click('//button[text()="' + xpath + '"]')
+
+    def is_xpath_present(self, xpath):
+        try:
+            self.retry_if_stale(
+                self.driver.find_element_by_xpath,
+                xpath
+                )
+            return True
+        except NoSuchElementException:
+            return False
+
+    def is_xpath_displayed(self, xpath):
+        return self.retry_if_stale(
+            self._is_xpath_displayed,
+            xpath
+            )
+
+    def _is_xpath_displayed(self, xpath):
+        return self.driver.find_element_by_xpath(xpath).is_displayed()
+
+    def is_xpath_enabled(self, xpath):
+        return self.retry_if_stale(
+            self._is_xpath_enabled,
+            xpath
+            )
+
+    def _is_xpath_enabled(self, xpath):
+        return self.driver.find_element_by_xpath(xpath).is_enabled()
+
+    def xpath_click(self, xpath):
+        return self.retry_if_stale(
+            self._xpath_click,
+            xpath
+            )
+
+    def _xpath_click(self, xpath):
+        self.driver.find_element_by_xpath(xpath).click()
+
+    def xpath_wait_and_click(self, message, xpath, wait_long=False):
+        wait_until = self.wait_until
+        if wait_long:
+            wait_until = self.wait_long_until
+
+        wait_until(message + ' is not displayed', self.is_xpath_displayed, xpath)
+        wait_until(message + ' is not enabled', self.is_xpath_enabled, xpath)
+        self.xpath_click(xpath)
 
     def wait_until(self, message, condition_method, *args):
         self._wait_until(message, 60, condition_method, *args)

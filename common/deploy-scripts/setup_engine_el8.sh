@@ -135,3 +135,14 @@ systemctl enable snmptrapd
 
 # Reserving port 54323 for ovirt-imageio-proxy service
 sysctl -w net.ipv4.ip_local_reserved_ports=54323
+
+if [[ ! -r /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf ]]; then
+    cat << EOF > /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf
+[connection]
+ipv6.addr-gen-mode=0
+ipv6.dhcp-duid=ll
+ipv6.dhcp-iaid=mac
+EOF
+
+    systemctl restart NetworkManager
+fi

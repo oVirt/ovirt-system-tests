@@ -63,3 +63,13 @@ sed -i 's/node.conn\[0\].timeo.noop_out_timeout = 5/node.conn\[0\].timeo.noop_ou
 # unique initiator name
 echo "InitiatorName=`/sbin/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi
 
+if [[ ! -r /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf ]]; then
+    cat << EOF > /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf
+[connection]
+ipv6.addr-gen-mode=0
+ipv6.dhcp-duid=ll
+ipv6.dhcp-iaid=mac
+EOF
+
+    systemctl restart NetworkManager
+fi

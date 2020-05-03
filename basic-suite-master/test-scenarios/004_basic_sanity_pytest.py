@@ -283,13 +283,10 @@ def test_sparsify_disk1(api_v4):
     with test_utils.TestEvent(engine, 1325): # USER_SPARSIFY_IMAGE_START event
         disk_service.sparsify()
 
-    testlib.assert_true_within_short(
-        lambda:
-        disk_service.get().status == types.DiskStatus.OK
-    )
-    # USER_SPARSIFY_IMAGE_FINISH_SUCCESS event
-    # TODO: enable - sparsify sometimes fails.
-    # test_utils.test_for_event(engine, 1326, last_event)
+    with test_utils.TestEvent(engine, 1326):  # USER_SPARSIFY_IMAGE_FINISH_SUCCESS
+        pass
+    # Make sure disk is unlocked
+    assert disk_service.get().status == types.DiskStatus.OK
 
 
 @order_by(_TEST_LIST)

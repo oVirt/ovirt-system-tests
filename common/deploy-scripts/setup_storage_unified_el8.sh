@@ -55,12 +55,6 @@ set_selinux_on_nfs() {
 install_deps() {
     systemctl disable --now kdump.service
     pkgs_to_install=(
-    "net-snmp"
-    "ovirt-engine"
-    "ovirt-log-collector"
-    "ovirt-engine-extension-aaa-ldap-setup"
-    "otopi-debug-plugins"
-    "cronie"
     "nfs-utils"
     "rpcbind"
     "lvm2"

@@ -31,6 +31,10 @@ GRID_STARTUP_WAIT_RETRIES = 300
 GRID_URL_TEMPLATE = "http://{}:{}/wd/hub"
 
 
+class SeleniumGridError(Exception):
+    pass
+
+
 def grid_health_check(hub_url, expected_node_count=None):
     status_url = hub_url + "/status"
 
@@ -43,7 +47,7 @@ def grid_health_check(hub_url, expected_node_count=None):
             pass
         time.sleep(0.1)
     else:
-        raise RuntimeError("Selenium grid didn't start up properly")
+        raise SeleniumGridError("Selenium grid didn't start up properly")
 
     if expected_node_count is not None:
         api_url = "/".join(hub_url.split("/")[:-2] + ["grid/api/hub"])
@@ -58,7 +62,7 @@ def grid_health_check(hub_url, expected_node_count=None):
                 pass
             time.sleep(0.1)
         else:
-            raise RuntimeError("Not enough nodes in selenium grid")
+            raise SeleniumGridError("Not enough nodes in selenium grid")
 
 
 @contextlib.contextmanager

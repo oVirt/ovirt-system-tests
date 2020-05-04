@@ -30,6 +30,7 @@ from ost_utils.selenium import common
 from ost_utils.shell import shell
 
 
+GRID_STARTUP_RETRIES = 3
 HUB_IP = "127.0.0.1"
 HUB_PORT = 4444
 LOGGER = logging.getLogger(__name__)
@@ -37,7 +38,10 @@ NODE_PORT_GEN = iter(range(5600, 5700))
 NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
 
 
-def _log_issues(hub_name, node_names):
+def _log_issues(pod_name, hub_name, node_names):
+    LOGGER.error("Pod inspection: \n%s" % shell([
+        "podman", "pod", "inspect", pod_name
+    ]))
     LOGGER.error("Hub logs: \n%s" % shell(["podman", "logs", hub_name]))
     for name in node_names:
         LOGGER.error(
@@ -102,8 +106,7 @@ def _nodes(images, hub_port, pod_name, engine_dns_entry):
 
 
 @contextlib.contextmanager
-def grid(engine_fqdn, engine_ip, node_images=None,
-         hub_image=HUB_CONTAINER_IMAGE, hub_port=HUB_PORT):
+def _grid(engine_fqdn, engine_ip, node_images, hub_image, hub_port):
     if node_images is None:
         node_images = [CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE]
 
@@ -117,7 +120,25 @@ def grid(engine_fqdn, engine_ip, node_images=None,
                     url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
                     try:
                         common.grid_health_check(url, len(node_images))
-                    except RuntimeError:
-                        _log_issues(hub_name, node_names)
+                        yield url
+                    except common.SeleniumGridError:
+                        _log_issues(pod_name, hub_name, node_names)
                         raise
-                    yield url
+
+
+@contextlib.contextmanager
+def grid(engine_fqdn, engine_ip, node_images=None,
+         hub_image=HUB_CONTAINER_IMAGE, hub_port=HUB_PORT,
+         retries=GRID_STARTUP_RETRIES):
+    for attempt in range(GRID_STARTUP_RETRIES):
+        try:
+            with _grid(engine_fqdn, engine_ip, node_images, hub_image,
+                       hub_port) as url:
+                yield url
+        except common.SeleniumGridError as e:
+            if attempt < GRID_STARTUP_RETRIES - 1:
+                LOGGER.warning("Grid startup failed, retrying...")
+            else:
+                raise
+        else:
+            break

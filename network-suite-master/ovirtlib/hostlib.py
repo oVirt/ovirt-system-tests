@@ -101,6 +101,16 @@ class Host(SDKRootEntity):
     def is_not_spm(self):
         return self.get_sdk_type().spm.status == types.SpmStatus.NONE
 
+    @property
+    def bonds(self):
+        bonds = []
+        for sdk_nic in self._service.nics_service().list():
+            if sdk_nic.bonding:
+                bond = Bond(self)
+                bond.import_by_id(sdk_nic.id)
+                bonds.append(bond)
+        return bonds
+
     def create(self, cluster, name, address, root_password):
         """
         :param cluster: clusterlib.Cluster
@@ -264,6 +274,10 @@ class Host(SDKRootEntity):
             if attachment.network.id in network_ids
         ]
 
+    def clean_all_networking(self):
+        self.clean_networks()
+        self.clean_bonds()
+
     @retry_below_version('4.4')
     def clean_networks(self):
         mgmt_net_id = self._get_mgmt_net_attachment().network.id
@@ -272,6 +286,11 @@ class Host(SDKRootEntity):
         self.service.setup_networks(
             removed_network_attachments=removed_attachments
         )
+
+    @retry_below_version('4.4')
+    def clean_bonds(self):
+        removed_bonds = [bond.get_sdk_type() for bond in self.bonds]
+        self.service.setup_networks(removed_bonds=removed_bonds)
 
     def sync_all_networks(self):
         self.service.sync_all_networks()

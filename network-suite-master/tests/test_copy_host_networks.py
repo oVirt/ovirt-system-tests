@@ -17,21 +17,29 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from collections import namedtuple
 import contextlib
 
 import pytest
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
-from ovirtlib import netattachlib
+from ovirtlib.netattachlib import BondingData
+from ovirtlib.netattachlib import NetworkAttachmentData as AttachData
 
 from testlib import suite
 
 ETH1 = 'eth1'
 ETH2 = 'eth2'
+ETH3 = 'eth3'
+BOND0 = 'bond0'
 
 VM_NET_NAME = 'vm-net'
 VLAN_10_NET_NAME = 'vlan-10-net'
+VLAN_20_NET_NAME = 'vlan-20-net'
+VLAN_30_NET_NAME = 'vlan-30-net'
+
+Config = namedtuple('Config', ('attachments', 'bonds'))
 
 
 @suite.skip_suites_below('4.4')
@@ -49,32 +57,47 @@ def test_copy_host_networks(configured_hosts):
 @pytest.fixture(
     scope='function',
     params=[('ovirtmgmt_only', 'ovirtmgmt_only'),
-            ('vlan_and_nonvlan', 'single_network')],
+            ('vlan_and_nonvlan', 'single_network'),
+            ('networks_and_bond', 'vlan_and_nonvlan')],
     ids=['copy_nothing_to_host_with_nothing',
-         'copy_vlan_and_nonvlan_to_host_with_single_network'],
+         'copy_vlan_and_nonvlan_to_host_with_single_network',
+         'copy_networks_and_bond_to_host_with_vlan_and_nonvlan'],
 )
-def configured_hosts(request, host_attachments, host_0_up, host_1_up):
-    source_attach_data = host_attachments[request.param[0]]
-    destination_attach_data = host_attachments[request.param[1]]
+def configured_hosts(request, host_config, host_0_up, host_1_up):
+    SRC_CONF = request.param[0]
+    DEST_CONF = request.param[1]
 
-    setup_host0 = hostlib.setup_networks(host_0_up, source_attach_data)
-    setup_host1 = _setup_destination_host(host_1_up, destination_attach_data)
-    with setup_host0, setup_host1:
+    setup_host_0 = hostlib.setup_networks(
+        host_0_up,
+        attach_data=host_config[SRC_CONF].attachments,
+        bonding_data=host_config[SRC_CONF].bonds)
+
+    setup_host_1 = _setup_destination_host(
+        host_1_up,
+        attach_data=host_config[DEST_CONF].attachments,
+        bonding_data=host_config[DEST_CONF].bonds)
+
+    with setup_host_0, setup_host_1:
         yield (host_0_up, host_1_up)
 
 
 @pytest.fixture(scope='module')
-def host_attachments(networks):
+def host_config(networks):
     return {
-        'ovirtmgmt_only': [],
-        'single_network': [
-            netattachlib.NetworkAttachmentData(networks[VM_NET_NAME], ETH1)
-        ],
-        'vlan_and_nonvlan': [
-            netattachlib.NetworkAttachmentData(
-                networks[VLAN_10_NET_NAME], ETH1),
-            netattachlib.NetworkAttachmentData(networks[VM_NET_NAME], ETH2),
-        ],
+        'ovirtmgmt_only': Config((), ()),
+        'single_network': Config(
+            (AttachData(networks[VM_NET_NAME], ETH1),),
+            ()),
+        'vlan_and_nonvlan': Config(
+            (AttachData(networks[VLAN_10_NET_NAME], ETH1),
+             AttachData(networks[VM_NET_NAME], ETH2)),
+            ()),
+        'networks_and_bond': Config(
+            (AttachData(networks[VM_NET_NAME], ETH1),
+             AttachData(networks[VLAN_10_NET_NAME], ETH1),
+             AttachData(networks[VLAN_20_NET_NAME], BOND0),
+             AttachData(networks[VLAN_30_NET_NAME], BOND0)),
+            (BondingData(BOND0, [ETH2, ETH3]),)),
     }
 
 
@@ -86,10 +109,21 @@ def networks(default_data_center, default_cluster):
     vm_vlan_10_net_ctx = clusterlib.new_assigned_network(
         VLAN_10_NET_NAME, default_data_center, default_cluster, vlan=10)
 
-    with vm_net_ctx as vm_network, vm_vlan_10_net_ctx as vm_vlan_10_network:
+    vm_vlan_20_net_ctx = clusterlib.new_assigned_network(
+        VLAN_20_NET_NAME, default_data_center, default_cluster, vlan=20)
+
+    vm_vlan_30_net_ctx = clusterlib.new_assigned_network(
+        VLAN_30_NET_NAME, default_data_center, default_cluster, vlan=30)
+
+    with vm_net_ctx as vm_network, \
+            vm_vlan_10_net_ctx as vm_vlan_10_network, \
+            vm_vlan_20_net_ctx as vm_vlan_20_network, \
+            vm_vlan_30_net_ctx as vm_vlan_30_network:
         yield {
             VM_NET_NAME: vm_network,
             VLAN_10_NET_NAME: vm_vlan_10_network,
+            VLAN_20_NET_NAME: vm_vlan_20_network,
+            VLAN_30_NET_NAME: vm_vlan_30_network,
         }
 
 
@@ -155,14 +189,14 @@ class CopyHostComparator(object):
 
 
 @contextlib.contextmanager
-def _setup_destination_host(host, attach_data):
+def _setup_destination_host(host, attach_data, bonding_data):
     """
     After copy_host_network, the configuration of destination will be different
     than what we originally set up. We therefore have to clean it completely
     to avoid any leftovers.
     """
-    host.setup_networks(attach_data)
+    host.setup_networks(attach_data, bonding_data=bonding_data)
     try:
         yield
     finally:
-        host.clean_networks()
+        host.clean_all_networking()

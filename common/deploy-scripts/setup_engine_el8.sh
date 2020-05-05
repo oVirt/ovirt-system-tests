@@ -74,17 +74,18 @@ else
     exit 1
 fi
 
-if [[ "$DIST" =~ "el8" ]]; then
-    yum module enable -y pki-deps 389-ds postgresql:12
-    # only required on CentOS, so check if it exists
-    yum module list javapackages-tools && yum module enable -y javapackages-tools
+if  ! rpm -q "${pkgs_to_install[@]}" >/dev/null; then
+    if [[ "$DIST" =~ "el8" ]]; then
+        dnf module enable -y pki-deps 389-ds postgresql:12
+        # only required on CentOS, so check if it exists
+        dnf module list javapackages-tools && dnf module enable -y javapackages-tools
+    fi
+    $install_cmd "${pkgs_to_install[@]}" || {
+        ret=$?
+        echo "install failed with status $ret"
+        exit $ret
+    }
 fi
-
-rpm -q "${pkgs_to_install[@]}" >/dev/null || $install_cmd "${pkgs_to_install[@]}" || {
-    ret=$?
-    echo "install failed with status $ret"
-    exit $ret
-}
 
 systemctl enable crond
 systemctl start crond

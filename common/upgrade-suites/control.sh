@@ -25,39 +25,26 @@ env_copy_config_file() {
 }
 
 env_copy_repo_file() {
-
-    local engine_repo_file="$1"
-    local host_repo_file="$2"
+    declare -A repos
+    repos=(["engine"]="$1" ["host"]="$2")
     local copy_to_path="$3"
+
     cd "$PREFIX"
-    ## ENGINE
-    local reposync_file="$engine_repo_file"
-    local reqsubstr="engine"
     for vm in $(lago --out-format flat status | \
         gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
         ; do
 
         echo "$vm"
-        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
-            if [[ -e "$reposync_file" ]] ;then
-                "$CLI" copy-to-vm "$vm" "$reposync_file" "$copy_to_path/${reposync_file##*/}"
+        for reqsubstr in "${!repos[@]}"; do
+            reposync_file="${repos[$reqsubstr]}"
+            echo "$reqsubstr - $reposync_file"
+            if [[ -z "${vm##*$reqsubstr*}" ]] ;then
+                if [[ -e "$reposync_file" ]] ;then
+                    echo "$CLI copy-to-vm $vm $reposync_file $copy_to_path/${reposync_file##*/}"
+                    "$CLI" copy-to-vm "$vm" "$reposync_file" "$copy_to_path/${reposync_file##*/}"
+                fi
             fi
-        fi
-    done
-
-    ## HOST
-    local reposync_file="$host_repo_file"
-    local reqsubstr="host"
-    for vm in $(lago --out-format flat status | \
-        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
-        ; do
-
-        echo "$vm"
-        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
-            if [[ -e "$reposync_file" ]] ;then
-                "$CLI" copy-to-vm "$vm" "$reposync_file" "$copy_to_path/${reposync_file##*/}"
-            fi
-        fi
+        done
     done
 
     cd -
@@ -113,8 +100,8 @@ run_suite () {
     #install_local_rpms
     env_start
     env_copy_config_file "$SUITE/vars/main.yml" "/tmp/vars_main.yml" false
-    env_copy_repo_file "$SUITE"/pre-reposync-config-engine.repo \
-        "$SUITE"/pre-reposync-config-host.repo \
+    env_copy_repo_file "$SUITE/pre-reposync-config-engine.repo" \
+        "$SUITE/pre-reposync-config-host.repo" \
         "/etc/yum.repos.d"
     cd "$OST_REPO_ROOT"
     if ! env_deploy; then

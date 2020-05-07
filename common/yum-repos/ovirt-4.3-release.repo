@@ -50,132 +50,56 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	NetworkManager-config-server
-	apache-commons-beanutils
-	augeas
+includepkgs = augeas
 	augeas-libs
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
+	device-mapper
 	device-mapper-event
 	device-mapper-event-libs
-	dnsmasq
+	device-mapper-libs
 	firewalld
 	firewalld-filesystem
-	fribidi
 	git
 	http-parser
-	ipa-client
-	ipa-client-common
-	ipa-common
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	krb5-workstation
-	libarchive
 	libgudev1
-	libguestfs
-	libguestfs-tools-c
+	libibumad
+	libibverbs
 	libicu
-	libipa_hbac
-	libkadm5
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
-	libvirt
-	libvirt-admin
-	libvirt-bash-completion
-	libvirt-client
-	libvirt-daemon
-	libvirt-daemon-config-network
-	libvirt-daemon-config-nwfilter
-	libvirt-daemon-driver-interface
-	libvirt-daemon-driver-lxc
-	libvirt-daemon-driver-network
-	libvirt-daemon-driver-nodedev
-	libvirt-daemon-driver-nwfilter
-	libvirt-daemon-driver-qemu
-	libvirt-daemon-driver-secret
-	libvirt-daemon-driver-storage
-	libvirt-daemon-driver-storage-core
-	libvirt-daemon-driver-storage-disk
-	libvirt-daemon-driver-storage-gluster
-	libvirt-daemon-driver-storage-iscsi
-	libvirt-daemon-driver-storage-logical
-	libvirt-daemon-driver-storage-mpath
-	libvirt-daemon-driver-storage-rbd
-	libvirt-daemon-driver-storage-scsi
-	libvirt-daemon-kvm
-	libvirt-libs
-	libvirt-lock-sanlock
-	libwbclient
+	librdmacm
 	lvm2
 	lvm2-libs
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
 	net-snmp
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
-	numactl
-	pango
-	patch
 	perl-Git
 	postgresql-libs
 	python-firewall
-	python-libguestfs
-	python-libipa_hbac
-	python-sss-murmur
-	python-sssdconfig
-	python-syspurpose
-	python2-ipaclient
-	python2-ipalib
 	python3-pip
-	rsyslog
-	rsyslog-elasticsearch
-	rsyslog-mmjsonparse
-	rsyslog-mmnormalize
-	samba-client-libs
-	samba-common
-	samba-common-libs
-	sg3_utils
-	sg3_utils-libs
-	sos
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
-	subscription-manager
-	subscription-manager-rhsm
-	subscription-manager-rhsm-certificates
-	sysstat
+	rdma-core
 	systemd
 	systemd-libs
 	systemd-python
 	systemd-sysv
-	tcpdump
+	telnet
 	tomcat-servlet-3.0-api
 	tzdata-java
-	virt-v2v
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = GeoIP
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	GeoIP
+	NetworkManager-config-server
 	OVMF
 	OpenIPMI
 	OpenIPMI-libs
@@ -199,6 +123,7 @@ includepkgs = GeoIP
 	ant
 	antlr-tool
 	aopalliance
+	apache-commons-beanutils
 	apache-commons-codec
 	apache-commons-collections
 	apache-commons-compress
@@ -225,10 +150,6 @@ includepkgs = GeoIP
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-libs
-	bind-libs-lite
-	bind-license
-	bind-utils
 	blas
 	boost-iostreams
 	boost-random
@@ -246,9 +167,15 @@ includepkgs = GeoIP
 	clevis-dracut
 	clevis-luks
 	clevis-systemd
+	cockpit
+	cockpit-bridge
+	cockpit-machines-ovirt
+	cockpit-system
+	cockpit-ws
 	coolkey
 	copy-jdk-configs
 	cryptsetup
+	cryptsetup-libs
 	cups-libs
 	cyrus-sasl
 	cyrus-sasl-gssapi
@@ -260,12 +187,18 @@ includepkgs = GeoIP
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
+	dnsmasq
 	dom4j
 	dosfstools
+	dracut
+	dracut-config-rescue
 	dracut-fips
+	dracut-network
 	dwz
 	easymock2
 	elfutils
+	elfutils-libelf
+	elfutils-libs
 	emacs-filesystem
 	fcoe-utils
 	fence-agents-all
@@ -307,6 +240,7 @@ includepkgs = GeoIP
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
+	fribidi
 	fuse
 	fuse-libs
 	gdb
@@ -338,6 +272,9 @@ includepkgs = GeoIP
 	httpcomponents-core
 	httpd
 	httpd-tools
+	ipa-client
+	ipa-client-common
+	ipa-common
 	iperf3
 	ipmitool
 	ipxe-roms-qemu
@@ -363,6 +300,9 @@ includepkgs = GeoIP
 	junit
 	jzlib
 	keyutils
+	kpartx
+	krb5-libs
+	krb5-workstation
 	lapack
 	libICE
 	libSM
@@ -382,6 +322,7 @@ includepkgs = GeoIP
 	libXtst
 	libXxf86vm
 	libaio
+	libarchive
 	libatasmart
 	libbasicobjects
 	libblockdev
@@ -394,6 +335,7 @@ includepkgs = GeoIP
 	libblockdev-swap
 	libblockdev-utils
 	libbytesize
+	libcacard
 	libcgroup
 	libcgroup-tools
 	libcollection
@@ -406,13 +348,15 @@ includepkgs = GeoIP
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
+	libguestfs
+	libguestfs-tools-c
 	libguestfs-winsupport
-	libibumad
-	libibverbs
 	libini_config
+	libipa_hbac
 	libiscsi
 	libjose
 	libjpeg-turbo
+	libkadm5
 	libldb
 	liblognorm
 	libluksmeta
@@ -427,7 +371,6 @@ includepkgs = GeoIP
 	libquadmath
 	librados2
 	librbd1
-	librdmacm
 	libref_array
 	libreport
 	libreport-centos
@@ -438,8 +381,17 @@ includepkgs = GeoIP
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
+	libselinux
+	libselinux-python
 	libselinux-ruby
+	libselinux-utils
 	libsemanage-python
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -451,11 +403,39 @@ includepkgs = GeoIP
 	libusal
 	libusbx
 	libverto-libevent
+	libvirt
+	libvirt-admin
+	libvirt-bash-completion
+	libvirt-client
+	libvirt-daemon
+	libvirt-daemon-config-network
+	libvirt-daemon-config-nwfilter
+	libvirt-daemon-driver-interface
+	libvirt-daemon-driver-lxc
+	libvirt-daemon-driver-network
+	libvirt-daemon-driver-nodedev
+	libvirt-daemon-driver-nwfilter
+	libvirt-daemon-driver-qemu
+	libvirt-daemon-driver-secret
+	libvirt-daemon-driver-storage
+	libvirt-daemon-driver-storage-core
+	libvirt-daemon-driver-storage-disk
+	libvirt-daemon-driver-storage-gluster
+	libvirt-daemon-driver-storage-iscsi
+	libvirt-daemon-driver-storage-logical
+	libvirt-daemon-driver-storage-mpath
+	libvirt-daemon-driver-storage-rbd
+	libvirt-daemon-driver-storage-scsi
+	libvirt-daemon-kvm
+	libvirt-libs
+	libvirt-lock-sanlock
 	libvirt-python
 	libwayland-client
 	libwayland-server
+	libwbclient
 	libwsman1
 	libxcb
+	libxml2
 	libxml2-python
 	libxshmfence
 	libxslt
@@ -473,6 +453,12 @@ includepkgs = GeoIP
 	mailx
 	make
 	mdadm
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
@@ -491,6 +477,7 @@ includepkgs = GeoIP
 	nmap-ncat
 	ntp
 	ntpdate
+	numactl
 	numad
 	numpy
 	objectweb-asm
@@ -508,6 +495,8 @@ includepkgs = GeoIP
 	osinfo-db
 	osinfo-db-tools
 	pam_pkcs11
+	pango
+	patch
 	pciutils
 	pcsc-lite
 	pcsc-lite-ccid
@@ -556,11 +545,14 @@ includepkgs = GeoIP
 	perl-threads-shared
 	pexpect
 	pixman
+	policycoreutils
 	policycoreutils-python
 	postgresql-jdbc
 	psmisc
 	pygobject2
+	pyldb
 	pyparsing
+	pytalloc
 	python-IPy
 	python-augeas
 	python-backports
@@ -580,6 +572,8 @@ includepkgs = GeoIP
 	python-kitchen
 	python-kmod
 	python-ldap
+	python-libguestfs
+	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -593,11 +587,17 @@ includepkgs = GeoIP
 	python-rtslib
 	python-setuptools
 	python-srpm-macros
+	python-sss-murmur
+	python-sssdconfig
 	python-suds
+	python-syspurpose
+	python-tdb
 	python-urwid
 	python-webob
 	python-yubico
 	python2-futures
+	python2-ipaclient
+	python2-ipalib
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32
@@ -610,16 +610,23 @@ includepkgs = GeoIP
 	quota
 	quota-nls
 	radvd
-	rdma-core
 	redhat-rpm-config
 	relaxngDatatype
 	resteasy-base-jaxrs
 	resteasy-base-jaxrs-api
 	rng-tools
 	rpcbind
+	rpm
 	rpm-build
+	rpm-build-libs
+	rpm-libs
+	rpm-python
 	rpmdevtools
 	rsync
+	rsyslog
+	rsyslog-elasticsearch
+	rsyslog-mmjsonparse
+	rsyslog-mmnormalize
 	ruby
 	ruby-irb
 	ruby-libs
@@ -628,6 +635,10 @@ includepkgs = GeoIP
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
+	samba-client-libs
+	samba-common
+	samba-common-libs
+	samba-libs
 	sanlock
 	sanlock-lib
 	sanlock-python
@@ -640,25 +651,43 @@ includepkgs = GeoIP
 	seabios-bin
 	seavgabios-bin
 	setools-libs
+	sg3_utils
+	sg3_utils-libs
 	sgabios-bin
 	slf4j
 	socat
+	sos
 	spice-server
 	squashfs-tools
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
 	stax2-api
+	subscription-manager
+	subscription-manager-rhsm
+	subscription-manager-rhsm-certificates
 	supermin5
 	svrcore
 	syslinux
 	syslinux-extlinux
+	sysstat
 	targetcli
 	tcp_wrappers
-	telnet
+	tcpdump
 	tpm2-abrmd
 	tpm2-tools
 	tpm2-tss
 	tree
 	trousers
 	ttmkfdir
+	tuned
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2
@@ -669,6 +698,7 @@ includepkgs = GeoIP
 	uuid
 	virt-install
 	virt-manager-common
+	virt-v2v
 	volume_key-libs
 	ws-commons-util
 	ws-jaxme
@@ -701,13 +731,8 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = cockpit
-	cockpit-bridge
-	cockpit-dashboard
-	cockpit-machines-ovirt
+includepkgs = cockpit-dashboard
 	cockpit-storaged
-	cockpit-system
-	cockpit-ws
 	dpdk
 	libssh
 	python-httplib2

@@ -2,6 +2,7 @@
 
 BUILDS="rpmbuild"
 EXPORT_DIR="exported-artifacts"
+PROJECT_DIR="ost-images"
 
 rm -rf "${EXPORT_DIR}"
 mkdir -p "${EXPORT_DIR}"
@@ -14,7 +15,7 @@ export LIBGUESTFS_BACKEND=direct
 ! [[ -c "/dev/kvm" ]] && mknod /dev/kvm c 10 232
 
 on_exit() {
-    pushd ost-images || true
+    pushd "${PROJECT_DIR}" || true
     make clean
     popd
     rm -rf "${BUILDS}"
@@ -22,8 +23,9 @@ on_exit() {
 
 trap on_exit EXIT
 
-pushd ost-images
+pushd "${PROJECT_DIR}"
 ./build.sh
 popd
 
 find "${BUILDS}" -iname *.rpm -exec mv {} "${EXPORT_DIR}/" \;
+find "${PROJECT_DIR}" -iname *-pkglist*.txt -exec mv {} "${EXPORT_DIR}/" \;

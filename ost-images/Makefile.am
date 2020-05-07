@@ -37,6 +37,11 @@ PROVISION_HOST_SCRIPT := $(DISTRO)-provision-host.sh.in
 # This resolves to either smth like 'el8.iso' for ISOs or url for repository urls
 _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 
+# Where pkglist.txt files are put
+_PKGLIST_PATH := /var/tmp
+
+# Command used to make *pkglist-diff.txt files
+_DIFF := -diff --new-line-format="" --unchanged-line-format=""
 
 # If the INSTALL_URL is an iso image then download it first.
 %.iso:
@@ -66,6 +71,9 @@ _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 		--noautoconsole \
 		--wait 30 \
 		--noreboot
+	virt-customize \
+		-a $@.tmp \
+		--run-command "rpm -qa | sort > $(_PKGLIST_PATH)/$(@:.qcow2=-pkglist.txt)"
 	mv $@.tmp $@
 
 %-upgrade.qcow2: $(if $(BUILD_BASE),%-base.qcow2)
@@ -76,6 +84,7 @@ _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 		-a $@.tmp \
 		$(if $(DUMMY_UPGRADE),, --run-command "dnf upgrade -y") \
 		--run-command "dnf clean all" \
+		--run-command "rpm -qa | sort > $(_PKGLIST_PATH)/$(@:.qcow2=-pkglist.txt)" \
 		--selinux-relabel
 	mv $@.tmp $@
 
@@ -89,6 +98,7 @@ _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 	virt-customize \
 		-a $@.tmp \
 		--run "$*-provision-engine.sh" \
+		--run-command "rpm -qa | sort > $(_PKGLIST_PATH)/$(@:.qcow2=-pkglist.txt)" \
 		--selinux-relabel
 	mv $@.tmp $@
 
@@ -102,8 +112,21 @@ _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 	virt-customize \
 		-a $@.tmp \
 		--run "$*-provision-host.sh" \
+		--run-command "rpm -qa | sort > $(_PKGLIST_PATH)/$(@:.qcow2=-pkglist.txt)" \
 		--selinux-relabel
 	mv $@.tmp $@
+
+%-pkglist.txt: %.qcow2
+	virt-copy-out -a $*.qcow2 $(_PKGLIST_PATH)/$@ .
+
+%-upgrade-pkglist-diff.txt: %-upgrade-pkglist.txt $(if $(BUILD_BASE),%-base-pkglist.txt)
+	$(_DIFF) $*-upgrade-pkglist.txt $(_BASE_IMAGE_PREFIX)$*-base-pkglist.txt > $@
+
+%-host-installed-pkglist-diff.txt: %-host-installed-pkglist.txt %-upgrade-pkglist.txt
+	$(_DIFF) $*-host-installed-pkglist.txt $*-upgrade-pkglist.txt > $@
+
+%-engine-installed-pkglist-diff.txt: %-engine-installed-pkglist.txt %-upgrade-pkglist.txt
+	$(_DIFF) $*-engine-installed-pkglist.txt $*-upgrade-pkglist.txt > $@
 
 ost-images.spec: ost-images.spec.in
 	sed 's/[@]PACKAGE_RELEASE[@]/$(PACKAGE_RELEASE)/g' $< >$@
@@ -114,13 +137,13 @@ ks: $(DISTRO).ks
 
 iso: $(DISTRO).iso
 
-base: $(DISTRO)-base.qcow2
+base: $(DISTRO)-base.qcow2 $(DISTRO)-base-pkglist.txt
 
-upgrade: $(DISTRO)-upgrade.qcow2
+upgrade: $(DISTRO)-upgrade.qcow2 $(DISTRO)-upgrade-pkglist.txt $(DISTRO)-upgrade-pkglist-diff.txt
 
-engine: $(DISTRO)-engine-installed.qcow2
+engine: $(DISTRO)-engine-installed.qcow2 $(DISTRO)-engine-installed-pkglist.txt $(DISTRO)-engine-installed-pkglist-diff.txt
 
-host: $(DISTRO)-host-installed.qcow2
+host: $(DISTRO)-host-installed.qcow2 $(DISTRO)-host-installed-pkglist.txt $(DISTRO)-host-installed-pkglist-diff.txt
 
 spec: ost-images.spec
 
@@ -142,17 +165,30 @@ gen-VERSION:
 		$(top_srcdir)/build-aux/pkg-version --full > $(distdir)/VERSION; \
 	fi
 
-dist-hook: gen-VERSION rebase-images
+# Since we rebase the image in the dist hook all targets
+# that depend on qcow files are considered outdated during rpm build,
+# so make tries to rebuild them... we need to touch them to avoid that.
+update-image-dependent-targets:
+	touch $(distdir)/*.txt
+
+dist-hook: gen-VERSION rebase-images update-image-dependent-targets
 
 clean-local:
 	-virsh destroy $(DISTRO)-base
 	-virsh undefine $(DISTRO)-base
 
 dist_image_DATA = \
+	$(if $(BUILD_BASE),$(DISTRO)-base-pkglist.txt) \
 	$(if $(BUILD_BASE),$(DISTRO)-base.qcow2) \
 	$(if $(BUILD_BASE),$(DISTRO).ks) \
+	$(DISTRO)-engine-installed-pkglist-diff.txt \
+	$(DISTRO)-engine-installed-pkglist.txt \
 	$(DISTRO)-engine-installed.qcow2 \
+	$(DISTRO)-host-installed-pkglist-diff.txt \
+	$(DISTRO)-host-installed-pkglist.txt \
 	$(DISTRO)-host-installed.qcow2 \
+	$(DISTRO)-upgrade-pkglist-diff.txt \
+	$(DISTRO)-upgrade-pkglist.txt \
 	$(DISTRO)-upgrade.qcow2 \
 	$(NULL)
 
@@ -163,6 +199,7 @@ dist_image_SCRIPTS = \
 	$(NULL)
 
 CLEANFILES = \
+	*-pkglist*.txt \
 	*.ks \
 	*.qcow2 \
 	*.qcow2.tmp \

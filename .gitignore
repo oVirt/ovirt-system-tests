@@ -35,6 +35,7 @@ ost-images/*.qcow2
 ost-images/*.qcow2.tmp
 ost-images/*.spec
 ost-images/*.tar.gz
+ost-images/*-pkglist*.txt
 ost-images/*-provision-*.sh
 ost-images/COPYING
 ost-images/INSTALL

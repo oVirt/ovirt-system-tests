@@ -52,6 +52,7 @@ Bare distro installation image
 %{_datarootdir}/%{name}/*.ks
 %attr(444, -, -) %{_datarootdir}/%{name}/*-base.qcow2
 %attr(755, -, -) %{_datarootdir}/%{name}/rebase_images.sh
+%{_datarootdir}/%{name}/*-base-pkglist.txt
 %exclude %{_datarootdir}/%{name}/*.ks.in
 
 %endif # %{with_base}
@@ -77,6 +78,7 @@ Bare distro with packages up to date
 
 %files %{distro}-upgrade
 %attr(444, -, -) %{_datarootdir}/%{name}/*-upgrade.qcow2
+%{_datarootdir}/%{name}/*-upgrade-pkglist*.txt
 
 
 %package %{distro}-engine-installed
@@ -88,6 +90,7 @@ Distro with ovirt-engine installed
 
 %files %{distro}-engine-installed
 %attr(444, -, -) %{_datarootdir}/%{name}/*-engine-installed.qcow2
+%{_datarootdir}/%{name}/*-engine-installed-pkglist*.txt
 %{_datarootdir}/%{name}/*-provision-engine.sh
 
 
@@ -100,4 +103,5 @@ Distro with ovirt-host installed
 
 %files %{distro}-host-installed
 %attr(444, -, -) %{_datarootdir}/%{name}/*-host-installed.qcow2
+%{_datarootdir}/%{name}/*-host-installed-pkglist*.txt
 %{_datarootdir}/%{name}/*-provision-host.sh

@@ -105,6 +105,9 @@ _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 		--selinux-relabel
 	mv $@.tmp $@
 
+ost-images.spec: ost-images.spec.in
+	sed 's/[@]PACKAGE_RELEASE[@]/$(PACKAGE_RELEASE)/g' $< >$@
+
 ks: $(DISTRO).ks
 
 .INTERMEDIATE: $(DISTRO).iso
@@ -119,7 +122,9 @@ engine: $(DISTRO)-engine-installed.qcow2
 
 host: $(DISTRO)-host-installed.qcow2
 
-all: $(if $(BUILD_BASE),base) upgrade engine host
+spec: ost-images.spec
+
+all: $(if $(BUILD_BASE),base) upgrade engine host spec
 
 # While qemu is fine with having relative paths
 # for backing images, lago is not. This is why we need
@@ -132,7 +137,12 @@ rebase-images:
 	qemu-img rebase -u -b "$(imagedir)/$(DISTRO)-upgrade.qcow2" "$(distdir)/$(DISTRO)-host-installed.qcow2"
 	qemu-img rebase -u -b "$(imagedir)/$(DISTRO)-upgrade.qcow2" "$(distdir)/$(DISTRO)-engine-installed.qcow2"
 
-dist-hook: rebase-images
+gen-VERSION:
+	if test -d ../.git; then                                             \
+		$(top_srcdir)/build-aux/pkg-version --full > $(distdir)/VERSION; \
+	fi
+
+dist-hook: gen-VERSION rebase-images
 
 clean-local:
 	-virsh destroy $(DISTRO)-base
@@ -156,6 +166,7 @@ CLEANFILES = \
 	*.ks \
 	*.qcow2 \
 	*.qcow2.tmp \
+	*.spec \
 	$(DISTRO)-provision-engine.sh \
 	$(DISTRO)-provision-host.sh \
 	$(DIST_ARCHIVES) \
@@ -163,17 +174,22 @@ CLEANFILES = \
 
 EXTRA_DIST = \
 	ost-images.spec \
+	ost-images.spec.in \
 	template.ks.in \
 	$(NULL)
 
 srpm: dist
 	rpmbuild -ts \
 		--define "distro $(DISTRO)" \
+		--define "release $(PACKAGE_RELEASE)" \
 		--define "with_base $(if $(BUILD_BASE),1,0)" \
+		--define "dummy_upgrade $(if $(DUMMY_UPGRADE),1,0)" \
 		$(DIST_ARCHIVES)
 
 rpm: dist
 	rpmbuild -tb \
 		--define "distro $(DISTRO)" \
+		--define "release $(PACKAGE_RELEASE)" \
 		--define "with_base $(if $(BUILD_BASE),1,0)" \
+		--define "dummy_upgrade $(if $(DUMMY_UPGRADE),1,0)" \
 		$(DIST_ARCHIVES)

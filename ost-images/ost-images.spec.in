@@ -1,18 +1,18 @@
 %{!?distro: %global distro el8}
-
-# TODO: Can be overriden from cmdline
-%{!?version: %global version 1}
-%{!?release: %global release %(date -u +%%+4Y.%%m.%%d.%%H.%%M.%%S)}
+%{!?release: %global release @PACKAGE_RELEASE@}
 
 # Whether base image is built or not
 %{!?with_base: %global with_base 0}
+
+# Whether we use dummy upgrade layer (for repo-based installations)
+%{!?dummy_upgrade: %global dummy_upgrade 0}
 
 # Disable debuginfo package, since this is a meta-package
 %global debug_package %{nil}
 
 Name: ost-images
-Version: %{version}
-Release: 0
+Version: 1
+Release: %{release}
 Summary: VM images needed to run OST
 License: GPLv2+
 Source0: %{name}-%{version}.tar.gz
@@ -59,7 +59,18 @@ Bare distro installation image
 
 %package %{distro}-upgrade
 Summary: Bare distro with packages up to date
+
+# For repo-based installations the upgrade layer doesn't contain
+# anything useful - the base layer already contains updated packages.
+# In this case we need to have a strict dependency to match
+# the nigthly-built base RPM. In iso-based installation scenarios
+# the base layer changes very rarely and we match only the major
+# version of the base package.
+%if %{dummy_upgrade}
+Requires: %{name}-%{distro}-base = %{version}-%{release}
+%else
 Requires: %{name}-%{distro}-base = %{version}
+%endif # %{dummy_upgrade}
 
 %description %{distro}-upgrade
 Bare distro with packages up to date

@@ -20,10 +20,18 @@
 
 # Autoconf initialization
 AC_INIT([ost-images],
-        [1],
+        [m4_esyscmd([build-aux/pkg-version --version])],
         [devel@ovirt.org])
 
-# Automake initialization
+AC_SUBST([PACKAGE_RELEASE],
+	   [m4_esyscmd([build-aux/pkg-version --release])])
+
+AS_IF([test "x$PACKAGE_VERSION" = x],
+      AC_MSG_ERROR([package version not defined]))
+
+AS_IF([test "x$PACKAGE_RELEASE" = x],
+      AC_MSG_ERROR([package release not defined]))
+
 AM_INIT_AUTOMAKE([foreign])
 
 AC_SUBST([imagedir], ['${datarootdir}/ost-images'])

@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# output versions:
+#   - 1-202005051340   => 1
+AWK_VERSION='
+    BEGIN { FS="-" }
+    /^[0-9]*/ {
+      print $1
+    }'
+
+# output releases:
+#   - 1-202005051340 => 202005051340
+AWK_RELEASE='
+    BEGIN { FS="-" }
+    /^[0-9]*/ {
+      print $2
+    }'
+
+AWK_SPEC_VERSION='
+    $1 == "Version:" {
+      print $2
+      exit
+    }'
+
+PKG_VERSION=`cat VERSION 2> /dev/null`
+
+if [ -z $PKG_VERSION ]; then
+    MAJOR=`awk "$AWK_SPEC_VERSION" ost-images.spec.in`
+    RELEASE=`date -u +%Y%m%d%H%M`
+    PKG_VERSION=$MAJOR-$RELEASE
+fi
+
+if test "x$1" = "x--full"; then
+    echo $PKG_VERSION | tr -d '[:space:]'
+elif test "x$1" = "x--version"; then
+    echo $PKG_VERSION | awk "$AWK_VERSION" | tr -cd '[:alnum:]'
+elif test "x$1" = "x--release"; then
+    echo $PKG_VERSION | awk "$AWK_RELEASE" | tr -cd '[:alnum:]'
+else
+    echo "usage: $0 [--full|--version|--release]"
+    exit 1
+fi

@@ -33,6 +33,7 @@ ost-images/*.iso
 ost-images/*.ks
 ost-images/*.qcow2
 ost-images/*.qcow2.tmp
+ost-images/*.spec
 ost-images/*.tar.gz
 ost-images/*-provision-*.sh
 ost-images/COPYING
@@ -41,7 +42,8 @@ ost-images/Makefile
 ost-images/Makefile.in
 ost-images/aclocal.m4
 ost-images/autom4te.cache/
-ost-images/build-aux/
+ost-images/build-aux/*
+!ost-images/build-aux/pkg-version
 ost-images/config.log
 ost-images/config.status
 ost-images/configure

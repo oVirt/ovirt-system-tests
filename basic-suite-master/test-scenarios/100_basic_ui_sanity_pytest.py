@@ -209,7 +209,7 @@ def test_login(ovirt_driver, save_screenshot, engine_username,
     save_screenshot('logged_in', 5)
 
 
-def test_left_nav(ovirt_driver, save_screenshot):
+def test_left_nav(ovirt_driver, save_screenshot, save_page_source):
     """
     click around on a few main views
     """

@@ -107,6 +107,8 @@ _LOCATION := $(if $(_USING_ISO),$(DISTRO).iso,$(INSTALL_URL))
 
 ks: $(DISTRO).ks
 
+.INTERMEDIATE: $(DISTRO).iso
+
 iso: $(DISTRO).iso
 
 base: $(DISTRO)-base.qcow2
@@ -139,7 +141,6 @@ clean-local:
 dist_image_DATA = \
 	$(if $(BUILD_BASE),$(DISTRO)-base.qcow2) \
 	$(if $(BUILD_BASE),$(DISTRO).ks) \
-	$(if $(and $(BUILD_BASE),$(_USING_ISO)),$(DISTRO).iso) \
 	$(DISTRO)-engine-installed.qcow2 \
 	$(DISTRO)-host-installed.qcow2 \
 	$(DISTRO)-upgrade.qcow2 \
@@ -152,7 +153,6 @@ dist_image_SCRIPTS = \
 	$(NULL)
 
 CLEANFILES = \
-	*.iso \
 	*.ks \
 	*.qcow2 \
 	*.qcow2.tmp \

@@ -40,9 +40,13 @@ sed \
 
 fstrim -va
 rm -rf /var/cache/yum/* /var/cache/dnf/*
+
+#change ulimit open files value
+ulimit -n 8192
+
 ANSIBLE_SSH_ARGS="-C -o ControlMaster=auto -o ControlPersist=60m" \
     ANSIBLE_SSH_CONTROL_PATH_DIR="~/.ansible/cp" \
-    ANSIBLE_SSH_CONTROL_PATH="%(directory)s/ansible-ssh-%%h-%%p-%%r" \
+    ANSIBLE_SSH_CONTROL_PATH="%(directory)s/a-%%h-%%p-%%r" \
     ANSIBLE_SSH_PIPELINING=True \
     ansible-playbook -i ${TARGETHOST}, /root/hosted_engine_deploy.yml --extra-vars='@/root/he_deployment.json'
 RET_CODE=$?

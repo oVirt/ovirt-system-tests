@@ -81,7 +81,6 @@ includepkgs = augeas
 	perl-Git
 	postgresql-libs
 	python-firewall
-	python3-pip
 	rdma-core
 	systemd
 	systemd-libs
@@ -601,9 +600,6 @@ includepkgs = 389-ds-base
 	python2-pyasn1
 	python2-pyasn1-modules
 	python2-subprocess32
-	python3
-	python3-libs
-	python3-setuptools
 	pytz
 	pyusb
 	qdox

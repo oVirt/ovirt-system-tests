@@ -311,7 +311,6 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
 
         vm_vgpu_dialog.cancel()
         save_screenshot('vms-success')
-
     except:
         save_screenshot('vms-failed')
         save_page_source('vms-failed')

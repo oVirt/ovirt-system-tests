@@ -67,6 +67,6 @@ class VmVgpuDialog(Displayable):
 
     def cancel(self):
         print('Cancel vGPU dialog')
-        self.ovirt_driver.driver.find_element_by_xpath('//button[text()="Cancel"]').click()
+        self.ovirt_driver.driver.find_element_by_xpath('//div[@class="modal-footer"]//button[. = "Cancel"]').click()
         self.wait_for_not_displayed()
 

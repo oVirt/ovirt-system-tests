@@ -648,6 +648,7 @@ includepkgs = ansible
 	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
+	python2-jmespath
 	python2-mimeparse
 	python2-pbr
 	python2-pysocks
@@ -717,7 +718,6 @@ includepkgs = archaius-core
 	python2-cryptography
 	python2-extras
 	python2-fixtures
-	python2-jmespath
 	python2-openvswitch
 	python2-ovsdbapp
 	python2-six

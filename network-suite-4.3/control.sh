@@ -18,6 +18,7 @@ install_dependencies() {
 
     # dependency of ansible's os_* modules
     pip install openstacksdk==0.37
+    pip install decorator==4.4.0
 }
 
 run_static_analysis() {

@@ -83,6 +83,7 @@ def test_modify_vnic_sec_groups_on_ext_networks(running_vm_0, system,
                                     'temporary sec group') as sec_group:
             profile.custom_properties = [
                 netlib.CustomProperty('SecurityGroups', sec_group.id)]
+            profile.filter = None
 
             vnic = running_vm_0.get_vnic(VNIC0_NAME)
             def_group = default_ovn_provider_client.get_security_group(

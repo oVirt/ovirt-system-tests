@@ -386,10 +386,6 @@ includepkgs = 389-ds-base
 	libreport-plugin-ureport
 	libreport-python
 	libreport-web
-	libselinux
-	libselinux-python
-	libselinux-ruby
-	libselinux-utils
 	libsemanage-python
 	libsmbclient
 	libsss_autofs
@@ -469,11 +465,9 @@ includepkgs = 389-ds-base
 	msv-xsdlib
 	mtools
 	nbdkit
-	nbdkit-devel
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
-	net-tools
 	netcf-libs
 	nettle
 	newt-python
@@ -750,11 +744,6 @@ exclude = archaius-core
 	rxjava
 max_connections = 5
 includepkgs = ansible
-	ansible-doc
-	facter
-	hiera
-	puppet
-	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
 	python2-jmespath
@@ -764,10 +753,7 @@ includepkgs = ansible
 	python2-pysocks
 	python2-qpid-proton
 	qpid-proton-c
-	ruby-augeas
-	ruby-shadow
 	rubygem-multipart-post
-	rubygem-rgen
 
 [centos-ovirt-4.3-el7]
 name = CentOS-7 - oVirt 4.3

@@ -64,7 +64,9 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = augeas
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	augeas
 	augeas-libs
 	bind-libs
 	bind-libs-lite
@@ -78,6 +80,7 @@ includepkgs = augeas
 	firewalld-filesystem
 	git
 	http-parser
+	ipmitool
 	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
@@ -85,9 +88,49 @@ includepkgs = augeas
 	libibumad
 	libibverbs
 	libicu
+	libipa_hbac
 	librdmacm
+	libsmbclient
+	libsss_autofs
+	libsss_certmap
+	libsss_idmap
+	libsss_nss_idmap
+	libsss_sudo
+	libvirt
+	libvirt-admin
+	libvirt-bash-completion
+	libvirt-client
+	libvirt-daemon
+	libvirt-daemon-config-network
+	libvirt-daemon-config-nwfilter
+	libvirt-daemon-driver-interface
+	libvirt-daemon-driver-lxc
+	libvirt-daemon-driver-network
+	libvirt-daemon-driver-nodedev
+	libvirt-daemon-driver-nwfilter
+	libvirt-daemon-driver-qemu
+	libvirt-daemon-driver-secret
+	libvirt-daemon-driver-storage
+	libvirt-daemon-driver-storage-core
+	libvirt-daemon-driver-storage-disk
+	libvirt-daemon-driver-storage-gluster
+	libvirt-daemon-driver-storage-iscsi
+	libvirt-daemon-driver-storage-logical
+	libvirt-daemon-driver-storage-mpath
+	libvirt-daemon-driver-storage-rbd
+	libvirt-daemon-driver-storage-scsi
+	libvirt-daemon-kvm
+	libvirt-libs
+	libvirt-lock-sanlock
+	libwbclient
 	lvm2
 	lvm2-libs
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
 	net-snmp
 	net-snmp-agent-libs
 	net-snmp-libs
@@ -95,7 +138,29 @@ includepkgs = augeas
 	perl-Git
 	postgresql-libs
 	python-firewall
+	python-libipa_hbac
+	python-sss-murmur
+	python-sssdconfig
+	python-syspurpose
 	rdma-core
+	samba-client-libs
+	samba-common
+	samba-common-libs
+	samba-libs
+	sos
+	sssd
+	sssd-ad
+	sssd-client
+	sssd-common
+	sssd-common-pac
+	sssd-ipa
+	sssd-krb5
+	sssd-krb5-common
+	sssd-ldap
+	sssd-proxy
+	subscription-manager
+	subscription-manager-rhsm
+	subscription-manager-rhsm-certificates
 	systemd
 	systemd-libs
 	systemd-python
@@ -103,15 +168,15 @@ includepkgs = augeas
 	telnet
 	tomcat-servlet-3.0-api
 	tzdata-java
+	yum-plugin-versionlock
+	yum-utils
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	GeoIP
+includepkgs = GeoIP
 	NetworkManager-config-server
 	OVMF
 	OpenIPMI
@@ -284,7 +349,6 @@ includepkgs = 389-ds-base
 	ipa-client-common
 	ipa-common
 	iperf3
-	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils
 	iscsi-initiator-utils-iscsiuio
@@ -359,7 +423,6 @@ includepkgs = 389-ds-base
 	libguestfs-tools-c
 	libguestfs-winsupport
 	libini_config
-	libipa_hbac
 	libiscsi
 	libjpeg-turbo
 	libkadm5
@@ -387,12 +450,6 @@ includepkgs = 389-ds-base
 	libreport-python
 	libreport-web
 	libsemanage-python
-	libsmbclient
-	libsss_autofs
-	libsss_certmap
-	libsss_idmap
-	libsss_nss_idmap
-	libsss_sudo
 	libtalloc
 	libtar
 	libtdb
@@ -404,36 +461,9 @@ includepkgs = 389-ds-base
 	libusal
 	libusbx
 	libverto-libevent
-	libvirt
-	libvirt-admin
-	libvirt-bash-completion
-	libvirt-client
-	libvirt-daemon
-	libvirt-daemon-config-network
-	libvirt-daemon-config-nwfilter
-	libvirt-daemon-driver-interface
-	libvirt-daemon-driver-lxc
-	libvirt-daemon-driver-network
-	libvirt-daemon-driver-nodedev
-	libvirt-daemon-driver-nwfilter
-	libvirt-daemon-driver-qemu
-	libvirt-daemon-driver-secret
-	libvirt-daemon-driver-storage
-	libvirt-daemon-driver-storage-core
-	libvirt-daemon-driver-storage-disk
-	libvirt-daemon-driver-storage-gluster
-	libvirt-daemon-driver-storage-iscsi
-	libvirt-daemon-driver-storage-logical
-	libvirt-daemon-driver-storage-mpath
-	libvirt-daemon-driver-storage-rbd
-	libvirt-daemon-driver-storage-scsi
-	libvirt-daemon-kvm
-	libvirt-libs
-	libvirt-lock-sanlock
 	libvirt-python
 	libwayland-client
 	libwayland-server
-	libwbclient
 	libwsman1
 	libxcb
 	libxml2
@@ -453,12 +483,6 @@ includepkgs = 389-ds-base
 	mailx
 	make
 	mdadm
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
@@ -568,7 +592,6 @@ includepkgs = 389-ds-base
 	python-kmod
 	python-ldap
 	python-libguestfs
-	python-libipa_hbac
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -582,10 +605,7 @@ includepkgs = 389-ds-base
 	python-rtslib
 	python-setuptools
 	python-srpm-macros
-	python-sss-murmur
-	python-sssdconfig
 	python-suds
-	python-syspurpose
 	python-tdb
 	python-urwid
 	python-webob
@@ -627,10 +647,6 @@ includepkgs = 389-ds-base
 	rubygem-psych
 	rubygem-rdoc
 	rubygems
-	samba-client-libs
-	samba-common
-	samba-common-libs
-	samba-libs
 	sanlock
 	sanlock-lib
 	sanlock-python
@@ -650,23 +666,9 @@ includepkgs = 389-ds-base
 	sgabios-bin
 	slf4j
 	socat
-	sos
 	spice-server
 	squashfs-tools
-	sssd
-	sssd-ad
-	sssd-client
-	sssd-common
-	sssd-common-pac
-	sssd-ipa
-	sssd-krb5
-	sssd-krb5-common
-	sssd-ldap
-	sssd-proxy
 	stax2-api
-	subscription-manager
-	subscription-manager-rhsm
-	subscription-manager-rhsm-certificates
 	supermin5
 	svrcore
 	syslinux
@@ -707,8 +709,6 @@ includepkgs = 389-ds-base
 	xpp3
 	xz-java
 	yajl
-	yum-plugin-versionlock
-	yum-utils
 	zip
 
 [centos-extras-el7]
@@ -744,6 +744,7 @@ exclude = archaius-core
 	rxjava
 max_connections = 5
 includepkgs = ansible
+	python-extras
 	python-unittest2
 	python2-asn1crypto
 	python2-jmespath

@@ -705,6 +705,7 @@ includepkgs = ansible
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
 	puppet
+	python-extras
 	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
@@ -788,7 +789,6 @@ includepkgs = archaius-core
 	python2-babel
 	python2-cffi
 	python2-cryptography
-	python2-extras
 	python2-fixtures
 	python2-ioprocess
 	python2-openvswitch

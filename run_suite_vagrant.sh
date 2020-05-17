@@ -193,7 +193,7 @@ generate_add_local_repo_script() {
     local reposerver_addr="${1:?}"
     local base="${SUITE}/deploy-scripts"
 
-    for f in add_local_repo_no_ext_access.sh.in add_local_repo.sh.in; do
+    for f in setup_repofile.sh.in; do
         [[ -f "${base}/${f}" ]] || continue
         sed "s,@ADDR@,${reposerver_addr},g" \
             "${base}/${f}" \
@@ -205,7 +205,7 @@ generate_add_local_repo_script() {
 env_start () {
     cd "$PREFIX"
     cp "${SUITE}/Vagrantfile" .
-    "$CLI" up --no-provision
+    "$CLI" up --no-provision --no-parallel
 
     local tmpxml=$(mktemp --suffix .xml)
     for x in $(virsh -q list | awk '{print $2}' | grep deployment-${SUITE##*/})
@@ -221,7 +221,7 @@ env_start () {
     done
     rm $tmpxml
 
-    "$CLI" up --provision
+    "$CLI" up --provision --no-parallel
 
     cd -
 }
@@ -270,6 +270,24 @@ env_run_test () {
 
     [[ "$res" -ne 0 ]] && xmllint --format "${junitxml_path}"
 
+    return "$res"
+}
+
+env_run_pytest () {
+
+    local res=0
+    cd $PREFIX
+    local junitxml_file="$PREFIX/${1##*/}.junit.xml"
+
+    "${PYTHON}" -B -m pytest \
+        -s \
+        -v \
+        -x \
+        --junit-xml="${junitxml_file}" \
+        "$1" || res=$?
+
+    [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
+    cd -
     return "$res"
 }
 
@@ -424,6 +442,34 @@ restore_package_manager_config() {
     rm "$path_to_config_bak"
 }
 
+install_local_rpms_without_reposync() {
+    local pkg_manager os path_to_config
+
+    [[ ${#RPMS_TO_INSTALL[@]} -le 0 ]] && return
+
+    pkg_manager="$(get_package_manager)"
+    path_to_config="$(get_package_manager_config)"
+
+    os=$(rpm -E %{dist})
+    os=${os#.}
+    os=${os%.*}
+
+    backup_package_manager_config
+
+    cat > "$path_to_config" <<EOF
+[internal_repo]
+name=Lago's internal repo
+baseurl="file://${PREFIX}/current/internal_repo/default/${os}"
+enabled=1
+gpgcheck=0
+skip_if_unavailable=1
+EOF
+    cat "$SUITE/reposync-config-sdk4.repo"  >> "$path_to_config"
+    $pkg_manager -y install "${RPMS_TO_INSTALL[@]}" || return 1
+
+    return 0
+}
+
 install_local_rpms() {
     local pkg_manager os path_to_config
 
@@ -452,7 +498,6 @@ EOF
     return 0
 }
 
-
 create_venv() {
     local name="ost-venv"
     local suite_req="${SUITE}/requirements.txt.lock"
@@ -466,6 +511,68 @@ create_venv() {
     fi
 }
 
+running_vms() {
+    $CLI status | \
+        gawk 'match($0, /^(.*)*running \(*/, m){ print m[1]; }'
+}
+
+copy_to_vm() {
+    vm="$1"
+    source="$2"
+    dest="$3"
+
+    scp -i "$(CLI ssh-config $vm| grep IdentityFile| awk '{print $2}')" \
+           -o StrictHostKeyChecking='no'  \
+           "$source" "$dest"
+}
+
+env_copy_config_file() {
+
+    cd "$PREFIX"
+    for vm in $(running_vms)
+    do
+        echo "$vm"
+        copy_to_vm "$vm" "$SUITE/vars/main.yml" "root@${vm}:/tmp/vars_main.yml"
+    done
+    cd -
+}
+
+
+env_copy_repo_file() {
+
+    cd "$PREFIX"
+    ## declare an array variable
+    declare -a vm_types_arr=("engine" "host" "storage")
+
+    ## now loop through the above array
+    for vm_type in "${vm_types_arr[@]}"
+    do
+        echo "$vm_type"
+        local reposync_file="reposync-config-${vm_type}.repo"
+        local reqsubstr="$vm_type"
+        for vm in $(running_vms)
+        do
+            echo "$vm"
+            if [[ -f "$SUITE/$reposync_file" && -z "${vm##*$reqsubstr*}" ]] ;then
+                copy_to_vm "$vm" "$SUITE/$reposync_file" "root@${vm}:/etc/yum.repos.d/$reposync_file"
+            fi
+        done
+    done
+    cd -
+}
+
+install_libguestfs() {
+    cd /tmp
+    /var/lib/ci_toolbox/safe_download.sh \
+        -s ec284cf371566983084a5e0427ed4f7ee48bd981 \
+        appliance.lock \
+        http://download.libguestfs.org/binaries/appliance/appliance-1.38.0.tar.xz \
+        /var/lib/lago/appliance-1.38.0.tar.xz
+
+    tar xvf /var/lib/lago/appliance-1.38.0.tar.xz
+    cd -
+    export LIBGUESTFS_PATH=/tmp/appliance
+}
 
 main() {
     options=$( \

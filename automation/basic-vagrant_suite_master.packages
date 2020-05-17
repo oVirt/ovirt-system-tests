@@ -6,7 +6,7 @@ python-netaddr
 python-ovirt-engine-sdk4
 python-pip
 python-virtualenv
-https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.rpm
+https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.rpm
 libvirt
 libvirt-devel
 ruby-devel

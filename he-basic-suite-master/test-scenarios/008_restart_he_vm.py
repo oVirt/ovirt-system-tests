@@ -125,13 +125,18 @@ def _find_host_running_he_vm(hosts):
 
 
 def _get_he_status(host):
-    ret = host.ssh(["hosted-engine", "--vm-status", "--json"])
-    nt.assert_equals(ret.code, 0)
-
-    try:
-        return json.loads(ret.out)
-    except ValueError:
-        raise RuntimeError('could not parse JSON: %s' % ret.out)
+    attempt = 5
+    failed = False
+    while not failed:
+        attempt -= 1
+        ret = host.ssh(["hosted-engine", "--vm-status", "--json"])
+        nt.assert_equals(ret.code, 0)
+        try:
+            return json.loads(ret.out)
+        except ValueError:
+            if attempt <= 0:
+                failed = True
+    raise RuntimeError('could not parse JSON: %s' % ret.out)
 
 
 def _shutdown_he_vm(host):

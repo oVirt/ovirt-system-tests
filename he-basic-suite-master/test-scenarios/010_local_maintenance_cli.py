@@ -59,14 +59,20 @@ def _find_host_running_he_vm(hosts):
     return k, next(h for h in hosts if h.name() == running_on)
 
 
-def _get_he_status(host):
-    ret = host.ssh(["hosted-engine", "--vm-status", "--json"])
-    nt.assert_equals(ret.code, 0)
 
-    try:
-        return json.loads(ret.out)
-    except ValueError:
-        raise RuntimeError('could not parse JSON: %s' % ret.out)
+def _get_he_status(host):
+    attempt = 5
+    failed = False
+    while not failed:
+        attempt -= 1
+        ret = host.ssh(["hosted-engine", "--vm-status", "--json"])
+        nt.assert_equals(ret.code, 0)
+        try:
+            return json.loads(ret.out)
+        except ValueError:
+            if attempt <= 0:
+                failed = True
+    raise RuntimeError('could not parse JSON: %s' % ret.out)
 
 
 @testlib.with_ovirt_prefix

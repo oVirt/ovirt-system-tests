@@ -18,7 +18,7 @@ BUILD_BASE := $(findstring not installed,$(shell rpm -q $(PACKAGE_NAME)-$(DISTRO
 
 # Use either the base image that's built locally
 # or the one that's already installed
-_BASE_IMAGE_PREFIX := $(if $(BUILD_BASE),,$(imagedir)/)
+_BASE_IMAGE_PREFIX := $(if $(BUILD_BASE),,$(shell rpm -q --queryformat '%{INSTPREFIXES}' $(PACKAGE_NAME)-$(DISTRO)-base)/$(PACKAGE_NAME)/)
 
 # Empty string when using repo-based installs, ".iso" otherwise
 _USING_ISO := $(findstring .iso,$(INSTALL_URL))

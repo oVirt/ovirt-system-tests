@@ -130,13 +130,6 @@ def get_storage_domain_service(engine, sd_name):
     return storage_domains_service.storage_domain_service(sd.id)
 
 
-@memoized
-def on_centos(ver=''):
-    with open('/etc/redhat-release') as f:
-        contents = f.readline()
-        return re.match('(Red Hat|CentOS).*release {}'.format(ver), contents)
-
-
 def get_storage_domain_vm_service_by_name(sd_service, vm_name):
     vms_service = sd_service.vms_service()
     # StorageDomainVmsService.list has no 'search' parameter and ignores

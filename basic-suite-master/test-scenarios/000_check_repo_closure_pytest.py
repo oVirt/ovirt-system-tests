@@ -31,15 +31,14 @@ import pytest
 import ovirtlago
 import ovirtlago.prefix
 
+from ost_utils import os_utils
 from ovirtlago import constants
 from ovirtlago import testlib
 from six.moves import configparser
 
-import test_utils
-
 
 def _get_cache_dir(*args, **kwargs):
-    if test_utils.on_centos(7):
+    if os_utils.on_centos(7):
         from yum.misc import getCacheDir
         return getCacheDir(*args, **kwargs)
     else:

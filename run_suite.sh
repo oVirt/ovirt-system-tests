@@ -3,6 +3,7 @@
 # Imports
 source common/helpers/logger.sh
 source common/helpers/python.sh
+source common/helpers/ost-images.sh
 
 CLI="lago"
 DO_CLEANUP=false
@@ -10,6 +11,8 @@ RECOMMENDED_RAM_IN_MB=8196
 EXTRA_SOURCES=()
 RPMS_TO_INSTALL=()
 COVERAGE=false
+INSIDE_MOCK="$(if [ -n "${MOCK_EXTERNAL_USER}" ]; then echo 1; else echo 0; fi)"
+
 usage () {
     echo "
 Usage:
@@ -176,6 +179,9 @@ render_jinja_templates () {
     # export the suite name so jinja can interpolate it in the template
     export suite_name="${suite_name//./-}"
     export coverage="${COVERAGE}"
+    export use_ost_images="${USE_OST_IMAGES}"
+    export engine_image="${OST_IMAGES_ENGINE_INSTALLED}"
+    export host_image="${OST_IMAGES_HOST_INSTALLED}"
     "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
     cat "$dest"
 }
@@ -344,7 +350,7 @@ env_cleanup() {
     logger.info "Cleaning up"
     if [[ -e "$PREFIX" ]]; then
         logger.info "Cleaning with lago"
-        $CLI --workdir "$PREFIX" destroy --yes --all-prefixes || res=$?
+        $CLI --workdir "$PREFIX" destroy --yes || res=$?
         [[ "$res" -eq 0 ]] && logger.success "Cleaning with lago done"
     elif [[ -e "$PREFIX/uuid" ]]; then
         uid="$(cat "$PREFIX/uuid")"
@@ -358,6 +364,15 @@ env_cleanup() {
         logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
         env_libvirt_cleanup "${SUITE##*/}" "$uid"
     fi
+
+    if [ ${USE_OST_IMAGES} -eq 1 -a ${INSIDE_MOCK} -eq 1 ]; then
+        cleanup_ost_images
+    fi
+
+    if [ -e "$PREFIX" ]; then
+        rm -r "$PREFIX"
+    fi
+
     export LIBGUESTFS_PATH=/tmp/appliance
     rm -rf "$LIBGUESTFS_PATH"
     restore_package_manager_config
@@ -688,6 +703,10 @@ logger.info  "Environment will be deployed at $PREFIX"
 
 export PYTHONPATH="${PYTHONPATH}:${SUITE}"
 source "${SUITE}/control.sh"
+
+if [ ${USE_OST_IMAGES} -eq 1 -a ${INSIDE_MOCK} -eq 1 ]; then
+    prepare_images_for_mock
+fi
 
 prep_suite "$ENGINE_OVA" "$NODE_ISO" "$BOOT_ISO"
 run_suite

@@ -23,6 +23,10 @@ domains:
     disks:
       - template_name: {{ templates.engine }}
         type: template
+        {% if env.use_ost_images == "1" -%}
+        template_type: qcow2
+        path: {{ env.engine_image }}
+        {%- endif %}
         name: root
         dev: vda
         format: qcow2
@@ -42,6 +46,9 @@ domains:
       ovirt-engine-password: 123
       deploy-scripts:
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
+        {% if env.use_ost_images == "1" -%}
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
+        {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_el7.sh
@@ -84,12 +91,19 @@ domains:
     disks:
       - template_name: {{ templates.host }}
         type: template
+        {% if env.use_ost_images == "1" -%}
+        template_type: qcow2
+        path: {{ env.host_image }}
+        {%- endif %}
         name: root
         dev: vda
         format: qcow2
     metadata:
       deploy-scripts:
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
+        {% if env.use_ost_images == "1" -%}
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
+        {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh
         {% if loop.first and install_ovirt_host|default(false) -%}

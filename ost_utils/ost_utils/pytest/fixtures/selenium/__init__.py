@@ -67,8 +67,8 @@ def hub_url(engine_fqdn, engine_ip):
     else:
         backend = _grid_backend()
         if backend == "podman":
-            if os_utils.on_centos(8) and os_utils.kernel_version()[0] <= 3:
-                pytest.xfail("el8 podman doesn't work on el7 kernel")
+            if os_utils.on_centos(8) and os_utils.inside_mock():
+                pytest.skip("podman doesn't work in mock")
             hub_port = network_utils.find_free_port(4444, 4544)
             with podman.grid(engine_fqdn, engine_ip, hub_port=hub_port) as hub_url:
                 yield hub_url

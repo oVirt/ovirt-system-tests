@@ -1,0 +1,10 @@
+ansible
+grubby
+lago
+lago-ovirt
+podman
+python3-devel
+python3-netaddr
+python3-ovirt-engine-sdk4
+python3-pip
+python3-six

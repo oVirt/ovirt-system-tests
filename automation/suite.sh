@@ -9,6 +9,8 @@
 # $ chrooter -s automation/basic_suite_4.0.sh
 #
 
+source common/helpers/python.sh
+
 SUITE="$0"
 SUITE=$(echo "$SUITE" | tr '_' '-')
 # Leaving just the base dir
@@ -23,7 +25,7 @@ SUITE_REAL_PATH=$(realpath "$SUITE")
 # Default RPMs to install in the mock env.
 # Unlike the RPMs from .packages file, this RPMs will be taken from lago's
 # internal repo (assuming that we have a newer version in the internal repo).
-DEFAULT_RPMS=(python-ovirt-engine-sdk4)
+DEFAULT_RPMS=(${OVIRT_ENGINE_SDK_PKG})
 
 #Indicate if image creation is needed
 readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"

@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import os
 import platform
 import re
 
@@ -35,3 +36,8 @@ def on_centos(ver=''):
 def kernel_version():
     version = platform.uname()[2]
     return [int(v) for v in version.replace('-', '.').split('.')[:4]]
+
+
+@memoized
+def inside_mock():
+    return "MOCK_EXTERNAL_USER" in os.environ

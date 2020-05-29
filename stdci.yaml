@@ -18,7 +18,10 @@ stage:
         - dr_suite_master
         - basic_suite_4.2
         - basic_suite_4.3
-        - basic_suite_master
+        - basic_suite_master:
+            distributions:
+              - el7
+              - el8
         - compat-4.2_suite_master
         - compat-4.3_suite_master
         - he-basic-ipv6_suite_4.3
@@ -73,7 +76,7 @@ stage:
       script:
         fromfile: 'automation/ost-images.sh'
 runtime-requirements:
+  hostdistro: same
   support-nesting-level: 2
-  isolation_level: container
 release-branches:
   master: [ovirt-master, ovirt-4.3]

@@ -132,9 +132,9 @@ class Host(SDKRootEntity):
         cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster
 
-    def setup_networks(self, attachments_data,
-                       remove_other_networks=True,
-                       sync_networks=False):
+    def setup_networks(
+        self, attachments_data, remove_other_networks=True, sync_networks=False
+    ):
         """
         By default sets a desired network configuration state on the host
         which means that unspecified network attachments are removed.
@@ -150,29 +150,30 @@ class Host(SDKRootEntity):
         :param remove_other_networks: Boolean
         :param sync_networks: Boolean
         """
+        modified_net_attachments = [
+            att_data.to_network_attachment() for att_data in attachments_data
+        ]
 
-        modified_network_attachments = {
-            att_data.network.id: att_data.to_network_attachment()
-            for att_data in attachments_data
-        }
-        removed_network_attachments = None
-        if remove_other_networks:
-            mgmt_attachment = self._get_mgmt_net_attachment()
-            modified_network_attachments[mgmt_attachment.network.id] = \
-                mgmt_attachment
-            removed_network_attachments = self._removed_net_attachments(
-                set(modified_network_attachments)
+        removed_net_attachments = (
+            self._get_complementary_net_attachments(
+                self._get_net_ids_for_attachment_data(
+                    list(attachments_data)
+                    + [self.get_mgmt_net_attachment_data()]
+                )
             )
-        synced_net_attachment_values = None
-        modified_network_attachments_val = list(
-                modified_network_attachments.values())
-        if sync_networks:
-            synced_net_attachment_values = modified_network_attachments_val
+            if remove_other_networks
+            else None
+        )
+
+        synced_net_attachments = (
+            modified_net_attachments if sync_networks else None
+        )
+
         return self.service.setup_networks(
-            modified_network_attachments=modified_network_attachments_val,
-            removed_network_attachments=removed_network_attachments,
-            synchronized_network_attachments=synced_net_attachment_values,
-            check_connectivity=True
+            modified_network_attachments=modified_net_attachments,
+            removed_network_attachments=removed_net_attachments,
+            synchronized_network_attachments=synced_net_attachments,
+            check_connectivity=True,
         )
 
     def remove_networks(self, removed_networks):
@@ -259,9 +260,15 @@ class Host(SDKRootEntity):
             raise HostStatusError('{} is {}'.format(self.name, host_status))
         return False
 
-    def _removed_net_attachments(self, modified_networks):
-        return [attachment for attachment in self._get_existing_attachments()
-                if attachment.network.id not in modified_networks]
+    def _get_net_ids_for_attachment_data(self, attachments_data):
+        return {att_data.network.id for att_data in attachments_data}
+
+    def _get_complementary_net_attachments(self, network_ids):
+        return [
+            attachment
+            for attachment in self._get_existing_attachments()
+            if attachment.network.id not in network_ids
+        ]
 
     def get_mgmt_net_attachment_data(self):
         return self._get_attachment_data_for_networks(

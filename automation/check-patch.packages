@@ -6,7 +6,6 @@ lago
 lago-ovirt
 libselinux-python
 python-netaddr
-script
 virt-install
 wget
 docker

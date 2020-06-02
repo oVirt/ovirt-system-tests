@@ -215,10 +215,11 @@ EXTRA_DIST = \
 	template.ks.in \
 	$(NULL)
 
-rpm: dist
-	rpmbuild -tb \
+rpm: spec
+	rpmbuild -bb \
 		--define "distro $(DISTRO)" \
 		--define "release $(PACKAGE_RELEASE)" \
 		--define "with_base $(if $(BUILD_BASE),1,0)" \
 		--define "dummy_upgrade $(if $(DUMMY_UPGRADE),1,0)" \
-		$(DIST_ARCHIVES)
+		--build-in-place \
+		ost-images.spec

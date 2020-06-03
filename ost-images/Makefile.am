@@ -215,14 +215,6 @@ EXTRA_DIST = \
 	template.ks.in \
 	$(NULL)
 
-srpm: dist
-	rpmbuild -ts \
-		--define "distro $(DISTRO)" \
-		--define "release $(PACKAGE_RELEASE)" \
-		--define "with_base $(if $(BUILD_BASE),1,0)" \
-		--define "dummy_upgrade $(if $(DUMMY_UPGRADE),1,0)" \
-		$(DIST_ARCHIVES)
-
 rpm: dist
 	rpmbuild -tb \
 		--define "distro $(DISTRO)" \

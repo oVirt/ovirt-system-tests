@@ -55,7 +55,7 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 MASTER_SD_TYPE = 'nfs'
 
 # Simulate Hosts and Vms
-USE_VDSMFAKE = os.environ.has_key('OST_USE_VDSMFAKE')
+USE_VDSMFAKE = 'OST_USE_VDSMFAKE' in os.environ
 VMS_COUNT = int(os.environ.get('OST_VM_COUNT', 100))
 HOST_COUNT = int(os.environ.get('OST_HOST_COUNT', 10))
 VM_NAME = "vm"

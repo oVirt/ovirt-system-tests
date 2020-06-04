@@ -13,8 +13,6 @@ install_dependencies() {
     pip install contextlib2
     pip install ansible-runner==1.4.4
 
-    yum install -y ansible
-
     # dependency of ansible's os_* modules
     pip install openstacksdk==0.37
     pip install decorator==4.4.0

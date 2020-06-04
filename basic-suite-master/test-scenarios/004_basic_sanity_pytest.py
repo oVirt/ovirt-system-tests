@@ -1050,7 +1050,6 @@ def test_next_run_unplug_cpu(api_v4):
 
 @order_by(_TEST_LIST)
 def test_hotplug_nic(prefix):
-    pytest.skip('https://bugzilla.redhat.com/1776317')
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
     vms_service = api_v4.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]

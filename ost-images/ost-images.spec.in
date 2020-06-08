@@ -51,7 +51,6 @@ Bare distro installation image
 %files %{distro}-base
 %{_datarootdir}/%{name}/*.ks
 %attr(444, -, -) %{_datarootdir}/%{name}/*-base.qcow2
-%attr(755, -, -) %{_datarootdir}/%{name}/rebase_images.sh
 %{_datarootdir}/%{name}/*-base-pkglist.txt
 %exclude %{_datarootdir}/%{name}/*.ks.in
 

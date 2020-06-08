@@ -151,29 +151,12 @@ spec: ost-images.spec
 
 all: $(if $(BUILD_BASE),base) upgrade engine host spec
 
-# While qemu is fine with having relative paths
-# for backing images, lago is not. This is why we need
-# to rebase the images to paths where the backing
-# image lands after installation.
-.PHONY: rebase-images
-rebase-images:
-	echo "rebasing"
-	qemu-img rebase -u -f qcow2 -F qcow2 -b "$(imagedir)/$(DISTRO)-base.qcow2" "$(distdir)/$(DISTRO)-upgrade.qcow2"
-	qemu-img rebase -u -f qcow2 -F qcow2 -b "$(imagedir)/$(DISTRO)-upgrade.qcow2" "$(distdir)/$(DISTRO)-host-installed.qcow2"
-	qemu-img rebase -u -f qcow2 -F qcow2 -b "$(imagedir)/$(DISTRO)-upgrade.qcow2" "$(distdir)/$(DISTRO)-engine-installed.qcow2"
-
 gen-VERSION:
 	if test -d ../.git; then                                             \
 		$(top_srcdir)/build-aux/pkg-version --full > $(distdir)/VERSION; \
 	fi
 
-# Since we rebase the image in the dist hook all targets
-# that depend on qcow files are considered outdated during rpm build,
-# so make tries to rebuild them... we need to touch them to avoid that.
-update-image-dependent-targets:
-	touch $(distdir)/*.txt
-
-dist-hook: gen-VERSION rebase-images update-image-dependent-targets
+dist-hook: gen-VERSION
 
 clean-local:
 	-virsh destroy $(DISTRO)-base
@@ -195,7 +178,6 @@ dist_image_DATA = \
 	$(NULL)
 
 dist_image_SCRIPTS = \
-	$(if $(BUILD_BASE),rebase_images.sh) \
 	$(DISTRO)-provision-engine.sh \
 	$(DISTRO)-provision-host.sh \
 	$(NULL)

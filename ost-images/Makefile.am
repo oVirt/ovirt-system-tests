@@ -10,18 +10,19 @@ INSTALL_URL := "http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.19
 # The url of root of repos, can be overriden by running with 'make REPO_ROOT=...'
 REPO_ROOT := "http://mirror.centos.org/centos/8/"
 
-# Whether to build the base image or not. Looks for installed base package
+# Empty string when using repo-based installs, ".iso" otherwise
+_USING_ISO := $(findstring .iso,$(INSTALL_URL))
+
+# Whether to build the base image or not. For repo-based installation always
+# set to "yes". For iso-based installations looks for installed base package
 # and if finds one, base won't be built. Can be overriden by running
 # with 'make BUILD_BASE=...'. Any non-empty string will be treated as true
 # and an empty string is treated as false.
-BUILD_BASE := $(findstring not installed,$(shell rpm -q $(PACKAGE_NAME)-$(DISTRO)-base))
+BUILD_BASE := $(if $(_USING_ISO),$(findstring not installed,$(shell rpm -q $(PACKAGE_NAME)-$(DISTRO)-base)),yes)
 
 # Use either the base image that's built locally
 # or the one that's already installed
 _BASE_IMAGE_PREFIX := $(if $(BUILD_BASE),,$(shell rpm -q --queryformat '%{INSTPREFIXES}' $(PACKAGE_NAME)-$(DISTRO)-base)/$(PACKAGE_NAME)/)
-
-# Empty string when using repo-based installs, ".iso" otherwise
-_USING_ISO := $(findstring .iso,$(INSTALL_URL))
 
 # Whether to build a real upgrade layer. Upgrade layer doesn't really make
 # sense in scenarios where you build from nightly repos.

@@ -168,6 +168,7 @@ includepkgs = 389-ds-base
 	telnet
 	tomcat-servlet-3.0-api
 	tzdata-java
+	unbound-libs
 	yum-plugin-versionlock
 	yum-utils
 
@@ -684,7 +685,6 @@ includepkgs = GeoIP
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2
-	unbound-libs
 	unzip
 	usbredir
 	usermode

@@ -44,9 +44,10 @@ _PKGLIST_PATH := /var/tmp
 # Command used to make *pkglist-diff.txt files
 _DIFF := -diff --new-line-format="" --unchanged-line-format=""
 
-# If the INSTALL_URL is an iso image then download it first.
+# If the INSTALL_URL is an iso image then download it
+# (or make a symlink to it if it's a local path) first.
 %.iso:
-	curl -L -o $@ $(INSTALL_URL)
+	$(if $(findstring http,$(INSTALL_URL)),curl -L -o $@ $(INSTALL_URL),ln -s $(INSTALL_URL) $@)
 
 %.ks: template.ks.in
 	sed "s|%REPO_ROOT%|$(REPO_ROOT)|" template.ks.in > $@

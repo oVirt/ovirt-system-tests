@@ -28,17 +28,25 @@ from ovirtlago import testlib
 import test_utils
 
 from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.ansible import ansible_engine
+from ost_utils.pytest.fixtures.ansible import ansible_hosts
 
 
-def test_initialize_engine(prefix):
+def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
+    ansible_engine.ping()
+    ansible_hosts.ping()
+
+
+def test_initialize_engine(prefix, ansible_engine):
     engine = prefix.virt_env.engine_vm()
 
     answer_file_src = os.path.join(
         os.environ.get('SUITE'), 'engine-answer-file.conf'
     )
-    engine.copy_to(
-        answer_file_src,
-        '/tmp/answer-file',
+
+    ansible_engine.copy(
+        src=answer_file_src,
+        dest='/tmp/answer-file',
     )
 
     nics = engine.nics()

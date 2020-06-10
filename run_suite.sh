@@ -220,6 +220,12 @@ env_start () {
     cd -
 }
 
+env_dump_ansible_hosts() {
+    cd $PREFIX
+    $CLI ansible_hosts > "${ANSIBLE_INVENTORY_FILE}"
+    cd -
+}
+
 env_ovirt_start() {
     cd "$PREFIX"
     "$CLI" ovirt start
@@ -668,6 +674,10 @@ export SUITE="$(realpath --no-symlinks "$1")"
 # If no deployment path provided, set the default
 [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
 export PREFIX
+
+export ANSIBLE_INVENTORY_FILE="${PREFIX}/hosts"
+export ANSIBLE_HOST_KEY_CHECKING="False"
+export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
 
 if "$DO_CLEANUP"; then
     env_cleanup

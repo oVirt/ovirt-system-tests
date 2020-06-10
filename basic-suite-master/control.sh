@@ -13,6 +13,7 @@ run_suite () {
     put_host_image
     install_local_rpms_without_reposync
     env_start
+    env_dump_ansible_hosts
     env_copy_repo_file
     env_copy_config_file
     env_status

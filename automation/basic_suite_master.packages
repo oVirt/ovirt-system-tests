@@ -1,10 +1,11 @@
+ansible
 docker
 grubby
 lago
 lago-ovirt
+python2-ansible-runner
 python2-six
 python-devel
 python-netaddr
 python-ovirt-engine-sdk4
 python-pip
-ansible

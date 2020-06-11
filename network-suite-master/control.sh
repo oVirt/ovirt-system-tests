@@ -38,7 +38,11 @@ setup_env() {
         "$1" \
         "$SUITE/LagoInitFile"
     env_repo_setup
-    install_local_rpms
+    if [[ -e "$SUITE/reposync-config-sdk4.repo" ]]; then
+        install_local_rpms_without_reposync
+    else
+        install_local_rpms
+    fi
 }
 
 start_env() {

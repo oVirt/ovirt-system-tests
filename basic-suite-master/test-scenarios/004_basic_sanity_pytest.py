@@ -551,8 +551,6 @@ def cold_storage_migration(api_v4):
 
 @order_by(_TEST_LIST)
 def test_live_storage_migration(api_v4):
-    pytest.skip("TODO: el8 fails all the time")
-
     engine = api_v4.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     correlation_id = 'live_storage_migration'

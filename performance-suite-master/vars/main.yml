@@ -1,6 +1,6 @@
 templates:
-  engine: el8.1-base-beta-1
-  host: el8.1-base-beta-1
+  engine: el8.2-base-beta-1
+  host: el8.2-base-beta-1
 hostCount: 2
 install_storage_with_lago_deploy: false
 create_local_repo: global_add_local_repo_no_ext_access.sh

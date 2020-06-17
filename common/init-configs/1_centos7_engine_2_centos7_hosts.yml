@@ -45,9 +45,10 @@ domains:
     metadata:
       ovirt-engine-password: 123
       deploy-scripts:
+        {%- if env.add_plain_repos != "0" | default(false) %}
+        - add_plain_repos.sh
+        {%- else %}
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
-        {% if env.use_ost_images == "1" -%}
-        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}
@@ -101,13 +102,14 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
+        {%- if env.add_plain_repos != "0" | default(false) %}
+        - add_plain_repos.sh
+        {%- else %}
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
-        {% if env.use_ost_images == "1" -%}
-        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh
-        {% if loop.first and install_ovirt_host|default(false) -%}
+        {% if env.use_ost_images != "1" and loop.first and install_ovirt_host|default(false) -%}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_1st_host_el7.sh
         {%- endif %}
         {% if env.coverage == "true" -%}

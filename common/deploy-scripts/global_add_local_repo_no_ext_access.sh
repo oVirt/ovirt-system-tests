@@ -92,3 +92,5 @@ reqsubstr="host"
 if [[ -z "${hostname##*$reqsubstr*}" ]] ;then
     virsh capabilities > /var/log/virsh_capabilities.log || res=$?
 fi
+
+yum upgrade --nogpgcheck -y

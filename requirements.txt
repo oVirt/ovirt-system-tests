@@ -1,0 +1,10 @@
+# PIP requirements for OST
+pytest-ordering
+selenium
+# network sute deps
+flake8
+pylint
+openstacksdk
+contextlib2
+# there's a conflict between rpm and pip versions on regular el8 hosts
+requests

@@ -31,6 +31,12 @@ baseurl = http://mirror.centos.org/centos-8/8/PowerTools/x86_64/os/
 gpgcheck = 0
 enabled = 1
 
+[centos-opstools-el8]
+name=opstools
+baseurl = http://mirror.centos.org/centos/8/opstools/x86_64/collectd-5/
+gpgcheck = 0
+enabled = 1
+
 ## end centos repos
 
 ## from release rpm

@@ -89,9 +89,8 @@ SD_GLANCE_NAME = 'ovirt-image-repository'
 GUEST_IMAGE_NAME = versioning.guest_os_image_name()
 GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 TEMPLATE_GUEST = versioning.guest_os_template_name()
-# TODO fix back to URL ending with "/" for testing backward compatibility. Pending fix by dholler
-# currently engine blindly adds /v1 and resulting URL has // which then returns "Wrong API version or malformed URL"
-GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292'
+# intentionaly use URL ending with / to test backward compatibility of <4.4 glance implementation and ability to handle // in final URL
+GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
 VM_NETWORK = u'VM Network with a very long name and עברית'

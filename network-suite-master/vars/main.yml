@@ -1,6 +1,6 @@
 templates:
-  engine: el8.2-base-beta-1
-  host: el8.2-base-beta-1
+  engine: el8.2-base
+  host: el8.2-base
 hostCount: 2
 create_local_repo: add_local_repo_no_ext_access.sh
 

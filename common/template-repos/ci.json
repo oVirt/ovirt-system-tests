@@ -75,8 +75,8 @@
     "el7.6-base-3": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "el7.6-base-3", 
+          "source": "ci-templates-vm",
+          "handle": "el7.6-base-3",
           "timestamp": 1557642256.8417253
         }
       }
@@ -129,8 +129,8 @@
     "el8.1-base-beta-2": {
       "versions": {
         "v1": {
-          "source": "ci-templates-vm", 
-          "handle": "el8.1-base-beta-2", 
+          "source": "ci-templates-vm",
+          "handle": "el8.1-base-beta-2",
           "timestamp": 1582451883.876916
         }
       }
@@ -150,6 +150,15 @@
           "source": "ci-templates-vm",
           "handle": "el8.2-base-beta-1",
           "timestamp": 1592296609.4351332
+        }
+      }
+    },
+    "el8.2-base": {
+      "versions": {
+        "v1": {
+          "source": "ci-templates-vm",
+          "handle": "el8.2-base",
+          "timestamp": 1592386090.9137897
         }
       }
     }

@@ -86,7 +86,6 @@ SD_TEMPLATES_HOST_NAME = SD_NFS_HOST_NAME
 SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
-GLANCE_AVAIL = False
 GUEST_IMAGE_NAME = versioning.guest_os_image_name()
 GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 TEMPLATE_GUEST = versioning.guest_os_template_name()
@@ -681,7 +680,6 @@ def generic_import_from_glance(prefix=None, as_template=False,
 
 @order_by(_TEST_LIST)
 def test_list_glance_images(api_v4):
-    global GLANCE_AVAIL
     search_query = 'name={}'.format(SD_GLANCE_NAME)
     engine = api_v4.system_service()
     storage_domains_service = engine.storage_domains_service()
@@ -690,11 +688,11 @@ def test_list_glance_images(api_v4):
     if not glance_domain_list:
         openstack_glance = add_glance(api_v4)
         if not openstack_glance:
-            pytest.skip('GLANCE storage domain is not available.')
+            raise RuntimeError('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not check_glance_connectivity(engine):
-        pytest.skip('GLANCE connectivity test failed')
+        raise RuntimeError('GLANCE connectivity test failed')
 
     glance_domain = glance_domain_list.pop()
     glance_domain_service = storage_domains_service.storage_domain_service(
@@ -704,10 +702,10 @@ def test_list_glance_images(api_v4):
     try:
         with test_utils.TestEvent(engine, 998):
             all_images = glance_domain_service.images_service().list()
-        if len(all_images):
-            GLANCE_AVAIL = True
+        if not len(all_images):
+            raise RuntimeError('No GLANCE images available')
     except sdk4.Error:
-        pytest.skip('GLANCE is not available: client request error')
+        raise RuntimeError('GLANCE is not available: client request error')
 
 
 def add_glance(api):
@@ -765,14 +763,10 @@ def check_glance_connectivity(engine):
 
 
 def import_non_template_from_glance(prefix_param):
-    if not GLANCE_AVAIL:
-        pytest.skip('%s: GLANCE is not available.' % import_non_template_from_glance.__name__ )
     generic_import_from_glance(prefix=prefix_param)
 
 
 def import_template_from_glance(prefix_param):
-    if not GLANCE_AVAIL:
-        pytest.skip('%s: GLANCE is not available.' % import_template_from_glance.__name__ )
     generic_import_from_glance(prefix=prefix_param, as_template=True)
 
 

@@ -6,6 +6,7 @@ prep_suite () {
 }
 
 run_suite () {
+    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"

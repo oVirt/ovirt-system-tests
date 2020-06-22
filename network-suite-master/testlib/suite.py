@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,10 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import contextlib
+from distutils.version import LooseVersion
 import os
 
+import ovirtsdk4
 import pytest
 
 
@@ -50,6 +52,20 @@ def xfail_suite_43(reason):
             reason=reason,
             run=False
             )
+
+
+def skip_sdk_below(version):
+    if _is_sdk_below(version):
+        skip = True
+        reason = 'Only supported upwards of SDK {}'.format(version)
+    else:
+        reason = 'SDK version is fine'
+        skip = False
+    return pytest.mark.skipif(skip, reason=reason)
+
+
+def _is_sdk_below(version):
+    return LooseVersion(ovirtsdk4.version.VERSION) < LooseVersion(version)
 
 
 def is_master():

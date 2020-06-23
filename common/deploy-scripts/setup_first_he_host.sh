@@ -79,7 +79,7 @@ sed \
     -e "s,@VMPASS@,${VMPASS},g" \
     -e "s,@ENGINEPASS@,${ENGINEPASS},g" \
     -e "s,@DOMAIN@,${DOMAIN},g" \
-    -e "s,@MYHOSTNAME@,${MYHOSTNAME},g" \
+    -e "s,@MYHOSTNAME@,${MYHOSTNAME}.${DOMAIN},g" \
     -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
     -e "s,@STORAGEHOSTNAME@,${STORAGEHOSTNAME},g" \
     -e "s,@INTERFACE@,${INTERFACE},g" \

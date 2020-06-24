@@ -76,6 +76,42 @@ includepkgs = 389-ds-base
 	device-mapper-event
 	device-mapper-event-libs
 	device-mapper-libs
+	fence-agents-all
+	fence-agents-amt-ws
+	fence-agents-apc
+	fence-agents-apc-snmp
+	fence-agents-bladecenter
+	fence-agents-brocade
+	fence-agents-cisco-mds
+	fence-agents-cisco-ucs
+	fence-agents-common
+	fence-agents-compute
+	fence-agents-drac5
+	fence-agents-eaton-snmp
+	fence-agents-emerson
+	fence-agents-eps
+	fence-agents-heuristics-ping
+	fence-agents-hpblade
+	fence-agents-ibmblade
+	fence-agents-ifmib
+	fence-agents-ilo-moonshot
+	fence-agents-ilo-mp
+	fence-agents-ilo-ssh
+	fence-agents-ilo2
+	fence-agents-intelmodular
+	fence-agents-ipdu
+	fence-agents-ipmilan
+	fence-agents-kdump
+	fence-agents-mpath
+	fence-agents-redfish
+	fence-agents-rhevm
+	fence-agents-rsa
+	fence-agents-rsb
+	fence-agents-sbd
+	fence-agents-scsi
+	fence-agents-vmware-rest
+	fence-agents-vmware-soap
+	fence-agents-wti
 	firewalld
 	firewalld-filesystem
 	git
@@ -135,6 +171,8 @@ includepkgs = 389-ds-base
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
+	ntp
+	ntpdate
 	perl-Git
 	postgresql-libs
 	python-firewall
@@ -143,6 +181,10 @@ includepkgs = 389-ds-base
 	python-sssdconfig
 	python-syspurpose
 	rdma-core
+	rsyslog
+	rsyslog-elasticsearch
+	rsyslog-mmjsonparse
+	rsyslog-mmnormalize
 	samba-client-libs
 	samba-common
 	samba-common-libs
@@ -275,42 +317,6 @@ includepkgs = GeoIP
 	elfutils-libs
 	emacs-filesystem
 	fcoe-utils
-	fence-agents-all
-	fence-agents-amt-ws
-	fence-agents-apc
-	fence-agents-apc-snmp
-	fence-agents-bladecenter
-	fence-agents-brocade
-	fence-agents-cisco-mds
-	fence-agents-cisco-ucs
-	fence-agents-common
-	fence-agents-compute
-	fence-agents-drac5
-	fence-agents-eaton-snmp
-	fence-agents-emerson
-	fence-agents-eps
-	fence-agents-heuristics-ping
-	fence-agents-hpblade
-	fence-agents-ibmblade
-	fence-agents-ifmib
-	fence-agents-ilo-moonshot
-	fence-agents-ilo-mp
-	fence-agents-ilo-ssh
-	fence-agents-ilo2
-	fence-agents-intelmodular
-	fence-agents-ipdu
-	fence-agents-ipmilan
-	fence-agents-kdump
-	fence-agents-mpath
-	fence-agents-redfish
-	fence-agents-rhevm
-	fence-agents-rsa
-	fence-agents-rsb
-	fence-agents-sbd
-	fence-agents-scsi
-	fence-agents-vmware-rest
-	fence-agents-vmware-soap
-	fence-agents-wti
 	fence-virt
 	fontconfig
 	fontpackages-filesystem
@@ -498,8 +504,6 @@ includepkgs = GeoIP
 	newt-python
 	nfs-utils
 	nmap-ncat
-	ntp
-	ntpdate
 	numactl
 	numad
 	numpy
@@ -636,10 +640,6 @@ includepkgs = GeoIP
 	rpm-python
 	rpmdevtools
 	rsync
-	rsyslog
-	rsyslog-elasticsearch
-	rsyslog-mmjsonparse
-	rsyslog-mmnormalize
 	ruby
 	ruby-irb
 	ruby-libs

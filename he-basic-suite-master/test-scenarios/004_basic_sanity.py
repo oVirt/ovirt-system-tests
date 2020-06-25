@@ -44,6 +44,7 @@ TEST_CLUSTER = 'Default'
 TEMPLATE_BLANK = 'Blank'
 TEMPLATE_CENTOS7 = 'centos7_template'
 
+DOMAIN_NAME = 'lago.local'
 MANAGEMENT_NETWORK = 'ovirtmgmt'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -353,7 +354,7 @@ def vm_run(prefix,api):
     vm_params = types.Vm(
             placement_policy=types.VmPlacementPolicy(
                 hosts=[types.Host(
-                    name=sorted(host_names)[0]
+                    name="{}.{}".format(sorted(host_names)[0] , DOMAIN_NAME)
                 )],
             ),
             initialization=types.Initialization(
@@ -363,8 +364,8 @@ def vm_run(prefix,api):
         )
 
     vm_params.initialization.host_name = 'VM0'
-    vm_params.initialization.dns_search = 'lago.local'
-    vm_params.initialization.domain = 'lago.local'
+    vm_params.initialization.dns_search = DOMAIN_NAME
+    vm_params.initialization.domain = DOMAIN_NAME
     vm_params.initialization.dns_servers = gw_ip
     vm_params.initialization.nic_configurations = [
         types.NicConfiguration(
@@ -401,9 +402,12 @@ def vm_migrate(prefix, api):
             search='id={}'.format(host_id))[0]
         return host.name
 
+    def _append_domain(hostname):
+        return "{}.{}".format(hostname, DOMAIN_NAME)
+
     src_host = _current_running_host()
     dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
-                       if h.name() != src_host])[0]
+                       if _append_domain(h.name()) != src_host])[0]
 
     print('source host: {}'.format(src_host))
     print('destination host: {}'.format(dst_host))
@@ -418,7 +422,7 @@ def vm_migrate(prefix, api):
     def vm_is_not_on_host():
         src_host_obj = [
             h for h in prefix.virt_env.host_vms()
-            if h.name() == src_host
+            if _append_domain(h.name()) == src_host
         ][0]
 
         ret = src_host_obj.ssh(['vdsm-client', 'Host', 'getVMList'])

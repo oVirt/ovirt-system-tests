@@ -121,6 +121,8 @@ def test_initialize_engine(prefix, ansible_engine):
 def test_engine_config(ansible_engine):
     ansible_engine.shell("engine-config --set VdsLocalDisksLowFreeSpace=400")
     ansible_engine.shell("engine-config --set OvfUpdateIntervalInMinutes=10")
+    ansible_engine.shell(
+        "engine-config --set IsIncrementalBackupSupported=True --cver=4.4")
 
 
 def test_engine_restart(prefix):

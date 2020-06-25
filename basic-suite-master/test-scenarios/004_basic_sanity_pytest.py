@@ -33,6 +33,7 @@ from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
 from ovirtlago import testlib
 
+import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 
 import test_utils
@@ -102,6 +103,7 @@ _TEST_LIST = [
     "test_export_vm1",
     "test_verify_backup_snapshot_removed",
     "test_verify_vm2_run",
+    "test_incremental_backup_vm2",
     "test_ha_recovery",
     "test_verify_vm1_exported",
     "test_import_vm_as_clone",
@@ -223,6 +225,7 @@ def test_add_disks(api_v4):
         sparse=True,
         active=True,
         bootable=True,
+        backup=types.DiskBackup.INCREMENTAL,
     )
 
     for vm_name, disk_name, sd_name in (
@@ -759,6 +762,45 @@ def test_run_vms(prefix):
 @order_by(_TEST_LIST)
 def test_verify_vm2_run(api_v4):
     _verify_vm_state(api_v4.system_service(), VM2_NAME, types.VmStatus.UP)
+
+
+@order_by(_TEST_LIST)
+def test_incremental_backup_vm2(api_v4):
+    engine = api_v4.system_service()
+    disks_service = engine.disks_service()
+    disk2 = disks_service.list(search='name={}'.format(DISK2_NAME))[0]
+    vm2_backups_service = test_utils.get_vm_service(engine, VM2_NAME).backups_service()
+    created_checkpoint_id = None
+
+    # The first iteration will be a full VM backup (from_checkpoint_id=None)
+    # and the second iteration will be an incremental VM backup.
+    for _ in range(2):
+        correlation_id = 'test_incremental_backup'
+        backup = vm2_backups_service.add(
+            types.Backup(
+                disks=[types.Disk(id=disk2.id)],
+                from_checkpoint_id=created_checkpoint_id
+            ), query={'correlation_id': correlation_id}
+        )
+
+        backup_service = vm2_backups_service.backup_service(backup.id)
+        testlib.assert_true_within_long(
+            lambda: backup_service.get().phase == types.BackupPhase.READY,
+            allowed_exceptions=[sdk4.NotFoundError]
+        )
+
+        backup = backup_service.get()
+        created_checkpoint_id = backup.to_checkpoint_id
+
+        backup_service.finalize()
+
+        testlib.assert_true_within_long(
+            lambda: len(vm2_backups_service.list()) == 0
+        )
+        testlib.assert_true_within_long(
+            lambda:
+            disks_service.disk_service(disk2.id).get().status == types.DiskStatus.OK
+        )
 
 
 @order_by(_TEST_LIST)

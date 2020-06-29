@@ -10,6 +10,10 @@ _find_qcow() {
     rpm -ql ost-images-${OST_IMAGES_DISTRO}-${1} | grep qcow2
 }
 
+_find_ssh_key() {
+    rpm -ql ost-images-${OST_IMAGES_DISTRO}-base | grep 'id_rsa$'
+}
+
 if [ ${USE_OST_IMAGES} -eq 1 ]; then
     export OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:-el8}
 
@@ -19,6 +23,8 @@ if [ ${USE_OST_IMAGES} -eq 1 ]; then
     export OST_IMAGES_HOST_DEPS_INSTALLED=$(_find_qcow "host-deps-installed")
     export OST_IMAGES_ENGINE_INSTALLED=$(_find_qcow "engine-installed")
     export OST_IMAGES_HOST_INSTALLED=$(_find_qcow "host-installed")
+
+    export OST_IMAGES_SSH_KEY=$(_find_ssh_key)
 fi
 
 _fix_permissions() {

@@ -153,9 +153,16 @@ env_init () {
 
     local template_repo="${1:-$SUITE/template-repo.json}"
     local initfile="${2:-$SUITE/init.json}"
+    local extra_args
+
+    if [[ -n "${OST_IMAGES_SSH_KEY}" ]]; then
+        extra_args="--ssh-key ${OST_IMAGES_SSH_KEY} --skip-bootstrap"
+    fi
+
     $CLI init \
         $PREFIX \
         "$initfile" \
+        ${extra_args} \
         --template-repo-path "$template_repo"
 }
 

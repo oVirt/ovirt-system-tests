@@ -36,7 +36,7 @@ def skip_suites_below(version):
     return pytest.mark.skipif(skip, reason=reason)
 
 
-def XFAIL_SUITE_MASTER(reason):
+def xfail_suite_master(reason):
     return pytest.mark.xfail(
             condition=SUITE_NAME.endswith('master'),
             reason=reason,
@@ -44,7 +44,7 @@ def XFAIL_SUITE_MASTER(reason):
             )
 
 
-def XFAIL_SUITE_43(reason):
+def xfail_suite_43(reason):
     return pytest.mark.xfail(
             condition=SUITE_NAME.endswith('4.3'),
             reason=reason,

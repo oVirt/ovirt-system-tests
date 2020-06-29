@@ -33,7 +33,7 @@ from ovirtlib.storagelib import storage_domain
 from testlib import suite
 
 
-@suite.SKIP_SUITES_BELOW(4.3)
+@suite.skip_suites_below(4.3)
 @suite.XFAIL_SUITE_MASTER('TODO')
 def test_non_mgmt_display_network_over_ipv6(system, default_data_center,
                                             default_cluster, host_0_up,

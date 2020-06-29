@@ -24,7 +24,7 @@ from ovirtlib import hostlib
 from testlib import suite
 
 
-@suite.SKIP_SUITES_BELOW(4.4)
+@suite.skip_suites_below(4.4)
 def test_copy_host_networks(configured_hosts):
     source_host = configured_hosts[0]
     destination_host = configured_hosts[1]

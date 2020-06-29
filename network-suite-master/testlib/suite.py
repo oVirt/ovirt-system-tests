@@ -26,7 +26,7 @@ import pytest
 SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
 
 
-def SKIP_SUITES_BELOW(version):
+def skip_suites_below(version):
     if is_master():
         reason = 'Always run master'
         skip = False

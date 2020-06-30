@@ -175,7 +175,7 @@ def test_mac_pools_in_different_clusters_dont_overlap(
                 )
 
 
-@suite.skip_suites_below(4.4)
+@suite.skip_suites_below('4.4')
 def test_add_overlapping_mac_pool_same_cluster(system, cluster_0,
                                                default_cluster):
     POOL_0 = 'mac_pool_0'
@@ -191,7 +191,7 @@ def test_add_overlapping_mac_pool_same_cluster(system, cluster_0,
             pass
 
 
-@suite.skip_suites_below(4.4)
+@suite.skip_suites_below('4.4')
 def test_add_overlapping_mac_pool_other_cluster(system, cluster_0,
                                                 default_cluster):
     POOL_0 = 'mac_pool_0'

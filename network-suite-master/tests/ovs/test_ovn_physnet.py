@@ -137,7 +137,7 @@ def test_max_mtu_size(system, ovs_cluster, host_in_ovs_cluster, host_0, host_1,
                  data_size=MAX_ICMP_DATA_SIZE + 1)
 
 
-@suite.skip_suites_below(4.3)
+@suite.skip_suites_below('4.3')
 @suite.xfail_suite_master('BZ 1779727')
 @suite.xfail_suite_43('BZ 1817589')
 def test_security_groups_allow_icmp(system, ovs_cluster, host_in_ovs_cluster,

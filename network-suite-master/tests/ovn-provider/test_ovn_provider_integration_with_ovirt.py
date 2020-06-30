@@ -73,7 +73,7 @@ def test_connect_vm_to_external_network(running_vm_0,
     assert vm0_vnic_0.mac_address == ovn_port.mac_address
 
 
-@suite.skip_suites_below(4.3)
+@suite.skip_suites_below('4.3')
 def test_modify_vnic_sec_groups_on_ext_networks(running_vm_0, system,
                                                 ovirt_external_network,
                                                 default_ovn_provider_client):

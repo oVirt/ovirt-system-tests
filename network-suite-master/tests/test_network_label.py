@@ -20,7 +20,7 @@
 from testlib import suite
 
 
-@suite.skip_suites_below(4.3)
+@suite.skip_suites_below('4.3')
 def test_empty_string_on_ovirtmgmt_labels(ovirtmgmt_network):
     """
     Ovirtmgmt has null in label by default (e.g. no labels) and not an empty

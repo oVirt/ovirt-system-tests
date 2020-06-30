@@ -24,7 +24,7 @@ from ovirtlib import hostlib
 from testlib import suite
 
 
-@suite.skip_suites_below(4.4)
+@suite.skip_suites_below('4.4')
 @suite.skip_sdk_below('4.4')
 def test_copy_host_networks(configured_hosts):
     source_host = configured_hosts[0]

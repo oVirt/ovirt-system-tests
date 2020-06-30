@@ -33,7 +33,7 @@ def skip_suites_below(version):
         reason = 'Always run master'
         skip = False
     else:
-        skip = float(SUITE_NAME.split('-')[-1]) < version
+        skip = LooseVersion(SUITE_NAME.split('-')[-1]) < LooseVersion(version)
         reason = 'Only supported upwards of suite {}'.format(version)
     return pytest.mark.skipif(skip, reason=reason)
 

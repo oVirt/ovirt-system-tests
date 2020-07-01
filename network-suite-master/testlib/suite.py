@@ -65,7 +65,26 @@ def skip_sdk_below(version):
 
 
 def _is_sdk_below(version):
-    return LooseVersion(ovirtsdk4.version.VERSION) < LooseVersion(version)
+    return _compare_versions(ovirtsdk4.version.VERSION, version) < 0
+
+
+def _compare_versions(runtime_version, candidate_version):
+    """
+    :param runtime_version: version number as string or 'master'
+    :param candidate_version: version number as string or 'master'
+    :return: -1 if runtime_version is smaller
+              0 if versions are equal
+              1 if runtime_version version is larger
+    """
+    if candidate_version == runtime_version:
+        return 0
+    if runtime_version == 'master':
+        return 1
+    if candidate_version == 'master':
+        return -1
+    if LooseVersion(runtime_version) < LooseVersion(candidate_version):
+        return -1
+    return 1
 
 
 def is_master():

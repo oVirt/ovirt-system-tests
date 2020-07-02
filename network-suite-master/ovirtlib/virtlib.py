@@ -117,6 +117,9 @@ class Vm(SDKRootEntity):
     def migrate(self, dst_host_name):
         self._service.migrate(host=types.Host(name=dst_host_name))
 
+    def move_to_cluster(self, cluster):
+        self.update(cpu_profile=None, cluster=types.Cluster(id=cluster.id))
+
     def create_vnic(self, vnic_name, vnic_profile, mac_addr=None):
         vnic = netlib.Vnic(self)
         vnic.create(name=vnic_name,

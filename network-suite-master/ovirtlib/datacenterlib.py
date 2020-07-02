@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,6 +77,11 @@ class DataCenter(SDKRootEntity):
     def create(self, dc_name):
         sdk_type = types.DataCenter(name=dc_name)
         self._create_sdk_entity(sdk_type)
+
+    def get_mgmt_network(self):
+        ovirtmgmt = netlib.Network(self)
+        ovirtmgmt.import_by_name(netlib.OVIRTMGMT)
+        return ovirtmgmt
 
     def _get_parent_service(self, system):
         return system.data_centers_service

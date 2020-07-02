@@ -24,6 +24,7 @@ from ovirtlib import netlib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
 from ovirtlib.sdkentity import EntityCreationError
+from ovirtlib.templatelib import TEMPLATE_BLANK as BLANK
 from testlib import suite
 
 MAC_POOL = 'mac_pool'
@@ -31,11 +32,16 @@ MAC_ADDR_1 = '00:1a:4a:16:01:50'
 MAC_ADDR_2 = '00:1a:4a:16:01:51'
 MAC_ADDR_3 = '00:1a:4a:16:01:60'
 MAC_ADDR_4 = '00:1a:4a:16:01:61'
+MAC_ADDR_5 = '00:1a:4a:16:01:70'
+MAC_ADDR_6 = '00:1a:4a:16:01:72'
 MAC_POOL_RANGE = clusterlib.MacPoolRange(
     start=MAC_ADDR_1, end=MAC_ADDR_2
 )
 MAC_POOL_RANGE_1 = clusterlib.MacPoolRange(
     start=MAC_ADDR_3, end=MAC_ADDR_4
+)
+MAC_POOL_RANGE_3 = clusterlib.MacPoolRange(
+    start=MAC_ADDR_5, end=MAC_ADDR_6
 )
 OVERLAP_REGEX = r".*MAC pool cannot contain ranges which overlap.*"
 
@@ -269,9 +275,76 @@ def test_move_mac_to_new_vm(
         assert vnic_1.mac_address == MAC_ADDR_1
 
 
+@pytest.mark.usefixtures('pool_0_cluster_0', 'pool_1_cluster_1')
+@pytest.mark.usefixtures('host_0_in_cluster_0', 'host_1_in_cluster_1')
+def test_allocate_mac_in_use_in_other_cluster_small_mac_pool(
+        system, default_data_center, cluster_0, cluster_1):
+    """
+    A 2-address pool is exhausted by the flow and the pool is tested for being
+    able to find another free and unused address.
+    """
+    _run_scenario_of_bz_1760170(
+        system, default_data_center, cluster_0, cluster_1)
+
+
+@pytest.mark.usefixtures('pool_3_cluster_0', 'pool_1_cluster_1')
+@pytest.mark.usefixtures('host_0_in_cluster_0', 'host_1_in_cluster_1')
+def test_allocate_mac_in_use_in_other_cluster_large_mac_pool(
+        system, default_data_center, cluster_0, cluster_1):
+    """
+    A 3-address pool has the pointer pointing to a free and unused address
+    after vm_1 is created so the pool is tested for allocating this address.
+    """
+    _run_scenario_of_bz_1760170(
+        system, default_data_center, cluster_0, cluster_1)
+
+
+def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
+    """
+    The BZ shows that the pool allocates an address which is used in another
+    pool, although there is another unused address in the pool.
+    Tricking the allocation pointer to point to a used address is achieved by
+    exhausting the free addresses in the pool and then removing a vnic so that
+    there is a free and unused address to allocate, but the pointer points to a
+    used address and therefore it is wrongly allocated because usability is not
+    checked.
+    Flow:
+    - on cluster_0 (pool_0) create vm_0 with 2 vnics
+    - remove the second vnic
+    - move vm_0 to cluster_1 (pool_1)
+    - create vm_1 on cluster_0
+    - create a vnic on vm_1: this fails because the allocated address is in use
+      on vm_0, but it should not fail because there is another free address on
+      pool_0
+    """
+    NET_NAME = 'net_bz_1760170'
+    with clusterlib.new_assigned_network(
+            NET_NAME, default_dc, cluster_0) as net:
+        with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+            vm_0.create(vm_name=VM0, cluster=cluster_0, template=BLANK)
+            vm_0.wait_for_down_status()
+            vm_0.create_vnic(
+                netlib.OVIRTMGMT,
+                default_dc.get_mgmt_network().vnic_profile()
+            )
+            vnic = vm_0.create_vnic(NET_NAME, net.vnic_profile())
+            vnic.remove()
+            vm_0.move_to_cluster(cluster_1)
+
+            vm_1.create(vm_name=VM1, cluster=cluster_0, template=BLANK)
+            vm_1.wait_for_down_status()
+            vm_1.create_vnic(NET_NAME, net.vnic_profile())
+
+
 @pytest.fixture(scope='function')
 def host_0_in_cluster_0(host_0_up, cluster_0):
     with host_0_up.toggle_cluster(cluster_0):
+        yield
+
+
+@pytest.fixture(scope='function')
+def host_1_in_cluster_1(host_1_up, cluster_1):
+    with host_1_up.toggle_cluster(cluster_1):
         yield
 
 
@@ -279,6 +352,32 @@ def host_0_in_cluster_0(host_0_up, cluster_0):
 def cluster_0(system, default_data_center):
     with clusterlib.cluster(system, default_data_center, 'c0') as c0:
         yield c0
+
+
+@pytest.fixture(scope='module')
+def cluster_1(system, default_data_center):
+    with clusterlib.cluster(system, default_data_center, 'c1') as c1:
+        yield c1
+
+
+@pytest.fixture(scope='function')
+def pool_0_cluster_0(system, cluster_0):
+    with clusterlib.mac_pool(system, cluster_0, 'p0', (MAC_POOL_RANGE,)) as p0:
+        yield p0
+
+
+@pytest.fixture(scope='function')
+def pool_1_cluster_1(system, cluster_1):
+    with clusterlib.mac_pool(
+            system, cluster_1, 'p1', (MAC_POOL_RANGE_1,)) as p1:
+        yield p1
+
+
+@pytest.fixture(scope='function')
+def pool_3_cluster_0(system, cluster_0):
+    with clusterlib.mac_pool(
+            system, cluster_0, 'p3', (MAC_POOL_RANGE_3,)) as p3:
+        yield p3
 
 
 def _replace_vnic_mac_addr(vm, addr):

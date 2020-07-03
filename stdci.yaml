@@ -31,7 +31,10 @@ stage:
         - he-node-ng_suite_4.3
         - network_suite_4.2
         - network_suite_4.3
-        - network_suite_master
+        - network_suite_master:
+            distributions:
+              - el7
+              - el8
         - performance_suite_master
         - upgrade-from-release_suite_4.2
         - upgrade-from-release_suite_4.3

@@ -43,7 +43,7 @@ NIC2 = 'nic2'
 VM0 = 'vm_for_test_qos_config'
 DISK0 = 'disk0'
 MAX_PEAK_RATE = 34359
-MAX_AVG_RATE = MAX_PEAK_RATE / 2
+MAX_AVG_RATE = MAX_PEAK_RATE // 2
 MAX_BURST = 99
 MAX_LINKSHARE = 100
 

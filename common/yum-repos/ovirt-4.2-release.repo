@@ -683,7 +683,6 @@ exclude = libtomcrypt
 	libtommath
 	python2-crypto
 includepkgs = libssh
-	python-httplib2
 	sshpass
 
 [epel-el7]
@@ -708,6 +707,7 @@ includepkgs = ansible
 	python-ordereddict
 	python-unittest2
 	python2-asn1crypto
+	python2-httplib2
 	python2-jmespath
 	python2-lockfile
 	python2-mimeparse

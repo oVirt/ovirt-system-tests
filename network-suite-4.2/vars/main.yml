@@ -1,4 +1,0 @@
-templates:
-  engine: el7.6-base-5
-  host: el7.6-base-5
-hostCount: 2

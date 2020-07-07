@@ -1,1 +1,0 @@
-../network-suite-master/pkgs.txt

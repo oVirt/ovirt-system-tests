@@ -26,7 +26,6 @@ stage:
         - he-basic-iscsi_suite_4.3
         - he-basic-role-remote_suite_4.3
         - he-node-ng_suite_4.3
-        - network_suite_4.2
         - network_suite_4.3
         - network_suite_master:
             distributions:

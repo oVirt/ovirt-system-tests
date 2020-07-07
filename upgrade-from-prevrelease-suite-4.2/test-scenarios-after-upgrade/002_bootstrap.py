@@ -1,1 +1,0 @@
-../../common/upgrade-suites/test-scenarios-after-upgrade/002_bootstrap.py

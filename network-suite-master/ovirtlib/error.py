@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import ovirtsdk4
+
+from six.moves import http_client
 
 
 def sd_deactivation_error_not_due_to_busy(error):
@@ -49,3 +51,9 @@ def sd_destroy_error_not_due_to_busy(error):
         RELATED_OP in str(error) and
         TRY_AGAIN_LATER in str(error)
     )
+
+
+def is_not_http_conflict(error):
+    if not isinstance(error, ovirtsdk4.Error):
+        return True
+    return error.code != http_client.CONFLICT

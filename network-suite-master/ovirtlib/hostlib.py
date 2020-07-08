@@ -17,19 +17,25 @@
 #
 # Refer to the README and COPYING files for full details of the license
 import contextlib
+import functools
+from types import MethodType
 
 import ovirtsdk4
 from ovirtsdk4 import types
 
 from ovirtlib import clusterlib
+from ovirtlib import error
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import syncutil
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
 
+from testlib import suite
+
 HOST_TIMEOUT_SHORT = 5 * 60
 HOST_TIMEOUT_LONG = 15 * 60
+SETUP_NETWORKS_TIMEOUT = 3 * 60
 
 
 class HostStatus(object):
@@ -65,6 +71,21 @@ def change_cluster(host, cluster):
         yield
     finally:
         host.change_cluster(original_cluster)
+
+
+def retry_below_version(version):
+    def decorate_if_required(func):
+        @functools.wraps(func)
+        def func_with_retry(self, *args, **kwargs):
+            exec_func = MethodType(func, self)
+            return syncutil.sync(exec_func=exec_func,
+                                 exec_func_args=(args if args else kwargs),
+                                 error_criteria=error.is_not_http_conflict,
+                                 timeout=SETUP_NETWORKS_TIMEOUT)
+        if suite.is_suite_below(version):
+            return func_with_retry
+        return func
+    return decorate_if_required
 
 
 class Host(SDKRootEntity):
@@ -132,6 +153,7 @@ class Host(SDKRootEntity):
         cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster
 
+    @retry_below_version('4.4')
     def setup_networks(
         self, attachments_data, remove_other_networks=True, sync_networks=False
     ):
@@ -176,6 +198,7 @@ class Host(SDKRootEntity):
             check_connectivity=True,
         )
 
+    @retry_below_version('4.4')
     def remove_networks(self, removed_networks):
         removed_network_ids = [
             removed_network.id for removed_network in removed_networks
@@ -208,6 +231,7 @@ class Host(SDKRootEntity):
                            if att.network.id in network_ids]
         return attachments
 
+    @retry_below_version('4.4')
     def clean_networks(self):
         mgmt_net_id = self._get_mgmt_net_attachment().network.id
         removed_attachments = [att for att in self._get_existing_attachments()

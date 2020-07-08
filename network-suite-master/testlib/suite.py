@@ -26,16 +26,7 @@ import pytest
 
 
 SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
-
-
-def skip_suites_below(version):
-    if is_master():
-        reason = 'Always run master'
-        skip = False
-    else:
-        skip = LooseVersion(SUITE_NAME.split('-')[-1]) < LooseVersion(version)
-        reason = 'Only supported upwards of suite {}'.format(version)
-    return pytest.mark.skipif(skip, reason=reason)
+SUITE_VERSION = SUITE_NAME.split('-')[-1]
 
 
 def xfail_suite_master(reason):
@@ -54,18 +45,30 @@ def xfail_suite_43(reason):
             )
 
 
+def skip_suites_below(version):
+    skip = is_suite_below(version)
+    return pytest.mark.skipif(
+        skip, reason=_skip_reason(skip, 'suite version {}'.format(version))
+    )
+
+
+def is_suite_below(version):
+    return _compare_versions(SUITE_VERSION, version) < 0
+
+
 def skip_sdk_below(version):
-    if _is_sdk_below(version):
-        skip = True
-        reason = 'Only supported upwards of SDK {}'.format(version)
-    else:
-        reason = 'SDK version is fine'
-        skip = False
-    return pytest.mark.skipif(skip, reason=reason)
+    skip = _is_sdk_below(version)
+    return pytest.mark.skipif(
+        skip, reason=_skip_reason(skip, 'SDK version {}'.format(version))
+    )
 
 
 def _is_sdk_below(version):
     return _compare_versions(ovirtsdk4.version.VERSION, version) < 0
+
+
+def _skip_reason(skip, version):
+    return 'Only supported since {}'.format(version) if skip else None
 
 
 def _compare_versions(runtime_version, candidate_version):
@@ -85,10 +88,6 @@ def _compare_versions(runtime_version, candidate_version):
     if LooseVersion(runtime_version) < LooseVersion(candidate_version):
         return -1
     return 1
-
-
-def is_master():
-    return SUITE_NAME.endswith('master')
 
 
 @contextlib.contextmanager

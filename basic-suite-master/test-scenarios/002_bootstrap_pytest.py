@@ -170,6 +170,7 @@ _TEST_LIST = [
     "test_add_vm2_lease",
     "test_add_non_vm_network",
     "test_add_vm_network",
+    "test_verify_glance_import",
     "test_verify_engine_backup",
 ]
 
@@ -1272,6 +1273,24 @@ def test_verify_notifier(prefix):
         'Failed grep for USER_VDC_LOGIN with code {0}. Output: {1}'.format(result.code, result.out)
     engine.service('ovirt-engine-notifier')._request_stop()
     engine.service('snmptrapd')._request_stop()
+
+
+@order_by(_TEST_LIST)
+def test_verify_glance_import(api_v4):
+    # If we go with the engine backup before the glance template
+    # creation is complete, we'll fail the creation of 'vm1' later,
+    # which is based on that template.
+    templates_service = api_v4.system_service().templates_service()
+
+    testlib.assert_true_within_long(
+        lambda: TEMPLATE_GUEST in [t.name for t in templates_service.list()]
+    )
+
+    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
+        disks_service = api_v4.system_service().disks_service()
+        testlib.assert_true_within_long(
+            lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
+        )
 
 
 @order_by(_TEST_LIST)

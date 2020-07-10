@@ -86,7 +86,6 @@ VDSM_LOG = '/var/log/vdsm/vdsm.log'
 
 _TEST_LIST = [
     "test_verify_add_all_hosts",
-    "test_verify_glance_import",
     "test_reconstruct_master_domain",
     "test_add_vm1_from_template",
     "test_verify_add_vm1_from_template",
@@ -1174,14 +1173,6 @@ def test_verify_suspend_resume_vm0(prefix):
     assert log_line_count('CPU running: onResume') >= 1
     assert_vm0_is_alive(prefix)
 
-
-@order_by(_TEST_LIST)
-def test_verify_glance_import(api_v4):
-    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
-        disks_service = api_v4.system_service().disks_service()
-        testlib.assert_true_within_long(
-            lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
-        )
 
 @order_by(_TEST_LIST)
 def test_reconstruct_master_domain(api_v4):

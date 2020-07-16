@@ -17,7 +17,10 @@ stage:
         - basic_suite_master:
             distributions:
               - el7
-              - el8
+              - el8:
+                  runtime-requirements:
+                    hostdistro: same
+                    support-nesting-level: 2
         - compat-4.2_suite_master
         - compat-4.3_suite_master
         - he-basic-ipv6_suite_4.3
@@ -29,7 +32,10 @@ stage:
         - network_suite_master:
             distributions:
               - el7
-              - el8
+              - el8:
+                  runtime-requirements:
+                    hostdistro: same
+                    support-nesting-level: 2
         - performance_suite_master
         - upgrade-from-release_suite_4.3
         - upgrade-from-prevrelease_suite_4.3
@@ -75,5 +81,6 @@ stage:
 runtime-requirements:
   hostdistro: same
   support-nesting-level: 2
+  isolation_level: container
 release-branches:
   master: [ovirt-master, ovirt-4.3]

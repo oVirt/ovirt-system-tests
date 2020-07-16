@@ -79,7 +79,6 @@ stage:
       script:
         fromfile: 'automation/ost-images.sh'
 runtime-requirements:
-  hostdistro: same
   support-nesting-level: 2
   isolation_level: container
 release-branches:

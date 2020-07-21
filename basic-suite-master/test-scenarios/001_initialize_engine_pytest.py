@@ -118,24 +118,9 @@ def test_initialize_engine(prefix, ansible_engine):
     )
 
 
-def _exec_engine_config(engine, key, value):
-    result = engine.ssh(
-        [
-            'engine-config',
-            '--set',
-            '{0}={1}'.format(key, value),
-        ],
-    )
-    assert result.code == 0, \
-        'setting {0}:{1} via engine-config failed with {2}'.format(
-            key, value, result.code)
-
-
-def test_engine_config(prefix):
-    engine = prefix.virt_env.engine_vm()
-
-    _exec_engine_config(engine, 'VdsLocalDisksLowFreeSpace', '400')
-    _exec_engine_config(engine, 'OvfUpdateIntervalInMinutes', '10')
+def test_engine_config(ansible_engine):
+    ansible_engine.shell("engine-config --set VdsLocalDisksLowFreeSpace=400")
+    ansible_engine.shell("engine-config --set OvfUpdateIntervalInMinutes=10")
 
 
 def test_engine_restart(prefix):

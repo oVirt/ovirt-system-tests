@@ -98,9 +98,11 @@ class _AnsibleModuleArgsMapper(object):
     def __init__(self, config):
         self.config = config
 
-    def __call__(self, **kwargs):
-        self.config.module_args = " ".join("{}={}".format(k, v)
-                                           for k, v in kwargs.items())
+    def __call__(self, *args, **kwargs):
+        self.config.module_args = " ".join((
+            " ".join(args),
+            " ".join("{}={}".format(k, v) for k, v in kwargs.items())
+        )).strip()
         return _run_ansible(self.config)
 
 

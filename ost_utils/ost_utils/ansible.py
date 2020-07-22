@@ -62,6 +62,14 @@ class AnsibleExecutionError(Exception):
         return "Error running ansible: rc={}, stdout={}".format(self.rc,
                                                                 self.stdout)
 
+class AnsibleFactNotFound(Exception):
+
+    def __init__(self, fact):
+        self.fact = fact
+
+    def __str__(self):
+        return "Could not find fact: {}".format(self.fact)
+
 
 def module_mapper_for(host_pattern):
     config = _base_ansible_config()
@@ -114,3 +122,30 @@ class _AnsibleModuleMapper(object):
     def __getattr__(self, name):
         self.config.module = name
         return _AnsibleModuleArgsMapper(self.config)
+
+
+class _AnsibleFacts(object):
+
+    def __init__(self, host_pattern):
+        self._facts_gathered = False
+        self.module_mapper = module_mapper_for(host_pattern)
+
+    def get(self, fact):
+        if not self._facts_gathered:
+            self.refresh()
+        runner = self.module_mapper.debug(var=fact)
+        for event in reversed(tuple(runner.events)):
+            event_data = event.get('event_data', None)
+            if event_data is not None:
+                res = event_data.get('res', None)
+                if res is not None:
+                    value = res.get(fact, None)
+                    if value == "VARIABLE IS NOT DEFINED!":
+                        raise AnsibleFactNotFound(fact)
+                    if value is not None:
+                        return value
+        raise AnsibleFactNotFound(fact)
+
+    def refresh(self):
+        self.module_mapper.gather_facts()
+        self._facts_gathered = True

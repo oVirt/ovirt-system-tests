@@ -57,8 +57,8 @@ SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
 SD_ISCSI_NAME = 'iscsi'
 
-VM_USER_NAME = 'root'
-VM_PASSWORD = 'secret'
+VM_USER_NAME = 'cirros'
+VM_PASSWORD = 'gocubsgo'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -171,7 +171,11 @@ def _verify_vm_state(engine, vm_name, state):
     return vm_service
 
 
-def _vm_ssh(ip_address, command, tries=None):
+def _vm_ssh(prefix, vm_name, command, tries=None):
+    host = _vm_host(prefix, vm_name)
+    ret = host.ssh(['host', vm_name])
+    match = re.search(r'\s([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', ret.out.decode('utf-8'))
+    ip_address = match.group(1)
     return ssh.ssh(
         ip_addr=ip_address,
         command=command,
@@ -182,15 +186,15 @@ def _vm_ssh(ip_address, command, tries=None):
 
 
 def assert_vm0_is_alive(prefix):
-    assert_vm_is_alive(prefix, test_utils.get_vm0_ip_address(prefix))
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
-def assert_vm_is_alive(prefix, ip_address):
+def assert_vm_is_alive(prefix, vm_hostname):
     testlib.assert_true_within_short(
         lambda:
-        _ping(prefix, ip_address) == EX_OK
+        _ping(prefix, vm_hostname) == EX_OK
     )
-    assert _vm_ssh(ip_address, ['true']).code == EX_OK
+    assert _vm_ssh(prefix, vm_hostname, ['true']).code == EX_OK
 
 
 @order_by(_TEST_LIST)
@@ -653,13 +657,13 @@ def test_add_vm1_from_template(api_v4):
     if glance_template is None:
         pytest.skip('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_GUEST))
 
-    vm_memory = 512 * MB
+    vm_memory = 96 * MB # runs with 64 ok, but we need to do a hotplug later (64+256 is too much difference)
     vms_service = engine.vms_service()
     vms_service.add(
         types.Vm(
             name=VM1_NAME,
             description='CirrOS imported from Glance as Template',
-            memory= 512 * MB,
+            memory= vm_memory,
             cluster=types.Cluster(
                 name=TEST_CLUSTER,
             ),
@@ -672,11 +676,11 @@ def test_add_vm1_from_template(api_v4):
                 type=types.DisplayType.VNC,
             ),
             memory_policy=types.MemoryPolicy(
-                guaranteed=vm_memory // 2,
+                guaranteed=vm_memory, # with so little memory we don't want guaranteed to be any lower
                 ballooning=False,
             ),
             os=types.OperatingSystem(
-                type='rhel_7x64',
+                type='rhel_7x64', # even though it's CirrOS we want to check a non-default OS type
             ),
             time_zone=types.TimeZone(
                 name='Etc/GMT',
@@ -734,22 +738,11 @@ def test_run_vms(prefix):
 
     gw_ip = test_utils.get_management_net(prefix).gw()
 
-    vm_params.initialization.host_name = VM0_NAME
+    # CirrOS cloud-init is different, networking doesn't work since it doesn't support the format oVirt is using
+    vm_params.initialization.host_name = VM0_NAME # hostname seems to work, the others not
     vm_params.initialization.dns_search = 'lago.local'
     vm_params.initialization.domain = 'lago.local'
     vm_params.initialization.dns_servers = gw_ip
-    vm_params.initialization.nic_configurations = [
-        types.NicConfiguration(
-            name='eth0',
-            boot_protocol=types.BootProtocol.STATIC,
-            on_boot=True,
-            ip=types.Ip(
-                address=test_utils.get_vm0_ip_address(prefix),
-                netmask='255.255.255.0',
-                gateway=gw_ip
-            )
-        )
-    ]
     vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
     vm0_service.start(use_cloud_init=True, vm=vm_params)
 
@@ -1054,7 +1047,7 @@ def test_hotplug_cpu(prefix):
             )
         )
         assert vm_service.get().cpu.topology.sockets == 2
-    ret = _vm_ssh(test_utils.get_vm0_ip_address(prefix), ['lscpu'])
+    ret = _vm_ssh(prefix, VM0_NAME, ['lscpu'])
     assert ret.code == 0
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out.decode('utf-8'))
     assert match.group('cpus') == '2'

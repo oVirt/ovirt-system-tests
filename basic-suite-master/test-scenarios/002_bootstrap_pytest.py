@@ -1443,7 +1443,7 @@ def test_add_blank_vms(api_v4):
 
     vm_params = sdk4.types.Vm(
         os=sdk4.types.OperatingSystem(
-            type='rhel_7x64',
+            type='other_linux',
         ),
         type=sdk4.types.VmType.SERVER,
         high_availability=sdk4.types.HighAvailability(
@@ -1471,14 +1471,14 @@ def test_add_blank_vms(api_v4):
     )
 
     vm_params.name = BACKUP_VM_NAME
-    vm_params.memory = 256 * MB
-    vm_params.memory_policy.guaranteed = 128 * MB
+    vm_params.memory = 96 * MB
+    vm_params.memory_policy.guaranteed = 64 * MB
     vms_service.add(vm_params)
     backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
 
     vm_params.name = VM0_NAME
     least_hotplug_increment = 256 * MB
-    required_memory = 384 * MB
+    required_memory = 96 * MB
     vm_params.memory = required_memory
     vm_params.memory_policy.guaranteed = required_memory
     vm_params.memory_policy.max = required_memory + least_hotplug_increment
@@ -1550,10 +1550,10 @@ def test_add_blank_high_perf_vm2(api_v4):
             ),
             memory_policy=sdk4.types.MemoryPolicy(
                 ballooning=False,
-                guaranteed=256 * MB,
+                guaranteed=64 * MB,
                 max=256 * MB,
             ),
-            memory=256 * MB,
+            memory=96 * MB,
             high_availability=sdk4.types.HighAvailability(
                 enabled=True,
                 priority=100,
@@ -1753,16 +1753,17 @@ def test_add_filter(api_v4):
 @order_by(_TEST_LIST)
 def test_add_filter_parameter(prefix):
     engine_vm = prefix.virt_env.engine_vm()
-    ovirt_api4 = engine_vm.get_api(api_ver=4)
-    engine = ovirt_api4.system_service()
+    vm_gw = '.'.join(engine_vm.ip().split('.')[0:3] + ['1'])
+    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api_v4.system_service()
     network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
         engine, VM0_NAME)
 
     with test_utils.TestEvent(engine, 10912):
         assert network_filter_parameters_service.add(
             sdk4.types.NetworkFilterParameter(
-                name='IP',
-                value=test_utils.get_vm0_ip_address(prefix)
+                name='GW_IP',
+                value=vm_gw
             )
         )
 

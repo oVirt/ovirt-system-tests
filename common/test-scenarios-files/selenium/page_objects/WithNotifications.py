@@ -16,7 +16,7 @@ class WithNotifications(WithOvirtDriver):
         if self._is_notification_displayed():
             print('Notification is present')
             self.ovirt_driver.xpath_click(xpath)
-            self.ovirt_driver.wait_while(self.ovirt_driver.is_xpath_displayed, xpath)
+            self.ovirt_driver.wait_while('Notification is not closed', self.ovirt_driver.is_xpath_displayed, xpath)
             print('Notification was closed')
 
     def wait_and_close_success_notification_safely(self):

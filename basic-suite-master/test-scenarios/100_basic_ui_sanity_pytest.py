@@ -35,12 +35,7 @@ import test_utils
 
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
-from ost_utils.pytest.fixtures.engine import engine_cert
-from ost_utils.pytest.fixtures.engine import engine_fqdn
-from ost_utils.pytest.fixtures.engine import engine_ip
-from ost_utils.pytest.fixtures.engine import engine_username
-from ost_utils.pytest.fixtures.engine import engine_password
-from ost_utils.pytest.fixtures.engine import engine_webadmin_url
+from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.selenium import CHROME_VERSION
 from ost_utils.selenium import FIREFOX_VERSION

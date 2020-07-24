@@ -45,6 +45,7 @@ from ost_utils import general_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.engine import *
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -274,8 +275,8 @@ def _wait_for_status(hosts_service, dc_name, status):
 
 
 @order_by(_TEST_LIST)
-def test_add_dc(api_v4):
-    engine = api_v4.system_service()
+def test_add_dc(engine_api):
+    engine = engine_api.system_service()
     dcs_service = engine.data_centers_service()
     with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
         assert dcs_service.add(
@@ -289,16 +290,16 @@ def test_add_dc(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_remove_default_dc(api_v4):
-    engine = api_v4.system_service()
+def test_remove_default_dc(engine_api):
+    engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
     with test_utils.TestEvent(engine, 954): # USER_REMOVE_STORAGE_POOL event
         dc_service.remove()
 
 
 @order_by(_TEST_LIST)
-def test_update_default_dc(api_v4):
-    engine = api_v4.system_service()
+def test_update_default_dc(engine_api):
+    engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
     with test_utils.TestEvent(engine, 952): # USER_UPDATE_STORAGE_POOL event
         dc_service.update(
@@ -309,8 +310,8 @@ def test_update_default_dc(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_update_default_cluster(api_v4):
-    engine = api_v4.system_service()
+def test_update_default_cluster(engine_api):
+    engine = engine_api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
     with test_utils.TestEvent(engine, 811): # USER_UPDATE_CLUSTER event
         cluster_service.update(
@@ -323,16 +324,16 @@ def test_update_default_cluster(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_remove_default_cluster(api_v4):
-    engine = api_v4.system_service()
+def test_remove_default_cluster(engine_api):
+    engine = engine_api.system_service()
     cl_service = test_utils.get_cluster_service(engine, 'Default')
     with test_utils.TestEvent(engine, 813): # USER_REMOVE_CLUSTER event
         cl_service.remove()
 
 
 @order_by(_TEST_LIST)
-def test_add_dc_quota(api_v4):
-    datacenters_service = api_v4.system_service().data_centers_service()
+def test_add_dc_quota(engine_api):
+    datacenters_service = engine_api.system_service().data_centers_service()
     datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
@@ -346,8 +347,8 @@ def test_add_dc_quota(api_v4):
     )
 
 @order_by(_TEST_LIST)
-def test_add_cluster(api_v4):
-    engine = api_v4.system_service()
+def test_add_cluster(engine_api):
+    engine = engine_api.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
     with test_utils.TestEvent(engine, 809):
@@ -422,8 +423,8 @@ def test_add_hosts(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_hosts(api_v4):
-    hosts_service = api_v4.system_service().hosts_service()
+def test_verify_add_hosts(engine_api):
+    hosts_service = engine_api.system_service().hosts_service()
     hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
     total_hosts = len(hosts_status)
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)

@@ -21,17 +21,18 @@
 from __future__ import absolute_import
 
 import tempfile
+import time
 
+import ovirtsdk4 as sdk4
 import pytest
 
 from ost_utils.shell import shell
-from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 
 
 @pytest.fixture(scope="session")
-def engine_ip(prefix):
-    engine = prefix.virt_env.engine_vm()
-    return engine.ip()
+def engine_ip(ansible_engine_facts):
+    return ansible_engine_facts.get("ansible_default_ipv4.address")
 
 
 @pytest.fixture(scope="session")
@@ -50,9 +51,32 @@ def engine_username():
 
 
 @pytest.fixture(scope="session")
-def engine_password(prefix):
-    engine = prefix.virt_env.engine_vm()
-    return engine.metadata["ovirt-engine-password"]
+def engine_full_username():
+    return "admin@internal"
+
+
+@pytest.fixture(scope="session")
+def engine_password():
+    # TODO: read the password from the answerfile
+    return "123"
+
+
+@pytest.fixture(scope="session")
+def engine_api(engine_full_username, engine_password, engine_ip):
+    url = 'https://{}/ovirt-engine/api'.format(engine_ip)
+    api = sdk4.Connection(
+        url=url,
+        username=engine_full_username,
+        password=engine_password,
+        insecure=True,
+        debug=True,
+    )
+    for _ in range(20):
+        if not api.test():
+            time.sleep(1)
+        else:
+            return api
+    raise RuntimeError("Test API call failed")
 
 
 @pytest.fixture(scope="session")

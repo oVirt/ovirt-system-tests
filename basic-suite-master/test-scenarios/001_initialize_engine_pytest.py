@@ -23,12 +23,10 @@ import os
 import socket
 
 from tempfile import NamedTemporaryFile
-from ovirtlago import testlib
 
-import test_utils
-
-from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.ansible import ansible_engine
+from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 from ost_utils.pytest.fixtures.ansible import ansible_hosts
 
 
@@ -37,9 +35,7 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(prefix, ansible_engine):
-    engine = prefix.virt_env.engine_vm()
-
+def test_initialize_engine(engine_ip, ansible_engine):
     answer_file_src = os.path.join(
         os.environ.get('SUITE'), 'engine-answer-file.conf'
     )
@@ -49,75 +45,44 @@ def test_initialize_engine(prefix, ansible_engine):
         dest='/tmp/answer-file',
     )
 
-    nics = engine.nics()
-    nets = prefix.get_nets()
-    engine_ip = [
-        nic.get('ip') for nic in nics if nets[nic.get('net')].is_management()
-    ]
-
     host_name = socket.getfqdn()
     host_ip = socket.gethostbyname(host_name)
 
-    with NamedTemporaryFile(mode='w', delete=False) as sso_conf:
+    with NamedTemporaryFile(mode='w') as sso_conf:
         sso_conf.write(
             (
                 'SSO_ALTERNATE_ENGINE_FQDNS='
                 '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0} {1} {2}"\n'
-            ).format(engine_ip.pop(), host_name, host_ip)
+            ).format(engine_ip, host_name, host_ip)
         )
-
-    fqdn_conf = '/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf'
-    engine.copy_to(sso_conf.name, fqdn_conf)
-    engine.ssh(['chmod', '644', fqdn_conf])
+        sso_conf.flush()
+        os.fsync(sso_conf.fileno())
+        ansible_engine.copy(
+            src=sso_conf.name,
+            dest='/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf',
+            mode='0644'
+        )
 
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
-        engine.ssh(
-                [
-                    'sed', '-i',
-                    '-e', '"/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }"',
-                    '-e', '"/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }"',
-                    '-e', '"/.*<root-logger>/{ n; s/INFO/DEBUG/ }"',
-                    '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
-                ],
+        ansible_engine.shell(
+            'sed -i '
+            '-e "/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }" '
+            '-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }" '
+            '-e "/.*<root-logger>/{ n; s/INFO/DEBUG/ }" '
+            '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
         )
 
-    result = engine.ssh(
-        [
-            'engine-setup',
-            '--config-append=/tmp/answer-file',
-            '--accept-defaults',
-            '--offline',
-        ],
+    ansible_engine.shell(
+        'engine-setup '
+        '--config-append=/tmp/answer-file '
+        '--accept-defaults '
+        '--offline '
     )
-    engine.ssh(
-        [
-            'ss',
-            '-anp',
-        ],
-    )
-    assert result.code == 0, \
-        'engine-setup failed. Exit code is %s' % result.code
+    ansible_engine.shell('ss -anp')
 
-    result = engine.ssh(
-        [
-            'systemctl',
-            'start',
-            'ovirt-engine-notifier',
-        ],
-    )
-    assert result.code == 0, \
-        'engine-ovirt-notifier failed. Exit code is %s' % result.code
-
-    testlib.assert_true_within_long(
-        lambda: engine.service('ovirt-engine').alive()
-    )
-
-    testlib.assert_true_within_short(
-        lambda: engine.service('ovirt-engine-dwhd').alive()
-    )
-    testlib.assert_true_within_short(
-        lambda: engine.service('ovirt-engine-notifier').alive()
-    )
+    ansible_engine.systemd(name='ovirt-engine-notifier', state='started')
+    ansible_engine.systemd(name='ovirt-engine', state='started')
+    ansible_engine.systemd(name='ovirt-engine-dwhd', state='started')
 
 
 def test_engine_config(ansible_engine):
@@ -127,15 +92,6 @@ def test_engine_config(ansible_engine):
         "engine-config --set IsIncrementalBackupSupported=True --cver=4.4")
 
 
-def test_engine_restart(prefix):
-    engine = prefix.virt_env.engine_vm()
-
-    engine.service('ovirt-engine')._request_stop()
-    testlib.assert_true_within_long(
-        lambda: not engine.service('ovirt-engine').alive()
-    )
-
-    engine.service('ovirt-engine')._request_start()
-    testlib.assert_true_within_long(
-        lambda: engine.service('ovirt-engine').alive()
-    )
+def test_engine_restart(ansible_engine):
+    ansible_engine.systemd(name='ovirt-engine', state='stopped')
+    ansible_engine.systemd(name='ovirt-engine', state='started')

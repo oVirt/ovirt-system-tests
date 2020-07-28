@@ -45,6 +45,7 @@ import time
 import uuid
 
 
+KB = 2 ** 10
 MB = 2 ** 20
 GB = 2 ** 30
 
@@ -97,6 +98,7 @@ _TEST_LIST = [
     "test_verify_transient_folder",
     "test_remove_backup_vm_and_backup_snapshot",
     "test_vm0_is_alive",
+    "test_hotplug_memory",
     "test_suspend_resume_vm0",
     "test_extend_disk1",
     "test_sparsify_disk1",
@@ -111,7 +113,7 @@ _TEST_LIST = [
     "test_template_update",
     "test_verify_vm_import",
     "test_verify_suspend_resume_vm0",
-    "test_hotplug_memory",
+    "test_hotunplug_memory",
     "test_hotplug_disk",
     "test_hotplug_nic",
     "test_hotplug_cpu",
@@ -657,7 +659,7 @@ def test_add_vm1_from_template(api_v4):
     if glance_template is None:
         pytest.skip('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_GUEST))
 
-    vm_memory = 96 * MB # runs with 64 ok, but we need to do a hotplug later (64+256 is too much difference)
+    vm_memory = 128 * MB # runs with 64 ok, but we need to do a hotplug later (64+256 is too much difference)
     vms_service = engine.vms_service()
     vms_service.add(
         types.Vm(
@@ -1017,12 +1019,25 @@ def test_disk_operations(api_v4):
     vt.join_all()
 
 
+@pytest.fixture(scope="session")
+def hotplug_mem_amount():
+    return 256 * MB
+
+
+def _vm_libvirt_memory_amount(prefix, vm_name):
+    vm_host = _vm_host(prefix, vm_name)
+    ret = vm_host.ssh(['virsh', '-r', 'dumpxml', vm_name])
+    assert ret.code == 0
+    match = re.search(r'<currentMemory unit=\'KiB\'>(?P<mem>[0-9]+)', ret.out.decode('utf-8'))
+    return int(match.group('mem'))
+
+
 @order_by(_TEST_LIST)
-def test_hotplug_memory(prefix):
+def test_hotplug_memory(prefix, hotplug_mem_amount):
     api_v4 = prefix.virt_env.engine_vm().get_api_v4()
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    new_memory = vm_service.get().memory + 256 * MB
+    new_memory = vm_service.get().memory + hotplug_mem_amount
     with test_utils.TestEvent(engine, 2039): # HOT_SET_MEMORY(2,039)
         vm_service.update(
             vm=types.Vm(
@@ -1030,7 +1045,27 @@ def test_hotplug_memory(prefix):
             )
         )
         assert vm_service.get().memory == new_memory
+
     assert_vm0_is_alive(prefix)
+    assert _vm_libvirt_memory_amount(prefix, VM0_NAME) // KB == new_memory // MB
+
+
+@order_by(_TEST_LIST)
+def test_hotunplug_memory(prefix, hotplug_mem_amount):
+    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
+    engine = api_v4.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+    new_memory = vm_service.get().memory - hotplug_mem_amount
+    with test_utils.TestEvent(engine, 2046): # MEMORY_HOT_UNPLUG_SUCCESSFULLY_REQUESTED(2,046)
+        vm_service.update(
+            vm=types.Vm(
+                memory=new_memory
+            )
+        )
+        assert vm_service.get().memory == new_memory
+
+    assert_vm0_is_alive(prefix)
+    assert _vm_libvirt_memory_amount(prefix, VM0_NAME) // KB == new_memory // MB
 
 
 @order_by(_TEST_LIST)

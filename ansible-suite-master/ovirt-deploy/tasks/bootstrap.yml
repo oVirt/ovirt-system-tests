@@ -57,22 +57,22 @@
       timeout: 100
       retrans: 10
 
-- name: Add iSCSI storage
-  ovirt_storage_domain:
-    auth: "{{ ovirt_auth }}"
-    name: "{{ iscsi_name }}"
-    host: "{{ host_names[0] }}"
-    data_center: "{{ dc_name }}"
-    iscsi:
-      address: "{{ engine_ip }}"
-      target: "{{ iscsi_target }}"
-      port: "{{ iscsi_port }}"
-      lun_id: "{{ sd_lun_id }}"
-      username: "{{ iscsi_username }}"
-      password: "{{ iscsi_password }}"
-  async: 120
-  poll: 0
-  register: data_iscsi
+#- name: Add iSCSI storage
+#  ovirt_storage_domain:
+#    auth: "{{ ovirt_auth }}"
+#    name: "{{ iscsi_name }}"
+#    host: "{{ host_names[0] }}"
+#    data_center: "{{ dc_name }}"
+#    iscsi:
+#      address: "{{ engine_ip }}"
+#      target: "{{ iscsi_target }}"
+#      port: "{{ iscsi_port }}"
+#      lun_id: "{{ sd_lun_id }}"
+#      username: "{{ iscsi_username }}"
+#      password: "{{ iscsi_password }}"
+#  async: 120
+#  poll: 0
+#  register: data_iscsi
 
 - name: Add export storage
   ovirt_storage_domain:
@@ -106,7 +106,6 @@
   async_status: "jid={{ item.ansible_job_id }}"
   register: job_result
   with_items:
-    - "{{ data_iscsi }}"
     - "{{ iso_nfs }}"
     - "{{ export_nfs }}"
   until: job_result.finished

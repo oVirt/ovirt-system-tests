@@ -26,17 +26,17 @@
     interface: virtio
     bootable: true
 
-- name: Attach logical unit to VM
-  ovirt_disk:
-    auth: "{{ ovirt_auth }}"
-    vm_name: "{{ vm_name0 }}"
-    name: "{{ disk_lun_name }}"
-    format: raw
-    logical_unit:
-      address: "{{ engine_ip }}"
-      target: "{{ iscsi_target }}"
-      id: "{{ vm_lun_id }}"
-    interface: virtio
+#- name: Attach logical unit to VM
+#  ovirt_disk:
+#    auth: "{{ ovirt_auth }}"
+#    vm_name: "{{ vm_name0 }}"
+#    name: "{{ disk_lun_name }}"
+#    format: raw
+#    logical_unit:
+#      address: "{{ engine_ip }}"
+#      target: "{{ iscsi_target }}"
+#      id: "{{ vm_lun_id }}"
+#    interface: virtio
 
 - name: Add VM from template
   ovirt_vm:
@@ -97,7 +97,7 @@
     state: present
     vm: "{{ vm_name1 }}"
     name: nic1
-    interface: e1000
+    interface: virtio
     profile: ovirtmgmt
     network: ovirtmgmt
 

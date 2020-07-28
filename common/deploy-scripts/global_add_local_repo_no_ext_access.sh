@@ -23,6 +23,17 @@ END
 
 }
 
+## update /etc/dnf/dnf.conf for centos8
+dnf_conf_file="/etc/dnf/dnf.conf"
+dnf_yum_bck_file="/tmp/dnf_yum.conf"
+if [[ -e  "$dnf_conf_file" ]]; then
+    sed -i -e 's/gpgcheck=1/gpgcheck=0/g' "$dnf_conf_file"
+    sed -i -e '/^gpgcheck=.*/a enabled=1' "$dnf_conf_file"
+    cp "$dnf_conf_file" "$dnf_yum_bck_file"
+else
+    cp "/etc/yum.conf" "$dnf_yum_bck_file"
+fi
+
 DIST=$(uname -r | sed -r  's/^.*\.([^\.]+)\.[^\.]+$/\1/')
 ADDR=$(ip -4 addr show scope global up |grep -m1 inet | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}')
 curl_res=0

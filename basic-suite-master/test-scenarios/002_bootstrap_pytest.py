@@ -448,6 +448,8 @@ def test_verify_add_all_hosts(prefix):
 
 @order_by(_TEST_LIST)
 def test_complete_hosts_setup(prefix):
+    if not os.environ.get('ENABLE_DEBUG_LOGGING'):
+        pytest.skip('Skip vdsm debug logging')
     hosts = prefix.virt_env.host_vms()
     for host in hosts:
         host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])

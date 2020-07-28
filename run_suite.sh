@@ -686,6 +686,9 @@ export ANSIBLE_INVENTORY_FILE="${PREFIX}/hosts"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
 
+# Comment out, or set this variable to empty value, to disable debug logging
+export ENABLE_DEBUG_LOGGING=debug
+
 if "$DO_CLEANUP"; then
     env_cleanup
     exit $?

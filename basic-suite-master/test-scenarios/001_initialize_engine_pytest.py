@@ -69,6 +69,18 @@ def test_initialize_engine(prefix, ansible_engine):
     fqdn_conf = '/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf'
     engine.copy_to(sso_conf.name, fqdn_conf)
     engine.ssh(['chmod', '644', fqdn_conf])
+
+    if os.environ.get('ENABLE_DEBUG_LOGGING'):
+        engine.ssh(
+                [
+                    'sed', '-i',
+                    '-e', '"/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }"',
+                    '-e', '"/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }"',
+                    '-e', '"/.*<root-logger>/{ n; s/INFO/DEBUG/ }"',
+                    '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
+                ],
+        )
+
     result = engine.ssh(
         [
             'engine-setup',

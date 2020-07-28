@@ -106,12 +106,6 @@ else
     firewall-cmd --permanent --zone=public --add-service=ntp
     firewall-cmd --reload
 fi
-# Enable debug logs on the engine
-sed -i \
-    -e '/.*logger category="org.ovirt"/{ n; s/INFO/DEBUG/ }' \
-    -e '/.*logger category="org.ovirt.engine.core.bll"/{ n; s/INFO/DEBUG/ }' \
-    -e '/.*<root-logger>/{ n; s/INFO/DEBUG/ }' \
-    /usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in
 
 # rotate logs quicker, because of the debug logs they tend to flood the root partition if they run > 15 minutes
 cat > /etc/cron.d/ovirt-engine << EOF

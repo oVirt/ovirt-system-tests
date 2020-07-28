@@ -27,6 +27,17 @@ from ovirtlago import testlib
 def test_initialize_engine(prefix):
     engine = prefix.virt_env.engine_vm()
 
+    if os.environ.get('ENABLE_DEBUG_LOGGING'):
+        engine.ssh(
+                [
+                    'sed', '-i',
+                    '-e', '/.*logger category="org.ovirt"/{ n; s/INFO/DEBUG/ }',
+                    '-e', '/.*logger category="org.ovirt.engine.core.bll"/{ n; s/INFO/DEBUG/ }',
+                    '-e', '/.*<root-logger>/{ n; s/INFO/DEBUG/ }',
+                    '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
+                ],
+        )
+
     answer_file_src = os.path.join(
         os.environ.get('SUITE'),
         'engine-answer-file.conf'

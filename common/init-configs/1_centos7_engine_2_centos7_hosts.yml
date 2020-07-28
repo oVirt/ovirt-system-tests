@@ -78,6 +78,7 @@ domains:
       - /etc/yum
       - /etc/resolv.conf
       - /etc/yum.repos.d
+      - /tmp/dnf_yum.conf
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
@@ -116,6 +117,7 @@ domains:
       - /etc/resolv.conf
       - /var/log
       - /etc/yum.repos.d
+      - /tmp/dnf_yum.conf
       {% if env.coverage == "true" -%}
       - /var/lib/vdsm/coverage
       {%- endif %}

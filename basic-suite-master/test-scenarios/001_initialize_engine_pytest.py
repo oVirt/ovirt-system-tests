@@ -96,16 +96,6 @@ def test_initialize_engine(prefix, ansible_engine):
     assert result.code == 0, \
         'engine-ovirt-notifier failed. Exit code is %s' % result.code
 
-    # Remove YUM leftovers that are in /var/cache/[dnf/yum]* - free disk space.
-    result = engine.ssh(
-        [
-            'rm',
-            '-rf',
-            '/var/cache/yum/*',
-            '/var/cache/dnf/*',
-        ]
-    )
-
     testlib.assert_true_within_long(
         lambda: engine.service('ovirt-engine').alive()
     )

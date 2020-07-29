@@ -63,3 +63,9 @@ def ansible_host0_facts():
 @pytest.fixture(scope="session")
 def ansible_host1_facts():
     return ansible._AnsibleFacts(ANSIBLE_HOST1_PATTERN)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ansible_clean_private_dirs():
+    yield
+    ansible._AnsiblePrivateDir.cleanup()

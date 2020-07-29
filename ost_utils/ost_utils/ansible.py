@@ -47,7 +47,9 @@ which will raise 'AnsibleExecutionError' on failure.
 """
 
 import os
+import shutil
 import tempfile
+import threading
 
 import ansible_runner
 
@@ -72,24 +74,13 @@ class AnsibleFactNotFound(Exception):
 
 
 def module_mapper_for(host_pattern):
-    config = _base_ansible_config()
-    config.host_pattern = host_pattern
-    return _AnsibleModuleMapper(config)
+    config_builder = _AnsibleConfigBuilder()
+    config_builder.host_pattern = host_pattern
+    return _AnsibleModuleMapper(config_builder)
 
 
-def _base_ansible_config():
-    return ansible_runner.RunnerConfig(
-        private_data_dir=tempfile.mkdtemp(),
-        inventory=os.environ["ANSIBLE_INVENTORY_FILE"],
-        extravars={
-            "ansible_user": "root"
-        },
-    )
-
-
-def _run_ansible(config):
-    config.prepare()
-    runner = ansible_runner.Runner(config=config)
+def _run_ansible(config_builder):
+    runner = ansible_runner.Runner(config=config_builder.prepare())
     runner.run()
 
     if runner.status != 'successful':
@@ -101,39 +92,93 @@ def _run_ansible(config):
     return runner
 
 
+# We need one ansible private directory per thread because:
+#  - when multiple threads try to access the same directory
+#    ansible-runner reports a conflict
+#  - when using a new private directory for each ansible
+#    module call, we cannot refer to gathered and cached facts
+class _AnsiblePrivateDir(object):
+
+    thread_local = threading.local()
+    all_dirs = set()
+
+    @classmethod
+    def get(cls):
+        dir = cls.thread_local.__dict__.setdefault('dir', tempfile.mkdtemp())
+        cls.all_dirs.add(dir)
+        return dir
+
+    @classmethod
+    def cleanup(cls):
+        for dir in cls.all_dirs:
+            shutil.rmtree(dir)
+
+
+class _AnsibleConfigBuilder(object):
+
+    def __init__(self):
+        self.inventory = os.environ["ANSIBLE_INVENTORY_FILE"]
+        self.extravars = {"ansible_user": "root"}
+        self.host_pattern = None
+        self.module = None
+        self.module_args = None
+
+    def prepare(self):
+        config = ansible_runner.RunnerConfig(
+            inventory=self.inventory,
+            extravars=self.extravars,
+            host_pattern=self.host_pattern,
+            module=self.module,
+            module_args=self.module_args,
+            private_data_dir=_AnsiblePrivateDir.get()
+        )
+        config.prepare()
+        return config
+
+
 class _AnsibleModuleArgsMapper(object):
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, config_builder):
+        self.config_builder = config_builder
 
     def __call__(self, *args, **kwargs):
-        self.config.module_args = " ".join((
+        self.config_builder.module_args = " ".join((
             " ".join(args),
             " ".join("{}={}".format(k, v) for k, v in kwargs.items())
         )).strip()
-        return _run_ansible(self.config)
+        return _run_ansible(self.config_builder)
 
 
 class _AnsibleModuleMapper(object):
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, config_builder):
+        self.config_builder = config_builder
 
     def __getattr__(self, name):
-        self.config.module = name
-        return _AnsibleModuleArgsMapper(self.config)
+        self.config_builder.module = name
+        return _AnsibleModuleArgsMapper(self.config_builder)
 
 
+# Similar to '_AnsiblePrivateDir', we need the 'facts_gathered'
+# boolean to have a per-thread value. See the rationale above.
 class _AnsibleFacts(object):
 
     def __init__(self, host_pattern):
-        self._facts_gathered = False
-        self.module_mapper = module_mapper_for(host_pattern)
+        self._thread_local = threading.local()
+        self._module_mapper = module_mapper_for(host_pattern)
+
+    @property
+    def facts_gathered(self):
+        return self._thread_local.__dict__.setdefault('facts_gathered', False)
+
+    @facts_gathered.setter
+    def facts_gathered(self, value):
+        self._thread_local.facts_gathered = value
 
     def get(self, fact):
-        if not self._facts_gathered:
+        if not self.facts_gathered:
             self.refresh()
-        runner = self.module_mapper.debug(var=fact)
+        runner = self._module_mapper.debug(var=fact)
         for event in reversed(tuple(runner.events)):
             event_data = event.get('event_data', None)
             if event_data is not None:
@@ -147,5 +192,5 @@ class _AnsibleFacts(object):
         raise AnsibleFactNotFound(fact)
 
     def refresh(self):
-        self.module_mapper.gather_facts()
-        self._facts_gathered = True
+        self._module_mapper.gather_facts()
+        self.facts_gathered = True

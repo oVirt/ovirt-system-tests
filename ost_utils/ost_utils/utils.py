@@ -17,7 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import Queue
+from __future__ import absolute_import
+
 import collections
 import datetime
 import fcntl
@@ -38,8 +39,13 @@ from io import StringIO
 import argparse
 import configparser
 import uuid as uuid_m
-from log_utils import (LogTask, setup_prefix_logging)
 import hashlib
+
+import six
+
+from six.moves import queue
+
+from ost_utils.log_utils import LogTask, setup_prefix_logging
 
 LOGGER = logging.getLogger(__name__)
 
@@ -80,7 +86,7 @@ class VectorThread:
     def start_all(self):
         self.thread_handles = []
         for target in self.targets:
-            q = Queue.Queue()
+            q = queue.Queue()
             t = threading.Thread(target=_ret_via_queue, args=(target, q))
             self.thread_handles.append((t, q))
             t.start()
@@ -92,17 +98,17 @@ class VectorThread:
         for t, q in self.thread_handles:
             t.join()
 
-        self.results = map(lambda (t, q): q.get(), self.thread_handles)
+        self.results = [q.get() for _, q in self.thread_handles]
         if raise_exceptions:
             for result in self.results:
                 if 'exception' in result:
                     exc_info = result['exception']
-                    raise exc_info[1], None, exc_info[2]
-        return map(lambda x: x.get('return', None), self.results)
+                    six.reraise(*exc_info)
+        return [x.get('return', None) for x in self.results]
 
 
 def invoke_in_parallel(func, *args_sequences):
-    vt = VectorThread(func_vector(func, zip(*args_sequences)))
+    vt = VectorThread(func_vector(func, list(zip(*args_sequences))))
     vt.start_all()
     return vt.join_all()
 
@@ -159,7 +165,7 @@ class RollbackContext(object):
                     undoExcInfo = sys.exc_info()
 
         if exc_type is None and undoExcInfo is not None:
-            raise undoExcInfo[0], undoExcInfo[1], undoExcInfo[2]
+            six.reraise(undoExcInfo[0], undoExcInfo[1], undoExcInfo[2])
 
     def defer(self, func, *args, **kwargs):
         self._finally.append((func, args, kwargs))

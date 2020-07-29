@@ -26,27 +26,6 @@ from lago import utils
 
 from ost_utils.pytest.fixtures import prefix
 
-def test_configure_vdsm_sos_plugin(prefix):
-    """
-     VDSM SOS plugin has been moved from VDSM to SOS as a part of:
-        sos-3.7-3 in CentOS/RHEL 7.7
-        sos-3.7.1 in Fedora
-     In the transition period we need to ensure that VDSM SOS plugin exists
-     on hosts for metrics to configure properly, so we will need to copy it
-     manually to hosts if not exists (ie installed by sos package)
-    """
-    plugin_setup = os.path.join(
-        os.environ.get('SUITE'),
-        '../common/test-scenarios-files/vdsm-sos-plugin'
-    )
-    hosts = prefix.virt_env.host_vms()
-    for host in hosts:
-        host.copy_to(
-            plugin_setup,
-            '/tmp'
-        )
-        host.ssh(['/tmp/vdsm-sos-plugin/install-plugin.sh'])
-
 
 def configure_metrics(prefix):
     """

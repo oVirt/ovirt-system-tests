@@ -22,12 +22,13 @@ from __future__ import absolute_import
 import functools
 import os
 
-from lago import utils
+from ost_utils import utils
+from ost_utils.ansible import AnsibleExecutionError
+from ost_utils.pytest.fixtures.ansible import ansible_engine
+from ost_utils.pytest.fixtures.ansible import ansible_hosts
 
-from ost_utils.pytest.fixtures import prefix
 
-
-def configure_metrics(prefix):
+def configure_metrics(ansible_engine, ansible_hosts):
     """
      configure the setup for metrics collection. Essentially collectd and
      fluentd on each host and the engine. The engine will be also the central
@@ -35,24 +36,15 @@ def configure_metrics(prefix):
      an exported artifact of the suite.
     """
 
-    engine = prefix.virt_env.engine_vm()
-
     # Use ovirt-engine-metrics to configure collectd + fluentd
     configyml = os.path.join(
         os.environ.get('SUITE'),
         '../common/test-scenarios-files/metrics_bootstrap/config.yml'
     )
-    engine.copy_to(configyml, '/etc/ovirt-engine-metrics/')
+    ansible_engine.copy(src=configyml, dest='/etc/ovirt-engine-metrics/')
 
-    result = engine.ssh(
-        [
-          '/usr/share/ovirt-engine-metrics/'
-          'configure_ovirt_machines_for_metrics.sh',
-        ],
-    )
-    assert result.code == 0, (
-        'Configuring ovirt machines for metrics failed.'
-        ' Exit code is %s' % result.code
+    ansible_engine.shell(
+      '/usr/share/ovirt-engine-metrics/configure_ovirt_machines_for_metrics.sh'
     )
 
     # Configure the engine-vm as the fluentd aggregator
@@ -61,56 +53,44 @@ def configure_metrics(prefix):
             os.environ.get('SUITE'),
             '../common/test-scenarios-files/metrics_bootstrap'
         )
-        engine.copy_to(metrics_bootstrap, '/root')
+        ansible_engine.copy(src=metrics_bootstrap, dest='/root/')
 
-        result = engine.ssh(
-            [
-                'ansible-playbook',
-                '/root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml',
-            ],
-        )
-        assert result.code == 0, (
-            'Configuring ovirt-engine as fluentd aggregator failed.'
-            ' Exit code is %s' % result.code
+        ansible_engine.shell(
+            'ansible-playbook '
+            '/root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml'
         )
 
     # clean /var/cache from yum leftovers. Frees up ~65M
-    engine.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
-    hosts = prefix.virt_env.host_vms()
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
+    ansible_engine.file(path='/var/cache/dnf', state='absent')
+    ansible_engine.file(path='/var/cache/yum', state='absent')
+    ansible_hosts.file(path='/var/cache/dnf', state='absent')
+    ansible_hosts.file(path='/var/cache/yum', state='absent')
 
 
-def run_log_collector(prefix):
-    engine = prefix.virt_env.engine_vm()
-    result = engine.ssh(
-        [
-            'ovirt-log-collector',
-            '--verbose',
-            '--batch',
-            '--no-hypervisors',
-            '--conf-file=/root/ovirt-log-collector.conf',
-        ],
-    )
-    # log collector returns status code == 2 for warnings
-    assert result.code in (0, 2), \
-        'log collector failed. Exit code is %s' % result.code
-
-    engine.ssh(
-        [
-            'rm',
-            '-rf',
-            '/dev/shm/sosreport-LogCollector-*',
-        ],
-    )
-
-
-def test_metrics_and_log_collector(prefix):
-    vt = utils.VectorThread(
-            [
-                functools.partial(configure_metrics, prefix),
-                functools.partial(run_log_collector, prefix),
-            ],
+def run_log_collector(ansible_engine):
+    try:
+        ansible_engine.shell(
+            'ovirt-log-collector '
+            '--verbose '
+            '--batch '
+            '--no-hypervisors '
+            '--conf-file=/root/ovirt-log-collector.conf '
         )
+    except AnsibleExecutionError as e:
+        # log collector returns status code == 2 for warnings
+        if e.rc != 2:
+            raise
+
+    ansible_engine.shell('rm -rf /dev/shm/sosreport-LogCollector-*')
+
+
+def test_metrics_and_log_collector(ansible_engine, ansible_hosts):
+    vt = utils.VectorThread(
+        [
+            functools.partial(configure_metrics, ansible_engine,
+                              ansible_hosts),
+            functools.partial(run_log_collector, ansible_engine),
+        ],
+    )
     vt.start_all()
     vt.join_all()

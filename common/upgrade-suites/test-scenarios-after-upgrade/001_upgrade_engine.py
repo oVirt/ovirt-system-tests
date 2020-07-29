@@ -61,7 +61,8 @@ def test_initialize_engine(prefix):
     _execute_on_engine(engine,
                        ['engine-setup',
                         '--config-append=/tmp/answer-file-post',
-                        '--accept-defaults'],
+                        '--accept-defaults',
+                        '--otopi-environment=OVESETUP_SYSTEM/memCheckEnabled=bool:False'],
                        error_message="engine-setup",
                        run_ss=True)
 

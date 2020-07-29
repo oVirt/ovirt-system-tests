@@ -16,7 +16,7 @@ domains:
   lago-{{ env.suite_name }}-engine:
     <<: *vm-common-settings
     vm-type: ovirt-engine
-    memory: 4096
+    memory: 3584
     nics:
       - net: lago-{{ env.suite_name}}-net-management
       - net: lago-{{ env.suite_name}}-net-storage
@@ -83,7 +83,7 @@ domains:
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
     vm-type: ovirt-host
-    memory: 2047
+    memory: 1792
     nics:
       - net: lago-{{ env.suite_name }}-net-management
       - net: lago-{{ env.suite_name }}-net-storage

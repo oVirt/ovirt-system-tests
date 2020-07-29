@@ -1357,6 +1357,7 @@ def test_verify_engine_backup(prefix):
             'engine-setup',
             '--accept-defaults',
             '--offline',
+            '--otopi-environment=OVESETUP_SYSTEM/memCheckEnabled=bool:False',
         ],
     )
     assert result.code == 0, \

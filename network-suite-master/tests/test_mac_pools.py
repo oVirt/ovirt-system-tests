@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,26 +47,6 @@ VM1 = 'vm1'
 
 
 pytestmark = pytest.mark.usefixtures('default_storage_domain')
-
-
-@pytest.fixture(scope='module')
-def host_1_in_cluster_0(default_data_center, host_1_up, cluster_0):
-    current_cluster = host_1_up.get_cluster()
-
-    host_1_up.change_cluster(cluster_0)
-    default_data_center.wait_for_up_status()
-    yield
-    host_1_up.change_cluster(current_cluster)
-    default_data_center.wait_for_up_status()
-
-
-@pytest.fixture(scope='module')
-def cluster_0(system, default_data_center):
-    CLUSTER_0 = 'Cluster0'
-    cluster = clusterlib.Cluster(system)
-    cluster.create(default_data_center, CLUSTER_0)
-    yield cluster
-    cluster.remove()
 
 
 def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
@@ -141,7 +121,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         assert vm_0.get_vnic(NIC_NAME_1).mac_address != MAC_ADDR_1
 
 
-@pytest.mark.usefixtures('host_1_in_cluster_0')
+@pytest.mark.usefixtures('host_0_in_cluster_0')
 def test_mac_pools_in_different_clusters_dont_overlap(
         system, cluster_0, default_cluster, ovirtmgmt_vnic_profile):
     MAC_POOL_0 = 'mac_pool_0'
@@ -287,6 +267,18 @@ def test_move_mac_to_new_vm(
 
         vnic_1 = vm_1.get_vnic(NIC_NAME_1)
         assert vnic_1.mac_address == MAC_ADDR_1
+
+
+@pytest.fixture(scope='function')
+def host_0_in_cluster_0(host_0_up, cluster_0):
+    with host_0_up.toggle_cluster(cluster_0):
+        yield
+
+
+@pytest.fixture(scope='module')
+def cluster_0(system, default_data_center):
+    with clusterlib.cluster(system, default_data_center, 'c0') as c0:
+        yield c0
 
 
 def _replace_vnic_mac_addr(vm, addr):

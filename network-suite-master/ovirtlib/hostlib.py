@@ -62,17 +62,6 @@ class HostStatusError(Exception):
     pass
 
 
-@contextlib.contextmanager
-def change_cluster(host, cluster):
-    original_cluster = host.get_cluster()
-
-    host.change_cluster(cluster)
-    try:
-        yield
-    finally:
-        host.change_cluster(original_cluster)
-
-
 def retry_below_version(version):
     def decorate_if_required(func):
         @functools.wraps(func)
@@ -140,6 +129,17 @@ class Host(SDKRootEntity):
             error_criteria=Host._is_error_non_transient
         )
         self.wait_for_maintenance_status()
+
+    @contextlib.contextmanager
+    def toggle_cluster(self, target_cluster):
+        current_cluster = self.get_cluster()
+        try:
+            self.change_cluster(target_cluster)
+            self._get_data_center().wait_for_up_status()
+            yield
+        finally:
+            self.change_cluster(current_cluster)
+            self._get_data_center().wait_for_up_status()
 
     def change_cluster(self, cluster):
         self.deactivate()

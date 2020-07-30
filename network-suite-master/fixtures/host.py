@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ def host_in_ovs_cluster(
     host = hostlib.Host(system)
     host.import_by_id(host_id)
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
-    with hostlib.change_cluster(host, ovs_cluster):
+    with host.toggle_cluster(ovs_cluster):
         host.sync_all_networks()
         default_data_center.wait_for_up_status()
         yield host

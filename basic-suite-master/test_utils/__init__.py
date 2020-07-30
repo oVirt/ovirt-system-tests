@@ -28,6 +28,7 @@ import six
 import uuid
 from ovirtlago import testlib
 from ost_utils.memoized import memoized
+from test_utils.constants import VM0_IP_HOST_PART
 
 
 @testlib.with_ovirt_api4
@@ -279,6 +280,12 @@ def get_luns(prefix, host, port, target, from_lun, to_lun=None):
             luns.append(lun)
 
     return luns
+
+
+# unused in master, but sadly this is shared with he-basic-role-remote_suite_4.3, he-basic_suite_4.3, he-basic-iscsi_suite_4.3
+def get_vm0_ip_address(prefix):
+    gw_address = get_management_net(prefix).gw()
+    return '.'.join(gw_address.split('.')[0:3] + [VM0_IP_HOST_PART])
 
 
 def get_management_net(prefix):

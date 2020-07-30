@@ -189,6 +189,8 @@ includepkgs = 389-ds-base
 	samba-common
 	samba-common-libs
 	samba-libs
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	sssd
 	sssd-ad
@@ -659,8 +661,6 @@ includepkgs = GeoIP
 	scrub
 	seabios-bin
 	seavgabios-bin
-	selinux-policy
-	selinux-policy-targeted
 	setools-libs
 	sg3_utils
 	sg3_utils-libs
@@ -726,7 +726,6 @@ includepkgs = cockpit-dashboard
 	cockpit-storaged
 	dpdk
 	libssh
-	python-httplib2
 	sshpass
 
 [epel-el7]
@@ -746,6 +745,7 @@ includepkgs = ansible
 	python-extras
 	python-unittest2
 	python2-asn1crypto
+	python2-httplib2
 	python2-jmespath
 	python2-lockfile
 	python2-mimeparse

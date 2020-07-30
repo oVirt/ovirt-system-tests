@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import ovirtsdk4
 from ovirtsdk4 import types
 
 from ovirtlib import datacenterlib
+from ovirtlib import netlib
 
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
@@ -199,3 +200,10 @@ def network_assignment(cluster, network, required=False):
         yield cluster_network
     finally:
         cluster_network.remove()
+
+
+@contextlib.contextmanager
+def new_assigned_network(name, data_center, cluster):
+    with netlib.new_network(name, data_center) as network:
+        with network_assignment(cluster, network):
+            yield network

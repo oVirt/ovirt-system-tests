@@ -118,9 +118,6 @@ domains:
       - /var/log
       - /etc/yum.repos.d
       - /tmp/dnf_yum.conf
-      {% if env.coverage == "true" -%}
-      - /var/lib/vdsm/coverage
-      {%- endif %}
 {%- endfor %}
 nets:
   lago-{{ env.suite_name }}-net-management:

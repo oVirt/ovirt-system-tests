@@ -15,7 +15,9 @@ else
     PYTHON_VERSION="3"
 fi
 
-$DNF install -y python${PYTHON_VERSION}-coverage
+if ! rpm -q python${PYTHON_VERSION}-coverage > /dev/null; then
+    $DNF install -y python${PYTHON_VERSION}-coverage
+fi
 
 VDSM_CONF_DIR="/etc/vdsm/vdsm.conf.d"
 VDSM_COVERAGE_CONF="${VDSM_CONF_DIR}/coverage.conf"

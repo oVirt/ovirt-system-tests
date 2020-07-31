@@ -63,7 +63,7 @@ def _combine_coverage_data_on_hosts(hosts):
     print("Combining coverage data on hosts...")
 
     def _combine_coverage_data_on_host(host):
-        host.ssh(['coverage', 'combine',
+        host.ssh(['$([ -x /usr/bin/coverage ] && echo coverage || echo coverage-3)', 'combine',
                   '--rcfile=/var/lib/vdsm/coverage/coveragerc'])
 
     utils.invoke_in_parallel(_combine_coverage_data_on_host, hosts)
@@ -94,9 +94,9 @@ def _copy_coverage_data_to_first_host(first_host, remaining_hosts):
 
 def _generate_coverage_report_on_host(host):
     print("Generating coverage report on one of the hosts...")
-    host.ssh(['coverage', 'combine', '-a',
+    host.ssh(['$([ -x /usr/bin/coverage ] && echo coverage || echo coverage-3)', 'combine', '-a',
               '--rcfile=/var/lib/vdsm/coverage/coveragerc'])
-    host.ssh(['coverage', 'html',
+    host.ssh(['$([ -x /usr/bin/coverage ] && echo coverage || echo coverage-3)', 'html',
               '--directory=/var/lib/vdsm/coverage/html',
               '--rcfile=/var/lib/vdsm/coverage/coveragerc'])
 

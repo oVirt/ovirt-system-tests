@@ -475,9 +475,8 @@ def test_verify_add_hosts(engine_api):
     )
 
 @order_by(_TEST_LIST)
-def test_verify_add_all_hosts(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    hosts_service = api.system_service().hosts_service()
+def test_verify_add_all_hosts(engine_api):
+    hosts_service = engine_api.system_service().hosts_service()
     total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
 
     testlib.assert_true_within(
@@ -722,14 +721,14 @@ def generic_import_from_glance(prefix=None, as_template=False,
 
 
 @order_by(_TEST_LIST)
-def test_list_glance_images(api_v4):
+def test_list_glance_images(engine_api):
     search_query = 'name={}'.format(SD_GLANCE_NAME)
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
     storage_domains_service = engine.storage_domains_service()
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
-        openstack_glance = add_glance(api_v4)
+        openstack_glance = add_glance(engine_api)
         if not openstack_glance:
             raise RuntimeError('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
@@ -814,8 +813,8 @@ def import_template_from_glance(prefix_param):
 
 
 @order_by(_TEST_LIST)
-def test_set_dc_quota_audit(api_v4):
-    dcs_service = api_v4.system_service().data_centers_service()
+def test_set_dc_quota_audit(engine_api):
+    dcs_service = engine_api.system_service().data_centers_service()
     dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
     dc_service = dcs_service.data_center_service(dc.id)
     assert dc_service.update(
@@ -826,15 +825,15 @@ def test_set_dc_quota_audit(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_quota_storage_limits(api_v4):
+def test_add_quota_storage_limits(engine_api):
 
     # Find the data center and the service that manages it:
-    dcs_service = api_v4.system_service().data_centers_service()
+    dcs_service = engine_api.system_service().data_centers_service()
     dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
     dc_service = dcs_service.data_center_service(dc.id)
 
     # Find the storage domain and the service that manages it:
-    sds_service = api_v4.system_service().storage_domains_service()
+    sds_service = engine_api.system_service().storage_domains_service()
     sd = sds_service.list()[0]
 
     # Find the quota and the service that manages it.
@@ -880,8 +879,8 @@ def test_add_quota_storage_limits(api_v4):
     )
 
 @order_by(_TEST_LIST)
-def test_add_quota_cluster_limits(api_v4):
-    datacenters_service = api_v4.system_service().data_centers_service()
+def test_add_quota_cluster_limits(engine_api):
+    datacenters_service = engine_api.system_service().data_centers_service()
     datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
@@ -900,8 +899,8 @@ def test_add_quota_cluster_limits(api_v4):
     )
 
 @order_by(_TEST_LIST)
-def test_add_vm_network(api_v4):
-    engine = api_v4.system_service()
+def test_add_vm_network(engine_api):
+    engine = engine_api.system_service()
 
     network = network_utils_v4.create_network_params(
         VM_NETWORK,
@@ -921,8 +920,8 @@ def test_add_vm_network(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_non_vm_network(api_v4):
-    engine = api_v4.system_service()
+def test_add_non_vm_network(engine_api):
+    engine = engine_api.system_service()
 
     network = network_utils_v4.create_network_params(
         MIGRATION_NETWORK,
@@ -943,8 +942,8 @@ def test_add_non_vm_network(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_role(api_v4):
-    engine = api_v4.system_service()
+def test_add_role(engine_api):
+    engine = engine_api.system_service()
     roles_service = engine.roles_service()
     with test_utils.TestEvent(engine, 864): # USER_ADD_ROLE_WITH_ACTION_GROUP event
         assert roles_service.add(
@@ -963,8 +962,8 @@ def test_add_role(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_affinity_label(api_v4):
-    engine = api_v4.system_service()
+def test_add_affinity_label(engine_api):
+    engine = engine_api.system_service()
     affinity_labels_service = engine.affinity_labels_service()
     with test_utils.TestEvent(engine, 10380):
         assert affinity_labels_service.add(
@@ -975,8 +974,8 @@ def test_add_affinity_label(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_affinity_group(api_v4):
-    engine = api_v4.system_service()
+def test_add_affinity_group(engine_api):
+    engine = engine_api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     affinity_group_service = cluster_service.affinity_groups_service()
     with test_utils.TestEvent(engine, 10350):
@@ -995,8 +994,8 @@ def test_add_affinity_group(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_bookmark(api_v4):
-    engine = api_v4.system_service()
+def test_add_bookmark(engine_api):
+    engine = engine_api.system_service()
     bookmarks_service = engine.bookmarks_service()
     with test_utils.TestEvent(engine, 350):
         assert bookmarks_service.add(
@@ -1008,8 +1007,8 @@ def test_add_bookmark(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_cpu_profile(api_v4):
-    engine = api_v4.system_service()
+def test_add_cpu_profile(engine_api):
+    engine = engine_api.system_service()
     cpu_profiles_service = engine.cpu_profiles_service()
     cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
     with test_utils.TestEvent(engine, 10130): # USER_ADDED_CPU_PROFILE event
@@ -1024,8 +1023,8 @@ def test_add_cpu_profile(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_qos(api_v4):
-    engine = api_v4.system_service()
+def test_add_qos(engine_api):
+    engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, DC_NAME)
     qoss = dc_service.qoss_service()
     with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
@@ -1048,8 +1047,8 @@ def test_add_qos(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_disk_profile(api_v4):
-    engine = api_v4.system_service()
+def test_add_disk_profile(engine_api):
+    engine = engine_api.system_service()
     disk_profiles_service = engine.disk_profiles_service()
     dc_service = test_utils.data_center_service(engine, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
@@ -1067,8 +1066,8 @@ def test_add_disk_profile(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_version(api_v4):
-    product_info = api_v4.system_service().get().product_info
+def test_get_version(engine_api):
+    product_info = engine_api.system_service().get().product_info
     name = product_info.name
     major_version = product_info.version.major
     assert name in ('oVirt Engine', 'Red Hat Virtualization Manager')
@@ -1076,8 +1075,8 @@ def test_get_version(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_cluster_enabled_features(api_v4):
-    cluster_service = test_utils.get_cluster_service(api_v4.system_service(), CLUSTER_NAME)
+def test_get_cluster_enabled_features(engine_api):
+    cluster_service = test_utils.get_cluster_service(engine_api.system_service(), CLUSTER_NAME)
     enabled_features_service = cluster_service.enabled_features_service()
     features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
     #TODO: Fix the below - why is features null?
@@ -1092,8 +1091,8 @@ def test_get_cluster_enabled_features(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_cluster_levels(api_v4):
-    cluster_levels_service = api_v4.system_service().cluster_levels_service()
+def test_get_cluster_levels(engine_api):
+    cluster_levels_service = engine_api.system_service().cluster_levels_service()
     cluster_levels = sorted(cluster_levels_service.list(), key=lambda level:level.id)
     assert cluster_levels
     levels = ''
@@ -1109,8 +1108,8 @@ def test_get_cluster_levels(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_domains(api_v4):
-    domains_service = api_v4.system_service().domains_service()
+def test_get_domains(engine_api):
+    domains_service = engine_api.system_service().domains_service()
     domains = sorted(domains_service.list(), key=lambda domain: domain.name)
     for domain in domains:
         if domain.name == 'internal-authz':
@@ -1119,8 +1118,8 @@ def test_get_domains(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_devices(api_v4):
-    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
+def test_get_host_devices(engine_api):
+    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
     for i in range(10):
         devices_service = host_service.devices_service()
         devices = sorted(devices_service.list(), key=lambda device: device.name)
@@ -1135,8 +1134,8 @@ def test_get_host_devices(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_hooks(api_v4):
-    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
+def test_get_host_hooks(engine_api):
+    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
     hooks_list = ''
@@ -1149,8 +1148,8 @@ def test_get_host_hooks(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_stats(api_v4):
-    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
+def test_get_host_stats(engine_api):
+    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
     stats_list = ''
@@ -1163,8 +1162,8 @@ def test_get_host_stats(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_numa_nodes(api_v4):
-    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
+def test_get_host_numa_nodes(engine_api):
+    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
@@ -1175,9 +1174,9 @@ def test_get_host_numa_nodes(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_check_update_host(api_v4):
-    engine = api_v4.system_service()
-    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
+def test_check_update_host(engine_api):
+    engine = engine_api.system_service()
+    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
     events_service = engine.events_service()
     with test_utils.TestEvent(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
@@ -1186,8 +1185,8 @@ def test_check_update_host(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_scheduling_policy(api_v4):
-    engine = api_v4.system_service()
+def test_add_scheduling_policy(engine_api):
+    engine = engine_api.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
     with test_utils.TestEvent(engine, 9910):
         assert scheduling_policies_service.add(
@@ -1216,14 +1215,14 @@ def test_add_scheduling_policy(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_get_system_options(api_v4):
+def test_get_system_options(engine_api):
     #TODO: get some option
-    options_service = api_v4.system_service().options_service()
+    options_service = engine_api.system_service().options_service()
 
 
 @order_by(_TEST_LIST)
-def test_get_operating_systems(api_v4):
-    operating_systems_service = api_v4.system_service().operating_systems_service()
+def test_get_operating_systems(engine_api):
+    operating_systems_service = engine_api.system_service().operating_systems_service()
     os_list = sorted(operating_systems_service.list(), key=lambda os:os.name)
     assert os_list
     os_string = ''
@@ -1236,11 +1235,11 @@ def test_get_operating_systems(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_fence_agent(api_v4):
+def test_add_fence_agent(engine_api):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
-    host_service = _random_host_service_from_dc(api_v4, DC_NAME)
+    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
 
     fence_agents_service = host_service.fence_agents_service()
     pytest.skip('Enabling this may affect tests. Needs further tests')
@@ -1262,8 +1261,8 @@ def test_add_fence_agent(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_tag(api_v4):
-    engine = api_v4.system_service()
+def test_add_tag(engine_api):
+    engine = engine_api.system_service()
     tags_service = engine.tags_service()
     assert tags_service.add(
         sdk4.types.Tag(
@@ -1274,8 +1273,8 @@ def test_add_tag(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_mac_pool(api_v4):
-    engine = api_v4.system_service()
+def test_add_mac_pool(engine_api):
+    engine = engine_api.system_service()
     pools_service = engine.mac_pools_service()
     with test_utils.TestEvent(engine, 10700): # MAC_POOL_ADD_SUCCESS event
         pool = pools_service.add(
@@ -1319,18 +1318,18 @@ def test_verify_notifier(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_verify_glance_import(api_v4):
+def test_verify_glance_import(engine_api):
     # If we go with the engine backup before the glance template
     # creation is complete, we'll fail the creation of 'vm1' later,
     # which is based on that template.
-    templates_service = api_v4.system_service().templates_service()
+    templates_service = engine_api.system_service().templates_service()
 
     testlib.assert_true_within_long(
         lambda: TEMPLATE_GUEST in [t.name for t in templates_service.list()]
     )
 
     for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
-        disks_service = api_v4.system_service().disks_service()
+        disks_service = engine_api.system_service().disks_service()
         testlib.assert_true_within_long(
             lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
         )
@@ -1407,8 +1406,8 @@ def test_verify_engine_backup(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_add_vnic_passthrough_profile(api_v4):
-    engine = api_v4.system_service()
+def test_add_vnic_passthrough_profile(engine_api):
+    engine = engine_api.system_service()
     vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
     with test_utils.TestEvent(engine, 1122):
@@ -1424,8 +1423,8 @@ def test_add_vnic_passthrough_profile(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_remove_vnic_passthrough_profile(api_v4):
-    engine = api_v4.system_service()
+def test_remove_vnic_passthrough_profile(engine_api):
+    engine = engine_api.system_service()
     vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
     vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
@@ -1439,8 +1438,8 @@ def test_remove_vnic_passthrough_profile(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_blank_vms(api_v4):
-    engine = api_v4.system_service()
+def test_add_blank_vms(engine_api):
+    engine = engine_api.system_service()
     vms_service = engine.vms_service()
 
     vm_params = sdk4.types.Vm(
@@ -1496,8 +1495,8 @@ def test_add_blank_vms(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_blank_high_perf_vm2(api_v4):
-    engine = api_v4.system_service()
+def test_add_blank_high_perf_vm2(engine_api):
+    engine = engine_api.system_service()
     hosts_service = engine.hosts_service()
     hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
 
@@ -1587,8 +1586,8 @@ def test_add_blank_high_perf_vm2(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_configure_high_perf_vm2(api_v4):
-    engine = api_v4.system_service()
+def test_configure_high_perf_vm2(engine_api):
+    engine = engine_api.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
     vm2_graphics_consoles_service = vm2_service.graphics_consoles_service()
     vm2_graphics_consoles = vm2_graphics_consoles_service.list()
@@ -1627,8 +1626,8 @@ def test_configure_high_perf_vm2(api_v4):
 
 @versioning.require_version(4, 1)
 @order_by(_TEST_LIST)
-def test_add_vm2_lease(api_v4):
-    engine = api_v4.system_service()
+def test_add_vm2_lease(engine_api):
+    engine = engine_api.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
 
@@ -1651,11 +1650,11 @@ def test_add_vm2_lease(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_nic(api_v4):
+def test_add_nic(engine_api):
     NIC_NAME = 'eth0'
     # Locate the vnic profiles service and use it to find the ovirmgmt
     # network's profile id:
-    profiles_service = api_v4.system_service().vnic_profiles_service()
+    profiles_service = engine_api.system_service().vnic_profiles_service()
     profile_id = next(
         (
             profile.id for profile in profiles_service.list()
@@ -1669,7 +1668,7 @@ def test_add_nic(api_v4):
 
     # Locate the virtual machines service and use it to find the virtual
     # machine:
-    vms_service = api_v4.system_service().vms_service()
+    vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
 
     # Locate the service that manages the network interface cards of the
@@ -1703,9 +1702,9 @@ def test_add_nic(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_graphics_console(api_v4):
+def test_add_graphics_console(engine_api):
     # remove VNC
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
     vm = test_utils.get_vm_service(engine, VM0_NAME)
     consoles_service = vm.graphics_consoles_service()
     if len(consoles_service.list()) == 2:
@@ -1729,11 +1728,11 @@ def test_add_graphics_console(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_filter(api_v4):
-    engine = api_v4.system_service()
+def test_add_filter(engine_api):
+    engine = engine_api.system_service()
     nics_service = test_utils.get_nics_service(engine, VM0_NAME)
     nic = nics_service.list()[0]
-    network = api_v4.follow_link(nic.vnic_profile).network
+    network = engine_api.follow_link(nic.vnic_profile).network
     network_filters_service = engine.network_filters_service()
     network_filter = next(
         network_filter for network_filter in network_filters_service.list()
@@ -1771,8 +1770,8 @@ def test_add_filter_parameter(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_add_serial_console_vm2(api_v4):
-    engine = api_v4.system_service()
+def test_add_serial_console_vm2(engine_api):
+    engine = engine_api.system_service()
     # Find the virtual machine. Note the use of the `all_content` parameter, it is
     # required in order to obtain additional information that isn't retrieved by
     # default, like the configuration of the serial console.
@@ -1790,8 +1789,8 @@ def test_add_serial_console_vm2(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_instance_type(api_v4):
-    engine = api_v4.system_service()
+def test_add_instance_type(engine_api):
+    engine = engine_api.system_service()
     instance_types_service = engine.instance_types_service()
     with test_utils.TestEvent(engine, 29):
         assert instance_types_service.add(
@@ -1816,8 +1815,8 @@ def test_add_instance_type(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_event(api_v4):
-    events_service = api_v4.system_service().events_service()
+def test_add_event(engine_api):
+    events_service = engine_api.system_service().events_service()
     assert events_service.add( # Add a new event to the system
         types.Event(
             description='ovirt-system-tests description',

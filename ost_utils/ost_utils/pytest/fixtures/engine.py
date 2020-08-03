@@ -86,3 +86,29 @@ def engine_cert(engine_ip):
         url = "https://%s/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA" % engine_ip
         shell(["curl", "--insecure", "--output", cert_file.name, url])
         yield cert_file.name
+
+
+@pytest.fixture(scope="session")
+def engine_download(request, engine_fqdn, engine_ip):
+
+    def download(url, path=None, timeout=10):
+        args = ["curl", "-fsS", "-m", str(timeout)]
+
+        if url.startswith("https"):
+            args.extend([
+                "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip),
+                "--cacert", request.getfixturevalue("engine_cert")
+            ])
+        else:
+            args.extend([
+                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip),
+            ])
+
+        if path is not None:
+            args.extend(["-o", path])
+
+        args.append(url)
+
+        return shell(args, bytes_output=True)
+
+    return download

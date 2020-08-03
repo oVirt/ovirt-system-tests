@@ -28,6 +28,12 @@ from ovirtlago import testlib
 
 
 @pytest.fixture(scope="session")
+def root_password():
+    # TODO: read it properly
+    return "123456"
+
+
+@pytest.fixture(scope="session")
 def prefix():
     yield testlib.get_test_prefix()
 

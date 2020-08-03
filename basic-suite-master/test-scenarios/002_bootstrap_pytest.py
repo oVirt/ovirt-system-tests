@@ -46,7 +46,8 @@ from ost_utils import general_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
-from ost_utils.pytest.fixtures.ansible import ansible_hosts
+from ost_utils.pytest.fixtures import root_password
+from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.selenium.common import http_proxy_disabled
 from ost_utils import shell
@@ -436,19 +437,22 @@ def test_sync_time(ansible_hosts, engine_hostname):
 
 
 @order_by(_TEST_LIST)
-def test_add_hosts(prefix):
-    hosts = prefix.virt_env.host_vms()
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api.system_service()
-    hosts_service = engine.hosts_service()
+def test_add_hosts(ansible_host0_facts, ansible_host1_facts, engine_api,
+                   root_password):
+    engine = engine_api.system_service()
 
-    def _add_host(vm):
-        return hosts_service.add(
+    hostnames = [
+        facts.get("ansible_hostname")
+        for facts in [ansible_host0_facts, ansible_host1_facts]
+    ]
+
+    def _add_host(hostname):
+        return engine.hosts_service().add(
             sdk4.types.Host(
-                name=vm.name(),
-                description='host %s' % vm.name(),
-                address=vm.name(),
-                root_password=str(vm.root_password()),
+                name=hostname,
+                description='host %s' % hostname,
+                address=hostname,
+                root_password=root_password,
                 override_iptables=True,
                 cluster=sdk4.types.Cluster(
                     name=CLUSTER_NAME,
@@ -457,8 +461,8 @@ def test_add_hosts(prefix):
         )
 
     with test_utils.TestEvent(engine, 42):
-        for host in hosts:
-            assert _add_host(host)
+        for hostname in hostnames:
+            assert _add_host(hostname)
 
 
 @order_by(_TEST_LIST)

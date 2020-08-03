@@ -245,18 +245,6 @@ def _check_problematic_hosts(hosts_service):
         raise RuntimeError(dump_hosts)
 
 
-def _change_logging_level(host, logger_name, level='DEBUG',
-                          qualified_logger_name=None):
-    if qualified_logger_name is None:
-        qualified_logger_name = logger_name
-
-    host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level={}'.format(level),
-              'name={}'.format(qualified_logger_name)])
-    sed_expr = ('/logger_{}/,/level=/s/level=INFO/level={}/'
-                .format(logger_name, level))
-    host.ssh(['sed', '-i', sed_expr, '/etc/vdsm/logger.conf'])
-
-
 def _host_status_to_print(hosts_service, hosts_list):
     dump_hosts = ''
     for host in hosts_list:
@@ -489,17 +477,27 @@ def test_verify_add_all_hosts(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_complete_hosts_setup(prefix):
+def test_complete_hosts_setup(ansible_hosts):
     if not os.environ.get('ENABLE_DEBUG_LOGGING'):
         pytest.skip('Skip vdsm debug logging')
-    hosts = prefix.virt_env.host_vms()
-    for host in hosts:
-        host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
-        host.ssh(['vdsm-client', 'Host', 'setLogLevel', 'level=DEBUG'])
-        for logger in ('root', 'vds', 'virt',):
-            _change_logging_level(host, logger)
-        _change_logging_level(host, 'schema_inconsistency', 'DEBUG',
-                              'schema.inconsistency')
+
+    ansible_hosts.shell('vdsm-client Host setLogLevel level=DEBUG')
+
+    loggers = (
+        ('root', 'root'),
+        ('vds', 'vds'),
+        ('virt', 'virt'),
+        ('schema_inconsistency', 'schema.inconsistency')
+    )
+
+    for name, qualified_name in loggers:
+        ansible_hosts.shell(
+            'vdsm-client Host setLogLevel level=DEBUG name={}'.format(qualified_name)
+        )
+        sed_expr = '/logger_{}/,/level=/s/level=INFO/level=DEBUG/'.format(name)
+        ansible_hosts.shell(
+            'sed -i {} /etc/vdsm/logger.conf'.format(sed_expr)
+        )
 
 
 def _add_storage_domain(api, p):

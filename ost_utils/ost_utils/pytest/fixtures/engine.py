@@ -39,6 +39,11 @@ def engine_ip(ansible_engine_facts):
 
 
 @pytest.fixture(scope="session")
+def engine_hostname(ansible_engine_facts):
+    return ansible_engine_facts.get("ansible_hostname")
+
+
+@pytest.fixture(scope="session")
 def engine_fqdn():
     return "engine"
 

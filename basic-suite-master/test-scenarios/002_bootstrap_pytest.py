@@ -46,6 +46,7 @@ from ost_utils import general_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.ansible import ansible_hosts
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.selenium.common import http_proxy_disabled
 from ost_utils import shell
@@ -429,11 +430,9 @@ def test_add_cluster(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_sync_time(prefix):
-    hosts = prefix.virt_env.host_vms()
-    for host in hosts:
-        host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
-        host.ssh(['chronyc', '-4', 'makestep'])
+def test_sync_time(ansible_hosts, engine_hostname):
+    ansible_hosts.shell('chronyc -4 add server {}'.format(engine_hostname))
+    ansible_hosts.shell('chronyc -4 makestep')
 
 
 @order_by(_TEST_LIST)

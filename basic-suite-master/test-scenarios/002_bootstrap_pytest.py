@@ -1755,11 +1755,9 @@ def test_add_filter(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_filter_parameter(prefix):
-    engine_vm = prefix.virt_env.engine_vm()
-    vm_gw = '.'.join(engine_vm.ip().split('.')[0:3] + ['1'])
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api_v4.system_service()
+def test_add_filter_parameter(engine_api, engine_ip):
+    vm_gw = '.'.join(engine_ip.split('.')[0:3] + ['1'])
+    engine = engine_api.system_service()
     network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
         engine, VM0_NAME)
 

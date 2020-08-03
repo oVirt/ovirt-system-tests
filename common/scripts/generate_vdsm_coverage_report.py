@@ -109,6 +109,7 @@ def _copy_coverage_report_from_host(host, output_path):
 
 
 def generate_coverage_report(prefix_path, output_path):
+    os.makedirs(output_path, exist_ok=True)
     prefix = sdk.load_env(prefix_path)
     hosts = [h for h in six.itervalues(prefix.get_vms())
              if h.vm_type == 'ovirt-host']

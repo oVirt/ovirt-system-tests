@@ -1337,73 +1337,49 @@ def test_verify_glance_import(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_verify_engine_backup(prefix):
-    engine_vm = prefix.virt_env.engine_vm()
-    engine_vm.ssh(
-        [
-            'mkdir',
-            '/var/log/ost-engine-backup',
-        ],
+def test_verify_engine_backup(ansible_engine, engine_api):
+    ansible_engine.file(
+        path='/var/log/ost-engine-backup',
+        state='directory',
+        mode='0755'
     )
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api.system_service()
+
+    engine = engine_api.system_service()
 
     with test_utils.TestEvent(engine, [9024, 9025]): #backup started event, completed
-        result = engine_vm.ssh(
-            [
-                'engine-backup',
-                '--mode=backup',
-                '--file=/var/log/ost-engine-backup/backup.tgz',
-                '--log=/var/log/ost-engine-backup/log.txt',
-            ],
+        ansible_engine.shell(
+            'engine-backup '
+            '--mode=backup '
+            '--file=/var/log/ost-engine-backup/backup.tgz '
+            '--log=/var/log/ost-engine-backup/log.txt'
         )
-        assert result.code == 0, \
-            'Failed to run engine-backup with code {0}. Output: {1}'.format(result.code, result.out)
 
-    result = engine_vm.ssh(
-        [
-            'engine-backup',
-            '--mode=verify',
-            '--file=/var/log/ost-engine-backup/backup.tgz',
-            '--log=/var/log/ost-engine-backup/verify-log.txt',
-        ],
+    ansible_engine.shell(
+        'engine-backup '
+        '--mode=verify '
+        '--file=/var/log/ost-engine-backup/backup.tgz '
+        '--log=/var/log/ost-engine-backup/verify-log.txt'
     )
-    assert result.code == 0, \
-        'Failed to verify backup with code {0}. Output: {1}'.format(result.code, result.out)
 
-    result = engine_vm.ssh(
-        [
-            'engine-cleanup',
-            '--otopi-environment="OVESETUP_CORE/remove=bool:True OVESETUP_CORE/engineStop=bool:True"',
-        ],
+    ansible_engine.shell(
+        'engine-cleanup '
+        '--otopi-environment="OVESETUP_CORE/remove=bool:True OVESETUP_CORE/engineStop=bool:True"'
     )
-    assert result.code == 0, \
-        'Failed to cleanup engine with code {0}. Output: {1}'.format(result.code, result.out)
 
-    result = engine_vm.ssh(
-        [
-            'engine-backup',
-            '--mode=restore',
-            '--provision-all-databases',
-            '--file=/var/log/ost-engine-backup/backup.tgz',
-            '--log=/var/log/ost-engine-backup/verify-restore-log.txt',
-        ],
+    ansible_engine.shell(
+        'engine-backup '
+        '--mode=restore '
+        '--provision-all-databases '
+        '--file=/var/log/ost-engine-backup/backup.tgz '
+        '--log=/var/log/ost-engine-backup/verify-restore-log.txt'
     )
-    assert result.code == 0, \
-        'Failed to verify restore with code {0}. Output: {1}'.format(result.code, result.out)
 
-    result = engine_vm.ssh(
-        [
-            'engine-setup',
-            '--accept-defaults',
-            '--offline',
-            '--otopi-environment=OVESETUP_SYSTEM/memCheckEnabled=bool:False',
-        ],
+    ansible_engine.shell(
+        'engine-setup '
+        '--accept-defaults '
+        '--offline '
+        '--otopi-environment=OVESETUP_SYSTEM/memCheckEnabled=bool:False'
     )
-    assert result.code == 0, \
-        'Failed to setup after restore with code {0}. Output: {1}'.format(result.code, result.out)
-
-
 
 
 @order_by(_TEST_LIST)

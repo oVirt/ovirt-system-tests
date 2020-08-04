@@ -1207,17 +1207,11 @@ def test_hotunplug_disk(api_v4):
         )
 
 
-_log_time_before_suspend = None
-
-
 @order_by(_TEST_LIST)
 def test_suspend_resume_vm0(prefix):
-    vm_host = _vm_host(prefix, VM0_NAME)
-    ret = vm_host.ssh(['tail', '-1', VDSM_LOG])
+    # start a background job we are going to check if it's still running later
+    ret = _vm_ssh(prefix, VM0_NAME, ['sleep 3600 &'])
     assert ret.code == EX_OK
-    log_items = ret.out.decode('utf-8').split()
-    global _log_time_before_suspend
-    _log_time_before_suspend = log_items[0] + ' ' + log_items[1]  # date + time
 
     assert_vm0_is_alive(prefix)
 
@@ -1237,23 +1231,8 @@ def test_verify_suspend_resume_vm0(prefix):
     _verify_vm_state(api_v4.system_service(), VM0_NAME, types.VmStatus.UP)
     vm_host = _vm_host(prefix, VM0_NAME)
 
-    def log_line_count(regexp):
-        awk = ('BEGIN {{ n = 0; }} '
-               '$1 " " $2 > "{}" && $0 ~ /{}/ {{ n = n + 1; }} '
-               'END {{ print n; }}').format(
-                   _log_time_before_suspend, regexp
-               )
-        ret = vm_host.ssh(['awk', "'" + awk + "'", VDSM_LOG])
-        assert ret.code == EX_OK
-        return int(ret.out)
-
-    if versioning.cluster_version_ok(4, 2):
-        identifier = 'memoryDumpVolume'
-    else:
-        identifier = 'hiberVolHandle'
-    assert log_line_count('START create\(.*' + identifier) == 1
-    assert log_line_count('CPU running: onResume') >= 1
-    assert_vm0_is_alive(prefix)
+    ret = _vm_ssh(prefix, VM0_NAME, ['pidof sleep'])
+    assert ret.code == EX_OK
 
 
 @order_by(_TEST_LIST)

@@ -51,6 +51,8 @@ NIC_NAME_2 = 'nic002'
 VM0 = 'vm0'
 VM1 = 'vm1'
 
+SNAPSHOT_DESC = 'snapshot0'
+
 
 pytestmark = pytest.mark.usefixtures('default_storage_domain')
 
@@ -108,7 +110,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         vm_0.run()
         vm_0.wait_for_up_status()
 
-        nicless_snapshot = _create_snapshot(vm_0)
+        nicless_snapshot = vm_0.create_snapshot(SNAPSHOT_DESC)
 
         vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.stop()
@@ -207,7 +209,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         vm_0.run()
         vm_0.wait_for_up_status()
 
-        snapshot = _create_snapshot(vm_0)
+        snapshot = vm_0.create_snapshot(SNAPSHOT_DESC)
 
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
@@ -381,12 +383,3 @@ def pool_3_cluster_0(system, cluster_0):
     with clusterlib.mac_pool(
             system, cluster_0, 'p3', (MAC_POOL_RANGE_3,)) as p3:
         yield p3
-
-
-def _create_snapshot(vm):
-    SNAPSHOT_DESC = 'snapshot0'
-
-    snapshot = virtlib.VmSnapshot(vm)
-    snapshot.create(SNAPSHOT_DESC)
-    snapshot.wait_for_ready_status()
-    return snapshot

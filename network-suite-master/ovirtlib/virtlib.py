@@ -114,6 +114,13 @@ class Vm(SDKRootEntity):
                 snapshots.append(snapshot)
         return snapshots
 
+    def create_snapshot(self, snapshot_desc=None):
+        snapshot = VmSnapshot(self)
+        snapshot.create('snapshot_of_{}'.format(self.name)
+                        if snapshot_desc is None else snapshot_desc)
+        snapshot.wait_for_ready_status()
+        return snapshot
+
     def migrate(self, dst_host_name):
         self._service.migrate(host=types.Host(name=dst_host_name))
 

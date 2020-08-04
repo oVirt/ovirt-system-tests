@@ -1303,19 +1303,10 @@ def test_add_mac_pool(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_verify_notifier(prefix):
-    engine = prefix.virt_env.engine_vm()
-    result = engine.ssh(
-        [
-            'grep',
-            'USER_VDC_LOGIN',
-            '/var/log/messages',
-        ],
-    )
-    assert result.code == 0, \
-        'Failed grep for USER_VDC_LOGIN with code {0}. Output: {1}'.format(result.code, result.out)
-    engine.service('ovirt-engine-notifier')._request_stop()
-    engine.service('snmptrapd')._request_stop()
+def test_verify_notifier(ansible_engine):
+    ansible_engine.shell('grep USER_VDC_LOGIN /var/log/messages')
+    ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
+    ansible_engine.systemd(name='snmptrapd', state='stopped')
 
 
 @order_by(_TEST_LIST)

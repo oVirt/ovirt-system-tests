@@ -200,7 +200,8 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
                     template=cirros_template)
-        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vnic_0 = vm_0.create_vnic(NIC_NAME_1,
+                                  ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.wait_for_down_status()
 
         vm_0.run()
@@ -208,7 +209,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
 
         snapshot = _create_snapshot(vm_0)
 
-        _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
+        vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
@@ -233,13 +234,14 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
                     template=cirros_template,
                     stateless=True)
 
-        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vnic_0 = vm_0.create_vnic(NIC_NAME_1,
+                                  ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
 
-        _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
+        vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
@@ -257,13 +259,14 @@ def test_move_mac_to_new_vm(
                     cluster=default_cluster,
                     template=cirros_template)
 
-        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vnic_0 = vm_0.create_vnic(NIC_NAME_1,
+                                  ovirtmgmt_vnic_profile, MAC_ADDR_1)
         vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
 
-        _replace_vnic_mac_addr(vm_0, MAC_ADDR_2)
+        vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
@@ -378,13 +381,6 @@ def pool_3_cluster_0(system, cluster_0):
     with clusterlib.mac_pool(
             system, cluster_0, 'p3', (MAC_POOL_RANGE_3,)) as p3:
         yield p3
-
-
-def _replace_vnic_mac_addr(vm, addr):
-    vnic = vm.get_vnic(NIC_NAME_1)
-    vnic.hotunplug()
-    vnic.set_mac_addr(addr)
-    vnic.hotplug()
 
 
 def _create_snapshot(vm):

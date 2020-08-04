@@ -252,6 +252,11 @@ class Vnic(SDKSubEntity):
     def hotplug(self):
         self._service.activate()
 
+    def hot_replace_mac_addr(self, mac_addr):
+        self.hotunplug()
+        self.set_mac_addr(mac_addr)
+        self.hotplug()
+
     def _get_parent_service(self, vm):
         return vm.service.nics_service()
 

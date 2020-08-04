@@ -647,11 +647,11 @@ def test_resize_and_refresh_storage_domain(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_add_glance_images(prefix):
+def test_add_glance_images(engine_api):
     vt = utils.VectorThread(
         [
-            functools.partial(import_non_template_from_glance, prefix),
-            functools.partial(import_template_from_glance, prefix),
+            functools.partial(import_non_template_from_glance, engine_api),
+            functools.partial(import_template_from_glance, engine_api),
         ],
     )
     vt.start_all()
@@ -693,11 +693,10 @@ def add_iso_storage_domain(prefix):
 def add_templates_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
 
-def generic_import_from_glance(prefix=None, as_template=False,
+def generic_import_from_glance(engine_api, as_template=False,
                                dest_storage_domain=MASTER_SD_TYPE,
                                dest_cluster=CLUSTER_NAME):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    storage_domains_service = api.system_service().storage_domains_service()
+    storage_domains_service = engine_api.system_service().storage_domains_service()
     glance_storage_domain = storage_domains_service.list(search='name={}'.format(SD_GLANCE_NAME))[0]
     images = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().list()
     image = [x for x in images if x.name == GUEST_IMAGE_NAME][0]
@@ -717,7 +716,7 @@ def generic_import_from_glance(prefix=None, as_template=False,
             name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
         ),
     )
-    disk = api.system_service().disks_service().list(search='name={}'.format(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME))[0]
+    disk = engine_api.system_service().disks_service().list(search='name={}'.format(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME))[0]
     assert disk
 
 
@@ -805,12 +804,12 @@ def check_glance_connectivity(engine):
     return avail
 
 
-def import_non_template_from_glance(prefix_param):
-    generic_import_from_glance(prefix=prefix_param)
+def import_non_template_from_glance(engine_api):
+    generic_import_from_glance(engine_api)
 
 
-def import_template_from_glance(prefix_param):
-    generic_import_from_glance(prefix=prefix_param, as_template=True)
+def import_template_from_glance(engine_api):
+    generic_import_from_glance(engine_api, as_template=True)
 
 
 @order_by(_TEST_LIST)

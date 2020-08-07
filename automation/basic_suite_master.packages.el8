@@ -2,6 +2,7 @@ ansible
 grubby
 lago
 lago-ovirt
+openssl
 ost-images-el8-engine-installed
 ost-images-el8-host-installed
 podman

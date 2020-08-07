@@ -3,6 +3,7 @@ docker
 grubby
 lago
 lago-ovirt
+openssl
 python2-ansible-runner
 python2-six
 python-devel

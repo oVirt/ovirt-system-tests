@@ -28,6 +28,7 @@ from ovirtlago import testlib
 
 import test_utils
 from ost_utils.pytest.fixtures import api_v4, prefix
+from ost_utils.pytest.fixtures.engine import *
 
 # AAA
 AAA_LDAP_USER = 'user1'
@@ -36,7 +37,7 @@ AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
 HOSTNAME_389DS = testlib.get_prefixed_name('engine')
 
 
-def test_add_ldap_provider(prefix):
+def test_add_ldap_provider(prefix, engine_restart):
     engine = prefix.virt_env.engine_vm()
     machine_389ds = prefix.virt_env.get_vm(HOSTNAME_389DS)
 
@@ -74,14 +75,7 @@ def test_add_ldap_provider(prefix):
     assert result.code == 0, \
         'aaa-ldap-setup failed. Exit code is %s' % result.code
 
-    engine.service('ovirt-engine')._request_stop()
-    testlib.assert_true_within_long(
-        lambda: not engine.service('ovirt-engine').alive()
-    )
-    engine.service('ovirt-engine')._request_start()
-    testlib.assert_true_within_long(
-        lambda: engine.service('ovirt-engine').alive()
-    )
+    engine_restart()
 
 
 def test_add_ldap_group(api_v4):

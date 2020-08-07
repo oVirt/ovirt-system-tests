@@ -27,7 +27,10 @@ import ovirtsdk4 as sdk4
 import pytest
 
 from ost_utils.shell import shell
+from ost_utils.shell import ShellError
+from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
+from ost_utils.selenium.common import http_proxy_disabled
 
 
 @pytest.fixture(scope="session")
@@ -112,3 +115,28 @@ def engine_download(request, engine_fqdn, engine_ip):
         return shell(args, bytes_output=True)
 
     return download
+
+
+@pytest.fixture(scope="session")
+def engine_restart(ansible_engine, engine_download, engine_fqdn):
+
+    def restart():
+        ansible_engine.systemd(name='ovirt-engine', state='stopped')
+        ansible_engine.systemd(name='ovirt-engine', state='started')
+
+        health_url = 'http://{}/ovirt-engine/services/health'.format(engine_fqdn)
+
+        for _ in range(30):
+            with http_proxy_disabled():
+                try:
+                    engine_download(health_url)
+                except ShellError:
+                    pass
+                else:
+                    return
+            time.sleep(1)
+
+        # Final attempt in case of a failure to get the error message
+        engine_download(health_url)
+
+    return restart

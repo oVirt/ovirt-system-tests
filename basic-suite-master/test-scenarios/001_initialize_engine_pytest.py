@@ -24,10 +24,10 @@ import socket
 
 from tempfile import NamedTemporaryFile
 
-from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 from ost_utils.pytest.fixtures.ansible import ansible_hosts
+from ost_utils.pytest.fixtures.engine import *
 
 
 def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
@@ -85,13 +85,10 @@ def test_initialize_engine(engine_ip, ansible_engine):
     ansible_engine.systemd(name='ovirt-engine-dwhd', state='started')
 
 
-def test_engine_config(ansible_engine):
+def test_engine_config(ansible_engine, engine_restart):
     ansible_engine.shell("engine-config --set VdsLocalDisksLowFreeSpace=400")
     ansible_engine.shell("engine-config --set OvfUpdateIntervalInMinutes=10")
     ansible_engine.shell(
         "engine-config --set IsIncrementalBackupSupported=True --cver=4.4")
 
-
-def test_engine_restart(ansible_engine):
-    ansible_engine.systemd(name='ovirt-engine', state='stopped')
-    ansible_engine.systemd(name='ovirt-engine', state='started')
+    engine_restart()

@@ -83,12 +83,18 @@ def engine_api(engine_full_username, engine_password, engine_ip):
 
 
 @pytest.fixture(scope="session")
-def engine_cert(engine_ip):
-    with tempfile.NamedTemporaryFile(prefix="engine-cert",
-                                     suffix=".pem", delete=False) as cert_file:
-        url = "https://%s/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA" % engine_ip
-        shell(["curl", "--insecure", "--output", cert_file.name, url])
-        yield cert_file.name
+def engine_cert(engine_fqdn, engine_ip):
+    with http_proxy_disabled():
+        with tempfile.NamedTemporaryFile(prefix="engine-cert",
+                                         suffix=".pem") as cert_file:
+            shell([
+                "curl", "-fsS",
+                "-m", "10",
+                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip),
+                "-o", cert_file.name,
+                "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(engine_fqdn)
+            ])
+            yield cert_file.name
 
 
 @pytest.fixture(scope="session")

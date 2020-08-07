@@ -24,6 +24,7 @@ import functools
 import os
 import random
 import ssl
+import tempfile
 import time
 
 from six.moves import http_client
@@ -46,6 +47,8 @@ from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures.engine import *
+from ost_utils.selenium.common import http_proxy_disabled
+from ost_utils import shell
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -111,7 +114,8 @@ UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
 
 _TEST_LIST = [
-    "test_download_engine_certs",
+    "test_verify_engine_certs",
+    "test_engine_health_status",
     "test_add_dc",
     "test_add_cluster",
     "test_add_hosts",
@@ -272,6 +276,42 @@ def _wait_for_status(hosts_service, dc_name, status):
         else:
             up_status_seen = False
     return all_hosts
+
+
+@pytest.mark.parametrize("key_format, verification_fn", [
+    pytest.param(
+        'X509-PEM-CA',
+        lambda path: shell.shell(["openssl", "x509", "-in", path, "-text", "-noout"]),
+        id="CA certificate"
+    ),
+    pytest.param(
+        'OPENSSH-PUBKEY',
+        lambda path: shell.shell(["ssh-keygen", "-l", "-f", path]),
+        id="ssh pubkey"
+    ),
+])
+@order_by(_TEST_LIST)
+def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
+                             engine_download):
+    url = 'http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format={}'
+
+    with http_proxy_disabled(), tempfile.NamedTemporaryFile() as tmp:
+        engine_download(url.format(engine_fqdn, key_format), tmp.name)
+        try:
+            verification_fn(tmp.name)
+        except shell.ShellError:
+            print("Certificate verification failed. Certificate contents:\n")
+            print(tmp.read())
+            raise
+
+
+@pytest.mark.parametrize("scheme", ["http", "https"])
+@order_by(_TEST_LIST)
+def test_engine_health_status(scheme, engine_fqdn, engine_download):
+    url = '{}://{}/ovirt-engine/services/health'.format(scheme, engine_fqdn)
+
+    with http_proxy_disabled():
+        assert engine_download(url) == b"DB Up!Welcome to Health Status!"
 
 
 @order_by(_TEST_LIST)
@@ -1364,47 +1404,6 @@ def test_verify_engine_backup(prefix):
         'Failed to setup after restore with code {0}. Output: {1}'.format(result.code, result.out)
 
 
-@order_by(_TEST_LIST)
-def test_download_engine_certs(prefix):
-    engine_ip = prefix.virt_env.engine_vm().ip()
-    engine_base_url = '/ovirt-engine/services/pki-resource?resource=ca-certificate&format='
-    engine_ca_url = engine_base_url + 'X509-PEM-CA'
-    engine_ssh_url = engine_base_url + 'OPENSSH-PUBKEY'
-
-    # We use an unverified connection, as L0 host cannot resolve '...engine.lago.local'
-    conn = http_client.HTTPSConnection(engine_ip, context=ssl._create_unverified_context())
-
-    def _download_file(url, path=None, compare_string=None):
-        conn.request("GET", url)
-        resp = conn.getresponse()
-        if resp.status != 200:
-            return False
-        data = resp.read()
-        if path:
-            with open(path, 'wb') as outfile:
-                outfile.write(data)
-        if compare_string:
-            assert data == compare_string
-        return True
-
-    testlib.assert_true_within_short(
-        lambda: _download_file(engine_ca_url, 'engine-ca.pem')
-    )
-    # TODO: verify certificate. Either use it, or run:
-    # 'openssl x509 -in engine-ca.pem -text -noout'
-
-    testlib.assert_true_within_short(
-        lambda: _download_file(engine_ssh_url, 'engine-rsa.pub')
-    )
-    # TODO: verify public key. Either use it, or run:
-    # 'ssh-keygen -l -f engine-rsa.pub'
-
-    healthy = b"DB Up!Welcome to Health Status!"
-    testlib.assert_true_within_short(
-        lambda: _download_file('/ovirt-engine/services/health', path=None, compare_string=healthy)
-    )
-
-    conn.close()
 
 
 @order_by(_TEST_LIST)

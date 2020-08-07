@@ -30,6 +30,11 @@ class ShellError(Exception):
         self.out = out
         self.err = err
 
+    def __str__(self):
+        return "Command failed with rc={}. Stdout:\n{}\nStderr:\n{}\n".format(
+            self.code, self.out, self.err
+        )
+
 
 def shell(args, bytes_output=False):
     process = subprocess.Popen(args,

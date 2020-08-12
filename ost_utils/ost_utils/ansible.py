@@ -179,7 +179,12 @@ class _AnsibleFacts(object):
         if not self.facts_gathered:
             self.refresh()
         runner = self._module_mapper.debug(var=fact)
-        for event in reversed(tuple(runner.events)):
+        events = sorted(
+            (e for e in runner.events if 'created' in e),
+            key=lambda e: e['created']
+        )
+
+        for event in reversed(events):
             event_data = event.get('event_data', None)
             if event_data is not None:
                 res = event_data.get('res', None)

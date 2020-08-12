@@ -1041,7 +1041,16 @@ def test_hotplug_memory(prefix, hotplug_mem_amount):
     with test_utils.TestEvent(engine, 2039): # HOT_SET_MEMORY(2,039)
         vm_service.update(
             vm=types.Vm(
-                memory=new_memory
+                memory=new_memory,
+                # Need to avoid OOM scenario where ballooning would immediately try to claim some memory.
+                # CirrOS is lacking memory onlining rules so the guest memory doesn't really increase and
+                # balloon inflation just crashes the guest instead. Balloon gets inflated because MOM
+                # does not know that guest size didn't increase and just assumes it did, and the host
+                # OST VM is likely under memory pressure, there's not much free RAM in OST environment.
+                # Setting minimum guaranteed to new memory size keeps MOM from inflating balloon.
+                memory_policy=types.MemoryPolicy(
+                    guaranteed=new_memory,
+                )
             )
         )
         assert vm_service.get().memory == new_memory
@@ -1059,7 +1068,10 @@ def test_hotunplug_memory(prefix, hotplug_mem_amount):
     with test_utils.TestEvent(engine, 2046): # MEMORY_HOT_UNPLUG_SUCCESSFULLY_REQUESTED(2,046)
         vm_service.update(
             vm=types.Vm(
-                memory=new_memory
+                memory=new_memory,
+                memory_policy=types.MemoryPolicy(
+                    guaranteed=new_memory,
+                )
             )
         )
         assert vm_service.get().memory == new_memory

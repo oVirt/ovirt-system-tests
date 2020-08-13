@@ -20,6 +20,7 @@ import os
 from os import EX_OK
 import nose.tools as nt
 from nose import SkipTest
+import re
 
 from ovirtsdk.xml import params
 
@@ -72,7 +73,21 @@ def _ping(ovirt_prefix, destination):
     return ret.code
 
 
-def _vm_ssh(ip_address, command, tries=None):
+def _vm_host(prefix, vm_name):
+    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+    vm_service = test_utils.get_vm_service(engine, vm_name)
+    host_id = vm_service.get().host.id
+    host_name = engine.hosts_service().host_service(host_id).get().name
+    return prefix.virt_env.get_vm(host_name)
+
+
+
+def _vm_ssh(prefix, vm_name, command, tries=None):
+    host = _vm_host(prefix, vm_name)
+    ret = host.ssh(['host', vm_name])
+    match = re.search(r'\s([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', ret.out.decode('utf-8'))
+    ip_address = match.group(1)
+
     return ssh.ssh(
         ip_addr=ip_address,
         command=command,
@@ -82,15 +97,15 @@ def _vm_ssh(ip_address, command, tries=None):
     )
 
 def assert_vm0_is_alive(prefix):
-    assert_vm_is_alive(prefix, test_utils.get_vm0_ip_address(prefix))
+    assert_vm_is_alive(prefix, VM0_NAME)
 
 
-def assert_vm_is_alive(prefix, ip_address):
+def assert_vm_is_alive(prefix, vm_hostname):
     testlib.assert_true_within_short(
         lambda:
-        _ping(prefix, ip_address) == EX_OK
+        _ping(prefix, vm_hostname) == EX_OK
     )
-    nt.assert_equals(_vm_ssh(ip_address, ['true']).code, EX_OK)
+    assert _vm_ssh(prefix, vm_hostname, ['true']).code == EX_OK
 
 
 def setup_module():

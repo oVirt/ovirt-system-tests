@@ -45,7 +45,7 @@ domains:
     metadata:
       ovirt-engine-password: 123
       deploy-scripts:
-        {%- if env.add_plain_repos != "0" | default(false) %}
+        {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
         {%- else %}
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
@@ -102,7 +102,7 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        {%- if env.add_plain_repos != "0" | default(false) %}
+        {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
         {%- else %}
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}

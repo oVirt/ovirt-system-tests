@@ -33,7 +33,7 @@ check_dependencies() {
         echo Missing mandatory rpm
         return 9
     }
-    podman info |grep -A5 '^  search' | grep 'docker.io' || {
+    podman info |grep -A5 '^  search' | grep -q 'docker.io' || {
         sed -i "/^registries.*registry.access.redhat.com/ c registries = ['registry.access.redhat.com', 'registry.redhat.io', 'docker.io', 'quay.io']" /etc/containers/registries.conf
     }
     return 0

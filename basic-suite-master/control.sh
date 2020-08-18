@@ -19,7 +19,7 @@ run_suite () {
     env_status
     cd "$OST_REPO_ROOT"
     if ! env_deploy; then
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
+        env_collect "$PWD/test_logs/${SUITE_NAME}/post-000_deploy"
         echo "@@@ ERROR: Failed in deploy stage"
         return 1
     fi
@@ -32,27 +32,16 @@ run_suite () {
         "pytest==4.6.9" \
         "zipp==1.2.0"
 
-    for scenario in "${test_scenarios[@]}"; do
-        if [[ "$scenario" == *pytest* ]]; then
-            echo "Running test scenario ${scenario##*/} with pytest"
-            env_run_pytest "$scenario" || failed=true
-        else
-            echo "Running test scenario ${scenario##*/}"
-            env_run_test "$scenario" || failed=true
-        fi
+    env_run_pytest_bulk ${test_scenarios[@]} || failed=true
 
-        if [[ -n "$OST_SKIP_COLLECT" ]]; then
-            if [[ "$failed" == "true" ]]; then
-                env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
-            fi
-        else
-            env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
-        fi
-        if $failed; then
-            echo "@@@@ ERROR: Failed running $scenario"
-            return 1
-        fi
-    done
+    if [[ -z "$OST_SKIP_COLLECT" || "${failed}" == "true" ]]; then
+        env_collect "$PWD/test_logs/${SUITE_NAME}"
+    fi
+
+    if $failed; then
+        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        return 1
+    fi
 
     generate_vdsm_coverage_report
 }

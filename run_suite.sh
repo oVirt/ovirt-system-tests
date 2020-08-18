@@ -84,7 +84,7 @@ on_exit() {
 }
 
 on_sigterm() {
-    local dest="${OST_REPO_ROOT}/test_logs/${SUITE##*/}/post-suite-sigterm"
+    local dest="${OST_REPO_ROOT}/test_logs/${SUITE_NAME/}/post-suite-sigterm"
 
     set +e
     export CLI
@@ -179,7 +179,7 @@ put_host_image() {
 }
 
 render_jinja_templates () {
-    local suite_name="${SUITE##*/}"
+    local suite_name="${SUITE_NAME}"
     local src="${SUITE}/LagoInitFile.in"
     local dest="${SUITE}/LagoInitFile"
 
@@ -322,6 +322,24 @@ env_run_pytest () {
 }
 
 
+env_run_pytest_bulk () {
+    local res=0
+    cd $PREFIX
+    local junitxml_file="$PREFIX/$SUITE_NAME.junit.xml"
+
+    "${PYTHON}" -B -m pytest \
+        -s \
+        -v \
+        -x \
+        --junit-xml="${junitxml_file}" \
+        "$@" || res=$?
+
+    [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
+    cd -
+    return "$res"
+}
+
+
 env_ansible () {
 
     # Ensure latest Ansible modules are tested:
@@ -385,7 +403,7 @@ env_cleanup() {
     fi
     if [[ "$res" -ne 0 ]]; then
         logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
-        env_libvirt_cleanup "${SUITE##*/}" "$uid"
+        env_libvirt_cleanup "${SUITE_NAME}" "$uid"
     fi
 
     if [ ${USE_OST_IMAGES} -eq 1 -a ${INSIDE_MOCK} -eq 1 ]; then
@@ -686,10 +704,14 @@ fi
 
 export OST_REPO_ROOT="$PWD"
 
+# Resolves to suite's path, i.e. '/home/me/ovirt-system-tests/basic-suite-master'
 export SUITE="$(realpath --no-symlinks "$1")"
 
+# Suite's name, i.e. 'basic-suite-master'
+export SUITE_NAME="${SUITE##*/}"
+
 # If no deployment path provided, set the default
-[[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE##*/}"
+[[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE_NAME}"
 export PREFIX
 
 export ANSIBLE_INVENTORY_FILE="${PREFIX}/hosts"

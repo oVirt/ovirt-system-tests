@@ -87,37 +87,35 @@ EOT
     # ... and that's it
 }
 
-# $1 test scenario .py, e.g. basic-suite-master/test-scenarios/002_bootstrap_pytest.py
-# $2 individual test to run, e.g. test_add_direct_lun_vm0
-run_tc () {
+# $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/002_bootstrap.py 
+# TC individual test to run
+_run_tc () {
     local res=0
-    local testcase=$(realpath $1)
+    local testcase=${@/#/$PWD/}
     cd $PREFIX
-    local junitxml_file="$PREFIX/${1##*/}.junit.xml"
-    if [[ "${testcase%pytest.py}" != "${testcase}" ]]; then
-        PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 -u -B -m pytest \
-            -s \
-            -v \
-            -x \
-            ${2:+-k $2}\
-            --junit-xml="${junitxml_file}" \
-            -o junit_family=xunit2 \
-            "$testcase" || res=$?
-    else
-        PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" lago ovirt runtest $1 --junitxml-file "${junitxml_file}"  || res=$?
-    fi
+    local junitxml_file="$PREFIX/${TC:-$SUITE_NAME}.junit.xml"
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 -u -B -m pytest \
+        -s \
+        -v \
+        -x \
+        ${TC:+-k $TC}\
+        --junit-xml="${junitxml_file}" \
+        -o junit_family=xunit2 \
+        ${testcase[@]} || res=$?
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
     cd -
     return "$res"
 }
+# $1 test scenario .py file
+# $2 individual test to run, e.g. test_add_direct_lun_vm0
+run_tc() {
+    local testcase=$(realpath $1)
+    TC=$2 _run_tc "$1"
+}
 
 run_tests() {
-    test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | grep -v conftest | sort))
-    failed=
-    for scenario in "${test_scenarios[@]}"; do
-        echo "Running test scenario ${scenario##*/}"
-        run_tc "$scenario" || { echo "@@@@ ERROR: Failed running $scenario"; return 1; }
-    done
+    test_scenarios=($(cd ${OST_REPO_ROOT} && ls ${SUITE_NAME}/test-scenarios/*.py | grep -v conftest | sort))
+    TC= _run_tc "${test_scenarios[@]}" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
     return 0
 }
@@ -130,7 +128,7 @@ since=_TEST_LIST.index('$2')
 print('%s' % '\n'.join(_TEST_LIST[since:]))
 EOT
     } | while IFS= read -r i; do
-        run_tc $1 $i
+        TC=$i _run_tc $1
         [[ $? -ne 0 ]] && break
     done
 }
@@ -164,7 +162,7 @@ lago_init <base_qcow_file> [-k key_file] [-s additional_repo ...]
 lago status | stop | shell | console ...
     show environment status, shut down VMs, log into a running VM, etc
 run_tc <full path to test case file> [test function]
-    run single test case file, optionally only a single test case (e.g. \`pwd\`/basic-suite-master/test-scenarios/002_bootstrap_pytest.py test_add_role)
+    run single test case file, optionally only a single test case (e.g. \`pwd\`/basic-suite-master/test-scenarios/002_bootstrap.py test_add_role)
 run_since <full path to test case file> <test function>
     resume running of test case file after the test function (excluded)
 run_tests

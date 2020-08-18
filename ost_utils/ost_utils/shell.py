@@ -36,10 +36,11 @@ class ShellError(Exception):
         )
 
 
-def shell(args, bytes_output=False):
+def shell(args, bytes_output=False, **kwargs):
     process = subprocess.Popen(args,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+                               stderr=subprocess.PIPE,
+                               **kwargs)
     out, err = process.communicate()
 
     if not bytes_output:

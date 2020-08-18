@@ -23,8 +23,8 @@ from __future__ import absolute_import
 from lago import utils
 from netaddr.ip import IPAddress
 from ost_utils import backend
-from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures.ansible import ansible_host0
+from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.network import bonding_network_name
 from ost_utils.pytest.fixtures.network import management_network_name
 from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
@@ -102,14 +102,14 @@ def _attach_vm_network_to_host_static_config(api, network_name, host_num):
          IPAddress(VM_NETWORK_IPv6_ADDR.format(host_num+1))
 
 
-def test_attach_vm_network_to_host_0_static_config(api_v4,
+def test_attach_vm_network_to_host_0_static_config(engine_api,
                                                    management_network_name):
-    _attach_vm_network_to_host_static_config(api_v4, management_network_name,
+    _attach_vm_network_to_host_static_config(engine_api, management_network_name,
                                              host_num=0)
 
 
-def test_modify_host_0_ip_to_dhcp(api_v4):
-    engine = api_v4.system_service()
+def test_modify_host_0_ip_to_dhcp(engine_api):
+    engine = engine_api.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)
@@ -123,8 +123,8 @@ def test_modify_host_0_ip_to_dhcp(api_v4):
     # verify ip configuration.
 
 
-def test_detach_vm_network_from_host_0(api_v4):
-    engine = api_v4.system_service()
+def test_detach_vm_network_from_host_0(engine_api):
+    engine = engine_api.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)
@@ -136,8 +136,8 @@ def test_detach_vm_network_from_host_0(api_v4):
     assert not _host_is_attached_to_network(engine, host_service, VM_NETWORK)
 
 
-def test_bond_nics(api_v4, bonding_network_name):
-    engine = api_v4.system_service()
+def test_bond_nics(engine_api, bonding_network_name):
+    engine = engine_api.system_service()
 
     def _bond_nics(number, host):
         slaves = [
@@ -186,8 +186,8 @@ def test_verify_interhost_connectivity_ipv6(ansible_host0):
     )
 
 
-def test_remove_bonding(api_v4):
-    engine = api_v4.system_service()
+def test_remove_bonding(engine_api):
+    engine = engine_api.system_service()
 
     def _remove_bonding(host):
         host_service = engine.hosts_service().host_service(id=host.id)
@@ -205,10 +205,10 @@ def test_remove_bonding(api_v4):
                                                 MIGRATION_NETWORK)
 
 
-def test_attach_vm_network_to_both_hosts_static_config(api_v4,
+def test_attach_vm_network_to_both_hosts_static_config(engine_api,
                                                        management_network_name):
     # preparation for 004 and 006
     for host_num in (0, 1):
-        _attach_vm_network_to_host_static_config(api_v4,
+        _attach_vm_network_to_host_static_config(engine_api,
                                                  management_network_name,
                                                  host_num)

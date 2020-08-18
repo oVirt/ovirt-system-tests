@@ -1,7 +1,6 @@
 # PIP requirements for OST
-pytest-ordering
 selenium
-# network sute deps
+# network suite deps
 flake8
 pylint
 openstacksdk

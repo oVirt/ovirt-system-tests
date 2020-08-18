@@ -30,7 +30,6 @@ run_suite () {
     "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
     "${PYTHON}" -m pip install --user \
         "pytest==4.6.9" \
-        "pytest-ordering==0.6" \
         "zipp==1.2.0"
 
     for scenario in "${test_scenarios[@]}"; do

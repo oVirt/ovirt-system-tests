@@ -19,6 +19,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+from ost_utils.pytest import pytest_collection_modifyitems
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures import repo_server

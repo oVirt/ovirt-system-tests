@@ -24,7 +24,7 @@ from lago import utils
 from netaddr.ip import IPAddress
 from ost_utils import backend
 from ost_utils.pytest.fixtures import api_v4
-from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.network import bonding_network_name
 from ost_utils.pytest.fixtures.network import management_network_name
 from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
@@ -57,20 +57,6 @@ MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
 MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
-
-
-def _ping(host, ip_address):
-    """
-    Ping a given address (IPv4/6) from a host.
-    """
-    cmd = ['ping', '-c', '1']
-    # TODO: support pinging by host names?
-    if ':' in ip_address:
-        cmd += ['-6']
-
-    ret = host.ssh(cmd + [ip_address])
-    assert ret.code == 0, 'Cannot ping {} from {}: {}'.format(
-        ip_address, host.name(), ret)
 
 
 def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
@@ -188,14 +174,16 @@ def test_bond_nics(api_v4, bonding_network_name):
             engine, host_service, MIGRATION_NETWORK, nic_name=BOND_NAME)
 
 
-def test_verify_interhost_connectivity_ipv4(prefix):
-    first_host = prefix.virt_env.host_vms()[0]
-    _ping(first_host, MIGRATION_NETWORK_IPv4_ADDR.format(2))
+def test_verify_interhost_connectivity_ipv4(ansible_host0):
+    ansible_host0.shell(
+        'ping -c 1 {}'.format(MIGRATION_NETWORK_IPv4_ADDR.format(2))
+    )
 
 
-def test_verify_interhost_connectivity_ipv6(prefix):
-    first_host = prefix.virt_env.host_vms()[0]
-    _ping(first_host, MIGRATION_NETWORK_IPv6_ADDR.format(2))
+def test_verify_interhost_connectivity_ipv6(ansible_host0):
+    ansible_host0.shell(
+        'ping -c 1 -6 {}'.format(MIGRATION_NETWORK_IPv6_ADDR.format(2))
+    )
 
 
 def test_remove_bonding(api_v4):

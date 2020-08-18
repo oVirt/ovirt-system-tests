@@ -22,19 +22,17 @@ from __future__ import absolute_import
 
 from lago import utils
 from netaddr.ip import IPAddress
+from ost_utils import backend
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
-from ovirtlago import testlib
+from ost_utils.pytest.fixtures.network import bonding_network_name
+from ost_utils.pytest.fixtures.network import management_network_name
 from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
 
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import versioning
 
-
-# Environment (see control.sh and LagoInitFile.in)
-LIBVIRT_NETWORK_FOR_MANAGEMENT = testlib.get_prefixed_name('net-management')  # eth0
-LIBVIRT_NETWORK_FOR_BONDING = testlib.get_prefixed_name('net-bonding')  # eth2, eth3
 
 # DC/Cluster
 DC_NAME = 'test-dc'
@@ -59,18 +57,6 @@ MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
 MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
-
-
-def _host_vm_nics(prefix, host_name, network_name):
-    """
-    Return names of host VM NICs attached by Lago to a given libvirt network,
-    just like do_status in site-packages/lago/cmd.py:446
-
-    TODO: move 'eth{0}' magic to site-packages/ovirtlago/testlib.py?
-    """
-    lago_host_vm = prefix.get_vms()[host_name]
-    return ['eth{0}'.format(i) for i, nic in enumerate(lago_host_vm.nics())
-            if nic['net'] == network_name]
 
 
 def _ping(host, ip_address):
@@ -101,14 +87,13 @@ def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
     return attachment
 
 
-def _attach_vm_network_to_host_static_config(prefix, api, host_num):
+def _attach_vm_network_to_host_static_config(api, network_name, host_num):
     engine = api.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[host_num]
     host_service = engine.hosts_service().host_service(id=host.id)
 
-    nic_name = _host_vm_nics(prefix, host.name,
-                             LIBVIRT_NETWORK_FOR_MANAGEMENT)[0]  # eth0
+    nic_name = backend.ifaces_for(host.name, network_name)[0]  # eth0
     ip_configuration = network_utils_v4.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR.format(host_num+1),
         VM_NETWORK_IPv4_MASK,
@@ -131,8 +116,10 @@ def _attach_vm_network_to_host_static_config(prefix, api, host_num):
          IPAddress(VM_NETWORK_IPv6_ADDR.format(host_num+1))
 
 
-def test_attach_vm_network_to_host_0_static_config(prefix, api_v4):
-    _attach_vm_network_to_host_static_config(prefix, api_v4, host_num=0)
+def test_attach_vm_network_to_host_0_static_config(api_v4,
+                                                   management_network_name):
+    _attach_vm_network_to_host_static_config(api_v4, management_network_name,
+                                             host_num=0)
 
 
 def test_modify_host_0_ip_to_dhcp(api_v4):
@@ -163,12 +150,14 @@ def test_detach_vm_network_from_host_0(api_v4):
     assert not _host_is_attached_to_network(engine, host_service, VM_NETWORK)
 
 
-def test_bond_nics(prefix, api_v4):
+def test_bond_nics(api_v4, bonding_network_name):
     engine = api_v4.system_service()
 
     def _bond_nics(number, host):
-        slaves = [HostNic(name=nic) for nic in _host_vm_nics(  # eth2, eth3
-                    prefix, host.name, LIBVIRT_NETWORK_FOR_BONDING)]
+        slaves = [
+            HostNic(name=nic)
+            for nic in backend.ifaces_for(host.name, bonding_network_name)
+        ]
 
         options = [
             Option(name='mode', value='active-backup'),
@@ -228,7 +217,10 @@ def test_remove_bonding(api_v4):
                                                 MIGRATION_NETWORK)
 
 
-def test_attach_vm_network_to_both_hosts_static_config(prefix, api_v4):
+def test_attach_vm_network_to_both_hosts_static_config(api_v4,
+                                                       management_network_name):
     # preparation for 004 and 006
-    _attach_vm_network_to_host_static_config(prefix, api_v4, host_num=0)
-    _attach_vm_network_to_host_static_config(prefix, api_v4, host_num=1)
+    for host_num in (0, 1):
+        _attach_vm_network_to_host_static_config(api_v4,
+                                                 management_network_name,
+                                                 host_num)

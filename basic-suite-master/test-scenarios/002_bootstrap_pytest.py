@@ -50,6 +50,7 @@ from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.selenium.common import http_proxy_disabled
+from ost_utils.storage_utils import glance
 from ost_utils import shell
 
 import logging
@@ -648,10 +649,21 @@ def test_resize_and_refresh_storage_domain(prefix):
 
 @order_by(_TEST_LIST)
 def test_add_glance_images(engine_api):
+    system_service = engine_api.system_service()
+    non_template_import = functools.partial(
+        glance.import_image, system_service,
+        GUEST_IMAGE_NAME, TEMPLATE_GUEST, GLANCE_DISK_NAME,
+        MASTER_SD_TYPE, CLUSTER_NAME, SD_GLANCE_NAME
+    )
+    template_import = functools.partial(
+        glance.import_image, system_service,
+        GUEST_IMAGE_NAME, TEMPLATE_GUEST, TEMPLATE_GUEST,
+        MASTER_SD_TYPE, CLUSTER_NAME, SD_GLANCE_NAME, as_template=True
+    )
     vt = utils.VectorThread(
         [
-            functools.partial(import_non_template_from_glance, engine_api),
-            functools.partial(import_template_from_glance, engine_api),
+            non_template_import,
+            template_import,
         ],
     )
     vt.start_all()
@@ -693,47 +705,22 @@ def add_iso_storage_domain(prefix):
 def add_templates_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
 
-def generic_import_from_glance(engine_api, as_template=False,
-                               dest_storage_domain=MASTER_SD_TYPE,
-                               dest_cluster=CLUSTER_NAME):
-    storage_domains_service = engine_api.system_service().storage_domains_service()
-    glance_storage_domain = storage_domains_service.list(search='name={}'.format(SD_GLANCE_NAME))[0]
-    images = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().list()
-    image = [x for x in images if x.name == GUEST_IMAGE_NAME][0]
-    image_service = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().image_service(image.id)
-    result = image_service.import_(
-        storage_domain=types.StorageDomain(
-           name=dest_storage_domain,
-        ),
-        template=types.Template(
-            name=TEMPLATE_GUEST,
-        ),
-        cluster=types.Cluster(
-           name=dest_cluster,
-        ),
-        import_as_template=as_template,
-        disk=types.Disk(
-            name=(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME)
-        ),
-    )
-    disk = engine_api.system_service().disks_service().list(search='name={}'.format(TEMPLATE_GUEST if as_template else GLANCE_DISK_NAME))[0]
-    assert disk
-
 
 @order_by(_TEST_LIST)
 def test_list_glance_images(engine_api):
     search_query = 'name={}'.format(SD_GLANCE_NAME)
-    engine = engine_api.system_service()
-    storage_domains_service = engine.storage_domains_service()
+    system_service = engine_api.system_service()
+    storage_domains_service = system_service.storage_domains_service()
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
-        openstack_glance = add_glance(engine_api)
+        openstack_glance = glance.add_domain(system_service, SD_GLANCE_NAME,
+                                             GLANCE_SERVER_URL)
         if not openstack_glance:
             raise RuntimeError('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
 
-    if not check_glance_connectivity(engine):
+    if not glance.check_connectivity(system_service, SD_GLANCE_NAME):
         raise RuntimeError('GLANCE connectivity test failed')
 
     glance_domain = glance_domain_list.pop()
@@ -742,74 +729,12 @@ def test_list_glance_images(engine_api):
     )
 
     try:
-        with test_utils.TestEvent(engine, 998):
+        with test_utils.TestEvent(system_service, 998):
             all_images = glance_domain_service.images_service().list()
         if not len(all_images):
             raise RuntimeError('No GLANCE images available')
     except sdk4.Error:
         raise RuntimeError('GLANCE is not available: client request error')
-
-
-def add_glance(api):
-    target_server = sdk4.types.OpenStackImageProvider(
-        name=SD_GLANCE_NAME,
-        description=SD_GLANCE_NAME,
-        url=GLANCE_SERVER_URL,
-        requires_authentication=False
-    )
-
-    try:
-        providers_service = api.system_service().openstack_image_providers_service()
-        providers_service.add(target_server)
-        glance = []
-
-        def get():
-            providers = [
-                provider for provider in providers_service.list()
-                if provider.name == SD_GLANCE_NAME
-            ]
-            if not providers:
-                return False
-            instance = providers_service.provider_service(providers.pop().id)
-            if instance:
-                glance.append(instance)
-                return True
-            else:
-                return False
-
-        testlib.assert_true_within_short(func=get, allowed_exceptions=[sdk4.NotFoundError])
-    except (AssertionError, sdk4.NotFoundError):
-        # RequestError if add method was failed.
-        # AssertionError if add method succeed but we couldn't verify that glance was actually added
-        return None
-
-    return glance.pop()
-
-
-def check_glance_connectivity(engine):
-    avail = False
-    providers_service = engine.openstack_image_providers_service()
-    providers = [
-        provider for provider in providers_service.list()
-        if provider.name == SD_GLANCE_NAME
-    ]
-    if providers:
-        glance = providers_service.provider_service(providers.pop().id)
-        try:
-            glance.test_connectivity()
-            avail = True
-        except sdk4.Error:
-            pass
-
-    return avail
-
-
-def import_non_template_from_glance(engine_api):
-    generic_import_from_glance(engine_api)
-
-
-def import_template_from_glance(engine_api):
-    generic_import_from_glance(engine_api, as_template=True)
 
 
 @order_by(_TEST_LIST)

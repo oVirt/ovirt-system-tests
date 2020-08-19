@@ -31,7 +31,6 @@ from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrou
 
 import test_utils
 from test_utils import network_utils_v4
-from test_utils import versioning
 
 
 # DC/Cluster
@@ -48,10 +47,7 @@ VM_NETWORK_VLAN_ID = 100
 
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
 
-if versioning.cluster_version_ok(4, 3):
-    BOND_NAME = 'bond_fancy0'
-else:
-    BOND_NAME = 'bond0'
+BOND_NAME = 'bond_fancy0'
 
 MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
 MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'

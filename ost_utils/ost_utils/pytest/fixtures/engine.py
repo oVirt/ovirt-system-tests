@@ -20,22 +20,36 @@
 
 from __future__ import absolute_import
 
+import functools
 import tempfile
 import time
 
 import ovirtsdk4 as sdk4
 import pytest
 
+from ost_utils import network_utils
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
 from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
+from ost_utils.pytest.fixtures.network import management_network_name
+from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.selenium.common import http_proxy_disabled
 
 
 @pytest.fixture(scope="session")
-def engine_ip(ansible_engine_facts):
-    return ansible_engine_facts.get("ansible_default_ipv4.address")
+def engine_ips_for_network(ansible_engine_facts):
+    return functools.partial(network_utils.get_ips, ansible_engine_facts)
+
+
+@pytest.fixture(scope="session")
+def engine_ip(engine_ips_for_network, management_network_name):
+    return engine_ips_for_network(management_network_name)[0]
+
+
+@pytest.fixture(scope="session")
+def engine_storage_ips(engine_ips_for_network, storage_network_name):
+    return engine_ips_for_network(storage_network_name)
 
 
 @pytest.fixture(scope="session")

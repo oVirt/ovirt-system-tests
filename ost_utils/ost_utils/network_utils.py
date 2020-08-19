@@ -22,6 +22,8 @@ import socket
 
 import six
 
+from ost_utils import backend
+
 
 if six.PY2:
     ConnectionRefusedError = socket.error
@@ -36,3 +38,24 @@ def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
         else:
             s.close()
     raise RuntimeError("No free port could be found")
+
+
+def get_ips(ansible_facts, network_name):
+    hostname = ansible_facts.get("ansible_hostname")
+    ifaces = backend.ifaces_for(hostname, network_name)
+    ips = [
+        ansible_facts.get("ansible_{}.ipv4.address".format(iface))
+        for iface in ifaces
+    ]
+    return ips
+
+
+def get_ips6(ansible_facts, network_name):
+    hostname = ansible_facts.get("ansible_hostname")
+    ifaces = backend.ifaces_for(hostname, network_name)
+    ips = [
+        addr['address']
+        for iface in ifaces
+        for addr in ansible_facts.get("ansible_{}.ipv6".format(iface))
+    ]
+    return ips

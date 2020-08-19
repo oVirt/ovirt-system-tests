@@ -45,10 +45,15 @@ lago_init() {
     # does not have to be in /var/lib/lago/store
     QCOW=$(realpath "$1")
     [ -n "$QCOW" -a -e "$QCOW" ] || { echo "Image file $1 doesn't exist"; return 1; }
+    local engine_image=${QCOW/-host/-engine}
+    local host_image=${QCOW/-engine/-host}
+    [[ "$2" = "-k" ]] && { LAGO_INIT_SSH_KEY="--ssh-key $3 --skip-bootstrap"; shift 2; }
 
+    # cleanup
     [[ -d "$PREFIX" ]] && { lago stop || true ; rm -rf "$PREFIX"; echo "Removed existing $PREFIX"; }
 
-    [[ "$2" = "-k" ]] && { LAGO_INIT_SSH_KEY="--ssh-key $3 --skip-bootstrap"; shift 2; }
+    echo "Using images $(rpm -qf $host_image 2>/dev/null || echo $host_image), $(rpm -qf $engine_image 2>/dev/null || echo $engine_image) containing "
+    egrep -h '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt}
 
     # final lago init file
     local add_repo=0
@@ -68,7 +73,7 @@ EOT
         done
         echo "dnf upgrade --nogpgcheck -y" >> add_plain_repos.sh
     fi
-    suite_name="$SUITE_NAME" engine_image=${QCOW/-host/-engine} host_image=${QCOW/-engine/-host} use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
+    suite_name="$SUITE_NAME" engine_image=$engine_image host_image=$host_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
 
     lago init $LAGO_INIT_SSH_KEY "$PREFIX" "$SUITE/LagoInitFile"
 

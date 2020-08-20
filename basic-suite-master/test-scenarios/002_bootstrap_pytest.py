@@ -541,19 +541,25 @@ def test_add_master_storage_domain(prefix, engine_api, sd_nfs_host_storage_ip):
 
 
 def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
-    add_generic_nfs_storage_domain(engine_api, SD_NFS_NAME, SD_NFS_HOST_NAME,
+    random_host = _random_host_from_dc(engine_api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
+
+    add_generic_nfs_storage_domain(engine_api, SD_NFS_NAME, random_host,
                                    sd_nfs_host_storage_ip, SD_NFS_PATH,
                                    nfs_version='v4_2')
 
 
 # TODO: add this over the storage network and with IPv6
 def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
+    random_host = _random_host_from_dc(engine_api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
+
     add_generic_nfs_storage_domain(engine_api, SD_SECOND_NFS_NAME,
-                                   SD_NFS_HOST_NAME, sd_nfs_host_storage_ip,
+                                   random_host, sd_nfs_host_storage_ip,
                                    SD_SECOND_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, nfs_host_name,
+def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, sd_nfs_host,
                                    sd_nfs_host_storage_ip, mount_path,
                                    sd_format='v4', sd_type='data',
                                    nfs_version='v4_2'):
@@ -581,13 +587,11 @@ def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, nfs_host_name,
             kwargs['storage_format'] = sdk4.types.StorageFormat.V3
         elif not versioning.cluster_version_ok(4, 3):
             kwargs['storage_format'] = sdk4.types.StorageFormat.V4
-    random_host = _random_host_from_dc(engine_api, DC_NAME)
-    LOGGER.debug('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
         type=dom_type,
-        host=random_host,
+        host=sd_nfs_host,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
             address=sd_nfs_host_storage_ip,
@@ -713,17 +717,23 @@ def add_iscsi_storage_domain(prefix):
 
 
 def add_iso_storage_domain(engine_api, sd_host_storage_ip):
-    add_generic_nfs_storage_domain(engine_api, SD_ISO_NAME, SD_ISO_HOST_NAME,
+    random_host = _random_host_from_dc(engine_api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
+
+    add_generic_nfs_storage_domain(engine_api, SD_ISO_NAME, random_host,
                                    sd_host_storage_ip, SD_ISO_PATH,
                                    sd_format='v1', sd_type='iso',
                                    nfs_version='v3')
 
 
 def add_templates_storage_domain(engine_api, sd_host_storage_ip):
-    add_generic_nfs_storage_domain(engine_api, SD_TEMPLATES_NAME,
-                                   SD_TEMPLATES_HOST_NAME, sd_host_storage_ip,
-                                   SD_TEMPLATES_PATH, sd_format='v1',
-                                   sd_type='export', nfs_version='v4_1')
+    random_host = _random_host_from_dc(engine_api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
+
+    add_generic_nfs_storage_domain(engine_api, SD_TEMPLATES_NAME, random_host,
+                                   sd_host_storage_ip, SD_TEMPLATES_PATH,
+                                   sd_format='v1', sd_type='export',
+                                   nfs_version='v4_1')
 
 
 @order_by(_TEST_LIST)

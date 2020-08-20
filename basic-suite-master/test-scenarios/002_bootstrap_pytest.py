@@ -49,6 +49,7 @@ from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
+from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.selenium.common import http_proxy_disabled
 from ost_utils.storage_utils import glance
 from ost_utils import shell
@@ -182,9 +183,6 @@ _TEST_LIST = [
     "test_verify_engine_backup",
 ]
 
-
-def _get_host_ips_in_net(prefix, host_name, net_name):
-    return prefix.virt_env.get_vm(host_name).ips_in_net(net_name)
 
 def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
@@ -529,25 +527,36 @@ def _add_storage_domain(api, p):
         )
 
 
+@pytest.fixture(scope="session")
+def sd_nfs_host_storage_ip(engine_ips_for_network, storage_network_name):
+    return engine_ips_for_network(storage_network_name)[0]
+
+
 @order_by(_TEST_LIST)
-def test_add_master_storage_domain(prefix):
+def test_add_master_storage_domain(prefix, engine_api, sd_nfs_host_storage_ip):
     if MASTER_SD_TYPE == 'iscsi':
         add_iscsi_storage_domain(prefix)
     else:
-        add_nfs_storage_domain(prefix)
+        add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip)
 
 
-def add_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
+def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
+    add_generic_nfs_storage_domain(engine_api, SD_NFS_NAME, SD_NFS_HOST_NAME,
+                                   sd_nfs_host_storage_ip, SD_NFS_PATH,
+                                   nfs_version='v4_2')
 
 
 # TODO: add this over the storage network and with IPv6
-def add_second_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_SECOND_NFS_NAME,
-                                   SD_NFS_HOST_NAME, SD_SECOND_NFS_PATH)
+def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
+    add_generic_nfs_storage_domain(engine_api, SD_SECOND_NFS_NAME,
+                                   SD_NFS_HOST_NAME, sd_nfs_host_storage_ip,
+                                   SD_SECOND_NFS_PATH)
 
 
-def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format='v4', sd_type='data', nfs_version='v4_2'):
+def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, nfs_host_name,
+                                   sd_nfs_host_storage_ip, mount_path,
+                                   sd_format='v4', sd_type='data',
+                                   nfs_version='v4_2'):
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':
@@ -566,15 +575,13 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
     else:
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
-    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-    ips = _get_host_ips_in_net(prefix, nfs_host_name, testlib.get_prefixed_name('net-storage'))
     kwargs = {}
     if sd_format >= 'v4':
         if not versioning.cluster_version_ok(4, 1):
             kwargs['storage_format'] = sdk4.types.StorageFormat.V3
         elif not versioning.cluster_version_ok(4, 3):
             kwargs['storage_format'] = sdk4.types.StorageFormat.V4
-    random_host = _random_host_from_dc(api, DC_NAME)
+    random_host = _random_host_from_dc(engine_api, DC_NAME)
     LOGGER.debug('random host: {}'.format(random_host.name))
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
@@ -583,26 +590,30 @@ def add_generic_nfs_storage_domain(prefix, sd_nfs_name, nfs_host_name, mount_pat
         host=random_host,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
-            address=ips[0],
+            address=sd_nfs_host_storage_ip,
             path=mount_path,
             nfs_version=nfs_vers,
         ),
         **kwargs
     )
 
-    _add_storage_domain(api, p)
+    _add_storage_domain(engine_api, p)
 
 @order_by(_TEST_LIST)
-def test_add_secondary_storage_domains(prefix):
+def test_add_secondary_storage_domains(prefix, engine_api, sd_nfs_host_storage_ip):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
-                functools.partial(add_nfs_storage_domain, prefix),
+                functools.partial(add_nfs_storage_domain, engine_api,
+                                  sd_nfs_host_storage_ip),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 # Bug-Url: http://bugzilla.redhat.com/1463263
-#                functools.partial(add_iso_storage_domain, prefix),
-                functools.partial(add_templates_storage_domain, prefix),
-                functools.partial(add_second_nfs_storage_domain, prefix),
+#                functools.partial(add_iso_storage_domain, engine_api,
+#                                  sd_nfs_host_storage_ip),
+                functools.partial(add_templates_storage_domain, engine_api,
+                                  sd_nfs_host_storage_ip),
+                functools.partial(add_second_nfs_storage_domain, engine_api,
+                                  sd_nfs_host_storage_ip),
 
             ],
         )
@@ -612,9 +623,12 @@ def test_add_secondary_storage_domains(prefix):
                 functools.partial(add_iscsi_storage_domain, prefix),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 #Bug-Url: http://bugzilla.redhat.com/1463263
-#                functools.partial(add_iso_storage_domain, prefix),
-                functools.partial(add_templates_storage_domain, prefix),
-                functools.partial(add_second_nfs_storage_domain, prefix),
+#                functools.partial(add_iso_storage_domain, engine_api,
+#                                  sd_nfs_host_storage_ip),
+                functools.partial(add_templates_storage_domain, engine_api,
+                                  sd_nfs_host_storage_ip),
+                functools.partial(add_second_nfs_storage_domain, engine_api,
+                                  sd_nfs_host_storage_ip),
 
             ],
         )
@@ -698,12 +712,18 @@ def add_iscsi_storage_domain(prefix):
     _add_storage_domain(api, p)
 
 
-def add_iso_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
+def add_iso_storage_domain(engine_api, sd_host_storage_ip):
+    add_generic_nfs_storage_domain(engine_api, SD_ISO_NAME, SD_ISO_HOST_NAME,
+                                   sd_host_storage_ip, SD_ISO_PATH,
+                                   sd_format='v1', sd_type='iso',
+                                   nfs_version='v3')
 
 
-def add_templates_storage_domain(prefix):
-    add_generic_nfs_storage_domain(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
+def add_templates_storage_domain(engine_api, sd_host_storage_ip):
+    add_generic_nfs_storage_domain(engine_api, SD_TEMPLATES_NAME,
+                                   SD_TEMPLATES_HOST_NAME, sd_host_storage_ip,
+                                   SD_TEMPLATES_PATH, sd_format='v1',
+                                   sd_type='export', nfs_version='v4_1')
 
 
 @order_by(_TEST_LIST)

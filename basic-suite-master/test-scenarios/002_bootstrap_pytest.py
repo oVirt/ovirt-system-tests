@@ -53,6 +53,7 @@ from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.selenium.common import http_proxy_disabled
+from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
 from ost_utils import shell
 
@@ -501,36 +502,6 @@ def test_complete_hosts_setup(ansible_hosts):
         )
 
 
-def _add_storage_domain(api, p, dc_name):
-    system_service = api.system_service()
-    sds_service = system_service.storage_domains_service()
-    with engine_utils.wait_for_event(system_service, 956): # USER_ADD_STORAGE_DOMAIN(956)
-        sd = sds_service.add(p)
-
-        sd_service = sds_service.storage_domain_service(sd.id)
-        assertions.assert_true_within_long(
-            lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
-        )
-
-    data_centers = system_service.data_centers_service()
-    dc = data_centers.list(search='name={}'.format(dc_name))[0]
-    dc_service = data_centers.data_center_service(dc.id)
-    attached_sds_service = dc_service.storage_domains_service()
-
-    with engine_utils.wait_for_event(system_service, [966, 962]):
-        # USER_ACTIVATED_STORAGE_DOMAIN(966)
-        # USER_ATTACH_STORAGE_DOMAIN_TO_POOL(962)
-        attached_sds_service.add(
-            sdk4.types.StorageDomain(
-                id=sd.id,
-            ),
-        )
-        attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-        assertions.assert_true_within_long(
-            lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
-        )
-
-
 @pytest.fixture(scope="session")
 def sd_nfs_host_storage_ip(engine_ips_for_network, storage_network_name):
     return engine_ips_for_network(storage_network_name)[0]
@@ -605,7 +576,7 @@ def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, sd_nfs_host,
         **kwargs
     )
 
-    _add_storage_domain(engine_api, p, dc_name)
+    domain.add(engine_api, p, dc_name)
 
 @order_by(_TEST_LIST)
 def test_add_secondary_storage_domains(prefix, engine_api, sd_nfs_host_storage_ip):
@@ -717,7 +688,7 @@ def add_iscsi_storage_domain(prefix):
         ),
     )
 
-    _add_storage_domain(api, p, DC_NAME)
+    domain.add(api, p, DC_NAME)
 
 
 def add_iso_storage_domain(engine_api, sd_host_storage_ip):

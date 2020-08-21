@@ -30,12 +30,19 @@ import nose.plugins
 from nose.plugins.skip import SkipTest
 import utils
 
+# TODO: remove once code is aligned to new location
+from ost_utils.assertions import SHORT_TIMEOUT
+from ost_utils.assertions import LONG_TIMEOUT
+from ost_utils.assertions import assert_equals_within
+from ost_utils.assertions import assert_equals_within_short
+from ost_utils.assertions import assert_equals_within_long
+from ost_utils.assertions import assert_true_within
+from ost_utils.assertions import assert_true_within_short
+from ost_utils.assertions import assert_true_within_long
 
 from ost_utils.vm import VagrantHosts
 
 LOGGER = logging.getLogger(__name__)
-SHORT_TIMEOUT = 3 * 60
-LONG_TIMEOUT = 10 * 60
 
 _test_prefix = None
 
@@ -135,77 +142,6 @@ class LogCollectorPlugin(nose.plugins.Plugin):
         except (ExtractPathError, ExtractPathNoPathError) as e:
             LOGGER.debug(e, exc_info=True)
 
-
-
-def _instance_of_any(obj, cls_list):
-    return any(True for cls in cls_list if isinstance(obj, cls))
-
-
-def assert_equals_within(
-    func, value, timeout, allowed_exceptions=None, initial_wait=10,
-    error_message=None
-):
-    allowed_exceptions = allowed_exceptions or []
-    with utils.EggTimer(timeout) as timer:
-        while not timer.elapsed():
-            try:
-                res = func()
-                if res == value:
-                    return
-            except Exception as exc:
-                if _instance_of_any(exc, allowed_exceptions):
-                    time.sleep(3)
-                    continue
-
-                LOGGER.exception("Unhandled exception in %s", func)
-                raise
-
-            if initial_wait == 0:
-                time.sleep(3)
-            else:
-                time.sleep(initial_wait)
-                initial_wait = 0
-    try:
-        if error_message is None:
-            error_message = '%s != %s after %s seconds' % (res, value, timeout)
-        raise AssertionError(error_message)
-    # if func repeatedly raises any of the allowed exceptions, res remains
-    # unbound throughout the function, resulting in an UnboundLocalError.
-    except UnboundLocalError:
-        raise AssertionError(
-            '%s failed to evaluate after %s seconds' %
-            (func.__name__, timeout)
-        )
-
-
-def assert_equals_within_short(func, value, allowed_exceptions=None,
-                               error_message=None):
-    allowed_exceptions = allowed_exceptions or []
-    assert_equals_within(
-        func, value, SHORT_TIMEOUT, allowed_exceptions=allowed_exceptions,
-        error_message=error_message
-    )
-
-
-def assert_equals_within_long(func, value, allowed_exceptions=None):
-    allowed_exceptions = allowed_exceptions or []
-    assert_equals_within(
-        func, value, LONG_TIMEOUT, allowed_exceptions=allowed_exceptions
-    )
-
-
-def assert_true_within(func, timeout, allowed_exceptions=None):
-    assert_equals_within(func, True, timeout, allowed_exceptions)
-
-
-def assert_true_within_short(func, allowed_exceptions=None,
-                             error_message=None):
-    assert_equals_within_short(func, True, allowed_exceptions,
-                               error_message=error_message)
-
-
-def assert_true_within_long(func, allowed_exceptions=None):
-    assert_equals_within_long(func, True, allowed_exceptions)
 
 def main():
     print("testlib")

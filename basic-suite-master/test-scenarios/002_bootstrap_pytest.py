@@ -556,12 +556,6 @@ def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, sd_nfs_host,
     else:
         nfs_vers = sdk4.types.NfsVersion.AUTO
 
-    kwargs = {}
-    if sd_format >= 'v4':
-        if not versioning.cluster_version_ok(4, 1):
-            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
-        elif not versioning.cluster_version_ok(4, 3):
-            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
     p = sdk4.types.StorageDomain(
         name=sd_nfs_name,
         description='APIv4 NFS storage domain',
@@ -572,8 +566,7 @@ def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, sd_nfs_host,
             address=sd_nfs_host_storage_ip,
             path=mount_path,
             nfs_version=nfs_vers,
-        ),
-        **kwargs
+        )
     )
 
     domain.add(engine_api, p, dc_name)

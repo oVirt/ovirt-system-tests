@@ -42,6 +42,8 @@ from test_utils import network_utils_v4
 from test_utils import constants
 from test_utils import versioning
 
+from ost_utils import assertions
+from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
@@ -499,21 +501,23 @@ def test_complete_hosts_setup(ansible_hosts):
         )
 
 
-def _add_storage_domain(api, p):
+def _add_storage_domain(api, p, dc_name):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
-    with test_utils.TestEvent(system_service, 956): # USER_ADD_STORAGE_DOMAIN(956)
+    with engine_utils.wait_for_event(system_service, 956): # USER_ADD_STORAGE_DOMAIN(956)
         sd = sds_service.add(p)
 
         sd_service = sds_service.storage_domain_service(sd.id)
-        testlib.assert_true_within_long(
+        assertions.assert_true_within_long(
             lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
         )
 
-    dc_service = test_utils.data_center_service(system_service, DC_NAME)
+    data_centers = system_service.data_centers_service()
+    dc = data_centers.list(search='name={}'.format(dc_name))[0]
+    dc_service = data_centers.data_center_service(dc.id)
     attached_sds_service = dc_service.storage_domains_service()
 
-    with test_utils.TestEvent(system_service, [966, 962]):
+    with engine_utils.wait_for_event(system_service, [966, 962]):
         # USER_ACTIVATED_STORAGE_DOMAIN(966)
         # USER_ATTACH_STORAGE_DOMAIN_TO_POOL(962)
         attached_sds_service.add(
@@ -522,7 +526,7 @@ def _add_storage_domain(api, p):
             ),
         )
         attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-        testlib.assert_true_within_long(
+        assertions.assert_true_within_long(
             lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
         )
 
@@ -546,7 +550,7 @@ def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
 
     add_generic_nfs_storage_domain(engine_api, SD_NFS_NAME, random_host,
                                    sd_nfs_host_storage_ip, SD_NFS_PATH,
-                                   nfs_version='v4_2')
+                                   DC_NAME, nfs_version='v4_2')
 
 
 # TODO: add this over the storage network and with IPv6
@@ -556,11 +560,11 @@ def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
 
     add_generic_nfs_storage_domain(engine_api, SD_SECOND_NFS_NAME,
                                    random_host, sd_nfs_host_storage_ip,
-                                   SD_SECOND_NFS_PATH)
+                                   SD_SECOND_NFS_PATH, DC_NAME)
 
 
 def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, sd_nfs_host,
-                                   sd_nfs_host_storage_ip, mount_path,
+                                   sd_nfs_host_storage_ip, mount_path, dc_name,
                                    sd_format='v4', sd_type='data',
                                    nfs_version='v4_2'):
     if sd_type == 'data':
@@ -601,7 +605,7 @@ def add_generic_nfs_storage_domain(engine_api, sd_nfs_name, sd_nfs_host,
         **kwargs
     )
 
-    _add_storage_domain(engine_api, p)
+    _add_storage_domain(engine_api, p, dc_name)
 
 @order_by(_TEST_LIST)
 def test_add_secondary_storage_domains(prefix, engine_api, sd_nfs_host_storage_ip):
@@ -713,7 +717,7 @@ def add_iscsi_storage_domain(prefix):
         ),
     )
 
-    _add_storage_domain(api, p)
+    _add_storage_domain(api, p, DC_NAME)
 
 
 def add_iso_storage_domain(engine_api, sd_host_storage_ip):
@@ -721,7 +725,7 @@ def add_iso_storage_domain(engine_api, sd_host_storage_ip):
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     add_generic_nfs_storage_domain(engine_api, SD_ISO_NAME, random_host,
-                                   sd_host_storage_ip, SD_ISO_PATH,
+                                   sd_host_storage_ip, SD_ISO_PATH, DC_NAME,
                                    sd_format='v1', sd_type='iso',
                                    nfs_version='v3')
 
@@ -732,7 +736,7 @@ def add_templates_storage_domain(engine_api, sd_host_storage_ip):
 
     add_generic_nfs_storage_domain(engine_api, SD_TEMPLATES_NAME, random_host,
                                    sd_host_storage_ip, SD_TEMPLATES_PATH,
-                                   sd_format='v1', sd_type='export',
+                                   DC_NAME, sd_format='v1', sd_type='export',
                                    nfs_version='v4_1')
 
 

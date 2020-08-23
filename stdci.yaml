@@ -12,7 +12,6 @@ stage:
   - check-patch:
       timeout: 180m
       substage:
-        - dr_suite_master
         - basic_suite_4.3
         - basic_suite_master:
             distributions:

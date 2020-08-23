@@ -25,7 +25,6 @@ stage:
         - he-basic-ipv6_suite_4.3
         - he-basic_suite_4.3
         - he-basic-iscsi_suite_4.3
-        - he-basic-role-remote_suite_4.3
         - he-node-ng_suite_4.3
         - network_suite_4.3
         - network_suite_master:

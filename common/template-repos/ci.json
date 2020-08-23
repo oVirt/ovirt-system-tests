@@ -108,6 +108,15 @@
         }
       }
     },
+    "el7.8-base": {
+      "versions": {
+        "v1": {
+          "source": "ci-templates-vm", 
+          "handle": "el7.8-base", 
+          "timestamp": 1598162386.7571886
+        }
+      }
+    },
     "el8-base-1": {
       "versions": {
         "v1": {

@@ -121,6 +121,8 @@ includepkgs = 389-ds-base
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
 	libgudev1
+	libguestfs
+	libguestfs-tools-c
 	libibumad
 	libibverbs
 	libicu
@@ -171,11 +173,14 @@ includepkgs = 389-ds-base
 	net-snmp-agent-libs
 	net-snmp-libs
 	net-snmp-utils
+	nfs-utils
 	ntp
 	ntpdate
 	perl-Git
+	postgresql-jdbc
 	postgresql-libs
 	python-firewall
+	python-libguestfs
 	python-libipa_hbac
 	python-sss-murmur
 	python-sssdconfig
@@ -213,6 +218,7 @@ includepkgs = 389-ds-base
 	tomcat-servlet-3.0-api
 	tzdata-java
 	unbound-libs
+	virt-v2v
 	yum-plugin-versionlock
 	yum-utils
 
@@ -428,8 +434,6 @@ includepkgs = GeoIP
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
-	libguestfs
-	libguestfs-tools-c
 	libguestfs-winsupport
 	libini_config
 	libiscsi
@@ -504,7 +508,6 @@ includepkgs = GeoIP
 	netcf-libs
 	nettle
 	newt-python
-	nfs-utils
 	nmap-ncat
 	numactl
 	numad
@@ -573,7 +576,6 @@ includepkgs = GeoIP
 	pixman
 	policycoreutils
 	policycoreutils-python
-	postgresql-jdbc
 	psmisc
 	pygobject2
 	pyldb
@@ -598,7 +600,6 @@ includepkgs = GeoIP
 	python-kitchen
 	python-kmod
 	python-ldap
-	python-libguestfs
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -691,7 +692,6 @@ includepkgs = GeoIP
 	uuid
 	virt-install
 	virt-manager-common
-	virt-v2v
 	volume_key-libs
 	ws-commons-util
 	ws-jaxme

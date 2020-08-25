@@ -55,6 +55,7 @@ from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.selenium.common import http_proxy_disabled
 from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
+from ost_utils.storage_utils import lun
 from ost_utils.storage_utils import nfs
 from ost_utils import shell
 
@@ -152,7 +153,8 @@ _TEST_LIST = [
     "test_add_tag",
     "test_add_cpu_profile",
     "test_verify_add_hosts",
-    "test_add_master_storage_domain",
+    "test_add_nfs_master_storage_domain",
+    "test_add_iscsi_master_storage_domain",
     "test_add_blank_vms",
     "test_add_direct_lun_vm0",
     "test_add_blank_high_perf_vm2",
@@ -504,16 +506,53 @@ def test_complete_hosts_setup(ansible_hosts):
 
 
 @pytest.fixture(scope="session")
-def sd_nfs_host_storage_ip(engine_ips_for_network, storage_network_name):
-    return engine_ips_for_network(storage_network_name)[0]
+def sd_iscsi_port():
+    return SD_ISCSI_PORT
+
+
+@pytest.fixture(scope="session")
+def sd_iscsi_target():
+    return SD_ISCSI_TARGET
+
+
+@pytest.fixture(scope="session")
+def sd_iscsi_ansible_host(ansible_engine):
+    return ansible_engine
+
+
+@pytest.fixture(scope="session")
+def sd_iscsi_host_ips(engine_storage_ips):
+    return engine_storage_ips
+
+
+@pytest.fixture
+def sd_iscsi_host_lun_uuids(sd_iscsi_ansible_host):
+    return lun.get_uuids(sd_iscsi_ansible_host)[:SD_ISCSI_NR_LUNS]
+
+
+@pytest.fixture
+def sd_iscsi_host_luns(sd_iscsi_host_lun_uuids, sd_iscsi_host_ips,
+                       sd_iscsi_port, sd_iscsi_target):
+    return lun.create_lun_sdk_entries(sd_iscsi_host_lun_uuids,
+                                      sd_iscsi_host_ips, sd_iscsi_port,
+                                      sd_iscsi_target)
 
 
 @order_by(_TEST_LIST)
-def test_add_master_storage_domain(prefix, engine_api, sd_nfs_host_storage_ip):
-    if MASTER_SD_TYPE == 'iscsi':
-        add_iscsi_storage_domain(prefix)
-    else:
-        add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip)
+@pytest.mark.skipif(MASTER_SD_TYPE != 'iscsi', reason='not using iscsi')
+def test_add_iscsi_master_storage_domain(engine_api, sd_iscsi_host_luns):
+    add_iscsi_storage_domain(engine_api, sd_iscsi_host_luns)
+
+
+@pytest.fixture(scope="session")
+def sd_nfs_host_storage_ip(engine_storage_ips):
+    return engine_storage_ips[0]
+
+
+@order_by(_TEST_LIST)
+@pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
+def test_add_nfs_master_storage_domain(engine_api, sd_nfs_host_storage_ip):
+    add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip)
 
 
 def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
@@ -535,7 +574,8 @@ def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
 
 
 @order_by(_TEST_LIST)
-def test_add_secondary_storage_domains(prefix, engine_api, sd_nfs_host_storage_ip):
+def test_add_secondary_storage_domains(engine_api, sd_nfs_host_storage_ip,
+                                       sd_iscsi_host_luns):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
@@ -555,7 +595,8 @@ def test_add_secondary_storage_domains(prefix, engine_api, sd_nfs_host_storage_i
     else:
         vt = utils.VectorThread(
             [
-                functools.partial(add_iscsi_storage_domain, prefix),
+                functools.partial(add_iscsi_storage_domain, engine_api,
+                                  sd_iscsi_host_luns),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 #Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, engine_api,
@@ -619,12 +660,8 @@ def test_add_glance_images(engine_api):
     vt.join_all()
 
 
-def add_iscsi_storage_domain(prefix):
-    luns = test_utils.get_luns(
-        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
-
+def add_iscsi_storage_domain(engine_api, luns):
     v4_domain = versioning.cluster_version_ok(4, 1)
-    api = prefix.virt_env.engine_vm().get_api_v4()
     p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
         description='iSCSI Storage Domain',
@@ -633,7 +670,7 @@ def add_iscsi_storage_domain(prefix):
         data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
-        host=_random_host_from_dc(api, DC_NAME),
+        host=_random_host_from_dc(engine_api, DC_NAME),
         storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
@@ -644,7 +681,7 @@ def add_iscsi_storage_domain(prefix):
         ),
     )
 
-    domain.add(api, p, DC_NAME)
+    domain.add(engine_api, p, DC_NAME)
 
 
 def add_iso_storage_domain(engine_api, sd_host_storage_ip):

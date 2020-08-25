@@ -613,27 +613,19 @@ def test_add_secondary_storage_domains(engine_api, sd_nfs_host_storage_ip,
 
 
 @order_by(_TEST_LIST)
-def test_resize_and_refresh_storage_domain(prefix):
-    storage_vm = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME)
-    result = storage_vm.ssh(
-        [
-            'lvresize',
-            '--size',
-            '+3000M',
-            '/dev/mapper/vg1_storage-lun0_bdev',
-        ],
+def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api,
+                                           sd_iscsi_host_luns):
+    sd_iscsi_ansible_host.shell(
+        'lvresize --size +3000M /dev/mapper/vg1_storage-lun0_bdev'
     )
-    assert result.code == 0, 'Failed to resize lun0. Code: {0}, output: {1}'.format(result.code, result.out)
 
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api.system_service()
+    engine = engine_api.system_service()
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_ISCSI_NAME)
-    luns = test_utils.get_luns(
-        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
+
     with test_utils.TestEvent(engine, 1022): # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
         storage_domain_service.refresh_luns(
             async=False,
-            logical_units=luns
+            logical_units=sd_iscsi_host_luns
         )
 
 

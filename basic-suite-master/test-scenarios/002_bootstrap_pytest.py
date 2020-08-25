@@ -1710,21 +1710,31 @@ def test_add_event(engine_api):
     )
 
 
+@pytest.fixture
+def sd_iscsi_host_direct_lun_uuids(sd_iscsi_ansible_host):
+    return lun.get_uuids(sd_iscsi_ansible_host)[SD_ISCSI_NR_LUNS + 1:SD_ISCSI_NR_LUNS + 2]
+
+
+@pytest.fixture
+def sd_iscsi_host_direct_luns(sd_iscsi_host_direct_lun_uuids, sd_iscsi_host_ips,
+                              sd_iscsi_port, sd_iscsi_target):
+    return lun.create_lun_sdk_entries(sd_iscsi_host_direct_lun_uuids,
+                                      sd_iscsi_host_ips, sd_iscsi_port,
+                                      sd_iscsi_target)
+
+
 @order_by(_TEST_LIST)
-def test_add_direct_lun_vm0(prefix):
-    luns = test_utils.get_luns(
-        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=SD_ISCSI_NR_LUNS+1)
+def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
     dlun_params = sdk4.types.Disk(
         name=DLUN_DISK_NAME,
         format=sdk4.types.DiskFormat.RAW,
         lun_storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
-            logical_units=luns,
+            logical_units=sd_iscsi_host_direct_luns,
         ),
     )
 
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api.system_service()
+    engine = engine_api.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     with test_utils.TestEvent(engine, 97):
         disk_attachments_service.add(sdk4.types.DiskAttachment(

@@ -325,7 +325,7 @@ env_run_pytest () {
 env_ansible () {
 
     # Ensure latest Ansible modules are tested:
-    local collection_dir=$SUITE/ovirt-deploy/collections/ansible_collections/ovirt/ovirt/plugins
+    local collection_dir=$SUITE/collections/ansible_collections/ovirt/ovirt/plugins
     rm -rf $collection_dir/modules || true
     rm -rf $collection_dir/module_utils || true
     mkdir -p $collection_dir/modules
@@ -341,6 +341,13 @@ env_ansible () {
     cd -
 
     wget https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/ovirt.py -O $collection_dir/module_utils/ovirt.py
+
+    for file in $(find $collection_dir/modules/* -type f)
+    do
+        sed -i -e "s/@NAMESPACE@/ovirt/g" -e "s/@NAME@/ovirt/g" $file
+    done
+
+    sed -i -e "s/@NAMESPACE@/ovirt/g" -e "s/@NAME@/ovirt/g" $collection_dir/module_utils/ovirt.py
 }
 
 

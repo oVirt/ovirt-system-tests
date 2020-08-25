@@ -89,7 +89,23 @@ def _run_ansible(config_builder):
             stdout=runner.stdout.read()
         )
 
-    return runner
+    return _find_result(runner.events)
+
+
+def _find_result(ansible_events):
+    events = sorted(
+        (e for e in ansible_events if 'created' in e),
+        key=lambda e: e['created']
+    )
+
+    for event in reversed(events):
+        event_data = event.get('event_data', None)
+        if event_data is not None:
+            res = event_data.get('res', None)
+            if res is not None:
+                return res
+
+    return None
 
 
 # We need one ansible private directory per thread because:
@@ -178,22 +194,15 @@ class _AnsibleFacts(object):
     def get(self, fact):
         if not self.facts_gathered:
             self.refresh()
-        runner = self._module_mapper.debug(var=fact)
-        events = sorted(
-            (e for e in runner.events if 'created' in e),
-            key=lambda e: e['created']
-        )
+        result = self._module_mapper.debug(var=fact)
 
-        for event in reversed(events):
-            event_data = event.get('event_data', None)
-            if event_data is not None:
-                res = event_data.get('res', None)
-                if res is not None:
-                    value = res.get(fact, None)
-                    if value == "VARIABLE IS NOT DEFINED!":
-                        raise AnsibleFactNotFound(fact)
-                    if value is not None:
-                        return value
+        if result is not None:
+            value = result.get(fact, None)
+            if value == "VARIABLE IS NOT DEFINED!":
+                raise AnsibleFactNotFound(fact)
+            if value is not None:
+                return value
+
         raise AnsibleFactNotFound(fact)
 
     def refresh(self):

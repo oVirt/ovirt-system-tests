@@ -22,7 +22,6 @@ stage:
                     support-nesting-level: 2
         - compat-4.2_suite_master
         - compat-4.3_suite_master
-        - he-basic-ipv6_suite_4.3
         - he-basic_suite_4.3
         - he-basic_suite_master
         - he-basic-iscsi_suite_4.3

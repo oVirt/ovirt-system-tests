@@ -21,9 +21,9 @@ from __future__ import absolute_import
 
 import functools
 
-from lago import utils
-from ost_utils.pytest.fixtures import api_v4, prefix
-from ovirtlago import testlib
+from ost_utils import assertions
+from ost_utils import utils
+from ost_utils.pytest.fixtures.engine import *
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
 import test_utils
@@ -52,11 +52,11 @@ def _host_is_attached_to_network(engine, host, network_name):
     return True
 
 
-def test_assign_hosts_network_label(api_v4):
+def test_assign_hosts_network_label(engine_api):
     """
     Assigns NETWORK_LABEL to first network interface of every host in cluster
     """
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
 
     def _assign_host_network_label(host):
         host_service = engine.hosts_service().host_service(id=host.id)
@@ -81,7 +81,7 @@ def test_assign_hosts_network_label(api_v4):
     assert all(vt.join_all())
 
 
-def test_add_labeled_network(api_v4):
+def test_add_labeled_network(engine_api):
     """
     Creates a labeled network
     """
@@ -100,7 +100,7 @@ def test_add_labeled_network(api_v4):
             id=LABELED_NET_VLAN_ID,
         ),
     )
-    networks_service = api_v4.system_service().networks_service()
+    networks_service = engine_api.system_service().networks_service()
     net = networks_service.add(labeled_net)
     assert net
 
@@ -118,11 +118,11 @@ def test_add_labeled_network(api_v4):
     assert len(labels) == 1
 
 
-def test_assign_labeled_network(api_v4):
+def test_assign_labeled_network(engine_api):
     """
     Adds the labeled network to the cluster and asserts the hosts are attached
     """
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
 
     labeled_net = engine.networks_service().list(
         search='name={}'.format(LABELED_NET_NAME))[0]
@@ -136,6 +136,6 @@ def test_assign_labeled_network(api_v4):
     hosts_service = engine.hosts_service()
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
         host_service = hosts_service.host_service(id=host.id)
-        testlib.assert_true_within_short(
+        assertions.assert_true_within_short(
             functools.partial(_host_is_attached_to_network, engine,
                               host_service, LABELED_NET_NAME))

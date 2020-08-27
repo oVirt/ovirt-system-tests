@@ -340,7 +340,10 @@ env_ansible () {
     wget -N $OVIRT_MODULES_FILES
     cd -
 
-    wget https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/ovirt.py -O $collection_dir/module_utils/ovirt.py
+    for module_util in ovirt cloud
+    do
+    wget "https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/$module_util.py" -O $collection_dir/module_utils/$module_util.py
+    done
 
     for file in $(find $collection_dir/modules/* -type f)
     do

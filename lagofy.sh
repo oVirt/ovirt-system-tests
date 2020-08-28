@@ -16,7 +16,7 @@ check_dependencies() {
         rmmod kvm-intel; modprobe kvm-intel;
         [[ $(cat /sys/module/kvm_intel/parameters/nested) -ne 1 ]] && return 5
     }
-    virsh connect || {
+    virsh -q connect || {
         echo "Can not connect to libvirt. Fix it!"
         return 6
     }

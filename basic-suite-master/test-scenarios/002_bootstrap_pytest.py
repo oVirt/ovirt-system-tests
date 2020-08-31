@@ -34,9 +34,6 @@ import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 import pytest
 
-from lago import utils
-from ovirtlago import testlib
-
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
@@ -46,8 +43,6 @@ from ost_utils import assertions
 from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures import api_v4
-from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
@@ -58,6 +53,7 @@ from ost_utils.storage_utils import glance
 from ost_utils.storage_utils import lun
 from ost_utils.storage_utils import nfs
 from ost_utils import shell
+from ost_utils import utils
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -79,23 +75,19 @@ MASTER_SD_TYPE = 'nfs'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
-SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_NFS_PATH = '/exports/nfs/share1'
 SD_SECOND_NFS_PATH = '/exports/nfs/share2'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
 
 SD_ISO_NAME = 'iso'
-SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
 SD_ISO_PATH = '/exports/nfs/iso'
 
 SD_TEMPLATES_NAME = 'templates'
-SD_TEMPLATES_HOST_NAME = SD_NFS_HOST_NAME
 SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
@@ -465,7 +457,7 @@ def test_verify_add_hosts(engine_api):
     total_hosts = len(hosts_status)
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)
     LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
-    testlib.assert_true_within(
+    assertions.assert_true_within(
         lambda: _single_host_up(hosts_service, total_hosts),
         timeout=constants.ADD_HOST_TIMEOUT
     )
@@ -475,7 +467,7 @@ def test_verify_add_all_hosts(engine_api):
     hosts_service = engine_api.system_service().hosts_service()
     total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
 
-    testlib.assert_true_within(
+    assertions.assert_true_within(
         lambda: _all_hosts_up(hosts_service, total_hosts),
         timeout=constants.ADD_HOST_TIMEOUT
     )
@@ -1228,13 +1220,13 @@ def test_verify_glance_import(engine_api):
     # which is based on that template.
     templates_service = engine_api.system_service().templates_service()
 
-    testlib.assert_true_within_long(
+    assertions.assert_true_within_long(
         lambda: TEMPLATE_GUEST in [t.name for t in templates_service.list()]
     )
 
     for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
         disks_service = engine_api.system_service().disks_service()
-        testlib.assert_true_within_long(
+        assertions.assert_true_within_long(
             lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
         )
 
@@ -1370,7 +1362,7 @@ def test_add_blank_vms(engine_api):
     vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
 
     for vm_service in [backup_vm_service, vm0_vm_service]:
-        testlib.assert_true_within_short(
+        assertions.assert_true_within_short(
             lambda:
             vm_service.get().status == sdk4.types.VmStatus.DOWN
         )
@@ -1461,7 +1453,7 @@ def test_add_blank_high_perf_vm2(engine_api):
         ),
     )
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
-    testlib.assert_true_within_long(
+    assertions.assert_true_within_long(
         lambda:
         vm2_service.get().status == sdk4.types.VmStatus.DOWN
     )
@@ -1525,7 +1517,7 @@ def test_add_vm2_lease(engine_api):
             )
         )
     )
-    testlib.assert_true_within_short(
+    assertions.assert_true_within_short(
         lambda:
         vm2_service.get().lease.storage_domain.id == sd.id
     )
@@ -1592,7 +1584,7 @@ def test_add_graphics_console(engine_api):
     if len(consoles_service.list()) == 2:
         console = consoles_service.console_service('766e63')
         console.remove()
-        testlib.assert_true_within_short(
+        assertions.assert_true_within_short(
             lambda:
             len(consoles_service.list()) == 1
         )
@@ -1603,7 +1595,7 @@ def test_add_graphics_console(engine_api):
             protocol=sdk4.types.GraphicsType.VNC,
         )
     )
-    testlib.assert_true_within_short(
+    assertions.assert_true_within_short(
         lambda:
         len(consoles_service.list()) == 2
     )

@@ -7,7 +7,7 @@ check_dependencies() {
     pip3 install --user -q -r ${OST_REPO_ROOT}/requirements.txt
     # update ost_utils all the time since we don't version it
     pip3 install --user -q -e ost_utils
-    grep ipv6 /etc/sysctl.conf | grep -q 'accept_ra = 2' || {
+    grep ipv6 /etc/sysctl.conf | egrep -q 'accept_ra ?= ?2' || {
         echo 'Missing "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
     }

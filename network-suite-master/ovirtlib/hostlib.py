@@ -420,6 +420,10 @@ class HostNic(SDKSubEntity):
         return self.get_sdk_type().name
 
     @property
+    def status(self):
+        return self.get_sdk_type().status
+
+    @property
     def boot_protocol(self):
         return self.get_sdk_type().boot_protocol
 
@@ -451,6 +455,39 @@ class HostNic(SDKSubEntity):
     def is_network_attached(self):
         return self.get_network_id() is not None
 
+    def is_up(self):
+        return self.status == types.NicStatus.UP
+
     def get_network_id(self):
         network = self.get_sdk_type().network
         return network.id if network else None
+
+    def wait_for_up_status(self, timeout=HOST_TIMEOUT_SHORT):
+        syncutil.sync(exec_func=self.is_up,
+                      exec_func_args=(),
+                      success_criteria=lambda s: s,
+                      timeout=timeout)
+
+
+class Bond(HostNic):
+
+    @property
+    def active_slave(self):
+        active_slave = self._updated_bonding().active_slave
+        return self._to_nic(active_slave)
+
+    @property
+    def inactive_slaves(self):
+        bonding = self._updated_bonding()
+        inactive_slaves = [
+            inactive for inactive in bonding.slaves
+            if inactive.id != bonding.active_slave.id]
+        return [self._to_nic(nic) for nic in inactive_slaves]
+
+    def _to_nic(self, sdk_nic):
+        nic = HostNic(self._parent_sdk_entity)
+        nic.import_by_id(sdk_nic.id)
+        return nic
+
+    def _updated_bonding(self):
+        return self.get_sdk_type().bonding

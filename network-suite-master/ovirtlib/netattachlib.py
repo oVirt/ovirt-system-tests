@@ -192,3 +192,45 @@ class NetworkAttachmentData(object):
             attachment.to_network_attachment()
             for attachment in network_attachments_data
         ]
+
+
+class BondingData(object):
+
+    def __init__(self, name, slave_names, options=None):
+        self._name = name
+        self._options = options
+        self._slave_names = slave_names
+
+    @property
+    def name(self):
+        return self._name
+
+    def to_bond(self):
+        return types.HostNic(
+            name=self._name,
+            bonding=types.Bonding(
+                options=self._sdk_options(),
+                slaves=self._sdk_slaves()))
+
+    def _sdk_slaves(self):
+        return [types.HostNic(name=name) for name in self._slave_names]
+
+    def _sdk_options(self):
+        return [
+            types.Option(name=key, value=value)
+            for key, value in self._options.items()
+        ]
+
+    @staticmethod
+    def get_bonds_names(bonds):
+        """
+        :param bonds: []netattachlib.BondingData
+        :return:[]str
+        """
+        return [bond.name for bond in bonds]
+
+
+class ActiveSlaveBonding(BondingData):
+    def __init__(self, name, slave_names):
+        super(ActiveSlaveBonding, self).__init__(
+            name, slave_names, {'mode': '1'})

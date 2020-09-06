@@ -28,6 +28,7 @@ from ovirtlib import error
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import syncutil
+from ovirtlib.netattachlib import BondingData
 from ovirtlib.netattachlib import NetworkAttachmentData
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
@@ -156,7 +157,11 @@ class Host(SDKRootEntity):
 
     @retry_below_version('4.4')
     def setup_networks(
-        self, attachments_data, remove_other_networks=True, sync_networks=False
+        self,
+        attachments_data=(),
+        remove_other_networks=True,
+        sync_networks=False,
+        bonding_data=()
     ):
         """
         By default sets a desired network configuration state on the host
@@ -172,6 +177,7 @@ class Host(SDKRootEntity):
         :param attachments_data: []NetworkAttachmentData
         :param remove_other_networks: Boolean
         :param sync_networks: Boolean
+        :param bonding_data: []BondingData
         """
         modified_net_attachments = [
             att_data.to_network_attachment() for att_data in attachments_data
@@ -192,7 +198,12 @@ class Host(SDKRootEntity):
             modified_net_attachments if sync_networks else None
         )
 
+        modified_bonds = [
+            bond_data.to_bond() for bond_data in bonding_data
+        ]
+
         return self.service.setup_networks(
+            modified_bonds=modified_bonds,
             modified_network_attachments=modified_net_attachments,
             removed_network_attachments=removed_net_attachments,
             synchronized_network_attachments=synced_net_attachments,
@@ -206,21 +217,27 @@ class Host(SDKRootEntity):
             removed_network_ids)
         return self._remove_setup_networks(removed_attachments)
 
-    def remove_attachments(self, removed_attachments_data):
+    def remove_attachments(self, removed_attachments_data=(),
+                           removed_bonding_data=()):
         """
         :param removed_attachments_data: []netattachlib.NetworkAttachmentData
+        :param removed_bonding_data: []netattachlib.BondingData
         """
+        removed_bond_names = BondingData.get_bonds_names(removed_bonding_data)
+        removed_bonds = self._get_nics_by_name(removed_bond_names)
         net_attachments = NetworkAttachmentData.to_network_attachments(
             removed_attachments_data)
-        return self._remove_setup_networks(net_attachments)
+        return self._remove_setup_networks(net_attachments, removed_bonds)
 
     @retry_below_version('4.4')
-    def _remove_setup_networks(self, net_attachments):
+    def _remove_setup_networks(self, net_attachments, removed_bonds=None):
         """
         :param net_attachments: []types.NetworkAttachment
+        :param removed_bonds: []types.HostNic
         """
         return self.service.setup_networks(
             removed_network_attachments=net_attachments,
+            removed_bonds=removed_bonds,
             check_connectivity=True
         )
 
@@ -336,6 +353,16 @@ class Host(SDKRootEntity):
         return (self.system.hosts_service.host_service(self.id)
                 .nics_service().nic_service(nic_id).get().name)
 
+    def _get_nics_by_name(self, nic_names):
+        """
+        :param nic_names: []str
+        :return: []types.HostNic
+        """
+        return [
+            host_nic for host_nic in self._service.nics_service().list()
+            if host_nic.name in nic_names
+        ]
+
     def _get_network_by_id(self, network_id):
         dc = self._get_data_center()
         network = netlib.Network(dc)
@@ -394,17 +421,18 @@ class Host(SDKRootEntity):
 
 
 @contextlib.contextmanager
-def setup_networks(host, attach_data, remove_other_networks=True,
-                   sync_networks=False):
+def setup_networks(host, attach_data=(), remove_other_networks=True,
+                   sync_networks=False, bonding_data=()):
     host.setup_networks(
         attachments_data=attach_data,
         remove_other_networks=remove_other_networks,
-        sync_networks=sync_networks
+        sync_networks=sync_networks,
+        bonding_data=bonding_data
     )
     try:
         yield
     finally:
-        host.remove_attachments(attach_data)
+        host.remove_attachments(attach_data, bonding_data)
 
 
 class HostNic(SDKSubEntity):

@@ -28,6 +28,7 @@ from ovirtlib import error
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import syncutil
+from ovirtlib.netattachlib import NetworkAttachmentData
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
 
@@ -198,19 +199,28 @@ class Host(SDKRootEntity):
             check_connectivity=True,
         )
 
-    @retry_below_version('4.4')
     def remove_networks(self, removed_networks):
-        removed_network_ids = [
-            removed_network.id for removed_network in removed_networks
-        ]
+        removed_network_ids = netlib.Network.get_networks_ids(
+            removed_networks)
+        removed_attachments = self._get_existing_attachments_for_network_ids(
+            removed_network_ids)
+        return self._remove_setup_networks(removed_attachments)
 
-        removed_attachments = [
-            attachment for attachment in self._get_existing_attachments()
-            if attachment.network.id in removed_network_ids
-        ]
+    def remove_attachments(self, removed_attachments_data):
+        """
+        :param removed_attachments_data: []netattachlib.NetworkAttachmentData
+        """
+        net_attachments = NetworkAttachmentData.to_network_attachments(
+            removed_attachments_data)
+        return self._remove_setup_networks(net_attachments)
 
+    @retry_below_version('4.4')
+    def _remove_setup_networks(self, net_attachments):
+        """
+        :param net_attachments: []types.NetworkAttachment
+        """
         return self.service.setup_networks(
-            removed_network_attachments=removed_attachments,
+            removed_network_attachments=net_attachments,
             check_connectivity=True
         )
 
@@ -230,6 +240,12 @@ class Host(SDKRootEntity):
             attachments = [att for att in self._get_existing_attachments()
                            if att.network.id in network_ids]
         return attachments
+
+    def _get_existing_attachments_for_network_ids(self, network_ids):
+        return [
+            attachment for attachment in self._get_existing_attachments()
+            if attachment.network.id in network_ids
+        ]
 
     @retry_below_version('4.4')
     def clean_networks(self):
@@ -388,8 +404,7 @@ def setup_networks(host, attach_data, remove_other_networks=True,
     try:
         yield
     finally:
-        networks = [attach_datum.network for attach_datum in attach_data]
-        host.remove_networks(networks)
+        host.remove_attachments(attach_data)
 
 
 class HostNic(SDKSubEntity):

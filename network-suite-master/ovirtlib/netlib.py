@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2019 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,6 +110,14 @@ class Network(SDKSubEntity):
         network_service = self.system.networks_service.network_service(
             self.id)
         return network_service.network_labels_service().list()
+
+    @staticmethod
+    def get_networks_ids(networks):
+        """
+        :param networks: []netlib.Network
+        :return: frozenset(String)
+        """
+        return frozenset(network.id for network in networks)
 
 
 class VnicProfile(SDKRootEntity):

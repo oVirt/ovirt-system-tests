@@ -1,4 +1,4 @@
-# Copyright 2019 Red Hat, Inc.
+# Copyright 2019-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -181,3 +181,14 @@ class NetworkAttachmentData(object):
             ip_address_assignment.ip.version,
             ip_address_assignment.assignment_method
         )
+
+    @staticmethod
+    def to_network_attachments(network_attachments_data):
+        """
+        :param network_attachments_data: []netattachlib.NetworkAttachmentData
+        :return: []types.NetworkAttachment
+        """
+        return [
+            attachment.to_network_attachment()
+            for attachment in network_attachments_data
+        ]

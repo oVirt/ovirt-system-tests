@@ -65,7 +65,6 @@
       nic_netmask: 255.255.255.0
       nic_gateway: 192.168.200.1
       nic_name: eth0
-      nic_on_boot: true
       host_name: "{{ vm_name0 }}"
       custom_script: |
         write_files:

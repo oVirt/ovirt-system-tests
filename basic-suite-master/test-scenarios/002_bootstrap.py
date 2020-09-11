@@ -1329,9 +1329,7 @@ def test_add_blank_vms(engine_api):
             name=TEMPLATE_BLANK,
         ),
         display=sdk4.types.Display(
-            # TODO: Enable smartcard again once
-            # https://bugzilla.redhat.com/1876635 is resolved.
-            smartcard_enabled=False,
+            smartcard_enabled=True,
             keyboard_layout='en-us',
             file_transfer_enabled=True,
             copy_paste_enabled=True,

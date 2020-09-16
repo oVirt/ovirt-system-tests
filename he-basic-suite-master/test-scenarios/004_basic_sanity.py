@@ -22,8 +22,6 @@ import nose.tools as nt
 from nose import SkipTest
 import re
 
-from ovirtsdk.xml import params
-
 from lago import ssh
 from ovirtlago import testlib
 import ovirtsdk4 as sdk4
@@ -334,16 +332,16 @@ def snapshot_merge(api):
 def add_vm_template(api):
     #TODO: Fix the exported domain generation
     raise SkipTest('Exported domain generation not supported yet')
-    vm_params = params.VM(
+    vm_params = types.VM(
         name=VM1_NAME,
         memory=512 * MB,
-        cluster=params.Cluster(
+        cluster=types.Cluster(
             name=TEST_CLUSTER,
         ),
-        template=params.Template(
+        template=types.Template(
             name=TEMPLATE_CENTOS7,
         ),
-        display=params.Display(
+        display=types.Display(
             type_='spice',
         ),
     )
@@ -468,12 +466,12 @@ def snapshot_live_merge(api):
     disk_id = disk.id
     disk_name = disk.name
 
-    live_snap1_params = params.Snapshot(
+    live_snap1_params = types.Snapshot(
         description='live_snap1',
         persist_memorystate=True,
-        disks=params.Disks(
+        disks=types.Disks(
             disk=[
-                params.Disk(
+                types.Disk(
                     id=disk_id,
                 ),
             ],
@@ -485,12 +483,12 @@ def snapshot_live_merge(api):
         api.vms.get(VM0_NAME).snapshots.list()[-1].snapshot_status == 'ok'
     )
 
-    live_snap2_params = params.Snapshot(
+    live_snap2_params = types.Snapshot(
         description='live_snap2',
         persist_memorystate=True,
-        disks=params.Disks(
+        disks=types.Disks(
             disk=[
-                params.Disk(
+                types.Disk(
                     id=disk_id,
                 ),
             ],

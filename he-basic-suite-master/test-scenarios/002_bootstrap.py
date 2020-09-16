@@ -19,16 +19,15 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import functools
-import httplib
 import json
 import os
 import random
 import time
 
+from six.moves import http_client
+
 import nose.tools as nt
 from nose import SkipTest
-from ovirtsdk.infrastructure import errors
-from ovirtsdk.xml import params
 from ovirtsdk4 import Error as sdkError
 import ovirtsdk4.types as types
 
@@ -447,19 +446,19 @@ def add_iscsi_storage_domain(prefix):
 
     lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
 
-    p = params.StorageDomain(
+    p = types.StorageDomain(
         name=SD_ISCSI_NAME,
-        data_center=params.DataCenter(
+        data_center=types.DataCenter(
             name=DC_NAME,
         ),
         type_='data',
         storage_format=SD_FORMAT,
         host=_random_host_from_dc_4(api, DC_NAME),
-        storage=params.Storage(
+        storage=types.Storage(
             type_='iscsi',
-            volume_group=params.VolumeGroup(
+            volume_group=types.VolumeGroup(
                 logical_unit=[
-                    params.LogicalUnit(
+                    types.LogicalUnit(
                         id=lun_id,
                         address=_get_host_ip(
                             prefix,
@@ -600,7 +599,7 @@ def list_glance_images(api):
         if len(all_images):
             GLANCE_AVAIL = True
     except sdkError as e:
-        if e.code == httplib.BAD_REQUEST:
+        if e.code == http_client.BAD_REQUEST:
             raise SkipTest('%s: GLANCE is not available: client request error'
                            % list_glance_images.__name__)
         else:
@@ -658,7 +657,7 @@ def check_glance_connectivity(api):
             glance.test_connectivity()
             avail = True
         except sdkError as e:
-            if e.code == httplib.BAD_REQUEST:
+            if e.code == http_client.BAD_REQUEST:
                 pass
             else:
                 raise

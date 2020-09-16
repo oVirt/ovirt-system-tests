@@ -55,7 +55,7 @@ setup_ipv6() {
 }
 
 run_suite(){
-    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
+    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
     install_libguestfs
     local suite="${SUITE?}"
     local curdir="${PWD?}"

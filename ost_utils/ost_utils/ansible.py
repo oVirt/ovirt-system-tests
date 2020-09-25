@@ -128,6 +128,7 @@ class _AnsiblePrivateDir(object):
     def cleanup(cls):
         for dir in cls.all_dirs:
             shutil.rmtree(dir)
+        cls.all_dirs.clear()
 
 
 class _AnsibleConfigBuilder(object):

@@ -23,24 +23,30 @@ import os
 import tempfile
 
 import ovirtsdk4.types as types
+import pytest
 
-from ovirtlago import testlib
-
-import test_utils
-from ost_utils.pytest.fixtures import api_v4, prefix
+from ost_utils import engine_utils
+from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.engine import *
 
 # AAA
 AAA_LDAP_USER = 'user1'
 AAA_LDAP_GROUP = 'mygroup'
 AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
-HOSTNAME_389DS = testlib.get_prefixed_name('engine')
 
 
-def test_add_ldap_provider(prefix, engine_restart):
-    engine = prefix.virt_env.engine_vm()
-    machine_389ds = prefix.virt_env.get_vm(HOSTNAME_389DS)
+@pytest.fixture(scope="session")
+def ansible_machine_389ds(ansible_engine):
+    return ansible_engine
 
+
+@pytest.fixture(scope="session")
+def machine_389ds_ip(engine_ip):
+    return engine_ip
+
+
+def test_add_ldap_provider(ansible_engine, ansible_machine_389ds,
+                           machine_389ds_ip, engine_restart):
     answer_file_src = os.path.join(
         os.environ.get('SUITE'),
         'aaa-ldap-answer-file.conf'
@@ -48,40 +54,29 @@ def test_add_ldap_provider(prefix, engine_restart):
 
     with open(answer_file_src, 'r') as f:
         content = f.read()
-        content = content.replace('@389DS_IP@', machine_389ds.ip())
+        content = content.replace('@389DS_IP@', machine_389ds_ip)
 
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
+    with tempfile.NamedTemporaryFile(mode='w') as temp:
         temp.write(content)
-    engine.copy_to(temp.name, '/root/aaa-ldap-answer-file.conf')
-    os.unlink(temp.name)
+        temp.flush()
+        os.fsync(temp.fileno())
+        ansible_engine.copy(src=temp.name, dest='/root/aaa-ldap-answer-file.conf')
 
-    result = machine_389ds.ssh(
-        [
-            'systemctl',
-            'start',
-            'dirsrv@lago',
-        ],
-    )
-    assert result.code == 0, \
-        'Failed to start LDAP server. Exit code %s' % result.code
+    ansible_machine_389ds.systemd(name='dirsrv@lago', state='started')
 
-    result = engine.ssh(
-        [
-            'ovirt-engine-extension-aaa-ldap-setup',
-            '--config-append=/root/aaa-ldap-answer-file.conf',
-            '--log=/var/log/ovirt-engine-extension-aaa-ldap-setup.log',
-        ],
+    ansible_engine.shell(
+        'ovirt-engine-extension-aaa-ldap-setup '
+        '--config-append=/root/aaa-ldap-answer-file.conf '
+        '--log=/var/log/ovirt-engine-extension-aaa-ldap-setup.log'
     )
-    assert result.code == 0, \
-        'aaa-ldap-setup failed. Exit code is %s' % result.code
 
     engine_restart()
 
 
-def test_add_ldap_group(api_v4):
-    engine = api_v4.system_service()
+def test_add_ldap_group(engine_api):
+    engine = engine_api.system_service()
     groups_service = engine.groups_service()
-    with test_utils.TestEvent(engine, 149): # USER_ADD(149)
+    with engine_utils.wait_for_event(engine, 149): # USER_ADD(149)
         groups_service.add(
             types.Group(
                 name=AAA_LDAP_GROUP,
@@ -92,10 +87,10 @@ def test_add_ldap_group(api_v4):
         )
 
 
-def test_add_ldap_user(api_v4):
-    engine = api_v4.system_service()
+def test_add_ldap_user(engine_api):
+    engine = engine_api.system_service()
     users_service = engine.users_service()
-    with test_utils.TestEvent(engine, 149): # USER_ADD(149)
+    with engine_utils.wait_for_event(engine, 149): # USER_ADD(149)
         users_service.add(
             types.User(
                 user_name=AAA_LDAP_USER,

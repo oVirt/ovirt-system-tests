@@ -33,15 +33,13 @@ import ovirtsdk4.types as types
 import pytest
 import test_utils
 
-from ost_utils.pytest.fixtures import api_v4
-from ost_utils.pytest.fixtures import prefix
+from ost_utils import assertions
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.selenium import CHROME_VERSION
 from ost_utils.selenium import FIREFOX_VERSION
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
-from ovirtlago import testlib
 from test_utils.constants import *
 from test_utils.selenium_constants import *
 from test_utils.navigation.driver import *
@@ -250,11 +248,11 @@ def test_left_nav(ovirt_driver, save_screenshot, save_page_source):
 
 
 @pytest.fixture
-def setup_virtual_machines(api_v4):
-    vm_service = test_utils.get_vm_service(api_v4.system_service(), 'vm0')
+def setup_virtual_machines(engine_api):
+    vm_service = test_utils.get_vm_service(engine_api.system_service(), 'vm0')
     if vm_service.get().status == types.VmStatus.DOWN:
         vm_service.start()
-        testlib.assert_true_within_long(
+        assertions.assert_true_within_long(
             lambda: vm_service.get().status == types.VmStatus.POWERING_UP
         )
 

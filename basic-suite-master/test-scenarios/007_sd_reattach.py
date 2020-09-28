@@ -19,12 +19,12 @@
 #
 from __future__ import absolute_import
 
-from ovirtlago import testlib
 import ovirtsdk4
 import pytest
 
 import test_utils
-from ost_utils.pytest.fixtures import api_v4, prefix
+from ost_utils import assertions
+from ost_utils.pytest.fixtures.engine import *
 from test_utils.vnic_setup import VnicSetup
 
 DC_NAME = 'test-dc'
@@ -55,48 +55,48 @@ def _get_vm_service(root, name, unregistered=None):
     return virtual_machines.vm_service(vm.id)
 
 
-def test_deactivate_storage_domain(api_v4):
+def test_deactivate_storage_domain(engine_api):
     pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
-    VnicSetup.vnic_setup().init(api_v4.system_service(),
+    VnicSetup.vnic_setup().init(engine_api.system_service(),
                                 VM2_NAME, DC_NAME, CLUSTER_NAME)
-    dc = test_utils.data_center_service(api_v4.system_service(), DC_NAME)
+    dc = test_utils.data_center_service(engine_api.system_service(), DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).deactivate()
 
-    testlib.assert_equals_within_short(
+    assertions.assert_equals_within_short(
         lambda: _get_storage_domain(dc, SD_SECOND_NFS_NAME).status,
         ovirtsdk4.types.StorageDomainStatus.MAINTENANCE)
 
 
-def test_detach_storage_domain(api_v4):
+def test_detach_storage_domain(engine_api):
     pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine, DC_NAME)
 
     _get_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).remove()
 
-    testlib.assert_equals_within_short(
+    assertions.assert_equals_within_short(
         lambda: _get_storage_domain(engine, SD_SECOND_NFS_NAME).status,
         ovirtsdk4.types.StorageDomainStatus.UNATTACHED)
 
 
-def test_reattach_storage_domain(api_v4):
+def test_reattach_storage_domain(engine_api):
     pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
     VnicSetup.vnic_setup().remove_some_profiles_and_networks()
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine, DC_NAME)
     sd = _get_storage_domain(engine, SD_SECOND_NFS_NAME)
 
     dc.storage_domains_service().add(sd)
 
-    testlib.assert_equals_within_short(
+    assertions.assert_equals_within_short(
         lambda: _get_storage_domain(dc, SD_SECOND_NFS_NAME).status,
         ovirtsdk4.types.StorageDomainStatus.ACTIVE)
 
 
-def test_import_lost_vm(api_v4):
+def test_import_lost_vm(engine_api):
     pytest.skip('skipping until reattach test fixed. Jira OVIRT-2264')
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
     sd = _get_storage_domain(engine, SD_SECOND_NFS_NAME, service=True)
     lost_vm = _get_vm_service(sd, VM2_NAME, unregistered=True)
 

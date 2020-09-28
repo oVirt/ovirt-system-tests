@@ -51,6 +51,21 @@ def ansible_host1():
 
 
 @pytest.fixture(scope="session")
+def ansible_by_hostname(ansible_engine, ansible_host0, ansible_host1):
+
+    # ugly, but local and gets the job done for now
+    def by_hostname(hostname):
+        if "engine" in hostname:
+            return ansible_engine
+        if "host-0" in hostname:
+            return ansible_host0
+        if "host-1" in hostname:
+            return ansible_host1
+
+    return by_hostname
+
+
+@pytest.fixture(scope="session")
 def ansible_engine_facts():
     return ansible._AnsibleFacts(ANSIBLE_ENGINE_PATTERN)
 

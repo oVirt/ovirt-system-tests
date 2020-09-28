@@ -21,14 +21,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from netaddr.ip import IPAddress
-from ovirtlago import testlib
 from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
 import json
 
 import pytest
 import test_utils
 from test_utils import network_utils_v4, assert_finished_within_long
-from ost_utils.pytest.fixtures import api_v4, prefix
+from ost_utils import assertions
+from ost_utils.pytest.fixtures.ansible import *
+from ost_utils.pytest.fixtures.engine import *
 
 
 DC_NAME = 'test-dc'
@@ -51,23 +52,31 @@ VM0_NAME = 'vm0'
 MIGRATION_POLICY_POSTCOPY='a7aeedb2-8d66-4e51-bb22-32595027ce71'
 
 
-@pytest.fixture(scope="module")
-def prepare_migration_vlan(api_v4):
-    engine = api_v4.system_service()
+@pytest.fixture(scope="session")
+def system_service(engine_api):
+    return engine_api.system_service()
 
+
+@pytest.fixture(scope="session")
+def all_hosts_hostnames(system_service):
+    hosts_service = system_service.hosts_service()
+    return {host.name for host in hosts_service.list()}
+
+
+@pytest.fixture(scope="module")
+def prepare_migration_vlan(system_service):
     assert network_utils_v4.set_network_usages_in_cluster(
-        engine, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
+        system_service, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
     assert network_utils_v4.set_network_mtu(
-        engine, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
+        system_service, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
 
 
-def migrate_vm(prefix, api_v4):
-    engine = api_v4.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
+    vm_service = test_utils.get_vm_service(system_service, VM0_NAME)
     vm_id = vm_service.get().id
-    hosts_service = engine.hosts_service()
+    hosts_service = system_service.hosts_service()
 
     def _current_running_host():
         host_id = vm_service.get().host.id
@@ -76,51 +85,38 @@ def migrate_vm(prefix, api_v4):
         return host.name
 
     src_host = _current_running_host()
-    dst_host = sorted([h.name() for h in prefix.virt_env.host_vms()
-                       if h.name() != src_host])[0]
+    dst_host = next(iter(all_hosts_hostnames - {src_host}))
 
     print('source host: {}'.format(src_host))
     print('destination host: {}'.format(dst_host))
 
     assert_finished_within_long(
         vm_service.migrate,
-        engine,
+        system_service,
         host=Host(name=dst_host)
     )
 
     # Verify that VDSM cleaned the vm in the source host
     def vm_is_not_on_host():
-        src_host_obj = [
-            h for h in prefix.virt_env.host_vms()
-            if h.name() == src_host
-        ][0]
+        ansible_src_host = ansible_by_hostname(src_host)
+        out = ansible_src_host.shell('vdsm-client Host getVMList')["stdout"]
+        vms = json.loads(out)
+        return vm_id not in [vm["vmId"] for vm in vms]
 
-        ret = src_host_obj.ssh(['vdsm-client', 'Host', 'getVMList'])
-        if ret:
-            raise RuntimeError('Failed to call vdsm-client in {}, {}'.format(
-                src_host, ret.err
-                )
-            )
+    assertions.assert_true_within_short(vm_is_not_on_host)
 
-        parsed_output = json.loads(ret.out)
-
-        return vm_id not in parsed_output
-
-    testlib.assert_true_within_short(vm_is_not_on_host)
-
-    testlib.assert_true_within_short(
+    assertions.assert_true_within_short(
         lambda: vm_service.get().status == VmStatus.UP
     )
 
     assert _current_running_host() == dst_host
 
 
-def prepare_migration_attachments_ipv4(api_v4):
-    engine = api_v4.system_service()
-    hosts_service = engine.hosts_service()
+def prepare_migration_attachments_ipv4(system_service):
+    hosts_service = system_service.hosts_service()
 
     for index, host in enumerate(
-            test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),
+            test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME),
             start=1):
         host_service = hosts_service.host_service(id=host.id)
 
@@ -138,12 +134,11 @@ def prepare_migration_attachments_ipv4(api_v4):
         assert IPAddress(actual_address) == IPAddress(ip_address)
 
 
-def prepare_migration_attachments_ipv6(api_v4):
-    engine = api_v4.system_service()
-    hosts_service = engine.hosts_service()
+def prepare_migration_attachments_ipv6(system_service):
+    hosts_service = system_service.hosts_service()
 
     for index, host in enumerate(
-            test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME),
+            test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME),
             start=1):
         host_service = hosts_service.host_service(id=host.id)
 
@@ -154,15 +149,15 @@ def prepare_migration_attachments_ipv6(api_v4):
             ipv6_mask=MIGRATION_NETWORK_IPv6_MASK)
 
         network_utils_v4.modify_ip_config(
-            engine, host_service, MIGRATION_NETWORK, ip_configuration)
+            system_service, host_service, MIGRATION_NETWORK, ip_configuration)
 
         actual_address = next(nic for nic in host_service.nics_service().list()
                               if nic.name == VLAN200_IF_NAME).ipv6.address
         assert IPAddress(actual_address) == IPAddress(ip_address)
 
 
-def set_postcopy_migration_policy(api_v4):
-    cluster_service = test_utils.get_cluster_service(api_v4.system_service(), CLUSTER_NAME)
+def set_postcopy_migration_policy(system_service):
+    cluster_service = test_utils.get_cluster_service(system_service, CLUSTER_NAME)
     cluster_service.update(
         cluster=Cluster(
             migration=MigrationOptions(
@@ -174,12 +169,14 @@ def set_postcopy_migration_policy(api_v4):
     )
 
 
-def test_ipv4_migration(prefix, api_v4, prepare_migration_vlan):
-    prepare_migration_attachments_ipv4(api_v4)
-    migrate_vm(prefix, api_v4)
+def test_ipv4_migration(all_hosts_hostnames, ansible_by_hostname, system_service,
+                        prepare_migration_vlan):
+    prepare_migration_attachments_ipv4(system_service)
+    migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service)
 
 
-def test_ipv6_migration(prefix, api_v4, prepare_migration_vlan):
-    prepare_migration_attachments_ipv6(api_v4)
-    set_postcopy_migration_policy(api_v4)
-    migrate_vm(prefix, api_v4)
+def test_ipv6_migration(all_hosts_hostnames, ansible_by_hostname, system_service,
+                        prepare_migration_vlan):
+    prepare_migration_attachments_ipv6(system_service)
+    set_postcopy_migration_policy(system_service)
+    migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service)

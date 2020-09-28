@@ -27,11 +27,11 @@ import requests
 
 from six.moves.urllib import parse as urlparse
 
-from ovirtlago import testlib
 from ovirtsdk4 import types
 
 import test_utils
-from ost_utils.pytest.fixtures import api_v4, prefix
+from ost_utils import assertions
+from ost_utils.pytest.fixtures.engine import *
 from test_utils import network_utils_v4
 from test_utils import versioning
 
@@ -244,28 +244,6 @@ def _delete_subnet(
     )
 
 
-def _delete_all(prefix):
-    engine = prefix.virt_env.engine_vm()
-    engine_ip = engine.ip()
-    token_id = _get_auth_token(engine_ip)
-
-    networks = _get_networks(token_id, engine_ip)['networks']
-    ports = _get_ports(token_id, engine_ip)['ports']
-    subnets = _get_subnets(token_id, engine_ip)['subnets']
-
-    for port in ports:
-        id = port['id']
-        _delete_port(token_id, engine_ip, id)
-
-    for subnet in subnets:
-        id = subnet['id']
-        _delete_subnet(token_id, engine_ip, id)
-
-    for network in networks:
-        id = network['id']
-        _delete_network(token_id, engine_ip, id)
-
-
 def _validate_network(token_id, engine_ip, name, id):
     networks = _get_networks(token_id, engine_ip)['networks']
     for network in networks:
@@ -316,7 +294,7 @@ def _validate_vnic_profile(api, vnic_profile_name):
               None)
 
     profiles_service = api.system_service().vnic_profiles_service()
-    testlib.assert_true_within_short(
+    assertions.assert_true_within_short(
         lambda:
         _get_vnic_profile(profiles_service, vnic_profile_name) is not None
     )
@@ -359,7 +337,7 @@ def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
            .network_service(network_id)
     )
     network_service.import_(
-        async=False,
+        _async=False,
         data_center=ovirtsdk4.types.DataCenter(
             id=datacenter_id
         ),
@@ -428,7 +406,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
     nic_service = nics_service.nic_service(nic.id)
     nic_service.deactivate()
-    testlib.assert_true_within_short(
+    assertions.assert_true_within_short(
         lambda:
         nic_service.get().plugged == False
     )
@@ -436,16 +414,15 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 
 @versioning.require_version(4, 2)
-def test_use_ovn_provider(prefix, api_v4):
-    engine = api_v4.system_service()
-    engine_ip = prefix.virt_env.engine_vm().ip()
+def test_use_ovn_provider(engine_api, engine_ip):
+    engine = engine_api.system_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
 
     token_id = _get_auth_token(engine_ip)
 
     _validate_db_empty(token_id, engine_ip)
 
-    with _disable_auto_sync(api_v4, provider_id):
+    with _disable_auto_sync(engine_api, provider_id):
         network1_id = _add_network(
             token_id,
             engine_ip,
@@ -470,14 +447,14 @@ def test_use_ovn_provider(prefix, api_v4):
         _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
         _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
 
-        datacenter_id = _get_datacenter_id(api_v4)
-        _import_network_to_ovirt(api_v4, provider_id, network1_id, datacenter_id)
-        _validate_vnic_profile(api_v4, NETWORK_1)
-        ovirt_network_id = _get_ovirt_network(api_v4, datacenter_id, NETWORK_1)
-        _add_network_to_cluster(api_v4, datacenter_id, ovirt_network_id)
-        _hotplug_network_to_vm(api_v4, VM0_NAME, NETWORK_1, IFACE_NAME)
-        _remove_iface_from_vm(api_v4, VM0_NAME, IFACE_NAME)
-        _remove_network_from_ovirt(api_v4, datacenter_id, ovirt_network_id)
+        datacenter_id = _get_datacenter_id(engine_api)
+        _import_network_to_ovirt(engine_api, provider_id, network1_id, datacenter_id)
+        _validate_vnic_profile(engine_api, NETWORK_1)
+        ovirt_network_id = _get_ovirt_network(engine_api, datacenter_id, NETWORK_1)
+        _add_network_to_cluster(engine_api, datacenter_id, ovirt_network_id)
+        _hotplug_network_to_vm(engine_api, VM0_NAME, NETWORK_1, IFACE_NAME)
+        _remove_iface_from_vm(engine_api, VM0_NAME, IFACE_NAME)
+        _remove_network_from_ovirt(engine_api, datacenter_id, ovirt_network_id)
 
         _delete_port(token_id, engine_ip, port1_id)
         _delete_subnet(token_id, engine_ip, subnet1_id)

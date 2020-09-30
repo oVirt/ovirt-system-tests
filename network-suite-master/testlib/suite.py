@@ -29,10 +29,11 @@ SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
 SUITE_VERSION = SUITE_NAME.split('-')[-1]
 
 
-def xfail_suite_master(reason):
+def xfail_suite_master(reason, raises=None):
     return pytest.mark.xfail(
             condition=SUITE_NAME.endswith('master'),
             reason=reason,
+            raises=raises,
             run=False
             )
 

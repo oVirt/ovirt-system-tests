@@ -78,6 +78,17 @@ class Node(object):
         self.exec_command('ip link set {iface} mtu {mtu}'
                           .format(iface=iface_name, mtu=mtu_value))
 
+    def change_active_slave(self, bond_name, slave_name):
+        """"
+        :param bond_name: str
+        :param slave_name: str
+        """
+        self.exec_command(
+            'ip link set {bond} type bond active_slave {slave}'.format(
+                bond=bond_name, slave=slave_name
+            )
+        )
+
     def assert_default_route(self, expected_v6_route_address):
         assert expected_v6_route_address == self.get_default_route_v6()
 

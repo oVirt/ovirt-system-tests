@@ -1,4 +1,5 @@
 # PIP requirements for OST
+pytest
 selenium
 # network suite deps
 flake8

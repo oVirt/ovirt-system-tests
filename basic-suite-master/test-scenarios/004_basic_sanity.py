@@ -31,8 +31,8 @@ from lago import utils, ssh
 from ost_utils import assertions
 from ost_utils import engine_utils
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
+from ost_utils.pytest.fixtures.engine import *
 
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
@@ -136,9 +136,8 @@ _TEST_LIST = [
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_all_hosts(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    hosts_service = api.system_service().hosts_service()
+def test_verify_add_all_hosts(engine_api):
+    hosts_service = engine_api.system_service().hosts_service()
     total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
 
     assertions.assert_true_within(
@@ -201,8 +200,8 @@ def assert_vm_is_alive(prefix, vm_hostname):
 
 
 @order_by(_TEST_LIST)
-def test_add_disks(api_v4):
-    engine = api_v4.system_service()
+def test_add_disks(engine_api):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
     assert vm_service and glance_disk
@@ -262,11 +261,11 @@ def test_add_disks(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_extend_disk1(api_v4):
-    engine = api_v4.system_service()
+def test_extend_disk1(engine_api):
+    engine = engine_api.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM1_NAME)
     for disk_attachment in disk_attachments_service.list():
-        disk = api_v4.follow_link(disk_attachment.disk)
+        disk = engine_api.follow_link(disk_attachment.disk)
         if disk.name == DISK1_NAME:
             attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
     with engine_utils.wait_for_event(engine, 371): # USER_EXTEND_DISK_SIZE_SUCCESS(371)
@@ -286,8 +285,8 @@ def test_extend_disk1(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_sparsify_disk1(api_v4):
-    engine = api_v4.system_service()
+def test_sparsify_disk1(engine_api):
+    engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
     with engine_utils.wait_for_event(engine, 1325): # USER_SPARSIFY_IMAGE_START event
         disk_service.sparsify()
@@ -299,8 +298,8 @@ def test_sparsify_disk1(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_snapshot_for_backup(api_v4):
-    engine = api_v4.system_service()
+def test_add_snapshot_for_backup(engine_api):
+    engine = engine_api.system_service()
 
     vm2_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM2_NAME)
     disk = vm2_disk_attachments_service.list()[0]
@@ -337,8 +336,8 @@ def test_add_snapshot_for_backup(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_attach_snapshot_to_backup_vm(api_v4):
-    engine = api_v4.system_service()
+def test_attach_snapshot_to_backup_vm(engine_api):
+    engine = engine_api.system_service()
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
     vm2_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM2_NAME)
     vm2_disk = vm2_disk_attachments_service.list()[0]
@@ -361,8 +360,8 @@ def test_attach_snapshot_to_backup_vm(api_v4):
         assert len(disk_attachments_service.list()) > 0
 
 @order_by(_TEST_LIST)
-def test_verify_transient_folder(prefix):
-    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+def test_verify_transient_folder(engine_api, prefix):
+    engine = engine_api.system_service()
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
     host = _vm_host(prefix, BACKUP_VM_NAME)
 
@@ -377,8 +376,8 @@ def test_verify_transient_folder(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_remove_backup_vm_and_backup_snapshot(api_v4):
-    engine = api_v4.system_service()
+def test_remove_backup_vm_and_backup_snapshot(engine_api):
+    engine = engine_api.system_service()
     backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
     vm2_snapshot = vm2_snapshots_service.list()[-1]
@@ -401,8 +400,8 @@ def test_remove_backup_vm_and_backup_snapshot(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_verify_backup_snapshot_removed(api_v4):
-    engine = api_v4.system_service()
+def test_verify_backup_snapshot_removed(engine_api):
+    engine = engine_api.system_service()
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
 
     assertions.assert_true_within_long(
@@ -410,8 +409,8 @@ def test_verify_backup_snapshot_removed(api_v4):
     )
 
 
-def snapshot_cold_merge(api_v4):
-    engine = api_v4.system_service()
+def snapshot_cold_merge(engine_api):
+    engine = engine_api.system_service()
     vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM1_NAME)
     if vm1_snapshots_service is None:
         pytest.skip('Glance is not available')
@@ -482,8 +481,8 @@ def snapshot_cold_merge(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_make_snapshot_with_memory(api_v4):
-    engine = api_v4.system_service()
+def test_make_snapshot_with_memory(engine_api):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     disks_service = engine.disks_service()
     vm_disks_service = \
@@ -504,8 +503,8 @@ def test_make_snapshot_with_memory(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_preview_snapshot_with_memory(api_v4):
-    engine = api_v4.system_service()
+def test_preview_snapshot_with_memory(engine_api):
+    engine = engine_api.system_service()
     events = engine.events_service()
     assertions.assert_true_within_long(
         # wait for event 68 == USER_CREATE_SNAPSHOT_FINISHED_SUCCESS
@@ -520,8 +519,8 @@ def test_preview_snapshot_with_memory(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_check_snapshot_with_memory(api_v4):
-    engine = api_v4.system_service()
+def test_check_snapshot_with_memory(engine_api):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     assertions.assert_true_within_long(
         lambda: test_utils.get_snapshot(engine, VM0_NAME,
@@ -532,8 +531,8 @@ def test_check_snapshot_with_memory(api_v4):
     _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
 
 
-def cold_storage_migration(api_v4):
-    engine = api_v4.system_service()
+def cold_storage_migration(engine_api):
+    engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK2_NAME)
 
     # Cold migrate the disk to ISCSI storage domain and then migrate it back
@@ -549,7 +548,7 @@ def cold_storage_migration(api_v4):
             )
 
             assertions.assert_true_within_long(
-                lambda: api_v4.follow_link(
+                lambda: engine_api.follow_link(
                     disk_service.get().storage_domains[0]).name == domain
             )
             assertions.assert_true_within_long(
@@ -559,8 +558,8 @@ def cold_storage_migration(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_live_storage_migration(api_v4):
-    engine = api_v4.system_service()
+def test_live_storage_migration(engine_api):
+    engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     correlation_id = 'live_storage_migration'
     disk_service.move(
@@ -578,7 +577,7 @@ def test_live_storage_migration(api_v4):
     # its status is OK and the snapshot created for the migration
     # has been merged
     assertions.assert_true_within_long(
-        lambda: api_v4.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME
+        lambda: engine_api.follow_link(disk_service.get().storage_domains[0]).name == SD_ISCSI_NAME
     )
 
     vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
@@ -590,8 +589,8 @@ def test_live_storage_migration(api_v4):
     )
 
 @order_by(_TEST_LIST)
-def test_export_vm1(api_v4):
-    engine = api_v4.system_service()
+def test_export_vm1(engine_api):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
 
@@ -604,8 +603,8 @@ def test_export_vm1(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_verify_vm1_exported(api_v4):
-    engine = api_v4.system_service()
+def test_verify_vm1_exported(engine_api):
+    engine = engine_api.system_service()
     _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
 
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
@@ -618,8 +617,8 @@ def test_verify_vm1_exported(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_import_vm_as_clone(api_v4):
-    engine = api_v4.system_service()
+def test_import_vm_as_clone(engine_api):
+    engine = engine_api.system_service()
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
     vm_to_import = test_utils.get_storage_domain_vm_service_by_name(storage_domain_service, VM1_NAME)
 
@@ -642,8 +641,8 @@ def test_import_vm_as_clone(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_verify_vm_import(api_v4):
-    engine = api_v4.system_service()
+def test_verify_vm_import(engine_api):
+    engine = engine_api.system_service()
     vm_service = _verify_vm_state(engine, IMPORTED_VM_NAME, types.VmStatus.DOWN)
 
     # Remove the imported VM
@@ -653,8 +652,8 @@ def test_verify_vm_import(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_vm1_from_template(api_v4):
-    engine = api_v4.system_service()
+def test_add_vm1_from_template(engine_api):
+    engine = engine_api.system_service()
     templates_service = engine.templates_service()
     glance_template = templates_service.list(search='name=%s' % TEMPLATE_GUEST)[0]
     if glance_template is None:
@@ -706,8 +705,8 @@ def test_add_vm1_from_template(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_vm1_from_template(api_v4):
-    engine = api_v4.system_service()
+def test_verify_add_vm1_from_template(engine_api):
+    engine = engine_api.system_service()
     _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
 
     disks_service = engine.disks_service()
@@ -721,8 +720,8 @@ def test_verify_add_vm1_from_template(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_run_vms(prefix):
-    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+def test_run_vms(engine_api, prefix):
+    engine = engine_api.system_service()
 
     vm_params = types.Vm(
         initialization=types.Initialization(
@@ -756,13 +755,13 @@ def test_run_vms(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_verify_vm2_run(api_v4):
-    _verify_vm_state(api_v4.system_service(), VM2_NAME, types.VmStatus.UP)
+def test_verify_vm2_run(engine_api):
+    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
 
 
 @order_by(_TEST_LIST)
-def test_incremental_backup_vm2(api_v4):
-    engine = api_v4.system_service()
+def test_incremental_backup_vm2(engine_api):
+    engine = engine_api.system_service()
     disks_service = engine.disks_service()
     disk2 = disks_service.list(search='name={}'.format(DISK2_NAME))[0]
     vm2_backups_service = test_utils.get_vm_service(engine, VM2_NAME).backups_service()
@@ -805,8 +804,8 @@ def test_vm0_is_alive(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_ha_recovery(prefix):
-    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+def test_ha_recovery(engine_api, prefix):
+    engine = engine_api.system_service()
     with engine_utils.wait_for_event(engine, [119, 9602, 506]):
         # VM_DOWN_ERROR event(119)
         # HA_VM_FAILED event event(9602)
@@ -825,8 +824,8 @@ def test_ha_recovery(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_vdsm_recovery(prefix):
-    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
+def test_vdsm_recovery(engine_api, prefix):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     host_id = vm_service.get().host.id
     host_service = engine.hosts_service().host_service(host_id)
@@ -851,8 +850,8 @@ def test_vdsm_recovery(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_template_export(api_v4):
-    engine = api_v4.system_service()
+def test_template_export(engine_api):
+    engine = engine_api.system_service()
 
     template_guest = test_utils.get_template_service(engine, TEMPLATE_GUEST)
     if template_guest is None:
@@ -880,8 +879,8 @@ def test_template_export(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_add_vm_pool(api_v4):
-    engine = api_v4.system_service()
+def test_add_vm_pool(engine_api):
+    engine = engine_api.system_service()
     pools_service = engine.vm_pools_service()
     pool_cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
     pool_template = engine.templates_service().list(search='name={}'.format(TEMPLATE_GUEST))[0]
@@ -903,8 +902,8 @@ def test_add_vm_pool(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_update_template_version(api_v4):
-    engine = api_v4.system_service()
+def test_update_template_version(engine_api):
+    engine = engine_api.system_service()
     stateless_vm = engine.vms_service().list(search='name={}'.format(VM1_NAME))[0]
     templates_service = engine.templates_service()
     template = templates_service.list(search='name={}'.format(TEMPLATE_GUEST))[0]
@@ -929,8 +928,8 @@ def test_update_template_version(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_update_vm_pool(api_v4):
-    engine = api_v4.system_service()
+def test_update_vm_pool(engine_api):
+    engine = engine_api.system_service()
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
     correlation_id = uuid.uuid4()
     pool_service.update(
@@ -948,8 +947,8 @@ def test_update_vm_pool(api_v4):
 
 @versioning.require_version(4, 1)
 @order_by(_TEST_LIST)
-def test_remove_vm2_lease(api_v4):
-    engine = api_v4.system_service()
+def test_remove_vm2_lease(engine_api):
+    engine = engine_api.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
 
     vm2_service.update(
@@ -969,15 +968,15 @@ def test_remove_vm2_lease(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_remove_vm_pool(api_v4):
-    engine = api_v4.system_service()
+def test_remove_vm_pool(engine_api):
+    engine = engine_api.system_service()
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
     correlation_id = uuid.uuid4()
     with engine_utils.wait_for_event(engine, [321, 304]):
         # USER_REMOVE_VM_POOL_INITIATED(321) event
         # USER_REMOVE_VM_POOL(304) event
         pool_service.remove(query={'correlation_id': correlation_id})
-        vm_pools_service = api_v4.system_service().vm_pools_service()
+        vm_pools_service = engine_api.system_service().vm_pools_service()
         assert len(vm_pools_service.list()) == 0
     assertions.assert_true_within_long(
         lambda:
@@ -986,8 +985,8 @@ def test_remove_vm_pool(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_template_update(api_v4):
-    template_guest = test_utils.get_template_service(api_v4.system_service(), TEMPLATE_GUEST)
+def test_template_update(engine_api):
+    template_guest = test_utils.get_template_service(engine_api.system_service(), TEMPLATE_GUEST)
 
     if template_guest is None:
         pytest.skip('{0}: template {1} is missing'.format(
@@ -1009,11 +1008,11 @@ def test_template_update(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_disk_operations(api_v4):
+def test_disk_operations(engine_api):
     vt = utils.VectorThread(
         [
-            functools.partial(cold_storage_migration, api_v4),
-            functools.partial(snapshot_cold_merge, api_v4),
+            functools.partial(cold_storage_migration, engine_api),
+            functools.partial(snapshot_cold_merge, engine_api),
         ],
     )
     vt.start_all()
@@ -1034,9 +1033,8 @@ def _vm_libvirt_memory_amount(prefix, vm_name):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_memory(prefix, hotplug_mem_amount):
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api_v4.system_service()
+def test_hotplug_memory(engine_api, prefix, hotplug_mem_amount):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory + hotplug_mem_amount
     with engine_utils.wait_for_event(engine, 2039): # HOT_SET_MEMORY(2,039)
@@ -1061,9 +1059,8 @@ def test_hotplug_memory(prefix, hotplug_mem_amount):
 
 
 @order_by(_TEST_LIST)
-def test_hotunplug_memory(prefix, hotplug_mem_amount):
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api_v4.system_service()
+def test_hotunplug_memory(engine_api, prefix, hotplug_mem_amount):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory - hotplug_mem_amount
     with engine_utils.wait_for_event(engine, 2046): # MEMORY_HOT_UNPLUG_SUCCESSFULLY_REQUESTED(2,046)
@@ -1082,9 +1079,8 @@ def test_hotunplug_memory(prefix, hotplug_mem_amount):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_cpu(prefix):
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api_v4.system_service()
+def test_hotplug_cpu(engine_api, prefix):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 2
@@ -1102,8 +1098,8 @@ def test_hotplug_cpu(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_next_run_unplug_cpu(api_v4):
-    engine = api_v4.system_service()
+def test_next_run_unplug_cpu(engine_api):
+    engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 1
@@ -1126,9 +1122,8 @@ def test_next_run_unplug_cpu(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_nic(prefix):
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    vms_service = api_v4.system_service().vms_service()
+def test_hotplug_nic(engine_api, prefix):
+    vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
     nics_service = vms_service.vm_service(vm.id).nics_service()
     nics_service.add(
@@ -1141,9 +1136,8 @@ def test_hotplug_nic(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_disk(prefix):
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    engine = api_v4.system_service()
+def test_hotplug_disk(engine_api, prefix):
+    engine = engine_api.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.add(
         types.DiskAttachment(
@@ -1181,8 +1175,8 @@ def test_hotplug_disk(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_hotunplug_disk(api_v4):
-    engine = api_v4.system_service()
+def test_hotunplug_disk(engine_api):
+    engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.attachment_service(disk_service.get().id)
@@ -1209,15 +1203,14 @@ def test_hotunplug_disk(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_suspend_resume_vm0(prefix):
+def test_suspend_resume_vm0(engine_api, prefix):
     # start a background job we are going to check if it's still running later
     ret = _vm_ssh(prefix, VM0_NAME, ['sleep 3600 &'])
     assert ret.code == EX_OK
 
     assert_vm0_is_alive(prefix)
 
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    vm_service = test_utils.get_vm_service(api_v4.system_service(), VM0_NAME)
+    vm_service = test_utils.get_vm_service(engine_api.system_service(), VM0_NAME)
     vm_service.suspend()
     assertions.assert_true_within_long(
         lambda: vm_service.get().status == types.VmStatus.SUSPENDED
@@ -1227,9 +1220,8 @@ def test_suspend_resume_vm0(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_verify_suspend_resume_vm0(prefix):
-    api_v4 = prefix.virt_env.engine_vm().get_api_v4()
-    _verify_vm_state(api_v4.system_service(), VM0_NAME, types.VmStatus.UP)
+def test_verify_suspend_resume_vm0(engine_api, prefix):
+    _verify_vm_state(engine_api.system_service(), VM0_NAME, types.VmStatus.UP)
     vm_host = _vm_host(prefix, VM0_NAME)
 
     ret = _vm_ssh(prefix, VM0_NAME, ['pidof sleep'])
@@ -1237,9 +1229,9 @@ def test_verify_suspend_resume_vm0(prefix):
 
 
 @order_by(_TEST_LIST)
-def test_reconstruct_master_domain(api_v4):
+def test_reconstruct_master_domain(engine_api):
     pytest.skip('TODO:Handle case where tasks are running')
-    system_service = api_v4.system_service()
+    system_service = engine_api.system_service()
     dc_service = test_utils.data_center_service(system_service, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
     master_sd = next(sd for sd in attached_sds_service.list() if sd.master)
@@ -1259,9 +1251,9 @@ def test_reconstruct_master_domain(api_v4):
 
 
 @order_by(_TEST_LIST)
-def test_ovf_import(api_v4):
+def test_ovf_import(engine_api):
     # Read the OVF file and replace the disk id
-    engine = api_v4.system_service()
+    engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_id = disk_service.get().id
     ovf_file = os.path.join(os.environ['SUITE'], 'files', 'test-vm.ovf')

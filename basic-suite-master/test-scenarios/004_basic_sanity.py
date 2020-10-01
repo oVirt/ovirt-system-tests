@@ -28,6 +28,7 @@ import re
 import pytest
 
 from lago import utils, ssh
+from ost_utils import engine_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import api_v4
 from ost_utils.pytest.fixtures import prefix
@@ -268,7 +269,7 @@ def test_extend_disk1(api_v4):
         disk = api_v4.follow_link(disk_attachment.disk)
         if disk.name == DISK1_NAME:
             attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
-    with test_utils.TestEvent(engine, 371): # USER_EXTEND_DISK_SIZE_SUCCESS(371)
+    with engine_utils.wait_for_event(engine, 371): # USER_EXTEND_DISK_SIZE_SUCCESS(371)
        attachment_service.update(
                 types.DiskAttachment(
                     disk=types.Disk(provisioned_size=2 * GB,)))
@@ -288,10 +289,10 @@ def test_extend_disk1(api_v4):
 def test_sparsify_disk1(api_v4):
     engine = api_v4.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
-    with test_utils.TestEvent(engine, 1325): # USER_SPARSIFY_IMAGE_START event
+    with engine_utils.wait_for_event(engine, 1325): # USER_SPARSIFY_IMAGE_START event
         disk_service.sparsify()
 
-    with test_utils.TestEvent(engine, 1326):  # USER_SPARSIFY_IMAGE_FINISH_SUCCESS
+    with engine_utils.wait_for_event(engine, 1326):  # USER_SPARSIFY_IMAGE_FINISH_SUCCESS
         pass
     # Make sure disk is unlocked
     assert disk_service.get().status == types.DiskStatus.OK
@@ -319,7 +320,7 @@ def test_add_snapshot_for_backup(api_v4):
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
 
     correlation_id = uuid.uuid4()
-    with test_utils.TestEvent(engine, [45, 68]):
+    with engine_utils.wait_for_event(engine, [45, 68]):
         # USER_CREATE_SNAPSHOT(41) event
         # USER_CREATE_SNAPSHOT_FINISHED_SUCCESS(68) event
         vm2_snapshots_service.add(backup_snapshot_params,
@@ -343,7 +344,7 @@ def test_attach_snapshot_to_backup_vm(api_v4):
     vm2_disk = vm2_disk_attachments_service.list()[0]
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, BACKUP_VM_NAME)
 
-    with test_utils.TestEvent(engine, 2016): # USER_ATTACH_DISK_TO_VM event
+    with engine_utils.wait_for_event(engine, 2016): # USER_ATTACH_DISK_TO_VM event
         disk_attachments_service.add(
             types.DiskAttachment(
                 disk=types.Disk(
@@ -382,7 +383,7 @@ def test_remove_backup_vm_and_backup_snapshot(api_v4):
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
     vm2_snapshot = vm2_snapshots_service.list()[-1]
     # power-off backup-vm
-    with test_utils.TestEvent(engine, [33, 61]):
+    with engine_utils.wait_for_event(engine, [33, 61]):
         # VM_DOWN(61) event
         # USER_STOP_VM(33) event
         backup_vm_service.stop()
@@ -394,7 +395,7 @@ def test_remove_backup_vm_and_backup_snapshot(api_v4):
     num_of_vms = len(engine.vms_service().list())
     backup_vm_service.remove()
     assert len(engine.vms_service().list()) == (num_of_vms-1)
-    with test_utils.TestEvent(engine, 342): # USER_REMOVE_SNAPSHOT event
+    with engine_utils.wait_for_event(engine, 342): # USER_REMOVE_SNAPSHOT event
         # remove vm2 snapshot
         vm2_snapshots_service.snapshot_service(vm2_snapshot.id).remove()
 
@@ -498,7 +499,7 @@ def test_make_snapshot_with_memory(api_v4):
         persist_memorystate=True,
         disk_attachments=disk_attachments
     )
-    with test_utils.TestEvent(engine, 45):  # USER_CREATE_SNAPSHOT event
+    with engine_utils.wait_for_event(engine, 45):  # USER_CREATE_SNAPSHOT event
         snapshots_service.add(snapshot_params)
 
 
@@ -539,7 +540,7 @@ def cold_storage_migration(api_v4):
     # to the NFS domain because it is used by other cases that assume the
     # disk found on that specific domain
     for domain in [SD_ISCSI_NAME, SD_SECOND_NFS_NAME]:
-        with test_utils.TestEvent(engine, 2008): # USER_MOVED_DISK(2,008)
+        with engine_utils.wait_for_event(engine, 2008): # USER_MOVED_DISK(2,008)
             disk_service.move(
                 async=False,
                 storage_domain=types.StorageDomain(
@@ -594,7 +595,7 @@ def test_export_vm1(api_v4):
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
 
-    with test_utils.TestEvent(engine, 1162): # IMPORTEXPORT_STARTING_EXPORT_VM event
+    with engine_utils.wait_for_event(engine, 1162): # IMPORTEXPORT_STARTING_EXPORT_VM event
         vm_service.export(
             storage_domain=types.StorageDomain(
                 id=sd.id,
@@ -625,7 +626,7 @@ def test_import_vm_as_clone(api_v4):
     if vm_to_import is None:
         pytest.skip("VM: '%s' not found on export domain: '%s'" % (VM1_NAME, SD_TEMPLATES_NAME))
 
-    with test_utils.TestEvent(engine, 1165): # IMPORTEXPORT_STARTING_IMPORT_VM event
+    with engine_utils.wait_for_event(engine, 1165): # IMPORTEXPORT_STARTING_IMPORT_VM event
         vm_to_import.import_(
             storage_domain=types.StorageDomain(
                 name=SD_ISCSI_NAME,
@@ -806,7 +807,7 @@ def test_vm0_is_alive(prefix):
 @order_by(_TEST_LIST)
 def test_ha_recovery(prefix):
     engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
-    with test_utils.TestEvent(engine, [119, 9602, 506]):
+    with engine_utils.wait_for_event(engine, [119, 9602, 506]):
         # VM_DOWN_ERROR event(119)
         # HA_VM_FAILED event event(9602)
         # VDS_INITIATED_RUN_VM event(506)
@@ -819,7 +820,7 @@ def test_ha_recovery(prefix):
         lambda:
         vm_service.get().status == types.VmStatus.UP
     )
-    with test_utils.TestEvent(engine, 33): # USER_STOP_VM event
+    with engine_utils.wait_for_event(engine, 33): # USER_STOP_VM event
         vm_service.stop()
 
 
@@ -862,7 +863,7 @@ def test_template_export(api_v4):
         )
 
     storage_domain = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
-    with test_utils.TestEvent(engine, 1164):
+    with engine_utils.wait_for_event(engine, 1164):
         # IMPORTEXPORT_STARTING_EXPORT_TEMPLATE event
         template_guest.export(
             storage_domain=types.StorageDomain(
@@ -870,7 +871,7 @@ def test_template_export(api_v4):
             ),
         )
 
-    with test_utils.TestEvent(engine, 1156):
+    with engine_utils.wait_for_event(engine, 1156):
         # IMPORTEXPORT_EXPORT_TEMPLATE event
         testlib.assert_true_within_long(
             lambda:
@@ -884,7 +885,7 @@ def test_add_vm_pool(api_v4):
     pools_service = engine.vm_pools_service()
     pool_cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
     pool_template = engine.templates_service().list(search='name={}'.format(TEMPLATE_GUEST))[0]
-    with test_utils.TestEvent(engine, 302):
+    with engine_utils.wait_for_event(engine, 302):
         pools_service.add(
             pool=types.VmPool(
                 name=VMPOOL_NAME,
@@ -972,7 +973,7 @@ def test_remove_vm_pool(api_v4):
     engine = api_v4.system_service()
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
     correlation_id = uuid.uuid4()
-    with test_utils.TestEvent(engine, [321, 304]):
+    with engine_utils.wait_for_event(engine, [321, 304]):
         # USER_REMOVE_VM_POOL_INITIATED(321) event
         # USER_REMOVE_VM_POOL(304) event
         pool_service.remove(query={'correlation_id': correlation_id})
@@ -1038,7 +1039,7 @@ def test_hotplug_memory(prefix, hotplug_mem_amount):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory + hotplug_mem_amount
-    with test_utils.TestEvent(engine, 2039): # HOT_SET_MEMORY(2,039)
+    with engine_utils.wait_for_event(engine, 2039): # HOT_SET_MEMORY(2,039)
         vm_service.update(
             vm=types.Vm(
                 memory=new_memory,
@@ -1065,7 +1066,7 @@ def test_hotunplug_memory(prefix, hotplug_mem_amount):
     engine = api_v4.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory - hotplug_mem_amount
-    with test_utils.TestEvent(engine, 2046): # MEMORY_HOT_UNPLUG_SUCCESSFULLY_REQUESTED(2,046)
+    with engine_utils.wait_for_event(engine, 2046): # MEMORY_HOT_UNPLUG_SUCCESSFULLY_REQUESTED(2,046)
         vm_service.update(
             vm=types.Vm(
                 memory=new_memory,
@@ -1087,7 +1088,7 @@ def test_hotplug_cpu(prefix):
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
     new_cpu.topology.sockets = 2
-    with test_utils.TestEvent(engine, 2033): # HOT_SET_NUMBER_OF_CPUS(2,033)
+    with engine_utils.wait_for_event(engine, 2033): # HOT_SET_NUMBER_OF_CPUS(2,033)
         vm_service.update(
             vm=types.Vm(
                 cpu=new_cpu
@@ -1115,7 +1116,7 @@ def test_next_run_unplug_cpu(api_v4):
     assert vm_service.get().cpu.topology.sockets == 2
     assert vm_service.get(next_run=True).cpu.topology.sockets == 1
 
-    with test_utils.TestEvent(engine, 157): # USER_REBOOT_VM(157)
+    with engine_utils.wait_for_event(engine, 157): # USER_REBOOT_VM(157)
         vm_service.reboot()
         testlib.assert_true_within_long(
             lambda:
@@ -1186,7 +1187,7 @@ def test_hotunplug_disk(api_v4):
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.attachment_service(disk_service.get().id)
 
-    with test_utils.TestEvent(engine, 2002):
+    with engine_utils.wait_for_event(engine, 2002):
         # USER_HOTUNPLUG_DISK(2,002)
         correlation_id = 'test_hotunplug_disk'
         assert disk_attachment.update(types.DiskAttachment(active=False),

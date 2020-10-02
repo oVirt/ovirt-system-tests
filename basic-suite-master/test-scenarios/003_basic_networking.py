@@ -20,9 +20,9 @@
 #
 from __future__ import absolute_import
 
-from lago import utils
 from netaddr.ip import IPAddress
 from ost_utils import backend
+from ost_utils import utils
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.network import bonding_network_name

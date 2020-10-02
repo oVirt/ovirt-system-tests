@@ -27,9 +27,10 @@ import re
 
 import pytest
 
-from lago import utils, ssh
+from lago import utils
 from ost_utils import assertions
 from ost_utils import engine_utils
+from ost_utils import ssh
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures.engine import *

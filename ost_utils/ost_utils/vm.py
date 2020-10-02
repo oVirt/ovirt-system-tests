@@ -27,6 +27,7 @@ import yaml
 from itertools import chain
 from collections import OrderedDict
 import testlib
+from ost_utils.command_status import CommandStatus
 from ost_utils.sdk_utils import available_sdks, require_sdk
 from ost_utils.log_utils import LevelFilter
 
@@ -65,16 +66,6 @@ def sh_output_result(func):
         result = CommandStatus(ret.stdout, ret.stderr, ret.exit_code)
         return result
     return func_wrapper
-
-
-_CommandStatus = collections.namedtuple(
-    'CommandStatus', ('out', 'err', 'code')
-)
-
-
-class CommandStatus(_CommandStatus):
-    def __nonzero__(self):
-        return self.code
 
 
 class VagrantHosts(object):

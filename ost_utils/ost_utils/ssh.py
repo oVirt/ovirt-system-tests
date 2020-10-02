@@ -13,10 +13,12 @@ import logging
 import paramiko
 
 from . import (
-    vm,
     utils,
     log_utils,
 )
+
+from ost_utils import command_status
+
 SSH_TIMEOUT_DEFAULT = 100
 SSH_TRIES_DEFAULT = 20
 LOGGER = logging.getLogger(__name__)
@@ -91,7 +93,7 @@ def ssh(
             host_name,
             err,
         )
-    return vm.CommandStatus(out, err, return_code)
+    return command_status.CommandStatus(out, err, return_code)
 
 
 def wait_for_ssh(

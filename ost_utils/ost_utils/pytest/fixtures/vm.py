@@ -67,3 +67,14 @@ def get_vm_ip(get_ansible_host_for_vm):
             return ret["stdout"].strip()
 
     return get_ip
+
+
+@pytest.fixture(scope="session")
+def get_vm_libvirt_xml(get_ansible_host_for_vm):
+
+    def get_xml(vm_name):
+        ansible_host = get_ansible_host_for_vm(vm_name)
+        ret = ansible_host.shell('virsh -r dumpxml {}'.format(vm_name))
+        return ret['stdout'].strip()
+
+    return get_xml

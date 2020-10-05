@@ -176,14 +176,6 @@ def test_verify_add_all_hosts(engine_api):
     )
 
 
-def _vm_host(prefix, vm_name):
-    engine = prefix.virt_env.engine_vm().get_api_v4().system_service()
-    vm_service = test_utils.get_vm_service(engine, vm_name)
-    host_id = vm_service.get().host.id
-    host_name = engine.hosts_service().host_service(host_id).get().name
-    return prefix.virt_env.get_vm(host_name)
-
-
 def _verify_vm_state(engine, vm_name, state):
     vm_service = test_utils.get_vm_service(engine, vm_name)
     assertions.assert_true_within_long(
@@ -1035,16 +1027,20 @@ def hotplug_mem_amount():
     return 256 * MB
 
 
-def _vm_libvirt_memory_amount(prefix, vm_name):
-    vm_host = _vm_host(prefix, vm_name)
-    ret = vm_host.ssh(['virsh', '-r', 'dumpxml', vm_name])
-    assert ret.code == 0
-    match = re.search(r'<currentMemory unit=\'KiB\'>(?P<mem>[0-9]+)', ret.out.decode('utf-8'))
-    return int(match.group('mem'))
+@pytest.fixture(scope="session")
+def get_vm_libvirt_memory_amount(get_vm_libvirt_xml):
+
+    def mem_amount(vm_name):
+        xml = get_vm_libvirt_xml(vm_name)
+        match = re.search(r'<currentMemory unit=\'KiB\'>(?P<mem>[0-9]+)', xml)
+        return int(match.group('mem'))
+
+    return mem_amount
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_memory(assert_vm_is_alive, engine_api, prefix, hotplug_mem_amount):
+def test_hotplug_memory(assert_vm_is_alive, engine_api,
+                        get_vm_libvirt_memory_amount, hotplug_mem_amount):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory + hotplug_mem_amount
@@ -1066,11 +1062,12 @@ def test_hotplug_memory(assert_vm_is_alive, engine_api, prefix, hotplug_mem_amou
         assert vm_service.get().memory == new_memory
 
     assert_vm_is_alive(VM0_NAME)
-    assert _vm_libvirt_memory_amount(prefix, VM0_NAME) // KB == new_memory // MB
+    assert get_vm_libvirt_memory_amount(VM0_NAME) // KB == new_memory // MB
 
 
 @order_by(_TEST_LIST)
-def test_hotunplug_memory(assert_vm_is_alive, engine_api, prefix, hotplug_mem_amount):
+def test_hotunplug_memory(assert_vm_is_alive, engine_api,
+                          get_vm_libvirt_memory_amount, hotplug_mem_amount):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_memory = vm_service.get().memory - hotplug_mem_amount
@@ -1086,7 +1083,7 @@ def test_hotunplug_memory(assert_vm_is_alive, engine_api, prefix, hotplug_mem_am
         assert vm_service.get().memory == new_memory
 
     assert_vm_is_alive(VM0_NAME)
-    assert _vm_libvirt_memory_amount(prefix, VM0_NAME) // KB == new_memory // MB
+    assert get_vm_libvirt_memory_amount(VM0_NAME) // KB == new_memory // MB
 
 
 @order_by(_TEST_LIST)

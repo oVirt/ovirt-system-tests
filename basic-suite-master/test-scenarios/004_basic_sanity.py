@@ -835,21 +835,21 @@ def test_ha_recovery(engine_api, get_ansible_host_for_vm):
 
 
 @order_by(_TEST_LIST)
-def test_vdsm_recovery(engine_api, prefix):
+def test_vdsm_recovery(ansible_by_hostname, engine_api):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     host_id = vm_service.get().host.id
     host_service = engine.hosts_service().host_service(host_id)
     host_name = host_service.get().name
-    vm_host = prefix.virt_env.get_vm(host_name)
+    ansible_host = ansible_by_hostname(host_name)
 
-    vm_host.service('vdsmd').stop()
+    ansible_host.systemd(name='vdsmd', state='stopped')
     assertions.assert_true_within_short(
         lambda:
         vm_service.get().status == types.VmStatus.UNKNOWN
     )
 
-    vm_host.service('vdsmd').start()
+    ansible_host.systemd(name='vdsmd', state='started')
     assertions.assert_true_within_short(
         lambda:
         host_service.get().status == types.HostStatus.UP

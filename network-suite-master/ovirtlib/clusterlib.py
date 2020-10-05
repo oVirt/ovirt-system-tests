@@ -58,18 +58,18 @@ def cluster(system, data_center, name):
 
 @contextlib.contextmanager
 def mac_pool(system, cluster, name, ranges, allow_duplicates=False):
-    mac_pool_id = cluster.get_mac_pool().id
+    mac_pool_id = cluster.mac_pool.id
 
     temp_mac_pool = MacPool(system)
     temp_mac_pool.create(name, ranges, allow_duplicates)
     try:
-        cluster.set_mac_pool(temp_mac_pool)
+        cluster.mac_pool = temp_mac_pool
         yield temp_mac_pool
     finally:
         mac_pool = MacPool(system)
         mac_pool.import_by_id(mac_pool_id)
+        cluster.mac_pool = mac_pool
 
-        cluster.set_mac_pool(mac_pool)
         temp_mac_pool.remove()
 
 
@@ -115,10 +115,15 @@ class Cluster(SDKRootEntity):
         )
         self._create_sdk_entity(sdk_type)
 
-    def get_mac_pool(self):
+    @property
+    def mac_pool(self):
         mac_pool = MacPool(self.system)
         mac_pool.import_by_id(self.get_sdk_type().mac_pool.id)
         return mac_pool
+
+    @mac_pool.setter
+    def mac_pool(self, mac_pool):
+        self.update(mac_pool=mac_pool.get_sdk_type())
 
     def get_data_center(self):
         dc = datacenterlib.DataCenter(self.system)
@@ -148,11 +153,9 @@ class Cluster(SDKRootEntity):
     def network_switch_type(self):
         return self.get_sdk_type().switch_type
 
-    def set_network_switch_type(self, switch_type):
+    @network_switch_type.setter
+    def network_switch_type(self, switch_type):
         self.update(switch_type=switch_type)
-
-    def set_mac_pool(self, mac_pool):
-        self.update(mac_pool=mac_pool.get_sdk_type())
 
     def sync_all_networks(self):
         self.service.sync_all_networks()

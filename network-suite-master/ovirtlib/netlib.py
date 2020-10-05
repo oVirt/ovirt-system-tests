@@ -206,12 +206,8 @@ class Vnic(SDKSubEntity):
     def linked(self):
         return self.get_sdk_type().linked
 
-    def set_mac_addr(self, address):
-        sdk_type = self.get_sdk_type()
-        sdk_type.mac.address = address
-        self._service.update(sdk_type)
-
-    def set_linked(self, linked):
+    @linked.setter
+    def linked(self, linked):
         sdk_type = self.get_sdk_type()
         sdk_type.linked = linked
         self._service.update(sdk_type)
@@ -219,6 +215,12 @@ class Vnic(SDKSubEntity):
     @property
     def mac_address(self):
         return self.get_sdk_type().mac.address
+
+    @mac_address.setter
+    def mac_address(self, address):
+        sdk_type = self.get_sdk_type()
+        sdk_type.mac.address = address
+        self._service.update(sdk_type)
 
     def create(self, name, vnic_profile,
                interface=VnicInterfaceType.VIRTIO, mac_addr=None):
@@ -254,7 +256,7 @@ class Vnic(SDKSubEntity):
 
     def hot_replace_mac_addr(self, mac_addr):
         self.hotunplug()
-        self.set_mac_addr(mac_addr)
+        self.mac_address = mac_addr
         self.hotplug()
 
     def _get_parent_service(self, vm):

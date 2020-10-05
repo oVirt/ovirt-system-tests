@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2019 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -112,11 +112,11 @@ def test_hot_linking_vnic(running_vm_0):
     vnic = running_vm_0.get_vnic(NIC1_NAME)
     assert vnic.linked is True
 
-    vnic.set_linked(False)
+    vnic.linked = False
     vnic = running_vm_0.get_vnic(NIC1_NAME)
     assert not vnic.linked
 
-    vnic.set_linked(True)
+    vnic.linked = True
     vnic = running_vm_0.get_vnic(NIC1_NAME)
     assert vnic.linked is True
 

@@ -1,4 +1,4 @@
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,5 +34,5 @@ def ovs_cluster(system, default_data_center):
     OVS_CLUSTER_NAME = 'ovs-cluster'
     with clusterlib.cluster(
             system, default_data_center, OVS_CLUSTER_NAME) as ovs_cluster:
-        ovs_cluster.set_network_switch_type(clusterlib.SwitchType.OVS)
+        ovs_cluster.network_switch_type = clusterlib.SwitchType.OVS
         yield ovs_cluster

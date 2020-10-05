@@ -815,15 +815,15 @@ def test_vm0_is_alive(assert_vm_is_alive):
 
 
 @order_by(_TEST_LIST)
-def test_ha_recovery(engine_api, prefix):
+def test_ha_recovery(engine_api, get_ansible_host_for_vm):
     engine = engine_api.system_service()
     with engine_utils.wait_for_event(engine, [119, 9602, 506]):
         # VM_DOWN_ERROR event(119)
         # HA_VM_FAILED event event(9602)
         # VDS_INITIATED_RUN_VM event(506)
-        vm_host = _vm_host(prefix, VM2_NAME)
-        pid = vm_host.ssh(['pgrep', '-f', 'qemu.*guest=vm2'])
-        vm_host.ssh(['kill', '-KILL', pid.out.decode('utf-8')])
+        ansible_host = get_ansible_host_for_vm(VM2_NAME)
+        pid = ansible_host.shell('pgrep -f qemu.*guest=vm2')['stdout'].strip()
+        ansible_host.shell('kill -KILL {}'.format(pid))
 
     vm_service = test_utils.get_vm_service(engine, VM2_NAME)
     assertions.assert_true_within_long(

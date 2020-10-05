@@ -372,15 +372,14 @@ def test_attach_snapshot_to_backup_vm(engine_api):
         assert len(disk_attachments_service.list()) > 0
 
 @order_by(_TEST_LIST)
-def test_verify_transient_folder(assert_vm_is_alive, engine_api, prefix):
+def test_verify_transient_folder(assert_vm_is_alive, engine_api,
+                                 get_ansible_host_for_vm):
     engine = engine_api.system_service()
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
-    host = _vm_host(prefix, BACKUP_VM_NAME)
+    ansible_host = get_ansible_host_for_vm(BACKUP_VM_NAME)
+    out = ansible_host.shell('ls /var/lib/vdsm/transient')['stdout']
 
-    ret = host.ssh(['ls', '/var/lib/vdsm/transient'])
-    assert ret.code == 0
-
-    all_volumes = ret.out.decode('utf-8').splitlines()
+    all_volumes = out.strip().splitlines()
     assert len(all_volumes) == 1
 
     assert sd.id in all_volumes[0]

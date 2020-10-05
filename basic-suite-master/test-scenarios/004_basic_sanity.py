@@ -33,7 +33,6 @@ from ost_utils import engine_utils
 from ost_utils import ssh
 from ost_utils import utils
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.vm import *
@@ -722,8 +721,14 @@ def test_verify_add_vm1_from_template(engine_api):
         )
 
 
+@pytest.fixture(scope="session")
+def management_gw_ip(engine_ip):
+    gw_ip = engine_ip.split('.')[:3] + ['1']
+    return '.'.join(gw_ip)
+
+
 @order_by(_TEST_LIST)
-def test_run_vms(assert_vm_is_alive, engine_api, prefix):
+def test_run_vms(assert_vm_is_alive, engine_api, management_gw_ip):
     engine = engine_api.system_service()
 
     vm_params = types.Vm(
@@ -741,13 +746,11 @@ def test_run_vms(assert_vm_is_alive, engine_api, prefix):
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
     vm2_service.start(use_cloud_init=True, vm=vm_params)
 
-    gw_ip = test_utils.get_management_net(prefix).gw()
-
     # CirrOS cloud-init is different, networking doesn't work since it doesn't support the format oVirt is using
     vm_params.initialization.host_name = VM0_NAME # hostname seems to work, the others not
     vm_params.initialization.dns_search = 'lago.local'
     vm_params.initialization.domain = 'lago.local'
-    vm_params.initialization.dns_servers = gw_ip
+    vm_params.initialization.dns_servers = management_gw_ip
     vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
     vm0_service.start(use_cloud_init=True, vm=vm_params)
 

@@ -34,6 +34,7 @@ from ost_utils import utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures.engine import *
+from ost_utils.pytest.fixtures.vm import *
 
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
@@ -134,6 +135,32 @@ _TEST_LIST = [
     "test_ovf_import",
     "test_vdsm_recovery",
 ]
+
+
+@pytest.fixture(scope="session")
+def vm_user():
+    return VM_USER_NAME
+
+
+@pytest.fixture(scope="session")
+def vm_password():
+    return VM_PASSWORD
+
+
+@pytest.fixture(scope="session")
+def vm_ssh(get_vm_ip, vm_user, vm_password):
+
+    def run_ssh(vm_name_or_ip, command):
+        if isinstance(command, str):
+            command = command.split()
+        return ssh.ssh(
+            ip_addr=get_vm_ip(vm_name_or_ip),
+            command=command,
+            username=vm_user,
+            password=vm_password,
+        )
+
+    return run_ssh
 
 
 @order_by(_TEST_LIST)
@@ -1080,7 +1107,7 @@ def test_hotunplug_memory(engine_api, prefix, hotplug_mem_amount):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_cpu(engine_api, prefix):
+def test_hotplug_cpu(engine_api, vm_ssh):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
@@ -1092,7 +1119,7 @@ def test_hotplug_cpu(engine_api, prefix):
             )
         )
         assert vm_service.get().cpu.topology.sockets == 2
-    ret = _vm_ssh(prefix, VM0_NAME, ['lscpu'])
+    ret = vm_ssh(VM0_NAME, 'lscpu')
     assert ret.code == 0
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out.decode('utf-8'))
     assert match.group('cpus') == '2'
@@ -1204,9 +1231,9 @@ def test_hotunplug_disk(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_suspend_resume_vm0(engine_api, prefix):
+def test_suspend_resume_vm0(engine_api, prefix, vm_ssh):
     # start a background job we are going to check if it's still running later
-    ret = _vm_ssh(prefix, VM0_NAME, ['sleep 3600 &'])
+    ret = vm_ssh(VM0_NAME, 'sleep 3600 &')
     assert ret.code == EX_OK
 
     assert_vm0_is_alive(prefix)
@@ -1221,11 +1248,9 @@ def test_suspend_resume_vm0(engine_api, prefix):
 
 
 @order_by(_TEST_LIST)
-def test_verify_suspend_resume_vm0(engine_api, prefix):
+def test_verify_suspend_resume_vm0(engine_api, vm_ssh):
     _verify_vm_state(engine_api.system_service(), VM0_NAME, types.VmStatus.UP)
-    vm_host = _vm_host(prefix, VM0_NAME)
-
-    ret = _vm_ssh(prefix, VM0_NAME, ['pidof sleep'])
+    ret = vm_ssh(VM0_NAME, 'pidof sleep')
     assert ret.code == EX_OK
 
 

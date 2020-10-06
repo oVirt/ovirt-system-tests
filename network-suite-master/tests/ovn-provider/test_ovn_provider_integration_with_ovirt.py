@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2019 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,8 +45,7 @@ def running_vm_0(ovirt_external_network, system, default_cluster,
             template=cirros_template
         )
 
-        vnic_profile0 = netlib.VnicProfile(system)
-        vnic_profile0.import_by_name(ovirt_external_network.name)
+        vnic_profile0 = ovirt_external_network.vnic_profile()
 
         vm0_vnic_0 = netlib.Vnic(vm_0)
         vm0_vnic_0.create(

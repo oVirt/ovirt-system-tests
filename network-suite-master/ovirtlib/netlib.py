@@ -107,9 +107,29 @@ class Network(SDKSubEntity):
         return dc.service.networks_service()
 
     def labels(self):
-        network_service = self.system.networks_service.network_service(
-            self.id)
-        return network_service.network_labels_service().list()
+        return self._system_network_service().network_labels_service().list()
+
+    def vnic_profiles(self):
+        profiles = self._system_network_service().vnic_profiles_service().list(
+        )
+        vnic_profiles = []
+        for profile in profiles:
+            vnic_profile = VnicProfile(self.system)
+            vnic_profile.import_by_id(profile.id)
+            vnic_profiles.append(vnic_profile)
+        return vnic_profiles
+
+    def vnic_profile(self, name=None):
+        """
+        :param name: if no name is specified the default name for a vnic
+        profile is assumed, which is the network name
+        """
+        profile_name = self.name if name is None else name
+        return next(vnic_profile for vnic_profile in self.vnic_profiles() if
+                    vnic_profile.name == profile_name)
+
+    def _system_network_service(self):
+        return self.system.networks_service.network_service(self.id)
 
     @staticmethod
     def get_networks_ids(networks):

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,8 +85,7 @@ def vm_in_ovs_cluster_down(system, ovs_cluster, cirros_template):
 @pytest.fixture(scope='module')
 def vnic_attached_to_ovn_network(system, vm_in_ovs_cluster_down,
                                  ovn_physnet_small_mtu):
-    vnic_profile = netlib.VnicProfile(system)
-    vnic_profile.import_by_name(ovn_physnet_small_mtu.name)
+    vnic_profile = ovn_physnet_small_mtu.vnic_profile()
     vm_vnic = netlib.Vnic(vm_in_ovs_cluster_down)
     vm_vnic.create(name=VNIC0_NAME, vnic_profile=vnic_profile)
     return vm_vnic

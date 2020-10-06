@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,8 +43,7 @@ def display_network(host_0, default_data_center, default_cluster):
 
 @pytest.fixture(scope='module')
 def display_network_vnic_profile(system, display_network):
-    vnic_profile = netlib.VnicProfile(system)
-    vnic_profile.import_by_name(display_network.name)
+    vnic_profile = display_network.vnic_profile()
     yield vnic_profile
     vnic_profile.remove()
 

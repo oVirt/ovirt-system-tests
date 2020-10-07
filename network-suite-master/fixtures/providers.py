@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,14 +53,14 @@ def ovirt_image_repo(system):
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(engine):
+def openstack_client_config(engine, engine_password):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
                     'auth_url': OPENSTACK_AUTH_URL.format(engine.ip()),
                     'username': OPENSTACK_USERNAME,
-                    'password': engine.metadata['ovirt-engine-password']
+                    'password': engine_password
                 },
                 'verify': False
             }

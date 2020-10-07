@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ from fixtures.host import host_0_up  # NOQA: F401
 from fixtures.host import host_1_up  # NOQA: F401
 from fixtures.host import install_hosts_to_save_time  # NOQA: F401
 
+from fixtures.engine import engine_full_username  # NOQA: F401
+from fixtures.engine import engine_password  # NOQA: F401
 from fixtures.engine import engine  # NOQA: F401
 from fixtures.engine import api  # NOQA: F401
 from fixtures.engine import test_invocation_logger  # NOQA: F401

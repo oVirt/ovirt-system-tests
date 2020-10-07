@@ -84,7 +84,7 @@ on_exit() {
 }
 
 on_sigterm() {
-    local dest="${OST_REPO_ROOT}/test_logs/${SUITE_NAME/}/post-suite-sigterm"
+    local dest="${OST_REPO_ROOT}/test_logs/${SUITE_NAME}/post-suite-sigterm"
 
     set +e
     export CLI

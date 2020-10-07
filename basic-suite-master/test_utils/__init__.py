@@ -26,48 +26,36 @@ import random
 import re
 import six
 import uuid
-from ovirtlago import testlib
+from ost_utils import assertions
 from ost_utils.engine_utils import wait_for_event as TestEvent
 from ost_utils.memoized import memoized
 from test_utils.constants import VM0_IP_HOST_PART
 
 
-@testlib.with_ovirt_api4
-def test_invocation_logger(api, test_id):
-    engine = api.system_service()
-    events = engine.events_service()
-    events.add(types.Event(
-        comment='delimiter for test function invocation in engine log',
-        custom_id=random.randrange(1, 2**31),
-        description='OST invoked: ' + test_id,
-        origin='OST-basic-suite',
-        severity=types.LogSeverity(
-            types.LogSeverity.NORMAL
-        )
-    ))
+if os.environ.get("USE_LAGO_OST_PLUGIN", "0") == "1":
+    from ovirtlago import testlib
 
+    def test_gen(tests, generator):
+        '''Run the given tests amending their names according to the context.
 
-def test_gen(tests, generator):
-    '''Run the given tests amending their names according to the context.
+        Tests suites are run repeatedly under different conditions, such as data
+        center version as defined by OST_DC_VERSION environment variable.  This
+        helper amends the run time test names to contain information about the
+        environment under which they were run.
 
-    Tests suites are run repeatedly under different conditions, such as data
-    center version as defined by OST_DC_VERSION environment variable.  This
-    helper amends the run time test names to contain information about the
-    environment under which they were run.
+        Arguments:
 
-    Arguments:
-
-      test_names -- sequence of names of the tests to run
-      generator -- the calling test generator function providing test names to
-        nose
-    '''
-    ost_dc_version = os.environ.get('OST_DC_VERSION', None)
-    for t in testlib.test_sequence_gen(tests):
-        test_id = t.description
-        if ost_dc_version is not None:
-            test_id = '{}_{}'.format(test_id, ost_dc_version.replace('.', ''))
-        generator.__name__ = test_id
-        yield t
+          test_names -- sequence of names of the tests to run
+          generator -- the calling test generator function providing test names to
+            nose
+        '''
+        ost_dc_version = os.environ.get('OST_DC_VERSION', None)
+        for t in testlib.test_sequence_gen(tests):
+            test_id = t.description
+            if ost_dc_version is not None:
+                test_id = '{}_{}'.format(test_id, ost_dc_version.replace('.', ''))
+            generator.__name__ = test_id
+            yield t
 
 
 @memoized
@@ -222,7 +210,7 @@ def assert_finished_within(
 
     func(*args, **kwargs)
 
-    testlib.assert_true_within(
+    assertions.assert_true_within(
         lambda: all_jobs_finished(engine, kwargs['query']['correlation_id']),
         timeout
     )
@@ -230,7 +218,7 @@ def assert_finished_within(
 
 assert_finished_within_long = functools.partial(
     assert_finished_within,
-    timeout=testlib.LONG_TIMEOUT
+    timeout=assertions.LONG_TIMEOUT
 )
 
 

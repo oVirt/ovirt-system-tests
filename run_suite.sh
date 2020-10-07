@@ -12,6 +12,7 @@ EXTRA_SOURCES=()
 RPMS_TO_INSTALL=()
 COVERAGE=false
 INSIDE_MOCK="$(if [ -n "${MOCK_EXTERNAL_USER}" ]; then echo 1; else echo 0; fi)"
+export USE_LAGO_OST_PLUGIN=${USE_LAGO_OST_PLUGIN:-$((rpm -qa | grep -q lago-ovirt) && echo 1 || echo 0)}
 
 usage () {
     echo "
@@ -187,6 +188,7 @@ render_jinja_templates () {
     export suite_name="${suite_name//./-}"
     export coverage="${COVERAGE}"
     export use_ost_images="${USE_OST_IMAGES}"
+    export use_lago_ost_plugin="${USE_LAGO_OST_PLUGIN}"
     export engine_image="${OST_IMAGES_ENGINE_INSTALLED}"
     export host_image="${OST_IMAGES_HOST_INSTALLED}"
     "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
@@ -278,7 +280,10 @@ env_deploy () {
 
     local res=0
     cd "$PREFIX"
-    $CLI ovirt deploy || res=$?
+    if [[ ${USE_LAGO_OST_PLUGIN} -eq 1 ]]; then
+        local ovirt_deploy="ovirt"
+    fi
+    $CLI ${ovirt_deploy} deploy || res=$?
     cd -
     return "$res"
 }
@@ -607,6 +612,36 @@ env_copy_repo_file() {
     cd -
 }
 
+env_wait_for_ssh() {
+    logger.info "Waiting for ssh on the VMs"
+    ansible \
+        -i "${ANSIBLE_INVENTORY_FILE}" \
+        -m wait_for_connection \
+        -a "timeout=120" \
+        -u "root" \
+        all
+}
+
+env_add_extra_repos() {
+    local repo_no=0
+    for extra_src in "${EXTRA_SOURCES[@]}"; do
+        logger.info "Adding extra repository to VMs: ${extra_src}"
+        ansible \
+            -i "${ANSIBLE_INVENTORY_FILE}" \
+            -m yum_repository \
+            -a "name=extra-src-${repo_no} description=extra-src-${repo_no} baseurl=${extra_src} gpgcheck=no sslverify=no" \
+            -u "root" \
+            all
+        ansible \
+            -i "${ANSIBLE_INVENTORY_FILE}" \
+            -m ini_file \
+            -a "path=/etc/yum.repos.d/extra-src-${repo_no}.repo section=extra-src-${repo_no} option=module_hotfixes value=1" \
+            -u "root" \
+            all
+        repo_no=$((repo_no + 1))
+    done
+}
+
 install_libguestfs() {
     if [[ ${INSIDE_MOCK} -eq 0 ]]; then
         return 0
@@ -750,7 +785,10 @@ trap "on_sigterm" SIGTERM
 trap "on_exit" EXIT
 
 logger.info "Using $(lago --version 2>&1)"
-logger.info "Using $(lago ovirt --version 2>&1)"
+
+if [[ "${USE_LAGO_OST_PLUGIN}" -eq 1 ]]; then
+    logger.info "Using $(lago ovirt --version 2>&1)"
+fi
 
 check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"

@@ -15,7 +15,11 @@ vm-common-settings: &vm-common-settings
 domains:
   lago-{{ env.suite_name }}-engine:
     <<: *vm-common-settings
+    {% if env.use_lago_ost_plugin == "1" -%}
     vm-type: ovirt-engine
+    {%- else %}
+    vm-type: default
+    {%- endif %}
     memory: 3584
     nics:
       - net: lago-{{ env.suite_name}}-net-management
@@ -47,6 +51,8 @@ domains:
       deploy-scripts:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
+        {%- elif env.use_lago_ost_plugin == "0" %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- else %}
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
         {%- endif %}
@@ -83,7 +89,11 @@ domains:
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
+    {% if env.use_lago_ost_plugin == "1" -%}
     vm-type: ovirt-host
+    {%- else %}
+    vm-type: default
+    {%- endif %}
     memory: 1792
     nics:
       - net: lago-{{ env.suite_name }}-net-management
@@ -104,6 +114,8 @@ domains:
       deploy-scripts:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
+        {%- elif env.use_lago_ost_plugin == "0" %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- else %}
         - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
         {%- endif %}

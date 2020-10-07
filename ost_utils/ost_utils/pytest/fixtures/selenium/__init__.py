@@ -29,7 +29,6 @@ import ost_utils.os_utils as os_utils
 import ost_utils.selenium.docker as docker
 import ost_utils.selenium.podman as podman
 
-from ost_utils.pytest.fixtures import prefix
 from ost_utils.pytest.fixtures.engine import engine_fqdn
 from ost_utils.pytest.fixtures.engine import engine_ip
 

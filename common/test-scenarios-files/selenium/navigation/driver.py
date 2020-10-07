@@ -21,7 +21,7 @@
 import os
 import time
 
-from ovirtlago import testlib
+from ost_utils import assertions
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
@@ -279,19 +279,19 @@ class Driver(object):
         self.xpath_click(xpath)
 
     def wait_until(self, message, condition_method, *args):
-        self._wait_until(message, testlib.SHORT_TIMEOUT, condition_method, *args)
+        self._wait_until(message, assertions.SHORT_TIMEOUT, condition_method, *args)
 
     def wait_long_until(self, message, condition_method, *args):
-        self._wait_until(message, testlib.LONG_TIMEOUT, condition_method, *args)
+        self._wait_until(message, assertions.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_until(self, message, timeout, condition_method, *args):
         WebDriverWait(self.driver, timeout).until(ConditionClass(condition_method, *args), message)
 
     def wait_while(self, message, condition_method, *args):
-        self._wait_while(message, testlib.SHORT_TIMEOUT, condition_method, *args)
+        self._wait_while(message, assertions.SHORT_TIMEOUT, condition_method, *args)
 
     def wait_long_while(self, message, condition_method, *args):
-        self._wait_while(message, testlib.LONG_TIMEOUT, condition_method, *args)
+        self._wait_while(message, assertions.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_while(self, message, timeout, condition_method, *args):
         WebDriverWait(self.driver, timeout).until_not(ConditionClass(condition_method, *args), message)

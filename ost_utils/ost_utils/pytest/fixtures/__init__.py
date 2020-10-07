@@ -20,34 +20,9 @@
 
 import os
 
-import ovirtlago
-import ovirtlago.prefix
 import pytest
-
-from ovirtlago import testlib
-
 
 @pytest.fixture(scope="session")
 def root_password():
     # TODO: read it properly
     return "123456"
-
-
-@pytest.fixture(scope="session")
-def prefix():
-    yield testlib.get_test_prefix()
-
-
-@pytest.fixture(scope="session")
-def api_v4(prefix):
-    yield prefix.virt_env.engine_vm().get_api(api_ver=4)
-
-
-@pytest.fixture(autouse=True, scope="session")
-def repo_server(prefix):
-    with ovirtlago.server.repo_server_context(
-        gw_ip=prefix.virt_env.get_net().gw(),
-        port=ovirtlago.constants.REPO_SERVER_PORT,
-        root_dir=prefix.paths.internal_repo()
-    ):
-        yield

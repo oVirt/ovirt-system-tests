@@ -43,8 +43,13 @@ def engine_password():
 
 
 @pytest.fixture(scope='session')
-def api(engine, engine_full_username, engine_password):
-    return _create_engine_connection(engine, engine_full_username,
+def engine_ip(engine):
+    return engine.ip()
+
+
+@pytest.fixture(scope='session')
+def api(engine_ip, engine_full_username, engine_password):
+    return _create_engine_connection(engine_ip, engine_full_username,
                                      engine_password)
 
 
@@ -65,18 +70,18 @@ def engine(fqdn, env, artifacts_path, engine_full_username, engine_password):
         )
 
         syncutil.sync(exec_func=_create_engine_connection,
-                      exec_func_args=(engine, engine_full_username,
+                      exec_func_args=(engine.ip(), engine_full_username,
                                       engine_password),
                       success_criteria=lambda api: isinstance(api, Connection),
                       timeout=10*60)
         yield engine
 
 
-def _create_engine_connection(engine, engine_full_username, engine_password):
-    url = 'https://{}/ovirt-engine/api'.format(engine.ip())
+def _create_engine_connection(engine_ip, engine_username, engine_password):
+    url = 'https://{}/ovirt-engine/api'.format(engine_ip)
     conn = Connection(
         url=url,
-        username=engine_full_username,
+        username=engine_username,
         password=engine_password,
         insecure=True,
         debug=True,

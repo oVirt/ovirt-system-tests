@@ -53,12 +53,12 @@ def ovirt_image_repo(system):
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(engine, engine_password):
+def openstack_client_config(engine_ip, engine_password):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
-                    'auth_url': OPENSTACK_AUTH_URL.format(engine.ip()),
+                    'auth_url': OPENSTACK_AUTH_URL.format(engine_ip),
                     'username': OPENSTACK_USERNAME,
                     'password': engine_password
                 },

@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 
 @pytest.fixture(scope='session')
-def default_storage_domain(system, engine, host_0_up, default_data_center):
+def default_storage_domain(system, engine_ip, host_0_up, default_data_center):
     # workaround for BZ 1779280
     time.sleep(5)
     storage_domain = storagelib.StorageDomain(system)
@@ -38,7 +38,7 @@ def default_storage_domain(system, engine, host_0_up, default_data_center):
                           host=host_0_up,
                           host_storage_data=storagelib.HostStorageData(
                               storage_type=storagelib.StorageType.NFS,
-                              address=engine.ip(),
+                              address=engine_ip,
                               path=DEFAULT_DOMAIN_PATH,
                               nfs_version=storagelib.NfsVersion.V4_2
                               )

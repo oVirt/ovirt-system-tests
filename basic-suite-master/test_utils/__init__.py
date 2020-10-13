@@ -259,3 +259,7 @@ def get_vm0_ip_address(prefix):
 def get_management_net(prefix):
     return prefix.virt_env.get_net()
 
+
+def get_first_active_host_by_name(engine):
+    hosts = engine.hosts_service().list(search='status=up')
+    return sorted(hosts, key=lambda host: host.name)[0]

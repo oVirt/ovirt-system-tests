@@ -90,6 +90,10 @@ SNAPSHOT_DESC_MEM = 'memory_snap'
 
 VDSM_LOG = '/var/log/vdsm/vdsm.log'
 
+OVA_VM_EXPORT_NAME = 'ova_vm.ova'
+OVA_DIR = '/var/tmp'
+IMPORTED_OVA_NAME = 'ova:///var/tmp/ova_vm.ova'
+OVA_FILE_LOCATION = '%s/%s' % (OVA_DIR, OVA_VM_EXPORT_NAME)
 
 _TEST_LIST = [
     "test_verify_add_all_hosts",
@@ -114,7 +118,7 @@ _TEST_LIST = [
     "test_incremental_backup_vm2",
     "test_ha_recovery",
     "test_verify_vm1_exported",
-    "test_import_vm_as_clone",
+    "test_import_vm1",
     "test_template_export",
     "test_template_update",
     "test_verify_vm_import",
@@ -443,7 +447,8 @@ def snapshot_cold_merge(engine_api):
     if vm1_snapshots_service is None:
         pytest.skip('Glance is not available')
 
-    disk = engine.disks_service().list(search='name={}'.format(DISK1_NAME))[0]
+    disk = engine.disks_service().list(search='name={} and vm_names={}'.
+                                       format(DISK1_NAME, VM1_NAME))[0]
 
     dead_snap1_params = types.Snapshot(
         description=SNAPSHOT_DESC_1,
@@ -616,67 +621,69 @@ def test_live_storage_migration(engine_api):
         lambda: disk_service.get().status == types.DiskStatus.OK
     )
 
+
 @order_by(_TEST_LIST)
 def test_export_vm1(engine_api):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM1_NAME)
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
+    host = test_utils.get_first_active_host_by_name(engine)
 
-    with engine_utils.wait_for_event(engine, 1162): # IMPORTEXPORT_STARTING_EXPORT_VM event
-        vm_service.export(
-            storage_domain=types.StorageDomain(
-                id=sd.id,
-            ), discard_snapshots=True, async=True
+    with engine_utils.wait_for_event(engine, 1223): # IMPORTEXPORT_STARTING_EXPORT_VM_TO_OVA event
+        vm_service.export_to_path_on_host(
+            host=types.Host(id=host.id),
+            directory=OVA_DIR,
+            filename=OVA_VM_EXPORT_NAME, async=True
         )
 
 
 @order_by(_TEST_LIST)
 def test_verify_vm1_exported(engine_api):
     engine = engine_api.system_service()
-    _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
-
-    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
-    vm_sd_service = test_utils.get_storage_domain_vm_service_by_name(
-        storage_domain_service, VM1_NAME)
-    assertions.assert_true_within_short(
+    vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM1_NAME)
+    assertions.assert_true_within_long(
         lambda:
-        vm_sd_service.get().status == types.VmStatus.DOWN
+        len(vm1_snapshots_service.list()) == 1,
     )
 
 
 @order_by(_TEST_LIST)
-def test_import_vm_as_clone(engine_api):
+def test_import_vm1(engine_api):
     engine = engine_api.system_service()
-    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_TEMPLATES_NAME)
-    vm_to_import = test_utils.get_storage_domain_vm_service_by_name(storage_domain_service, VM1_NAME)
+    sd = engine.storage_domains_service().list(search='name={}'.format(SD_ISCSI_NAME))[0]
+    cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
+    imports_service = engine.external_vm_imports_service()
+    host = test_utils.get_first_active_host_by_name(engine)
+    correlation_id = "test_validate_ova_import_vm"
 
-    if vm_to_import is None:
-        pytest.skip("VM: '%s' not found on export domain: '%s'" % (VM1_NAME, SD_TEMPLATES_NAME))
-
-    with engine_utils.wait_for_event(engine, 1165): # IMPORTEXPORT_STARTING_IMPORT_VM event
-        vm_to_import.import_(
-            storage_domain=types.StorageDomain(
-                name=SD_ISCSI_NAME,
-            ),
-            cluster=types.Cluster(
-                name=TEST_CLUSTER,
-            ),
-            vm=types.Vm(
+    with engine_utils.wait_for_event(engine, 1165): # IMPORTEXPORT_STARTING_IMPORT_VM
+        imports_service.add(
+            types.ExternalVmImport(
                 name=IMPORTED_VM_NAME,
-            ),
-            clone=True, collapse_snapshots=True, async=True
+                provider=types.ExternalVmProviderType.KVM,
+                url=IMPORTED_OVA_NAME,
+                cluster=types.Cluster(
+                    id=cluster.id
+                ),
+                storage_domain=types.StorageDomain(
+                    id=sd.id
+                ),
+                host=types.Host(
+                    id=host.id
+                ),
+                sparse=True
+            ), async=True, query={'correlation_id': correlation_id}
         )
 
 
 @order_by(_TEST_LIST)
 def test_verify_vm_import(engine_api):
     engine = engine_api.system_service()
-    vm_service = _verify_vm_state(engine, IMPORTED_VM_NAME, types.VmStatus.DOWN)
-
-    # Remove the imported VM
-    num_of_vms = len(engine.vms_service().list())
-    vm_service.remove()
-    assert len(engine.vms_service().list()) == (num_of_vms-1)
+    correlation_id = "test_validate_ova_import_vm"
+    assertions.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
+    )
+    _verify_vm_state(engine, IMPORTED_VM_NAME, types.VmStatus.DOWN)
 
 
 @order_by(_TEST_LIST)

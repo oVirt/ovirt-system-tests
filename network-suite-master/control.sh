@@ -15,6 +15,7 @@ install_dependencies() {
         "decorator==4.4.0" \
         "openstacksdk==0.37"
     install_libguestfs
+    "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
 }
 
 run_static_analysis_pylint() {
@@ -46,6 +47,7 @@ setup_env() {
 
 start_env() {
     env_start
+    env_dump_ansible_hosts
     env_copy_repo_file
     env_copy_config_file
     env_status

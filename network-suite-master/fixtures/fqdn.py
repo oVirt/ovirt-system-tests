@@ -1,4 +1,4 @@
-# Copyright 2018-9 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,17 +17,18 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import errno
+import re
 import shutil
 
 import pytest
 
 from ovirtlib import syncutil
 
-from fixtures.engine import ENGINE_DOMAIN
+from fixtures.engine import ENGINE_DOMAIN, SUITE
 from fixtures.engine import ANSWER_FILE_SRC
-from fixtures.host import HOST_0_DOMAIN
 
 HOSTS_FILE = '/etc/hosts'
+HOST_0_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '0'])
 
 
 class EngineNotResorvableError(Exception):

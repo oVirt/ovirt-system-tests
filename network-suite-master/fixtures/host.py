@@ -16,23 +16,18 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import re
 
 import pytest
 
 from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
-from fixtures.engine import SUITE
-
-
-HOST_0_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '0'])
-HOST_1_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'host', '1'])
+ROOT_PASSWORD = '123456'
 
 
 @pytest.fixture(scope='session')
-def host_0(env, system, default_cluster):
-    return _create_host(env, system, default_cluster, HOST_0_DOMAIN)
+def host_0(system, default_cluster, ansible_host0_facts):
+    return _create_host(system, default_cluster, ansible_host0_facts)
 
 
 @pytest.fixture(scope='session')
@@ -42,8 +37,8 @@ def host_0_up(host_0):
 
 
 @pytest.fixture(scope='session')
-def host_1(env, system, default_cluster):
-    return _create_host(env, system, default_cluster, HOST_1_DOMAIN)
+def host_1(system, default_cluster, ansible_host1_facts):
+    return _create_host(system, default_cluster, ansible_host1_facts)
 
 
 @pytest.fixture(scope='session')
@@ -77,12 +72,13 @@ def install_hosts_to_save_time(host_0, host_1):
     pass
 
 
-def _create_host(env, system, default_cluster, domain_name):
-    vm = env.get_vms()[domain_name]
+def _create_host(system, default_cluster, ansible_host_facts):
     host = hostlib.Host(system)
     try:
-        host.import_by_name(vm.name())
+        host.import_by_name(ansible_host_facts.get("ansible_hostname"))
     except EntityNotFoundError:
         host.create(
-            default_cluster, vm.name(), vm.ip(), str(vm.root_password()))
+            default_cluster, ansible_host_facts.get("ansible_hostname"),
+            ansible_host_facts.get("ansible_default_ipv4").get("address"),
+            ROOT_PASSWORD)
     return host

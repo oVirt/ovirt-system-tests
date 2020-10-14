@@ -608,6 +608,9 @@ env_copy_repo_file() {
 }
 
 install_libguestfs() {
+    if [[ ${INSIDE_MOCK} -eq 0 ]]; then
+        return 0
+    fi
     cd /tmp
     /var/lib/ci_toolbox/safe_download.sh \
         -s 525522aaf4fcc4f5212cc2a9e98ee873d125536e \

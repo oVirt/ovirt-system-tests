@@ -242,7 +242,8 @@ def install_cockpit_ovirt(prefix):
     vt.start_all()
     nt.assert_true(all(vt.join_all()), 'not all threads finished: %s' % vt)
 
-def add_iscsi_storage_domain_4(prefix ):
+
+def add_iscsi_storage_domain_4(prefix):
     api = prefix.virt_env.engine_vm().get_api_v4()
 
     # Find LUN GUIDs
@@ -257,7 +258,7 @@ def add_iscsi_storage_domain_4(prefix ):
     for lun_id in lun_guids:
         for ip in ips:
             lun=sdk4.types.LogicalUnit(
-                id=lun_id,
+                id=lun_id.decode('utf-8'),
                 address=ip,
                 port=SD_ISCSI_PORT,
                 target=SD_ISCSI_TARGET,
@@ -900,7 +901,7 @@ def he_get_shared_config(prefix):
         result.code, 0, 'hosted-engine --get-shared-config code: %s' % result.code
     )
     nt.assert_true(
-	'gateway' in result.out
+	b'gateway' in result.out
     )
 
 
@@ -916,7 +917,7 @@ def he_check_ha_agent(prefix):
         ],
     )
     nt.assert_true(
-	'Permission denied' not in result.out
+	b'Permission denied' not in result.out
     )
 
 

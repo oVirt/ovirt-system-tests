@@ -115,7 +115,7 @@ def add_vm_blank(api):
     engine = api.system_service()
     vms_service = engine.vms_service()
 
-    vm_memory = 512 * MB
+    vm_memory=512 * MB
     vm_params = sdk4.types.Vm(
         name=VM0_NAME,
         memory=vm_memory,
@@ -145,7 +145,7 @@ def add_vm_blank(api):
         ),
         memory_policy=sdk4.types.MemoryPolicy(
             ballooning=True,
-            guaranteed=vm_memory / 2,
+            guaranteed=vm_memory // 2,
         ),
     )
 

@@ -22,7 +22,6 @@ import time
 
 import functools
 import nose.tools as nt
-from ovirtsdk.xml import params
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
 from lago import utils

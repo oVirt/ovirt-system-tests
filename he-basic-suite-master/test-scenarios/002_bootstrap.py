@@ -498,34 +498,6 @@ def _add_storage_domain_3(api, p):
     )
 
 
-def add_iscsi_storage_domain_bad(prefix):
-    luns = test_utils.get_luns(
-        prefix, SD_ISCSI_HOST_NAME, SD_ISCSI_PORT, SD_ISCSI_TARGET, from_lun=0, to_lun=SD_ISCSI_NR_LUNS)
-
-    v4_domain = versioning.cluster_version_ok(4, 1)
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    p = sdk4.types.StorageDomain(
-        name=SD_ISCSI_NAME,
-        description='iSCSI Storage Domain',
-        type=sdk4.types.StorageDomainType.DATA,
-        discard_after_delete=v4_domain,
-        data_center=sdk4.types.DataCenter(
-            name=DC_NAME,
-        ),
-        host=_random_host_from_dc(api, DC_NAME),
-        storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
-        storage=sdk4.types.HostStorage(
-            type=sdk4.types.StorageType.ISCSI,
-            override_luns=True,
-            volume_group=sdk4.types.VolumeGroup(
-                logical_units=luns
-            ),
-        ),
-    )
-
-    _add_storage_domain(api, p)
-
-
 def add_iso_storage_domain(prefix):
     add_generic_nfs_storage_domain(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
 

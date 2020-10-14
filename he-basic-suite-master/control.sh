@@ -94,7 +94,7 @@ run_suite(){
     declare test_scenarios=($(ls "$suite"/test-scenarios/*.py | sort))
 
     for scenario in "${test_scenarios[@]}"; do
-        echo "Running test scenario ${scenario##*/}"
+        echo "Running test scenario: ${scenario##*/}"
         env_run_test "$scenario" || failed=true
         env_collect "$curdir/test_logs/${suite##*/}/post-${scenario##*/}"
         if $failed; then

@@ -1,0 +1,118 @@
+#!/usr/bin/ansible-playbook
+
+- hosts: all
+
+  vars:
+    default_ost_images_repo_url: 'https://templates.ovirt.org/yum/'
+    default_ovirt_repo_url: 'https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm'
+    default_ost_images_rpms:
+      - ost-images-el8-engine-installed
+      - ost-images-el8-host-installed
+
+  tasks:
+    - name: enable nested virtualization on intel
+      lineinfile:
+        path: /etc/modprobe.d/kvm.conf
+        create: yes
+        line: options kvm_intel nested=1
+      become: true
+      notify: reboot
+      when: ansible_facts['processor'][1] == 'GenuineIntel'
+
+    - name: enable nested virtualization on amd
+      lineinfile:
+        path: /etc/modprobe.d/kvm.conf
+        create: yes
+        line: options kvm_amd nested=1
+      become: true
+      notify: reboot
+      when: ansible_facts['processor'][1] == 'AuthenticAMD'
+
+    - name: set accept_ra on ipv6
+      lineinfile:
+        path: /etc/sysctl.d/90-lago-ipv6-ra.conf
+        create: yes
+        line: net.ipv6.conf.all.accept_ra=2
+      become: true
+
+    - name: set up lago copr repo
+      command:
+        cmd: dnf -y copr enable tinez/ost-stuff
+        creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:tinez:ost-stuff.repo
+        warn: false
+      become: true
+
+    - name: set up ost-images repo
+      yum_repository:
+        name: ost-images
+        description: ost-images
+        baseurl: "{{ ost_images_repo_url | default(default_ost_images_repo_url) }}"
+        gpgcheck: no
+      become: true
+
+    - name: install ovirt-release-master
+      dnf:
+        name: "{{ ovirt_repo_url | default(default_ovirt_repo_url) }}"
+        disable_gpg_check: yes
+      become: true
+
+    - name: install packages and cleanup epel if necessary
+
+      block:
+        - name: install epel
+          dnf:
+            name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          become: true
+          register: epel
+
+        - name: install required packages
+          dnf:
+            name:
+              - ansible
+              - git
+              - lago
+              - openssl
+              - podman
+              - python3-ansible-runner
+              - python3-ovirt-engine-sdk4
+              - python3-paramiko
+          become: true
+
+      always:
+        - name: remove epel if it was added
+          dnf:
+            name: epel-release-8
+            state: absent
+          when: epel.changed
+          become: true
+
+    - name: install ost images
+      dnf:
+        name: "{{ ost_images_rpms | default(default_ost_images_rpms) }}"
+      become: true
+
+    - name: add user to relevant groups
+      user:
+        name: "{{ ansible_facts['user_id'] }}"
+        groups:
+          - lago
+          - qemu
+      become: true
+
+    - name: add qemu to the user group
+      user:
+        name: qemu
+        groups:
+          - "{{ ansible_facts['user_id'] }}"
+      become: true
+
+    - name: set user home directory permissions
+      file:
+        path: "{{ ansible_facts['user_dir'] }}"
+        mode: 0751
+      become: true
+
+  handlers:
+    - name: reboot
+      debug:
+        msg: Please reboot to apply all the changes.

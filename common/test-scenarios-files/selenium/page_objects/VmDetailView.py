@@ -57,16 +57,16 @@ class VmVgpuDialog(Displayable):
         super(VmVgpuDialog, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_css_selector('.modal-dialog').is_displayed()
+        return self.ovirt_driver.driver.find_element_by_css_selector('.modal-dialog,.pf-c-modal-box').is_displayed()
 
     def get_displayable_name(self):
         return 'Manage vGPU dialog'
 
     def get_title(self):
-        return self.ovirt_driver.driver.find_element_by_css_selector('h4.modal-title').text
+        return self.ovirt_driver.driver.find_element_by_css_selector('h4.modal-title,h1.pf-c-title').text
 
     def cancel(self):
         print('Cancel vGPU dialog')
-        self.ovirt_driver.driver.find_element_by_xpath('//div[@class="modal-footer"]//button[. = "Cancel"]').click()
+        self.ovirt_driver.driver.find_element_by_xpath('//div[@class="modal-footer"]//button[. = "Cancel"]|//div[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]').click()
         self.wait_for_not_displayed()
 

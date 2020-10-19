@@ -96,13 +96,17 @@ def env(artifacts_path):
         loglevel=logging.DEBUG
     )
 
-    # TODO: once a proper solution for repo server w/o OST lago plugin
-    # is available, remove this hack and use it instead.
+    # When OST is run over an el8 distro the repo server is no longer
+    # required due to the introduction of prebuilt ost-images. But when OST is
+    # run over an el7 distro, the repo server is still required.
+    use_repo_server = os.environ.get("USE_LAGO_OST_PLUGIN", "0") == "1"
     try:
-        repo_server = create_repo_server(workdir, lago_env)
+        if use_repo_server:
+            repo_server = create_repo_server(workdir, lago_env)
         yield lago_env
     finally:
-        repo_server.shutdown()
+        if use_repo_server:
+            repo_server.shutdown()
         shutil.move(lago_log_path, artifacts_path)
 
 

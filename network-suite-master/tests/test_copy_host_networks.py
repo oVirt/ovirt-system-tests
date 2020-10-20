@@ -17,6 +17,8 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import contextlib
+
 import pytest
 
 from ovirtlib import clusterlib
@@ -56,11 +58,9 @@ def configured_hosts(request, host_attachments, host_0_up, host_1_up):
     destination_attach_data = host_attachments[request.param[1]]
 
     setup_host0 = hostlib.setup_networks(host_0_up, source_attach_data)
-    setup_host1 = hostlib.setup_networks(host_1_up, destination_attach_data)
+    setup_host1 = _setup_destination_host(host_1_up, destination_attach_data)
     with setup_host0, setup_host1:
         yield (host_0_up, host_1_up)
-
-    host_1_up.clean_networks()
 
 
 @pytest.fixture(scope='module')
@@ -152,3 +152,17 @@ class CopyHostComparator(object):
         In such cases the resulting boot protocol should be disabled.
         """
         return nic0.is_static_ipv6() and nic1.is_disabled_ipv6()
+
+
+@contextlib.contextmanager
+def _setup_destination_host(host, attach_data):
+    """
+    After copy_host_network, the configuration of destination will be different
+    than what we originally set up. We therefore have to clean it completely
+    to avoid any leftovers.
+    """
+    host.setup_networks(attach_data)
+    try:
+        yield
+    finally:
+        host.clean_networks()

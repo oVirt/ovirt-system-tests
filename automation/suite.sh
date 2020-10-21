@@ -124,12 +124,17 @@ res=0
 # http://plain.resources.ovirt.org/repos/ovirt/experimental/master/latest.under_testing/
 #
 extra_cmds=()
-if [[ -e "$SUITE_REAL_PATH/extra_sources" ]]; then
-    cat "$SUITE_REAL_PATH/extra_sources"
-    extra_cmds+=(-s "conf:$SUITE_REAL_PATH/extra_sources")
-elif [[ -e "$PWD/extra_sources" ]]; then
-    cat "$PWD/extra_sources"
-    extra_cmds+=(-s "conf:$PWD/extra_sources")
+extra_sources=""
+[[ -e "$SUITE_REAL_PATH/extra_sources" ]] && extra_sources="$SUITE_REAL_PATH/extra_sources"
+[[ -e "$PWD/extra_sources" ]] && extra_sources="$PWD/extra_sources"
+
+if [[ -n ${extra_sources} ]]; then
+    cat "${extra_sources}"
+
+    while IFS= read -r repo_url
+    do
+        extra_cmds+=(-s "${repo_url}")
+    done < "${extra_sources}"
 fi
 
 if [[ ${#DEFAULT_RPMS[@]} -gt 0 ]]; then

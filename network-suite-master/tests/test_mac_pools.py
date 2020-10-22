@@ -280,6 +280,7 @@ def test_move_mac_to_new_vm(
         assert vnic_1.mac_address == MAC_ADDR_1
 
 
+@suite.skip_suites_below('4.4')
 @pytest.mark.usefixtures('pool_0_cluster_0', 'pool_1_cluster_1')
 @pytest.mark.usefixtures('host_0_in_cluster_0', 'host_1_in_cluster_1')
 def test_allocate_mac_in_use_in_other_cluster_small_mac_pool(
@@ -292,6 +293,7 @@ def test_allocate_mac_in_use_in_other_cluster_small_mac_pool(
         system, default_data_center, cluster_0, cluster_1)
 
 
+@suite.skip_suites_below('4.4')
 @pytest.mark.usefixtures('pool_3_cluster_0', 'pool_1_cluster_1')
 @pytest.mark.usefixtures('host_0_in_cluster_0', 'host_1_in_cluster_1')
 def test_allocate_mac_in_use_in_other_cluster_large_mac_pool(

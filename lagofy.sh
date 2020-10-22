@@ -7,14 +7,13 @@ check_dependencies() {
     pip3 install --user -q -r ${OST_REPO_ROOT}/requirements.txt
     # update ost_utils all the time since we don't version it
     pip3 install --user -q -e ost_utils
-    grep ipv6 /etc/sysctl.conf | egrep -q 'accept_ra ?= ?2' || {
+    sysctl net.ipv6.conf.all.accept_ra | egrep -q 'accept_ra ?= ?2' || {
         echo 'Missing "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
     }
-    grep 'nested=1' /etc/modprobe.d/kvm.conf | grep -q ^options || {
-        echo 'options kvm_intel nested=1' >> /etc/modprobe.d/kvm.conf
-        rmmod kvm-intel; modprobe kvm-intel;
-        [[ $(cat /sys/module/kvm_intel/parameters/nested) -ne 1 ]] && return 5
+    [[ $(cat /sys/module/kvm_*/parameters/nested) -eq 1 ]] || {
+        echo "No nesting virtualization support. Fix it!"
+        return 5
     }
     virsh -q connect || {
         echo "Can not connect to libvirt. Fix it!"
@@ -29,7 +28,7 @@ check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    rpm --quiet -q lago lago-ovirt python3-ovirt-engine-sdk4 python3-paramiko ansible python3-ansible-runner openssl || {
+    rpm --quiet -q lago python3-ovirt-engine-sdk4 python3-paramiko ansible python3-ansible-runner openssl || {
         echo Missing mandatory rpm
         return 9
     }

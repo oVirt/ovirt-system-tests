@@ -185,19 +185,18 @@ def _verify_vm_state(engine, vm_name, state):
 
 
 @pytest.fixture(scope="session")
-def assert_vm_is_alive(ansible_host0, get_vm_ip, vm_ssh):
+def assert_vm_is_alive(ansible_host0, vm_ssh):
 
     def is_alive(vm_name):
-        vm_ip = get_vm_ip(vm_name)
         try:
-            ansible_host0.shell('ping -4 -c 1 {}'.format(vm_ip))
+            ansible_host0.shell('ping -4 -c 1 -W 60 {}'.format(vm_name))
         except ansible.AnsibleExecutionError as e:
             raise RuntimeError(
-                "Unable to reach vm {} with {} ip address: {}".format(
-                     vm_name, vm_ip, e
+                "Unable to reach vm {}: {}".format(
+                     vm_name, e
                 )
             )
-        assert vm_ssh(vm_ip, 'true').code == EX_OK
+        assert vm_ssh(vm_name, 'true').code == EX_OK
 
     return is_alive
 

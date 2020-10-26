@@ -36,10 +36,10 @@ class EngineNotResorvableError(Exception):
 
 
 @pytest.fixture(scope='session')
-def fqdn(env):
+def fqdn(engine_facts):
     BACKUP_FILE = HOSTS_FILE + 'OST-BACKUP'
 
-    address = env.get_vms()[ENGINE_DOMAIN].ip()
+    address = engine_facts.ipv4_default
     fqdn = _fetch_fqdn(ANSWER_FILE_SRC)
 
     remove_backup = False

@@ -22,8 +22,14 @@ import pytest
 from ost_utils import ansible
 
 
+__ANSIBLE_ENGINE_PATTERN = "~lago-.*-engine"
 __ANSIBLE_HOST0_PATTERN = "~lago-.*-host-0"
 __ANSIBLE_HOST1_PATTERN = "~lago-.*-host-1"
+
+
+@pytest.fixture(scope="session")
+def engine_facts():
+    return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_ENGINE_PATTERN))
 
 
 @pytest.fixture(scope="session")

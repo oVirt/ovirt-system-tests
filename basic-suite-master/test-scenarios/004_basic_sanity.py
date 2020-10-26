@@ -188,14 +188,15 @@ def _verify_vm_state(engine, vm_name, state):
 def assert_vm_is_alive(ansible_host0, vm_ssh):
 
     def is_alive(vm_name):
-        try:
+
+        def _ping():
             ansible_host0.shell('ping -4 -c 1 -W 60 {}'.format(vm_name))
-        except ansible.AnsibleExecutionError as e:
-            raise RuntimeError(
-                "Unable to reach vm {}: {}".format(
-                     vm_name, e
-                )
-            )
+            return True
+
+        assertions.assert_true_within_short(
+            _ping, allowed_exceptions=[ansible.AnsibleExecutionError]
+        )
+
         assert vm_ssh(vm_name, 'true').code == EX_OK
 
     return is_alive

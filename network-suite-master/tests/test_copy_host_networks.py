@@ -38,6 +38,7 @@ VM_NET_NAME = 'vm-net'
 VLAN_10_NET_NAME = 'vlan-10-net'
 VLAN_20_NET_NAME = 'vlan-20-net'
 VLAN_30_NET_NAME = 'vlan-30-net'
+VLAN_30_NET_NAME_1 = 'vlan-30-net-1'
 
 Config = namedtuple('Config', ('attachments', 'bonds'))
 
@@ -58,10 +59,12 @@ def test_copy_host_networks(configured_hosts):
     scope='function',
     params=[('ovirtmgmt_only', 'ovirtmgmt_only'),
             ('vlan_and_nonvlan', 'single_network'),
-            ('networks_and_bond', 'vlan_and_nonvlan')],
+            ('networks_and_bond_0', 'vlan_and_nonvlan'),
+            ('networks_and_bond_1', 'networks_and_bond_0')],
     ids=['copy_nothing_to_host_with_nothing',
          'copy_vlan_and_nonvlan_to_host_with_single_network',
-         'copy_networks_and_bond_to_host_with_vlan_and_nonvlan'],
+         'copy_networks_and_bond_to_host_with_vlan_and_nonvlan',
+         'copy_networks_and_bond_to_host_with_different_networks_and_bond'],
 )
 def configured_hosts(request, host_config, host_0_up, host_1_up):
     SRC_CONF = request.param[0]
@@ -92,12 +95,18 @@ def host_config(networks):
             (AttachData(networks[VLAN_10_NET_NAME], ETH1),
              AttachData(networks[VM_NET_NAME], ETH2)),
             ()),
-        'networks_and_bond': Config(
+        'networks_and_bond_0': Config(
             (AttachData(networks[VM_NET_NAME], ETH1),
              AttachData(networks[VLAN_10_NET_NAME], ETH1),
              AttachData(networks[VLAN_20_NET_NAME], BOND0),
              AttachData(networks[VLAN_30_NET_NAME], BOND0)),
             (BondingData(BOND0, [ETH2, ETH3]),)),
+        'networks_and_bond_1': Config(
+            (AttachData(networks[VLAN_30_NET_NAME], ETH2),
+             AttachData(networks[VM_NET_NAME], BOND0),
+             AttachData(networks[VLAN_10_NET_NAME], BOND0),
+             AttachData(networks[VLAN_30_NET_NAME_1], BOND0)),
+            (BondingData(BOND0, [ETH1, ETH3]),))
     }
 
 
@@ -115,15 +124,20 @@ def networks(default_data_center, default_cluster):
     vm_vlan_30_net_ctx = clusterlib.new_assigned_network(
         VLAN_30_NET_NAME, default_data_center, default_cluster, vlan=30)
 
+    vm_vlan_30_net_1_ctx = clusterlib.new_assigned_network(
+        VLAN_30_NET_NAME_1, default_data_center, default_cluster, vlan=30)
+
     with vm_net_ctx as vm_network, \
             vm_vlan_10_net_ctx as vm_vlan_10_network, \
             vm_vlan_20_net_ctx as vm_vlan_20_network, \
-            vm_vlan_30_net_ctx as vm_vlan_30_network:
+            vm_vlan_30_net_ctx as vm_vlan_30_network, \
+            vm_vlan_30_net_1_ctx as vm_vlan_30_network_1:
         yield {
             VM_NET_NAME: vm_network,
             VLAN_10_NET_NAME: vm_vlan_10_network,
             VLAN_20_NET_NAME: vm_vlan_20_network,
             VLAN_30_NET_NAME: vm_vlan_30_network,
+            VLAN_30_NET_NAME_1: vm_vlan_30_network_1,
         }
 
 

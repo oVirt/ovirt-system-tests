@@ -38,7 +38,13 @@ stage:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
-        - performance_suite_master
+        - performance_suite_master:
+            distributions:
+             - el7
+             - el8:
+                 runtime-requirements:
+                   hostdistro: same
+                   support-nesting-level: 2
         - upgrade-from-release_suite_4.3
         - upgrade-from-prevrelease_suite_4.3
         - test-ost-container:

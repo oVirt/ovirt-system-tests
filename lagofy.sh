@@ -150,7 +150,7 @@ export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
 lago() { /usr/bin/lago --lease_dir "$HOME/.lago" --workdir "$PREFIX" "$@"; }
 
-check_dependencies
+check_dependencies || return $?
 
 echo "you can run the following:
 

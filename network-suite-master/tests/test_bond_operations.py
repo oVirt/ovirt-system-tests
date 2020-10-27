@@ -31,8 +31,6 @@ class ActiveSlaveNotChangedError(Exception):
 
 
 @suite.skip_suites_below('4.4')
-@suite.xfail_suite_master(reason='BZ 1846338',
-                          raises=ActiveSlaveNotChangedError)
 def test_bond_active_slave(system, default_data_center, default_cluster,
                            host_0_up):
     bond_data = netattachlib.ActiveSlaveBonding(

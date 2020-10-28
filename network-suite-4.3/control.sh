@@ -19,6 +19,7 @@ install_dependencies() {
     # dependency of ansible's os_* modules
     pip install openstacksdk==0.37
     pip install decorator==4.4.0
+    "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
 }
 
 run_static_analysis() {
@@ -46,6 +47,7 @@ setup_env() {
 
 start_env() {
     env_start
+    env_dump_ansible_hosts
     env_copy_repo_file
     env_copy_config_file
     env_status

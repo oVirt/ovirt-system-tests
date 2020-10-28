@@ -26,7 +26,7 @@ run_static_analysis_pylint() {
         "${SUITE}/fixtures" \
         "${SUITE}/ovirtlib" \
         "${SUITE}/testlib" \
-        "${SUITE}/tests"
+        "${SUITE}/test-scenarios"
 }
 
 run_static_analysis_flake() {
@@ -77,7 +77,7 @@ run_tests() {
         --junit-xml="$junit_xml_path" \
         --lago-env="$PREFIX" \
         --artifacts-path="$artifacts_path" \
-        "${SUITE}/tests"
+        "${SUITE}/test-scenarios"
 }
 
 run_suite () {

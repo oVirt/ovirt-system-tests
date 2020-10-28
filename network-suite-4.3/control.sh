@@ -30,7 +30,7 @@ run_static_analysis() {
         "${SUITE}/fixtures" \
         "${SUITE}/ovirtlib" \
         "${SUITE}/testlib" \
-        "${SUITE}/tests"
+        "${SUITE}/test-scenarios"
 }
 
 setup_env() {
@@ -71,7 +71,7 @@ run_tests() {
         --junit-xml="$junit_xml_path" \
         --lago-env="$PREFIX" \
         --artifacts-path="$artifacts_path" \
-        "${SUITE}/tests"
+        "${SUITE}/test-scenarios"
 }
 
 run_suite () {

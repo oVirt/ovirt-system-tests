@@ -34,6 +34,7 @@ import pytest
 import test_utils
 
 from ost_utils import assertions
+from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.selenium import CHROME_VERSION
@@ -150,10 +151,9 @@ def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
 
 
 @pytest.fixture(scope="session")
-def screenshots_dir():
+def screenshots_dir(artifacts_dir):
     dc_version = os.environ.get('OST_DC_VERSION', '')
-    root = os.environ.get('OST_REPO_ROOT')
-    path = os.path.join(root, 'exported-artifacts/screenshots%s/' % dc_version)
+    path = os.path.join(artifacts_dir, 'screenshots%s/' % dc_version)
 
     # make screenshot directory
     if os.path.exists(path):

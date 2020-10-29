@@ -752,6 +752,7 @@ export SUITE_NAME="${SUITE##*/}"
 [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE_NAME}"
 export PREFIX
 
+export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_INVENTORY_FILE="${PREFIX}/hosts"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"

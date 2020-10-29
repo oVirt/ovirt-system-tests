@@ -19,9 +19,12 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import os
+
 import pytest
 
 from ost_utils import ansible
+from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 
 
 ANSIBLE_ENGINE_PATTERN = "~lago-.*-engine"
@@ -84,3 +87,9 @@ def ansible_host1_facts():
 def ansible_clean_private_dirs():
     yield
     ansible._AnsiblePrivateDir.cleanup()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
+    yield
+    ansible._AnsibleLogs.save(artifacts_dir)

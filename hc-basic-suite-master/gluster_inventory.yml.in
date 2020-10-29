@@ -186,5 +186,4 @@ gluster:
     @HOST1@:
     @HOST2@:
   vars:
-    storage_domains: [{"name":"data","host":"@HOST0@","address":"@HOST0@","path":"/data","mount_options":"backup-volfile-servers=@HOST1@:@HOST2@"},{"name":"vmstore","host":"@HOST0@","address":"@HOST0@","path":"/vmstore","mount_options":"backup-volfile-servers=@HOST1@:@HOST2@"}]
-
+    storage_domains: [{"name":"data","host":"@HOST0@","address":"@HOST0@","path":"/data","function":"data","mount_options":"backup-volfile-servers=@HOST1@:@HOST2@"},{"name":"vmstore","host":"@HOST0@","address":"@HOST0@","path":"/vmstore","function":"data","mount_options":"backup-volfile-servers=@HOST1@:@HOST2@"}]

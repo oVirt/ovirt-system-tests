@@ -25,8 +25,8 @@ from lago import sdk as lagosdk
 
 from repo_server import create_repo_server
 
-from fixtures.ansible import ansible_host0_facts  # NOQA: F401
-from fixtures.ansible import ansible_host1_facts  # NOQA: F401
+from fixtures.ansible import host0_facts  # NOQA: F401
+from fixtures.ansible import host1_facts  # NOQA: F401
 
 from fixtures.cluster import default_cluster  # NOQA: F401
 

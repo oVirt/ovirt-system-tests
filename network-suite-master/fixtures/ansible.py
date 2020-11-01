@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Copyright 2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -24,21 +22,35 @@ import pytest
 from ost_utils import ansible
 
 
-ANSIBLE_HOST0_PATTERN = "~lago-.*-host-0"
-ANSIBLE_HOST1_PATTERN = "~lago-.*-host-1"
+__ANSIBLE_HOST0_PATTERN = "~lago-.*-host-0"
+__ANSIBLE_HOST1_PATTERN = "~lago-.*-host-1"
 
 
 @pytest.fixture(scope="session")
-def ansible_host0_facts():
-    return ansible._AnsibleFacts(ANSIBLE_HOST0_PATTERN)
+def host0_facts():
+    return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_HOST0_PATTERN))
 
 
 @pytest.fixture(scope="session")
-def ansible_host1_facts():
-    return ansible._AnsibleFacts(ANSIBLE_HOST1_PATTERN)
+def host1_facts():
+    return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_HOST1_PATTERN))
 
 
 @pytest.fixture(scope="session", autouse=True)
-def ansible_clean_private_dirs():
+def _ansible_clean_private_dirs():
     yield
     ansible._AnsiblePrivateDir.cleanup()
+
+
+class AnsibleFactsAdapter(object):
+
+    def __init__(self, ansible_facts):
+        self._facts = ansible_facts
+
+    @property
+    def ipv4_default(self):
+        return self._facts.get("ansible_default_ipv4").get("address")
+
+    @property
+    def hostname(self):
+        return self._facts.get("ansible_hostname")

@@ -26,8 +26,8 @@ ROOT_PASSWORD = '123456'
 
 
 @pytest.fixture(scope='session')
-def host_0(system, default_cluster, ansible_host0_facts):
-    return _create_host(system, default_cluster, ansible_host0_facts)
+def host_0(system, default_cluster, host0_facts):
+    return _create_host(system, default_cluster, host0_facts)
 
 
 @pytest.fixture(scope='session')
@@ -37,8 +37,8 @@ def host_0_up(host_0):
 
 
 @pytest.fixture(scope='session')
-def host_1(system, default_cluster, ansible_host1_facts):
-    return _create_host(system, default_cluster, ansible_host1_facts)
+def host_1(system, default_cluster, host1_facts):
+    return _create_host(system, default_cluster, host1_facts)
 
 
 @pytest.fixture(scope='session')
@@ -72,13 +72,13 @@ def install_hosts_to_save_time(host_0, host_1):
     pass
 
 
-def _create_host(system, default_cluster, ansible_host_facts):
+def _create_host(system, default_cluster, host_facts):
     host = hostlib.Host(system)
     try:
-        host.import_by_name(ansible_host_facts.get("ansible_hostname"))
+        host.import_by_name(host_facts.hostname)
     except EntityNotFoundError:
         host.create(
-            default_cluster, ansible_host_facts.get("ansible_hostname"),
-            ansible_host_facts.get("ansible_default_ipv4").get("address"),
+            default_cluster, host_facts.hostname,
+            host_facts.ipv4_default,
             ROOT_PASSWORD)
     return host

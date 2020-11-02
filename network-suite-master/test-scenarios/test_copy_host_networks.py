@@ -60,11 +60,19 @@ def test_copy_host_networks(configured_hosts):
     params=[('ovirtmgmt_only', 'ovirtmgmt_only'),
             ('vlan_and_nonvlan', 'single_network'),
             ('networks_and_bond_0', 'vlan_and_nonvlan'),
-            ('networks_and_bond_1', 'networks_and_bond_0')],
+            ('networks_and_bond_1', 'networks_and_bond_0'),
+            ('ovirtmgmt_only', 'networks_and_bond_1'),
+            ('vlan_and_nonvlan', 'ovirtmgmt_only'),
+            ('ovirtmgmt_only', 'vlan_and_nonvlan'),
+            ('networks_and_bond_0', 'ovirtmgmt_only')],
     ids=['copy_nothing_to_host_with_nothing',
          'copy_vlan_and_nonvlan_to_host_with_single_network',
-         'copy_networks_and_bond_to_host_with_vlan_and_nonvlan',
-         'copy_networks_and_bond_to_host_with_different_networks_and_bond'],
+         'copy_networks_and_bond_0_to_host_with_vlan_and_nonvlan',
+         'copy_networks_and_bond_1_to_host_with_networks_and_bond_0',
+         'copy_nothing_to_host_with_networks_and_bond_1',
+         'copy_vlan_and_nonvlan_to_host_with_nothing',
+         'copy_nothing_to_host_with_vlan_and_nonvlan',
+         'copy_networks_and_bond_0_to_host_with_nothing']
 )
 def configured_hosts(request, host_config, host_0_up, host_1_up):
     SRC_CONF = request.param[0]

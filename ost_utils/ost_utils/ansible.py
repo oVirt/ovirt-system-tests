@@ -124,9 +124,11 @@ class _AnsiblePrivateDir(object):
 
     @classmethod
     def get(cls):
-        dir = cls.thread_local.__dict__.setdefault('dir', tempfile.mkdtemp())
-        cls.all_dirs.add(dir)
-        return dir
+        if 'dir' not in cls.thread_local.__dict__:
+            path = tempfile.mkdtemp()
+            cls.thread_local.__dict__['dir'] = path
+            cls.all_dirs.add(path)
+        return cls.thread_local.__dict__['dir']
 
     @classmethod
     def event_data_files(cls):

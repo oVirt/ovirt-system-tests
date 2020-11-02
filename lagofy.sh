@@ -135,8 +135,8 @@ EOT
 collect_logs() {
     logs="${OST_REPO_ROOT}/test_logs/${SUITE_NAME}/$(date +'%Y-%m-%d_%H:%M:%S')_${scenario##*/}"
     lago collect --output $logs # lago logs
-    [ -d "${OST_REPO_ROOT}/exported-artifacts/screenshots" ] && mv -v "${OST_REPO_ROOT}/exported-artifacts/screenshots" $logs/   # ui screenshots
     [ -n "$coverage" ] && python3 ${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py $PREFIX ${OST_REPO_ROOT}/exported-artifacts/coverage/
+    [ -d "${OST_REPO_ROOT}/exported-artifacts" ] && [ $(ls -1 "${OST_REPO_ROOT}/exported-artifacts" | wc -l) -ne 0 ] && mv "${OST_REPO_ROOT}/exported-artifacts/*" $logs/
 }
 
 
@@ -145,6 +145,7 @@ export SUITE=${OST_REPO_ROOT}/${1:-basic-suite-master}
 SUITE_NAME="${SUITE##*/}"
 echo -n "Suite $SUITE_NAME - "
 export PREFIX=${OST_REPO_ROOT}/deployment-${SUITE_NAME}
+export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_INVENTORY_FILE="${PREFIX}/hosts"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"

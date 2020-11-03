@@ -45,7 +45,6 @@ from test_utils import versioning
 from test_utils import host_status_utils
 from test_utils import constants
 
-import time
 import uuid
 
 

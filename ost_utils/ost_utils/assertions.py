@@ -35,6 +35,7 @@ def assert_equals_within(
     error_message=None
 ):
     allowed_exceptions = allowed_exceptions or []
+    res = '<no-result-obtained>'
     with _EggTimer(timeout) as timer:
         while not timer.elapsed():
             try:

@@ -25,6 +25,7 @@ from ost_utils.pytest import pytest_collection_modifyitems
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
+from ost_utils.pytest.running_time import *
 
 
 if os.environ.get("USE_LAGO_OST_PLUGIN", "0") == "1":

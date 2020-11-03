@@ -58,6 +58,7 @@ GB = 2 ** 30
 DC_NAME = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_CENTOS7 = 'centos7_template'
+TEMPLATE_BLANK = 'Blank'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
@@ -69,7 +70,9 @@ VM_PASSWORD = 'gocubsgo'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
+VM_TO_CLONE_NAME = 'vm_to_clone'
 BACKUP_VM_NAME = 'backup_vm'
+CLONED_VM_NAME = 'cloned_vm'
 IMPORTED_VM_NAME = 'imported_vm'
 OVF_VM_NAME = 'ovf_vm'
 VMPOOL_NAME = 'test-pool'
@@ -104,9 +107,11 @@ _TEST_LIST = [
     "test_add_disks",
     "test_add_floating_disk",
     "test_add_snapshot_for_backup",
+    "test_clone_powered_off_vm",
     "test_run_vms",
     "test_attach_snapshot_to_backup_vm",
     "test_verify_transient_folder",
+    "test_verify_and_remove_cloned_vm",
     "test_remove_backup_vm_and_backup_snapshot",
     "test_vm0_is_alive",
     "test_hotplug_memory",
@@ -189,6 +194,17 @@ def _verify_vm_state(engine, vm_name, state):
         vm_service.get().status == state
     )
     return vm_service
+
+
+def _verify_vm_disks_state(engine, vm_name, state):
+    disks_service = engine.disks_service()
+    vm_disk_attachments_service = test_utils.get_disk_attachments_service(engine, vm_name)
+    for disk_attachment in vm_disk_attachments_service.list():
+        disk_service = disks_service.disk_service(disk_attachment.disk.id)
+        assertions.assert_true_within_short(
+            lambda:
+            disk_service.get().status == state
+        )
 
 
 @pytest.fixture(scope="session")
@@ -407,6 +423,51 @@ def test_add_snapshot_for_backup(engine_api):
 
 
 @order_by(_TEST_LIST)
+def test_clone_powered_off_vm(system_service, vms_service):
+    # Prepare a VM with minimal disk size to clone
+    vms_service.add(
+        types.Vm(
+            name=VM_TO_CLONE_NAME,
+            description='VM with minimal disk to clone later',
+            template=types.Template(
+                name=TEMPLATE_BLANK,
+            ),
+            cluster=types.Cluster(
+                name=TEST_CLUSTER,
+            ),
+        )
+    )
+    _verify_vm_state(system_service, VM_TO_CLONE_NAME, types.VmStatus.DOWN)
+
+    vm_to_clone_service = test_utils.get_vm_service(system_service, VM_TO_CLONE_NAME)
+    vm_to_clone_disk_attachments_service = test_utils.get_disk_attachments_service(
+        system_service, VM_TO_CLONE_NAME)
+    floating_disk_service = test_utils.get_disk_service(system_service, FLOATING_DISK_NAME)
+
+    vm_to_clone_disk_attachments_service.add(
+        types.DiskAttachment(
+            disk=types.Disk(
+                id=floating_disk_service.get().id
+            ),
+            interface=types.DiskInterface.VIRTIO_SCSI,
+            bootable=True,
+            active=True
+        )
+    )
+    assertions.assert_true_within_short(
+        lambda:
+        floating_disk_service.get().status == types.DiskStatus.OK)
+
+    correlation_id = 'clone_powered_off_vm'
+    vm_to_clone_service.clone(
+        vm=types.Vm(
+            name=CLONED_VM_NAME
+        ),
+        query={'correlation_id': correlation_id}
+    )
+
+
+@order_by(_TEST_LIST)
 def test_attach_snapshot_to_backup_vm(engine_api):
     engine = engine_api.system_service()
     vm2_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
@@ -443,6 +504,31 @@ def test_verify_transient_folder(assert_vm_is_alive, engine_api,
 
     assert sd.id in all_volumes[0]
     assert_vm_is_alive(VM0_NAME)
+
+
+@order_by(_TEST_LIST)
+def test_verify_and_remove_cloned_vm(system_service):
+    cloned_vm_service = test_utils.get_vm_service(system_service, CLONED_VM_NAME)
+    vm_to_clone_service = test_utils.get_vm_service(system_service, VM_TO_CLONE_NAME)
+
+    correlation_id = 'clone_powered_off_vm'
+
+    assertions.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(system_service, correlation_id)
+    )
+
+    _verify_vm_state(system_service, CLONED_VM_NAME, types.VmStatus.DOWN)
+    _verify_vm_disks_state(system_service, CLONED_VM_NAME, types.DiskStatus.OK)
+
+    num_of_vms = len(system_service.vms_service().list())
+    vm_to_clone_service.remove(
+        detach_only=True
+    )
+    cloned_vm_service.remove()
+    assert len(system_service.vms_service().list()) == (num_of_vms-2)
+    floating_disk_service = test_utils.get_disk_service(system_service, FLOATING_DISK_NAME)
+    assert floating_disk_service is not None
 
 
 @order_by(_TEST_LIST)
@@ -785,15 +871,7 @@ def test_add_vm1_from_template(engine_api, cirros_image_glance_template_name):
 def test_verify_add_vm1_from_template(engine_api):
     engine = engine_api.system_service()
     _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
-
-    disks_service = engine.disks_service()
-    vm1_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM1_NAME)
-    for disk_attachment in vm1_disk_attachments_service.list():
-        disk_service = disks_service.disk_service(disk_attachment.disk.id)
-        assertions.assert_true_within_short(
-            lambda:
-            disk_service.get().status == types.DiskStatus.OK
-        )
+    _verify_vm_disks_state(engine, VM1_NAME, types.DiskStatus.OK)
 
 
 @pytest.fixture(scope="session")

@@ -35,6 +35,7 @@ from ost_utils import utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
+from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.vm import *
 
 import ovirtsdk4 as sdk4
@@ -74,6 +75,7 @@ VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
+FLOATING_DISK_NAME = 'floating_disk'
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
 GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 
@@ -95,6 +97,7 @@ _TEST_LIST = [
     "test_add_vm1_from_template",
     "test_verify_add_vm1_from_template",
     "test_add_disks",
+    "test_add_floating_disk",
     "test_add_snapshot_for_backup",
     "test_run_vms",
     "test_attach_snapshot_to_backup_vm",
@@ -260,6 +263,30 @@ def test_add_disks(engine_api):
         )
     # USER_ADD_DISK_TO_VM_FINISHED_SUCCESS event
     # test_utils.test_for_event(engine, 97, last_event)
+
+
+@order_by(_TEST_LIST)
+def test_add_floating_disk(engine_api, disks_service):
+    disks_service.add(
+        types.Disk(
+            name=FLOATING_DISK_NAME,
+            format=types.DiskFormat.COW,
+            provisioned_size=2 * MB,
+            active=True,
+            storage_domains=[
+                types.StorageDomain(
+                    name=SD_SECOND_NFS_NAME
+                )
+            ]
+        )
+    )
+
+    engine = engine_api.system_service()
+    disk_service = test_utils.get_disk_service(engine, FLOATING_DISK_NAME)
+    assertions.assert_true_within_short(
+        lambda:
+        disk_service.get().status == types.DiskStatus.OK
+    )
 
 
 @order_by(_TEST_LIST)

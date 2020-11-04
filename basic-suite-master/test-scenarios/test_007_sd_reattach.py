@@ -22,6 +22,7 @@ from __future__ import absolute_import
 import ovirtsdk4
 
 import test_utils
+from test_utils.constants import FLOATING_DISK_NAME
 from ost_utils import assertions
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.engine import *
@@ -39,7 +40,8 @@ _TEST_LIST = [
     "test_deactivate_storage_domain",
     "test_detach_storage_domain",
     "test_reattach_storage_domain",
-    "test_import_lost_vm"
+    "test_import_lost_vm",
+    "test_import_floating_disk"
 ]
 
 
@@ -62,6 +64,13 @@ def _get_vm_service(root, name, unregistered=None):
     vm = next(vm for vm in virtual_machines.list(query={
         'unregistered': unregistered}) if vm.name == name)
     return virtual_machines.vm_service(vm.id)
+
+
+def _get_floating_disk_service(root, name, unregistered=None):
+    disks = root.disks_service()
+    disk = next(disk for disk in disks.list(query={
+        'unregistered': unregistered}) if disk.name == name)
+    return disks.disk_service(disk.id)
 
 
 @order_by(_TEST_LIST)
@@ -134,3 +143,20 @@ def test_import_lost_vm(engine_api):
     assert mac_address <= _mac_value(mac_range.to)
     # TODO: uncomment once VnicSetup checks are fixed.
     # VnicSetup.vnic_setup().assert_results(VM2_NAME, CLUSTER_NAME)
+
+
+@order_by(_TEST_LIST)
+def test_import_floating_disk(engine_api):
+    engine = engine_api.system_service()
+    dc_service = test_utils.data_center_service(engine, DC_NAME)
+    attached_sds_service = dc_service.storage_domains_service()
+    sd_service = _get_storage_domain(engine, SD_SECOND_NFS_NAME, service=False)
+    attached_domain = attached_sds_service.storage_domain_service(
+        sd_service.id)
+
+    disk = _get_floating_disk_service(
+        attached_domain, FLOATING_DISK_NAME, unregistered=True)
+    disk.register()
+    registered_disk = _get_floating_disk_service(
+        attached_domain, FLOATING_DISK_NAME)
+    assert registered_disk.get().name == FLOATING_DISK_NAME

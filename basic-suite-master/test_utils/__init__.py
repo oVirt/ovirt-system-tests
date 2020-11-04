@@ -142,6 +142,18 @@ def get_storage_domain_vm_service_by_query(sd_service, vm_name, query=None):
         return vms_service.vm_service(vm.id)
 
 
+def get_storage_domain_disk_service_by_name(sd_service, disk_name):
+    disks_service = sd_service.disks_service()
+    # StorageDomainDisksService.list has no 'search' parameter and ignores
+    # query={'name': 'spam'} so we have to do the filtering ourselves
+    disk = next((disk for disk in disks_service.list()
+                 if disk.name == disk_name), None)
+    if disk is None:
+        return None
+    else:
+        return disks_service.disk_service(disk.id)
+
+
 def hosts_in_cluster_v4(root, cluster_name):
     hosts = root.hosts_service().list(search='cluster={}'.format(cluster_name))
     return sorted(hosts, key=lambda host: host.name)

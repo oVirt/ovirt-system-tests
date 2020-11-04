@@ -108,9 +108,11 @@ _TEST_LIST = [
     "test_add_vm1_from_template",
     "test_verify_add_vm1_from_template",
     "test_add_disks",
+    "test_copy_template_disk",
     "test_add_floating_disk",
     "test_add_snapshot_for_backup",
     "test_clone_powered_off_vm",
+    "test_verify_template_disk_copied_and_removed",
     "test_run_vms",
     "test_attach_snapshot_to_backup_vm",
     "test_verify_transient_folder",
@@ -330,6 +332,18 @@ def test_add_disks(engine_api, cirros_image_glance_disk_name):
 
 
 @order_by(_TEST_LIST)
+def test_copy_template_disk(system_service, cirros_image_glance_disk_name):
+    glance_disk = test_utils.get_disk_service(
+        system_service, cirros_image_glance_disk_name)
+
+    glance_disk.copy(
+        storage_domain=types.StorageDomain(
+            name=SD_ISCSI_NAME
+        )
+    )
+
+
+@order_by(_TEST_LIST)
 def test_add_floating_disk(engine_api, disks_service):
     disks_service.add(
         types.Disk(
@@ -470,6 +484,25 @@ def test_clone_powered_off_vm(system_service, vms_service):
             name=CLONED_VM_NAME
         ),
         query={'correlation_id': correlation_id}
+    )
+
+
+@order_by(_TEST_LIST)
+def test_verify_template_disk_copied_and_removed(system_service, cirros_image_glance_disk_name):
+    iscsi_sd_service = test_utils.get_storage_domain_service(
+        system_service, SD_ISCSI_NAME)
+    glance_sd_disk_service = test_utils.get_storage_domain_disk_service_by_name(
+        iscsi_sd_service, cirros_image_glance_disk_name)
+    assertions.assert_true_within_short(
+        lambda:
+        glance_sd_disk_service.get().status == types.DiskStatus.OK
+    )
+
+    num_of_disks = len(system_service.disks_service().list())
+    glance_sd_disk_service.remove()
+    assertions.assert_true_within_short(
+        lambda:
+        len(system_service.disks_service().list()) == (num_of_disks - 1)
     )
 
 

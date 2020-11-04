@@ -11,7 +11,7 @@ setup_device() {
     local mountpath=$2
     mkdir -p ${mountpath}
     mkfs.ext4 -E nodiscard -F /dev/${device}
-    echo -e "/dev/${device}\t${mountpath}\text4\tdefaults,discard\t0 0" >> /etc/fstab
+    echo -e "/dev/${device}\t${mountpath}\text4\tdefaults\t0 0" >> /etc/fstab
     mount /dev/${device} ${mountpath}
 }
 

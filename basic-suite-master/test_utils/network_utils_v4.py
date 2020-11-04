@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -214,7 +214,7 @@ def _get_network(engine, cluster_name, network_name):
 def get_profiles_for(engine, networks):
     profiles = []
     profile_service = engine.vnic_profiles_service()
-    network_ids = map(lambda network: network.id, networks)
+    network_ids = [network.id for network in networks]
     for profile in profile_service.list():
         if profile.network.id in network_ids:
             profiles.append(profile)

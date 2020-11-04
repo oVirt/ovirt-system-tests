@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -124,6 +124,18 @@ def get_storage_domain_vm_service_by_name(sd_service, vm_name):
     # StorageDomainVmsService.list has no 'search' parameter and ignores
     # query={'name': 'spam'} so we have to do the filtering ourselves
     vm = next((vm for vm in vms_service.list() if vm.name == vm_name), None)
+    if vm is None:
+        return None
+    else:
+        return vms_service.vm_service(vm.id)
+
+
+def get_storage_domain_vm_service_by_query(sd_service, vm_name, query=None):
+    vms_service = sd_service.vms_service()
+    # StorageDomainVmsService.list has no 'search' parameter and ignores
+    # query={'name': 'spam'} so we have to do the filtering ourselves
+    vm = next((vm for vm in vms_service.list(query=query)
+               if vm.name == vm_name), None)
     if vm is None:
         return None
     else:
@@ -263,3 +275,20 @@ def get_management_net(prefix):
 def get_first_active_host_by_name(engine):
     hosts = engine.hosts_service().list(search='status=up')
     return sorted(hosts, key=lambda host: host.name)[0]
+
+
+def get_attached_storage_domain(data_center, name, service=False):
+    storage_domains_service = data_center.storage_domains_service()
+    # AttachedStorageDomainsService.list doesn't have the 'search' parameter
+    # (StorageDomainsService.list does but this helper is overloaded)
+    sd = next(sd for sd in storage_domains_service.list() if sd.name == name)
+    return storage_domains_service.storage_domain_service(
+        sd.id) if service else sd
+
+
+def get_attached_storage_domain_disk_service(attached_storage, name,
+                                             query=None):
+    disks_service = attached_storage.disks_service()
+    disk = next(disk for disk in disks_service.list(query=query)
+                if disk.name == name)
+    return disks_service.disk_service(disk.id)

@@ -77,7 +77,7 @@ run_tests() {
         --junit-xml="$junit_xml_path" \
         --lago-env="$PREFIX" \
         --artifacts-path="$artifacts_path" \
-        "${SUITE}/test-scenarios/test_required_network.py"
+        "${SUITE}/test-scenarios"
 }
 
 run_suite () {

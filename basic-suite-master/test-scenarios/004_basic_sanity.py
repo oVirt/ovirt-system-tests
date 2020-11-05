@@ -192,7 +192,7 @@ def assert_vm_is_alive(ansible_host0, vm_ssh):
             ansible_host0.shell('ping -4 -c 1 -W 60 {}'.format(vm_name))
             return True
 
-        assertions.assert_true_within_short(
+        assertions.assert_true_within_long(
             _ping, allowed_exceptions=[ansible.AnsibleExecutionError]
         )
 

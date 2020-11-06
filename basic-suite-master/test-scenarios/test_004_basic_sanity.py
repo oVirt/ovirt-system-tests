@@ -76,6 +76,7 @@ VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
 DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
+DISK3_NAME = '%s_disk3' % VM1_NAME
 FLOATING_DISK_NAME = 'floating_disk'
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
 
@@ -208,6 +209,15 @@ def assert_vm_is_alive(ansible_host0, vm_ssh):
     return is_alive
 
 
+def _disk_attachment(**params):
+    attachment_params = params.pop('attachment_params')
+    disk = types.Disk(**params)
+    return types.DiskAttachment(
+        disk=disk,
+        **attachment_params
+    )
+
+
 @order_by(_TEST_LIST)
 def test_add_disks(engine_api, cirros_image_glance_disk_name):
     engine = engine_api.system_service()
@@ -218,56 +228,81 @@ def test_add_disks(engine_api, cirros_image_glance_disk_name):
     )
     assert vm_service and glance_disk
 
-    vm0_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    disks_params = {
+        (VM0_NAME, cirros_image_glance_disk_name): {
+            'storage_domains': [types.StorageDomain(name=SD_ISCSI_NAME)],
+            'id': glance_disk.get().id,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+                'active': True,
+                'bootable': True,
+            },
+        },
+        (VM1_NAME, DISK1_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_NFS_NAME)],
+            'name': DISK1_NAME,
+            'provisioned_size': 1 * GB,
+            'format': types.DiskFormat.COW,
+            'sparse': True,
+            'backup': types.DiskBackup.INCREMENTAL,
+            'active': True,
+            'bootable': True,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+            },
+        },
+        (VM2_NAME, DISK2_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
+            'name': DISK2_NAME,
+            'provisioned_size':1 * GB,
+            'format': types.DiskFormat.COW,
+            'sparse': True,
+            'backup': types.DiskBackup.INCREMENTAL,
+            'active': True,
+            'bootable': True,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+            },
+        },
+        (BACKUP_VM_NAME, BACKUP_DISK_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_NFS_NAME)],
+            'name': BACKUP_DISK_NAME,
+            'provisioned_size': 1 * GB,
+            'format': types.DiskFormat.COW,
+            'sparse': True,
+            'backup': types.DiskBackup.INCREMENTAL,
+            'active': True,
+            'bootable': True,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+            },
+        },
+        (VM1_NAME, DISK3_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
+            'name': DISK3_NAME,
+            'provisioned_size': 1 * MB,
+            'format': types.DiskFormat.COW,
+            'sparse': True,
+            'active': True,
+            'bootable': False,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+            },
+        }
+    }
 
-    vm0_disk_attachments_service.add(
-        types.DiskAttachment(
-            disk=types.Disk(
-                id=glance_disk.get().id,
-                storage_domains=[
-                    types.StorageDomain(
-                        name=SD_ISCSI_NAME,
-                    ),
-                ],
-            ),
-            interface=types.DiskInterface.VIRTIO,
-            active=True,
-            bootable=True,
-        ),
+    for (vm_name, _), disk_attachment_params in disks_params.items():
+        disk_attachments_service = test_utils.get_disk_attachments_service(
+            engine, vm_name)
+        assert disk_attachments_service.add(_disk_attachment(
+            **disk_attachment_params))
+
+    disk_services = (test_utils.get_disk_service(engine, disk_name)
+        for _, disk_name in disks_params)
+    assertions.assert_true_within_short(
+        lambda: all(disk_service.get().status == types.DiskStatus.OK
+            for disk_service in disk_services)
     )
-
-    disk_params = types.Disk(
-        provisioned_size=1 * GB,
-        format=types.DiskFormat.COW,
-        status=None,
-        sparse=True,
-        active=True,
-        bootable=True,
-        backup=types.DiskBackup.INCREMENTAL,
-    )
-
-    for vm_name, disk_name, sd_name in (
-            (VM1_NAME, DISK1_NAME, SD_NFS_NAME),
-            (VM2_NAME, DISK2_NAME, SD_SECOND_NFS_NAME),
-            (BACKUP_VM_NAME, BACKUP_DISK_NAME, SD_NFS_NAME)):
-        disk_params.name = disk_name
-        disk_params.storage_domains = [
-            types.StorageDomain(
-                name=sd_name,
-            )
-        ]
-
-        disk_attachments_service = test_utils.get_disk_attachments_service(engine, vm_name)
-        assert disk_attachments_service.add(types.DiskAttachment(
-            disk=disk_params,
-            interface=types.DiskInterface.VIRTIO))
-
-    for disk_name in (cirros_image_glance_disk_name, DISK1_NAME, DISK2_NAME, BACKUP_DISK_NAME):
-        disk_service = test_utils.get_disk_service(engine, disk_name)
-        assertions.assert_true_within_short(
-            lambda:
-            disk_service.get().status == types.DiskStatus.OK
-        )
     # USER_ADD_DISK_TO_VM_FINISHED_SUCCESS event
     # test_utils.test_for_event(engine, 97, last_event)
 

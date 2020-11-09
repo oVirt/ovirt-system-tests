@@ -28,7 +28,8 @@ from testlib import suite
 
 
 SUITE = os.path.split(os.environ['SUITE'])[1]
-ANSWER_FILE_SRC = os.path.join(SUITE, 'engine-answer-file.conf')
+ANSWER_FILE_SRC = os.path.join(os.environ.get('SUITE'),
+                               'engine-answer-file.conf')
 ENGINE_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'engine'])
 
 
@@ -54,13 +55,18 @@ def api(engine_ip, engine_full_username, engine_password):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def engine(fqdn, env, artifacts_path, engine_full_username, engine_password):
+def engine(fqdn, env, artifacts_path, engine_full_username, engine_password,
+           ansible_engine):
     with suite.collect_artifacts(env, artifacts_path, 'pre-tests'):
         engine = env.get_vms()[ENGINE_DOMAIN]
 
         ANSWER_FILE_TMP = '/tmp/answer-file'
 
-        engine.copy_to(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
+        ansible_engine.copy(
+            src=ANSWER_FILE_SRC,
+            dest=ANSWER_FILE_TMP,
+        )
+
         engine.ssh(
             [
                 'engine-setup',

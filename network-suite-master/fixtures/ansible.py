@@ -28,6 +28,11 @@ __ANSIBLE_HOST1_PATTERN = "~lago-.*-host-1"
 
 
 @pytest.fixture(scope="session")
+def ansible_engine():
+    return ansible.module_mapper_for(__ANSIBLE_ENGINE_PATTERN)
+
+
+@pytest.fixture(scope="session")
 def engine_facts():
     return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_ENGINE_PATTERN))
 

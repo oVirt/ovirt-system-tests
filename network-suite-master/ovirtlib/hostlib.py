@@ -98,6 +98,10 @@ class Host(SDKRootEntity):
         return self._root_password
 
     @property
+    def is_spm(self):
+        return self.get_sdk_type().spm.status == types.SpmStatus.SPM
+
+    @property
     def is_not_spm(self):
         return self.get_sdk_type().spm.status == types.SpmStatus.NONE
 
@@ -147,18 +151,24 @@ class Host(SDKRootEntity):
         current_cluster = self.get_cluster()
         try:
             self.change_cluster(target_cluster)
-            self._get_data_center().wait_for_up_status()
             yield
         finally:
             self.change_cluster(current_cluster)
-            self._get_data_center().wait_for_up_status()
 
     def change_cluster(self, cluster):
+        spm_before_deactivate = self.is_spm
         self.deactivate()
         self.wait_for_maintenance_status()
         self.update(cluster=cluster.get_sdk_type())
         self.activate()
         self.wait_for_up_status()
+        if spm_before_deactivate:
+            # Deactivation removed SPM status from this host and caused the DC
+            # to become Non Responsive. This is an unstable state.
+            # Wait for stabilization indicated by DC state UP when either:
+            # - another host becomes SPM after deactivating this host
+            # - this host becomes SPM after its reactivation
+            self._get_data_center().wait_for_up_status()
 
     def get_cluster(self):
         cluster = clusterlib.Cluster(self.system)

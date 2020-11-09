@@ -27,6 +27,7 @@ import time
 import ovirtsdk4 as sdk4
 import pytest
 
+from ost_utils import assertions
 from ost_utils import network_utils
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
@@ -151,17 +152,12 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
 
         health_url = 'http://{}/ovirt-engine/services/health'.format(engine_fqdn)
 
-        for _ in range(30):
+        def engine_is_alive():
             with http_proxy_disabled():
-                try:
-                    engine_download(health_url)
-                except ShellError:
-                    pass
-                else:
-                    return
-            time.sleep(1)
+                engine_download(health_url)
+                return True
 
-        # Final attempt in case of a failure to get the error message
-        engine_download(health_url)
+        assertions.assert_true_within_short(engine_is_alive,
+                                            allowed_exceptions=[ShellError])
 
     return restart

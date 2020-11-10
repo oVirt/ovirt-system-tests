@@ -43,6 +43,7 @@ from fixtures.host import install_hosts_to_save_time  # NOQA: F401
 
 from fixtures.engine import engine_full_username  # NOQA: F401
 from fixtures.engine import engine_password  # NOQA: F401
+from fixtures.engine import engine_ssh_password  # NOQA: F401
 from fixtures.engine import engine_ip  # NOQA: F401
 from fixtures.engine import engine  # NOQA: F401
 from fixtures.engine import api  # NOQA: F401

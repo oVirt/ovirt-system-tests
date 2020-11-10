@@ -23,6 +23,7 @@ import pytest
 from ovirtsdk4 import Connection
 
 from ovirtlib import eventlib
+from ovirtlib import sshlib
 from ovirtlib import syncutil
 from testlib import suite
 
@@ -43,6 +44,11 @@ def engine_password():
     return "123"
 
 
+@pytest.fixture(scope="session")
+def engine_ssh_password():
+    return "123456"
+
+
 @pytest.fixture(scope='session')
 def engine_ip(engine):
     return engine.ip()
@@ -56,7 +62,7 @@ def api(engine_ip, engine_full_username, engine_password):
 
 @pytest.fixture(scope='session', autouse=True)
 def engine(fqdn, env, artifacts_path, engine_full_username, engine_password,
-           ansible_engine):
+           ansible_engine, engine_ssh_password):
     with suite.collect_artifacts(env, artifacts_path, 'pre-tests'):
         engine = env.get_vms()[ENGINE_DOMAIN]
 
@@ -67,13 +73,13 @@ def engine(fqdn, env, artifacts_path, engine_full_username, engine_password,
             dest=ANSWER_FILE_TMP,
         )
 
-        engine.ssh(
-            [
-                'engine-setup',
-                '--config-append={}'.format(ANSWER_FILE_TMP),
-                '--accept-defaults',
-            ]
-        )
+        command = [
+            'engine-setup',
+            '--config-append={}'.format(ANSWER_FILE_TMP),
+            '--accept-defaults',
+        ]
+        sshlib.Node(engine.ip(),
+                    engine_ssh_password).exec_command(' '.join(command))
 
         syncutil.sync(exec_func=_create_engine_connection,
                       exec_func_args=(engine.ip(), engine_full_username,
@@ -97,14 +103,15 @@ def _create_engine_connection(engine_ip, engine_username, engine_password):
     return None
 
 
-def _exec_engine_config(engine, key, value):
-    result = engine.ssh(
-        [
-            'engine-config',
-            '--set',
-            '{0}={1}'.format(key, value),
-        ],
-    )
+def _exec_engine_config(engine, engine_ssh_password, key, value):
+    command = [
+        'engine-config',
+        '--set',
+        '{0}={1}'.format(key, value),
+    ]
+    node = sshlib.Node(engine.ip(), engine_ssh_password)
+    result = node.exec_command(' '.join(command))
+
     assert result.code == 0, (
         'setting {0}:{1} via engine-config failed with {2}'.format(
             key, value, result.code

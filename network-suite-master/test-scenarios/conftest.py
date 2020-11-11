@@ -64,6 +64,12 @@ from fixtures.data_center import default_data_center  # NOQA: F401
 
 from fixtures.system import system  # NOQA: F401
 
+# Import OST utils fixtures
+from ost_utils.pytest.fixtures.virt import cirros_image  # NOQA: F401
+from ost_utils.pytest.fixtures.virt import (  # NOQA: F401
+    transformed_cirros_image,
+)
+
 from testlib import suite
 
 

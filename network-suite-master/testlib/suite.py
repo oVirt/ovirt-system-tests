@@ -69,7 +69,7 @@ def _is_sdk_below(version):
 
 
 def _skip_reason(skip, version):
-    return 'Only supported since {}'.format(version) if skip else None
+    return 'Only supported since {}'.format(version) if skip else ''
 
 
 def _compare_versions(runtime_version, candidate_version):

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,29 +18,28 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import re
 
-import os
+import pytest
 
-_DC_VERSION = '4.4'
-
-
-def cluster_version():
-    version = os.getenv('OST_DC_VERSION', _DC_VERSION).split('.')
-    return [int(v) for v in version]
+CIRROS_IMAGE_NAME = 'CirrOS 0.5.1 Custom for x86_64'
 
 
-def cluster_version_ok(major, minor):
-    current = cluster_version()
-    return (current[0] > major or
-            (current[0] == major and current[1] >= minor))
+@pytest.fixture(scope="session")
+def cirros_image():
+    return CIRROS_IMAGE_NAME
 
 
-def require_version(major, minor):
-    if cluster_version_ok(major, minor):
-        return lambda test: test
-    else:
-        def skipped(test):
-            # TODO: Any way to log that test.__name__ has been skipped?
-            return lambda *args, **kwargs: True
-        return skipped
+@pytest.fixture(scope="session")
+def transformed_cirros_image(cirros_image):
+    return re.sub('[ ()]', '_', cirros_image)
 
+
+@pytest.fixture(scope="session")
+def cirros_image_glance_disk_name(transformed_cirros_image):
+    return transformed_cirros_image[:12] + '_glance_disk'
+
+
+@pytest.fixture(scope="session")
+def cirros_image_glance_template_name(transformed_cirros_image):
+    return transformed_cirros_image[:12] + '_glance_template'

@@ -36,6 +36,7 @@ from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.sdk import *
+from ost_utils.pytest.fixtures.virt import *
 from ost_utils.pytest.fixtures.vm import *
 
 import ovirtsdk4 as sdk4
@@ -56,7 +57,6 @@ GB = 2 ** 30
 DC_NAME = 'test-dc'
 TEST_CLUSTER = 'test-cluster'
 TEMPLATE_CENTOS7 = 'centos7_template'
-TEMPLATE_GUEST = versioning.guest_os_template_name()
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
@@ -77,7 +77,6 @@ DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
 FLOATING_DISK_NAME = 'floating_disk'
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
-GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
 
 SD_TEMPLATES_NAME = 'templates'
 
@@ -209,10 +208,13 @@ def assert_vm_is_alive(ansible_host0, vm_ssh):
 
 
 @order_by(_TEST_LIST)
-def test_add_disks(engine_api):
+def test_add_disks(engine_api, cirros_image_glance_disk_name):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    glance_disk = test_utils.get_disk_service(engine, GLANCE_DISK_NAME)
+    glance_disk = test_utils.get_disk_service(
+        engine,
+        cirros_image_glance_disk_name,
+    )
     assert vm_service and glance_disk
 
     vm0_disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
@@ -259,7 +261,7 @@ def test_add_disks(engine_api):
             disk=disk_params,
             interface=types.DiskInterface.VIRTIO))
 
-    for disk_name in (GLANCE_DISK_NAME, DISK1_NAME, DISK2_NAME, BACKUP_DISK_NAME):
+    for disk_name in (cirros_image_glance_disk_name, DISK1_NAME, DISK2_NAME, BACKUP_DISK_NAME):
         disk_service = test_utils.get_disk_service(engine, disk_name)
         assertions.assert_true_within_short(
             lambda:
@@ -687,12 +689,16 @@ def test_verify_vm_import(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_vm1_from_template(engine_api):
+def test_add_vm1_from_template(engine_api, cirros_image_glance_template_name):
     engine = engine_api.system_service()
     templates_service = engine.templates_service()
-    glance_template = templates_service.list(search='name=%s' % TEMPLATE_GUEST)[0]
+    glance_template = templates_service.list(
+        search='name=%s' % cirros_image_glance_template_name
+    )[0]
     if glance_template is None:
-        pytest.skip('%s: template %s not available.' % (add_vm1_from_template.__name__, TEMPLATE_GUEST))
+        pytest.skip('%s: template %s not available.' % (
+            add_vm1_from_template.__name__, cirros_image_glance_template_name
+        ))
 
     vm_memory = 128 * MB # runs with 64 ok, but we need to do a hotplug later (64+256 is too much difference)
     vms_service = engine.vms_service()
@@ -705,7 +711,7 @@ def test_add_vm1_from_template(engine_api):
                 name=TEST_CLUSTER,
             ),
             template=types.Template(
-                name=TEMPLATE_GUEST,
+                name=cirros_image_glance_template_name,
             ),
             use_latest_template_version=True,
             stateless=True,
@@ -889,14 +895,16 @@ def test_vdsm_recovery(ansible_by_hostname, engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_template_export(engine_api):
+def test_template_export(engine_api, cirros_image_glance_template_name):
     engine = engine_api.system_service()
 
-    template_guest = test_utils.get_template_service(engine, TEMPLATE_GUEST)
+    template_guest = test_utils.get_template_service(
+        engine, cirros_image_glance_template_name
+    )
     if template_guest is None:
         pytest.skip('{0}: template {1} is missing'.format(
             template_export.__name__,
-            TEMPLATE_GUEST
+            cirros_image_glance_template_name
             )
         )
 
@@ -918,11 +926,13 @@ def test_template_export(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_vm_pool(engine_api):
+def test_add_vm_pool(engine_api, cirros_image_glance_template_name):
     engine = engine_api.system_service()
     pools_service = engine.vm_pools_service()
     pool_cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
-    pool_template = engine.templates_service().list(search='name={}'.format(TEMPLATE_GUEST))[0]
+    pool_template = engine.templates_service().list(search='name={}'.format(
+        cirros_image_glance_template_name
+    ))[0]
     with engine_utils.wait_for_event(engine, 302):
         pools_service.add(
             pool=types.VmPool(
@@ -941,17 +951,19 @@ def test_add_vm_pool(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_update_template_version(engine_api):
+def test_update_template_version(engine_api, cirros_image_glance_template_name):
     engine = engine_api.system_service()
     stateless_vm = engine.vms_service().list(search='name={}'.format(VM1_NAME))[0]
     templates_service = engine.templates_service()
-    template = templates_service.list(search='name={}'.format(TEMPLATE_GUEST))[0]
+    template = templates_service.list(search='name={}'.format(
+        cirros_image_glance_template_name
+    ))[0]
 
     assert stateless_vm.memory != template.memory
 
     templates_service.add(
         template=types.Template(
-            name=TEMPLATE_GUEST,
+            name=cirros_image_glance_template_name,
             vm=stateless_vm,
             version=types.TemplateVersion(
                 base_template=template,
@@ -1024,13 +1036,15 @@ def test_remove_vm_pool(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_template_update(engine_api):
-    template_guest = test_utils.get_template_service(engine_api.system_service(), TEMPLATE_GUEST)
+def test_template_update(engine_api, cirros_image_glance_template_name):
+    template_guest = test_utils.get_template_service(
+        engine_api.system_service(), cirros_image_glance_template_name
+    )
 
     if template_guest is None:
         pytest.skip('{0}: template {1} is missing'.format(
             template_update.__name__,
-            TEMPLATE_GUEST
+            cirros_image_glance_template_name
         )
     )
     new_comment = "comment by ovirt-system-tests"

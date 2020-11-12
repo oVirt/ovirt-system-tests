@@ -47,6 +47,7 @@ from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.network import storage_network_name
+from ost_utils.pytest.fixtures.virt import *
 from ost_utils.selenium.common import http_proxy_disabled
 from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
@@ -91,9 +92,6 @@ SD_TEMPLATES_NAME = 'templates'
 SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
-GUEST_IMAGE_NAME = versioning.guest_os_image_name()
-GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
-TEMPLATE_GUEST = versioning.guest_os_template_name()
 # intentionaly use URL ending with / to test backward compatibility of <4.4 glance implementation and ability to handle // in final URL
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
@@ -622,17 +620,23 @@ def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api,
 
 
 @order_by(_TEST_LIST)
-def test_add_glance_images(engine_api):
+def test_add_glance_images(
+        engine_api, cirros_image,
+        cirros_image_glance_template_name,
+        cirros_image_glance_disk_name,
+):
     system_service = engine_api.system_service()
     non_template_import = functools.partial(
         glance.import_image, system_service,
-        GUEST_IMAGE_NAME, TEMPLATE_GUEST, GLANCE_DISK_NAME,
-        MASTER_SD_TYPE, CLUSTER_NAME, SD_GLANCE_NAME
+        cirros_image, cirros_image_glance_template_name,
+        cirros_image_glance_disk_name, MASTER_SD_TYPE,
+        CLUSTER_NAME, SD_GLANCE_NAME
     )
     template_import = functools.partial(
         glance.import_image, system_service,
-        GUEST_IMAGE_NAME, TEMPLATE_GUEST, TEMPLATE_GUEST,
-        MASTER_SD_TYPE, CLUSTER_NAME, SD_GLANCE_NAME, as_template=True
+        cirros_image, cirros_image_glance_template_name,
+        cirros_image_glance_template_name, MASTER_SD_TYPE, CLUSTER_NAME,
+        SD_GLANCE_NAME, as_template=True
     )
     vt = utils.VectorThread(
         [
@@ -1214,17 +1218,26 @@ def test_verify_notifier(ansible_engine):
 
 
 @order_by(_TEST_LIST)
-def test_verify_glance_import(engine_api):
+def test_verify_glance_import(
+        engine_api,
+        cirros_image_glance_template_name,
+        cirros_image_glance_disk_name,
+):
     # If we go with the engine backup before the glance template
     # creation is complete, we'll fail the creation of 'vm1' later,
     # which is based on that template.
     templates_service = engine_api.system_service().templates_service()
 
     assertions.assert_true_within_long(
-        lambda: TEMPLATE_GUEST in [t.name for t in templates_service.list()]
+        lambda: cirros_image_glance_template_name in [
+            t.name for t in templates_service.list()
+        ]
     )
 
-    for disk_name in (GLANCE_DISK_NAME, TEMPLATE_GUEST):
+    for disk_name in (
+            cirros_image_glance_disk_name,
+            cirros_image_glance_template_name,
+    ):
         disks_service = engine_api.system_service().disks_service()
         assertions.assert_true_within_long(
             lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK

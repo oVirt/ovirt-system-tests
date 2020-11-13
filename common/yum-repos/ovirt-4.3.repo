@@ -64,70 +64,12 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	augeas
-	augeas-libs
-	bind-libs
-	bind-libs-lite
-	bind-license
-	bind-utils
-	device-mapper
-	device-mapper-event
-	device-mapper-event-libs
-	device-mapper-libs
-	fence-agents-all
-	fence-agents-amt-ws
-	fence-agents-apc
-	fence-agents-apc-snmp
-	fence-agents-bladecenter
-	fence-agents-brocade
-	fence-agents-cisco-mds
-	fence-agents-cisco-ucs
-	fence-agents-common
-	fence-agents-compute
-	fence-agents-drac5
-	fence-agents-eaton-snmp
-	fence-agents-emerson
-	fence-agents-eps
-	fence-agents-heuristics-ping
-	fence-agents-hpblade
-	fence-agents-ibmblade
-	fence-agents-ifmib
-	fence-agents-ilo-moonshot
-	fence-agents-ilo-mp
-	fence-agents-ilo-ssh
-	fence-agents-ilo2
-	fence-agents-intelmodular
-	fence-agents-ipdu
-	fence-agents-ipmilan
-	fence-agents-kdump
-	fence-agents-mpath
-	fence-agents-redfish
-	fence-agents-rhevm
-	fence-agents-rsa
-	fence-agents-rsb
-	fence-agents-sbd
-	fence-agents-scsi
-	fence-agents-vmware-rest
-	fence-agents-vmware-soap
-	fence-agents-wti
-	firewalld
-	firewalld-filesystem
-	git
-	http-parser
-	ipmitool
-	java-1.8.0-openjdk
+includepkgs = java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
-	libgudev1
-	libguestfs
-	libguestfs-tools-c
-	libibumad
-	libibverbs
-	libicu
+	libX11
+	libX11-common
 	libipa_hbac
-	librdmacm
 	libsmbclient
 	libsss_autofs
 	libsss_certmap
@@ -161,31 +103,10 @@ includepkgs = 389-ds-base
 	libvirt-libs
 	libvirt-lock-sanlock
 	libwbclient
-	lvm2
-	lvm2-libs
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
-	net-snmp
-	net-snmp-agent-libs
-	net-snmp-libs
-	net-snmp-utils
-	nfs-utils
-	ntp
-	ntpdate
-	perl-Git
 	postgresql-jdbc
-	postgresql-libs
-	python-firewall
-	python-libguestfs
 	python-libipa_hbac
 	python-sss-murmur
 	python-sssdconfig
-	python-syspurpose
-	rdma-core
 	rsyslog
 	rsyslog-elasticsearch
 	rsyslog-mmjsonparse
@@ -193,10 +114,8 @@ includepkgs = 389-ds-base
 	samba-client-libs
 	samba-common
 	samba-common-libs
-	samba-libs
-	selinux-policy
-	selinux-policy-targeted
 	sos
+	spice-server
 	sssd
 	sssd-ad
 	sssd-client
@@ -207,27 +126,16 @@ includepkgs = 389-ds-base
 	sssd-krb5-common
 	sssd-ldap
 	sssd-proxy
-	subscription-manager
-	subscription-manager-rhsm
-	subscription-manager-rhsm-certificates
-	systemd
-	systemd-libs
-	systemd-python
-	systemd-sysv
-	telnet
-	tomcat-servlet-3.0-api
 	tzdata-java
-	unbound-libs
-	virt-v2v
-	yum-plugin-versionlock
-	yum-utils
 
 [centos-base-el7]
 name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = GeoIP
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	GeoIP
 	NetworkManager-config-server
 	OVMF
 	OpenIPMI
@@ -271,6 +179,8 @@ includepkgs = GeoIP
 	atlas
 	attr
 	audit-libs-python
+	augeas
+	augeas-libs
 	authconfig
 	autofs
 	autogen-libopts
@@ -279,6 +189,10 @@ includepkgs = GeoIP
 	avalon-logkit
 	bea-stax
 	bea-stax-api
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
 	blas
 	boost-iostreams
 	boost-random
@@ -292,11 +206,6 @@ includepkgs = GeoIP
 	celt051
 	certmonger
 	checkpolicy
-	cockpit
-	cockpit-bridge
-	cockpit-machines-ovirt
-	cockpit-system
-	cockpit-ws
 	copy-jdk-configs
 	cryptsetup
 	cryptsetup-libs
@@ -308,9 +217,14 @@ includepkgs = GeoIP
 	cyrus-sasl-scram
 	dejavu-fonts-common
 	dejavu-sans-fonts
+	device-mapper
+	device-mapper-event
+	device-mapper-event-libs
+	device-mapper-libs
 	device-mapper-multipath
 	device-mapper-multipath-libs
 	device-mapper-persistent-data
+	dmidecode
 	dnsmasq
 	dom4j
 	dosfstools
@@ -325,7 +239,45 @@ includepkgs = GeoIP
 	elfutils-libs
 	emacs-filesystem
 	fcoe-utils
+	fence-agents-all
+	fence-agents-amt-ws
+	fence-agents-apc
+	fence-agents-apc-snmp
+	fence-agents-bladecenter
+	fence-agents-brocade
+	fence-agents-cisco-mds
+	fence-agents-cisco-ucs
+	fence-agents-common
+	fence-agents-compute
+	fence-agents-drac5
+	fence-agents-eaton-snmp
+	fence-agents-emerson
+	fence-agents-eps
+	fence-agents-heuristics-ping
+	fence-agents-hpblade
+	fence-agents-ibmblade
+	fence-agents-ifmib
+	fence-agents-ilo-moonshot
+	fence-agents-ilo-mp
+	fence-agents-ilo-ssh
+	fence-agents-ilo2
+	fence-agents-intelmodular
+	fence-agents-ipdu
+	fence-agents-ipmilan
+	fence-agents-kdump
+	fence-agents-mpath
+	fence-agents-redfish
+	fence-agents-rhevm
+	fence-agents-rsa
+	fence-agents-rsb
+	fence-agents-sbd
+	fence-agents-scsi
+	fence-agents-vmware-rest
+	fence-agents-vmware-soap
+	fence-agents-wti
 	fence-virt
+	firewalld
+	firewalld-filesystem
 	fontconfig
 	fontpackages-filesystem
 	fribidi
@@ -338,6 +290,7 @@ includepkgs = GeoIP
 	geoipupdate
 	geronimo-jms
 	giflib
+	git
 	glib-networking
 	gnutls
 	gnutls-dane
@@ -356,6 +309,7 @@ includepkgs = GeoIP
 	hivex
 	hmaccalc
 	hsqldb
+	http-parser
 	httpcomponents-client
 	httpcomponents-core
 	httpd
@@ -364,6 +318,7 @@ includepkgs = GeoIP
 	ipa-client-common
 	ipa-common
 	iperf3
+	ipmitool
 	ipxe-roms-qemu
 	iscsi-initiator-utils
 	iscsi-initiator-utils-iscsiuio
@@ -392,8 +347,6 @@ includepkgs = GeoIP
 	lapack
 	libICE
 	libSM
-	libX11
-	libX11-common
 	libXau
 	libXcomposite
 	libXcursor
@@ -434,7 +387,13 @@ includepkgs = GeoIP
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
+	libgudev1
+	libguestfs
+	libguestfs-tools-c
 	libguestfs-winsupport
+	libibumad
+	libibverbs
+	libicu
 	libini_config
 	libiscsi
 	libjpeg-turbo
@@ -452,6 +411,7 @@ includepkgs = GeoIP
 	libquadmath
 	librados2
 	librbd1
+	librdmacm
 	libref_array
 	libreport
 	libreport-centos
@@ -490,12 +450,20 @@ includepkgs = GeoIP
 	lm_sensors-libs
 	log4j
 	lsof
+	lvm2
+	lvm2-libs
 	lzop
 	m2crypto
 	mailcap
 	mailx
 	make
 	mdadm
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
 	mod_ssl
 	mpfr
 	msv-msv
@@ -505,16 +473,24 @@ includepkgs = GeoIP
 	nbdkit-plugin-python-common
 	nbdkit-plugin-python2
 	nbdkit-plugin-vddk
+	net-snmp
+	net-snmp-agent-libs
+	net-snmp-libs
+	net-snmp-utils
 	netcf-libs
 	nettle
 	newt-python
+	nfs-utils
 	nmap-ncat
+	ntp
+	ntpdate
 	numactl
 	numad
 	numpy
 	objectweb-asm
 	oddjob
 	oddjob-mkhomedir
+	openldap
 	openldap-clients
 	openscap
 	openscap-containers
@@ -544,6 +520,7 @@ includepkgs = GeoIP
 	perl-File-Temp
 	perl-Filter
 	perl-Getopt-Long
+	perl-Git
 	perl-HTTP-Tiny
 	perl-IO-Compress
 	perl-IO-Zlib
@@ -576,11 +553,10 @@ includepkgs = GeoIP
 	pixman
 	policycoreutils
 	policycoreutils-python
+	postgresql-libs
 	psmisc
 	pygobject2
-	pyldb
 	pyparsing
-	pytalloc
 	python-IPy
 	python-augeas
 	python-backports
@@ -590,6 +566,7 @@ includepkgs = GeoIP
 	python-dns
 	python-enum34
 	python-ethtool
+	python-firewall
 	python-gssapi
 	python-inotify
 	python-ipaddr
@@ -600,6 +577,7 @@ includepkgs = GeoIP
 	python-kitchen
 	python-kmod
 	python-ldap
+	python-libguestfs
 	python-lxml
 	python-markupsafe
 	python-netifaces
@@ -614,7 +592,7 @@ includepkgs = GeoIP
 	python-setuptools
 	python-srpm-macros
 	python-suds
-	python-tdb
+	python-syspurpose
 	python-urwid
 	python-webob
 	python-yubico
@@ -630,6 +608,7 @@ includepkgs = GeoIP
 	quota
 	quota-nls
 	radvd
+	rdma-core
 	redhat-rpm-config
 	relaxngDatatype
 	resteasy-base-jaxrs
@@ -662,23 +641,33 @@ includepkgs = GeoIP
 	scrub
 	seabios-bin
 	seavgabios-bin
+	selinux-policy
+	selinux-policy-targeted
 	setools-libs
 	sg3_utils
 	sg3_utils-libs
 	sgabios-bin
 	slf4j
 	socat
-	spice-server
 	squashfs-tools
 	stax2-api
+	subscription-manager
+	subscription-manager-rhsm
+	subscription-manager-rhsm-certificates
 	supermin5
 	svrcore
 	syslinux
 	syslinux-extlinux
 	sysstat
+	systemd
+	systemd-libs
+	systemd-python
+	systemd-sysv
 	targetcli
 	tcp_wrappers
 	tcpdump
+	telnet
+	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
@@ -686,12 +675,14 @@ includepkgs = GeoIP
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2
+	unbound-libs
 	unzip
 	usbredir
 	usermode
 	uuid
 	virt-install
 	virt-manager-common
+	virt-v2v
 	volume_key-libs
 	ws-commons-util
 	ws-jaxme
@@ -709,6 +700,8 @@ includepkgs = GeoIP
 	xpp3
 	xz-java
 	yajl
+	yum-plugin-versionlock
+	yum-utils
 	zip
 
 [centos-extras-el7]
@@ -722,8 +715,13 @@ exclude = ansible
 	python2-crypto
 	python-paramiko
 max_connections = 5
-includepkgs = cockpit-dashboard
+includepkgs = cockpit
+	cockpit-bridge
+	cockpit-dashboard
+	cockpit-machines-ovirt
 	cockpit-storaged
+	cockpit-system
+	cockpit-ws
 	dpdk
 	libssh
 	sshpass

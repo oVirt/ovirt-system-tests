@@ -21,6 +21,8 @@ import time
 
 import pytest
 
+from fixtures.engine import engine_ssh_password
+from ovirtlib import sshlib
 from ovirtlib import storagelib
 
 
@@ -52,8 +54,9 @@ def default_storage_domain(system, engine_ip, host_0_up, default_data_center):
 
 
 @pytest.fixture(scope='session')
-def lun_id(engine):
+def lun_id(engine_facts):
     # Reads a lun id value from the file
-    ret = engine.ssh(['cat', '/root/multipath.txt'])
+    node = sshlib.Node(engine_facts.ipv4_default_address, engine_ssh_password)
+    ret = node.exec_command(' '.join(['cat', '/root/multipath.txt']))
     assert ret.code == 0
     return ret.out.splitlines()[0]

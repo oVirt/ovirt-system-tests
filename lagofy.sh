@@ -86,7 +86,7 @@ EOT
     # ... and that's it
 }
 
-# $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/002_bootstrap.py 
+# $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py
 # TC individual test to run
 _run_tc () {
     local res=0
@@ -113,8 +113,7 @@ run_tc() {
 }
 
 run_tests() {
-    test_scenarios=($(cd ${OST_REPO_ROOT} && ls ${SUITE_NAME}/test-scenarios/*.py | grep -v conftest | sort))
-    TC= _run_tc "${test_scenarios[@]}" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
+    TC= _run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
     return 0
 }

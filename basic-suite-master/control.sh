@@ -29,7 +29,7 @@ run_suite () {
         echo "@@@ ERROR: Failed in deploy stage"
         return 1
     fi
-    declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | grep -v conftest | sort))
+    declare test_scenarios="${SUITE}/test-scenarios"
     declare failed=false
 
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils

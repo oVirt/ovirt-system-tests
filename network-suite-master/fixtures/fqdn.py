@@ -39,7 +39,7 @@ class EngineNotResorvableError(Exception):
 def fqdn(engine_facts):
     BACKUP_FILE = HOSTS_FILE + 'OST-BACKUP'
 
-    address = engine_facts.ipv4_default
+    address = engine_facts.ipv4_default_address
     fqdn = _fetch_fqdn(ANSWER_FILE_SRC)
 
     remove_backup = False

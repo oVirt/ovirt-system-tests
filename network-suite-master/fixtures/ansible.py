@@ -34,17 +34,17 @@ def ansible_engine():
 
 @pytest.fixture(scope="session")
 def engine_facts():
-    return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_ENGINE_PATTERN))
+    return AnsibleFactsCache(ansible._AnsibleFacts(__ANSIBLE_ENGINE_PATTERN))
 
 
 @pytest.fixture(scope="session")
 def host0_facts():
-    return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_HOST0_PATTERN))
+    return AnsibleFactsCache(ansible._AnsibleFacts(__ANSIBLE_HOST0_PATTERN))
 
 
 @pytest.fixture(scope="session")
 def host1_facts():
-    return AnsibleFactsAdapter(ansible._AnsibleFacts(__ANSIBLE_HOST1_PATTERN))
+    return AnsibleFactsCache(ansible._AnsibleFacts(__ANSIBLE_HOST1_PATTERN))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -53,15 +53,24 @@ def _ansible_clean_private_dirs():
     ansible._AnsiblePrivateDir.cleanup()
 
 
-class AnsibleFactsAdapter(object):
+class AnsibleFactsCache(object):
+
+    """
+    ost_utils.ansible.ansible_facts retrieves information from
+    the remote machine whenever its get(attribute) is called.
+    AnsibleFactsCache caches the remote responses while also serving as
+    an adapter that encapsulates the ost_utils.
+    ansible library from the network suite.
+    """
 
     def __init__(self, ansible_facts):
-        self._facts = ansible_facts
+        self._ipv4_default = ansible_facts.get('ansible_default_ipv4')
+        self._hostname = ansible_facts.get('ansible_hostname')
 
     @property
-    def ipv4_default(self):
-        return self._facts.get("ansible_default_ipv4").get("address")
+    def ipv4_default_address(self):
+        return self._ipv4_default.get('address')
 
     @property
     def hostname(self):
-        return self._facts.get("ansible_hostname")
+        return self._hostname

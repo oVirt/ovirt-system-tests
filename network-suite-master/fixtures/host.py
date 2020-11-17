@@ -79,6 +79,6 @@ def _create_host(system, default_cluster, host_facts):
     except EntityNotFoundError:
         host.create(
             default_cluster, host_facts.hostname,
-            host_facts.ipv4_default,
+            host_facts.ipv4_default_address,
             ROOT_PASSWORD)
     return host

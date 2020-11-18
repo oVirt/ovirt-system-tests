@@ -19,6 +19,8 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import pytest
+
 from ost_utils.pytest import pytest_collection_modifyitems
 
 from ost_utils.pytest.fixtures.ansible import *

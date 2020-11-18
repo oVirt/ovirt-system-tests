@@ -42,7 +42,7 @@ he_deploy() {
     fi
 
     lago shell \
-	lago-${suite_name}-storage \
+        lago-${suite_name}-storage \
         "fstrim -va"
 
     cd -
@@ -56,6 +56,11 @@ setup_ipv6() {
 
 run_suite(){
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
+    "${PYTHON}" -m pip install --user \
+        "importlib_metadata==2.0.0" \
+        "pytest==4.6.9" \
+        "zipp==1.2.0"
+
     install_libguestfs
     local suite="${SUITE?}"
     local curdir="${PWD?}"
@@ -94,8 +99,13 @@ run_suite(){
     declare test_scenarios=($(ls "$suite"/test-scenarios/*.py | sort))
 
     for scenario in "${test_scenarios[@]}"; do
-        echo "Running test scenario: ${scenario##*/}"
-        env_run_test "$scenario" || failed=true
+        if [[ "$scenario" == *pytest* ]]; then
+            echo "Running test scenario ${scenario##*/} with pytest"
+            env_run_pytest "$scenario" || failed=true
+        else
+            echo "Running test scenario: ${scenario##*/}"
+            env_run_test "$scenario" || failed=true
+        fi
         env_collect "$curdir/test_logs/${suite##*/}/post-${scenario##*/}"
         if $failed; then
             echo "@@@@ ERROR: Failed running $scenario"

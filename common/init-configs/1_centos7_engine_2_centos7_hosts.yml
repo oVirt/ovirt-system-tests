@@ -94,7 +94,7 @@ domains:
     {%- else %}
     vm-type: default
     {%- endif %}
-    memory: 1792
+    memory: 8096
     nics:
       - net: lago-{{ env.suite_name }}-net-management
       - net: lago-{{ env.suite_name }}-net-storage

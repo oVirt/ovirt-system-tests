@@ -79,6 +79,7 @@ run_suite(){
         install_local_rpms
     fi
     env_start
+    env_dump_ansible_hosts
     env_copy_repo_file
     env_copy_config_file
     cd "$OST_REPO_ROOT"

@@ -11,6 +11,7 @@ wget
 docker
 python-pip
 python-virtualenv
+python2-ansible-runner
 
 ### docs
 mkdocs

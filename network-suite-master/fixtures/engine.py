@@ -50,16 +50,17 @@ def engine_ssh_password():
 
 
 @pytest.fixture(scope='session')
-def api(engine, engine_facts, engine_full_username, engine_password):
+def api(ovirt_engine_service_up, engine_facts, engine_full_username,
+        engine_password):
     return _create_engine_connection(engine_facts.ipv4_default_address,
                                      engine_full_username, engine_password)
 
 
 @pytest.fixture(scope='session', autouse=True)
-def engine(fqdn, env, artifacts_path, engine_full_username, engine_password,
-           ansible_engine, engine_ssh_password, engine_facts):
+def ovirt_engine_service_up(fqdn, env, artifacts_path, engine_full_username,
+                            engine_password, ansible_engine,
+                            engine_ssh_password, engine_facts):
     with suite.collect_artifacts(env, artifacts_path, 'pre-tests'):
-        engine = env.get_vms()[ENGINE_DOMAIN]
 
         ANSWER_FILE_TMP = '/tmp/answer-file'
 
@@ -82,7 +83,7 @@ def engine(fqdn, env, artifacts_path, engine_full_username, engine_password,
                                       engine_password),
                       success_criteria=lambda api: isinstance(api, Connection),
                       timeout=10*60)
-        yield engine
+        yield
 
 
 def _create_engine_connection(ip, engine_username, engine_password):

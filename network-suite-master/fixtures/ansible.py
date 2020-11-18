@@ -16,6 +16,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import os
 
 import pytest
 
@@ -48,9 +49,20 @@ def host1_facts():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def _ansible_clean_private_dirs():
+def ansible_clean_private_dirs():
     yield
     ansible._AnsiblePrivateDir.cleanup()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
+    yield
+    ansible._AnsibleLogs.save(artifacts_dir)
+
+
+@pytest.fixture(scope="session")
+def artifacts_dir():
+    return os.path.join(os.environ["OST_REPO_ROOT"], "exported-artifacts")
 
 
 class AnsibleFactsCache(object):

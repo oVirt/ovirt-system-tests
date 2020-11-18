@@ -29,6 +29,10 @@ from fixtures.ansible import host0_facts  # NOQA: F401
 from fixtures.ansible import host1_facts  # NOQA: F401
 from fixtures.ansible import engine_facts  # NOQA: F401
 from fixtures.ansible import ansible_engine  # NOQA: F401
+from fixtures.ansible import ansible_clean_private_dirs  # NOQA: F401
+
+from fixtures.ansible import ansible_collect_logs  # NOQA: F401
+from fixtures.ansible import artifacts_dir  # NOQA: F401
 
 from fixtures.cluster import default_cluster  # NOQA: F401
 

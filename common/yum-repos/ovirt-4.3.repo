@@ -30,12 +30,7 @@ baseurl = https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/ep
 gpgcheck = 1
 gpgkey = https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/pubkey.gpg
 enabled = 1
-includepkgs = gluster-ansible-cluster
-	gluster-ansible-features
-	gluster-ansible-infra
-	gluster-ansible-maintenance
-	gluster-ansible-repositories
-	gluster-ansible-roles
+exclude = *
 
 [glusterfs-6-el7]
 name = GlusterFS repo
@@ -64,11 +59,64 @@ name = CentOS7 Updates
 baseurl = http://mirror.centos.org/centos/7/updates/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = java-1.8.0-openjdk
+includepkgs = 389-ds-base
+	389-ds-base-libs
+	NetworkManager-config-server
+	bind-libs
+	bind-libs-lite
+	bind-license
+	bind-utils
+	device-mapper-multipath
+	device-mapper-multipath-libs
+	device-mapper-persistent-data
+	fence-agents-all
+	fence-agents-amt-ws
+	fence-agents-apc
+	fence-agents-apc-snmp
+	fence-agents-bladecenter
+	fence-agents-brocade
+	fence-agents-cisco-mds
+	fence-agents-cisco-ucs
+	fence-agents-common
+	fence-agents-compute
+	fence-agents-drac5
+	fence-agents-eaton-snmp
+	fence-agents-emerson
+	fence-agents-eps
+	fence-agents-heuristics-ping
+	fence-agents-hpblade
+	fence-agents-ibmblade
+	fence-agents-ifmib
+	fence-agents-ilo-moonshot
+	fence-agents-ilo-mp
+	fence-agents-ilo-ssh
+	fence-agents-ilo2
+	fence-agents-intelmodular
+	fence-agents-ipdu
+	fence-agents-ipmilan
+	fence-agents-kdump
+	fence-agents-mpath
+	fence-agents-redfish
+	fence-agents-rhevm
+	fence-agents-rsa
+	fence-agents-rsb
+	fence-agents-sbd
+	fence-agents-scsi
+	fence-agents-vmware-rest
+	fence-agents-vmware-soap
+	fence-agents-wti
+	firewalld
+	firewalld-filesystem
+	gtk-update-icon-cache
+	httpd
+	httpd-tools
+	java-1.8.0-openjdk
 	java-1.8.0-openjdk-devel
 	java-1.8.0-openjdk-headless
+	kpartx
 	libX11
 	libX11-common
+	libgudev1
 	libipa_hbac
 	libsmbclient
 	libsss_autofs
@@ -103,7 +151,19 @@ includepkgs = java-1.8.0-openjdk
 	libvirt-libs
 	libvirt-lock-sanlock
 	libwbclient
+	mesa-dri-drivers
+	mesa-filesystem
+	mesa-libEGL
+	mesa-libGL
+	mesa-libgbm
+	mesa-libglapi
+	mod_ssl
+	openscap
+	openscap-containers
+	openscap-scanner
+	openscap-utils
 	postgresql-jdbc
+	python-firewall
 	python-libipa_hbac
 	python-sss-murmur
 	python-sssdconfig
@@ -114,6 +174,8 @@ includepkgs = java-1.8.0-openjdk
 	samba-client-libs
 	samba-common
 	samba-common-libs
+	selinux-policy
+	selinux-policy-targeted
 	sos
 	spice-server
 	sssd
@@ -126,6 +188,13 @@ includepkgs = java-1.8.0-openjdk
 	sssd-krb5-common
 	sssd-ldap
 	sssd-proxy
+	systemd
+	systemd-libs
+	systemd-python
+	systemd-sysv
+	telnet
+	tomcat-servlet-3.0-api
+	tuned
 	tzdata-java
 
 [centos-base-el7]
@@ -133,10 +202,7 @@ name = CentOS7 Base
 baseurl = http://mirror.centos.org/centos/7/os/x86_64/
 enabled = 1
 max_connections = 10
-includepkgs = 389-ds-base
-	389-ds-base-libs
-	GeoIP
-	NetworkManager-config-server
+includepkgs = GeoIP
 	OVMF
 	OpenIPMI
 	OpenIPMI-libs
@@ -189,10 +255,6 @@ includepkgs = 389-ds-base
 	avalon-logkit
 	bea-stax
 	bea-stax-api
-	bind-libs
-	bind-libs-lite
-	bind-license
-	bind-utils
 	blas
 	boost-iostreams
 	boost-random
@@ -221,9 +283,6 @@ includepkgs = 389-ds-base
 	device-mapper-event
 	device-mapper-event-libs
 	device-mapper-libs
-	device-mapper-multipath
-	device-mapper-multipath-libs
-	device-mapper-persistent-data
 	dmidecode
 	dnsmasq
 	dom4j
@@ -239,45 +298,7 @@ includepkgs = 389-ds-base
 	elfutils-libs
 	emacs-filesystem
 	fcoe-utils
-	fence-agents-all
-	fence-agents-amt-ws
-	fence-agents-apc
-	fence-agents-apc-snmp
-	fence-agents-bladecenter
-	fence-agents-brocade
-	fence-agents-cisco-mds
-	fence-agents-cisco-ucs
-	fence-agents-common
-	fence-agents-compute
-	fence-agents-drac5
-	fence-agents-eaton-snmp
-	fence-agents-emerson
-	fence-agents-eps
-	fence-agents-heuristics-ping
-	fence-agents-hpblade
-	fence-agents-ibmblade
-	fence-agents-ifmib
-	fence-agents-ilo-moonshot
-	fence-agents-ilo-mp
-	fence-agents-ilo-ssh
-	fence-agents-ilo2
-	fence-agents-intelmodular
-	fence-agents-ipdu
-	fence-agents-ipmilan
-	fence-agents-kdump
-	fence-agents-mpath
-	fence-agents-redfish
-	fence-agents-rhevm
-	fence-agents-rsa
-	fence-agents-rsb
-	fence-agents-sbd
-	fence-agents-scsi
-	fence-agents-vmware-rest
-	fence-agents-vmware-soap
-	fence-agents-wti
 	fence-virt
-	firewalld
-	firewalld-filesystem
 	fontconfig
 	fontpackages-filesystem
 	fribidi
@@ -299,7 +320,6 @@ includepkgs = 389-ds-base
 	graphite2
 	gsettings-desktop-schemas
 	gssproxy
-	gtk-update-icon-cache
 	gtk2
 	hamcrest
 	harfbuzz
@@ -312,8 +332,6 @@ includepkgs = 389-ds-base
 	http-parser
 	httpcomponents-client
 	httpcomponents-core
-	httpd
-	httpd-tools
 	ipa-client
 	ipa-client-common
 	ipa-common
@@ -341,7 +359,6 @@ includepkgs = 389-ds-base
 	junit
 	jzlib
 	keyutils
-	kpartx
 	krb5-libs
 	krb5-workstation
 	lapack
@@ -387,7 +404,6 @@ includepkgs = 389-ds-base
 	libglvnd
 	libglvnd-egl
 	libglvnd-glx
-	libgudev1
 	libguestfs
 	libguestfs-tools-c
 	libguestfs-winsupport
@@ -458,13 +474,6 @@ includepkgs = 389-ds-base
 	mailx
 	make
 	mdadm
-	mesa-dri-drivers
-	mesa-filesystem
-	mesa-libEGL
-	mesa-libGL
-	mesa-libgbm
-	mesa-libglapi
-	mod_ssl
 	mpfr
 	msv-msv
 	msv-xsdlib
@@ -492,10 +501,6 @@ includepkgs = 389-ds-base
 	oddjob-mkhomedir
 	openldap
 	openldap-clients
-	openscap
-	openscap-containers
-	openscap-scanner
-	openscap-utils
 	openssl
 	openwsman-python
 	opus
@@ -566,7 +571,6 @@ includepkgs = 389-ds-base
 	python-dns
 	python-enum34
 	python-ethtool
-	python-firewall
 	python-gssapi
 	python-inotify
 	python-ipaddr
@@ -641,8 +645,6 @@ includepkgs = 389-ds-base
 	scrub
 	seabios-bin
 	seavgabios-bin
-	selinux-policy
-	selinux-policy-targeted
 	setools-libs
 	sg3_utils
 	sg3_utils-libs
@@ -659,19 +661,12 @@ includepkgs = 389-ds-base
 	syslinux
 	syslinux-extlinux
 	sysstat
-	systemd
-	systemd-libs
-	systemd-python
-	systemd-sysv
 	targetcli
 	tcp_wrappers
 	tcpdump
-	telnet
-	tomcat-servlet-3.0-api
 	tree
 	trousers
 	ttmkfdir
-	tuned
 	udisks2
 	udisks2-iscsi
 	udisks2-lvm2

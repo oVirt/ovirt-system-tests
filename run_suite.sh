@@ -189,6 +189,7 @@ render_jinja_templates () {
     export coverage="${COVERAGE}"
     export use_ost_images="${USE_OST_IMAGES}"
     export use_lago_ost_plugin="${USE_LAGO_OST_PLUGIN}"
+    export upgrade_image="${OST_IMAGES_UPGRADE}"
     export engine_image="${OST_IMAGES_ENGINE_INSTALLED}"
     export host_image="${OST_IMAGES_HOST_INSTALLED}"
     "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"

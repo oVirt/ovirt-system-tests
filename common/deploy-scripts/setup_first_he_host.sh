@@ -7,6 +7,21 @@ MYHOSTNAME="$(hostname | sed s/_/-/g)"
 STORAGEHOSTNAME="${HOSTEDENGINE/engine/storage}"
 VMPASS=123456
 ENGINEPASS=123
+HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
+
+# This is needed in case we're using prebuilt ost-images.
+# In this scenario ssh keys are baked in to the qcows (so lago
+# doesn't inject its own ssh keys), but HE VM is built from scratch.
+copy_ssh_key() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/copy_ssh_key.yml
+---
+- name: Copy ssh key for root to HE VM
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', '/root/.ssh/authorized_keys') }}"
+EOF
+
+}
 
 setup_ipv4() {
     MYADDR=$(\
@@ -44,7 +59,7 @@ setup_ipv6() {
     HEGW=${IPV6NET}${SUBNET}::1
     HEADDR=${IPV6NET}${SUBNET}::${HE_SUFFIX}
 
-    cat << EOF > /usr/share/ansible/roles/oVirt.hosted-engine-setup/hooks/enginevm_after_engine_setup/ipv6_dns_setup.yml
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_after_engine_setup/ipv6_dns_setup.yml
 ---
 - name: Add /etc/hosts IPv6 entry for host-1
   lineinfile:
@@ -52,7 +67,7 @@ setup_ipv6() {
     line: "${IPV6NET}${SUBNET}::101 ${HOSTNAME_PREFIX}host-1"
 EOF
 
-    cat << EOF > /usr/share/ansible/roles/oVirt.hosted-engine-setup/hooks/enginevm_after_engine_setup/disable_ssh_dns_lookup.yml
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_after_engine_setup/disable_ssh_dns_lookup.yml
 ---
 - name: Disable SSH reverse DNS lookup
   lineinfile:
@@ -66,6 +81,8 @@ EOF
 EOF
 
 }
+
+copy_ssh_key
 
 if [[ $(hostname) == *"ipv6"* ]]; then
     setup_ipv6

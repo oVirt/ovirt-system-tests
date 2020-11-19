@@ -28,6 +28,10 @@ domains:
     disks:
       - template_name: {{ templates.storage }}
         type: template
+        {% if env.use_ost_images == "1" -%}
+        template_type: qcow2
+        path: {{ env.upgrade_image }}
+        {%- endif %}
         name: root
         dev: vda
         format: qcow2
@@ -77,6 +81,9 @@ domains:
         {% if root_disk_path -%}
         template_type: qcow2
         path: {{ root_disk_path -}}
+        {% elif env.use_ost_images == "1" -%}
+        template_type: qcow2
+        path: {{ env.host_image }}
         {% else -%}
         template_name: {{ templates.host }}
         {%- endif %}

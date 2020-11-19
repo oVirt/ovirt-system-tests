@@ -47,6 +47,11 @@ def events_service(system_service):
 
 
 @pytest.fixture(scope="session")
+def networks_service(system_service):
+    return system_service.networks_service()
+
+
+@pytest.fixture(scope="session")
 def storage_domains_service(system_service):
     return system_service.storage_domains_service()
 

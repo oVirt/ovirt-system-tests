@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-
 
 import os
 import re
@@ -48,19 +47,16 @@ def require_version(major, minor):
 
 
 def guest_os_image_name():
-    if cluster_version_ok(4, 1):
-        return 'CirrOS 0.5.1 Custom for x86_64'
-    else:
-        return 'CirrOS 0.4.0 (qcow2 v0.10) for x86_64'
+	return 'CirrOS 0.5.1 Custom for x86_64'
 
 
-def _transformed_guest_os_image_name():
+def transformed_guest_os_image_name():
     return re.sub('[ ()]', '_', guest_os_image_name())
 
 
 def guest_os_glance_disk_name():
-    return _transformed_guest_os_image_name()[:24] + '_glance_disk'
+    return transformed_guest_os_image_name()[:12] + '_glance_disk'
 
 
 def guest_os_template_name():
-    return _transformed_guest_os_image_name()[:24] + '_glance_template'
+    return transformed_guest_os_image_name()[:12] + '_glance_template'

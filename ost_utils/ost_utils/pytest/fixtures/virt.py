@@ -18,28 +18,26 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import re
-
 import pytest
 
-CIRROS_IMAGE_NAME = 'CirrOS 0.5.1 Custom for x86_64'
+from ost_utils import versioning
 
 
 @pytest.fixture(scope="session")
 def cirros_image():
-    return CIRROS_IMAGE_NAME
+    return versioning.guest_os_image_name()
 
 
 @pytest.fixture(scope="session")
-def transformed_cirros_image(cirros_image):
-    return re.sub('[ ()]', '_', cirros_image)
+def transformed_cirros_image():
+    return versioning.transformed_guest_os_image_name()
 
 
 @pytest.fixture(scope="session")
-def cirros_image_glance_disk_name(transformed_cirros_image):
-    return transformed_cirros_image[:12] + '_glance_disk'
+def cirros_image_glance_disk_name():
+    return versioning.guest_os_glance_disk_name()
 
 
 @pytest.fixture(scope="session")
-def cirros_image_glance_template_name(transformed_cirros_image):
-    return transformed_cirros_image[:12] + '_glance_template'
+def cirros_image_glance_template_name():
+    return versioning.guest_os_template_name()

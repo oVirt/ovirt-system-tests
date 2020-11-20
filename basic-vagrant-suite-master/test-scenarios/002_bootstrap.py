@@ -43,9 +43,9 @@ else:
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
-from test_utils import versioning
 
 from ost_utils import general_utils
+from ost_utils import versioning
 
 import logging
 LOGGER = logging.getLogger(__name__)

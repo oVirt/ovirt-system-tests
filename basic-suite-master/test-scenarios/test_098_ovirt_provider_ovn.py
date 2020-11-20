@@ -31,9 +31,9 @@ from ovirtsdk4 import types
 
 import test_utils
 from ost_utils import assertions
+from ost_utils import versioning
 from ost_utils.pytest.fixtures.engine import *
 from test_utils import network_utils_v4
-from test_utils import versioning
 
 
 VM0_NAME = 'vm0'

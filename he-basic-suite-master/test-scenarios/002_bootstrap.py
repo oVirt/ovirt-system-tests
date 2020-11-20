@@ -32,9 +32,10 @@ from ovirtsdk4 import Error as sdkError
 import ovirtsdk4.types as types
 
 import test_utils
-from test_utils import versioning
 from test_utils import ipv6_utils
 from test_utils import network_utils_v4
+
+from ost_utils import versioning
 
 try:
     import ovirtsdk4 as sdk4

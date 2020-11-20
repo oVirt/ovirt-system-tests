@@ -24,9 +24,11 @@ import nose.tools as nt
 import ovirtsdk4.types as types
 
 import test_utils
-from test_utils import versioning
 from test_utils import host_status_utils
 from test_utils import constants
+
+from ost_utils import versioning
+
 import time
 
 MB = 2 ** 20

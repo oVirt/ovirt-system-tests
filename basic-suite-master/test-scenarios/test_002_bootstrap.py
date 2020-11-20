@@ -37,7 +37,6 @@ import pytest
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
-from test_utils import versioning
 
 from ost_utils import assertions
 from ost_utils import engine_utils
@@ -55,6 +54,7 @@ from ost_utils.storage_utils import lun
 from ost_utils.storage_utils import nfs
 from ost_utils import shell
 from ost_utils import utils
+from ost_utils import versioning
 
 import logging
 LOGGER = logging.getLogger(__name__)

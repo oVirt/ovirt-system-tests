@@ -31,9 +31,10 @@ import json
 
 import test_utils
 import uuid
-from test_utils import versioning
 from test_utils import ipv6_utils,assert_finished_within_long
 from ovirtsdk4.types import Host
+
+from ost_utils import versioning
 
 MB = 2 ** 20
 GB = 2 ** 30

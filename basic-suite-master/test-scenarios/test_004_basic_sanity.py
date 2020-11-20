@@ -32,6 +32,7 @@ from ost_utils import assertions
 from ost_utils import engine_utils
 from ost_utils import ssh
 from ost_utils import utils
+from ost_utils import versioning
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
@@ -43,9 +44,9 @@ import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 
 import test_utils
-from test_utils import versioning
 from test_utils import host_status_utils
 from test_utils import constants
+
 
 import uuid
 

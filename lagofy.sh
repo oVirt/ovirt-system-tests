@@ -76,12 +76,8 @@ EOT
 
     lago init $LAGO_INIT_SSH_KEY "$PREFIX" "$SUITE/LagoInitFile"
 
-    lago start
-
-    lago deploy
-
-    # ansible stuff
-    lago ansible_hosts > $PREFIX/hosts
+    # start the OST VMs, run deploy scripts and generate hosts for ansible tasks
+    lago start && lago deploy && lago ansible_hosts > $PREFIX/hosts
 
     # ... and that's it
 }

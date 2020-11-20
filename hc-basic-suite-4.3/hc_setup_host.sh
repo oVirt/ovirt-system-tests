@@ -1,1 +1,0 @@
-../hc-basic-suite-master/hc_setup_host.sh

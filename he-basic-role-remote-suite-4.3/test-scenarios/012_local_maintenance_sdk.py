@@ -1,1 +1,0 @@
-../../he-basic-suite-4.3/test-scenarios/012_local_maintenance_sdk.py

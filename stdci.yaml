@@ -4,15 +4,11 @@ stage:
       substage:
         - ovirt-master
         - ovirt-master-cq
-        - ovirt-4.3
-        - ovirt-4.3-cq
-        - ovirt-4.3-release
       script:
         fromfile: 'automation/{{ stage }}.{{ substage }}.sh'
   - check-patch:
       timeout: 180m
       substage:
-        - basic_suite_4.3
         - basic_suite_master:
             distributions:
               - el7
@@ -20,7 +16,6 @@ stage:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
-        - he-basic_suite_4.3
         - he-basic_suite_master:
             distributions:
               - el7
@@ -42,8 +37,6 @@ stage:
                  runtime-requirements:
                    hostdistro: same
                    support-nesting-level: 2
-        - upgrade-from-release_suite_4.3
-        - upgrade-from-prevrelease_suite_4.3
         - test-ost-container:
             runif:
               filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']

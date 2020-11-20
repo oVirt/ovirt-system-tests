@@ -1,1 +1,0 @@
-../hc-basic-suite-master/pkgs.txt

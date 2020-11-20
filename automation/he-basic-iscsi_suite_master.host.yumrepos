@@ -1,1 +1,1 @@
-../he-basic-iscsi-suite-4.3/reposync-config-host.repo
+../common/yum-repos/ovirt-4.3-host-cq.in

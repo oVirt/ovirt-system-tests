@@ -1,1 +1,0 @@
-poll-upstream-sources.ovirt-master.sh

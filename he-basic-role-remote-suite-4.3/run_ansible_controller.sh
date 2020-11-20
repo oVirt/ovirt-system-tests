@@ -1,1 +1,0 @@
-../he-basic-role-remote-suite-master/run_ansible_controller.sh

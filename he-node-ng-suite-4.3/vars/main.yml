@@ -1,8 +1,0 @@
-templates:
-  storage: el7.7-base-2
-  host: el7.7-base-2
-hostCount: 2
-system_requirements:
-  disk_space_gb: 15
-root_disk_path: "$LAGO_INITFILE_PATH/images/ovirt-ngn.qcow2"
-check_node_status: 1

@@ -1,1 +1,0 @@
-../he-basic-role-remote-suite-master/control.sh

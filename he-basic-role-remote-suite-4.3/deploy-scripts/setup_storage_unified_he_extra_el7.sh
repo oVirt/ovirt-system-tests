@@ -1,1 +1,0 @@
-../../common/deploy-scripts/setup_storage_unified_he_extra_el7.sh

@@ -1,1 +1,0 @@
-../../basic-suite-4.3/test-scenarios/000_check_repo_closure.py

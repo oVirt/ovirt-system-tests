@@ -74,6 +74,7 @@ VM_TO_CLONE_NAME = 'vm_to_clone'
 BACKUP_VM_NAME = 'backup_vm'
 CLONED_VM_NAME = 'cloned_vm'
 IMPORTED_VM_NAME = 'imported_vm'
+IMPORTED_TEMP_NAME = 'imported_temp'
 OVF_VM_NAME = 'ovf_vm'
 VMPOOL_NAME = 'test-pool'
 DISK0_NAME = '%s_disk0' % VM0_NAME
@@ -95,8 +96,10 @@ SNAPSHOT_DESC_MEM = 'memory_snap'
 VDSM_LOG = '/var/log/vdsm/vdsm.log'
 
 OVA_VM_EXPORT_NAME = 'ova_vm.ova'
+OVA_TEMP_EXPORT_NAME = 'ova_temp.ova'
 OVA_DIR = '/var/tmp'
 IMPORTED_OVA_NAME = 'ova:///var/tmp/ova_vm.ova'
+IMPORTED_TEMP_OVA_NAME = 'ova:///var/tmp/ova_temp.ova'
 OVA_FILE_LOCATION = '%s/%s' % (OVA_DIR, OVA_VM_EXPORT_NAME)
 
 _TEST_LIST = [
@@ -129,17 +132,20 @@ _TEST_LIST = [
     "test_template_update",
     "test_verify_vm_import",
     "test_verify_suspend_resume_vm0",
+    "test_verify_template_exported",
     "test_hotunplug_memory",
     "test_hotplug_disk",
     "test_hotplug_nic",
     "test_hotplug_cpu",
     "test_next_run_unplug_cpu",
     "test_disk_operations",
+    "test_import_template_as_vm",
     "test_live_storage_migration",
     "test_remove_vm2_lease",
     "test_hotunplug_disk",
     "test_make_snapshot_with_memory",
     "test_add_vm_pool",
+    "test_verify_template_import",
     "test_preview_snapshot_with_memory",
     "test_update_template_version",
     "test_update_vm_pool",
@@ -778,20 +784,36 @@ def test_verify_vm1_exported(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_import_vm1(engine_api):
+def test_verify_template_exported(engine_api, cirros_image_glance_template_name):
     engine = engine_api.system_service()
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_ISCSI_NAME))[0]
-    cluster = engine.clusters_service().list(search='name={}'.format(TEST_CLUSTER))[0]
+    correlation_id = "test_validate_ova_export_temp"
+    template_service = test_utils.get_template_service(
+        engine, cirros_image_glance_template_name
+    )
+    if template_service is None:
+        pytest.skip('{0}: template {1} is missing'.format(
+            template_export.__name__,
+            cirros_image_glance_template_name
+            )
+        )
+    assertions.assert_true_within_long(
+        lambda:
+        test_utils.all_jobs_finished(engine, correlation_id)
+    )
+
+
+def _import_ova(engine, correlation_id, vm_name, imported_url, storage_domain, cluster_name):
+    sd = engine.storage_domains_service().list(search='name={}'.format(storage_domain))[0]
+    cluster = engine.clusters_service().list(search='name={}'.format(cluster_name))[0]
     imports_service = engine.external_vm_imports_service()
     host = test_utils.get_first_active_host_by_name(engine)
-    correlation_id = "test_validate_ova_import_vm"
 
     with engine_utils.wait_for_event(engine, 1165): # IMPORTEXPORT_STARTING_IMPORT_VM
         imports_service.add(
             types.ExternalVmImport(
-                name=IMPORTED_VM_NAME,
+                name=vm_name,
                 provider=types.ExternalVmProviderType.KVM,
-                url=IMPORTED_OVA_NAME,
+                url=imported_url,
                 cluster=types.Cluster(
                     id=cluster.id
                 ),
@@ -807,14 +829,47 @@ def test_import_vm1(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_verify_vm_import(engine_api):
-    engine = engine_api.system_service()
-    correlation_id = "test_validate_ova_import_vm"
+def test_import_vm1(engine_api):
+    _import_ova(engine_api.system_service(),
+                "test_validate_ova_import_vm",
+                IMPORTED_VM_NAME,
+                IMPORTED_OVA_NAME,
+                SD_ISCSI_NAME,
+                TEST_CLUSTER)
+
+
+def _verify_vm_import(
+    engine,
+    correlation_id,
+    vm_name=IMPORTED_VM_NAME
+):
     assertions.assert_true_within_long(
         lambda:
         test_utils.all_jobs_finished(engine, correlation_id)
     )
-    _verify_vm_state(engine, IMPORTED_VM_NAME, types.VmStatus.DOWN)
+    _verify_vm_state(engine, vm_name, types.VmStatus.DOWN)
+
+
+@order_by(_TEST_LIST)
+def test_verify_vm_import(engine_api):
+    _verify_vm_import(engine_api.system_service(), "test_validate_ova_import_vm")
+
+
+@order_by(_TEST_LIST)
+def test_import_template_as_vm(engine_api):
+    _import_ova(engine_api.system_service(),
+                "test_validate_ova_import_temp",
+                IMPORTED_TEMP_NAME,
+                IMPORTED_TEMP_OVA_NAME,
+                SD_NFS_NAME,
+                TEST_CLUSTER)
+
+
+@order_by(_TEST_LIST)
+def test_verify_template_import(engine_api):
+    _verify_vm_import(engine_api.system_service(),
+                      "test_validate_ova_import_temp",
+                      IMPORTED_TEMP_NAME)
 
 
 @order_by(_TEST_LIST)
@@ -1019,30 +1074,25 @@ def test_vdsm_recovery(ansible_by_hostname, engine_api):
 def test_template_export(engine_api, cirros_image_glance_template_name):
     engine = engine_api.system_service()
 
-    template_guest = test_utils.get_template_service(
+    template_service = test_utils.get_template_service(
         engine, cirros_image_glance_template_name
     )
-    if template_guest is None:
+    if template_service is None:
         pytest.skip('{0}: template {1} is missing'.format(
             template_export.__name__,
             cirros_image_glance_template_name
             )
         )
-
-    storage_domain = engine.storage_domains_service().list(search='name={}'.format(SD_TEMPLATES_NAME))[0]
-    with engine_utils.wait_for_event(engine, 1164):
-        # IMPORTEXPORT_STARTING_EXPORT_TEMPLATE event
-        template_guest.export(
-            storage_domain=types.StorageDomain(
-                id=storage_domain.id,
-            ),
-        )
-
-    with engine_utils.wait_for_event(engine, 1156):
-        # IMPORTEXPORT_EXPORT_TEMPLATE event
-        assertions.assert_true_within_long(
-            lambda:
-            template_guest.get().status == types.TemplateStatus.OK,
+    host = test_utils.get_first_active_host_by_name(engine)
+    correlation_id = "test_validate_ova_export_temp"
+    with engine_utils.wait_for_event(engine, 1226):
+        # IMPORTEXPORT_STARTING_EXPORT_TEMPLATE_TO_OVA event
+        template_service.export_to_path_on_host(
+            host=types.Host(id=host.id),
+            directory=OVA_DIR,
+            filename=OVA_TEMP_EXPORT_NAME,
+            async=True,
+            query={'correlation_id': correlation_id}
         )
 
 

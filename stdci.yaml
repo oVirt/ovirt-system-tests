@@ -28,6 +28,7 @@ stage:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
+        - network_suite_4.3
         - network_suite_master:
             distributions:
               - el7
@@ -87,4 +88,4 @@ runtime-requirements:
   support-nesting-level: 2
   isolation_level: container
 release-branches:
-  master: [ovirt-master, ovirt-4.3]
+  master: [ovirt-master, ovirt-engine-4.3]

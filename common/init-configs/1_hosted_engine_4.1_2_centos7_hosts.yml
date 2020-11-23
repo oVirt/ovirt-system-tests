@@ -69,7 +69,6 @@ domains:
     distro: el7
     service_provider: systemd
     memory: 5744
-    cpu_model: SandyBridge
     nics:
       - net: lago-{{ env.suite_name }}-net-management
       - net: lago-{{ env.suite_name }}-net-mgmt-ipv6

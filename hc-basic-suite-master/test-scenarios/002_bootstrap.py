@@ -81,9 +81,6 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-GUEST_IMAGE_NAME = versioning.guest_os_image_name()
-GLANCE_DISK_NAME = versioning.guest_os_glance_disk_name()
-TEMPLATE_GUEST = versioning.guest_os_template_name()
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 CIRROS_IMAGE_NAME = 'CirrOS 0.4.0 for x86_64'

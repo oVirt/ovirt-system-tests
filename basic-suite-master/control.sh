@@ -35,6 +35,7 @@ run_suite () {
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
     "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
     "${PYTHON}" -m pip install --user \
+        "importlib_metadata==2.0.0" \
         "pytest==4.6.9" \
         "zipp==1.2.0"
 

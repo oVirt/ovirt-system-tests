@@ -79,7 +79,6 @@ from testlib import suite
 
 
 def pytest_addoption(parser):
-    parser.addoption('--lago-env', action='store')
     parser.addoption('--artifacts-path', action='store')
 
 
@@ -99,7 +98,7 @@ def artifacts_path():
 
 @pytest.fixture(scope='session')
 def env(artifacts_path):
-    workdir = pytest.config.getoption('--lago-env')
+    workdir = os.environ.get('PREFIX')
     lago_log_path = os.path.join(workdir, 'default/logs/lago.log')
     lago_env = lagosdk.load_env(
         workdir=workdir,

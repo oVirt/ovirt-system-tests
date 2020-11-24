@@ -75,7 +75,6 @@ run_tests() {
         --durations=0 \
         --log-level=INFO \
         --junit-xml="$junit_xml_path" \
-        --lago-env="$PREFIX" \
         --artifacts-path="$artifacts_path" \
         "${SUITE}/test-scenarios"
 }

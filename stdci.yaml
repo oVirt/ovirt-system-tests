@@ -1,11 +1,5 @@
 ---
 stage:
-  - poll-upstream-sources:
-      substage:
-        - ovirt-master
-        - ovirt-master-cq
-      script:
-        fromfile: 'automation/{{ stage }}.{{ substage }}.sh'
   - check-patch:
       timeout: 180m
       substage:

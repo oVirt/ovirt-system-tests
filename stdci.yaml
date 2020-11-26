@@ -11,28 +11,24 @@ stage:
       substage:
         - basic_suite_master:
             distributions:
-              - el7
               - el8:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
         - he-basic_suite_master:
             distributions:
-              - el7
               - el8:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
         - network_suite_master:
             distributions:
-              - el7
               - el8:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
         - performance_suite_master:
             distributions:
-             - el7
              - el8:
                  runtime-requirements:
                    hostdistro: same
@@ -50,6 +46,11 @@ stage:
               # to overwrite the global config of nesting support.
               support-nesting-level: 0
         - ost_core_change:
+            distributions:
+             - el8:
+                 runtime-requirements:
+                   hostdistro: same
+                   support-nesting-level: 2
             runif:
               # Any change that is not part of a suite
               filechanged: ['run_suite.sh', 'automation/suite.sh']

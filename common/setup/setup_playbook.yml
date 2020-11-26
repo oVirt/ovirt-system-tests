@@ -62,6 +62,7 @@
         - name: install epel
           dnf:
             name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+            disable_gpg_check: yes
           become: true
           register: epel
 

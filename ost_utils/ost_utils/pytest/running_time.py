@@ -29,7 +29,7 @@ RUNNING_TIMES = {}
 def pytest_runtest_logstart(nodeid, location):
     now = datetime.datetime.now()
     RUNNING_TIMES[location] = now
-    print(now.strftime('started at %H:%M:%S'), end=' ')
+    print(now.strftime('started at %Y-%m-%d %H:%M:%S'), end=' ')
 
 
 def pytest_runtest_logfinish(nodeid, location):

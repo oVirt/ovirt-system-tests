@@ -76,18 +76,11 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        mkdir \
-        /etc/ovirt-host-deploy.conf.d/
+        rm -rf /etc/ansible/roles/*
 
     lago shell \
-        ${HOST}1 \
-        mkdir \
-        /etc/ovirt-host-deploy.conf.d/
-
-    lago shell \
-        ${HOST}2 \
-        mkdir \
-        /etc/ovirt-host-deploy.conf.d/
+        ${HOST}0 \
+        yum install https://copr-be.cloud.fedoraproject.org/results/sac/gluster-ansible/epel-7-x86_64/00905703-gluster-ansible/gluster-ansible-1.0.5-1.el7.noarch.rpm -y
 
     echo "#########################"
     echo "Running ansible playbook on ${HOST}0"

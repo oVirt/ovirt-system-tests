@@ -25,6 +25,7 @@ import pytest
 
 from ovirtlib import clusterlib
 from ovirtlib import netlib
+from ovirtlib import sdkentity
 from ovirtlib import syncutil
 from ovirtlib import virtlib
 from ovirtlib.ansiblelib import Playbook
@@ -38,8 +39,11 @@ IP_ICMP_HEADER_SIZE = 28
 MTU = 1000
 MAX_ICMP_DATA_SIZE = MTU - IP_ICMP_HEADER_SIZE
 VNIC0_NAME = 'vnic0'
+VNIC_INTERNAL = 'vnic-internal'
 VM0_NAME = 'vm0'
 OVN_PHYSNET_NAME = 'ovn_ovirtmgmt'
+EXTERNAL_NETWORK = r'.*Only an external network may be attached to VM' \
+                   r' in a cluster with OVS switch type'
 
 PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
 
@@ -74,7 +78,8 @@ def ovn_physnet_small_mtu(default_data_center, ovirtmgmt_network, ovs_cluster,
 
 
 @pytest.fixture(scope='module')
-def vm_in_ovs_cluster_down(system, ovs_cluster, cirros_template):
+def vm_in_ovs_cluster_down(system, ovs_cluster, host_in_ovs_cluster,
+                           cirros_template):
     with virtlib.vm_pool(system, size=1) as (vm,):
         vm.create(vm_name=VM0_NAME, cluster=ovs_cluster,
                   template=cirros_template)
@@ -95,6 +100,13 @@ def vnic_attached_to_ovn_network(system, vm_in_ovs_cluster_down,
 def vm_in_ovn_network_up(vm_in_ovs_cluster_down, vnic_attached_to_ovn_network):
     vm_in_ovs_cluster_down.run_once(cloud_init_hostname=VM0_NAME)
     yield vm_in_ovs_cluster_down
+
+
+def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
+                                              ovirtmgmt_vnic_profile):
+    vnic = netlib.Vnic(vm_in_ovs_cluster_down)
+    with pytest.raises(sdkentity.EntityCreationError, match=EXTERNAL_NETWORK):
+        vnic.create(name=VNIC_INTERNAL, vnic_profile=ovirtmgmt_vnic_profile)
 
 
 @suite.xfail_suite_43('BZ 1817589')

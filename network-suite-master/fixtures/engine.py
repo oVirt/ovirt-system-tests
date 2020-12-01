@@ -44,11 +44,6 @@ def engine_password():
     return "123"
 
 
-@pytest.fixture(scope="session")
-def engine_ssh_password():
-    return "123456"
-
-
 @pytest.fixture(scope='session')
 def api(ovirt_engine_service_up, engine_facts, engine_full_username,
         engine_password):
@@ -58,8 +53,7 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 @pytest.fixture(scope='session', autouse=True)
 def ovirt_engine_service_up(fqdn, env, artifacts_path, engine_full_username,
-                            engine_password, ansible_engine,
-                            engine_ssh_password, engine_facts):
+                            engine_password, ansible_engine, engine_facts):
     with suite.collect_artifacts(env, artifacts_path, 'pre-tests'):
 
         ANSWER_FILE_TMP = '/tmp/answer-file'
@@ -75,7 +69,7 @@ def ovirt_engine_service_up(fqdn, env, artifacts_path, engine_full_username,
             '--accept-defaults',
         ]
         sshlib.Node(engine_facts.ipv4_default_address,
-                    engine_ssh_password).exec_command(' '.join(command))
+                    engine_facts.ssh_password).exec_command(' '.join(command))
 
         syncutil.sync(exec_func=_create_engine_connection,
                       exec_func_args=(engine_facts.ipv4_default_address,
@@ -100,13 +94,14 @@ def _create_engine_connection(ip, engine_username, engine_password):
     return None
 
 
-def _exec_engine_config(engine_facts, engine_ssh_password, key, value):
+def _exec_engine_config(engine_facts, key, value):
     command = [
         'engine-config',
         '--set',
         '{0}={1}'.format(key, value),
     ]
-    node = sshlib.Node(engine_facts.ipv4_default_address, engine_ssh_password)
+    node = sshlib.Node(engine_facts.ipv4_default_address,
+                       engine_facts.ssh_password)
     result = node.exec_command(' '.join(command))
 
     assert result.code == 0, (

@@ -86,3 +86,7 @@ class AnsibleFactsCache(object):
     @property
     def hostname(self):
         return self._hostname
+
+    @property
+    def ssh_password(self):
+        return '123456'

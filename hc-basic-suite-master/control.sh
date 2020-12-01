@@ -76,7 +76,7 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        rm -rf /etc/ansible/roles/*
+        yum remove gluster-ansible-roles -y
 
     lago shell \
         ${HOST}0 \

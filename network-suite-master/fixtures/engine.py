@@ -17,7 +17,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import os
-import re
 
 import pytest
 from ovirtsdk4 import Connection
@@ -28,10 +27,8 @@ from ovirtlib import syncutil
 from testlib import suite
 
 
-SUITE = os.path.split(os.environ['SUITE'])[1]
 ANSWER_FILE_SRC = os.path.join(os.environ.get('SUITE'),
                                'engine-answer-file.conf')
-ENGINE_DOMAIN = '-'.join(['lago', re.sub('\.', '-', SUITE), 'engine'])
 
 
 @pytest.fixture(scope="session")

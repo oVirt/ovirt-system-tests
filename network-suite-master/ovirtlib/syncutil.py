@@ -94,6 +94,8 @@ def sync(exec_func,
         try:
             result = exec_func(*args, **kwargs)
         except Exception as e:
+            if success_criteria(e):
+                return e
             if error_criteria(e):
                 raise
             result = e

@@ -98,6 +98,14 @@ class Host(SDKRootEntity):
         return self._root_password
 
     @property
+    def is_up(self):
+        return self.get_sdk_type().status == types.HostStatus.UP
+
+    @property
+    def is_in_maintenance(self):
+        return self.get_sdk_type().status == types.HostStatus.MAINTENANCE
+
+    @property
     def is_spm(self):
         return self.get_sdk_type().spm.status == types.SpmStatus.SPM
 
@@ -134,7 +142,12 @@ class Host(SDKRootEntity):
         self._root_password = root_password
 
     def activate(self):
-        self._service.activate()
+        syncutil.sync(
+            exec_func=self._service.activate,
+            exec_func_args=(),
+            success_criteria=lambda s: self.is_up,
+            timeout=3 * 60
+        )
 
     def deactivate(self):
         self.wait_for_up_status()
@@ -142,9 +155,9 @@ class Host(SDKRootEntity):
             exec_func=self._service.deactivate,
             exec_func_args=(),
             timeout=3 * 60,
+            success_criteria=lambda s: self.is_in_maintenance,
             error_criteria=Host._is_error_non_transient
         )
-        self.wait_for_maintenance_status()
 
     @contextlib.contextmanager
     def toggle_cluster(self, target_cluster):
@@ -158,10 +171,8 @@ class Host(SDKRootEntity):
     def change_cluster(self, cluster):
         spm_before_deactivate = self.is_spm
         self.deactivate()
-        self.wait_for_maintenance_status()
         self.update(cluster=cluster.get_sdk_type())
         self.activate()
-        self.wait_for_up_status()
         if spm_before_deactivate:
             # Deactivation removed SPM status from this host and caused the DC
             # to become Non Responsive. This is an unstable state.

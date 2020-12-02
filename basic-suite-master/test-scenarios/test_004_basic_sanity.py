@@ -513,13 +513,20 @@ def test_verify_and_remove_cloned_vm(system_service):
 
     correlation_id = 'clone_powered_off_vm'
 
-    assertions.assert_true_within_long(
+    assertions.assert_true_within_short(
         lambda:
         test_utils.all_jobs_finished(system_service, correlation_id)
     )
 
     _verify_vm_state(system_service, CLONED_VM_NAME, types.VmStatus.DOWN)
     _verify_vm_disks_state(system_service, CLONED_VM_NAME, types.DiskStatus.OK)
+
+    vm_to_clone_snapshots_service = test_utils.get_vm_snapshots_service(
+        system_service, VM_TO_CLONE_NAME
+    )
+    assertions.assert_true_within_short(
+        lambda: len(vm_to_clone_snapshots_service.list()) == 1
+    )
 
     num_of_vms = len(system_service.vms_service().list())
     vm_to_clone_service.remove(

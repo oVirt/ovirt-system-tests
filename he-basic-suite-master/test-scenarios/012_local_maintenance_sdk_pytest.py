@@ -1,5 +1,5 @@
 #
-# Copyright 2014-2019 Red Hat, Inc.
+# Copyright 2014-2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,114 +18,67 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from netaddr.ip import IPAddress
-import nose.tools as nt
-from ovirtlago import testlib
-from ovirtsdk4 import Error as sdkError
-import ovirtsdk4.types as types
-import json
-
-import test_utils
-from test_utils import network_utils_v4, assert_finished_within_long, ipv6_utils
-
 import logging
 import time
 
+import ovirtsdk4
+from ovirtsdk4 import types
+
+import pytest
+
+from test_utils import ipv6_utils
+
+from ost_utils import assertions
+
 VM_HE_NAME = 'HostedEngine'
+WAIT_VALUE = 300
 
-wait_value = 300
 
-
+@pytest.fixture(scope='module', autouse=True)
 def setup_module():
     ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
-def check_maintenance(host_service):
-    maintenance = None
-    count = 10
-    while maintenance is None and count > 0:
-        count = count - 1
-        try:
-            maintenance = (
-                host_service.get().status == types.HostStatus.MAINTENANCE or
-                host_service.get(all_content=True).hosted_engine.local_maintenance
-            )
-        except sdkError:
-            time.sleep(2)
-    if maintenance is None:
-        raise RuntimeError('Failed checking maintenance status')
-    return maintenance
+def test_local_maintenance(hosts_service, get_vm_service_for_vm):
+    logging.info('Waiting For System Stability...')
+    # TODO: Replace arbitrary sleep with something more sensible
+    time.sleep(WAIT_VALUE)
 
+    vm_service = get_vm_service_for_vm(VM_HE_NAME)
+    he_host_id = vm_service.get().host.id
+    host_service = hosts_service.host_service(id=he_host_id)
 
-@testlib.with_ovirt_api4
-@testlib.with_ovirt_prefix
-def local_maintenance(prefix, api):
-    logging.info("Waiting For System Stability...")
-    time.sleep(wait_value)
-
-    engine = api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM_HE_NAME)
-    hosts_service = engine.hosts_service()
-
-    def _current_running_host():
-        host_id = vm_service.get().host.id
-        host = hosts_service.list(
-            search='id={}'.format(host_id))[0]
-        return host
-
-    he_host = _current_running_host()
-
-    host_service = hosts_service.host_service(id=he_host.id)
-
-    prev_host_id = he_host.id
-
-    logging.info("Performing Deactivation...")
-
+    logging.info('Performing Deactivation...')
     host_service.deactivate()
-
-    testlib.assert_true_within_long(
-        lambda: check_maintenance(host_service)
+    assertions.assert_true_within_long(
+        lambda: (
+            host_service.get().status == types.HostStatus.MAINTENANCE or
+            host_service.get(all_content=True).hosted_engine.local_maintenance
+        ),
+        allowed_exceptions=[ovirtsdk4.Error],
     )
 
-    logging.info("Performing Activation...")
-
+    logging.info('Performing Activation...')
     host_service.activate()
-
-    testlib.assert_true_within_long(
+    assertions.assert_true_within_long(
         lambda: host_service.get().status == types.HostStatus.UNASSIGNED
     )
 
-    logging.info("Waiting For System Stability...")
+    logging.info('Waiting For System Stability...')
+    # TODO: Replace arbitrary sleep with something more sensible
+    time.sleep(WAIT_VALUE)
 
-    time.sleep(wait_value)
-
-    logging.info("Waiting For Maintenance...")
-
-    testlib.assert_true_within_long(
+    logging.info('Waiting For Maintenance...')
+    assertions.assert_true_within_long(
         lambda: not host_service.get(all_content=True).hosted_engine.local_maintenance
     )
 
-    logging.info("Waiting For Score...")
-
-    testlib.assert_true_within_long(
+    logging.info('Waiting For Score...')
+    assertions.assert_true_within_long(
         lambda: host_service.get(all_content=True).hosted_engine.score > 0
     )
 
-    logging.info("Validating Migration...")
-
-    he_host = _current_running_host()
-
-    testlib.assert_true_within_short(
-        lambda: prev_host_id != he_host.id
-    )
-
-
-_TEST_LIST = [
-    local_maintenance,
-]
-
-
-def test_gen():
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        test_gen.__name__ = t.description
-        yield t
+    logging.info('Validating Migration...')
+    prev_host_id = he_host_id
+    he_host_id = vm_service.get().host.id
+    assert prev_host_id != he_host_id

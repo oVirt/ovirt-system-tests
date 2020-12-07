@@ -146,6 +146,7 @@ class Host(SDKRootEntity):
             exec_func=self._service.activate,
             exec_func_args=(),
             success_criteria=lambda s: self.is_up,
+            error_criteria=Host._is_activate_error_non_transient,
             timeout=3 * 60
         )
 
@@ -156,7 +157,7 @@ class Host(SDKRootEntity):
             exec_func_args=(),
             timeout=3 * 60,
             success_criteria=lambda s: self.is_in_maintenance,
-            error_criteria=Host._is_error_non_transient
+            error_criteria=Host._is_deactivate_error_non_transient
         )
 
     @contextlib.contextmanager
@@ -424,16 +425,25 @@ class Host(SDKRootEntity):
         return list(self.service.network_attachments_service().list())
 
     @staticmethod
-    def _is_error_non_transient(error):
-        HAS_RUNNING_TASKS = 'Host has asynchronous running tasks'
-        HOST_IS_CONTENDING = 'Host is contending'
+    def _is_deactivate_error_non_transient(error_):
+        transient_errors = [
+            'Host has asynchronous running tasks',
+            'Host is contending'
+        ]
+        return not Host._is_error_transient(error_, transient_errors)
 
-        if not isinstance(error, ovirtsdk4.Error):
-            return True
-        msg = error.args[0]
-        if HAS_RUNNING_TASKS in msg or HOST_IS_CONTENDING in msg:
-            return False
-        return True
+    @staticmethod
+    def _is_activate_error_non_transient(error_):
+        transient_errors = [
+            'Cannot activate Host. Related operation is currently in progress'
+        ]
+        return not Host._is_error_transient(error_, transient_errors)
+
+    @staticmethod
+    def _is_error_transient(error_, transient_errors):
+        error_msg = error_.args[0]
+        return (isinstance(error_, ovirtsdk4.Error) and
+                [err for err in transient_errors if err in error_msg])
 
     def refresh_capabilities(self):
         self.service.refresh()

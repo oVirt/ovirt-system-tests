@@ -30,11 +30,6 @@ from test_utils import ipv6_utils, network_utils_v4
 from ost_utils import assertions
 from ost_utils import utils
 
-from ost_utils.pytest.fixtures.engine import *
-from ost_utils.pytest.fixtures.sdk import hosts_service
-from ost_utils.pytest.fixtures.sdk import networks_service
-from ost_utils.pytest.fixtures.sdk import system_service
-
 # DC/Cluster
 DC_NAME = 'Default'
 CLUSTER_NAME = 'Default'

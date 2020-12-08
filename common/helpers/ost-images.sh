@@ -23,6 +23,7 @@ if [ ${USE_OST_IMAGES} -eq 1 ]; then
     export OST_IMAGES_HOST_DEPS_INSTALLED=$(_find_qcow "host-deps-installed")
     export OST_IMAGES_ENGINE_INSTALLED=$(_find_qcow "engine-installed")
     export OST_IMAGES_HOST_INSTALLED=$(_find_qcow "host-installed")
+    export OST_IMAGES_HE_INSTALLED=$(_find_qcow "he-installed")
 
     export OST_IMAGES_SSH_KEY=$(_find_ssh_key)
 fi
@@ -45,6 +46,7 @@ prepare_images_for_mock() {
         ${OST_IMAGES_HOST_DEPS_INSTALLED} \
         ${OST_IMAGES_ENGINE_INSTALLED} \
         ${OST_IMAGES_HOST_INSTALLED} \
+        ${OST_IMAGES_HE_INSTALLED} \
     )
 
     for image in ${all_images[*]}; do
@@ -59,6 +61,7 @@ prepare_images_for_mock() {
     export OST_IMAGES_HOST_DEPS_INSTALLED="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_HOST_DEPS_INSTALLED})"
     export OST_IMAGES_ENGINE_INSTALLED="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_ENGINE_INSTALLED})"
     export OST_IMAGES_HOST_INSTALLED="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_HOST_INSTALLED})"
+    export OST_IMAGES_HE_INSTALLED="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_HE_INSTALLED})"
 }
 
 cleanup_ost_images() {

@@ -119,19 +119,19 @@ _TEST_LIST = [
     "test_vm0_is_alive",
     "test_hotplug_memory",
     "test_suspend_resume_vm0",
+    "test_verify_backup_snapshot_removed",
+    "test_export_vm2",
+    "test_verify_vm2_run",
     "test_extend_disk1",
     "test_sparsify_disk1",
-    "test_export_vm1",
-    "test_verify_backup_snapshot_removed",
-    "test_verify_vm2_run",
-    "test_incremental_backup_vm2",
-    "test_ha_recovery",
-    "test_verify_vm1_exported",
-    "test_import_vm1",
     "test_template_export",
     "test_template_update",
-    "test_verify_vm_import",
+    "test_verify_vm2_exported",
+    "test_incremental_backup_vm2",
+    "test_import_vm1",
+    "test_ha_recovery",
     "test_verify_suspend_resume_vm0",
+    "test_verify_vm_import",
     "test_verify_template_exported",
     "test_hotunplug_memory",
     "test_hotplug_disk",
@@ -760,9 +760,10 @@ def test_live_storage_migration(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_export_vm1(engine_api):
+def test_export_vm2(engine_api):
     engine = engine_api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM1_NAME)
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+    _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
     host = test_utils.get_first_active_host_by_name(engine)
 
     with engine_utils.wait_for_event(engine, 1223): # IMPORTEXPORT_STARTING_EXPORT_VM_TO_OVA event
@@ -774,9 +775,9 @@ def test_export_vm1(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_verify_vm1_exported(engine_api):
+def test_verify_vm2_exported(engine_api):
     engine = engine_api.system_service()
-    vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM1_NAME)
+    vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM2_NAME)
     assertions.assert_true_within_long(
         lambda:
         len(vm1_snapshots_service.list()) == 1,

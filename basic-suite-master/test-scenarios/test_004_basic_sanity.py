@@ -303,7 +303,7 @@ def test_add_disks(engine_api, cirros_image_glance_disk_name):
             'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
             'name': DISK3_NAME,
             'provisioned_size': 1 * MB,
-            'format': types.DiskFormat.COW,
+            'format': types.DiskFormat.RAW,
             'sparse': True,
             'active': True,
             'bootable': False,
@@ -380,7 +380,7 @@ def test_extend_disk1(engine_api):
 @order_by(_TEST_LIST)
 def test_sparsify_disk1(engine_api):
     engine = engine_api.system_service()
-    disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
+    disk_service = test_utils.get_disk_service(engine, DISK3_NAME)
     with engine_utils.wait_for_event(engine, 1325): # USER_SPARSIFY_IMAGE_START event
         disk_service.sparsify()
 

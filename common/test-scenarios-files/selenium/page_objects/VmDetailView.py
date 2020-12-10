@@ -1,4 +1,3 @@
-from .constants import *
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 
@@ -10,7 +9,7 @@ class VmDetailView(Displayable,WithBreadcrumbs):
 
     def is_displayed(self):
         breadcrumbs = self.get_breadcrumbs()
-        return len(breadcrumbs) == 3 and breadcrumbs[0] == BREADCRUMB_VM_COMPUTE and breadcrumbs[1] == BREADCRUMB_VM_LIST and breadcrumbs[2] == self.vmName
+        return len(breadcrumbs) == 3 and breadcrumbs[0] == 'Compute' and breadcrumbs[1] == 'Virtual Machines' and breadcrumbs[2] == self.vmName
 
     def get_displayable_name(self):
         return 'VM detail view'

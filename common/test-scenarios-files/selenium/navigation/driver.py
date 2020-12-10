@@ -202,16 +202,17 @@ class Driver(object):
         if delay > 0 and delay <= 10:
             time.sleep(delay)
 
-        print("saving screenshot " + path)
         self.driver.save_screenshot(path)
 
     def save_page_source(self, path, delay=0):
         if delay > 0 and delay <= 10:
             time.sleep(delay)
 
-        print("saving page source " + path)
         with open(path, "w") as text_file:
-            text_file.write(self.driver.page_source.encode('utf-8'))
+            text_file.write(self.driver.page_source.encode('utf-8').decode())
+
+    def id_wait_and_click(self, message, element_id, wait_long=False):
+        self.xpath_wait_and_click(message, '//*[@id="' + element_id + '"]', wait_long)
 
     def is_class_name_present(self, class_name):
         try:

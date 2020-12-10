@@ -1,6 +1,11 @@
-from .constants import *
+import time
 from .Displayable import Displayable
 from .VmListView import VmListView
+from .TemplateListView import TemplateListView
+from .PoolListView import PoolListView
+from .HostListView import HostListView
+from .ClusterListView import ClusterListView
+from .StorageDomainListView import StorageDomainListView
 
 class WebAdminLeftMenu(Displayable):
 
@@ -13,12 +18,70 @@ class WebAdminLeftMenu(Displayable):
     def get_displayable_name(self):
         return 'WebAdmin left menu'
 
+    def open_dashboard_view(self):
+        print('Open dashboard view')
+        self._open_dashboard_menu()
+
     def open_vm_list_view(self):
         print('Open VM list view')
-        self.ovirt_driver.hover_to_id(SEL_ID_COMPUTE_MENU)
-        self.ovirt_driver.id_click(SEL_ID_VMS_MENU)
+        self._open_compute_menu('VMx', 'MenuView_vmsAnchor')
 
         vm_list_view = VmListView(self.ovirt_driver)
         vm_list_view.wait_for_displayed()
         return vm_list_view
 
+    def open_template_list_view(self):
+        print('Open VM template list view')
+        self._open_compute_menu('Templatex', 'MenuView_templatesAnchor')
+
+        template_list_view = TemplateListView(self.ovirt_driver)
+        template_list_view.wait_for_displayed()
+        return template_list_view
+
+    def open_pool_list_view(self):
+        print('Open VM pool list view')
+        self._open_compute_menu('Pools', 'MenuView_poolsAnchor')
+
+        pool_list_view = PoolListView(self.ovirt_driver)
+        pool_list_view.wait_for_displayed()
+        return pool_list_view
+
+    def open_host_list_view(self):
+        print('Open host list view')
+        self._open_compute_menu('Hosts', 'MenuView_hostsAnchor')
+
+        host_list_view = HostListView(self.ovirt_driver)
+        host_list_view.wait_for_displayed()
+        return host_list_view
+
+    def open_cluster_list_view(self):
+        print('Open cluster list view')
+        self._open_compute_menu('Clusters', 'MenuView_clustersAnchor')
+
+        cluster_list_view = ClusterListView(self.ovirt_driver)
+        cluster_list_view.wait_for_displayed()
+        return cluster_list_view
+
+    def open_storage_domain_list_view(self):
+        print('Open storage domain list view')
+        self._open_storage_menu('Storage Domains', 'MenuView_domainsAnchor')
+
+        storage_domain_list_view = StorageDomainListView(self.ovirt_driver)
+        storage_domain_list_view.wait_for_displayed()
+        return storage_domain_list_view
+
+    def _open_dashboard_menu(self):
+        self.ovirt_driver.xpath_wait_and_click('Dashboard menu', '//a[@href="#dashboard-main"]')
+
+    def _open_compute_menu(self, menu_name, menu_id):
+        self._open_menu('compute', menu_name, menu_id)
+
+    def _open_storage_menu(self, menu_name, menu_id):
+        self._open_menu('MenuView_storageTab', menu_name, menu_id)
+
+    def _open_menu(self, menu_group, menu_name, menu_id):
+        # time.sleep(x) helps to overcome problem when the menu is not clicked - maybe some background gwt queries are still running?
+        time.sleep(5)
+        self.ovirt_driver.hover_to_id(menu_group)
+        time.sleep(1)
+        self.ovirt_driver.id_wait_and_click(menu_name + ' menu', menu_id)

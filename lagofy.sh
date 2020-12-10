@@ -46,6 +46,8 @@ lago_init() {
     [ -n "$QCOW" -a -e "$QCOW" ] || { echo "Image file $1 doesn't exist"; return 1; }
     local engine_image=${QCOW/-host/-engine}
     local host_image=${QCOW/-engine/-host}
+    local upgrade_image=${host_image/-host-installed/-upgrade}
+    local he_image=${host_image/-host/-he}
     [[ "$2" = "-k" ]] && { LAGO_INIT_SSH_KEY="--ssh-key $3 --skip-bootstrap"; shift 2; }
 
     # cleanup
@@ -70,9 +72,9 @@ EOT
             shift; let add_repo++; echo "Add repo $add_repo: $2"
             echo 'echo -e "[lagofy'${add_repo}']\nname=lagofy'${add_repo}'\nbaseurl='${2}'\ngpgcheck=0\nmodule_hotfixes=1\nsslverify=0\n" >> /etc/yum.repos.d/lagofy.repo' >> add_plain_repos.sh
         done
-        echo "dnf upgrade --nogpgcheck -y" >> add_plain_repos.sh
+        echo "dnf upgrade --nogpgcheck -y -x ovirt-release-master" >> add_plain_repos.sh
     fi
-    suite_name="$SUITE_NAME" engine_image=$engine_image host_image=$host_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
+    suite_name="$SUITE_NAME" engine_image=$engine_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
 
     lago init $LAGO_INIT_SSH_KEY "$PREFIX" "$SUITE/LagoInitFile"
 

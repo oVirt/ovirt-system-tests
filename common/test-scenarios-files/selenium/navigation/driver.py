@@ -181,6 +181,16 @@ class Driver(object):
 
         return return_value
 
+    def execute_in_frame(self, xpath, method, *args):
+        result = None
+        try:
+            frame = self.driver.find_element_by_xpath(xpath)
+            self.driver.switch_to.frame(frame)
+            result = method(*args)
+        finally:
+            self.driver.switch_to.default_content()
+            return result
+
     def safe_close_dialog(self):
 
         try:

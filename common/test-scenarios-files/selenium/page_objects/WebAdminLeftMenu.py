@@ -6,6 +6,7 @@ from .PoolListView import PoolListView
 from .HostListView import HostListView
 from .ClusterListView import ClusterListView
 from .StorageDomainListView import StorageDomainListView
+from .DashboardView import DashboardView
 
 class WebAdminLeftMenu(Displayable):
 
@@ -21,6 +22,10 @@ class WebAdminLeftMenu(Displayable):
     def open_dashboard_view(self):
         print('Open dashboard view')
         self._open_dashboard_menu()
+
+        dashboard = DashboardView(self.ovirt_driver)
+        dashboard.wait_for_displayed()
+        return dashboard
 
     def open_vm_list_view(self):
         print('Open VM list view')

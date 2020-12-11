@@ -439,7 +439,15 @@ def test_image_upload(ovirt_driver, save_screenshot, browser_name,
 def test_dashboard(ovirt_driver, save_screenshot, save_page_source):
     try:
         webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        webadmin_menu.open_dashboard_view()
+        dashboard = webadmin_menu.open_dashboard_view()
+
+        assert dashboard.data_centers_count() is 1
+        assert dashboard.clusters_count() is 1
+        assert dashboard.hosts_count() is 2
+        assert dashboard.storage_domains_count() is 3
+        assert dashboard.vm_count() is 6
+        assert dashboard.events_count() > 0
+
         save_screenshot('dashboard-success')
     except:
         save_screenshot('dashboard-failed')

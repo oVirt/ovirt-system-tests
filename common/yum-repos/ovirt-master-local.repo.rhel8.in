@@ -1,0 +1,6 @@
+[rhv-master-tested-el8]
+name = rhv master tested
+baseurl = http://ci-web.eng.lab.tlv.redhat.com/repos/tested/rhv-master/rpm/el8/
+enabled = 1
+gpgcheck = 0
+

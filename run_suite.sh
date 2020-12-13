@@ -3,6 +3,7 @@
 # Imports
 source common/helpers/logger.sh
 source common/helpers/python.sh
+source common/helpers/distro_vars.sh
 source common/helpers/ost-images.sh
 
 CLI="lago"
@@ -515,6 +516,15 @@ restore_package_manager_config() {
     rm "$path_to_config_bak"
 }
 
+create_reposync_file_name() {
+    local reposync_file="$1"
+    if [[ "${OST_IMAGES_DISTRO}" == "rhel8" ]]; then
+        reposync_file="${reposync_file}.rhel8"
+    fi
+    reposync_file="${reposync_file}.repo"
+    echo "$reposync_file"
+}
+
 install_local_rpms_without_reposync() {
     local pkg_manager os path_to_config
 
@@ -537,7 +547,9 @@ enabled=1
 gpgcheck=0
 skip_if_unavailable=1
 EOF
-    cat "$SUITE/reposync-config-sdk4.repo"  >> "$path_to_config"
+    local reposync_file=$(create_reposync_file_name "$SUITE/reposync-config-sdk4")
+
+    cat "$reposync_file"  >> "$path_to_config"
     $pkg_manager -y install "${RPMS_TO_INSTALL[@]}" || return 1
 
     return 0
@@ -598,7 +610,8 @@ env_copy_repo_file() {
     for vm_type in "${vm_types_arr[@]}"
     do
         echo "$vm_type"
-        local reposync_file="reposync-config-${vm_type}.repo"
+        local reposync_file=$(create_reposync_file_name "reposync-config-${vm_type}")
+
         local reqsubstr="$vm_type"
         for vm in $(lago --out-format flat status | \
             gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\

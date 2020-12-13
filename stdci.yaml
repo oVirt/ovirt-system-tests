@@ -9,6 +9,10 @@ stage:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
+              - rhel8:
+                  runtime-requirements:
+                    support-nesting-level: 2
+                    hostdistro: same
         - he-basic_suite_master:
             distributions:
               - el8:

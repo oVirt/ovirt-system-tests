@@ -17,7 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import contextlib
 from distutils.version import LooseVersion
 import os
 
@@ -89,13 +88,3 @@ def _compare_versions(runtime_version, candidate_version):
     if LooseVersion(runtime_version) < LooseVersion(candidate_version):
         return -1
     return 1
-
-
-@contextlib.contextmanager
-def collect_artifacts(env, artifacts_path, module_name):
-    try:
-        yield
-    finally:
-        p = os.path.join(artifacts_path, module_name)
-        os.makedirs(p)
-        env.collect_artifacts(output_dir=p, ignore_nopath=True)

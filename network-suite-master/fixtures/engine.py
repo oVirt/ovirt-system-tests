@@ -24,7 +24,6 @@ from ovirtsdk4 import Connection
 from ovirtlib import eventlib
 from ovirtlib import sshlib
 from ovirtlib import syncutil
-from testlib import suite
 
 
 ANSWER_FILE_SRC = os.path.join(os.environ.get('SUITE'),
@@ -49,32 +48,30 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_service_up(fqdn, env, artifacts_path, engine_full_username,
+def ovirt_engine_service_up(fqdn, engine_full_username,
                             engine_password, ansible_engine, engine_facts):
-    with suite.collect_artifacts(env, artifacts_path, 'pre-tests'):
+    ANSWER_FILE_TMP = '/tmp/answer-file'
 
-        ANSWER_FILE_TMP = '/tmp/answer-file'
+    ansible_engine.copy(
+        src=ANSWER_FILE_SRC,
+        dest=ANSWER_FILE_TMP,
+    )
 
-        ansible_engine.copy(
-            src=ANSWER_FILE_SRC,
-            dest=ANSWER_FILE_TMP,
-        )
+    command = [
+        'engine-setup',
+        '--config-append={}'.format(ANSWER_FILE_TMP),
+        '--accept-defaults',
+    ]
+    sshlib.Node(engine_facts.ipv4_default_address,
+                engine_facts.ssh_password).exec_command(' '.join(command))
 
-        command = [
-            'engine-setup',
-            '--config-append={}'.format(ANSWER_FILE_TMP),
-            '--accept-defaults',
-        ]
-        sshlib.Node(engine_facts.ipv4_default_address,
-                    engine_facts.ssh_password).exec_command(' '.join(command))
-
-        syncutil.sync(exec_func=_create_engine_connection,
-                      exec_func_args=(engine_facts.ipv4_default_address,
-                                      engine_full_username,
-                                      engine_password),
-                      success_criteria=lambda api: isinstance(api, Connection),
-                      timeout=10*60)
-        yield
+    syncutil.sync(exec_func=_create_engine_connection,
+                  exec_func_args=(engine_facts.ipv4_default_address,
+                                  engine_full_username,
+                                  engine_password),
+                  success_criteria=lambda api: isinstance(api, Connection),
+                  timeout=10*60)
+    yield
 
 
 def _create_engine_connection(ip, engine_username, engine_password):

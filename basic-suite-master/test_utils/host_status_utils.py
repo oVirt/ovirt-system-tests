@@ -51,32 +51,32 @@ def _random_host_service_from_dc(api, dc_name=DC_NAME):
     return api.system_service().hosts_service().host_service(id=host.id)
 
 
-def _all_hosts_up(hosts_service, total_num_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+def _all_hosts_up(hosts_service, total_num_hosts, dc_name=DC_NAME):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(dc_name))
     if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if len(up_hosts) == total_num_hosts:
         return True
 
-    _check_problematic_hosts(hosts_service)
+    _check_problematic_hosts(hosts_service, dc_name)
 
 
-def _single_host_up(hosts_service, total_num_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
+def _single_host_up(hosts_service, total_num_hosts, dc_name=DC_NAME):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(dc_name))
     if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if len(up_hosts):
         return True
 
-    _check_problematic_hosts(hosts_service)
+    _check_problematic_hosts(hosts_service, dc_name)
 
 
-def _check_problematic_hosts(hosts_service):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up)'.format(DC_NAME))
+def _check_problematic_hosts(hosts_service, dc_name=DC_NAME):
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up)'.format(dc_name))
     if len(problematic_hosts):
         dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
         for host in problematic_hosts:

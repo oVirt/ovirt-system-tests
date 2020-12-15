@@ -19,6 +19,7 @@
 #
 import collections
 import contextlib
+import time
 
 from ovirtsdk4 import types
 
@@ -258,6 +259,23 @@ class Vnic(SDKSubEntity):
         self.hotunplug()
         self.mac_address = mac_addr
         self.hotplug()
+
+    def hot_replace_profile(self, profile):
+        self.hotunplug()
+        self.vnic_profile = profile
+        self.hotplug()
+
+    @contextlib.contextmanager
+    def toggle_profile(self, profile):
+        original_profile = self.vnic_profile
+        self.hot_replace_profile(profile)
+        try:
+            yield
+        finally:
+            # ensure that the guest OS has enough time to initialize the vNIC,
+            # before the request to hot-unplug is sent
+            time.sleep(2)
+            self.hot_replace_profile(original_profile)
 
     def _get_parent_service(self, vm):
         return vm.service.nics_service()

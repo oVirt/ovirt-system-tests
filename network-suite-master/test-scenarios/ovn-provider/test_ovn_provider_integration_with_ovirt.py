@@ -18,7 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 from contextlib import contextmanager
-import time
 
 import pytest
 
@@ -90,7 +89,7 @@ def test_modify_vnic_sec_groups_on_ext_networks(running_vm_0, system,
             vnic.vnic_profile.custom_properties = [
                 netlib.CustomProperty('SecurityGroups', def_group.id)]
 
-            with _setup_vnic_profile(vnic, profile):
+            with vnic.toggle_profile(profile):
                 assert vnic.vnic_profile.name == 'temporary'
                 assert [sec_group.id] == [
                     p.value for p in vnic.vnic_profile.custom_properties]
@@ -117,23 +116,3 @@ def _create_security_group(ovn_provider_client, name, description):
         yield security_group
     finally:
         ovn_provider_client.delete_security_group(security_group.id)
-
-
-@contextmanager
-def _setup_vnic_profile(vnic, profile):
-    original_profile = vnic.vnic_profile
-    _update_vnic_profile(vnic, profile)
-    try:
-        yield
-    finally:
-        # ensure that the guest OS has enough time to initialize the vNIC,
-        # before the request to hotunplug is sent
-        time.sleep(2)
-        _update_vnic_profile(vnic, original_profile)
-
-
-def _update_vnic_profile(vnic, profile):
-    # hotunplug requires support from the guest
-    vnic.hotunplug()
-    vnic.vnic_profile = profile
-    vnic.hotplug()

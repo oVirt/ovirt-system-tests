@@ -29,6 +29,11 @@ stage:
                     jenkins_master: upstream
                     hostdistro: same
                     support-nesting-level: 2
+              - rhel8:
+                  runtime-requirements:
+                    jenkins_master: psi
+                    support-nesting-level: 2
+                    hostdistro: same
         - ansible_suite_master:
             distributions:
               - el8:

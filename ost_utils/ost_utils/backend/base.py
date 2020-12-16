@@ -53,6 +53,18 @@ class BaseBackend(abc.ABC):
 
         """
 
+    @abc.abstractmethod
+    def ansible_inventory(self):
+        """Returns a path to a file containing ansible inventory for the VMs.
+
+        The file should be deleted after the deriving class is garbage
+        collected.
+
+        Returns:
+            str: Path to ansible inventory file.
+
+        """
+
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]
 

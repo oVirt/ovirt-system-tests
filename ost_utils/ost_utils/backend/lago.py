@@ -19,6 +19,8 @@
 #
 
 import json
+import os
+import tempfile
 
 from ost_utils.backend import base
 from ost_utils import memoized
@@ -29,6 +31,7 @@ class LagoBackend(base.BaseBackend):
 
     def __init__(self, prefix_path):
         self._prefix_path = prefix_path
+        self._ansible_inventory = None
 
     def iface_mapping(self):
         status = self._status()
@@ -42,6 +45,19 @@ class LagoBackend(base.BaseBackend):
                 networks.setdefault(nic_desc["network"], []).append(nic_name)
 
         return mapping
+
+    def ansible_inventory(self):
+        if self._ansible_inventory is None:
+            contents = shell.shell(["lago", "ansible_hosts"],
+                                   bytes_output=True,
+                                   cwd=self._prefix_path)
+            inventory = tempfile.NamedTemporaryFile()
+            inventory.write(contents)
+            inventory.flush()
+            os.fsync(inventory.fileno())
+            self._ansible_inventory = inventory
+
+        return self._ansible_inventory.name
 
     @memoized.memoized
     def _status(self):

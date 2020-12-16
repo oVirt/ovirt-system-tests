@@ -152,7 +152,6 @@ SUITE_NAME="${SUITE##*/}"
 echo -n "Suite $SUITE_NAME - "
 export PREFIX=${OST_REPO_ROOT}/deployment-${SUITE_NAME}
 export ANSIBLE_NOCOLOR="1"
-export ANSIBLE_INVENTORY_FILE="${PREFIX}/hosts"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
 lago() { /usr/bin/lago --lease_dir "$HOME/.lago" --workdir "$PREFIX" "$@"; }

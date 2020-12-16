@@ -67,6 +67,8 @@ _LAGO_ENGINE_PATTERN = '~lago-.*-' + _ENGINE
 _LAGO_HOST0_PATTERN = '~lago-.*-' + _HOST0
 _LAGO_HOST1_PATTERN = '~lago-.*-' + _HOST1
 
+from ost_utils import backend
+
 
 class AnsibleExecutionError(Exception):
 
@@ -157,7 +159,7 @@ class _AnsiblePrivateDir(object):
 class _AnsibleConfigBuilder(object):
 
     def __init__(self):
-        self.inventory = os.environ["ANSIBLE_INVENTORY_FILE"]
+        self.inventory = backend.default_backend().ansible_inventory()
         self.extravars = {"ansible_user": "root"}
         self.host_pattern = None
         self.module = None

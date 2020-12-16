@@ -65,7 +65,7 @@ def engine_fqdn():
 
 @pytest.fixture(scope="session")
 def engine_webadmin_url(engine_fqdn):
-    return "https://%s/ovirt-engine/webadmin" % engine_fqdn
+    return "https://%s/ovirt-engine" % engine_fqdn
 
 
 @pytest.fixture(scope="session")

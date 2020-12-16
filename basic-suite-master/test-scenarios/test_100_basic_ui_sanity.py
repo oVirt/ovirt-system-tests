@@ -46,7 +46,10 @@ from ost_utils.shell import shell
 from test_utils.constants import *
 from test_utils.selenium_constants import *
 from test_utils.navigation.driver import *
+from test_utils.page_objects.WelcomeScreen import WelcomeScreen
+from test_utils.page_objects.LoginScreen import LoginScreen
 from test_utils.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
+from test_utils.page_objects.WebAdminTopMenu import WebAdminTopMenu
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
@@ -191,24 +194,33 @@ def save_page_source(ovirt_driver, browser_name, screenshots_dir):
 
 def test_login(ovirt_driver, save_screenshot, save_page_source, engine_username,
                engine_password, engine_cert):
-    """
-    login to oVirt webadmin
-    """
-    save_screenshot('login_screen')
-    elem = ovirt_driver.wait_for_id(SEL_ID_LOGIN_USERNAME)
-    elem.send_keys(engine_username)
-    elem = ovirt_driver.wait_for_id(SEL_ID_LOGIN_PASSWORD)
-    elem.send_keys(engine_password)
-    save_screenshot('login_screen_credentials')
-    elem.send_keys(Keys.RETURN)
-    save_screenshot('logged_in', 5)
 
     try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        webadmin_menu.wait_for_displayed()
+        save_screenshot('welcome-screen')
+
+        welcome_screen = WelcomeScreen(ovirt_driver)
+        welcome_screen.wait_for_displayed()
+        welcome_screen.open_administration_portal()
+
+        login_screen = LoginScreen(ovirt_driver)
+        login_screen.wait_for_displayed()
+        login_screen.set_user_name(engine_username)
+        login_screen.set_user_password(engine_password)
+        login_screen.login()
+
+        webadmin_left_menu = WebAdminLeftMenu(ovirt_driver)
+        webadmin_left_menu.wait_for_displayed()
+
+        webadmin_top_menu = WebAdminTopMenu(ovirt_driver)
+        webadmin_top_menu.wait_for_displayed()
+
+        assert webadmin_left_menu.is_displayed()
+        assert webadmin_top_menu.is_displayed()
+
+        save_screenshot('login-success')
     except:
-        save_screenshot('menu-failed')
-        save_page_source('menu-failed')
+        save_screenshot('login-failed')
+        save_page_source('login-failed')
         raise
 
 
@@ -452,4 +464,25 @@ def test_dashboard(ovirt_driver, save_screenshot, save_page_source):
     except:
         save_screenshot('dashboard-failed')
         save_page_source('dashboard-failed')
+        raise
+
+
+def test_logout(ovirt_driver, save_screenshot, save_page_source, engine_webadmin_url):
+
+    try:
+        webadmin_menu = WebAdminTopMenu(ovirt_driver)
+        webadmin_menu.wait_for_displayed()
+        webadmin_menu.logout()
+
+        # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
+        ovirt_driver.driver.get(engine_webadmin_url)
+
+        welcome_screen = WelcomeScreen(ovirt_driver)
+        welcome_screen.wait_for_displayed()
+        assert welcome_screen.is_user_logged_out()
+
+        save_screenshot('logout-success')
+    except:
+        save_screenshot('logout-failed')
+        save_page_source('logout-failed')
         raise

@@ -83,13 +83,14 @@ yum install --nogpgcheck -y "${INSTALL_PKG[@]}"
 yum repolist -v > /var/log/rst_yum_repos.log
 
 ## collect general info on the lago vm
-yum install --nogpgcheck -y libvirt sos
-systemctl start libvirtd
+reqsubstr="host"
+yum install --nogpgcheck -y sos
 lscpu >  /var/log/lscpu.log || res=$?
 cat /proc/cpuinfo > /var/log/cpuinfo.log || res=$?
 sosreport --batch --tmp-dir=/tmp --name=sosreport_for_vm.log || res=$?
-reqsubstr="host"
 if [[ -z "${hostname##*$reqsubstr*}" ]] ;then
+    yum install --nogpgcheck -y libvirt
+    systemctl start libvirtd
     virsh capabilities > /var/log/virsh_capabilities.log || res=$?
 fi
 

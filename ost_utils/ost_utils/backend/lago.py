@@ -18,57 +18,34 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from __future__ import absolute_import
-
 import json
-import os
 
+from ost_utils.backend import base
 from ost_utils import memoized
 from ost_utils import shell
 
 
-@memoized.memoized
-def _status():
-    prefix_path = os.environ["PREFIX"]
-    status = shell.shell(
-        ["lago", "--out-format", "json", "status"], cwd=prefix_path
-    )
-    return json.loads(status)
+class LagoBackend(base.BaseBackend):
 
+    def __init__(self, prefix_path):
+        self._prefix_path = prefix_path
 
-def _find_network(part):
-    return next(
-        n
-        for n in _status()["Prefix"]["Networks"]
-        if n.find(part) > 0
-    )
+    def iface_mapping(self):
+        status = self._status()
+        vms = status["Prefix"]["VMs"]
 
+        mapping = {}
 
-@memoized.memoized
-def management_network_name():
-    return _find_network("management")
+        for vm_name, vm_desc in vms.items():
+            networks = mapping.setdefault(vm_name, {})
+            for nic_name, nic_desc in vm_desc["NICs"].items():
+                networks.setdefault(nic_desc["network"], []).append(nic_name)
 
+        return mapping
 
-@memoized.memoized
-def storage_network_name():
-    return _find_network("storage")
-
-
-@memoized.memoized
-def bonding_network_name():
-    return _find_network("bonding")
-
-
-@memoized.memoized
-def iface_mapping():
-    status = _status()
-    vms = status["Prefix"]["VMs"]
-
-    mapping = {}
-
-    for vm_name, vm_desc in vms.items():
-        networks = mapping.setdefault(vm_name, {})
-        for nic_name, nic_desc in vm_desc["NICs"].items():
-            networks.setdefault(nic_desc["network"], []).append(nic_name)
-
-    return mapping
+    @memoized.memoized
+    def _status(self):
+        status = shell.shell(
+            ["lago", "--out-format", "json", "status"], cwd=self._prefix_path
+        )
+        return json.loads(status)

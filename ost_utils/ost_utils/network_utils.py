@@ -42,7 +42,7 @@ def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
 
 def get_ips(ansible_facts, network_name):
     hostname = ansible_facts.get("ansible_hostname")
-    ifaces = backend.ifaces_for(hostname, network_name)
+    ifaces = backend.default_backend().ifaces_for(hostname, network_name)
     ips = [
         ansible_facts.get("ansible_{}.ipv4.address".format(iface))
         for iface in ifaces
@@ -52,7 +52,7 @@ def get_ips(ansible_facts, network_name):
 
 def get_ips6(ansible_facts, network_name):
     hostname = ansible_facts.get("ansible_hostname")
-    ifaces = backend.ifaces_for(hostname, network_name)
+    ifaces = backend.default_backend().ifaces_for(hostname, network_name)
     ips = [
         addr['address']
         for iface in ifaces

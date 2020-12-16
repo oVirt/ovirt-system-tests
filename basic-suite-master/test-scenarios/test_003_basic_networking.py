@@ -75,7 +75,7 @@ def _attach_vm_network_to_host_static_config(api, network_name, host_num):
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[host_num]
     host_service = engine.hosts_service().host_service(id=host.id)
 
-    nic_name = backend.ifaces_for(host.name, network_name)[0]  # eth0
+    nic_name = backend.default_backend().ifaces_for(host.name, network_name)[0]  # eth0
     ip_configuration = network_utils_v4.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR.format(host_num+1),
         VM_NETWORK_IPv4_MASK,
@@ -138,7 +138,7 @@ def test_bond_nics(engine_api, bonding_network_name):
     def _bond_nics(number, host):
         slaves = [
             HostNic(name=nic)
-            for nic in backend.ifaces_for(host.name, bonding_network_name)
+            for nic in backend.default_backend().ifaces_for(host.name, bonding_network_name)
         ]
 
         options = [

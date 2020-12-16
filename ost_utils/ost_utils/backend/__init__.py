@@ -18,43 +18,22 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from __future__ import absolute_import
-
 """Backend-specific information
 
 This is the only module that should contain backend-specific
 information. Every other part of OST code should be backend-agnostic.
 
-ATM we only support lago, but the imports below should be adjusted
+ATM we only support lago, but the code below should be adjusted
 if new backends are available.
 
 """
 
-# Functions returning specific network names
-from ost_utils.backend.lago import management_network_name
-from ost_utils.backend.lago import storage_network_name
-from ost_utils.backend.lago import bonding_network_name
+import os
 
-# Function returning a mapping of hostname --> networks --> ifaces, i.e.:
-#
-#{
-#    'lago-basic-suite-master-engine': {
-#        'lago-basic-suite-master-net-management': ['eth0'],
-#        'lago-basic-suite-master-net-storage': ['eth1']
-#    },
-#    'lago-basic-suite-master-host-0': {
-#        'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
-#        'lago-basic-suite-master-net-management': ['eth0'],
-#        'lago-basic-suite-master-net-storage': ['eth1']
-#    },
-#     'lago-basic-suite-master-host-1': {
-#        'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
-#        'lago-basic-suite-master-net-management': ['eth0'],
-#        'lago-basic-suite-master-net-storage': ['eth1']
-#    }
-#}
-from ost_utils.backend.lago import iface_mapping
+from ost_utils.backend import lago
+from ost_utils import memoized
 
 
-def ifaces_for(hostname, network_name):
-    return iface_mapping()[hostname][network_name]
+@memoized.memoized
+def default_backend():
+    return lago.LagoBackend(os.environ["PREFIX"])

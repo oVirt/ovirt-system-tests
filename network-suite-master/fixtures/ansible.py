@@ -21,6 +21,7 @@ import os
 import pytest
 
 from ost_utils import ansible
+from ost_utils.ansible import private_dir
 
 
 __ANSIBLE_ENGINE_PATTERN = "~lago-.*-engine"
@@ -35,29 +36,29 @@ def ansible_engine():
 
 @pytest.fixture(scope="session")
 def engine_facts():
-    return AnsibleFactsCache(ansible._AnsibleFacts(__ANSIBLE_ENGINE_PATTERN))
+    return AnsibleFactsCache(ansible.Facts(__ANSIBLE_ENGINE_PATTERN))
 
 
 @pytest.fixture(scope="session")
 def host0_facts():
-    return AnsibleFactsCache(ansible._AnsibleFacts(__ANSIBLE_HOST0_PATTERN))
+    return AnsibleFactsCache(ansible.Facts(__ANSIBLE_HOST0_PATTERN))
 
 
 @pytest.fixture(scope="session")
 def host1_facts():
-    return AnsibleFactsCache(ansible._AnsibleFacts(__ANSIBLE_HOST1_PATTERN))
+    return AnsibleFactsCache(ansible.Facts(__ANSIBLE_HOST1_PATTERN))
 
 
 @pytest.fixture(scope="session", autouse=True)
 def ansible_clean_private_dirs():
     yield
-    ansible._AnsiblePrivateDir.cleanup()
+    private_dir.PrivateDir.cleanup()
 
 
 @pytest.fixture(scope="session", autouse=True)
 def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
     yield
-    ansible._AnsibleLogs.save(artifacts_dir)
+    ansible.LogsCollector.save(artifacts_dir)
 
 
 @pytest.fixture(scope="session")

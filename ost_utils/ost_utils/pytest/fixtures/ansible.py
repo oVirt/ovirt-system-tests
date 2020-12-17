@@ -19,11 +19,10 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import os
-
 import pytest
 
 from ost_utils import ansible
+from ost_utils.ansible import private_dir
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 
 
@@ -70,26 +69,26 @@ def ansible_by_hostname(ansible_engine, ansible_host0, ansible_host1):
 
 @pytest.fixture(scope="session")
 def ansible_engine_facts():
-    return ansible._AnsibleFacts(ANSIBLE_ENGINE_PATTERN)
+    return ansible.Facts(ANSIBLE_ENGINE_PATTERN)
 
 
 @pytest.fixture(scope="session")
 def ansible_host0_facts():
-    return ansible._AnsibleFacts(ANSIBLE_HOST0_PATTERN)
+    return ansible.Facts(ANSIBLE_HOST0_PATTERN)
 
 
 @pytest.fixture(scope="session")
 def ansible_host1_facts():
-    return ansible._AnsibleFacts(ANSIBLE_HOST1_PATTERN)
+    return ansible.Facts(ANSIBLE_HOST1_PATTERN)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def ansible_clean_private_dirs():
     yield
-    ansible._AnsiblePrivateDir.cleanup()
+    private_dir.PrivateDir.cleanup()
 
 
 @pytest.fixture(scope="session", autouse=True)
 def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
     yield
-    ansible._AnsibleLogs.save(artifacts_dir)
+    ansible.LogsCollector.save(artifacts_dir)

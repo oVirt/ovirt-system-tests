@@ -22,8 +22,8 @@ import os
 
 import pytest
 
-from ost_utils import ansible
 from ost_utils import utils
+from ost_utils.ansible import artifacts_collector as ac
 
 
 @pytest.fixture(scope="session")
@@ -35,7 +35,7 @@ def artifacts_dir():
 def collect_artifacts(artifacts_dir):
     yield
     utils.invoke_different_funcs_in_parallel(
-        ansible.EngineArtifactsCollector(artifacts_dir).collect,
-        ansible.Host0ArtifactsCollector(artifacts_dir).collect,
-        ansible.Host1ArtifactsCollector(artifacts_dir).collect
+        ac.EngineArtifactsCollector(artifacts_dir).collect,
+        ac.Host0ArtifactsCollector(artifacts_dir).collect,
+        ac.Host1ArtifactsCollector(artifacts_dir).collect
     )

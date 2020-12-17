@@ -44,8 +44,6 @@ which will raise 'AnsibleExecutionError' on failure.
 
 """
 
-from ost_utils.ansible.facts import Facts
 from ost_utils.ansible.facts import FactNotFound
 from ost_utils.ansible.logs_collector import LogsCollector
-from ost_utils.ansible.module_mapper import AnsibleExecutionError
-from ost_utils.ansible.module_mapper import module_mapper_for
+from ost_utils.ansible.module_mappers import AnsibleExecutionError

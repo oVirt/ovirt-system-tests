@@ -22,6 +22,7 @@ import ansible_runner
 
 from ost_utils import backend
 from ost_utils.ansible import config_builder as cb
+from ost_utils.ansible import patterns
 
 
 class AnsibleExecutionError(Exception):
@@ -32,6 +33,30 @@ class AnsibleExecutionError(Exception):
 
     def __str__(self):
         return f"Error running ansible: rc={self.rc}, stdout={self.stdout}"
+
+
+def all():
+    return module_mapper_for(patterns.all())
+
+
+def engine():
+    return module_mapper_for(patterns.engine())
+
+
+def host0():
+    return module_mapper_for(patterns.host0())
+
+
+def host1():
+    return module_mapper_for(patterns.host1())
+
+
+def hosts():
+    return module_mapper_for(patterns.hosts())
+
+
+def storage():
+    return module_mapper_for(patterns.storage())
 
 
 def module_mapper_for(host_pattern):

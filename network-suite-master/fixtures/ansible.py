@@ -21,28 +21,30 @@ import os
 import pytest
 
 from ost_utils import ansible
+from ost_utils.ansible import facts
+from ost_utils.ansible import module_mappers
 from ost_utils.ansible import patterns
 from ost_utils.ansible import private_dir
 
 
 @pytest.fixture(scope="session")
 def ansible_engine():
-    return ansible.module_mapper_for(patterns.engine())
+    return module_mappers.engine()
 
 
 @pytest.fixture(scope="session")
 def engine_facts():
-    return AnsibleFactsCache(ansible.Facts(patterns.engine()))
+    return AnsibleFactsCache(facts.engine())
 
 
 @pytest.fixture(scope="session")
 def host0_facts():
-    return AnsibleFactsCache(ansible.Facts(patterns.host0()))
+    return AnsibleFactsCache(facts.host0())
 
 
 @pytest.fixture(scope="session")
 def host1_facts():
-    return AnsibleFactsCache(ansible.Facts(patterns.host1()))
+    return AnsibleFactsCache(facts.host1())
 
 
 @pytest.fixture(scope="session", autouse=True)

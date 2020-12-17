@@ -23,8 +23,7 @@ import os
 import yaml
 
 from ost_utils import shell
-from ost_utils.ansible import module_mapper as mm
-from ost_utils.ansible import patterns
+from ost_utils.ansible import module_mappers as mm
 
 
 SUITE_PATH = os.environ.get('SUITE')
@@ -35,8 +34,8 @@ _HOST1 = 'host-1'
 
 class ArtifactsCollector(object):
 
-    def __init__(self, host_pattern, host_key, artifacts_target_dir):
-        self._module_mapper = mm.module_mapper_for(host_pattern)
+    def __init__(self, module_mapper, host_key, artifacts_target_dir):
+        self._module_mapper = module_mapper
         self.host_key = host_key
         self.artifacts_target_dir = artifacts_target_dir
         self.domain_name = None
@@ -78,16 +77,16 @@ class ArtifactsCollector(object):
 class EngineArtifactsCollector(ArtifactsCollector):
     def __init__(self, artifacts_dir):
         super(EngineArtifactsCollector, self).__init__(
-            patterns.engine(), _ENGINE, artifacts_dir)
+            mm.engine(), _ENGINE, artifacts_dir)
 
 
 class Host0ArtifactsCollector(ArtifactsCollector):
     def __init__(self, artifacts_dir):
         super(Host0ArtifactsCollector, self).__init__(
-            patterns.host0(), _HOST0, artifacts_dir)
+            mm.host0(), _HOST0, artifacts_dir)
 
 
 class Host1ArtifactsCollector(ArtifactsCollector):
     def __init__(self, artifacts_dir):
         super(Host1ArtifactsCollector, self).__init__(
-            patterns.host1(), _HOST1, artifacts_dir)
+            mm.host1(), _HOST1, artifacts_dir)

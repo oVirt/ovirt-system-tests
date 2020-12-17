@@ -18,9 +18,10 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import functools
 import threading
 
-from ost_utils.ansible import module_mapper as mm
+from ost_utils.ansible import module_mappers
 
 
 class FactNotFound(Exception):
@@ -32,6 +33,26 @@ class FactNotFound(Exception):
         return f"Could not find fact: {self.fact}"
 
 
+@functools.lru_cache()
+def engine():
+    return Facts(module_mappers.engine())
+
+
+@functools.lru_cache()
+def host0():
+    return Facts(module_mappers.host0())
+
+
+@functools.lru_cache()
+def host1():
+    return Facts(module_mappers.host1())
+
+
+@functools.lru_cache()
+def storage():
+    return Facts(module_mappers.storage())
+
+
 class Facts:
     """Uses ModuleMapper and gather_facts module to obtain and cache facts
     about a VM.
@@ -41,9 +62,9 @@ class Facts:
 
     """
 
-    def __init__(self, host_pattern):
+    def __init__(self, module_mapper):
         self._thread_local = threading.local()
-        self._module_mapper = mm.module_mapper_for(host_pattern)
+        self._module_mapper = module_mapper
 
     @property
     def facts_gathered(self):

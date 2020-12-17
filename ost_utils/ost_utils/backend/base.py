@@ -73,6 +73,20 @@ class BaseBackend(abc.ABC):
         return set(self.iface_mapping().keys())
 
     @memoized.memoized
+    def engine_hostname(self):
+        return next(hn for hn in self.hostnames() if "engine" in hn)
+
+    @memoized.memoized
+    def hosts_hostnames(self):
+        # The output should always be sorted, so we can refer by indices
+        return sorted(hn for hn in self.hostnames() if "host" in hn)
+
+    @memoized.memoized
+    def storage_hostname(self):
+        # Storage VM does not always exist - some suites do not define it
+        return next((hn for hn in self.hostnames() if "storage" in hn), None)
+
+    @memoized.memoized
     def network_names(self):
         return {
             network_name

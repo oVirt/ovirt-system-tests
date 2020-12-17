@@ -22,34 +22,29 @@
 import pytest
 
 from ost_utils import ansible
+from ost_utils.ansible import patterns
 from ost_utils.ansible import private_dir
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 
 
-ANSIBLE_ENGINE_PATTERN = "~lago-.*-engine"
-ANSIBLE_HOSTS_PATTERN = "~lago-.*-host-[0-9]"
-ANSIBLE_HOST0_PATTERN = "~lago-.*-host-0"
-ANSIBLE_HOST1_PATTERN = "~lago-.*-host-1"
-
-
 @pytest.fixture(scope="session")
 def ansible_engine():
-    return ansible.module_mapper_for(ANSIBLE_ENGINE_PATTERN)
+    return ansible.module_mapper_for(patterns.engine())
 
 
 @pytest.fixture(scope="session")
 def ansible_hosts():
-    return ansible.module_mapper_for(ANSIBLE_HOSTS_PATTERN)
+    return ansible.module_mapper_for(patterns.hosts())
 
 
 @pytest.fixture(scope="session")
 def ansible_host0():
-    return ansible.module_mapper_for(ANSIBLE_HOST0_PATTERN)
+    return ansible.module_mapper_for(patterns.host0())
 
 
 @pytest.fixture(scope="session")
 def ansible_host1():
-    return ansible.module_mapper_for(ANSIBLE_HOST1_PATTERN)
+    return ansible.module_mapper_for(patterns.host1())
 
 
 @pytest.fixture(scope="session")
@@ -69,17 +64,17 @@ def ansible_by_hostname(ansible_engine, ansible_host0, ansible_host1):
 
 @pytest.fixture(scope="session")
 def ansible_engine_facts():
-    return ansible.Facts(ANSIBLE_ENGINE_PATTERN)
+    return ansible.Facts(patterns.engine())
 
 
 @pytest.fixture(scope="session")
 def ansible_host0_facts():
-    return ansible.Facts(ANSIBLE_HOST0_PATTERN)
+    return ansible.Facts(patterns.host0())
 
 
 @pytest.fixture(scope="session")
 def ansible_host1_facts():
-    return ansible.Facts(ANSIBLE_HOST1_PATTERN)
+    return ansible.Facts(patterns.host1())
 
 
 @pytest.fixture(scope="session", autouse=True)

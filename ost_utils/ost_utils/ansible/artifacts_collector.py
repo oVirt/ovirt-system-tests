@@ -24,15 +24,13 @@ import yaml
 
 from ost_utils import shell
 from ost_utils.ansible import module_mapper as mm
+from ost_utils.ansible import patterns
 
 
 SUITE_PATH = os.environ.get('SUITE')
 _ENGINE = 'engine'
 _HOST0 = 'host-0'
 _HOST1 = 'host-1'
-_LAGO_ENGINE_PATTERN = '~lago-.*-' + _ENGINE
-_LAGO_HOST0_PATTERN = '~lago-.*-' + _HOST0
-_LAGO_HOST1_PATTERN = '~lago-.*-' + _HOST1
 
 
 class ArtifactsCollector(object):
@@ -80,16 +78,16 @@ class ArtifactsCollector(object):
 class EngineArtifactsCollector(ArtifactsCollector):
     def __init__(self, artifacts_dir):
         super(EngineArtifactsCollector, self).__init__(
-            _LAGO_ENGINE_PATTERN, _ENGINE, artifacts_dir)
+            patterns.engine(), _ENGINE, artifacts_dir)
 
 
 class Host0ArtifactsCollector(ArtifactsCollector):
     def __init__(self, artifacts_dir):
         super(Host0ArtifactsCollector, self).__init__(
-            _LAGO_HOST0_PATTERN, _HOST0, artifacts_dir)
+            patterns.host0(), _HOST0, artifacts_dir)
 
 
 class Host1ArtifactsCollector(ArtifactsCollector):
     def __init__(self, artifacts_dir):
         super(Host1ArtifactsCollector, self).__init__(
-            _LAGO_HOST1_PATTERN, _HOST1, artifacts_dir)
+            patterns.host1(), _HOST1, artifacts_dir)

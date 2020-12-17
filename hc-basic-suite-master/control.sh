@@ -144,7 +144,6 @@ run_suite () {
     local curdir="${PWD?}"
     declare failed=false
     cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
-    install_libguestfs
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"

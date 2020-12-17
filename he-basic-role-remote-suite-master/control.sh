@@ -77,7 +77,6 @@ he_deploy() {
 }
 
 run_suite(){
-    install_libguestfs
     cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
     local suite="${SUITE?}"
     local curdir="${PWD?}"

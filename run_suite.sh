@@ -657,21 +657,6 @@ env_add_extra_repos() {
     done
 }
 
-install_libguestfs() {
-    if [[ ${INSIDE_MOCK} -eq 0 ]]; then
-        return 0
-    fi
-    cd /tmp
-    /var/lib/ci_toolbox/safe_download.sh \
-        -s 525522aaf4fcc4f5212cc2a9e98ee873d125536e \
-        appliance.lock \
-        http://download.libguestfs.org/binaries/appliance/appliance-1.40.1.tar.xz \
-        /var/lib/lago/appliance-1.40.1.tar.xz
-
-    tar xvf /var/lib/lago/appliance-1.40.1.tar.xz
-    cd -
-    export LIBGUESTFS_PATH=/tmp/appliance
-}
 
 options=$( \
     getopt \

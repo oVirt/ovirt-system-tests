@@ -11,7 +11,6 @@ cleanup_run() {
 }
 
 run_suite () {
-    install_libguestfs
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"

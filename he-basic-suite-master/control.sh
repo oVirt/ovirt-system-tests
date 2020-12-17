@@ -61,7 +61,6 @@ run_suite(){
         "pytest==4.6.9" \
         "zipp==1.2.0"
 
-    install_libguestfs
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     declare failed=false

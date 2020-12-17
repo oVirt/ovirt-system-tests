@@ -14,7 +14,6 @@ install_dependencies() {
         "ansible-runner==1.4.4" \
         "decorator==4.4.0" \
         "openstacksdk==0.37"
-    install_libguestfs
     "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
 }
 

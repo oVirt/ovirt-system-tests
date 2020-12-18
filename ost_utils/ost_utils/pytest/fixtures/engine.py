@@ -79,6 +79,11 @@ def engine_full_username():
 
 
 @pytest.fixture(scope="session")
+def engine_email():
+    return "root@localhost"
+
+
+@pytest.fixture(scope="session")
 def engine_password():
     # TODO: read the password from the answerfile
     return "123"

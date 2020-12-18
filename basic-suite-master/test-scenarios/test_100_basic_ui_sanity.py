@@ -26,6 +26,7 @@ import shutil
 import subprocess
 import sys
 import time
+import requests
 
 from datetime import datetime
 
@@ -37,6 +38,7 @@ from ost_utils import assertions
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.engine import *
+from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.pytest.fixtures.virt import cirros_image_glance_template_name
 from ost_utils.selenium import CHROME_VERSION
@@ -51,6 +53,8 @@ from test_utils.page_objects.LoginScreen import LoginScreen
 from test_utils.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 from test_utils.page_objects.WebAdminTopMenu import WebAdminTopMenu
 from test_utils.page_objects.VmPortal import VmPortal
+from test_utils.page_objects.GrafanaLoginScreen import GrafanaLoginScreen
+from test_utils.page_objects.Grafana import Grafana
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
@@ -94,6 +98,21 @@ def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip,
         "--cacert", engine_cert,
         engine_webadmin_url
     ])
+
+
+def test_add_grafana_user(grafana_admin_api, engine_email):
+    url = grafana_admin_api + '/admin/users'
+    data = '''{{
+        "name":"ost",
+        "email":"{}",
+        "login":"ost",
+        "password":"ost12345"
+    }}'''.format(engine_email)
+    headers = {"Content-Type": 'application/json'}
+
+    response = requests.post(url, data=data,headers=headers)
+
+    print (response.text)
 
 
 @test_utils.memoized
@@ -488,6 +507,7 @@ def test_logout(ovirt_driver, save_screenshot, save_page_source, engine_webadmin
         save_page_source('logout-failed')
         raise
 
+
 def test_userportal(ovirt_driver, save_screenshot, save_page_source,
         engine_username, engine_password):
 
@@ -512,3 +532,37 @@ def test_userportal(ovirt_driver, save_screenshot, save_page_source,
         save_screenshot('vm-portal-failed')
         save_page_source('vm-portal-failed')
         raise
+
+
+def test_grafana(ovirt_driver, save_screenshot, save_page_source, engine_username,
+               engine_password, engine_webadmin_url):
+    try:
+
+        ovirt_driver.driver.get(engine_webadmin_url)
+
+        welcome_screen = WelcomeScreen(ovirt_driver)
+        welcome_screen.wait_for_displayed()
+        welcome_screen.open_monitoring_portal()
+
+        grafana_login = GrafanaLoginScreen(ovirt_driver)
+        grafana_login.wait_for_displayed()
+        save_screenshot('grafana-login')
+        grafana_login.use_ovirt_engine_auth()
+
+        grafana = Grafana(ovirt_driver)
+        grafana.wait_for_displayed()
+        save_screenshot('grafana')
+
+        grafana.open_dashboard('oVirt Executive Dashboards', 'Data Center Dashboard')
+        assert not grafana.is_error_visible()
+        save_screenshot('grafana-dashboard-1')
+
+        grafana.open_dashboard('oVirt Trend Dashboards', 'Hosts Resource Usage Dashboard')
+        assert not grafana.is_error_visible()
+
+        save_screenshot('grafana-dashboard-2')
+    except:
+        save_screenshot('grafana-failed')
+        save_page_source('grafana-failed')
+        raise
+

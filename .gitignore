@@ -20,6 +20,7 @@ mocker-*
 *.iml
 .idea
 .pydevproject
+.tox
 
 # Ansible files
 ###############

@@ -24,10 +24,17 @@ import socket
 
 from tempfile import NamedTemporaryFile
 
-from ost_utils.pytest.fixtures.ansible import ansible_engine
-from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
-from ost_utils.pytest.fixtures.ansible import ansible_hosts
+from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
+
+
+# workaround for https://issues.redhat.com/browse/RHV-39904
+def test_set_hostnames(ansible_engine, ansible_host0, ansible_host1,
+                       ansible_engine_facts, ansible_host0_facts,
+                       ansible_host1_facts):
+    ansible_engine.hostname(name=ansible_engine_facts.get("ansible_hostname"))
+    ansible_host0.hostname(name=ansible_host0_facts.get("ansible_hostname"))
+    ansible_host1.hostname(name=ansible_host1_facts.get("ansible_hostname"))
 
 
 def test_check_ansible_connectivity(ansible_engine, ansible_hosts):

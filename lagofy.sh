@@ -150,7 +150,6 @@ lago_cleanup() {
 collect_logs() {
     logs="${OST_REPO_ROOT}/test_logs/${SUITE_NAME}/$(date +'%Y-%m-%d_%H:%M:%S')_${scenario##*/}"
     lago collect --output $logs # lago logs
-    [ -n "$coverage" ] && python3 ${OST_REPO_ROOT}/common/scripts/generate_vdsm_coverage_report.py $PREFIX ${OST_REPO_ROOT}/exported-artifacts/coverage/
     [ -d "${OST_REPO_ROOT}/exported-artifacts" ] && ls "${OST_REPO_ROOT}/exported-artifacts" | xargs -IX mv "${OST_REPO_ROOT}/exported-artifacts/X" $logs/
 }
 

@@ -86,5 +86,4 @@ run_suite () {
     fi
     start_env
     run_tests
-    generate_vdsm_coverage_report
 }

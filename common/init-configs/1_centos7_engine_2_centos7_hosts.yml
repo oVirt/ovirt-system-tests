@@ -124,9 +124,6 @@ domains:
         {% if env.use_ost_images != "1" and loop.first and install_ovirt_host|default(false) -%}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_1st_host_el7.sh
         {%- endif %}
-        {% if env.coverage == "true" -%}
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_vdsm_coverage.sh
-        {%- endif %}
     artifacts:
       - /etc/resolv.conf
       - /var/log

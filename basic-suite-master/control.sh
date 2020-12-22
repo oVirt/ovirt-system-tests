@@ -44,6 +44,4 @@ run_suite () {
         echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
         return 1
     fi
-
-    generate_vdsm_coverage_report
 }

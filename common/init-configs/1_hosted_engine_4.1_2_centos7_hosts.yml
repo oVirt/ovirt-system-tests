@@ -107,9 +107,6 @@ domains:
         {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/add_tmp_part_el7.sh
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh
-        {% if env.coverage == "true" -%}
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_vdsm_coverage.sh
-        {%- endif %}
     artifacts:
       - /etc/resolv.conf
       - /var/log

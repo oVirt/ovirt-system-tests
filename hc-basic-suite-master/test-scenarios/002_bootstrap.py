@@ -30,9 +30,6 @@ import nose.tools as nt
 from nose.tools import assert_false
 from nose import SkipTest
 
-from ovirtsdk.infrastructure import errors
-from ovirtsdk.xml import params
-
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
@@ -243,16 +240,16 @@ def add_glusterfs_storage_domain(prefix, sdname, volname):
     mount_path = "{0}://{1}".format(hosts[0], volname)
     mount_options = "backup-volfile-servers={0}".format(':'.join(hosts[1:]))
 
-    p = params.StorageDomain(
+    p = sdk4.types.StorageDomain(
         name=sdname,
-        data_center=params.DataCenter(
+        data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
         type_='data',
         storage_format='v3',
         host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='glusterfs',
+        storage=sdk4.types.Storage(
+            type==sdk4.types.StorageType.GLUSTERFS,
             path=mount_path,
             vfs_type='glusterfs',
             mount_options=mount_options,
@@ -306,19 +303,19 @@ def add_iscsi_storage_domain(prefix):
 
     lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
 
-    p = params.StorageDomain(
+    p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
-        data_center=params.DataCenter(
+        data_center=sdk4.types.DataCenter(
             name=DC_NAME,
         ),
-        type_='data',
+        type=sdk4.types.StorageDomainType.DATA,
         storage_format=SD_FORMAT,
         host=_random_host_from_dc(api, DC_NAME),
-        storage=params.Storage(
-            type_='iscsi',
-            volume_group=params.VolumeGroup(
+        storage=sdk4.types.Storage(
+            type=sdk4.types.StorageType.ISCSI,
+            volume_group=sdk4.types.VolumeGroup(
                 logical_unit=[
-                    params.LogicalUnit(
+                    sdk4.types.LogicalUnit(
                         id=lun_id,
                         address=_get_host_ip(
                             prefix,
@@ -351,18 +348,18 @@ def generic_import_from_glance(api, image_name=CIRROS_IMAGE_NAME, as_template=Fa
     target_image = glance_provider.images.get(name=image_name)
     disk_name = image_name.replace(" ", "_") + image_ext
     template_name = image_name.replace(" ", "_") + template_ext
-    import_action = params.Action(
-        storage_domain=params.StorageDomain(
+    import_action = sdk4.types.Action(
+        storage_domain=sdk4.types.StorageDomain(
             name=dest_storage_domain,
         ),
-        cluster=params.Cluster(
+        cluster=sdk4.types.Cluster(
             name=dest_cluster,
         ),
         import_as_template=as_template,
-        disk=params.Disk(
+        disk=sdk4.types.Disk(
             name=disk_name,
         ),
-        template=params.Template(
+        template=sdk4.types.Template(
             name=template_name,
         ),
     )

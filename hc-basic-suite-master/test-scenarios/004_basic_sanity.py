@@ -21,8 +21,6 @@ import os
 import nose.tools as nt
 from nose import SkipTest
 
-from ovirtsdk.xml import params
-
 from ovirtlago import testlib
 
 import ovirtsdk4 as sdk4
@@ -103,7 +101,7 @@ def add_vm_blank(api):
         ),
         memory_policy=sdk4.types.MemoryPolicy(
             ballooning=True,
-            guaranteed=vm_memory / 2,
+            guaranteed=vm_memory // 2,
         ),
     )
 

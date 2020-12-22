@@ -143,7 +143,7 @@ run_suite () {
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     declare failed=false
-    cd "$OST_REPO_ROOT" && pip install --user -e ost_utils
+    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"

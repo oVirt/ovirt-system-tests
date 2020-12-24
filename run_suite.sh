@@ -1,5 +1,7 @@
 #!/bin/bash -ex
 
+export PS4="+ \D{%Y-%m-%d %H:%M:%S%z} "
+
 # Imports
 source common/helpers/logger.sh
 source common/helpers/python.sh

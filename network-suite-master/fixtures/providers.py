@@ -53,7 +53,8 @@ def ovirt_image_repo(system):
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(engine_facts, engine_password):
+def openstack_client_config(engine_facts, engine_password,
+                            ovirt_provider_ovn_with_ip_fqdn):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {

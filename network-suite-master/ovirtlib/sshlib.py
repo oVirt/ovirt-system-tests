@@ -20,7 +20,9 @@ import paramiko
 from ovirtlib import syncutil
 
 DEFAULT_USER = 'root'
+ROOT_PASSWORD = '123456'
 TIMEOUT = 60 * 5
+
 
 class SshException(Exception):
     pass
@@ -63,7 +65,7 @@ class Node(object):
     or VM) but are not supported by the corresponding oVirt objects.
     """
 
-    def __init__(self, address, password, username=DEFAULT_USER):
+    def __init__(self, address, password=ROOT_PASSWORD, username=DEFAULT_USER):
         self._address = address
         self._username = username
         self._password = password
@@ -149,6 +151,12 @@ class Node(object):
         """
         cmd = f'dig +short {hostname}'
         return self.exec_command(cmd).decode('utf-8').strip()
+
+    def global_replace_str_in_file(self, old, new, filename):
+        return self.exec_command(f'sed -i -r "s/{old}/{new}/g" "{filename}"')
+
+    def restart_service(self, service_name):
+        return self.exec_command(f'systemctl restart {service_name}')
 
 
 class CirrosNode(Node):

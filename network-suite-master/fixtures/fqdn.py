@@ -16,9 +16,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import errno
-import shutil
-
 import pytest
 
 from ovirtlib import sshlib
@@ -26,7 +23,7 @@ from ovirtlib import syncutil
 
 from fixtures.engine import ANSWER_FILE_SRC
 
-HOSTS_FILE = '/etc/hosts'
+OVN_CONF = '/etc/ovirt-provider-ovn/conf.d/10-setup-ovirt-provider-ovn.conf'
 
 
 class EngineNotResorvableError(Exception):
@@ -34,39 +31,17 @@ class EngineNotResorvableError(Exception):
 
 
 @pytest.fixture(scope='session')
-def fqdn(engine_facts):
-    BACKUP_FILE = HOSTS_FILE + 'OST-BACKUP'
-
-    address = engine_facts.ipv4_default_address
-    fqdn = _fetch_fqdn(ANSWER_FILE_SRC)
-
-    remove_backup = False
-    if not _fqdn_in_hosts_file(fqdn, address):
-        try:
-            shutil.copy2(HOSTS_FILE, BACKUP_FILE)
-        except OSError as err:
-            if err.errno == errno.EACCES:
-                raise EngineNotResorvableError
-            raise
-        remove_backup = True
-        _modify_hosts_file(fqdn, address)
-    yield
-    if remove_backup:
-        shutil.move(BACKUP_FILE, HOSTS_FILE)
-
-
-def _fqdn_in_hosts_file(fqdn, address):
-    with open(HOSTS_FILE) as f:
-        for line in f:
-            line = line.split("#", 1)[0]
-            args = line.split()
-            if not args:
-                continue
-            addr = args[0]
-            hostnames = args[1:]
-            if addr == address and fqdn in hostnames:
-                return True
-    return False
+def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts):
+    provider_ip = f'provider-host={engine_facts.ipv4_default_address}'
+    provider_fqdn = f'provider-host={_fetch_fqdn(ANSWER_FILE_SRC)}'
+    engine = sshlib.Node(engine_facts.ipv4_default_address)
+    try:
+        engine.global_replace_str_in_file(provider_fqdn, provider_ip, OVN_CONF)
+        engine.restart_service('ovirt-provider-ovn')
+        yield
+    finally:
+        engine.global_replace_str_in_file(provider_ip, provider_fqdn, OVN_CONF)
+        engine.restart_service('ovirt-provider-ovn')
 
 
 def _fetch_fqdn(answer_file):
@@ -76,20 +51,6 @@ def _fetch_fqdn(answer_file):
         for line in f:
             if line.startswith(FQDN_ENTRY):
                 return line.strip().split(':', 1)[1]
-
-
-def _modify_hosts_file(fqdn, address):
-    TEMP_FILE = HOSTS_FILE + 'OST-TMP'
-    TEMP_OST_ENTRY = '# temporary OST entry'
-    ENGINE_ENTRY = ' '.join([address, fqdn, TEMP_OST_ENTRY]) + '\n'
-
-    shutil.copy2(HOSTS_FILE, TEMP_FILE)
-    with open(TEMP_FILE, 'r+') as tf:
-        data = tf.read()
-        tf.seek(0, 0)
-        tf.write(ENGINE_ENTRY + data)
-
-    shutil.move(TEMP_FILE, HOSTS_FILE)
 
 
 @pytest.fixture(scope='session')

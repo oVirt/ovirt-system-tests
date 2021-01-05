@@ -224,6 +224,13 @@ class Driver(object):
     def id_wait_and_click(self, message, element_id, wait_long=False):
         self.xpath_wait_and_click(message, '//*[@id="' + element_id + '"]', wait_long)
 
+    def is_id_present(self, idx):
+        try:
+            self.driver.find_element_by_id(idx)
+            return True
+        except NoSuchElementException:
+            return False
+
     def is_class_name_present(self, class_name):
         try:
             self.driver.find_element_by_class_name(class_name)

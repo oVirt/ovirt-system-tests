@@ -50,6 +50,7 @@ from test_utils.page_objects.WelcomeScreen import WelcomeScreen
 from test_utils.page_objects.LoginScreen import LoginScreen
 from test_utils.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 from test_utils.page_objects.WebAdminTopMenu import WebAdminTopMenu
+from test_utils.page_objects.VmPortal import VmPortal
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
@@ -485,4 +486,29 @@ def test_logout(ovirt_driver, save_screenshot, save_page_source, engine_webadmin
     except:
         save_screenshot('logout-failed')
         save_page_source('logout-failed')
+        raise
+
+def test_userportal(ovirt_driver, save_screenshot, save_page_source,
+        engine_username, engine_password):
+
+    try:
+        welcome_screen = WelcomeScreen(ovirt_driver)
+        welcome_screen.wait_for_displayed()
+        welcome_screen.open_user_portal()
+
+        login_screen = LoginScreen(ovirt_driver)
+        login_screen.wait_for_displayed()
+        login_screen.set_user_name(engine_username)
+        login_screen.set_user_password(engine_password)
+        login_screen.login()
+
+        vm_portal = VmPortal(ovirt_driver)
+        vm_portal.wait_for_displayed()
+
+        vm0_status = vm_portal.get_vm_status('vm0')
+        assert vm0_status == 'Powering up' or vm0_status == 'Running'
+        save_screenshot('vm-portal-success')
+    except:
+        save_screenshot('vm-portal-failed')
+        save_page_source('vm-portal-failed')
         raise

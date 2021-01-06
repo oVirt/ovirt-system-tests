@@ -21,21 +21,26 @@
 import os
 import random
 
-import nose.tools as nt
-from nose import SkipTest
-
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
-
-from lago import utils
-from ovirtlago import testlib
+import pytest
 
 import test_utils
 from test_utils import network_utils_v4
 from test_utils import constants
 
+from ost_utils import assertions
+from ost_utils import engine_utils
 from ost_utils import general_utils
+from ost_utils.pytest import order_by
+from ost_utils.pytest.fixtures import root_password
+from ost_utils.pytest.fixtures.ansible import *
+from ost_utils.pytest.fixtures.engine import *
+from ost_utils.pytest.fixtures.sdk import system_service
+from ost_utils.storage_utils import nfs
+
+from ost_utils import shell
 from ost_utils import versioning
 
 import logging
@@ -67,71 +72,60 @@ GLANCE_IMAGE_TO_IMPORT = 'CirrOS 0.4.0 for x86_64'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
-SD_NFS_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_NFS_PATH = '/exports/nfs/share1'
 SD_SECOND_NFS_PATH = '/exports/nfs/share2'
 
 SD_ISCSI_NAME = 'iscsi'
-SD_ISCSI_HOST_NAME = testlib.get_prefixed_name('engine')
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 
 SD_ISO_NAME = 'iso'
-SD_ISO_HOST_NAME = SD_NFS_HOST_NAME
 SD_ISO_PATH = '/exports/nfs/iso'
 
 SD_TEMPLATES_NAME = 'templates'
-SD_TEMPLATES_HOST_NAME = SD_NFS_HOST_NAME
 SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_AVAIL = False
-CIRROS_IMAGE_NAME = versioning.guest_os_image_name()
-TEMPLATE_CIRROS = versioning.guest_os_template_name()
 
 
-# Network
-VM_NETWORK = 'VM_Network'
-VM_NETWORK_VLAN_ID = 100
-MIGRATION_NETWORK = 'Migration_Net'
+_TEST_LIST = [
+    "test_vdsmfake_setup",
+    "test_copy_storage_script",
+    "test_add_dc",
+    "test_add_cluster",
+    "test_sync_time",
+    "test_add_hosts",
+    "test_configure_storage",
+    "test_verify_add_hosts",
+    "test_add_nfs_master_storage_domain",
+    "test_add_vm_template",
+    "test_verify_add_all_hosts",
+    "test_add_vms",
+]
 
 
-@testlib.with_ovirt_prefix
-def vdsmfake_setup(prefix):
+@order_by(_TEST_LIST)
+@pytest.mark.skipif(USE_VDSMFAKE == False, reason="VDSMFAKE test")
+def test_vdsmfake_setup(ansible_engine):
     """
     Prepare a large setup using vdsmfake
     """
 
-    playbookName = 'vdsmfake-setup.yml'
-    engine = prefix.virt_env.engine_vm()
+    playbook_name = 'vdsmfake-setup.yml'
     playbook = os.path.join(os.environ.get('SUITE'),
-                            'test-scenarios', playbookName)
+                            'test-scenarios', playbook_name)
 
-    engine.copy_to(playbook, '/tmp/%s' % playbookName)
-
-    result = engine.ssh(['ansible-playbook /tmp/%s' % playbookName])
-
-    nt.eq_(
-        result.code, 0, 'Setting up vdsmfake failed.'
-                        ' Exit code is %s' % result.code
+    ansible_engine.copy(
+        src=playbook,
+        dest=f"/tmp/{playbook_name}"
     )
 
+    ansible_engine.shell('ansible-playbook /tmp/%s' % playbook_name)
 
-# TODO: support resolving hosts over IPv6 and arbitrary network
-def _get_host_ip(prefix, host_name):
-    return prefix.virt_env.get_vm(host_name).ip()
 
-def _get_host_all_ips(prefix, host_name):
-    return prefix.virt_env.get_vm(host_name).all_ips()
-
-def _hosts_in_dc(api, dc_name=DC_NAME):
-    hosts = api.hosts.list(query='datacenter={} AND status=up'.format(dc_name))
-    if hosts:
-        return sorted(hosts, key=lambda host: host.name)
-    raise RuntimeError('Could not find hosts that are up in DC %s' % dc_name)
-
-def _hosts_in_dc_4(api, dc_name=DC_NAME, random_host=False):
+def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
     up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
@@ -169,25 +163,23 @@ def _wait_for_status(hosts_service, dc_name, status):
     return all_hosts
 
 def _random_host_from_dc(api, dc_name=DC_NAME):
-    return random.choice(_hosts_in_dc(api, dc_name))
+    return _hosts_in_dc(api, dc_name, True)
 
-def _random_host_from_dc_4(api, dc_name=DC_NAME):
-    return _hosts_in_dc_4(api, dc_name, True)
-
-def _all_hosts_up(hosts_service, total_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
-    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+def _all_hosts_up(hosts_service, total_num_hosts):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing or status=connecting'.format(DC_NAME))
+    if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
-    if len(up_hosts) == len(total_hosts):
+    if len(up_hosts) == total_num_hosts:
         return True
 
     _check_problematic_hosts(hosts_service)
 
-def _single_host_up(hosts_service, total_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(DC_NAME))
-    if len(installing_hosts) == len(total_hosts): # All hosts still installing
+
+def _single_host_up(hosts_service, total_num_hosts):
+    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing or status=connecting'.format(DC_NAME))
+    if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
@@ -196,8 +188,9 @@ def _single_host_up(hosts_service, total_hosts):
 
     _check_problematic_hosts(hosts_service)
 
+
 def _check_problematic_hosts(hosts_service):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational or status=installfailed'.format(DC_NAME))
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up'.format(DC_NAME))
     if len(problematic_hosts):
         dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
         for host in problematic_hosts:
@@ -206,38 +199,32 @@ def _check_problematic_hosts(hosts_service):
         raise RuntimeError(dump_hosts)
 
 
-@testlib.with_ovirt_api4
-def add_dc(api):
-    engine = api.system_service()
-    dcs_service = engine.data_centers_service()
-    with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
-        nt.assert_true(
-            dcs_service.add(
-                sdk4.types.DataCenter(
-                    name=DC_NAME,
-                    description='APIv4 DC',
-                    local=False,
-                    version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
-                ),
-            )
-        )
-
-
-@testlib.with_ovirt_prefix
-def add_cluster(prefix):
-    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-    clusters_service = api.system_service().clusters_service()
-    nt.assert_true(
-        clusters_service.add(
-            sdk4.types.Cluster(
-                name=CLUSTER_NAME,
-                description='APIv4 Cluster',
-                data_center=sdk4.types.DataCenter(
-                    name=DC_NAME,
-                ),
-                ballooning_enabled=True,
+@order_by(_TEST_LIST)
+def test_add_dc(system_service):
+    dcs_service = system_service.data_centers_service()
+    with engine_utils.wait_for_event(system_service, 950): # USER_ADD_STORAGE_POOL
+        assert dcs_service.add(
+            sdk4.types.DataCenter(
+                name=DC_NAME,
+                description='APIv4 DC',
+                local=False,
+                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
             ),
         )
+
+
+@order_by(_TEST_LIST)
+def test_add_cluster(system_service):
+    clusters_service = system_service.clusters_service()
+    assert clusters_service.add(
+        sdk4.types.Cluster(
+            name=CLUSTER_NAME,
+            description='APIv4 Cluster',
+            data_center=sdk4.types.DataCenter(
+                name=DC_NAME,
+            ),
+            ballooning_enabled=True,
+        ),
     )
 
 
@@ -255,28 +242,33 @@ class FakeHostVm:
 def get_fake_hosts():
     return [FakeHostVm('%s.vdsm.fake' % i) for i in range(1, HOST_COUNT)]
 
-@testlib.with_ovirt_prefix
-def add_hosts(prefix):
-    hosts = get_fake_hosts() if USE_VDSMFAKE else prefix.virt_env.host_vms()
-    if not USE_VDSMFAKE:
-        for host in hosts:
-            host.ssh(['chronyc', '-4', 'add', 'server', testlib.get_prefixed_name('engine')])
-            host.ssh(['chronyc', '-4', 'makestep'])
 
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    add_hosts_4(api, hosts)
+@order_by(_TEST_LIST)
+@pytest.mark.skipif(USE_VDSMFAKE == True, reason='Using vdsmfake')
+def test_sync_time(ansible_hosts, engine_hostname):
+    ansible_hosts.shell('chronyc -4 add server {}'.format(engine_hostname))
+    ansible_hosts.shell('chronyc -4 makestep')
 
 
-def add_hosts_4(api, hosts):
-    hosts_service = api.system_service().hosts_service()
+@order_by(_TEST_LIST)
+def test_add_hosts(ansible_host0_facts, ansible_host1_facts, system_service,
+                   root_password):
 
-    def _add_host_4(vm):
-        return hosts_service.add(
+    if USE_VDSMFAKE:
+        hostnames = get_fake_hosts()
+    else:
+        hostnames = [
+            facts.get("ansible_hostname")
+            for facts in [ansible_host0_facts, ansible_host1_facts]
+        ]
+
+    def _add_host(hostname):
+        return system_service.hosts_service().add(
             sdk4.types.Host(
-                name=vm.name(),
-                description='host %s' % vm.name(),
-                address=vm.name(),
-                root_password=str(vm.root_password()),
+                name=hostname,
+                description='host %s' % hostname,
+                address=hostname,
+                root_password=root_password,
                 override_iptables=True,
                 cluster=sdk4.types.Cluster(
                     name=CLUSTER_NAME,
@@ -284,41 +276,33 @@ def add_hosts_4(api, hosts):
             ),
         )
 
-    for host in hosts:
-        nt.assert_true(
-            _add_host_4(host)
-        )
+    with engine_utils.wait_for_event(system_service, 42): # USER_ADD_VDS
+        for hostname in hostnames:
+            assert _add_host(hostname)
 
 
-@testlib.with_ovirt_prefix
-def verify_add_hosts(prefix):
-    hosts = prefix.virt_env.host_vms()
-
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    verify_add_hosts_4(api)
-
-
-def verify_add_hosts_4(api):
-    hosts_service = api.system_service().hosts_service()
-    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
-
-    testlib.assert_true_within_long(
-        lambda: _single_host_up(hosts_service, total_hosts)
+@order_by(_TEST_LIST)
+def test_verify_add_hosts(system_service):
+    hosts_service = system_service.hosts_service()
+    hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    total_hosts = len(hosts_status)
+    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
+    LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
+    assertions.assert_true_within(
+        lambda: _single_host_up(hosts_service, total_hosts),
+        timeout=constants.ADD_HOST_TIMEOUT
     )
 
-@testlib.with_ovirt_prefix
-def verify_add_all_hosts(prefix):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-    hosts_service = api.system_service().hosts_service()
-    total_hosts = hosts_service.list(search='datacenter={}'.format(DC_NAME))
 
-    testlib.assert_true_within_long(
-        lambda: _all_hosts_up(hosts_service, total_hosts)
+@order_by(_TEST_LIST)
+def test_verify_add_all_hosts(system_service):
+    hosts_service = system_service.hosts_service()
+    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
+
+    assertions.assert_true_within(
+        lambda: _all_hosts_up(hosts_service, total_hosts),
+        timeout=constants.ADD_HOST_TIMEOUT
     )
-
-    if not USE_VDSMFAKE:
-        for host in prefix.virt_env.host_vms():
-            host.ssh(['rm', '-rf', '/var/cache/yum/*', '/var/cache/dnf/*'])
 
 
 def _add_storage_domain_4(api, p):
@@ -327,7 +311,7 @@ def _add_storage_domain_4(api, p):
     sd = sds_service.add(p)
 
     sd_service = sds_service.storage_domain_service(sd.id)
-    testlib.assert_true_within_long(
+    assertions.assert_true_within_long(
         lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
     )
 
@@ -340,328 +324,34 @@ def _add_storage_domain_4(api, p):
     )
 
     attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
-    testlib.assert_true_within_long(
+    assertions.assert_true_within_long(
         lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
     )
 
 
-@testlib.with_ovirt_prefix
-def add_master_storage_domain(prefix):
-    if MASTER_SD_TYPE == 'iscsi':
-        add_iscsi_storage_domain(prefix)
-    else:
-        add_nfs_storage_domain(prefix)
+@pytest.fixture(scope="session")
+def sd_nfs_host_storage_ip(engine_storage_ips):
+    return engine_storage_ips[0]
 
 
-def add_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain_4(prefix, SD_NFS_NAME, SD_NFS_HOST_NAME, SD_NFS_PATH, nfs_version='v4_2')
+@order_by(_TEST_LIST)
+@pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
+def test_add_nfs_master_storage_domain(engine_api, sd_nfs_host_storage_ip):
+    add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip)
 
 
-# TODO: add this over the storage network and with IPv6
-def add_second_nfs_storage_domain(prefix):
-    add_generic_nfs_storage_domain_4(prefix, SD_SECOND_NFS_NAME,
-                                   SD_NFS_HOST_NAME, SD_SECOND_NFS_PATH)
+def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
+    random_host = _random_host_from_dc(engine_api, DC_NAME)
+    LOGGER.debug('random host: {}'.format(random_host.name))
+
+    nfs.add_domain(engine_api, SD_NFS_NAME, random_host,
+                   sd_nfs_host_storage_ip, SD_NFS_PATH, DC_NAME,
+                   nfs_version='v4_2')
 
 
-def add_generic_nfs_storage_domain_4(prefix, sd_nfs_name, nfs_host_name, mount_path, sd_format=SD_FORMAT, sd_type='data', nfs_version='v4_1'):
-    if sd_type == 'data':
-        dom_type = sdk4.types.StorageDomainType.DATA
-    elif sd_type == 'iso':
-        dom_type = sdk4.types.StorageDomainType.ISO
-    elif sd_type == 'export':
-        dom_type = sdk4.types.StorageDomainType.EXPORT
-
-    if nfs_version == 'v3':
-        nfs_vers = sdk4.types.NfsVersion.V3
-    elif nfs_version == 'v4':
-        nfs_vers = sdk4.types.NfsVersion.V4
-    elif nfs_version == 'v4_1':
-        nfs_vers = sdk4.types.NfsVersion.V4_1
-    elif nfs_version == 'v4_2':
-        nfs_vers = sdk4.types.NfsVersion.V4_2
-    else:
-        nfs_vers = sdk4.types.NfsVersion.AUTO
-
-    api = prefix.virt_env.engine_vm().get_api(api_ver=4)
-    kwargs = {}
-    if sd_format >= 'v4':
-        if not versioning.cluster_version_ok(4, 1):
-            kwargs['storage_format'] = sdk4.types.StorageFormat.V3
-        elif not versioning.cluster_version_ok(4, 3):
-            kwargs['storage_format'] = sdk4.types.StorageFormat.V4
-
-    p = sdk4.types.StorageDomain(
-        name=sd_nfs_name,
-        description='APIv4 NFS storage domain',
-        type=dom_type,
-        host=_random_host_from_dc_4(api, DC_NAME),
-        storage=sdk4.types.HostStorage(
-            type=sdk4.types.StorageType.NFS,
-            address=_get_host_ip(prefix, nfs_host_name),
-            path=mount_path,
-            nfs_version=nfs_vers,
-        ),
-        **kwargs
-    )
-
-    _add_storage_domain_4(api, p)
-
-
-def add_iscsi_storage_domain(prefix):
-    ret = prefix.virt_env.get_vm(SD_ISCSI_HOST_NAME).ssh(['cat', '/root/multipath.txt'])
-    nt.assert_equals(ret.code, 0)
-    lun_guids = ret.out.splitlines()[0:SD_ISCSI_NR_LUNS-1]
-
-    add_iscsi_storage_domain_4(prefix, lun_guids)
-
-def add_iscsi_storage_domain_4(prefix, lun_guids):
-    api = prefix.virt_env.engine_vm().get_api_v4()
-
-    ips = _get_host_all_ips(prefix, SD_ISCSI_HOST_NAME)
-    luns = []
-    for lun_id in lun_guids:
-        for ip in ips:
-            lun=sdk4.types.LogicalUnit(
-                id=lun_id,
-                address=ip,
-                port=SD_ISCSI_PORT,
-                target=SD_ISCSI_TARGET,
-                username='username',
-                password='password',
-            )
-            luns.append(lun)
-
-    p = sdk4.types.StorageDomain(
-        name=SD_ISCSI_NAME,
-        description='iSCSI Storage Domain',
-        type=sdk4.types.StorageDomainType.DATA,
-        discard_after_delete=True,
-        data_center=sdk4.types.DataCenter(
-            name=DC_NAME,
-        ),
-        host=_random_host_from_dc_4(api, DC_NAME),
-        storage_format=sdk4.types.StorageFormat.V4,
-        storage=sdk4.types.HostStorage(
-            type=sdk4.types.StorageType.ISCSI,
-            override_luns=True,
-            volume_group=sdk4.types.VolumeGroup(
-                logical_units=luns
-            ),
-        ),
-    )
-
-    _add_storage_domain_4(api, p)
-
-
-def add_iso_storage_domain(prefix):
-    add_generic_nfs_storage_domain_4(prefix, SD_ISO_NAME, SD_ISO_HOST_NAME, SD_ISO_PATH, sd_format='v1', sd_type='iso', nfs_version='v3')
-
-
-def add_templates_storage_domain(prefix):
-    add_generic_nfs_storage_domain_4(prefix, SD_TEMPLATES_NAME, SD_TEMPLATES_HOST_NAME, SD_TEMPLATES_PATH, sd_format='v1', sd_type='export', nfs_version='v4_1')
-
-
-@testlib.with_ovirt_api
-def set_dc_quota_audit(api):
-    dc = api.datacenters.get(name=DC_NAME)
-    dc.set_quota_mode('audit')
-    nt.assert_true(
-        dc.update()
-    )
-
-
-@testlib.with_ovirt_api4
-def add_quota_storage_limits(api):
-
-    # Find the data center and the service that manages it:
-    dcs_service = api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
-    dc_service = dcs_service.data_center_service(dc.id)
-
-    # Find the storage domain and the service that manages it:
-    sds_service = api.system_service().storage_domains_service()
-    sd = sds_service.list()[0]
-
-    # Find the quota and the service that manages it.
-    # If the quota doesn't exist,create it.
-    quotas_service = dc_service.quotas_service()
-    quotas = quotas_service.list()
-
-    quota = next(
-        (q for q in quotas if q.name == DC_QUOTA_NAME ),
-        None
-    )
-    if quota is None:
-        quota = quotas_service.add(
-            quota=types.Quota(
-                name=DC_QUOTA_NAME,
-                description='DC-QUOTA-DESCRIPTION',
-                cluster_hard_limit_pct=20,
-                cluster_soft_limit_pct=80,
-                storage_hard_limit_pct=20,
-                storage_soft_limit_pct=80
-            )
-        )
-    quota_service = quotas_service.quota_service(quota.id)
-
-    # Find the quota limit for the storage domain that we are interested on:
-    limits_service = quota_service.quota_storage_limits_service()
-    limits = limits_service.list()
-    limit = next(
-        (l for l in limits if l.id == sd.id),
-        None
-    )
-
-    # If that limit exists we will delete it:
-    if limit is not None:
-        limit_service = limits_service.limit_service(limit.id)
-        limit_service.remove()
-
-    # Create the limit again, with the desired value
-    nt.assert_true(
-        limits_service.add(
-            limit=types.QuotaStorageLimit(
-                limit=500,
-            )
-        )
-    )
-
-
-@testlib.with_ovirt_api4
-def add_quota_cluster_limits(api):
-    datacenters_service = api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
-    datacenter_service = datacenters_service.data_center_service(datacenter.id)
-    quotas_service = datacenter_service.quotas_service()
-    quotas = quotas_service.list()
-    quota = next(
-        (q for q in quotas if q.name == DC_QUOTA_NAME),
-        None
-    )
-    quota_service = quotas_service.quota_service(quota.id)
-    quota_cluster_limits_service = quota_service.quota_cluster_limits_service()
-    nt.assert_true(
-        quota_cluster_limits_service.add(
-            types.QuotaClusterLimit(
-                vcpu_limit=20,
-                memory_limit=10000.0
-            )
-        )
-    )
-
-
-@testlib.with_ovirt_api4
-def add_blank_vms(api):
-    engine = api.system_service()
-    vms_service = engine.vms_service()
-
-    vm_params = sdk4.types.Vm(
-        os=sdk4.types.OperatingSystem(
-            type='rhel_7x64',
-        ),
-        type=sdk4.types.VmType.SERVER,
-        high_availability=sdk4.types.HighAvailability(
-            enabled=False,
-        ),
-        cluster=sdk4.types.Cluster(
-            name=CLUSTER_NAME,
-        ),
-        template=sdk4.types.Template(
-            name=TEMPLATE_BLANK,
-        ),
-        display=sdk4.types.Display(
-            smartcard_enabled=True,
-            keyboard_layout='en-us',
-            file_transfer_enabled=True,
-            copy_paste_enabled=True,
-        ),
-        usb=sdk4.types.Usb(
-            enabled=True,
-            type=sdk4.types.UsbType.NATIVE,
-        ),
-        memory_policy=sdk4.types.MemoryPolicy(
-            ballooning=True,
-        ),
-    )
-
-    vm_params.name = BACKUP_VM_NAME
-    vm_params.memory = 256 * MB
-    vm_params.memory_policy.guaranteed = 128 * MB
-    vms_service.add(vm_params)
-    backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
-
-    vm_params.name = VM0_NAME
-    least_hotplug_increment = 256 * MB
-    required_memory = 384 * MB
-    vm_params.memory = required_memory
-    vm_params.memory_policy.guaranteed = required_memory
-    vm_params.memory_policy.max = required_memory + least_hotplug_increment
-
-    vms_service.add(vm_params)
-    vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-
-    for vm_service in [backup_vm_service, vm0_vm_service]:
-        testlib.assert_true_within_short(
-            lambda:
-            vm_service.get().status == sdk4.types.VmStatus.DOWN
-        )
-
-
-@testlib.with_ovirt_api4
-def add_nic(api):
-    NIC_NAME = 'eth0'
-    # Locate the vnic profiles service and use it to find the ovirmgmt
-    # network's profile id:
-    profiles_service = api.system_service().vnic_profiles_service()
-    profile_id = next(
-        (
-            profile.id for profile in profiles_service.list()
-            if profile.name == MANAGEMENT_NETWORK
-        ),
-        None
-    )
-
-    # Empty profile id would cause fail in later tests (e.g. add_filter):
-    nt.assert_is_not_none(profile_id)
-
-    # Locate the virtual machines service and use it to find the virtual
-    # machine:
-    vms_service = api.system_service().vms_service()
-    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
-
-    # Locate the service that manages the network interface cards of the
-    # virtual machine:
-    nics_service = vms_service.vm_service(vm.id).nics_service()
-
-    # Use the "add" method of the network interface cards service to add the
-    # new network interface card:
-    nics_service.add(
-        types.Nic(
-            name=NIC_NAME,
-            interface=types.NicInterface.VIRTIO,
-            vnic_profile=types.VnicProfile(
-                id=profile_id
-            ),
-        ),
-    )
-
-    vm = vms_service.list(search='name=%s' % VM2_NAME)[0]
-    nics_service = vms_service.vm_service(vm.id).nics_service()
-    nics_service.add(
-        types.Nic(
-            name=NIC_NAME,
-            interface=types.NicInterface.E1000,
-            mac=types.Mac(address=UNICAST_MAC_OUTSIDE_POOL),
-            vnic_profile=types.VnicProfile(
-                id=profile_id
-            ),
-        ),
-    )
-
-
-@testlib.with_ovirt_api4
-def add_vm_template(api):
-    sds = api.system_service().storage_domains_service()
+@order_by(_TEST_LIST)
+def test_add_vm_template(system_service):
+    sds = system_service.storage_domains_service()
     sd = sds.list(search='name=ovirt-image-repository')[0]
     sd_service = sds.storage_domain_service(sd.id)
     images_service = sd_service.images_service()
@@ -690,18 +380,25 @@ def add_vm_template(api):
         )
     )
 
-    templates_service = api.system_service().templates_service()
-    getTemplate = lambda: templates_service.list(search="name=%s" % VM_TEMPLATE)
-    testlib.assert_true_within(
-        lambda: len(getTemplate()) == 1 and
-                sdk4.types.TemplateStatus.OK == getTemplate()[0].status,
+    templates_service = system_service.templates_service()
+
+    def template_available(templates_service):
+        get_template = templates_service.list(search="name=%s" % VM_TEMPLATE)
+        if len(get_template) == 1 and \
+               sdk4.types.TemplateStatus.OK == get_template[0].status:
+            return True
+        return False
+
+    assertions.assert_true_within(
+        lambda: template_available(templates_service),
         timeout=300
     )
 
 
-@testlib.with_ovirt_api4
-def add_vms(api):
-    vm_pools_service = api.system_service().vm_pools_service()
+
+@order_by(_TEST_LIST)
+def test_add_vms(system_service):
+    vm_pools_service = system_service.vm_pools_service()
 
     # Use the "add" method to create a new virtual machine pool:
     vm_pools_service.add(
@@ -719,51 +416,21 @@ def add_vms(api):
         ),
     )
 
-@testlib.with_ovirt_prefix
-def copy_storage_script(prefix):
-    engine = prefix.virt_env.engine_vm()
+
+@order_by(_TEST_LIST)
+def test_copy_storage_script(ansible_engine):
     storage_script = os.path.join(
         os.environ.get('SUITE'),
         'deploy-scripts',
         'setup_storage.sh',
     )
-    engine.copy_to(
-        storage_script,
-        '/tmp/setup_storage.sh',
+    ansible_engine.copy(
+        src=storage_script,
+        dest='/tmp/setup_storage.sh',
+        mode='0755'
     )
 
 
-@testlib.with_ovirt_prefix
-def configure_storage(prefix):
-    engine = prefix.virt_env.engine_vm()
-    result = engine.ssh(
-        [
-            '/tmp/setup_storage.sh',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'setup_storage.sh failed. Exit code is %s' % result.code 
-    )
-
-
-
-_TEST_LIST = [
-    copy_storage_script,
-    add_dc,
-    add_cluster,
-    add_hosts,
-    configure_storage,
-    verify_add_hosts,
-    add_master_storage_domain,
-    add_vm_template,
-    verify_add_all_hosts,
-    add_vms,
-]
-
-
-def test_gen():
-    if USE_VDSMFAKE:
-        _TEST_LIST.insert(0, vdsmfake_setup)
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        test_gen.__name__ = t.description
-        yield t
+@order_by(_TEST_LIST)
+def test_configure_storage(ansible_engine):
+    ansible_engine.shell('/tmp/setup_storage.sh')

@@ -18,14 +18,11 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import nose.tools as nt
 import os
+from ost_utils.pytest.fixtures.ansible import ansible_engine
 
-from ovirtlago import testlib
 
-
-@testlib.with_ovirt_prefix
-def analyze_postgres(prefix):
+def test_analyze_postgres(ansible_engine):
     """
         analyze postgres logs will use pgbadger, pgcluu (and possibly more in the tools
         in the future) to create a static html reports and csv data.
@@ -34,31 +31,14 @@ def analyze_postgres(prefix):
         TODO - add test based on the audit output, like fail the test if there are missing indexes
     """
 
-    engine = prefix.virt_env.engine_vm()
-
     analyze_script = os.path.join(
         os.environ.get('SUITE'),
         '../common/test-scenarios-files/analyze_postgresql.sh'
     )
-    engine.copy_to(analyze_script, '/root')
-
-    result = engine.ssh(
-        [
-            '/root/analyze_postgresql.sh'
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'Failed to perform the postgres analysis.'
-                        ' Exit code is %s' % result.code
+    ansible_engine.copy(
+        src=analyze_script,
+        dest='/root',
+        mode='0755'
     )
 
-
-_TEST_LIST = [
-    analyze_postgres,
-]
-
-
-def test_gen():
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        test_gen.__name__ = t.description
-        yield t
+    ansible_engine.shell('/root/analyze_postgresql.sh')

@@ -19,36 +19,19 @@
 #
 import os
 
-import nose.tools as nt
-from ovirtlago import testlib
+from ost_utils.pytest.fixtures.ansible import ansible_engine
 
 
-@testlib.with_ovirt_prefix
-def tweak_db(prefix):
-    engine = prefix.virt_env.engine_vm()
+def test_tweak_db(ansible_engine):
 
     tweak_db_file = os.path.join(
         os.environ.get('SUITE'),
         '../common/deploy-scripts/db_config_tweaks.sh'
     )
-    engine.copy_to(tweak_db_file, '/root')
-
-    result = engine.ssh(
-        [
-            '/root/db_config_tweaks.sh',
-        ],
-    )
-    nt.eq_(
-        result.code, 0, 'tweaking postgres configuration failed. Exit code is %s' % result.code
+    ansible_engine.copy(
+        src=tweak_db_file,
+        dest='/root',
+        mode='0755'
     )
 
-
-def test_gen():
-    for t in testlib.test_sequence_gen(_TEST_LIST):
-        test_gen.__name__ = t.description
-        yield t
-
-
-_TEST_LIST = [
-        tweak_db,
-]
+    ansible_engine.shell('/root/db_config_tweaks.sh')

@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -206,7 +206,9 @@ def network_assignment(cluster, network, required=False):
 
 
 @contextlib.contextmanager
-def new_assigned_network(name, data_center, cluster, vlan=None):
-    with netlib.new_network(name, data_center, vlan) as network:
+def new_assigned_network(name, data_center, cluster, vlan=None,
+                         port_isolation=None):
+    with netlib.new_network(
+            name, data_center, vlan, port_isolation) as network:
         with network_assignment(cluster, network):
             yield network

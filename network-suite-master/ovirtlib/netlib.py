@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,7 +72,8 @@ class Network(SDKSubEntity):
                auto_generate_profile=True,
                external_provider=None,
                external_provider_physical_network=None,
-               mtu=None):
+               mtu=None,
+               port_isolation=None):
         """
         :type name: string
         :type vlan: integer
@@ -82,6 +83,7 @@ class Network(SDKSubEntity):
         :type external_provider: providerlib.OpenStackNetworkProvider
         :type external_provider_physical_network: netlib.Network
         :type mtu: integer
+        :type port_isolation: bool
         """
         qos_type = None if qos is None else qos.get_sdk_type()
         sdk_type = types.Network(
@@ -90,7 +92,8 @@ class Network(SDKSubEntity):
             usages=usages,
             qos=qos_type,
             profile_required=auto_generate_profile,
-            mtu=mtu
+            mtu=mtu,
+            port_isolation=port_isolation
         )
         if vlan is not None:
             sdk_type.vlan = types.Vlan(id=vlan)
@@ -398,9 +401,9 @@ def create_vnic_profile(system, name, network, qos=None):
 
 
 @contextlib.contextmanager
-def new_network(name, dc, vlan=None):
+def new_network(name, dc, vlan=None, port_isolation=None):
     network = Network(dc)
-    network.create(name=name, vlan=vlan)
+    network.create(name=name, vlan=vlan, port_isolation=port_isolation)
     try:
         yield network
     finally:

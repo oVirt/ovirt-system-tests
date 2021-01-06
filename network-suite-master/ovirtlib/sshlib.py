@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,9 +17,10 @@
 # Refer to the README and COPYING files for full details of the license
 import paramiko
 
+from ovirtlib import syncutil
 
 DEFAULT_USER = 'root'
-
+TIMEOUT = 60 * 5
 
 class SshException(Exception):
     pass
@@ -109,3 +110,56 @@ class Node(object):
         if res is not None:
             res = res[(res.find('via ') + len('via ')):res.find(' dev')]
         return res
+
+    def ping4(self, target_ipv4, iface_name):
+        """
+        Ping a v4 ip address via the specified interface
+        :param target_ipv4: str
+        :param iface_name: str
+        """
+        self.exec_command(f'ping -4 -c 1 -I {iface_name} {target_ipv4}')
+
+    def get_ipv4_of_interface(self, interface):
+        """
+        :param interface: str
+        :return: ipv4 address as a string
+        """
+        return self.exec_command(
+            f"ip -4 -o addr show {interface}|awk '{{print $4}}'"
+            "|cut -d '/' -f 1"
+        ).decode('utf-8').strip()
+
+    def lookup_ip_address_with_dns_query(self, hostname):
+        """
+        Wait for the ip address to update in the dns lookup
+        :param hostname: str
+        :return: ipv4 address as a string
+        """
+        return syncutil.sync(
+            exec_func=self._lookup_ip_address_with_dns_query,
+            exec_func_args=(hostname,),
+            success_criteria=lambda ip: ip != '',
+            timeout=TIMEOUT
+        )
+
+    def _lookup_ip_address_with_dns_query(self, hostname):
+        """
+        :param hostname: str
+        :return: ipv4 address as a string
+        """
+        cmd = f'dig +short {hostname}'
+        return self.exec_command(cmd).decode('utf-8').strip()
+
+
+class CirrosNode(Node):
+    """
+    A class to collect operations that need to be carried out via ssh
+    on a Cirros machine
+    """
+
+    def assign_ip_with_dhcp_client(self, iface_name):
+        """
+        run dhcp client to assign an ipv4 address for the specified interface
+        :param iface_name: str
+        """
+        self.exec_command(f'sudo /sbin/cirros-dhcpc up {iface_name}')

@@ -8,11 +8,17 @@ run_suite () {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
-    env_repo_setup
-    put_host_image
+    if [[ ${USE_LAGO_OST_PLUGIN} -eq 1 ]]; then
+        env_repo_setup
+        put_host_image
+    fi
     install_local_rpms_without_reposync
     env_start
     env_dump_ansible_hosts
+    if [[ ${USE_LAGO_OST_PLUGIN} -eq 0 ]]; then
+        env_wait_for_ssh
+        env_add_extra_repos
+    fi
     env_copy_repo_file
     env_copy_config_file
     env_status
@@ -22,7 +28,7 @@ run_suite () {
         echo "@@@ ERROR: Failed in deploy stage"
         return 1
     fi
-    declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | grep -v conftest | sort))
+    declare test_scenarios="${SUITE}/test-scenarios"
     declare failed=false
 
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
@@ -31,27 +37,16 @@ run_suite () {
         "pytest==4.6.9" \
         "zipp==1.2.0"
 
-    for scenario in "${test_scenarios[@]}"; do
-        if [[ "$scenario" == *pytest* ]]; then
-            echo "Running test scenario ${scenario##*/} with pytest"
-            env_run_pytest "$scenario" || failed=true
-        else
-            echo "Running test scenario ${scenario##*/}"
-            env_run_test "$scenario" || failed=true
-        fi
+    env_run_pytest_bulk ${test_scenarios[@]} || failed=true
 
-        if [[ -n "$OST_SKIP_COLLECT" ]]; then
-            if [[ "$failed" == "true" ]]; then
-                env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
-            fi
-        else
-            env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
-        fi
-        if $failed; then
-            echo "@@@@ ERROR: Failed running $scenario"
-            return 1
-        fi
-    done
+    if [[ -z "$OST_SKIP_COLLECT" || "${failed}" == "true" ]]; then
+        env_collect "$PWD/test_logs/${SUITE_NAME}"
+    fi
+
+    if $failed; then
+        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        return 1
+    fi
 
     generate_vdsm_coverage_report
 }

@@ -40,10 +40,6 @@ run_suite () {
 
     env_run_pytest_bulk ${test_scenarios[@]} || failed=true
 
-    if [[ -z "$OST_SKIP_COLLECT" || "${failed}" == "true" ]]; then
-        env_collect "$PWD/test_logs/${SUITE_NAME}"
-    fi
-
     if $failed; then
         echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
         return 1

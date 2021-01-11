@@ -782,6 +782,9 @@ mkdir -p "$PREFIX"
     exit 1
 }
 
+"${PYTHON}" -m pip install --user tox==3.21.0
+"${PYTHON}" -m tox -e flake8,pylint
+
 trap "on_sigterm" SIGTERM
 trap "on_exit" EXIT
 

@@ -1,6 +1,7 @@
 # PIP requirements for OST
 pytest
 selenium
+tox
 # network suite deps
 flake8
 pylint

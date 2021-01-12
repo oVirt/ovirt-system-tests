@@ -111,6 +111,7 @@ run_tc() {
 }
 
 run_tests() {
+    run_linters
     TC= _run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
     return 0
@@ -127,6 +128,10 @@ EOT
         TC=$i _run_tc $1
         [[ $? -ne 0 ]] && break
     done
+}
+
+run_linters() {
+   python3 -m tox -e flake8,pylint
 }
 
 collect_logs() {
@@ -164,6 +169,8 @@ run_since <full path to test case file> <test function>
     resume running of test case file after the test function (excluded)
 run_tests
     run the whole suite
+run_linters
+    run flake8 and pylint linters
 collect_logs
     grab logs from lago and exported-artifacts and add to test_logs
 "

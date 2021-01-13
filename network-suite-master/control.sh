@@ -8,7 +8,7 @@ install_dependencies() {
     "${PYTHON}" -m pip install -U pip==9.0.3
     "${PYTHON}" -m pip install contextlib2
     "${PYTHON}" -m pip install \
-        "flake8==3.1.0" \
+        "flake8==3.5.0" \
         "isort==4.2.5" \
         "pytest==3.5" \
         "ansible-runner==1.4.4" \
@@ -18,7 +18,7 @@ install_dependencies() {
 }
 
 run_static_analysis_pylint() {
-    "${PYTHON}" -m pip install pylint==2.5.3
+    "${PYTHON}" -m pip install pylint==2.6.0
     "${PYTHON}" -m pylint \
         --rcfile="${SUITE}/pylintrc" \
         --errors-only \

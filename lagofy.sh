@@ -39,7 +39,7 @@ check_dependencies() {
 }
 
 # init workspace and spin up the VMs
-# lago_init [-k key] [-s repo1 repo2 ...]
+# lago_init [-s repo1 repo2 ...]
 lago_init() {
     # does not have to be in /var/lib/lago/store
     QCOW=$(realpath "$1")
@@ -48,7 +48,7 @@ lago_init() {
     local host_image=${QCOW/-engine/-host}
     local upgrade_image=${host_image/-host-installed/-upgrade}
     local he_image=${host_image/-host/-he}
-    [[ "$2" = "-k" ]] && { LAGO_INIT_SSH_KEY="--ssh-key $3 --skip-bootstrap"; shift 2; }
+    local ssh_key=${he_image/-he-installed*/_id_rsa}
 
     # cleanup
     [[ -d "$PREFIX" ]] && { lago stop || true ; rm -rf "$PREFIX"; echo "Removed existing $PREFIX"; }
@@ -76,7 +76,7 @@ EOT
     fi
     suite_name="$SUITE_NAME" engine_image=$engine_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
 
-    lago init $LAGO_INIT_SSH_KEY "$PREFIX" "$SUITE/LagoInitFile"
+    lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "$SUITE/LagoInitFile"
 
     # start the OST VMs, run deploy scripts and generate hosts for ansible tasks
     lago start && lago deploy && lago ansible_hosts > $PREFIX/hosts
@@ -157,10 +157,9 @@ check_dependencies || return $?
 
 echo "you can run the following:
 
-lago_init <base_qcow_file> [-k key_file] [-s additional_repo ...]
+lago_init <base_qcow_file> [-s additional_repo ...]
     to initialize the workspace with qcow-host and qcow-engine preinstalled images, and launch lago VMs (with  deployment scripts from LagoInitPlain file)
     add extra repos with -s url1 url2 ...
-    use pregenerated ssh key with -k key_file without selinux relabeling
 lago status | stop | shell | console ...
     show environment status, shut down VMs, log into a running VM, etc
 run_tc <full path to test case file> [test function]

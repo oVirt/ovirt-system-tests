@@ -782,6 +782,8 @@ def test_verify_vm2_exported(engine_api):
         lambda:
         len(vm1_snapshots_service.list()) == 1,
     )
+    # ...and it should still be running
+    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
 
 
 @order_by(_TEST_LIST)

@@ -65,6 +65,7 @@ class Facts:
     def __init__(self, module_mapper):
         self._thread_local = threading.local()
         self._module_mapper = module_mapper
+        self._cache = {}
 
     @property
     def facts_gathered(self):
@@ -77,6 +78,10 @@ class Facts:
     def get(self, fact):
         if not self.facts_gathered:
             self.refresh()
+
+        if fact in self._cache:
+            return self._cache[fact]
+
         result = self._module_mapper.debug(var=fact)
 
         if result is not None:
@@ -84,10 +89,12 @@ class Facts:
             if value == "VARIABLE IS NOT DEFINED!":
                 raise FactNotFound(fact)
             if value is not None:
+                self._cache[fact] = value
                 return value
 
         raise FactNotFound(fact)
 
     def refresh(self):
+        self._cache = {}
         self._module_mapper.gather_facts()
         self.facts_gathered = True

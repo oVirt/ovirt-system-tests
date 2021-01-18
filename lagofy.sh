@@ -11,7 +11,8 @@ check_dependencies() {
         echo 'Missing "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
     }
-    [[ $(cat /sys/module/kvm_*/parameters/nested) -eq 1 ]] || {
+    local nested=$(cat /sys/module/kvm_*/parameters/nested)
+    [[ "$nested" = 1 ]] || [[ "$nested" = Y ]] || {
         echo "No nesting virtualization support. Fix it!"
         return 5
     }

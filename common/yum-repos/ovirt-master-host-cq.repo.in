@@ -126,26 +126,6 @@ repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
 
-[ovirt-master-copr-nmstate-0.2-el8]
-name=Copr repo for nmstate-0.2 owned by nmstate
-baseurl=https://copr-be.cloud.fedoraproject.org/results/nmstate/nmstate-0.2/epel-8-$basearch/
-type=rpm-md
-gpgcheck=1
-gpgkey=https://copr-be.cloud.fedoraproject.org/results/nmstate/nmstate-0.2/pubkey.gpg
-repo_gpgcheck=0
-enabled=1
-enabled_metadata=1
-
-[ovirt-master-copr-NetworkManager-1.22-el8]
-name=Copr repo for NetworkManager-1.22 owned by networkmanager
-baseurl=https://copr-be.cloud.fedoraproject.org/results/networkmanager/NetworkManager-1.22/epel-8-$basearch/
-type=rpm-md
-gpgcheck=1
-gpgkey=https://copr-be.cloud.fedoraproject.org/results/networkmanager/NetworkManager-1.22/pubkey.gpg
-repo_gpgcheck=0
-enabled=1
-enabled_metadata=1
-
 [ovirt-master-centos-ovirt44-el8]
 name=CentOS-8 - oVirt 4.4
 baseurl=https://buildlogs.centos.org/centos/8/virt/x86_64/ovirt-44/

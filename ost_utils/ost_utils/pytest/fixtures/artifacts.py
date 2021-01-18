@@ -18,10 +18,12 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import functools
 import os
 
 import pytest
 
+from ost_utils import backend
 from ost_utils import utils
 from ost_utils.ansible import artifacts_collector as ac
 
@@ -31,11 +33,16 @@ def artifacts_dir():
     return os.path.join(os.environ["OST_REPO_ROOT"], "exported-artifacts")
 
 
+@pytest.fixture(scope="session")
+def artifacts():
+    return backend.default_backend().artifacts()
+
+
 @pytest.fixture(scope="session", autouse=True)
-def collect_artifacts(artifacts_dir):
+def collect_artifacts(artifacts_dir, artifacts):
     yield
-    utils.invoke_different_funcs_in_parallel(
-        ac.EngineArtifactsCollector(artifacts_dir).collect,
-        ac.Host0ArtifactsCollector(artifacts_dir).collect,
-        ac.Host1ArtifactsCollector(artifacts_dir).collect
-    )
+    calls = [
+        functools.partial(ac.collect, hostname, artifact_list, artifacts_dir)
+        for hostname, artifact_list in artifacts.items()
+    ]
+    utils.invoke_different_funcs_in_parallel(*calls)

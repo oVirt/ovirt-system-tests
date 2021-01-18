@@ -6,6 +6,9 @@ This document describes:
 
 Reposync Template Files
 =========================
+
+**FIXME: This section si OBSOLETE: ovirt-4.2.repo is no longer used**
+
 In order to create new updated reposync files we are using reposync template files.
 
 These files are located in ovirt-system-tests/common/yum-repos

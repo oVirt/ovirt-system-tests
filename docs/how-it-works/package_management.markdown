@@ -8,6 +8,9 @@ dependencies.
 The Flow
 ==========
 
+
+**FIXME: This section si OBSOLETE: ovirt-4.2 is no longer used**
+
 $SUITE is the path to the test suite.
 
 1. packages that were specified in `$SUITE/reposync-config.repo` file are being

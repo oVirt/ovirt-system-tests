@@ -22,6 +22,8 @@ import json
 import os
 import tempfile
 
+import yaml
+
 from ost_utils.backend import base
 from ost_utils import memoized
 from ost_utils import shell
@@ -59,9 +61,26 @@ class LagoBackend(base.BaseBackend):
 
         return self._ansible_inventory.name
 
+    def artifacts(self):
+        init_file = self._init_file()
+        return {
+            hostname: init_file['domains'][hostname]['artifacts']
+            for hostname in self.hostnames()
+        }
+
     @memoized.memoized
     def _status(self):
         status = shell.shell(
             ["lago", "--out-format", "json", "status"], cwd=self._prefix_path
         )
         return json.loads(status)
+
+    @memoized.memoized
+    def _init_file(self):
+        path = os.environ.get("LAGO_INIT_FILE", None)
+
+        if path is None:
+            raise RuntimeError("'LAGO_INIT_FILE' variable is not defined")
+
+        with open(path, 'rb') as init_file:
+            return yaml.safe_load(init_file.read())

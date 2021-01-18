@@ -65,6 +65,32 @@ class BaseBackend(abc.ABC):
 
         """
 
+    @abc.abstractmethod
+    def artifacts(self):
+        """Function returning a mapping of hostname --> list of artifacts
+
+        Returns:
+            dict: Hostname --> list of artifacts.
+
+            Example value for basic suite:
+
+            {
+                'lago-basic-suite-master-engine': [
+                    '/var/log',
+                    '/var/cache/ovirt-engine',
+                ],
+                'lago-basic-suite-master-host-0': [
+                    '/etc/resolv.conf',
+                    '/var/log',
+                ],
+                'lago-basic-suite-master-host-1': [
+                    '/etc/resolv.conf',
+                    '/var/log',
+                ]
+            }
+
+        """
+
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]
 

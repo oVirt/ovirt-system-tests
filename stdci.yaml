@@ -79,4 +79,4 @@ runtime-requirements:
   support-nesting-level: 2
   isolation_level: container
 release-branches:
-  master: [ovirt-master, ovirt-4.3]
+  master: ovirt-master

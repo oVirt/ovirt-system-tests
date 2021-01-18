@@ -182,8 +182,8 @@ put_host_image() {
 
 render_jinja_templates () {
     local suite_name="${SUITE_NAME}"
-    local src="${SUITE}/LagoInitFile.in"
-    local dest="${SUITE}/LagoInitFile"
+    local src="${LAGO_INIT_FILE_IN}"
+    local dest="${LAGO_INIT_FILE}"
 
     # export the suite name so jinja can interpolate it in the template
     export suite_name="${suite_name//./-}"
@@ -269,7 +269,7 @@ env_create_images () {
     cd -
     cd $export_dir
     echo "$engine_version" > version.txt
-    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/modify_init.py" LagoInitFile
+    "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/modify_init.py" "${LAGO_INIT_FILE}"
     logger.info "Compressing images"
     local files=($(ls "$export_dir"))
     tar -cvS "${files[@]}" | xz -T 0 -v --stdout > "$archive_name"
@@ -747,6 +747,9 @@ export SUITE="$(realpath --no-symlinks "$1")"
 
 # Suite's name, i.e. 'basic-suite-master'
 export SUITE_NAME="${SUITE##*/}"
+
+export LAGO_INIT_FILE="${SUITE}/LagoInitFile"
+export LAGO_INIT_FILE_IN="${LAGO_INIT_FILE}.in"
 
 # If no deployment path provided, set the default
 [[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE_NAME}"

@@ -96,7 +96,7 @@ run_suite(){
         return 1
     fi
 
-    declare test_scenarios=($(ls "$suite"/test-scenarios/*.py | sort))
+    declare test_scenarios=($(ls "$suite"/test-scenarios/*.py | grep -v __init__ | sort))
 
     for scenario in "${test_scenarios[@]}"; do
         if [[ "$scenario" == *pytest* ]]; then

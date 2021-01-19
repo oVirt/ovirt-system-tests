@@ -444,7 +444,7 @@ env_libvirt_cleanup() {
             | egrep "$uid*" \
             | awk '{print $1;}' \
         ))
-    else
+    elif [[ ${INSIDE_MOCK} -eq 1 ]]; then
         local domains=($( \
             virsh -c qemu:///system list --all --name \
             | egrep "[[:alnum:]]*-lago-${suite}-" \

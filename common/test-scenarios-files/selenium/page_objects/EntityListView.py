@@ -36,7 +36,7 @@ class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
         if entity_name in names_to_ids:
             # find the parent td and click the td next to it to select the row
             # clicking the name cell directly might cause to navigate to the entity detail
-            self.ovirt_driver.xpath_click('//*[@id="' + names_to_ids[entity_name]  + '"]/../../following-sibling::td[1]')
+            self.ovirt_driver.xpath_click('//*[@id="' + names_to_ids[entity_name] + '"]/../../following-sibling::td[1]')
         else:
             raise Exception('No ' + self.entity_type + ' with the name ' + entity_name + ' found')
 

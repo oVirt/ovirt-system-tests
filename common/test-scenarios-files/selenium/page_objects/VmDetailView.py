@@ -20,7 +20,7 @@ class VmDetailView(Displayable,WithBreadcrumbs):
 
         vm_detail_host_devices_tab = VmDetailHostDevicesTab(self.ovirt_driver)
         vm_detail_host_devices_tab.wait_for_displayed()
-        return vm_detail_host_devices_tab 
+        return vm_detail_host_devices_tab
 
     def get_name(self):
         return self.ovirt_driver.driver.find_element_by_id('SubTabVirtualMachineGeneralView_form_col0_row0_value').text

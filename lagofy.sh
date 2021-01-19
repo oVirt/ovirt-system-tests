@@ -46,16 +46,19 @@ lago_init() {
     QCOW=$(realpath "$1")
     [ -n "$QCOW" -a -e "$QCOW" ] || { echo "Image file $1 doesn't exist"; return 1; }
     local engine_image=${QCOW/-host/-engine}
+    local node_image=${QCOW%/*}/node-base.qcow2
     local host_image=${QCOW/-engine/-host}
     local upgrade_image=${host_image/-host-installed/-upgrade}
     local he_image=${host_image/-host/-he}
     local ssh_key=${he_image/-he-installed*/_id_rsa}
 
+    local comma="Using images "
+    for i in $engine_image $host_image $he_image, $node_image; do echo -n $([ -e $i ] && { echo -n "$comma"; rpm -qf $i &>/dev/null && rpm -qf $i || echo $i; }); comma=", "; done
+    echo " containing"
+    egrep -h '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt} ${node_image/.qcow2/-pkglist.txt}
+
     # cleanup
     [[ -d "$PREFIX" ]] && { lago stop || true ; rm -rf "$PREFIX"; echo "Removed existing $PREFIX"; }
-
-    echo "Using images $(rpm -qf $host_image 2>/dev/null || echo $host_image), $(rpm -qf $engine_image 2>/dev/null || echo $engine_image) containing "
-    egrep -h '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt}
 
     # final lago init file
     local add_repo=0
@@ -75,7 +78,7 @@ EOT
         done
         echo "dnf upgrade --nogpgcheck -y -x ovirt-release-master" >> add_plain_repos.sh
     fi
-    suite_name="$SUITE_NAME" engine_image=$engine_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
+    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${SUITE}/LagoInitFile.in" > "${SUITE}/LagoInitFile"
 
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "$SUITE/LagoInitFile"
 

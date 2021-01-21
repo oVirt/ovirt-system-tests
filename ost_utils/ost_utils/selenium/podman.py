@@ -51,7 +51,8 @@ def _log_issues(pod_name, hub_name, node_names):
 
 @contextlib.contextmanager
 def _pod(hub_port):
-    name = shell(["podman", "pod", "create", "-p", str(hub_port)]).strip()
+    name = shell(["podman", "pod", "create", "-p",
+                 f"{hub_port}:{hub_port}"]).strip()
     try:
         yield name
     finally:

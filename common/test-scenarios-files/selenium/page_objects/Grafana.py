@@ -17,7 +17,7 @@ class Grafana(Displayable):
         self.ovirt_driver.xpath_wait_and_click('Home button', '//div[@class="navbar"]//a[normalize-space()="Home"]')
         self.ovirt_driver.xpath_wait_and_click(menu, '//div[@class="search-section"]//*[@class="search-section__header__text" and text() = "' + menu + '"]')
         self.ovirt_driver.xpath_wait_and_click(submenu, '//*[@class="search-item__body-title" and text() = "' + submenu + '"]')
- 
+
         self.ovirt_driver.wait_until('Breadcrumbs visible', self._is_breadcrumbs_visible, menu, submenu)
 
     def is_error_visible(self):

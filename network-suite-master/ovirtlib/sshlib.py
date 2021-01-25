@@ -44,13 +44,14 @@ def exec_command(address, password, command, username=DEFAULT_USER):
     try:
         _, stdout, stderr = client.exec_command(command)
         status = stdout.channel.recv_exit_status()
+        stdout_message = stdout.read()
         if status != 0:
             stderr_message = stderr.read()
-            raise SshException('Ssh command "{command}" exited with status '
-                               'code {status}. Stderr: {stderr}'
-                               .format(command=command, status=status,
-                                       stderr=stderr_message))
-        return stdout.read()
+            raise SshException(
+                f'Ssh command "{command}" exited with status code {status}. '
+                f'Stderr: {stderr_message}. Stdout: {stdout_message}. '
+            )
+        return stdout_message
     finally:
         client.close()
 

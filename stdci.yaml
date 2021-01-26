@@ -55,6 +55,8 @@ stage:
             script:
               fromfile: 'automation/basic_suite_master.sh'
         - build_ovirtlib:
+            distributions:
+             - el8
             runif:
               filechanged:
                 - 'automation/build-artifacts*'

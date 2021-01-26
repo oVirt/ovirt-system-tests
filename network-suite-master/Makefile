@@ -6,7 +6,7 @@ TIMESTAMP:=$(shell date +'%Y%m%d%H%M%S')
 RELEASE_SUFFIX=0.$(TIMESTAMP).git$(GITHASH)
 TARBALL=$(NAME)-$(VERSION).tar.gz
 SPEC=$(NAME).spec
-PYTHON=python
+PYTHON=python3
 
 GENERATED = ovirtlib/version.py \
 	    $(SPEC) \

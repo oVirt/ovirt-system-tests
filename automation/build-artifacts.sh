@@ -13,7 +13,7 @@ builddep() {
 
 ovirtlib_rpm() {
     pushd network-suite-master
-    make
+    make all
     builddep ovirtlib.spec
     make rpm
     find `rpm --eval %_topdir` \

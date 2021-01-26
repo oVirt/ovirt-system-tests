@@ -35,7 +35,7 @@ from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from ..selenium_constants import *
+from ost_utils.selenium.constants import *
 
 DEBUG = False
 

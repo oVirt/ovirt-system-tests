@@ -41,12 +41,12 @@ from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.pytest.fixtures.virt import cirros_image_glance_template_name
+from ost_utils.selenium.constants import *
 from ost_utils.selenium.grid import CHROME_VERSION
 from ost_utils.selenium.grid import FIREFOX_VERSION
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 from test_utils.constants import *
-from test_utils.selenium_constants import *
 from test_utils.navigation.driver import *
 from test_utils.page_objects.WelcomeScreen import WelcomeScreen
 from test_utils.page_objects.LoginScreen import LoginScreen

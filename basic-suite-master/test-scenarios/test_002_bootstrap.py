@@ -47,7 +47,7 @@ from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.pytest.fixtures.virt import *
-from ost_utils.selenium.common import http_proxy_disabled
+from ost_utils.selenium.grid.common import http_proxy_disabled
 from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
 from ost_utils.storage_utils import lun

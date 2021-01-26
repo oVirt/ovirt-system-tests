@@ -26,8 +26,8 @@ import pytest
 
 import ost_utils.network_utils as network_utils
 import ost_utils.os_utils as os_utils
-import ost_utils.selenium.docker as docker
-import ost_utils.selenium.podman as podman
+import ost_utils.selenium.grid.docker as docker
+import ost_utils.selenium.grid.podman as podman
 
 from ost_utils.pytest.fixtures.engine import engine_fqdn
 from ost_utils.pytest.fixtures.engine import engine_ip

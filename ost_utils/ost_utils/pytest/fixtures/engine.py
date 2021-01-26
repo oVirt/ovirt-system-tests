@@ -35,7 +35,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 from ost_utils.pytest.fixtures.network import management_network_name
 from ost_utils.pytest.fixtures.network import storage_network_name
-from ost_utils.selenium.common import http_proxy_disabled
+from ost_utils.selenium.grid.common import http_proxy_disabled
 
 
 @pytest.fixture(scope="session")

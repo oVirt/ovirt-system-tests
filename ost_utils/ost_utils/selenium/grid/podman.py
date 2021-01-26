@@ -23,10 +23,10 @@ from __future__ import absolute_import
 import contextlib
 import logging
 
-from ost_utils.selenium import CHROME_CONTAINER_IMAGE
-from ost_utils.selenium import FIREFOX_CONTAINER_IMAGE
-from ost_utils.selenium import HUB_CONTAINER_IMAGE
-from ost_utils.selenium import common
+from ost_utils.selenium.grid import CHROME_CONTAINER_IMAGE
+from ost_utils.selenium.grid import FIREFOX_CONTAINER_IMAGE
+from ost_utils.selenium.grid import HUB_CONTAINER_IMAGE
+from ost_utils.selenium.grid import common
 from ost_utils.shell import shell
 
 

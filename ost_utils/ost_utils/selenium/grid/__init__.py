@@ -1,5 +1,5 @@
 #
-# Copyright 2021 Red Hat, Inc.
+# Copyright 2020 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,3 +17,13 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+from __future__ import absolute_import
+
+CHROME_CONTAINER_IMAGE = 'selenium/node-chrome-debug:3.141.59-20200409'
+FIREFOX_CONTAINER_IMAGE = 'selenium/node-firefox-debug:3.141.59-20200409'
+HUB_CONTAINER_IMAGE = 'selenium/hub:3.141.59-20200409'
+
+# selenium grid zirconium update 20200409 uses these versions:
+CHROME_VERSION = '81.0.4044.92'
+FIREFOX_VERSION = '75.0'

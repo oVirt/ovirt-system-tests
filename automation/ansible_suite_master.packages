@@ -1,11 +1,1 @@
-ansible
-autoconf
-automake
-grubby
-lago
-lago-ovirt
-libselinux-python
-python-ovirt-engine-sdk4
-script
-virt-install
-wget
+basic_suite_master.packages.el8

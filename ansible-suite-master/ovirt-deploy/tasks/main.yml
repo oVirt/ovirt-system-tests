@@ -7,7 +7,7 @@
     register: health_status
     retries: 3
     delay: 5
-    until: health_status|success
+    until: health_status.status == 200
     ignore_errors: true
 
   - name: Login to oVirt

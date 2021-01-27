@@ -1,6 +1,6 @@
 ---
 - name: Deploy oVirt engine
-  hosts: vm-type=ovirt-engine
+  hosts: lago-ansible-suite-master-engine
 
   roles:
     - ovirt-deploy

@@ -4,19 +4,15 @@ prep_suite () {
     render_jinja_templates
 }
 
-cleanup_run() {
-    lago_serve_pid=$!
-    kill $lago_serve_pid
-    cd -
-}
-
 run_suite () {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
-    env_repo_setup
     install_local_rpms_without_reposync
     env_start
+    env_dump_ansible_hosts
+    env_wait_for_ssh
+    env_add_extra_repos
     env_copy_repo_file
     env_copy_config_file
     env_status
@@ -28,40 +24,36 @@ run_suite () {
         return 1
     fi
 
-    declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
     declare failed=false
 
-    for scenario in "${test_scenarios[@]}"; do
-        echo "Running test scenario ${scenario##*/}"
-        env_run_test "$scenario" || failed=true
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
-        if $failed; then
-            echo "@@@@ ERROR: Failed running $scenario"
-            return 1
-        fi
-        break
-    done
+    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
+    "${PYTHON}" -m pip install --user \
+        "importlib_metadata==2.0.0" \
+        "pytest==4.6.9" \
+        "zipp==1.2.0"
+
+    env_run_pytest_bulk "${SUITE}/test-scenarios" || failed=true
+
+    if [[ -z "$OST_SKIP_COLLECT" || "${failed}" == "true" ]]; then
+        env_collect "$PWD/test_logs/${SUITE_NAME}"
+    fi
+
+    if $failed; then
+        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        return 1
+    fi
 
     LOGS_DIR="$PWD/test_logs"
     export ANSIBLE_CONFIG="${SUITE}/ansible.cfg"
     cd $PREFIX/current
 
-    # Verify the ansible_hosts file
-    $CLI ansible_hosts >> ansible_hosts_file
-
-
-    ## update ansible hosts file with the path of python3 for hosts
-    local suite_name="${SUITE##*/}"
-    sed -i "s/^lago-${suite_name}-host.*id_rsa$/ & ansible_python_interpreter=\/usr\/bin\/python3/" ansible_hosts_file
-
     if ansible-playbook \
         --list-hosts \
-        -i ansible_hosts_file \
+        -i ${ANSIBLE_INVENTORY_FILE} \
         $SUITE/engine.yml \
         | grep 'hosts (0):'; then
             echo "@@@@ ERROR: ansible: No matching hosts were found"
             return 1
     fi
-    trap cleanup_run EXIT SIGHUP SIGTERM
-    $CLI ovirt serve & ansible-playbook -v -u root -i ansible_hosts_file $SUITE/engine.yml --extra-vars="lago_cmd=$CLI prefix=$PREFIX/current log_dir=$LOGS_DIR/${SUITE##*/}/"
+    ansible-playbook -v -u root -i ${ANSIBLE_INVENTORY_FILE} $SUITE/engine.yml --extra-vars="lago_cmd=$CLI prefix=$PREFIX/current log_dir=$LOGS_DIR/${SUITE##*/}/"
 }

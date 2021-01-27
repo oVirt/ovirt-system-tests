@@ -360,15 +360,15 @@ env_ansible () {
     ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/modules/ovirt_"
     for module in vm disk cluster datacenter host network quota storage_domain template vmpool nic
     do
-      OVIRT_MODULES_FILES="$OVIRT_MODULES_FILES $ANSIBLE_URL_PREFIX$module.py "
+      OVIRT_MODULES_FILES="$OVIRT_MODULES_FILES -O $ANSIBLE_URL_PREFIX$module.py "
     done
 
-    wget -N $OVIRT_MODULES_FILES
+    curl $OVIRT_MODULES_FILES
     cd -
 
     for module_util in ovirt cloud
     do
-    wget "https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/$module_util.py" -O $collection_dir/module_utils/$module_util.py
+    curl -o $collection_dir/module_utils/$module_util.py "https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/$module_util.py"
     done
 
     for file in $(find $collection_dir/modules/* -type f)

@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,19 +42,19 @@ from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.pytest.fixtures.virt import cirros_image_glance_template_name
 from ost_utils.selenium.constants import *
+from ost_utils.selenium.navigation.driver import *
+from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
+from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
+from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
+from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
+from ost_utils.selenium.page_objects.VmPortal import VmPortal
+from ost_utils.selenium.page_objects.GrafanaLoginScreen import GrafanaLoginScreen
+from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.selenium.grid import CHROME_VERSION
 from ost_utils.selenium.grid import FIREFOX_VERSION
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 from test_utils.constants import *
-from test_utils.navigation.driver import *
-from test_utils.page_objects.WelcomeScreen import WelcomeScreen
-from test_utils.page_objects.LoginScreen import LoginScreen
-from test_utils.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
-from test_utils.page_objects.WebAdminTopMenu import WebAdminTopMenu
-from test_utils.page_objects.VmPortal import VmPortal
-from test_utils.page_objects.GrafanaLoginScreen import GrafanaLoginScreen
-from test_utils.page_objects.Grafana import Grafana
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,

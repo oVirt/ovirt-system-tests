@@ -2,15 +2,9 @@
 
 # TODO: Fix code, so all the errors are fixed
 # TODO: Change W,R,C to separate disables and deal with them
-disable=bad-super-call,
-        assignment-from-none,
-        invalid-str-returned,
-        no-value-for-parameter,
-        unexpected-keyword-arg,
+disable=unexpected-keyword-arg,
         no-member,
-        unsubscriptable-object,
         no-name-in-module,
-        undefined-variable,
         import-error,
         W,  # warnings
         R,  # refactoring

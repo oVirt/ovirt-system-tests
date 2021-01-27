@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ class Browser(Enum):
     CHROME_64 = 'chrome-64'
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 
 DRIVER_MAX_RETRIES = 200

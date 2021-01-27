@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-from sh import vagrant
-from sh import scp
-from sh import virsh
-from sh import grep
+from sh import vagrant  # pylint: disable=no-name-in-module
+from sh import scp  # pylint: disable=no-name-in-module
+from sh import virsh  # pylint: disable=no-name-in-module
+from sh import grep  # pylint: disable=no-name-in-module
 
 from sh import ErrorReturnCode
 from sh import CommandNotFound
@@ -17,21 +17,22 @@ import re
 from functools import wraps
 import collections
 import io
-import service
 import time
 import warnings
 import logging
 import yaml
 from itertools import chain
 from collections import OrderedDict
+
 import testlib
+from ost_utils import service
+from ost_utils import utils
 from ost_utils.command_status import CommandStatus
 from ost_utils.sdk_utils import available_sdks, require_sdk
 from ost_utils.log_utils import LevelFilter
 
 import ovirtsdk.api
 from ovirtsdk.infrastructure.errors import (RequestError, ConnectionError)
-import utils
 
 try:
     import ovirtsdk4 as sdk4
@@ -193,7 +194,7 @@ class VM(object):
         buf = io.StringIO()
         ssh_config = self.info()
         conf = paramiko.SSHConfig()
-        buf = io.StringIO(unicode(ssh_config.out, 'unicode-escape'))
+        buf = io.StringIO(str(ssh_config.out, encoding='unicode-escape'))
         buf.seek(0)
         conf.parse(buf)
         buf.close()

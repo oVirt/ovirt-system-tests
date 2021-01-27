@@ -23,7 +23,7 @@ import warnings
 import logging
 import yaml
 from collections import OrderedDict
-from sh import vagrant
+from sh import vagrant  # pylint: disable=no-name-in-module
 
 from vm import VM
 import testlib

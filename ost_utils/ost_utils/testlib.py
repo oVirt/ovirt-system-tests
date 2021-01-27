@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ import time
 import unittest.case
 import nose.plugins
 from nose.plugins.skip import SkipTest
-import utils
+
+from lago.plugins.vm import ExtractPathError, ExtractPathNoPathError
 
 # TODO: remove once code is aligned to new location
 from ost_utils.assertions import SHORT_TIMEOUT

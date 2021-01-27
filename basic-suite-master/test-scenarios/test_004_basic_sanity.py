@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014, 2017 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -828,7 +828,7 @@ def test_verify_template_exported(engine_api, cirros_image_glance_template_name)
     )
     if template_service is None:
         pytest.skip('{0}: template {1} is missing'.format(
-            template_export.__name__,
+            test_verify_template_exported.__name__,
             cirros_image_glance_template_name
             )
         )
@@ -917,7 +917,7 @@ def test_add_vm1_from_template(engine_api, cirros_image_glance_template_name):
     )[0]
     if glance_template is None:
         pytest.skip('%s: template %s not available.' % (
-            add_vm1_from_template.__name__, cirros_image_glance_template_name
+            test_add_vm1_from_template.__name__, cirros_image_glance_template_name
         ))
 
     vm_memory = 128 * MB # runs with 64 ok, but we need to do a hotplug later (64+256 is too much difference)
@@ -1115,7 +1115,7 @@ def test_template_export(engine_api, cirros_image_glance_template_name):
     )
     if template_service is None:
         pytest.skip('{0}: template {1} is missing'.format(
-            template_export.__name__,
+            test_template_export.__name__,
             cirros_image_glance_template_name
             )
         )
@@ -1250,7 +1250,7 @@ def test_template_update(engine_api, cirros_image_glance_template_name):
 
     if template_guest is None:
         pytest.skip('{0}: template {1} is missing'.format(
-            template_update.__name__,
+            test_template_update.__name__,
             cirros_image_glance_template_name
         )
     )

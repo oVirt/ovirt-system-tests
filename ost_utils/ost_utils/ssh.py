@@ -3,7 +3,6 @@ import fcntl
 import functools
 import select
 import socket
-import six
 import sys
 import termios
 import time
@@ -121,8 +120,6 @@ def wait_for_ssh(
             )
         except Exception as err:
             ret = -1
-            if six.PY2:
-                sys.exc_clear()
             LOGGER.debug(
                 'Got exception while sshing to %s: %s',
                 host_name,
@@ -307,7 +304,7 @@ def interactive_ssh_channel(chan, command=None, stdin=sys.stdin):
         if stdin_is_tty:
             tty.setraw(stdin.fileno())
             tty.setcbreak(stdin.fileno())
-        return utils.CommandStatus(*drain_ssh_channel(chan, stdin))
+        return command_status.CommandStatus(*drain_ssh_channel(chan, stdin))
     finally:
         if stdin_is_tty:
             termios.tcsetattr(stdin, termios.TCSADRAIN, oldtty)

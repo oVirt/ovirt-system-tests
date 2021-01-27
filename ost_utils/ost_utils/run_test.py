@@ -1,4 +1,4 @@
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -203,9 +203,8 @@ class TaskLogNosePlugin(nose.plugins.Plugin):
         return super(TaskLogNosePlugin, self).options(parser, env)
 
     def configure(self, options, conf):
-        res = super(TaskLogNosePlugin, self).configure(options, conf)
+        super(TaskLogNosePlugin, self).configure(options, conf)
         self.logger.handlers = logging.root.handlers
-        return res
 
     def startTest(self, test):
         log_utils.start_log_task(
@@ -235,4 +234,4 @@ class TaskLogNosePlugin(nose.plugins.Plugin):
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pylint: disable=no-value-for-parameter

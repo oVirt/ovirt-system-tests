@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -116,13 +116,6 @@ def invoke_different_funcs_in_parallel(*funcs):
     vt = VectorThread(funcs)
     vt.start_all()
     return vt.join_all()
-
-
-def service_is_enabled(name):
-    ret, out, _ = run_command(['systemctl', 'is-enabled', name])
-    if ret == 0 and out.strip() == 'enabled':
-        return True
-    return False
 
 
 # Copied from VDSM: lib/vdsm/utils.py

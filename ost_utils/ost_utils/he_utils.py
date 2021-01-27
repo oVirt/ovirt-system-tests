@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ from ost_utils.ansible import AnsibleExecutionError
 
 
 def he_status(ansible_host):
-    ret = None
+    ret = {}
 
     def get_value():
         nonlocal ret
@@ -60,7 +60,7 @@ def he_status(ansible_host):
         return ret
 
     assertions.assert_true_within_short(
-        lambda: get_value() is not None,
+        lambda: bool(get_value()),
         allowed_exceptions=[RuntimeError, AnsibleExecutionError]
     )
     return ret

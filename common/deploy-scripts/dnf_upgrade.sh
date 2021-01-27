@@ -1,3 +1,3 @@
 #!/bin/bash -xe
 
-dnf upgrade -y
+dnf upgrade -y --nobest

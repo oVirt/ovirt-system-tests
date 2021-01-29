@@ -1,1 +1,0 @@
-../../common/deploy-scripts/setup_host_vdsm_coverage.sh

@@ -1,1 +1,0 @@
-../he-basic-suite-master/control.sh

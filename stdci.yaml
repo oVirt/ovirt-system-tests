@@ -25,12 +25,6 @@ stage:
                   runtime-requirements:
                     hostdistro: same
                     support-nesting-level: 2
-        - performance_suite_master:
-            distributions:
-             - el8:
-                 runtime-requirements:
-                   hostdistro: same
-                   support-nesting-level: 2
         - test-ost-container:
             runif:
               filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']

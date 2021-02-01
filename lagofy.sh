@@ -155,7 +155,7 @@ collect_logs() {
 
 export OST_REPO_ROOT=$(realpath "$PWD")
 export SUITE=${OST_REPO_ROOT}/${1:-basic-suite-master}
-SUITE_NAME="${SUITE##*/}"
+export SUITE_NAME="${SUITE##*/}"
 echo -n "Suite $SUITE_NAME - "
 export LAGO_INIT_FILE="${SUITE}/LagoInitFile"
 export LAGO_INIT_FILE_IN="${LAGO_INIT_FILE}.in"

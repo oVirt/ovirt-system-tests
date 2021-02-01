@@ -48,7 +48,7 @@ except ImportError:
     API_V4 = False
 
 from lago import utils
-from ovirtlago import testlib
+from ovirtlago import testlib  # pylint: disable=import-error
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -448,7 +448,7 @@ def add_iscsi_storage_domain(prefix):
 
     lun_guids = ret.out.splitlines()[:SD_ISCSI_NR_LUNS]
 
-    p = types.StorageDomain(
+    p = types.StorageDomain(  # pylint: disable=unexpected-keyword-arg
         name=SD_ISCSI_NAME,
         data_center=types.DataCenter(
             name=DC_NAME,
@@ -456,9 +456,9 @@ def add_iscsi_storage_domain(prefix):
         type_='data',
         storage_format=SD_FORMAT,
         host=_random_host_from_dc_4(api, DC_NAME),
-        storage=types.Storage(
+        storage=types.Storage(  # pylint: disable=no-member
             type_='iscsi',
-            volume_group=types.VolumeGroup(
+            volume_group=types.VolumeGroup(  # pylint: disable=unexpected-keyword-arg
                 logical_unit=[
                     types.LogicalUnit(
                         id=lun_id,

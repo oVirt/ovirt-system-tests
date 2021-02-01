@@ -23,7 +23,7 @@ from nose import SkipTest
 import re
 
 from lago import ssh
-from ovirtlago import testlib
+from ovirtlago import testlib  # pylint: disable=import-error
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 
@@ -333,7 +333,7 @@ def snapshot_merge(api):
 def add_vm_template(api):
     #TODO: Fix the exported domain generation
     raise SkipTest('Exported domain generation not supported yet')
-    vm_params = types.VM(
+    vm_params = types.VM(  # pylint: disable=no-member
         name=VM1_NAME,
         memory=512 * MB,
         cluster=types.Cluster(
@@ -342,7 +342,7 @@ def add_vm_template(api):
         template=types.Template(
             name=TEMPLATE_CENTOS7,
         ),
-        display=types.Display(
+        display=types.Display(  # pylint: disable=unexpected-keyword-arg
             type_='spice',
         ),
     )
@@ -470,7 +470,7 @@ def snapshot_live_merge(api):
     live_snap1_params = types.Snapshot(
         description='live_snap1',
         persist_memorystate=True,
-        disks=types.Disks(
+        disks=types.Disks(  # pylint: disable=no-member
             disk=[
                 types.Disk(
                     id=disk_id,
@@ -487,7 +487,7 @@ def snapshot_live_merge(api):
     live_snap2_params = types.Snapshot(
         description='live_snap2',
         persist_memorystate=True,
-        disks=types.Disks(
+        disks=types.Disks(  # pylint: disable=no-member
             disk=[
                 types.Disk(
                     id=disk_id,

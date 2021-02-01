@@ -33,7 +33,7 @@ from test_utils.constants import VM0_IP_HOST_PART
 
 
 if os.environ.get("USE_LAGO_OST_PLUGIN", "0") == "1":
-    from ovirtlago import testlib
+    from ovirtlago import testlib  # pylint: disable=import-error
 
     def test_gen(tests, generator):
         '''Run the given tests amending their names according to the context.

@@ -1,10 +1,11 @@
 # PIP requirements for OST
+-e ost_utils
+pylint==2.6.0
 pytest
 selenium
 tox
 # network suite deps
 flake8
-pylint
 openstacksdk
 contextlib2
 # there's a conflict between rpm and pip versions on regular el8 hosts

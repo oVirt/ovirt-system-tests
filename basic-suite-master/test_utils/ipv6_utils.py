@@ -20,7 +20,7 @@
 import contextlib
 import os
 
-from ovirtlago import testlib
+from ovirtlago import testlib  # pylint: disable=import-error
 
 # FIXME This hack is needed until we have proper support for IPv6 from lago
 # Issue to track the Lago IPv6 https://github.com/lago-project/lago/issues/770

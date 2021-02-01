@@ -1,11 +1,7 @@
 [MESSAGES CONTROL]
 
-# TODO: Fix code, so all the errors are fixed
+# TODO: Deal with single line ignores
 # TODO: Change W,R,C to separate disables and deal with them
-disable=unexpected-keyword-arg,
-        no-member,
-        no-name-in-module,
-        import-error,
-        W,  # warnings
+disable=W,  # warnings
         R,  # refactoring
         C   # conventions

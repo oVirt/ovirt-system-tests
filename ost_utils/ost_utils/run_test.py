@@ -36,7 +36,7 @@ import unittest.case
 from signal import signal, SIGTERM, SIGHUP
 import datetime
 
-import log_utils
+from ost_utils import log_utils
 
 LOGGER = logging.getLogger(__name__)
 LogTask = functools.partial(log_utils.LogTask, logger=LOGGER)

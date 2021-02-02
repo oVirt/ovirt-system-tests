@@ -77,7 +77,7 @@ EOT
         echo "touch /etc/yum.repos.d/lagofy.repo" >> add_plain_repos.sh
         while [[ -n "$3" ]]; do
             shift; let add_repo++; echo "Add repo $add_repo: $2"
-            echo 'echo -e "[lagofy'${add_repo}']\nname=lagofy'${add_repo}'\nbaseurl='${2}'\ngpgcheck=0\nmodule_hotfixes=1\nsslverify=0\n" >> /etc/yum.repos.d/lagofy.repo' >> add_plain_repos.sh
+            echo 'echo -e "[extra-src-'${add_repo}']\nname=extra-src-'${add_repo}'\nbaseurl='${2}'\ngpgcheck=0\nmodule_hotfixes=1\nsslverify=0\n" >> /etc/yum.repos.d/lagofy.repo' >> add_plain_repos.sh
         done
         echo "dnf upgrade --nogpgcheck -y -x ovirt-release-master" >> add_plain_repos.sh
     fi

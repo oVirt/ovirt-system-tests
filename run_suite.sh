@@ -599,7 +599,7 @@ env_wait_for_ssh() {
 }
 
 env_add_extra_repos() {
-    local repo_no=0
+    local repo_no=1
     for extra_src in "${EXTRA_SOURCES[@]}"; do
         logger.info "Adding extra repository to VMs: ${extra_src}"
         ansible \

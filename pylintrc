@@ -5,3 +5,11 @@
 disable=W,  # warnings
         R,  # refactoring
         C   # conventions
+
+
+[FORMAT]
+# Expected format of line ending, e.g. empty (any line ending), LF or CRLF.
+expected-line-ending-format=LF
+
+# Maximum number of characters on a single line.
+max-line-length=79

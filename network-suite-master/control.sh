@@ -17,17 +17,6 @@ install_dependencies() {
     "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
 }
 
-run_static_analysis_pylint() {
-    "${PYTHON}" -m pip install pylint==2.6.0
-    "${PYTHON}" -m pylint \
-        --rcfile="${SUITE}/pylintrc" \
-        --errors-only \
-        "${SUITE}/fixtures" \
-        "${SUITE}/ovirtlib" \
-        "${SUITE}/testlib" \
-        "${SUITE}/test-scenarios"
-}
-
 run_static_analysis_flake() {
     "${PYTHON}" -m flake8 --statistics --show-source "${SUITE}"
 }
@@ -81,9 +70,6 @@ run_suite () {
     install_dependencies
     setup_env
     run_static_analysis_flake
-    if [[ "${PYTHON}" !=  "python2" ]]; then
-        run_static_analysis_pylint
-    fi
     start_env
     run_tests
 }

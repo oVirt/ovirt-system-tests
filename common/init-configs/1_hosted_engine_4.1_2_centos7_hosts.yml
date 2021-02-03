@@ -1,7 +1,7 @@
 domains:
   lago-{{ env.suite_name }}-engine:
     vm-provider: ssh
-    vm-type: ovirt-engine
+    vm-type: default
     distro: el7
     service_provider: systemd
     ssh-password: 123456
@@ -68,7 +68,7 @@ domains:
 
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
-    vm-type: ovirt-host
+    vm-type: default
     distro: el7
     service_provider: systemd
     memory: 5744

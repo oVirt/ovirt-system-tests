@@ -1347,10 +1347,10 @@ def test_add_blank_vms(engine_api):
             file_transfer_enabled=True,
             copy_paste_enabled=True,
         ),
-#        usb=sdk4.types.Usb(
-#            enabled=True,
-#            type=sdk4.types.UsbType.NATIVE,
-#        ),
+        usb=sdk4.types.Usb(
+            enabled=True,
+            type=sdk4.types.UsbType.NATIVE,
+        ),
         memory_policy=sdk4.types.MemoryPolicy(
             ballooning=True,
         ),
@@ -1417,10 +1417,10 @@ def test_add_blank_high_perf_vm2(engine_api):
                     ],
                 ),
             ),
-#            usb=sdk4.types.Usb(
-#                enabled=False,
-#                type=sdk4.types.UsbType.NATIVE,
-#            ),
+            usb=sdk4.types.Usb(
+                enabled=False,
+                type=sdk4.types.UsbType.NATIVE,
+            ),
             soundcard_enabled=False,
             display=sdk4.types.Display(
                 smartcard_enabled=False,

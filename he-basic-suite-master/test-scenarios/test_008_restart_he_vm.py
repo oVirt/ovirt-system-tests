@@ -19,7 +19,6 @@
 #
 
 import logging
-import time
 
 import pytest
 
@@ -31,9 +30,6 @@ from test_utils import constants
 from test_utils import ipv6_utils, network_utils_v4
 
 
-WAIT_VALUE = 300
-
-
 @pytest.fixture(scope='module', autouse=True)
 def setup():
     ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
@@ -41,9 +37,7 @@ def setup():
 
 def test_set_global_maintenance(ansible_host0):
     logging.info('Waiting For System Stability...')
-    time.sleep(WAIT_VALUE)
-    # TODO: Replace arbitrary sleep above with something like below, once it's stable.
-    # wait_until_engine_vm_is_not_migrating(ansible_host0)
+    he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
 
     he_utils.set_and_test_global_maintenance_mode(ansible_host0, True)
 
@@ -66,9 +60,7 @@ def test_restart_he_vm(ansible_by_hostname, ansible_host0):
 
 def test_clear_global_maintenance(ansible_host0):
     logging.info('Waiting For System Stability...')
-    time.sleep(WAIT_VALUE)
-    # TODO: Replace arbitrary sleep above with something like below, once it's stable.
-    # wait_until_engine_vm_is_not_migrating(ansible_host0)
+    he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
 
     he_utils.set_and_test_global_maintenance_mode(ansible_host0, False)
 

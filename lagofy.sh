@@ -117,6 +117,8 @@ run_tc() {
 run_tests() {
     run_linters
     TC= _run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
+    # until it's in pytest let's run ansible playbook manually
+    [[ "$SUITE_NAME" =~ ^ansible ]] && ansible-playbook -v -u root -i $PREFIX/hosts $SUITE/engine.yml --extra-vars="lago_cmd=lago prefix=$PREFIX/current log_dir=${OST_REPO_ROOT}/exported-artifacts/"
     echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
     return 0
 }

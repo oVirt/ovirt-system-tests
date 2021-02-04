@@ -57,8 +57,7 @@ lago_init() {
     echo " containing"
     egrep -sh '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt} ${node_image/.qcow2/-pkglist.txt}
 
-    # cleanup
-    [[ -d "$PREFIX" ]] && { lago stop || true ; rm -rf "$PREFIX"; echo "Removed existing $PREFIX"; }
+    lago_cleanup
 
     # final lago init file
     local add_repo=0
@@ -140,6 +139,12 @@ run_linters() {
    python3 -m tox -e flake8,pylint
 }
 
+lago_cleanup() {
+    # cleanup lago deployment env $1 (or the default $PREFIX)
+    WHAT=${1:-PREFIX}
+    [[ -d "$WHAT" ]] && { lago --workdir "$WHAT" stop || true ; rm -rf "$WHAT"; echo "Removed existing $WHAT"; }
+}
+
 collect_logs() {
     logs="${OST_REPO_ROOT}/test_logs/${SUITE_NAME}/$(date +'%Y-%m-%d_%H:%M:%S')_${scenario##*/}"
     lago collect --output $logs # lago logs
@@ -177,6 +182,8 @@ run_tests
     run the whole suite
 run_linters
     run flake8 and pylint linters
+lago_cleanup [workdir]
+    stop and remove the running lago environment. [workdir] use different deployment directory than the current suite
 collect_logs
     grab logs from lago and exported-artifacts and add to test_logs
 "

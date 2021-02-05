@@ -32,3 +32,8 @@ def backend():
 @pytest.fixture(scope="session")
 def hosts_hostnames(backend):
     return backend.hosts_hostnames()
+
+
+@pytest.fixture(scope="session")
+def ansible_inventory(backend):
+    return backend.ansible_inventory()

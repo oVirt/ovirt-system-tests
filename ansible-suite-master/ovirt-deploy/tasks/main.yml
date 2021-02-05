@@ -11,7 +11,7 @@
     ignore_errors: true
 
   - name: Login to oVirt
-    ovirt_auth:
+    ovirt.ovirt.ovirt_auth:
       url: "{{ engine_url }}"
       username: "{{ engine_user }}"
       password: "{{ engine_password }}"
@@ -24,29 +24,15 @@
     tags:
       - always
 
-  - block:
-    - name: Include bootstrap tasks
-      include: bootstrap.yml
-      tags:
-        - bootstrap
+  - name: Include bootstrap tasks
+    include: bootstrap.yml
+    tags:
+      - bootstrap
 
-    always:
-      - name: Collect bootstrap tasks logs
-        include: log.yml task_name=bootstrap
-        tags:
-          - bootstrap
-
-  - block:
-    - name: Include sanity tasks
-      include: sanity.yml
-      tags:
-        - sanity
-
-    always:
-      - name: Collect sanity tasks logs
-        include: log.yml task_name=sanity
-        tags:
-          - sanity
+  - name: Include sanity tasks
+    include: sanity.yml
+    tags:
+      - sanity
 
   - name: Logout from oVirt
     ovirt_auth:

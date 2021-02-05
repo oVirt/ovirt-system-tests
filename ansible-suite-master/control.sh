@@ -16,7 +16,6 @@ run_suite () {
     env_copy_repo_file
     env_copy_config_file
     env_status
-    env_ansible
     cd "$OST_REPO_ROOT"
     if ! env_deploy; then
         env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
@@ -42,18 +41,4 @@ run_suite () {
         echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
         return 1
     fi
-
-    LOGS_DIR="$PWD/test_logs"
-    export ANSIBLE_CONFIG="${SUITE}/ansible.cfg"
-    cd $PREFIX/current
-
-    if ansible-playbook \
-        --list-hosts \
-        -i ${ANSIBLE_INVENTORY_FILE} \
-        $SUITE/engine.yml \
-        | grep 'hosts (0):'; then
-            echo "@@@@ ERROR: ansible: No matching hosts were found"
-            return 1
-    fi
-    ansible-playbook -v -u root -i ${ANSIBLE_INVENTORY_FILE} $SUITE/engine.yml --extra-vars="lago_cmd=$CLI prefix=$PREFIX/current log_dir=$LOGS_DIR/${SUITE##*/}/"
 }

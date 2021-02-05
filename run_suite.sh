@@ -348,38 +348,6 @@ env_run_pytest_bulk () {
 }
 
 
-env_ansible () {
-
-    # Ensure latest Ansible modules are tested:
-    local collection_dir=$SUITE/collections/ansible_collections/ovirt/ovirt/plugins
-    rm -rf $collection_dir/modules || true
-    rm -rf $collection_dir/module_utils || true
-    mkdir -p $collection_dir/modules
-    mkdir -p $collection_dir/module_utils
-    cd $collection_dir/modules
-    ANSIBLE_URL_PREFIX="https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/modules/ovirt_"
-    for module in vm disk cluster datacenter host network quota storage_domain template vmpool nic
-    do
-      OVIRT_MODULES_FILES="$OVIRT_MODULES_FILES -O $ANSIBLE_URL_PREFIX$module.py "
-    done
-
-    curl $OVIRT_MODULES_FILES
-    cd -
-
-    for module_util in ovirt cloud
-    do
-    curl -o $collection_dir/module_utils/$module_util.py "https://raw.githubusercontent.com/oVirt/ovirt-ansible-collection/master/plugins/module_utils/$module_util.py"
-    done
-
-    for file in $(find $collection_dir/modules/* -type f)
-    do
-        sed -i -e "s/@NAMESPACE@/ovirt/g" -e "s/@NAME@/ovirt/g" $file
-    done
-
-    sed -i -e "s/@NAMESPACE@/ovirt/g" -e "s/@NAME@/ovirt/g" $collection_dir/module_utils/ovirt.py
-}
-
-
 env_collect () {
     local tests_out_dir="${1?}"
 

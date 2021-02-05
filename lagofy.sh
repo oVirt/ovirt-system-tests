@@ -141,7 +141,7 @@ run_linters() {
 
 lago_cleanup() {
     # cleanup lago deployment env $1 (or the default $PREFIX)
-    WHAT=${1:-PREFIX}
+    WHAT=${1:-$PREFIX}
     [[ -d "$WHAT" ]] && { lago --workdir "$WHAT" stop || true ; rm -rf "$WHAT"; echo "Removed existing $WHAT"; }
 }
 

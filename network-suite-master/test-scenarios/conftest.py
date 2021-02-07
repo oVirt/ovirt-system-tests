@@ -60,6 +60,7 @@ from fixtures.data_center import default_data_center  # NOQA: F401
 from fixtures.system import system  # NOQA: F401
 
 # Import OST utils fixtures
+from ost_utils.pytest.fixtures.artifacts import artifacts  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts  # NOQA: F401
 from ost_utils.pytest.fixtures.virt import cirros_image  # NOQA: F401

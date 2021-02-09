@@ -55,20 +55,8 @@ def ansible_host1():
 
 
 @pytest.fixture(scope="session")
-def ansible_by_hostname(ansible_engine, ansible_storage, ansible_host0, ansible_host1):
-
-    # ugly, but local and gets the job done for now
-    def by_hostname(hostname):
-        if "engine" in hostname:
-            return ansible_engine
-        if "storage" in hostname:
-            return ansible_storage
-        if "host-0" in hostname:
-            return ansible_host0
-        if "host-1" in hostname:
-            return ansible_host1
-
-    return by_hostname
+def ansible_by_hostname():
+    return module_mappers.module_mapper_for
 
 
 @pytest.fixture(scope="session")

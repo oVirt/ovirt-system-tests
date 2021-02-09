@@ -31,6 +31,10 @@ from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 
 from ost_utils.pytest.fixtures.backend import backend
+from ost_utils.pytest.fixtures.backend import hosts_hostnames
+
+from ost_utils.pytest.fixtures.defaults import hostnames_to_add
+from ost_utils.pytest.fixtures.defaults import hostnames_to_reboot
 
 from ost_utils.pytest.running_time import *
 

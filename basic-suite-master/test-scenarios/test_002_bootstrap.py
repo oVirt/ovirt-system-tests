@@ -201,7 +201,10 @@ def _random_host_service_from_dc(api, dc_name=DC_NAME):
     return api.system_service().hosts_service().host_service(id=host.id)
 
 def _all_hosts_up(hosts_service, total_num_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing or status=connecting'.format(DC_NAME))
+    installing_hosts = hosts_service.list(
+        search='datacenter={} AND status=installing or status=initializing '
+               'or status=connecting or status=reboot'.format(DC_NAME)
+    )
     if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
@@ -220,7 +223,10 @@ def _all_hosts_up(hosts_service, total_num_hosts):
     _check_problematic_hosts(hosts_service)
 
 def _single_host_up(hosts_service, total_num_hosts):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing or status=connecting'.format(DC_NAME))
+    installing_hosts = hosts_service.list(
+        search='datacenter={} AND status=installing or status=initializing '
+               'or status=connecting or status=reboot'.format(DC_NAME)
+    )
     if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
@@ -420,14 +426,9 @@ def test_sync_time(ansible_hosts, engine_hostname):
 
 
 @order_by(_TEST_LIST)
-def test_add_hosts(ansible_host0_facts, ansible_host1_facts, engine_api,
-                   root_password):
+def test_add_hosts(engine_api, root_password, hostnames_to_add,
+                   hostnames_to_reboot):
     engine = engine_api.system_service()
-
-    hostnames = [
-        facts.get("ansible_hostname")
-        for facts in [ansible_host0_facts, ansible_host1_facts]
-    ]
 
     def _add_host(hostname):
         return engine.hosts_service().add(
@@ -441,10 +442,11 @@ def test_add_hosts(ansible_host0_facts, ansible_host1_facts, engine_api,
                     name=CLUSTER_NAME,
                 ),
             ),
+            reboot=(hostname in hostnames_to_reboot)
         )
 
     with test_utils.TestEvent(engine, 42):
-        for hostname in hostnames:
+        for hostname in hostnames_to_add:
             assert _add_host(hostname)
 
 

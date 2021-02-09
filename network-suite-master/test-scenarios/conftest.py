@@ -63,6 +63,7 @@ from fixtures.system import system  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import artifacts  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts  # NOQA: F401
+from ost_utils.pytest.fixtures.backend import backend  # NOQA: F401
 from ost_utils.pytest.fixtures.virt import cirros_image  # NOQA: F401
 from ost_utils.pytest.fixtures.virt import (  # NOQA: F401
     transformed_cirros_image,

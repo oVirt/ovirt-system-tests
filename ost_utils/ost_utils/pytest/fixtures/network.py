@@ -22,19 +22,17 @@ from __future__ import absolute_import
 
 import pytest
 
-from ost_utils import backend
+
+@pytest.fixture(scope="session")
+def management_network_name(backend):
+    return backend.management_network_name()
 
 
 @pytest.fixture(scope="session")
-def management_network_name():
-    return backend.default_backend().management_network_name()
+def storage_network_name(backend):
+    return backend.storage_network_name()
 
 
 @pytest.fixture(scope="session")
-def storage_network_name():
-    return backend.default_backend().storage_network_name()
-
-
-@pytest.fixture(scope="session")
-def bonding_network_name():
-    return backend.default_backend().bonding_network_name()
+def bonding_network_name(backend):
+    return backend.bonding_network_name()

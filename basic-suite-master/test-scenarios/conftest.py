@@ -30,6 +30,8 @@ from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 
+from ost_utils.pytest.fixtures.backend import backend
+
 from ost_utils.pytest.running_time import *
 
 

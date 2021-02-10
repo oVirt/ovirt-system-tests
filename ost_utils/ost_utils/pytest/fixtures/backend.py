@@ -30,6 +30,11 @@ def backend():
 
 
 @pytest.fixture(scope="session")
+def all_hostnames(backend):
+    return backend.hostnames()
+
+
+@pytest.fixture(scope="session")
 def hosts_hostnames(backend):
     return backend.hosts_hostnames()
 

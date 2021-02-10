@@ -22,9 +22,6 @@ import socket
 
 from tempfile import NamedTemporaryFile
 
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.engine import *
-
 
 def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_engine.ping()

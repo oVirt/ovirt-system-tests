@@ -52,6 +52,10 @@ lago_init() {
     local he_image=${host_image/-host/-he}
     local ssh_key=${he_image/-he-installed*/_id_rsa}
 
+    # We need this to make ansible suite working.
+    # Remove once we expose the ssh key with the backend
+    export OST_IMAGES_SSH_KEY="${ssh_key}"
+
     local comma="Using images "
     for i in $engine_image $host_image $he_image, $node_image; do echo -n $([ -e $i ] && { echo -n "$comma"; rpm -qf $i &>/dev/null && rpm -qf $i || echo $i; }); comma=", "; done
     echo " containing"

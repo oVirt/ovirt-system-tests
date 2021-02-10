@@ -19,8 +19,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import os
-
 from ost_utils.pytest import pytest_collection_modifyitems
 
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
@@ -37,23 +35,3 @@ from ost_utils.pytest.fixtures.defaults import hostnames_to_add
 from ost_utils.pytest.fixtures.defaults import hostnames_to_reboot
 
 from ost_utils.pytest.running_time import *
-
-
-if os.environ.get("USE_LAGO_OST_PLUGIN", "0") == "1":
-    import ovirtlago
-    import ovirtlago.prefix
-    import pytest
-    from ovirtlago import testlib
-
-    @pytest.fixture(scope="session")
-    def prefix():
-        yield testlib.get_test_prefix()
-
-    @pytest.fixture(autouse=True, scope="session")
-    def repo_server(prefix):
-        with ovirtlago.server.repo_server_context(
-            gw_ip=prefix.virt_env.get_net().gw(),
-            port=ovirtlago.constants.REPO_SERVER_PORT,
-            root_dir=prefix.paths.internal_repo()
-        ):
-            yield

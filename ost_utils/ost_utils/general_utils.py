@@ -17,7 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from __future__ import print_function
 
 import logging
 import time

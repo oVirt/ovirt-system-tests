@@ -18,8 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from __future__ import absolute_import
-
 CHROME_CONTAINER_IMAGE = 'selenium/node-chrome-debug:3.141.59-20200409'
 FIREFOX_CONTAINER_IMAGE = 'selenium/node-firefox-debug:3.141.59-20200409'
 HUB_CONTAINER_IMAGE = 'selenium/hub:3.141.59-20200409'

@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-from __future__ import print_function
-
 from sh import vagrant
 from sh import scp
 from sh import virsh

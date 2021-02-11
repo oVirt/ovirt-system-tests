@@ -18,8 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from __future__ import absolute_import
-
 import ovirtsdk4 as sdk4
 
 from ost_utils.storage_utils import domain

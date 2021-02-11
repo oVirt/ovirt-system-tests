@@ -1,4 +1,4 @@
-class WithOvirtDriver(object):
+class WithOvirtDriver:
 
     def __init__(self, ovirt_driver):
         super(WithOvirtDriver, self).__init__()

@@ -100,7 +100,7 @@ def _instance_of_any(obj, cls_list):
     return any(True for cls in cls_list if isinstance(obj, cls))
 
 
-class _EggTimer(object):
+class _EggTimer:
     def __init__(self, timeout):
         self.timeout = timeout
 

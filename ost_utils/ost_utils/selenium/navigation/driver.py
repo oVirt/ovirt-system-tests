@@ -48,7 +48,7 @@ class DriverException(Exception):
         return repr(self.value)
 
 
-class Driver(object):
+class Driver:
 
     def __init__(self, driver):
 
@@ -314,7 +314,7 @@ class Driver(object):
     def _wait_while(self, message, timeout, condition_method, *args):
         WebDriverWait(self.driver, timeout).until_not(ConditionClass(condition_method, *args), message)
 
-class ConditionClass(object):
+class ConditionClass:
     def __init__(self, condition_method, *args):
         self.condition_method = condition_method
         self.args = args

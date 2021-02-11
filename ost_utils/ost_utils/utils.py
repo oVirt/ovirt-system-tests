@@ -116,7 +116,7 @@ def invoke_different_funcs_in_parallel(*funcs):
 
 
 # Copied from VDSM: lib/vdsm/utils.py
-class RollbackContext(object):
+class RollbackContext:
     '''
     A context manager for recording and playing rollback.
     The first exception will be remembered and re-raised after rollback
@@ -166,7 +166,7 @@ class RollbackContext(object):
         self._finally = []
 
 
-class ExceptionTimer(object):
+class ExceptionTimer:
     def __init__(self, timeout):
         self.timeout = timeout or 0
 
@@ -187,7 +187,7 @@ class ExceptionTimer(object):
         signal.alarm(0)
 
 
-class Flock(object):
+class Flock:
     """A wrapper class around flock
 
     Attributes:
@@ -222,7 +222,7 @@ class Flock(object):
         self._fd.close()
 
 
-class LockFile(object):
+class LockFile:
     """
     Context manager that creates a file based lock, with optional
     timeout in the acquire operation.

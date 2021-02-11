@@ -29,7 +29,7 @@ from abc import (abstractmethod, abstractproperty, ABCMeta)
 from enum import Enum
 
 
-class Plugin(object):
+class Plugin:
     """
     Base class for all the plugins
     """

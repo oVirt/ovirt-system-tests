@@ -155,7 +155,7 @@ def run_test(path, junitxml_file=None):
              #   '--with-log-collector-plugin',
         ]
 
-        class DummyStream(object):
+        class DummyStream:
             def write(self, *args):
                 pass
 

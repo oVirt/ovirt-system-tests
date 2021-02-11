@@ -166,7 +166,7 @@ class Task(deque):
         return str(datetime.datetime.now() - self.start_time).rsplit('.', 1)[0]
 
 
-class ContextLock(object):
+class ContextLock:
     """
     Context manager to thread lock a block of code
     """
@@ -579,7 +579,7 @@ class TaskHandler(logging.StreamHandler):
             self.tasks[self.cur_task].append(record)
 
 
-class LogTask(object):
+class LogTask:
     """
     Context manager for a log task
 

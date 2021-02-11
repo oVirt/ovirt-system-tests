@@ -25,7 +25,6 @@ import os
 import time
 from configparser import SafeConfigParser
 import sys
-from future.builtins import super
 
 import nose.core
 import nose.config

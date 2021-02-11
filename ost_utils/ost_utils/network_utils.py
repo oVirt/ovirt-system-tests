@@ -20,13 +20,7 @@
 
 import socket
 
-import six
-
 from ost_utils import backend
-
-
-if six.PY2:
-    ConnectionRefusedError = socket.error
 
 
 def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):

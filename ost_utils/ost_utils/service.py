@@ -27,7 +27,6 @@ This plugins are used in order to manage services in the vms
 from abc import (abstractmethod, abstractproperty, ABCMeta)
 
 from enum import Enum
-from future.builtins import super
 
 
 class Plugin(object):

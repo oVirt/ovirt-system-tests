@@ -20,7 +20,6 @@
 """
 This module defines the special logging tools that lago uses
 """
-from future.builtins import super
 import logging
 import logging.config
 import os

@@ -25,6 +25,7 @@ import functools
 import json
 import logging
 import os
+import queue
 import shutil
 import signal
 import subprocess
@@ -39,10 +40,6 @@ import argparse
 import configparser
 import uuid as uuid_m
 import hashlib
-
-import six
-
-from six.moves import queue
 
 from ost_utils.log_utils import LogTask, setup_prefix_logging
 
@@ -102,7 +99,7 @@ class VectorThread:
             for result in self.results:
                 if 'exception' in result:
                     exc_info = result['exception']
-                    six.reraise(*exc_info)
+                    raise exc_info[1].with_traceback(exc_info[2])
         return [x.get('return', None) for x in self.results]
 
 
@@ -157,7 +154,7 @@ class RollbackContext(object):
                     undoExcInfo = sys.exc_info()
 
         if exc_type is None and undoExcInfo is not None:
-            six.reraise(undoExcInfo[0], undoExcInfo[1], undoExcInfo[2])
+            raise undoExcInfo[1].with_traceback(undoExcInfo[2])
 
     def defer(self, func, *args, **kwargs):
         self._finally.append((func, args, kwargs))

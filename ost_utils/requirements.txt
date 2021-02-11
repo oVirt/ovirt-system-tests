@@ -1,8 +1,5 @@
 configparser
-enum34
 paramiko
-future
 nose
-sh
 click
 PyYAML

@@ -1,5 +1,2 @@
-configparser
 paramiko
-nose
-click
 PyYAML

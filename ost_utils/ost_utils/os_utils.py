@@ -19,7 +19,6 @@
 #
 
 import os
-import platform
 import re
 
 from ost_utils.memoized import memoized
@@ -30,12 +29,6 @@ def on_centos(ver=''):
     with open('/etc/redhat-release') as f:
         contents = f.readline()
         return re.match('(Red Hat|CentOS).*release {}'.format(ver), contents)
-
-
-@memoized
-def kernel_version():
-    version = platform.uname()[2]
-    return [int(v) for v in version.replace('-', '.').split('.')[:4]]
 
 
 @memoized

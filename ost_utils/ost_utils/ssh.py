@@ -6,7 +6,6 @@ import socket
 import sys
 import termios
 import time
-import tty
 import uuid
 import logging
 
@@ -23,7 +22,6 @@ SSH_TIMEOUT_DEFAULT = 100
 SSH_TRIES_DEFAULT = 20
 LOGGER = logging.getLogger(__name__)
 LogTask = functools.partial(log_utils.LogTask, logger=LOGGER)
-log_task = functools.partial(log_utils.log_task, logger=LOGGER)
 logging.getLogger('paramiko.transport').setLevel(logging.WARNING)
 
 def ssh(
@@ -95,112 +93,6 @@ def ssh(
             err,
         )
     return command_status.CommandStatus(out, err, return_code)
-
-
-def wait_for_ssh(
-    ip_addr,
-    host_name=None,
-    connect_timeout=600,  # 10 minutes
-    ssh_key=None,
-    username='root',
-    password='vagrant',
-):
-    host_name = host_name or ip_addr
-    start_time = time.time()
-    while (time.time() - start_time) < connect_timeout:
-        try:
-            ret, _, _ = ssh(
-                ip_addr=ip_addr,
-                host_name=host_name,
-                command=['true'],
-                tries=1,
-                propagate_fail=False,
-                ssh_key=ssh_key,
-                username=username,
-                password=password,
-            )
-        except Exception as err:
-            ret = -1
-            LOGGER.debug(
-                'Got exception while sshing to %s: %s',
-                host_name,
-                err,
-            )
-
-        if ret == 0:
-            break
-
-        time.sleep(1)
-    else:
-        # Try one last time, using the ssh default timeout values, as we
-        # already waited for boot_time_sec for sure
-        ret, _, _ = ssh(
-            ip_addr=ip_addr,
-            host_name=host_name,
-            command=['true'],
-            ssh_key=ssh_key,
-            username=username,
-            password=password,
-        )
-        if ret != 0:
-            raise RuntimeError(
-                'Failed to connect remote shell to %s',
-                host_name,
-            )
-
-    LOGGER.debug('Wait succeeded for ssh to %s', host_name)
-
-
-def ssh_script(
-    ip_addr,
-    path,
-    host_name=None,
-    show_output=True,
-    ssh_key=None,
-    username='root',
-    password='123456',
-):
-    host_name = host_name or ip_addr
-    LOGGER.debug('Running %s on host %s', path, host_name)
-    with open(path) as script_fd:
-        return ssh(
-            ip_addr=ip_addr,
-            host_name=host_name,
-            command=['bash', '-s'],
-            data=script_fd.read(),
-            show_output=show_output,
-            ssh_key=ssh_key,
-            username=username,
-            password=password,
-        )
-
-
-def interactive_ssh(
-    ip_addr,
-    command=None,
-    host_name=None,
-    ssh_key=None,
-    username='root',
-    password='123456',
-):
-    if command is None:
-        command = ['bash']
-
-    client = get_ssh_client(
-        ip_addr=ip_addr,
-        host_name=host_name,
-        ssh_key=ssh_key,
-        username=username,
-        password=password,
-    )
-    transport = client.get_transport()
-    channel = transport.open_session()
-    try:
-        return interactive_ssh_channel(channel, ' '.join(command))
-    finally:
-        channel.close()
-        transport.close()
-        client.close()
 
 
 def drain_ssh_channel(chan, stdin=None, stdout=sys.stdout, stderr=sys.stderr):
@@ -286,29 +178,6 @@ def drain_ssh_channel(chan, stdin=None, stdout=sys.stdout, stderr=sys.stderr):
             done = True
 
     return (chan.exit_status, b''.join(out_all), b''.join(err_all))
-
-
-def interactive_ssh_channel(chan, command=None, stdin=sys.stdin):
-    try:
-        stdin_is_tty = stdin.isatty()
-    except Exception:
-        stdin_is_tty = False
-
-    if stdin_is_tty:
-        oldtty = termios.tcgetattr(stdin)
-        chan.get_pty()
-
-    if command is not None:
-        chan.exec_command(command)
-
-    try:
-        if stdin_is_tty:
-            tty.setraw(stdin.fileno())
-            tty.setcbreak(stdin.fileno())
-        return command_status.CommandStatus(*drain_ssh_channel(chan, stdin))
-    finally:
-        if stdin_is_tty:
-            termios.tcsetattr(stdin, termios.TCSADRAIN, oldtty)
 
 
 def _gen_ssh_command_id():

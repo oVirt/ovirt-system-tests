@@ -129,13 +129,13 @@ def _grid(engine_fqdn, engine_ip, node_images, hub_image, hub_port):
 def grid(engine_fqdn, engine_ip, node_images=None,
          hub_image=HUB_CONTAINER_IMAGE, hub_port=HUB_PORT,
          retries=GRID_STARTUP_RETRIES):
-    for attempt in range(GRID_STARTUP_RETRIES):
+    for attempt in range(retries):
         try:
             with _grid(engine_fqdn, engine_ip, node_images, hub_image,
                        hub_port) as url:
                 yield url
         except common.SeleniumGridError as e:
-            if attempt < GRID_STARTUP_RETRIES - 1:
+            if attempt < retries - 1:
                 LOGGER.warning("Grid startup failed, retrying...")
             else:
                 raise

@@ -18,21 +18,15 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import logging
-import os
 import time
 
 from ost_utils import assertions
 
-from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,
                                         NoSuchElementException,
                                         WebDriverException,
                                         StaleElementReferenceException)
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ost_utils.selenium.constants import *

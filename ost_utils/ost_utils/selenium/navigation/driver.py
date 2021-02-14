@@ -17,7 +17,7 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-
+import logging
 import os
 import time
 
@@ -38,6 +38,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from ost_utils.selenium.constants import *
 
 DEBUG = False
+
+LOGGER = logging.getLogger(__name__)
 
 
 class DriverException(Exception):
@@ -62,7 +64,7 @@ class Driver:
         for x in range(1, DRIVER_MAX_RETRIES):
             try:
                 if DEBUG:
-                    print("self.driver.find_element_by_id(%s)" % text)
+                    LOGGER.debug("self.driver.find_element_by_id(%s)" % text)
                 elem = self.driver.find_element_by_id(text)
                 break
             except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:
@@ -70,7 +72,7 @@ class Driver:
 
         if elem is None:
             self.driver.save_screenshot('%s could not locate by id %s.png' % (time.time(), text))
-            print("could not locate by id: " + text)
+            LOGGER.debug("could not locate by id: " + text)
             raise DriverException("could not locate by id: " + text)
 
         return elem
@@ -82,7 +84,7 @@ class Driver:
         for x in range(1, DRIVER_MAX_RETRIES):
             try:
                 if DEBUG:
-                    print("self.driver.find_element_by_id(%s)" % text)
+                    LOGGER.debug("self.driver.find_element_by_id(%s)" % text)
                 elif action == 'click':
                     elem = self.driver.find_element_by_link_text(text)
                     elem.click()
@@ -96,7 +98,7 @@ class Driver:
 
         if elem is None:
             self.driver.save_screenshot('%s could not locate by %s %s.png' % (time.time(), find_by, text))
-            print("could not locate by text: " + text)
+            LOGGER.debug("could not locate by text: " + text)
             raise DriverException("could not locate by text: " + text)
         return elem
 
@@ -108,14 +110,14 @@ class Driver:
                 # try to find the element. That requires its own wait loop, so it lives
                 # in another method for clarity
                 if DEBUG:
-                    print("self.wait_for_id(%s)" % id)
+                    LOGGER.debug("self.wait_for_id(%s)" % id)
 
                 ret = self.wait_for_id(id)
 
                 try:
                     # try to click it. This may or may not work, hence the surrounding wait loop
                     if DEBUG:
-                        print("" + str(ret) + ".click()")
+                        LOGGER.debug("" + str(ret) + ".click()")
 
                     ret.click()
                     break
@@ -124,7 +126,7 @@ class Driver:
 
         except DriverException as e:
             self.driver.save_screenshot('%s id_click couldnt find element %s.png' % (time.time(), id))
-            print('id_click couldnt find element %s' % id)
+            LOGGER.debug('id_click couldnt find element %s' % id)
             raise
 
     def hover_to_id(self, id):
@@ -135,14 +137,14 @@ class Driver:
                 # try to find the element. That requires its own wait loop, so it lives
                 # in another method for clarity
                 if DEBUG:
-                    print("self.wait_for_id(%s)" % id)
+                    LOGGER.debug("self.wait_for_id(%s)" % id)
 
                 ret = self.wait_for_id(id)
 
                 try:
                     # try to hover over it. This may or may not work, hence the surrounding wait loop
                     if DEBUG:
-                        print("hover.perform() on %s" % ret)
+                        LOGGER.debug("hover.perform() on %s" % ret)
 
                     hover = ActionChains(self.driver).move_to_element(ret)
                     hover.perform()
@@ -154,7 +156,7 @@ class Driver:
 
         except DriverException as e:
             self.driver.save_screenshot('%s hover_to_id couldnt find element %s.png' % (time.time(), id))
-            print('hover_to_id couldnt find element %s' % id)
+            LOGGER.debug('hover_to_id couldnt find element %s' % id)
             raise
 
     def retry_if_stale(self, method_to_retry, *args):
@@ -165,7 +167,7 @@ class Driver:
         for x in range(1, DRIVER_MAX_RETRIES):
             try:
                 if DEBUG:
-                    print("self.driver.retry_if_stale(%s)" % method_to_retry)
+                    LOGGER.debug("self.driver.retry_if_stale(%s)" % method_to_retry)
 
                 return_value = method_to_retry(*args)
                 success = True
@@ -176,7 +178,7 @@ class Driver:
 
         if not success:
             self.save_screenshot("stale-element")
-            print("StaleElementReferenceException occurred max times, stop retrying")
+            LOGGER.debug("StaleElementReferenceException occurred max times, stop retrying")
             raise exception
 
         return return_value
@@ -198,7 +200,7 @@ class Driver:
             if dialog_close_button:
                 dialog_close_button.click()
                 if DEBUG:
-                    print("force closed a dialog")
+                    LOGGER.debug("force closed a dialog")
         except NoSuchElementException as e:
             pass
 

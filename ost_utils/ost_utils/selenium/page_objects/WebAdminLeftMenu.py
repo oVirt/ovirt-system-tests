@@ -1,3 +1,4 @@
+import logging
 import time
 from .Displayable import Displayable
 from .VmListView import VmListView
@@ -7,6 +8,9 @@ from .HostListView import HostListView
 from .ClusterListView import ClusterListView
 from .StorageDomainListView import StorageDomainListView
 from .DashboardView import DashboardView
+
+LOGGER = logging.getLogger(__name__)
+
 
 class WebAdminLeftMenu(Displayable):
 
@@ -20,7 +24,7 @@ class WebAdminLeftMenu(Displayable):
         return 'WebAdmin left menu'
 
     def open_dashboard_view(self):
-        print('Open dashboard view')
+        LOGGER.debug('Open dashboard view')
         self._open_dashboard_menu()
 
         dashboard = DashboardView(self.ovirt_driver)
@@ -28,7 +32,7 @@ class WebAdminLeftMenu(Displayable):
         return dashboard
 
     def open_vm_list_view(self):
-        print('Open VM list view')
+        LOGGER.debug('Open VM list view')
         self._open_compute_menu('VMx', 'MenuView_vmsAnchor')
 
         vm_list_view = VmListView(self.ovirt_driver)
@@ -36,7 +40,7 @@ class WebAdminLeftMenu(Displayable):
         return vm_list_view
 
     def open_template_list_view(self):
-        print('Open VM template list view')
+        LOGGER.debug('Open VM template list view')
         self._open_compute_menu('Templatex', 'MenuView_templatesAnchor')
 
         template_list_view = TemplateListView(self.ovirt_driver)
@@ -44,7 +48,7 @@ class WebAdminLeftMenu(Displayable):
         return template_list_view
 
     def open_pool_list_view(self):
-        print('Open VM pool list view')
+        LOGGER.debug('Open VM pool list view')
         self._open_compute_menu('Pools', 'MenuView_poolsAnchor')
 
         pool_list_view = PoolListView(self.ovirt_driver)
@@ -52,7 +56,7 @@ class WebAdminLeftMenu(Displayable):
         return pool_list_view
 
     def open_host_list_view(self):
-        print('Open host list view')
+        LOGGER.debug('Open host list view')
         self._open_compute_menu('Hosts', 'MenuView_hostsAnchor')
 
         host_list_view = HostListView(self.ovirt_driver)
@@ -60,7 +64,7 @@ class WebAdminLeftMenu(Displayable):
         return host_list_view
 
     def open_cluster_list_view(self):
-        print('Open cluster list view')
+        LOGGER.debug('Open cluster list view')
         self._open_compute_menu('Clusters', 'MenuView_clustersAnchor')
 
         cluster_list_view = ClusterListView(self.ovirt_driver)
@@ -68,7 +72,7 @@ class WebAdminLeftMenu(Displayable):
         return cluster_list_view
 
     def open_storage_domain_list_view(self):
-        print('Open storage domain list view')
+        LOGGER.debug('Open storage domain list view')
         self._open_storage_menu('Storage Domains', 'MenuView_domainsAnchor')
 
         storage_domain_list_view = StorageDomainListView(self.ovirt_driver)

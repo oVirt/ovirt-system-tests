@@ -1,5 +1,10 @@
+import logging
+
 from .EntityListView import *
 from .VmDetailView import VmDetailView
+
+LOGGER = logging.getLogger(__name__)
+
 
 class VmListView(EntityListView):
 
@@ -29,7 +34,7 @@ class VmListView(EntityListView):
         return self.ovirt_driver.is_button_enabled('Migrate')
 
     def poweroff(self):
-        print('Power off selected vm')
+        LOGGER.debug('Power off selected vm')
         self.close_notification_safely()
         self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Shutdown"]/button[@data-toggle="dropdown"]')
         self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Shutdown"]//a[text()="Power Off"]')
@@ -39,7 +44,7 @@ class VmListView(EntityListView):
         self.ovirt_driver.wait_while('Shutdown button is still enabled', self.is_shutdown_button_enabled)
 
     def run_once(self):
-        print('Run once selected vm')
+        LOGGER.debug('Run once selected vm')
         self.close_notification_safely()
         self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Run"]/button[@data-toggle="dropdown"]')
         self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Run"]//a[text()="Run Once"]')

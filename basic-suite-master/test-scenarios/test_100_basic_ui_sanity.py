@@ -21,6 +21,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import functools
+import logging
 import os
 import shutil
 import subprocess
@@ -68,6 +69,7 @@ from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+LOGGER = logging.getLogger(__name__)
 
 BROWSER_PLATFORM = 'LINUX'
 IMAGE_UPLOAD_DELAY = 30
@@ -112,7 +114,7 @@ def test_add_grafana_user(grafana_admin_api, engine_email):
 
     response = requests.post(url, data=data,headers=headers)
 
-    print (response.text)
+    LOGGER.debug(response.text)
 
 
 @test_utils.memoized

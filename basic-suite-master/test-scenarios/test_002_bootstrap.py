@@ -258,7 +258,7 @@ def _wait_for_status(hosts_service, dc_name, status):
     for _ in general_utils.linear_retrier(attempts=12, iteration_sleeptime=10):
         all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
         up_hosts = [host for host in all_hosts if host.status == status]
-        LOGGER.info(_host_status_to_print(hosts_service, all_hosts))
+        LOGGER.debug(_host_status_to_print(hosts_service, all_hosts))
         # we use up_status_seen because we make sure the status is not flapping
         if up_hosts:
             if up_status_seen:
@@ -291,8 +291,9 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
         try:
             verification_fn(tmp.name)
         except shell.ShellError:
-            print("Certificate verification failed. Certificate contents:\n")
-            print(tmp.read())
+            LOGGER.debug(
+                "Certificate verification failed. Certificate contents:\n")
+            LOGGER.debug(tmp.read())
             raise
 
 

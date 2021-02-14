@@ -1,4 +1,9 @@
+import logging
+
 from .Displayable import Displayable
+
+LOGGER = logging.getLogger(__name__)
+
 
 class LoginScreen(Displayable):
 
@@ -20,6 +25,6 @@ class LoginScreen(Displayable):
         self.ovirt_driver.driver.find_element_by_xpath('//input[@id="password"]').send_keys(user_password)
 
     def login(self):
-        print ('Log in')
+        LOGGER.debug('Log in')
         self.ovirt_driver.xpath_click('//form[@id="loginForm"]//button')
 

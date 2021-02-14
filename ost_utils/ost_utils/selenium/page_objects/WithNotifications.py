@@ -1,4 +1,9 @@
+import logging
+
 from .WithOvirtDriver import WithOvirtDriver
+
+LOGGER = logging.getLogger(__name__)
+
 
 class WithNotifications(WithOvirtDriver):
 
@@ -14,15 +19,15 @@ class WithNotifications(WithOvirtDriver):
     def close_notification_safely(self):
         xpath = '//a[@class="notif_dismissButton"]'
         if self._is_notification_displayed():
-            print('Notification is present')
+            LOGGER.debug('Notification is present')
             self.ovirt_driver.xpath_click(xpath)
             self.ovirt_driver.wait_while('Notification is not closed', self.ovirt_driver.is_xpath_displayed, xpath)
-            print('Notification was closed')
+            LOGGER.debug('Notification was closed')
 
     def wait_and_close_success_notification_safely(self):
         isError = False
 
-        print('Wait for notification')
+        LOGGER.debug('Wait for notification')
         xpath = '//a[@class="notif_dismissButton"]'
         self.ovirt_driver.wait_long_until('Notification is not displayed', self.ovirt_driver.is_xpath_displayed, xpath)
         self.ovirt_driver.wait_long_until('Notification is not enabled', self.ovirt_driver.is_xpath_enabled, xpath)
@@ -32,5 +37,5 @@ class WithNotifications(WithOvirtDriver):
             raise Exception("Unexpected error notification present")
         else:
             self.ovirt_driver.xpath_click(xpath)
-            print('Notification closed')
+            LOGGER.debug('Notification closed')
 

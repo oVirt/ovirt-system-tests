@@ -1,4 +1,9 @@
+import logging
+
 from .Displayable import Displayable
+
+LOGGER = logging.getLogger(__name__)
+
 
 class Grafana(Displayable):
 
@@ -12,7 +17,7 @@ class Grafana(Displayable):
         return 'Grafana'
 
     def open_dashboard(self, menu, submenu):
-        print ('Open dashboard ' + menu + '/' + submenu)
+        LOGGER.debug('Open dashboard ' + menu + '/' + submenu)
         self.ovirt_driver.xpath_wait_and_click('Grafana logo button', '//*[@class="sidemenu__logo"]')
         self.ovirt_driver.xpath_wait_and_click('Home button', '//div[@class="navbar"]//a[normalize-space()="Home"]')
         self.ovirt_driver.xpath_wait_and_click(menu, '//div[@class="search-section"]//*[@class="search-section__header__text" and text() = "' + menu + '"]')

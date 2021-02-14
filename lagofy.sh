@@ -106,6 +106,7 @@ _run_tc () {
         ${TC:+-k $TC}\
         --junit-xml="${junitxml_file}" \
         -o junit_family=xunit2 \
+        --log-file="${OST_REPO_ROOT}/exported-artifacts/pytest.log" \
         ${testcase[@]} || res=$?
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
     return "$res"

@@ -1,4 +1,9 @@
+import logging
+
 from .Displayable import Displayable
+
+LOGGER = logging.getLogger(__name__)
+
 
 class GrafanaLoginScreen(Displayable):
 
@@ -14,6 +19,6 @@ class GrafanaLoginScreen(Displayable):
         return 'Grafana login screen'
 
     def use_ovirt_engine_auth(self):
-        print ('Open oVirt Engine Auth')
+        LOGGER.debug('Open oVirt Engine Auth')
         self.ovirt_driver.xpath_click(self.OAUTH_XPATH)
 

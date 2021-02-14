@@ -1,4 +1,9 @@
+import logging
+
 from .Displayable import Displayable
+
+LOGGER = logging.getLogger(__name__)
+
 
 class WelcomeScreen(Displayable):
 
@@ -12,15 +17,15 @@ class WelcomeScreen(Displayable):
         return 'Welcome screen'
 
     def open_administration_portal(self):
-        print ('Open Administration portal')
+        LOGGER.debug('Open Administration portal')
         self.ovirt_driver.driver.find_element_by_id('WelcomePage_webadmin').click()
 
     def open_user_portal(self):
-        print ('Open User portal')
+        LOGGER.debug('Open User portal')
         self.ovirt_driver.driver.find_element_by_id('WelcomePage_userportal_webui').click()
 
     def open_monitoring_portal(self):
-        print ('Open Monitoring portal')
+        LOGGER.debug('Open Monitoring portal')
         self.ovirt_driver.driver.find_element_by_id('WelcomePage_monitoring_grafana').click()
 
     def is_user_logged_out(self):

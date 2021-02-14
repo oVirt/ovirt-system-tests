@@ -1,5 +1,10 @@
+import logging
+
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
+
+LOGGER = logging.getLogger(__name__)
+
 
 class VmDetailView(Displayable,WithBreadcrumbs):
 
@@ -15,7 +20,7 @@ class VmDetailView(Displayable,WithBreadcrumbs):
         return 'VM detail view'
 
     def open_host_devices_tab(self):
-        print('Open host devices tab')
+        LOGGER.debug('Open host devices tab')
         self.ovirt_driver.driver.find_element_by_link_text('Host Devices').click()
 
         vm_detail_host_devices_tab = VmDetailHostDevicesTab(self.ovirt_driver)
@@ -29,7 +34,7 @@ class VmDetailView(Displayable,WithBreadcrumbs):
         return self.ovirt_driver.driver.find_element_by_id('SubTabVirtualMachineGeneralView_form_col0_row2_value').text
 
     def wait_for_statuses(self, statuses):
-        print('Waiting for one of the specified VM statuses')
+        LOGGER.debug('Waiting for one of the specified VM statuses')
         self.ovirt_driver.wait_long_until('Waiting for the specified VM statuses failed', lambda: self.get_status() in statuses)
 
 class VmDetailHostDevicesTab(Displayable):
@@ -44,7 +49,7 @@ class VmDetailHostDevicesTab(Displayable):
         return 'VM detail view, host devices tab'
 
     def open_manage_vgpu_dialog(self):
-        print('Open vGPU dialog')
+        LOGGER.debug('Open vGPU dialog')
         self.ovirt_driver.driver.find_element_by_xpath('//button[text()="Manage vGPU"]').click()
         vm_vgpu_dialog = VmVgpuDialog(self.ovirt_driver)
         vm_vgpu_dialog.wait_for_displayed()
@@ -67,7 +72,7 @@ class VmVgpuDialog(Displayable):
         return self.ovirt_driver.driver.find_element_by_css_selector('h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title').text
 
     def cancel(self):
-        print('Cancel vGPU dialog')
+        LOGGER.debug('Cancel vGPU dialog')
         self.ovirt_driver.driver.find_element_by_xpath('//div[@class="modal-footer"]//button[. = "Cancel"]|//div[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]|//footer[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]').click()
         self.wait_for_not_displayed()
 

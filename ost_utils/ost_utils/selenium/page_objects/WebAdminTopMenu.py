@@ -1,5 +1,9 @@
+import logging
 import time
 from .Displayable import Displayable
+
+LOGGER = logging.getLogger(__name__)
+
 
 class WebAdminTopMenu(Displayable):
 
@@ -13,7 +17,7 @@ class WebAdminTopMenu(Displayable):
         return 'WebAdmin top menu'
 
     def logout(self):
-        print ('Log out')
+        LOGGER.debug('Log out')
         self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="HeaderView_userName"]')
         self.ovirt_driver.xpath_wait_and_click('Logout menu', '//*[@id="HeaderView_logoutLink"]')
 

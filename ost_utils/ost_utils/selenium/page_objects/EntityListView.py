@@ -1,6 +1,11 @@
+import logging
+
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 from .WithNotifications import WithNotifications
+
+LOGGER = logging.getLogger(__name__)
+
 
 class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
 
@@ -21,7 +26,7 @@ class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
         return self.entity_type.capitalize() + ' list view'
 
     def open_detail_view(self, entity_name):
-        print('Open detail of ' + self.entity_type + ' ' + entity_name)
+        LOGGER.debug('Open detail of ' + self.entity_type + ' ' + entity_name)
         names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
 
         if entity_name in names_to_ids:
@@ -30,7 +35,7 @@ class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
             raise Exception('No ' + self.entity_type + ' with the name ' + entity_name + ' found')
 
     def select_entity(self, entity_name):
-        print('Select ' + self.entity_type + ' ' + entity_name)
+        LOGGER.debug('Select ' + self.entity_type + ' ' + entity_name)
         names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
 
         if entity_name in names_to_ids:

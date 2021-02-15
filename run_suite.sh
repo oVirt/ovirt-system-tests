@@ -325,7 +325,6 @@ env_run_pytest () {
 
 env_run_pytest_bulk () {
     local res=0
-    cd $PREFIX
     local junitxml_file="$PREFIX/$SUITE_NAME.junit.xml"
 
     "${PYTHON}" -B -m pytest \
@@ -336,7 +335,6 @@ env_run_pytest_bulk () {
         "$@" || res=$?
 
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
-    cd -
     return "$res"
 }
 

@@ -98,7 +98,6 @@ EOT
 _run_tc () {
     local res=0
     local testcase=${@/#/$PWD/}
-    cd $PREFIX
     local junitxml_file="$PREFIX/${TC:-$SUITE_NAME}.junit.xml"
     PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 -u -B -m pytest \
         -s \
@@ -109,7 +108,6 @@ _run_tc () {
         -o junit_family=xunit2 \
         ${testcase[@]} || res=$?
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
-    cd -
     return "$res"
 }
 # $1 test scenario .py file

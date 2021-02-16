@@ -15,6 +15,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
+import logging
+
 import paramiko
 
 from ovirtlib import syncutil
@@ -22,6 +24,8 @@ from ovirtlib import syncutil
 DEFAULT_USER = 'root'
 ROOT_PASSWORD = '123456'
 TIMEOUT = 60 * 5
+
+logging.getLogger('paramiko.transport').setLevel(logging.WARNING)
 
 
 class SshException(Exception):

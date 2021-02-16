@@ -24,6 +24,7 @@ SSH_TRIES_DEFAULT = 20
 LOGGER = logging.getLogger(__name__)
 LogTask = functools.partial(log_utils.LogTask, logger=LOGGER)
 log_task = functools.partial(log_utils.log_task, logger=LOGGER)
+logging.getLogger('paramiko.transport').setLevel(logging.WARNING)
 
 def ssh(
     ip_addr,

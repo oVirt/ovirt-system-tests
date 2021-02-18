@@ -35,6 +35,11 @@ def ansible_engine():
 
 
 @pytest.fixture(scope="session")
+def ansible_storage():
+    return module_mappers.storage()
+
+
+@pytest.fixture(scope="session")
 def ansible_hosts():
     return module_mappers.hosts()
 
@@ -50,12 +55,14 @@ def ansible_host1():
 
 
 @pytest.fixture(scope="session")
-def ansible_by_hostname(ansible_engine, ansible_host0, ansible_host1):
+def ansible_by_hostname(ansible_engine, ansible_storage, ansible_host0, ansible_host1):
 
     # ugly, but local and gets the job done for now
     def by_hostname(hostname):
         if "engine" in hostname:
             return ansible_engine
+        if "storage" in hostname:
+            return ansible_storage
         if "host-0" in hostname:
             return ansible_host0
         if "host-1" in hostname:
@@ -67,6 +74,11 @@ def ansible_by_hostname(ansible_engine, ansible_host0, ansible_host1):
 @pytest.fixture(scope="session")
 def ansible_engine_facts():
     return facts.engine()
+
+
+@pytest.fixture(scope="session")
+def ansible_storage_facts():
+    return facts.storage()
 
 
 @pytest.fixture(scope="session")

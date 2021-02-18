@@ -19,33 +19,8 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import pytest
+TEST_DC_NAME = 'test-dc'
+TEST_CLUSTER_NAME = 'test-cluster'
 
-from ost_utils import engine_object_names
-from ost_utils.pytest.fixtures.backend import backend
-from ost_utils.pytest.fixtures.backend import hosts_hostnames
-
-
-@pytest.fixture(scope="session")
-def ost_dc_name():
-    return engine_object_names.TEST_DC_NAME
-
-
-@pytest.fixture(scope="session")
-def ost_cluster_name():
-    return engine_object_names.TEST_CLUSTER_NAME
-
-
-@pytest.fixture(scope="session")
-def hostnames_to_add(hosts_hostnames):
-    return hosts_hostnames
-
-
-@pytest.fixture(scope="session")
-def hostnames_to_reboot(hosts_hostnames):
-    return hosts_hostnames[:1]
-
-
-@pytest.fixture(scope="session")
-def deploy_hosted_engine():
-    return False
+DEFAULT_DC_NAME = 'Default'
+DEFAULT_CLUSTER_NAME = 'Default'

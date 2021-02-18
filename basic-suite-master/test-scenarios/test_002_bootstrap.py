@@ -39,6 +39,8 @@ from test_utils import network_utils_v4
 from test_utils import constants
 
 from ost_utils import assertions
+from ost_utils import backend
+from ost_utils import engine_object_names
 from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils.pytest import order_by
@@ -63,10 +65,8 @@ MB = 2 ** 20
 GB = 2 ** 30
 
 # DC/Cluster
-DC_NAME = 'test-dc'
 DC_VER_MAJ, DC_VER_MIN = versioning.cluster_version()
 SD_FORMAT = 'v4'
-CLUSTER_NAME = 'test-cluster'
 DC_QUOTA_NAME = 'DC-QUOTA'
 TEMPLATE_BLANK = 'Blank'
 
@@ -180,7 +180,7 @@ _TEST_LIST = [
 ]
 
 
-def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
+def _hosts_in_dc(api, dc_name=engine_object_names.TEST_DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
     up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
@@ -193,51 +193,51 @@ def _hosts_in_dc(api, dc_name=DC_NAME, random_host=False):
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)
     raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
 
-def _random_host_from_dc(api, dc_name=DC_NAME):
+def _random_host_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
 
-def _random_host_service_from_dc(api, dc_name=DC_NAME):
+def _random_host_service_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
     host = _hosts_in_dc(api, dc_name, True)
     return api.system_service().hosts_service().host_service(id=host.id)
 
-def _all_hosts_up(hosts_service, total_num_hosts):
+def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
     installing_hosts = hosts_service.list(
         search='datacenter={} AND status=installing or status=initializing '
-               'or status=connecting or status=reboot'.format(DC_NAME)
+               'or status=connecting or status=reboot'.format(dc_name)
     )
     if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if len(up_hosts) == total_num_hosts:
         return True
 
     # sometimes a second host is fast enough to go up without master SD, it then goes NonOperational with 5min autorecovery, let's poke it
-    nonop_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational'.format(DC_NAME))
+    nonop_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational'.format(dc_name))
     if len(nonop_hosts):
         for host in nonop_hosts:
             host_service = hosts_service.host_service(host.id)
             host_service.activate()
         return False
 
-    _check_problematic_hosts(hosts_service)
+    _check_problematic_hosts(hosts_service, dc_name)
 
-def _single_host_up(hosts_service, total_num_hosts):
+def _single_host_up(hosts_service, total_num_hosts, dc_name):
     installing_hosts = hosts_service.list(
         search='datacenter={} AND status=installing or status=initializing '
-               'or status=connecting or status=reboot'.format(DC_NAME)
+               'or status=connecting or status=reboot'.format(dc_name)
     )
     if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
     if len(up_hosts):
         return True
 
-    _check_problematic_hosts(hosts_service)
+    _check_problematic_hosts(hosts_service, dc_name)
 
-def _check_problematic_hosts(hosts_service):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up'.format(DC_NAME))
+def _check_problematic_hosts(hosts_service, dc_name):
+    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up'.format(dc_name))
     if len(problematic_hosts):
         dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
         for host in problematic_hosts:
@@ -306,13 +306,15 @@ def test_engine_health_status(scheme, engine_fqdn, engine_download):
 
 
 @order_by(_TEST_LIST)
-def test_add_dc(engine_api):
+def test_add_dc(engine_api, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dcs_service = engine.data_centers_service()
     with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
         assert dcs_service.add(
             sdk4.types.DataCenter(
-                name=DC_NAME,
+                name=ost_dc_name,
                 description='APIv4 DC',
                 local=False,
                 version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
@@ -321,15 +323,20 @@ def test_add_dc(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_remove_default_dc(engine_api):
+def test_remove_default_dc(engine_api, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
     with test_utils.TestEvent(engine, 954): # USER_REMOVE_STORAGE_POOL event
         dc_service.remove()
 
 
+# Can't set Default DC to local storage, because we want both hosts in it.
 @order_by(_TEST_LIST)
-def test_update_default_dc(engine_api):
+def test_update_default_dc(engine_api, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
     with test_utils.TestEvent(engine, 952): # USER_UPDATE_STORAGE_POOL event
@@ -355,7 +362,9 @@ def test_update_default_cluster(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_remove_default_cluster(engine_api):
+def test_remove_default_cluster(engine_api, ost_cluster_name):
+    if ost_cluster_name != engine_object_names.TEST_CLUSTER_NAME:
+        pytest.skip(' [2020-12-01] hosted-engine suites only use Default cluster')
     engine = engine_api.system_service()
     cl_service = test_utils.get_cluster_service(engine, 'Default')
     with test_utils.TestEvent(engine, 813): # USER_REMOVE_CLUSTER event
@@ -363,9 +372,9 @@ def test_remove_default_cluster(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_dc_quota(engine_api):
+def test_add_dc_quota(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
+    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     assert quotas_service.add(
@@ -377,18 +386,21 @@ def test_add_dc_quota(engine_api):
         )
     )
 
+
 @order_by(_TEST_LIST)
-def test_add_cluster(engine_api):
+def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
+    if ost_cluster_name != engine_object_names.TEST_CLUSTER_NAME:
+        pytest.skip(' [2020-12-01] hosted-engine suites only use Default cluster')
     engine = engine_api.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
     with test_utils.TestEvent(engine, 809):
         assert clusters_service.add(
             sdk4.types.Cluster(
-                name=CLUSTER_NAME,
+                name=ost_cluster_name,
                 description='APIv4 Cluster',
                 data_center=sdk4.types.DataCenter(
-                    name=DC_NAME,
+                    name=ost_dc_name,
                 ),
                 version=sdk4.types.Version(
                     major=DC_VER_MAJ,
@@ -427,7 +439,8 @@ def test_sync_time(ansible_hosts, engine_hostname):
 
 @order_by(_TEST_LIST)
 def test_add_hosts(engine_api, root_password, hostnames_to_add,
-                   hostnames_to_reboot):
+                   hostnames_to_reboot, ost_cluster_name, ost_dc_name,
+                   deploy_hosted_engine):
     engine = engine_api.system_service()
 
     def _add_host(hostname):
@@ -439,10 +452,11 @@ def test_add_hosts(engine_api, root_password, hostnames_to_add,
                 root_password=root_password,
                 override_iptables=True,
                 cluster=sdk4.types.Cluster(
-                    name=CLUSTER_NAME,
+                    name=ost_cluster_name,
                 ),
             ),
-            reboot=(hostname in hostnames_to_reboot)
+            reboot=(hostname in hostnames_to_reboot),
+            deploy_hosted_engine=deploy_hosted_engine,
         )
 
     with test_utils.TestEvent(engine, 42):
@@ -451,24 +465,24 @@ def test_add_hosts(engine_api, root_password, hostnames_to_add,
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_hosts(engine_api):
+def test_verify_add_hosts(engine_api, ost_dc_name):
     hosts_service = engine_api.system_service().hosts_service()
-    hosts_status = hosts_service.list(search='datacenter={}'.format(DC_NAME))
+    hosts_status = hosts_service.list(search='datacenter={}'.format(ost_dc_name))
     total_hosts = len(hosts_status)
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)
     LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
     assertions.assert_true_within(
-        lambda: _single_host_up(hosts_service, total_hosts),
+        lambda: _single_host_up(hosts_service, total_hosts, ost_dc_name),
         timeout=constants.ADD_HOST_TIMEOUT
     )
 
 @order_by(_TEST_LIST)
-def test_verify_add_all_hosts(engine_api):
+def test_verify_add_all_hosts(engine_api, ost_dc_name):
     hosts_service = engine_api.system_service().hosts_service()
-    total_hosts = len(hosts_service.list(search='datacenter={}'.format(DC_NAME)))
+    total_hosts = len(hosts_service.list(search='datacenter={}'.format(ost_dc_name)))
 
     assertions.assert_true_within(
-        lambda: _all_hosts_up(hosts_service, total_hosts),
+        lambda: _all_hosts_up(hosts_service, total_hosts, ost_dc_name),
         timeout=constants.ADD_HOST_TIMEOUT
     )
 
@@ -507,16 +521,6 @@ def sd_iscsi_target():
     return SD_ISCSI_TARGET
 
 
-@pytest.fixture(scope="session")
-def sd_iscsi_ansible_host(ansible_engine):
-    return ansible_engine
-
-
-@pytest.fixture(scope="session")
-def sd_iscsi_host_ips(engine_storage_ips):
-    return engine_storage_ips
-
-
 @pytest.fixture
 def sd_iscsi_host_lun_uuids(sd_iscsi_ansible_host):
     return lun.get_uuids(sd_iscsi_ansible_host)[:SD_ISCSI_NR_LUNS]
@@ -532,55 +536,50 @@ def sd_iscsi_host_luns(sd_iscsi_host_lun_uuids, sd_iscsi_host_ips,
 
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'iscsi', reason='not using iscsi')
-def test_add_iscsi_master_storage_domain(engine_api, sd_iscsi_host_luns):
-    add_iscsi_storage_domain(engine_api, sd_iscsi_host_luns)
-
-
-@pytest.fixture(scope="session")
-def sd_nfs_host_storage_ip(engine_storage_ips):
-    return engine_storage_ips[0]
+def test_add_iscsi_master_storage_domain(engine_api, sd_iscsi_host_luns, ost_dc_name):
+    add_iscsi_storage_domain(engine_api, sd_iscsi_host_luns, ost_dc_name)
 
 
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
-def test_add_nfs_master_storage_domain(engine_api, sd_nfs_host_storage_ip):
-    add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip)
+def test_add_nfs_master_storage_domain(engine_api, sd_nfs_host_storage_ip, ost_dc_name):
+    add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, ost_dc_name)
 
 
-def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
-    random_host = _random_host_from_dc(engine_api, DC_NAME)
+def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, dc_name):
+    random_host = _random_host_from_dc(engine_api, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_NFS_NAME, random_host,
-                   sd_nfs_host_storage_ip, SD_NFS_PATH, DC_NAME,
+                   sd_nfs_host_storage_ip, SD_NFS_PATH, dc_name,
                    nfs_version='v4_2')
 
 
 # TODO: add this over the storage network and with IPv6
-def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip):
-    random_host = _random_host_from_dc(engine_api, DC_NAME)
+def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, dc_name):
+    random_host = _random_host_from_dc(engine_api, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_SECOND_NFS_NAME, random_host,
-                   sd_nfs_host_storage_ip, SD_SECOND_NFS_PATH, DC_NAME)
+                   sd_nfs_host_storage_ip, SD_SECOND_NFS_PATH, dc_name)
 
 
 @order_by(_TEST_LIST)
 def test_add_secondary_storage_domains(engine_api, sd_nfs_host_storage_ip,
-                                       sd_iscsi_host_luns):
+                                       sd_iscsi_host_luns, ost_dc_name):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
                 functools.partial(add_nfs_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip),
+                                  sd_nfs_host_storage_ip, ost_dc_name),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 # Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, engine_api,
-#                                  sd_nfs_host_storage_ip),
+#                                  sd_nfs_host_storage_ip, ost_dc_name),
                 functools.partial(add_templates_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip),
+                                  sd_nfs_host_storage_ip, ost_dc_name),
                 functools.partial(add_second_nfs_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip),
+                                  sd_nfs_host_storage_ip, ost_dc_name),
 
             ],
         )
@@ -588,15 +587,15 @@ def test_add_secondary_storage_domains(engine_api, sd_nfs_host_storage_ip,
         vt = utils.VectorThread(
             [
                 functools.partial(add_iscsi_storage_domain, engine_api,
-                                  sd_iscsi_host_luns),
+                                  sd_iscsi_host_luns, ost_dc_name),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 #Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, engine_api,
-#                                  sd_nfs_host_storage_ip),
+#                                  sd_nfs_host_storage_ip, ost_dc_name),
                 functools.partial(add_templates_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip),
+                                  sd_nfs_host_storage_ip, ost_dc_name),
                 functools.partial(add_second_nfs_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip),
+                                  sd_nfs_host_storage_ip, ost_dc_name),
 
             ],
         )
@@ -626,18 +625,19 @@ def test_add_glance_images(
         engine_api, cirros_image,
         cirros_image_glance_template_name,
         cirros_image_glance_disk_name,
+        ost_cluster_name,
 ):
     system_service = engine_api.system_service()
     non_template_import = functools.partial(
         glance.import_image, system_service,
         cirros_image, cirros_image_glance_template_name,
         cirros_image_glance_disk_name, MASTER_SD_TYPE,
-        CLUSTER_NAME, SD_GLANCE_NAME
+        ost_cluster_name, SD_GLANCE_NAME
     )
     template_import = functools.partial(
         glance.import_image, system_service,
         cirros_image, cirros_image_glance_template_name,
-        cirros_image_glance_template_name, MASTER_SD_TYPE, CLUSTER_NAME,
+        cirros_image_glance_template_name, MASTER_SD_TYPE, ost_cluster_name,
         SD_GLANCE_NAME, as_template=True
     )
     vt = utils.VectorThread(
@@ -650,7 +650,7 @@ def test_add_glance_images(
     vt.join_all()
 
 
-def add_iscsi_storage_domain(engine_api, luns):
+def add_iscsi_storage_domain(engine_api, luns, dc_name):
     v4_domain = versioning.cluster_version_ok(4, 1)
     p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
@@ -658,9 +658,9 @@ def add_iscsi_storage_domain(engine_api, luns):
         type=sdk4.types.StorageDomainType.DATA,
         discard_after_delete=v4_domain,
         data_center=sdk4.types.DataCenter(
-            name=DC_NAME,
+            name=dc_name,
         ),
-        host=_random_host_from_dc(engine_api, DC_NAME),
+        host=_random_host_from_dc(engine_api, dc_name),
         storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
@@ -671,24 +671,24 @@ def add_iscsi_storage_domain(engine_api, luns):
         ),
     )
 
-    domain.add(engine_api, p, DC_NAME)
+    domain.add(engine_api, p, dc_name)
 
 
-def add_iso_storage_domain(engine_api, sd_host_storage_ip):
-    random_host = _random_host_from_dc(engine_api, DC_NAME)
+def add_iso_storage_domain(engine_api, sd_host_storage_ip, dc_name):
+    random_host = _random_host_from_dc(engine_api, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_ISO_NAME, random_host, sd_host_storage_ip,
-                   SD_ISO_PATH, DC_NAME, sd_format='v1', sd_type='iso',
+                   SD_ISO_PATH, dc_name, sd_format='v1', sd_type='iso',
                    nfs_version='v3')
 
 
-def add_templates_storage_domain(engine_api, sd_host_storage_ip):
-    random_host = _random_host_from_dc(engine_api, DC_NAME)
+def add_templates_storage_domain(engine_api, sd_host_storage_ip, dc_name):
+    random_host = _random_host_from_dc(engine_api, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_TEMPLATES_NAME, random_host,
-                   sd_host_storage_ip, SD_TEMPLATES_PATH, DC_NAME,
+                   sd_host_storage_ip, SD_TEMPLATES_PATH, dc_name,
                    sd_format='v1', sd_type='export', nfs_version='v4_1')
 
 
@@ -724,9 +724,9 @@ def test_list_glance_images(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_set_dc_quota_audit(engine_api):
+def test_set_dc_quota_audit(engine_api, ost_dc_name):
     dcs_service = engine_api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc = dcs_service.list(search='name=%s' % ost_dc_name)[0]
     dc_service = dcs_service.data_center_service(dc.id)
     assert dc_service.update(
         types.DataCenter(
@@ -736,11 +736,11 @@ def test_set_dc_quota_audit(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_quota_storage_limits(engine_api):
+def test_add_quota_storage_limits(engine_api, ost_dc_name):
 
     # Find the data center and the service that manages it:
     dcs_service = engine_api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % DC_NAME)[0]
+    dc = dcs_service.list(search='name=%s' % ost_dc_name)[0]
     dc_service = dcs_service.data_center_service(dc.id)
 
     # Find the storage domain and the service that manages it:
@@ -790,9 +790,9 @@ def test_add_quota_storage_limits(engine_api):
     )
 
 @order_by(_TEST_LIST)
-def test_add_quota_cluster_limits(engine_api):
+def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % DC_NAME)[0]
+    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     quotas = quotas_service.list()
@@ -810,12 +810,12 @@ def test_add_quota_cluster_limits(engine_api):
     )
 
 @order_by(_TEST_LIST)
-def test_add_vm_network(engine_api):
+def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
 
     network = network_utils_v4.create_network_params(
         VM_NETWORK,
-        DC_NAME,
+        ost_dc_name,
         description='VM Network (originally on VLAN {})'.format(
             VM_NETWORK_VLAN_ID),
         vlan=sdk4.types.Vlan(
@@ -826,17 +826,17 @@ def test_add_vm_network(engine_api):
     with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
         assert engine.networks_service().add(network)
 
-    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
+    cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
     assert cluster_service.networks_service().add(network)
 
 
 @order_by(_TEST_LIST)
-def test_add_non_vm_network(engine_api):
+def test_add_non_vm_network(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
 
     network = network_utils_v4.create_network_params(
         MIGRATION_NETWORK,
-        DC_NAME,
+        ost_dc_name,
         description='Non VM Network on VLAN 200, MTU 9000',
         vlan=sdk4.types.Vlan(
             id='200',
@@ -848,7 +848,7 @@ def test_add_non_vm_network(engine_api):
     with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
         assert engine.networks_service().add(network)
 
-    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
+    cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
     assert cluster_service.networks_service().add(network)
 
 
@@ -885,9 +885,9 @@ def test_add_affinity_label(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_affinity_group(engine_api):
+def test_add_affinity_group(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
-    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
+    cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
     affinity_group_service = cluster_service.affinity_groups_service()
     with test_utils.TestEvent(engine, 10350):
         assert affinity_group_service.add(
@@ -918,10 +918,10 @@ def test_add_bookmark(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_cpu_profile(engine_api):
+def test_add_cpu_profile(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
     cpu_profiles_service = engine.cpu_profiles_service()
-    cluster_service = test_utils.get_cluster_service(engine, CLUSTER_NAME)
+    cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
     with test_utils.TestEvent(engine, 10130): # USER_ADDED_CPU_PROFILE event
         assert cpu_profiles_service.add(
             sdk4.types.CpuProfile(
@@ -934,9 +934,9 @@ def test_add_cpu_profile(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_qos(engine_api):
+def test_add_qos(engine_api, ost_dc_name):
     engine = engine_api.system_service()
-    dc_service = test_utils.data_center_service(engine, DC_NAME)
+    dc_service = test_utils.data_center_service(engine, ost_dc_name)
     qoss = dc_service.qoss_service()
     with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
         assert qoss.add(
@@ -958,10 +958,10 @@ def test_add_qos(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_disk_profile(engine_api):
+def test_add_disk_profile(engine_api, ost_dc_name):
     engine = engine_api.system_service()
     disk_profiles_service = engine.disk_profiles_service()
-    dc_service = test_utils.data_center_service(engine, DC_NAME)
+    dc_service = test_utils.data_center_service(engine, ost_dc_name)
     attached_sds_service = dc_service.storage_domains_service()
     attached_sd = attached_sds_service.list()[0]
 
@@ -986,8 +986,8 @@ def test_get_version(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_get_cluster_enabled_features(engine_api):
-    cluster_service = test_utils.get_cluster_service(engine_api.system_service(), CLUSTER_NAME)
+def test_get_cluster_enabled_features(engine_api, ost_cluster_name):
+    cluster_service = test_utils.get_cluster_service(engine_api.system_service(), ost_cluster_name)
     enabled_features_service = cluster_service.enabled_features_service()
     features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
     #TODO: Fix the below - why is features null?
@@ -1029,8 +1029,8 @@ def test_get_domains(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_devices(engine_api):
-    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
+def test_get_host_devices(engine_api, ost_dc_name):
+    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     for i in range(10):
         devices_service = host_service.devices_service()
         devices = sorted(devices_service.list(), key=lambda device: device.name)
@@ -1045,8 +1045,8 @@ def test_get_host_devices(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_hooks(engine_api):
-    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
+def test_get_host_hooks(engine_api, ost_dc_name):
+    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
     hooks_list = ''
@@ -1059,8 +1059,8 @@ def test_get_host_hooks(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_stats(engine_api):
-    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
+def test_get_host_stats(engine_api, ost_dc_name):
+    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
     stats_list = ''
@@ -1073,8 +1073,8 @@ def test_get_host_stats(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_numa_nodes(engine_api):
-    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
+def test_get_host_numa_nodes(engine_api, ost_dc_name):
+    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
@@ -1085,9 +1085,9 @@ def test_get_host_numa_nodes(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_check_update_host(engine_api):
+def test_check_update_host(engine_api, ost_dc_name):
     engine = engine_api.system_service()
-    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
+    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     events_service = engine.events_service()
     with test_utils.TestEvent(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
@@ -1146,11 +1146,11 @@ def test_get_operating_systems(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_fence_agent(engine_api):
+def test_add_fence_agent(engine_api, ost_dc_name):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
-    host_service = _random_host_service_from_dc(engine_api, DC_NAME)
+    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
 
     fence_agents_service = host_service.fence_agents_service()
     pytest.skip('Enabling this may affect tests. Needs further tests')
@@ -1213,7 +1213,16 @@ def test_add_mac_pool(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_verify_notifier(ansible_engine):
+def test_verify_notifier(ansible_engine, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        # basic-suite-master configures and starts it in
+        # test_001_initialize_engine.py, so it works there. HE does not (yet)
+        # do that, so can't test it.
+        # No need to repeat that in HE, the test there is enough.
+        # TODO:
+        # - Perhaps change the condition to make it more relevant
+        # - Fix :-)
+        pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
     ansible_engine.shell('grep USER_VDC_LOGIN /var/log/messages')
     ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
     ansible_engine.systemd(name='snmptrapd', state='stopped')
@@ -1247,7 +1256,14 @@ def test_verify_glance_import(
 
 
 @order_by(_TEST_LIST)
-def test_verify_engine_backup(ansible_engine, engine_api):
+def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        # TODO: If/when we decide to test this, we should:
+        # 1. Make sure things are generally stable (this applies also to non-HE)
+        # 2. Enter global maintenance
+        # 3. Do the below (backup, cleanup, restore, setup)
+        # 4. Exit global maintenance
+        pytest.skip(' [2020-12-14] Do not test engine-backup on hosted-engine suites')
     ansible_engine.file(
         path='/var/log/ost-engine-backup',
         state='directory',
@@ -1325,7 +1341,7 @@ def test_remove_vnic_passthrough_profile(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_blank_vms(engine_api):
+def test_add_blank_vms(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
     vms_service = engine.vms_service()
 
@@ -1338,7 +1354,7 @@ def test_add_blank_vms(engine_api):
             enabled=False,
         ),
         cluster=sdk4.types.Cluster(
-            name=CLUSTER_NAME,
+            name=ost_cluster_name,
         ),
         template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
@@ -1382,10 +1398,10 @@ def test_add_blank_vms(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_blank_high_perf_vm2(engine_api):
+def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
     hosts_service = engine.hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(DC_NAME))
+    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(ost_dc_name))
 
     vms_service = engine.vms_service()
     vms_service.add(
@@ -1393,7 +1409,7 @@ def test_add_blank_high_perf_vm2(engine_api):
             name=VM2_NAME,
             description='Mostly complete High-Performance VM configuration',
             cluster=sdk4.types.Cluster(
-            name=CLUSTER_NAME,
+            name=ost_cluster_name,
             ),
             template=sdk4.types.Template(
                 name=TEMPLATE_BLANK,
@@ -1700,7 +1716,7 @@ def test_add_instance_type(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_event(engine_api):
+def test_add_event(engine_api, ost_cluster_name):
     events_service = engine_api.system_service().events_service()
     assert events_service.add( # Add a new event to the system
         types.Event(
@@ -1709,7 +1725,7 @@ def test_add_event(engine_api):
             severity=types.LogSeverity.NORMAL,
             origin='ovirt-system-tests',
             cluster=types.Cluster(
-                name=CLUSTER_NAME,
+                name=ost_cluster_name,
             )
         ),
     )

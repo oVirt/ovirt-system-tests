@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright 2021 Red Hat, Inc.
 #
@@ -19,33 +18,32 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import functools
 import pytest
 
-from ost_utils import engine_object_names
-from ost_utils.pytest.fixtures.backend import backend
-from ost_utils.pytest.fixtures.backend import hosts_hostnames
+from ost_utils import network_utils
 
 
 @pytest.fixture(scope="session")
-def ost_dc_name():
-    return engine_object_names.TEST_DC_NAME
+def storage_ips_for_network(ansible_storage_facts):
+    return functools.partial(network_utils.get_ips, ansible_storage_facts)
 
 
 @pytest.fixture(scope="session")
-def ost_cluster_name():
-    return engine_object_names.TEST_CLUSTER_NAME
+def storage_management_ips(storage_ips_for_network, management_network_name):
+    return storage_ips_for_network(management_network_name)
 
 
 @pytest.fixture(scope="session")
-def hostnames_to_add(hosts_hostnames):
-    return hosts_hostnames
+def sd_iscsi_host_ips():
+    return 'Please override sd_iscsi_host_ips'
 
 
 @pytest.fixture(scope="session")
-def hostnames_to_reboot(hosts_hostnames):
-    return hosts_hostnames[:1]
+def sd_nfs_host_storage_ip():
+    return 'Please override sd_nfs_host_storage_ip'
 
 
 @pytest.fixture(scope="session")
-def deploy_hosted_engine():
-    return False
+def sd_iscsi_ansible_host():
+    return 'Please override sd_iscsi_ansible_host'

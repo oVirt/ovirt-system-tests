@@ -58,7 +58,7 @@ run_suite(){
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
     "${PYTHON}" -m pip install --user \
         "importlib_metadata==2.0.0" \
-        "pytest==4.6.9" \
+        "pytest==6.2.2" \
         "zipp==1.2.0"
 
     local suite="${SUITE?}"

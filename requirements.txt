@@ -1,7 +1,7 @@
 # PIP requirements for OST
 -e ost_utils
 pylint==2.6.0
-pytest
+pytest==6.2.2
 selenium
 tox
 # network suite deps

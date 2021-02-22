@@ -96,20 +96,12 @@ run_suite(){
         return 1
     fi
 
-    declare test_scenarios=($(ls "$suite"/test-scenarios/*.py | grep -v __init__ | sort))
+    declare test_scenarios="${SUITE}/test-scenarios"
 
-    for scenario in "${test_scenarios[@]}"; do
-        if [[ "$scenario" == *pytest* ]]; then
-            echo "Running test scenario ${scenario##*/} with pytest"
-            env_run_pytest "$scenario" || failed=true
-        else
-            echo "Running test scenario: ${scenario##*/}"
-            env_run_test "$scenario" || failed=true
-        fi
-        env_collect "$curdir/test_logs/${suite##*/}/post-${scenario##*/}"
-        if $failed; then
-            echo "@@@@ ERROR: Failed running $scenario"
-            return 1
-        fi
-    done
+    env_run_pytest_bulk ${test_scenarios[@]} || failed=true
+    env_collect "$curdir/test_logs/${suite##*/}"
+    if $failed; then
+        echo "@@@@ ERROR: Failed running ${suite}"
+        return 1
+    fi
 }

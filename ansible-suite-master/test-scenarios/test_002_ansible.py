@@ -18,41 +18,158 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import os
+from ost_utils.ansible.collection import CollectionMapper, infra
+from ost_utils.pytest.fixtures.defaults import hostnames_to_add  # noqa: F401
+from ost_utils.storage_utils import lun
 
 
-def test_ansible_run(suite_dir, ansible_engine, ansible_inventory):
-    ansible_run_dir = '/tmp/ansible_run'
-
-    for dir_name in ['inventory', 'env']:
-        ansible_engine.file(
-            path=f'{ansible_run_dir}/{dir_name}',
-            state='directory',
-            recurse='yes'
-        )
-
-    ansible_role_src = os.path.join(suite_dir, 'ovirt-deploy')
-    ansible_engine.copy(
-        src=ansible_role_src,
-        dest=ansible_run_dir,
+def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # noqa: F811, E501
+    infra(
+        ansible_engine=ansible_engine,
+        engine_fqdn="localhost",
+        engine_user="admin@internal",
+        engine_password="123",
+        engine_cafile="/etc/pki/ovirt-engine/ca.pem",
+        data_center_name="test-dc",
+        compatibility_version=4.4,
+        clusters=[
+            {
+                "name": "test-cluster",
+                "description": "APIv4 Cluster",
+                "scheduling_policy": "evenly_distributed",
+                "profile": "my_cpu_profile",
+                "cpu_arch": "ppc64",
+                "cpu_type": "",
+                "ksm": "yes",
+                "ksm_numa": "yes",
+                "memory_policy": "server",
+                "ha_reservation": "yes",
+                "vm_reason": "yes",
+                "ballooning": "yes",
+                "external_network_providers": [
+                    {
+                        "name": "ovirt-provider-ovn",
+                    },
+                ],
+            },
+        ],
+        hosts=[
+            {
+                "name": host,
+                "address": host,
+                "cluster": "test-cluster",
+                "password": "123456",
+                "description": f"host {host}",
+                "power_management": {
+                    "address": '1.2.3.4',
+                    "state": "present",
+                    "type": 'ipmilan',
+                    "username": 'myusername',
+                    "password": 'mypassword',
+                    "options": {
+                        "myname": 'myvalue',
+                    },
+                    "order": 0,
+                }
+            } for host in hostnames_to_add
+        ],
+        storages={
+            "nfs": {
+                "master": "true",
+                "state": "present",
+                "nfs": {
+                    "address": engine_storage_ips[0],
+                    "path": "/exports/nfs/share1",
+                }
+            },
+            "second-nfs": {
+                "state": "present",
+                "nfs": {
+                    "address": engine_storage_ips[0],
+                    "path": "/exports/nfs/share2",
+                }
+            },
+            "templates": {
+                "domain_function": "export",
+                "nfs": {
+                    "address": engine_storage_ips[0],
+                    "path": "/exports/nfs/exported",
+                }
+            },
+            "iso": {
+                "domain_function": "iso",
+                "nfs": {
+                    "address": engine_storage_ips[0],
+                    "path": "/exports/nfs/iso",
+                }
+            },
+            "iscsi": {
+                "iscsi": {
+                    "target": "iqn.2014-07.org.ovirt:storage",
+                    "port": 3260,
+                    "address": engine_storage_ips[0],
+                    "username": "username",
+                    "password": "password",
+                    "lun_id": lun.get_uuids(ansible_engine)[:2],
+                }
+            }
+        },
+        logical_networks=[
+            {
+                "name": "Migration_Net",
+                "description": "Non VM Network on VLAN 200, MTU 9000",
+                "mtu": 9000,
+                "vlan_tag": 200,
+                "clusters": [
+                    {
+                        "name": "test-cluster",
+                        "assigned": True,
+                        "migration": True,
+                        "required": False,
+                        "display": False,
+                        "gluster": False,
+                    }
+                ]
+            }
+        ],
+        mac_pools=[
+            {
+                "mac_pool_name": "mymacpool",
+                "mac_pool_ranges": [
+                    "02:00:00:00:00:00,02:00:00:01:00:00",
+                ],
+            }
+        ]
     )
 
-    ansible_playbook = os.path.join(suite_dir, 'engine.yml')
-    ansible_engine.copy(
-        src=ansible_playbook,
-        dest=f'{ansible_run_dir}/engine.yml',
+    collection = CollectionMapper(ansible_engine)
+
+    ovirt_auth = collection.ovirt_auth(
+        url="https://localhost/ovirt-engine/api",
+        username="admin@internal",
+        password="123",
+        insecure="true",
+    )['ansible_facts']['ovirt_auth']
+
+    collection.ovirt_host_info(
+        auth=ovirt_auth,
+        pattern="name=*"
     )
 
-    ansible_engine.copy(
-        src=ansible_inventory.dir,
-        dest=f'{ansible_run_dir}/inventory/hosts',
+    collection.ovirt_vm(
+        auth=ovirt_auth,
+        name="rhel",
+        cluster="test-cluster",
+        memory="1GiB",
+        cloud_init={
+            "user_name": 'root',
+            'root_password': 'super_password'
+        },
+        cloud_init_persist="true"
     )
 
-    ansible_engine.copy(
-        src=os.environ.get('OST_IMAGES_SSH_KEY'),
-        dest=f'{ansible_run_dir}/env/ssh_key',
-    )
-
-    ansible_engine.shell(
-        f'ansible-runner -vvv --playbook engine.yml run {ansible_run_dir}'
+    # Revoke the SSO token
+    collection.ovirt_auth(
+        state="absent",
+        ovirt_auth=ovirt_auth,
     )

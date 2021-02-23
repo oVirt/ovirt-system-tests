@@ -17,10 +17,10 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import os
-import socket
 
-from tempfile import NamedTemporaryFile
+import os
+
+from ost_utils.ansible.collection import engine_setup
 
 
 def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
@@ -28,52 +28,16 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(suite_dir, engine_ip, ansible_engine,
-                           engine_answer_file_path):
-    ansible_engine.copy(
-        src=engine_answer_file_path,
-        dest='/tmp/answer-file',
+def test_initialize_engine(ansible_engine, engine_ip):
+    engine_setup(
+        ansible_engine,
+        engine_ip,
+        answer_file_path=os.path.join(
+            os.environ.get('OST_REPO_ROOT'),
+            'common',
+            'answer-files',
+            'engine-answer-file.conf'
+        ),
+        ssh_key_path=os.environ.get('OST_IMAGES_SSH_KEY'),
+        ovirt_engine_setup_offline='true',
     )
-
-    host_name = socket.gethostname()
-    host_ip = socket.gethostbyname(host_name)
-
-    with NamedTemporaryFile(mode='w') as sso_conf:
-        sso_conf.write(
-            (
-                'SSO_ALTERNATE_ENGINE_FQDNS='
-                '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0} {1} {2}"\n'
-            ).format(engine_ip, host_name, host_ip)
-        )
-        sso_conf.flush()
-        os.fsync(sso_conf.fileno())
-        ansible_engine.copy(
-            src=sso_conf.name,
-            dest='/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf',
-            mode='0644'
-        )
-
-    if os.environ.get('ENABLE_DEBUG_LOGGING'):
-        sed = '{ n; s/INFO/DEBUG/ }'
-        ansible_engine.shell(
-            'sed -i '
-            f'-e "/.*logger category=\\"org.ovirt\\"/{sed}" '
-            f'-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{sed}" '
-            f'-e "/.*<root-logger>/{sed}" '
-            '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
-        )
-
-    ansible_engine.shell(
-        'engine-setup '
-        '--config-append=/tmp/answer-file '
-        '--accept-defaults '
-        '--offline '
-    )
-    ansible_engine.shell('ss -anp')
-
-    # TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
-    ansible_engine.systemd(name='firewalld', state='stopped')
-
-    ansible_engine.systemd(name='ovirt-engine-notifier', state='started')
-    ansible_engine.systemd(name='ovirt-engine', state='started')
-    ansible_engine.systemd(name='ovirt-engine-dwhd', state='started')

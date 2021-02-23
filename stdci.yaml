@@ -56,7 +56,10 @@ stage:
               fromfile: 'automation/basic_suite_master.sh'
         - build_ovirtlib:
             distributions:
-             - el8
+             - el8:
+                 runtime-requirements:
+                   hostdistro: same
+                   support-nesting-level: 2
             runif:
               filechanged:
                 - 'automation/build-artifacts*'

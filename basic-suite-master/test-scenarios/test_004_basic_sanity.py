@@ -44,13 +44,13 @@ from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.virt import *
 from ost_utils.pytest.fixtures.vm import *
 
-import ovirtsdk4 as sdk4
+from ost_utils.storage_utils import backup
+
 import ovirtsdk4.types as types
 
 import test_utils
 from test_utils import host_status_utils
 from test_utils import constants
-
 
 import uuid
 
@@ -119,8 +119,10 @@ _TEST_LIST = [
     "test_add_snapshot_for_backup",
     "test_clone_powered_off_vm",
     "test_verify_template_disk_copied_and_removed",
+    "test_cold_incremental_backup_vm2",
     "test_run_vms",
     "test_attach_snapshot_to_backup_vm",
+    "test_remove_vm2_backup_checkpoints",
     "test_verify_transient_folder",
     "test_verify_and_remove_cloned_vm",
     "test_remove_backup_vm_and_backup_snapshot",
@@ -135,7 +137,7 @@ _TEST_LIST = [
     "test_template_export",
     "test_template_update",
     "test_verify_vm2_exported",
-    "test_incremental_backup_vm2",
+    "test_live_incremental_backup_vm2",
     "test_import_vm1",
     "test_ha_recovery",
     "test_verify_suspend_resume_vm0",
@@ -538,6 +540,16 @@ def test_attach_snapshot_to_backup_vm(engine_api):
             )
         )
         assert len(disk_attachments_service.list()) > 0
+
+
+@order_by(_TEST_LIST)
+def test_remove_vm2_backup_checkpoints(engine_api, get_vm_service_for_vm):
+    # Removing the 2 checkpoints created in the cold backup test
+    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
+    vm2_checkpoints_service = get_vm_service_for_vm(VM2_NAME).checkpoints_service()
+    backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
+    backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
+
 
 @order_by(_TEST_LIST)
 def test_verify_transient_folder(assert_vm_is_alive, engine_api,
@@ -1039,6 +1051,14 @@ def management_gw_ip(engine_ip):
 
 
 @order_by(_TEST_LIST)
+def test_cold_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
+    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.DOWN)
+    vm2_backups_service = get_vm_service_for_vm(VM2_NAME).backups_service()
+    backup.perform_incremental_vm_backup(
+        engine_api, vm2_backups_service, DISK2_NAME, "cold_vm_backup")
+
+
+@order_by(_TEST_LIST)
 def test_run_vms(assert_vm_is_alive, engine_api, management_gw_ip):
     engine = engine_api.system_service()
 
@@ -1077,42 +1097,11 @@ def test_verify_vm2_run(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_incremental_backup_vm2(engine_api):
-    engine = engine_api.system_service()
-    disks_service = engine.disks_service()
-    disk2 = disks_service.list(search='name={}'.format(DISK2_NAME))[0]
-    vm2_backups_service = test_utils.get_vm_service(engine, VM2_NAME).backups_service()
-    created_checkpoint_id = None
-
-    # The first iteration will be a full VM backup (from_checkpoint_id=None)
-    # and the second iteration will be an incremental VM backup.
-    for _ in range(2):
-        correlation_id = 'test_incremental_backup'
-        backup = vm2_backups_service.add(
-            types.Backup(
-                disks=[types.Disk(id=disk2.id)],
-                from_checkpoint_id=created_checkpoint_id
-            ), query={'correlation_id': correlation_id}
-        )
-
-        backup_service = vm2_backups_service.backup_service(backup.id)
-        assertions.assert_true_within_long(
-            lambda: backup_service.get().phase == types.BackupPhase.READY,
-            allowed_exceptions=[sdk4.NotFoundError]
-        )
-
-        backup = backup_service.get()
-        created_checkpoint_id = backup.to_checkpoint_id
-
-        backup_service.finalize()
-
-        assertions.assert_true_within_long(
-            lambda: len(vm2_backups_service.list()) == 0
-        )
-        assertions.assert_true_within_long(
-            lambda:
-            disks_service.disk_service(disk2.id).get().status == types.DiskStatus.OK
-        )
+def test_live_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
+    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
+    vm2_backups_service = get_vm_service_for_vm(VM2_NAME).backups_service()
+    backup.perform_incremental_vm_backup(
+        engine_api, vm2_backups_service, DISK2_NAME, "live_vm_backup")
 
 
 @order_by(_TEST_LIST)

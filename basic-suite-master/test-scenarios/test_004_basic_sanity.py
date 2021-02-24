@@ -93,6 +93,7 @@ SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
 SNAPSHOT_FOR_BACKUP_VM = 'backup_snapshot'
 SNAPSHOT_DESC_MEM = 'memory_snap'
+SNAPSHOT_DESC_OFF = 'offline_snap'
 
 VDSM_LOG = '/var/log/vdsm/vdsm.log'
 
@@ -142,8 +143,10 @@ _TEST_LIST = [
     "test_hotplug_cpu",
     "test_next_run_unplug_cpu",
     "test_disk_operations",
+    "test_offline_snapshot_restore",
     "test_import_template_as_vm",
     "test_live_storage_migration",
+    "test_verify_offline_snapshot_restore",
     "test_remove_vm2_lease",
     "test_hotunplug_disk",
     "test_make_snapshot_with_memory",
@@ -1084,6 +1087,56 @@ def test_ha_recovery(engine_api, get_ansible_host_for_vm):
     )
     with engine_utils.wait_for_event(engine, 33): # USER_STOP_VM event
         vm_service.stop()
+
+
+@order_by(_TEST_LIST)
+def test_offline_snapshot_restore(engine_api):
+    engine = engine_api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+    _verify_vm_state(engine, VM2_NAME, types.VmStatus.DOWN)
+    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM2_NAME)
+    disk = disk_attachments_service.list()[0]
+    snapshots_service = vm_service.snapshots_service()
+
+    snapshot_params = types.Snapshot(
+        description=SNAPSHOT_DESC_OFF,
+        persist_memorystate=False,
+        disk_attachments=[
+            types.DiskAttachment(
+                disk=types.Disk(
+                    id=disk.id
+                )
+            )
+        ]
+    )
+    with engine_utils.wait_for_event(engine, [45, 68]):
+        # USER_CREATE_SNAPSHOT event - 45
+        # USER_CREATE_SNAPSHOT_FINISHED_SUCCESS - 68
+        snapshots_service.add(snapshot_params)
+    snapshot = test_utils.get_snapshot(engine, VM2_NAME, SNAPSHOT_DESC_OFF)
+    with engine_utils.wait_for_event(engine, [46, 71]):
+        # USER_TRY_BACK_TO_SNAPSHOT - 46
+        # USER_TRY_BACK_TO_SNAPSHOT_FINISH_SUCCESS - 71
+        vm_service.preview_snapshot(snapshot=snapshot, async=False, restore_memory=False)
+    assertions.assert_true_within_short(
+        lambda: test_utils.get_snapshot(engine, VM2_NAME, SNAPSHOT_DESC_OFF).snapshot_status ==
+                types.SnapshotStatus.IN_PREVIEW
+    )
+    vm_service.start()
+
+
+@order_by(_TEST_LIST)
+def test_verify_offline_snapshot_restore(engine_api):
+    engine = engine_api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
+
+    _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
+    vm_service.stop()
+    _verify_vm_state(engine, VM2_NAME, types.VmStatus.DOWN)
+    with engine_utils.wait_for_event(engine, [94, 95]):
+        # USER_COMMIT_RESTORE_FROM_SNAPSHOT_START - 94
+        # USER_COMMIT_RESTORE_FROM_SNAPSHOT_FINISH_SUCCESS - 95
+        vm_service.commit_snapshot(async=False)
 
 
 @order_by(_TEST_LIST)

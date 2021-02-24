@@ -60,10 +60,17 @@ from fixtures.data_center import default_data_center  # NOQA: F401
 from fixtures.system import system  # NOQA: F401
 
 # Import OST utils fixtures
+from ost_utils.pytest.fixtures.ansible import ansible_by_hostname  # NOQA: F401
+from ost_utils.pytest.fixtures.ansible import ansible_host0  # NOQA: F401
+from ost_utils.pytest.fixtures.ansible import ansible_host1  # NOQA: F401
+from ost_utils.pytest.fixtures.ansible import ansible_storage  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import artifacts  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir  # NOQA: F401
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts  # NOQA: F401
 from ost_utils.pytest.fixtures.backend import backend  # NOQA: F401
+from ost_utils.pytest.fixtures.check_repos import (  # NOQA: F401
+     check_installed_packages,
+)
 from ost_utils.pytest.fixtures.virt import cirros_image  # NOQA: F401
 from ost_utils.pytest.fixtures.virt import (  # NOQA: F401
     transformed_cirros_image,

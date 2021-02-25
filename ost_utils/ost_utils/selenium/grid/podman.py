@@ -39,31 +39,31 @@ NODE_PORT_GEN = iter(range(5600, 5700))
 NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
 
 
-def _log_issues(pod_name, hub_name, node_names):
+def _log_issues(pod_name, hub_name, node_names, podman_cmd):
     LOGGER.error("Pod inspection: \n%s" % shell([
-        "podman", "pod", "inspect", pod_name
+        podman_cmd, "pod", "inspect", pod_name
     ]))
-    LOGGER.error("Hub logs: \n%s" % shell(["podman", "logs", hub_name]))
+    LOGGER.error("Hub logs: \n%s" % shell([podman_cmd, "logs", hub_name]))
     for name in node_names:
         LOGGER.error(
-            "Node %s logs: \n%s" % (name, shell(["podman", "logs", name]))
+            "Node %s logs: \n%s" % (name, shell([podman_cmd, "logs", name]))
         )
 
 
 @contextlib.contextmanager
-def _pod(hub_port):
-    name = shell(["podman", "pod", "create", "-p",
+def _pod(hub_port, podman_cmd):
+    name = shell([podman_cmd, "pod", "create", "--network=slirp4netns", "-p",
                  f"{hub_port}:{hub_port}"]).strip()
     try:
         yield name
     finally:
-        shell(["podman", "pod", "rm", "-f", name])
+        shell([podman_cmd, "pod", "rm", "-f", name])
 
 
 @contextlib.contextmanager
-def _hub(image, hub_port, pod_name):
+def _hub(image, hub_port, pod_name, podman_cmd):
     name = shell([
-        "podman", "run",
+        podman_cmd, "run",
         "-d",
         "-e", "SE_OPTS=-port {}".format(hub_port),
         "-v", "/dev/shm:/dev/shm",
@@ -73,7 +73,7 @@ def _hub(image, hub_port, pod_name):
     try:
         yield name
     finally:
-        shell(["podman", "rm", "-f", name])
+        shell([podman_cmd, "rm", "-f", name])
 
 
 # When running multiple containers in a pod, they compete over
@@ -83,12 +83,12 @@ def _hub(image, hub_port, pod_name):
 # (we're using debug images which run VNC server) to some unique
 # values.
 @contextlib.contextmanager
-def _nodes(images, hub_port, pod_name, engine_dns_entry):
+def _nodes(images, hub_port, pod_name, engine_dns_entry, podman_cmd):
     names = []
 
     for image in images:
         name = shell([
-            "podman", "run", "-d",
+            podman_cmd, "run", "-d",
             "-v", "/dev/shm:/dev/shm",
             "--add-host={}".format(engine_dns_entry),
             "-e", "HUB_HOST={}".format(HUB_IP),
@@ -105,33 +105,34 @@ def _nodes(images, hub_port, pod_name, engine_dns_entry):
         yield names
     finally:
         for name in names:
-            shell(["podman", "rm", "-f", name])
+            shell([podman_cmd, "rm", "-f", name])
 
 
 @contextlib.contextmanager
-def _grid(engine_fqdn, engine_ip, node_images, hub_image, hub_port):
+def _grid(engine_fqdn, engine_ip, node_images, hub_image, hub_port, podman_cmd):
     if node_images is None:
         node_images = [CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE]
 
     engine_dns_entry="{}:{}".format(engine_fqdn, engine_ip)
 
     with common.http_proxy_disabled():
-        with _pod(hub_port) as pod_name:
-            with _hub(hub_image, hub_port, pod_name) as hub_name:
+        with _pod(hub_port, podman_cmd) as pod_name:
+            with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
                 with _nodes(node_images, hub_port, pod_name,
-                            engine_dns_entry) as node_names:
+                            engine_dns_entry, podman_cmd) as node_names:
                     url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
                     try:
                         common.grid_health_check(url, len(node_images))
                         yield url
                     except common.SeleniumGridError:
-                        _log_issues(pod_name, hub_name, node_names)
+                        _log_issues(pod_name, hub_name, node_names, podman_cmd)
                         raise
 
 
 @contextlib.contextmanager
 def grid(engine_fqdn, engine_ip, node_images=None,
-         hub_image=HUB_CONTAINER_IMAGE, retries=GRID_STARTUP_RETRIES):
+         hub_image=HUB_CONTAINER_IMAGE, retries=GRID_STARTUP_RETRIES,
+         podman_cmd="podman"):
     for attempt in range(retries):
         hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT+100)
         LOGGER.debug(
@@ -139,7 +140,7 @@ def grid(engine_fqdn, engine_ip, node_images=None,
         )
         try:
             with _grid(engine_fqdn, engine_ip, node_images, hub_image,
-                       hub_port) as url:
+                       hub_port, podman_cmd) as url:
                 LOGGER.debug(f"Grid is up: {url}")
                 yield url
         except (common.SeleniumGridError, ShellError):

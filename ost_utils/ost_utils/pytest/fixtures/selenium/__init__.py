@@ -34,14 +34,21 @@ def _has_podman():
     return os.system("podman --version &> /dev/null") == 0
 
 
+def _has_podman_remote():
+    return os.system("podman-remote --version &> /dev/null") == 0
+
+
 def _has_docker():
     return os.system("docker -v &> /dev/null") == 0
 
 
 def _grid_backend():
     env_backend = os.environ.get("OST_CONTAINER_BACKEND", None)
-    if env_backend in ("docker", "podman"):
+    if env_backend in ("docker", "podman", "podman-remote"):
         return env_backend
+
+    if os_utils.inside_mock() and _has_podman_remote():
+        return "podman-remote"
 
     if _has_podman():
         return "podman"
@@ -62,10 +69,9 @@ def hub_url(engine_fqdn, engine_ip):
         yield env_url
     else:
         backend = _grid_backend()
-        if backend == "podman":
-            if os_utils.on_centos(8) and os_utils.inside_mock():
-                pytest.skip("podman doesn't work in mock")
-            with podman.grid(engine_fqdn, engine_ip) as hub_url:
+        if backend == "podman" or backend == "podman-remote":
+            with podman.grid(engine_fqdn, engine_ip,
+                             podman_cmd=backend) as hub_url:
                 yield hub_url
         elif backend == "docker":
             with docker.grid(engine_fqdn, engine_ip) as hub_url:

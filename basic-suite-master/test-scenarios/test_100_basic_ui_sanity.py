@@ -355,6 +355,7 @@ def setup_virtual_machines(engine_api):
         )
 
 
+@pytest.mark.xfail(reason="unstable")
 def test_virtual_machines(ovirt_driver, setup_virtual_machines,
                           save_screenshot, save_page_source):
     try:
@@ -534,6 +535,7 @@ def test_userportal(ovirt_driver, save_screenshot, save_page_source,
         raise
 
 
+@pytest.mark.xfail(reason="fails on Stream because of different grafana UI")
 def test_grafana(ovirt_driver, save_screenshot, save_page_source, engine_username,
                engine_password, engine_webadmin_url):
     try:

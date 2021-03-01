@@ -67,6 +67,10 @@ Optional arguments:
     -i,--images
         Create qcow2 images of the vms that were created by the tests in SUITE
 
+    -d,--logging-level
+        Select level fot pytest console logger.
+        valid values are: CRITICAL,ERROR,WARNING,INFO,DEBUG
+
     --only-verify-requirements
         Verify that the system has the correct requirements (Disk Space, RAM, etc...)
         and exit.
@@ -189,6 +193,12 @@ render_jinja_templates () {
     export he_image="${OST_IMAGES_HE_INSTALLED}"
     "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
     cat "$dest"
+}
+
+get_pytest_log_level() {
+    if [ -n "${LOG_LEVEL}" ]; then
+      export PYTEST_ADDOPTS="--log-cli-level=${LOG_LEVEL}"
+    fi
 }
 
 env_repo_setup () {
@@ -326,6 +336,7 @@ env_run_pytest () {
 env_run_pytest_bulk () {
     local res=0
     local junitxml_file="$PREFIX/$SUITE_NAME.junit.xml"
+    get_pytest_log_level
 
     "${PYTHON}" -B -m pytest \
         -s \
@@ -619,10 +630,11 @@ env_add_extra_repos() {
 
 options=$( \
     getopt \
-        -o ho:e:n:b:cs:r:l:i \
+        -o ho:e:n:b:cs:r:l:d:i \
         --long help,output:,engine:,node:,boot-iso:,cleanup,images \
         --long extra-rpm-source,reposync-config:,local-rpms: \
         --long only-verify-requirements,ignore-requirements \
+        --long logging-level: \
         --long coverage \
         -n 'run_suite.sh' \
         -- "$@" \
@@ -673,6 +685,10 @@ while true; do
         -i|--images)
             readonly CREATE_IMAGES=true
             shift
+            ;;
+        -d|--logging-level)
+            readonly LOG_LEVEL="$2"
+            shift 2
             ;;
         --only-verify-requirements)
             readonly ONLY_VERIFY_REQUIREMENTS=true

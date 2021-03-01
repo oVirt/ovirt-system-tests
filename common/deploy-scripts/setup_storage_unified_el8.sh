@@ -261,6 +261,9 @@ EOC
     ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_user.ldif
     ldapadd -x -H ldap://localhost -D 'cn=Directory Manager' -w $PASSWORD -f add_group.ldif
     systemctl stop dirsrv@lago
+    sed -i 's/^nsslapd-cachememsize:.*/nsslapd-cachememsize: 512000/' /etc/dirsrv/slapd-lago/dse.ldif
+    sed -i 's/^nsslapd-dncachememsize:.*/nsslapd-dncachememsize: 512000/' /etc/dirsrv/slapd-lago/dse.ldif
+    sed -i 's/^nsslapd-cache-autosize:.*/nsslapd-cache-autosize: 1/' /etc/dirsrv/slapd-lago/dse.ldif
 }
 
 setup_lvm_filter() {

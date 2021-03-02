@@ -263,7 +263,8 @@ EOC
     systemctl stop dirsrv@lago
     sed -i 's/^nsslapd-cachememsize:.*/nsslapd-cachememsize: 512000/' /etc/dirsrv/slapd-lago/dse.ldif
     sed -i 's/^nsslapd-dncachememsize:.*/nsslapd-dncachememsize: 512000/' /etc/dirsrv/slapd-lago/dse.ldif
-    sed -i 's/^nsslapd-cache-autosize:.*/nsslapd-cache-autosize: 1/' /etc/dirsrv/slapd-lago/dse.ldif
+    sed -i 's/^nsslapd-dbcachesize:.*/nsslapd-dbcachesize: 512000/' /etc/dirsrv/slapd-lago/dse.ldif
+    sed -i 's/^nsslapd-cache-autosize:.*/nsslapd-cache-autosize: 0/' /etc/dirsrv/slapd-lago/dse.ldif
 }
 
 setup_lvm_filter() {

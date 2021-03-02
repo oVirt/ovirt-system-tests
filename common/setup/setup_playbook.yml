@@ -77,6 +77,7 @@
               - python3-ansible-runner
               - python3-ovirt-engine-sdk4
               - python3-paramiko
+              - python3-requests
             state: latest
           become: true
 

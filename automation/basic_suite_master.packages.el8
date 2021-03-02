@@ -10,4 +10,5 @@ python3-devel
 python3-netaddr
 python3-ovirt-engine-sdk4
 python3-pip
+python3-requests
 python3-six

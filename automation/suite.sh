@@ -11,7 +11,7 @@
 
 source common/helpers/python.sh
 
-SUITE="$0"
+SUITE="$BASH_SOURCE"
 SUITE=$(echo "$SUITE" | tr '_' '-')
 # Leaving just the base dir
 SUITE=${SUITE##*/}
@@ -28,7 +28,7 @@ SUITE_REAL_PATH=$(realpath "$SUITE")
 DEFAULT_RPMS=(${OVIRT_ENGINE_SDK_PKG})
 
 #Indicate if image creation is needed
-readonly CREATE_IMAGES="$PWD/CREATE_IMAGES.marker"
+readonly CREATE_IMAGES_FILE="$PWD/CREATE_IMAGES.marker"
 
 # Marker for running with coverage
 readonly COVERAGE_MARKER="$PWD/COVERAGE.marker"
@@ -141,7 +141,7 @@ if [[ ${#DEFAULT_RPMS[@]} -gt 0 ]]; then
     extra_cmds+=($(printf -- '-l %s ' "${DEFAULT_RPMS[@]}"))
 fi
 
-if [[ -e "$CREATE_IMAGES" ]]; then
+if [[ -e "$CREATE_IMAGES_FILE" ]]; then
     extra_cmds+=(-i)
 fi
 

@@ -22,6 +22,9 @@ import ansible_runner
 
 from ost_utils.ansible import private_dir as pd
 
+import logging
+LOGGER = logging.getLogger(__name__)
+
 
 class ConfigBuilder:
     """This class prepares an ansible_runner.RunnerConfig instance.
@@ -48,4 +51,8 @@ class ConfigBuilder:
             quiet=True
         )
         config.prepare()
+        LOGGER.debug(f'ConfigBuilder prepare: {config}')
         return config
+
+    def __str__(self):
+        return f'ConfigBuilder<inventory={self.inventory}, host_pattern={self.host_pattern}, module={self.module}, module_args={self.module_args}>'

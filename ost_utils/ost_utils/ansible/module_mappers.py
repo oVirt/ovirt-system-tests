@@ -24,6 +24,9 @@ from ost_utils import backend
 from ost_utils.ansible import config_builder as cb
 from ost_utils.ansible import patterns
 
+import logging
+LOGGER = logging.getLogger(__name__)
+
 
 class AnsibleExecutionError(Exception):
 
@@ -77,7 +80,9 @@ def module_mapper_for(host_pattern):
 
 def _run_ansible_runner(config_builder):
     runner = ansible_runner.Runner(config=config_builder.prepare())
+    LOGGER.debug(f'_run_ansible_runner: before run: {runner}')
     runner.run()
+    LOGGER.debug(f'_run_ansible_runner: after run: {runner}')
 
     if runner.status != 'successful':
         raise AnsibleExecutionError(
@@ -130,7 +135,11 @@ class ModuleArgsMapper:
             " ".join(args),
             " ".join("{}={}".format(k, v) for k, v in kwargs.items())
         )).strip()
+        LOGGER.debug(f'ModuleArgsMapper: __call__: module_args={self.config_builder.module_args}')
         return _run_ansible_runner(self.config_builder)
+
+    def __str__(self):
+        return f'ModuleArgsMapper<config_builder={self.config_builder}>'
 
 
 class ModuleMapper:
@@ -153,4 +162,9 @@ class ModuleMapper:
 
     def __getattr__(self, name):
         self.config_builder.module = name
-        return ModuleArgsMapper(self.config_builder)
+        res = ModuleArgsMapper(self.config_builder)
+        LOGGER.debug(f'ModuleMapper __getattr__: {res}')
+        return res
+
+    def __str__(self):
+        return f'ModuleMapper<config_builder={self.config_builder}>'

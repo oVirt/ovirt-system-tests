@@ -159,7 +159,7 @@ export PREFIX=${OST_REPO_ROOT}/deployment-${SUITE_NAME}
 export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
-lago() { /usr/bin/lago --lease_dir "$HOME/.lago" --workdir "$PREFIX" "$@"; }
+lago() { /usr/bin/lago --workdir "$PREFIX" "$@"; }
 
 check_dependencies || return $?
 

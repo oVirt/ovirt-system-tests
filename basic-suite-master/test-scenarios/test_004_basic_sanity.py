@@ -50,6 +50,9 @@ from test_utils import constants
 
 import uuid
 
+import logging
+LOGGER = logging.getLogger(__name__)
+
 
 KB = 2 ** 10
 MB = 2 ** 20
@@ -1066,8 +1069,13 @@ def test_ha_recovery(engine_api, get_ansible_host_for_vm):
         # HA_VM_FAILED event event(9602)
         # VDS_INITIATED_RUN_VM event(506)
         ansible_host = get_ansible_host_for_vm(VM2_NAME)
-        pid = ansible_host.shell('pgrep -f qemu.*guest=vm2')['stdout'].strip()
-        ansible_host.shell('kill -KILL {}'.format(pid))
+        LOGGER.debug(f'test_ha_recovery: ansible_host={ansible_host}')
+        pgrep_res = ansible_host.shell('pgrep -f qemu.*guest=vm2')
+        LOGGER.debug(f'test_ha_recovery: pgrep_res={pgrep_res}')
+        pid = pgrep_res['stdout'].strip()
+        LOGGER.debug(f'test_ha_recovery: pid={pid}')
+        kill_res = ansible_host.shell('kill -KILL {}'.format(pid))
+        LOGGER.debug(f'test_ha_recovery: kill_res={kill_res}')
 
     vm_service = test_utils.get_vm_service(engine, VM2_NAME)
     assertions.assert_true_within_long(

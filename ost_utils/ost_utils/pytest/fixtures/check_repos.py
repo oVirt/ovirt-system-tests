@@ -62,10 +62,20 @@ def _get_custom_repos_packages(ansible_vm):
 
 
 def _get_installed_packages(ansible_vm, repo_name):
-    result = ansible_vm.shell(f'dnf repo-pkgs {repo_name} list installed')
+    ansible_res = ansible_vm.shell(f'dnf repo-pkgs {repo_name} list installed')
+    result = [(line.split()) for line in ansible_res['stdout'].split('\n')]
+    filter_results(result)
     return [
-        Package(*line.split()) for line in result['stdout'].split('\n')[1:]
+        Package(*line) for line in result
     ]
+
+
+def filter_results(result):
+    try:
+        indx = result.index(['Installed', 'Packages'])
+    except ValueError:
+        return result.clear()
+    del result[0:indx+1]
 
 
 def _check_if_no_packages_used(pckgs_dict):

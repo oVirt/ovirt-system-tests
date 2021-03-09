@@ -61,9 +61,7 @@ lago_init() {
     echo " containing"
     egrep -sh '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt} ${node_image/.qcow2/-pkglist.txt}
 
-    lago_cleanup
-
-    # final lago init file
+    # generate initialization script with an empty repo and any other additional custom repos to upgrade to
     local add_repo=0
     cat << EOT > add_plain_repos.sh
 #!/bin/bash # generated file
@@ -81,6 +79,10 @@ EOT
         done
         echo "dnf upgrade --nogpgcheck -y -x ovirt-release-master" >> add_plain_repos.sh
     fi
+
+    lago_cleanup
+
+    # final lago init file
     suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
 
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"

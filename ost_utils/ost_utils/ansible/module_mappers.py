@@ -63,7 +63,15 @@ def module_mapper_for(host_pattern):
     inventory = backend.default_backend().ansible_inventory()
     config_builder = cb.ConfigBuilder()
     config_builder.inventory = inventory
-    config_builder.host_pattern = host_pattern
+    # lago inventory uses short domain names, not FQDN.
+    # In HE suites, host-0 is deployed with its FQDN, and this
+    # is what the engine returns to us when asking which host
+    # runs some VM. So when we feed this answer from the engine
+    # to current function, strip the domain part.
+    # TODO: Perhaps fix lago to include both short and full names?
+    # Alternatively, fix all relevant code to always use only
+    # full names, never short ones.
+    config_builder.host_pattern = host_pattern.split('.')[0]
     return ModuleMapper(config_builder)
 
 

@@ -357,7 +357,6 @@ def setup_virtual_machines(engine_api):
         )
 
 
-@pytest.mark.xfail(reason="unstable")
 def test_virtual_machines(ovirt_driver, setup_virtual_machines,
                           save_screenshot, save_page_source):
     try:

@@ -1,4 +1,5 @@
 import logging
+import time
 
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
@@ -44,6 +45,9 @@ class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
             self.ovirt_driver.xpath_click('//*[@id="' + names_to_ids[entity_name] + '"]/../../following-sibling::td[1]')
         else:
             raise Exception('No ' + self.entity_type + ' with the name ' + entity_name + ' found')
+        # TODO we do asserts on other button states right after throughout the code and it's too flaky.
+        # this is an ugly workaround
+        time.sleep(1)
 
     def get_entities(self):
         names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)

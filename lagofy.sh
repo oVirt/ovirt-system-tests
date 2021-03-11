@@ -147,12 +147,6 @@ lago_cleanup() {
     [[ -d "$WHAT" ]] && { lago --workdir "$WHAT" stop || true ; rm -rf "$WHAT"; echo "Removed existing $WHAT"; }
 }
 
-collect_logs() {
-    logs="${OST_REPO_ROOT}/test_logs/${SUITE_NAME}/$(date +'%Y-%m-%d_%H:%M:%S')_${scenario##*/}"
-    lago collect --output $logs # lago logs
-    [ -d "${OST_REPO_ROOT}/exported-artifacts" ] && ls "${OST_REPO_ROOT}/exported-artifacts" | xargs -IX mv "${OST_REPO_ROOT}/exported-artifacts/X" $logs/
-}
-
 
 export OST_REPO_ROOT=$(realpath "$PWD")
 export SUITE=${OST_REPO_ROOT}/${1:-basic-suite-master}
@@ -185,6 +179,4 @@ run_linters
     run flake8 and pylint linters
 lago_cleanup [workdir]
     stop and remove the running lago environment. [workdir] use different deployment directory than the current suite
-collect_logs
-    grab logs from lago and exported-artifacts and add to test_logs
 "

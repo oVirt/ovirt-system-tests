@@ -23,19 +23,13 @@ function install_firewalld() {
     fi
 }
 
-cat > /root/iso-uploader.conf << EOF
-[ISOUploader]
-user=admin@internal
-passwd=123
-engine=localhost:443
-EOF
-
+LOCALTMP=$(mktemp --dry-run /dev/shm/XXXXXX)
 cat > /root/ovirt-log-collector.conf << EOF
 [LogCollector]
 user=admin@internal
 passwd=123
 engine=engine:443
-local-tmp=/dev/shm/log
+local-tmp=$LOCALTMP
 output=/dev/shm
 EOF
 

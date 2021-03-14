@@ -1,0 +1,8 @@
+templates:
+  engine: el8.2-base
+  host: node
+hostCount: 1
+system_requirements:
+  disk_space_gb: 20
+create_local_repo: add_local_repo_no_ext_access.sh
+check_node_status: 1

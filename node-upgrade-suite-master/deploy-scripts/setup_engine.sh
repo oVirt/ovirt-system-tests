@@ -1,0 +1,1 @@
+../../common/deploy-scripts/setup_engine_el8.sh

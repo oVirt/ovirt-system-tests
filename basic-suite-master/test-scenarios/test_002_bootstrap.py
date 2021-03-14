@@ -1086,7 +1086,9 @@ def test_get_host_numa_nodes(engine_api, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_check_update_host(engine_api, ost_dc_name):
+def test_check_update_host(engine_api, ost_dc_name, is_node_suite):
+    if is_node_suite:
+        pytest.skip('Skip test_check_update_host on node suites - done later')
     engine = engine_api.system_service()
     host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     events_service = engine.events_service()
@@ -1257,9 +1259,9 @@ def test_verify_glance_import(
 
 
 @order_by(_TEST_LIST)
-def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name):
-    if ost_dc_name != engine_object_names.TEST_DC_NAME:
-        # TODO: If/when we decide to test this, we should:
+def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_suite):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME or is_node_suite:
+        # TODO: If/when we decide to test this in HE, we should:
         # 1. Make sure things are generally stable (this applies also to non-HE)
         # 2. Enter global maintenance
         # 3. Do the below (backup, cleanup, restore, setup)

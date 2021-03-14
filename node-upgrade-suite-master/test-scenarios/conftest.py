@@ -23,23 +23,15 @@ import pytest
 
 from ost_utils.pytest import pytest_collection_modifyitems
 
-from ost_utils.pytest.fixtures.ansible import ansible_by_hostname
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.ansible import ansible_engine
-from ost_utils.pytest.fixtures.ansible import ansible_host0
-from ost_utils.pytest.fixtures.ansible import ansible_host1
-from ost_utils.pytest.fixtures.ansible import ansible_storage
 
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 
-from ost_utils.pytest.fixtures.backend import all_hostnames
-from ost_utils.pytest.fixtures.backend import backend
-from ost_utils.pytest.fixtures.backend import hosts_hostnames
-
-from ost_utils.pytest.fixtures.check_repos import check_installed_packages
+from ost_utils.pytest.fixtures.backend import *
 
 from ost_utils.pytest.fixtures.defaults import *
 
@@ -63,3 +55,8 @@ def sd_nfs_host_storage_ip(engine_storage_ips):  # pylint: disable=function-rede
 @pytest.fixture(scope="session")
 def sd_iscsi_ansible_host(ansible_engine):  # pylint: disable=function-redefined
     return ansible_engine
+
+
+@pytest.fixture(scope="session")
+def is_node_suite():  # pylint: disable=function-redefined
+    return True

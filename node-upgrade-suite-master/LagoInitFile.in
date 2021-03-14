@@ -1,0 +1,120 @@
+nat-settings: &nat-settings
+    type: nat
+    dhcp:
+      start: 100
+      end: 254
+    management: False
+
+vm-common-settings: &vm-common-settings
+    root-password: 123456
+    service_provider: systemd
+    artifacts:
+      - /var/log
+      - /etc/resolv.conf
+
+domains:
+  lago-{{ env.suite_name }}-engine:
+    <<: *vm-common-settings
+    vm-type: default
+    memory: 3584
+    nics:
+      - net: lago-{{ env.suite_name}}-net-management
+      - net: lago-{{ env.suite_name}}-net-storage
+    disks:
+      - template_name: {{ templates.engine }}
+        type: template
+        template_type: qcow2
+        path: {{ env.engine_image }}
+        name: root
+        dev: vda
+        format: qcow2
+      - comment: Main NFS device
+        size: 101G
+        type: empty
+        name: nfs
+        dev: sda
+        format: raw
+      - comment: Main iSCSI device
+        size: 105G
+        type: empty
+        name: iscsi
+        dev: sdc
+        format: raw
+    metadata:
+      ovirt-engine-password: 123
+      deploy-scripts:
+        {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
+        - add_plain_repos.sh
+        {%- elif env.use_lago_ost_plugin == "0" %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
+        {%- else %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
+        {%- endif %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
+        {%- if install_storage_with_lago_deploy|default(true) %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_el7.sh
+        {%- endif %}
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_engine.sh
+    artifacts:
+      - /var/log
+      - /var/cache/ovirt-engine
+      - /var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log
+      - /var/lib/ovirt-engine/setup/answers
+      - /etc/ovirt-engine
+      - /etc/ovirt-engine-dwh
+      - /etc/ovirt-engine-metrics
+      - /etc/ovirt-engine-setup.conf.d
+      - /etc/ovirt-engine-setup.env.d
+      - /etc/ovirt-host-deploy.conf.d
+      - /etc/ovirt-imageio-proxy
+      - /etc/ovirt-provider-ovn
+      - /etc/ovirt-vmconsole
+      - /etc/ovirt-web-ui
+      - /etc/dnf
+      - /etc/firewalld
+      - /etc/httpd/conf
+      - /etc/httpd/conf.d
+      - /etc/httpd/conf.modules.d
+      - /etc/sysconfig
+      - /etc/yum
+      - /etc/resolv.conf
+      - /etc/yum.repos.d
+      - /tmp/dnf_yum.conf
+{%- for i in range(hostCount) %}
+  lago-{{ env.suite_name }}-host-{{ i }}:
+    <<: *vm-common-settings
+    vm-type: default
+    memory: 1792
+    nics:
+      - net: lago-{{ env.suite_name }}-net-management
+      - net: lago-{{ env.suite_name }}-net-storage
+      - net: lago-{{ env.suite_name }}-net-bonding
+      - net: lago-{{ env.suite_name }}-net-bonding
+    disks:
+      - template_name: {{ templates.host }}
+        type: template
+        template_type: qcow2
+        path: {{ env.node_image }}
+        name: root
+        dev: vda
+        format: qcow2
+    metadata:
+      deploy-scripts:
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/add_repos.sh
+    artifacts:
+      - /etc/resolv.conf
+      - /var/log
+      - /etc/yum.repos.d
+      - /tmp/dnf_yum.conf
+{%- endfor %}
+nets:
+  lago-{{ env.suite_name }}-net-management:
+    <<: *nat-settings
+    management: true
+    dns_domain_name: lago.local
+  lago-{{ env.suite_name }}-net-bonding:
+    <<: *nat-settings
+  lago-{{ env.suite_name }}-net-storage:
+    <<: *nat-settings

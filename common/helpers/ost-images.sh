@@ -18,6 +18,7 @@ if [ ${USE_OST_IMAGES} -eq 1 ]; then
     export OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:-el8}
 
     export OST_IMAGES_BASE=$(_find_qcow "base")
+    export OST_IMAGES_NODE=$(OST_IMAGES_DISTRO=node _find_qcow "base")
     export OST_IMAGES_UPGRADE=$(_find_qcow "upgrade")
     export OST_IMAGES_ENGINE_DEPS_INSTALLED=$(_find_qcow "engine-deps-installed")
     export OST_IMAGES_HOST_DEPS_INSTALLED=$(_find_qcow "host-deps-installed")
@@ -47,6 +48,7 @@ prepare_images_for_mock() {
         ${OST_IMAGES_ENGINE_INSTALLED} \
         ${OST_IMAGES_HOST_INSTALLED} \
         ${OST_IMAGES_HE_INSTALLED} \
+        ${OST_IMAGES_NODE} \
     )
 
     for image in ${all_images[*]}; do
@@ -56,6 +58,7 @@ prepare_images_for_mock() {
     done
 
     export OST_IMAGES_BASE="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_BASE})"
+    export OST_IMAGES_NODE="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_NODE})"
     export OST_IMAGES_UPGRADE="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_UPGRADE})"
     export OST_IMAGES_ENGINE_DEPS_INSTALLED="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_ENGINE_DEPS_INSTALLED})"
     export OST_IMAGES_HOST_DEPS_INSTALLED="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_HOST_DEPS_INSTALLED})"

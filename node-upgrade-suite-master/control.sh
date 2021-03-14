@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+prep_suite () {
+    render_jinja_templates
+}
+
+run_suite () {
+    env_init \
+        "$1" \
+        "$SUITE/LagoInitFile"
+    install_local_rpms_without_reposync
+    env_start
+    env_dump_ansible_hosts
+    env_wait_for_ssh
+    env_add_extra_repos
+    env_copy_repo_file
+    env_copy_config_file
+    env_status
+    cd "$OST_REPO_ROOT"
+    if ! env_deploy; then
+        env_collect "$PWD/test_logs/${SUITE_NAME}/post-000_deploy"
+        echo "@@@ ERROR: Failed in deploy stage"
+        return 1
+    fi
+    declare test_scenarios="${SUITE}/test-scenarios"
+    declare failed=false
+
+    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
+    "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
+    "${PYTHON}" -m pip install --user \
+        "importlib_metadata==2.0.0" \
+        "pytest==6.2.2" \
+        "zipp==1.2.0"
+
+    env_run_pytest_bulk ${test_scenarios[@]} || failed=true
+
+    if $failed; then
+        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        return 1
+    fi
+}

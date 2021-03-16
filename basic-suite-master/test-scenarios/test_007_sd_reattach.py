@@ -28,8 +28,7 @@ from ost_utils import engine_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.sdk import *
 
-# TODO: uncomment once VnicSetup checks are fixed.
-# from test_utils.vnic_setup import VnicSetup
+from test_utils.vnic_setup import VnicSetup
 
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
@@ -52,11 +51,10 @@ def _mac_value(mac):
 
 @order_by(_TEST_LIST)
 def test_deactivate_storage_domain(engine_api):
-    # TODO: uncomment once VnicSetup checks are fixed.
     # TODO: this also seems to leave running tasks behind which break the deactivation.
     # TODO: it should be tested in multiple runs or properly waited for.
-    # VnicSetup.vnic_setup().init(engine_api.system_service(),
-    #                            VM2_NAME, DC_NAME, CLUSTER_NAME)
+    VnicSetup.vnic_setup().init(engine_api.system_service(),
+                                VM2_NAME, DC_NAME, CLUSTER_NAME)
     engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine_api.system_service(), DC_NAME)
     correlation_id = 'deactivate_storage_domain'
@@ -106,8 +104,7 @@ def test_detach_storage_domain(engine_api):
 
 @order_by(_TEST_LIST)
 def test_reattach_storage_domain(engine_api):
-    # TODO: uncomment once VnicSetup checks are fixed.
-    # VnicSetup.vnic_setup().remove_some_profiles_and_networks()
+    VnicSetup.vnic_setup().remove_some_profiles_and_networks()
     engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine, DC_NAME)
     sd = test_utils.get_attached_storage_domain(engine, SD_SECOND_NFS_NAME)
@@ -128,12 +125,10 @@ def test_import_lost_vm(engine_api):
     lost_vm = test_utils.get_storage_domain_vm_service_by_query(
         sd, VM2_NAME, query={'unregistered': True})
 
-    # TODO: uncomment once VnicSetup checks are fixed.
-    # rg = VnicSetup.vnic_setup().registration_configuration
+    rg = VnicSetup.vnic_setup().registration_configuration
     lost_vm.register(
         allow_partial_import=True,
-        # TODO: uncomment once VnicSetup checks are fixed.
-        # registration_configuration=rg,
+        registration_configuration=rg,
         cluster=ovirtsdk4.types.Cluster(name=CLUSTER_NAME),
         vm=ovirtsdk4.types.Vm(name=VM2_NAME),
         reassign_bad_macs=True)
@@ -147,8 +142,7 @@ def test_import_lost_vm(engine_api):
 
     assert mac_address >= _mac_value(mac_range.from_)
     assert mac_address <= _mac_value(mac_range.to)
-    # TODO: uncomment once VnicSetup checks are fixed.
-    # VnicSetup.vnic_setup().assert_results(VM2_NAME, CLUSTER_NAME)
+    VnicSetup.vnic_setup().assert_results(VM2_NAME, CLUSTER_NAME)
 
 
 @order_by(_TEST_LIST)

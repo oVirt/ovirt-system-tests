@@ -62,7 +62,17 @@ def _get_custom_repos_packages(ansible_vm):
 
 
 def _get_installed_packages(ansible_vm, repo_name):
-    ansible_res = ansible_vm.shell(f'dnf repo-pkgs {repo_name} list installed')
+    # dnf adapts its output to the width of the terminal.
+    # If it fails to find this width out (which it does using:
+    # fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
+    # ), it defaults to 80 chars.
+    # If a package name + version + repo is wider than that, it will
+    # split the output across more than one line.
+    # This breaks our simplistic parsing. To work around this,
+    # call 'stty cols' to tell it that the terminal is wide.
+    # A better solution, one day, might be to make dnf support outputting
+    # such information in JSON, and parse this json if/where needed.
+    ansible_res = ansible_vm.shell(f'stty cols 300; dnf repo-pkgs {repo_name} list installed')
     result = [(line.split()) for line in ansible_res['stdout'].split('\n')]
     filter_results(result)
     return [

@@ -705,17 +705,18 @@ def test_make_snapshot_with_memory(engine_api):
         persist_memorystate=True,
         disk_attachments=disk_attachments
     )
+    correlation_id = "make_preview_snapshot_with_memory"
     with engine_utils.wait_for_event(engine, 45):  # USER_CREATE_SNAPSHOT event
-        snapshots_service.add(snapshot_params)
+        snapshots_service.add(snapshot_params,
+                              query={'correlation_id': correlation_id})
 
 
 @order_by(_TEST_LIST)
 def test_preview_snapshot_with_memory(engine_api):
     engine = engine_api.system_service()
-    events = engine.events_service()
+    correlation_id = "make_preview_snapshot_with_memory"
     assertions.assert_true_within_long(
-        # wait for event 68 == USER_CREATE_SNAPSHOT_FINISHED_SUCCESS
-        lambda: any(e.code == 68 for e in events.list(max=6))
+        lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     vm_service.stop()

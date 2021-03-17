@@ -1,3 +1,4 @@
+# "tested" is all the built artifacts as published by the change-queue. They're untested, actually.
 ovirt-master-tested,http://resources.ovirt.org/repos/ovirt/tested/master/rpm/$distro
 ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
 sbonazzo-el8-collection,https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-$basearch/

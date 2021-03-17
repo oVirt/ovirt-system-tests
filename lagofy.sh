@@ -7,8 +7,8 @@ check_dependencies() {
     pip3 install --user -q -r ${OST_REPO_ROOT}/requirements.txt
     # update ost_utils all the time since we don't version it
     pip3 install --user -q -e ost_utils
-    sysctl net.ipv6.conf.all.accept_ra | egrep -q 'accept_ra ?= ?2' || {
-        echo 'Missing "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
+    sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | egrep -q 'accept_ra ?= ?2' || {
+        echo 'Missing accept_ra on at least one interface. "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
     }
     local nested=$(cat /sys/module/kvm_*/parameters/nested)

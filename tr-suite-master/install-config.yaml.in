@@ -1,0 +1,57 @@
+apiVersion: v1
+baseDomain: OVIRT_BASE_DOMAIN
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform:
+    ovirt:
+      cpu:
+        cores: 2
+        sockets: 1
+      memoryMB: 2000
+      osDisk:
+        # 31 is used to trigger the instance customization (the disk size is 16 Gi)
+        sizeGB: 10
+      vmType: server
+      instanceTypeID:
+  replicas: 2
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform:
+    ovirt:
+      cpu:
+        cores: 2
+        sockets: 1
+      memoryMB: 2000
+      osDisk:
+        # 31 is used to trigger the instance customization (the disk size is 16 Gi)
+        sizeGB: 20
+      vmType: server
+      instanceTypeID:
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: PREFIX
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 10.0.0.0/16
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  ovirt:
+    api_vip: 192.168.211.30
+    ingress_vip: 192.168.211.32
+    ovirt_cluster_id: OVIRT_CLUSTER_ID
+    ovirt_network_name: OVIRT_NETWORK_NAME
+    ovirt_storage_domain_id: OVIRT_STORAGE_DOMAIN_ID
+publish: External
+pullSecret: '{"auths":{"example.com":{"auth":"authorization value"}}}'
+sshKey: |
+  SSH_KEY

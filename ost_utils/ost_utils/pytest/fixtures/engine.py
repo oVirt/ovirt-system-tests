@@ -98,10 +98,14 @@ def engine_password():
 
 
 @pytest.fixture(scope="session")
-def engine_api(engine_full_username, engine_password, engine_ip):
-    url = 'https://{}/ovirt-engine/api'.format(engine_ip)
+def engine_api_url(engine_ip):
+    return 'https://{}/ovirt-engine/api'.format(engine_ip)
+
+
+@pytest.fixture(scope="session")
+def engine_api(engine_full_username, engine_password, engine_api_url):
     api = sdk4.Connection(
-        url=url,
+        url=engine_api_url,
         username=engine_full_username,
         password=engine_password,
         insecure=True,

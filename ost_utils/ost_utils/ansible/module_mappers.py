@@ -64,8 +64,6 @@ def storage():
 
 def module_mapper_for(host_pattern):
     inventory = backend.default_backend().ansible_inventory()
-    config_builder = cb.ConfigBuilder()
-    config_builder.inventory = inventory
     # lago inventory uses short domain names, not FQDN.
     # In HE suites, host-0 is deployed with its FQDN, and this
     # is what the engine returns to us when asking which host
@@ -74,8 +72,7 @@ def module_mapper_for(host_pattern):
     # TODO: Perhaps fix lago to include both short and full names?
     # Alternatively, fix all relevant code to always use only
     # full names, never short ones.
-    config_builder.host_pattern = host_pattern.split('.')[0]
-    return ModuleMapper(config_builder)
+    return ModuleMapper(inventory, host_pattern.split('.')[0])
 
 
 def _run_ansible_runner(config_builder):
@@ -119,7 +116,7 @@ class ModuleArgsMapper:
     to ansible module names, this class does the same with the functions'
     arguments, i.e. for:
 
-        mm = ModuleMapper(config_builder)
+        mm = ModuleMapper(inventory, host_pattern)
         mm.shell(some, arguments)
 
     the ModuleMapper will map the call to use an ansible module called 'shell'
@@ -127,8 +124,11 @@ class ModuleArgsMapper:
     for the module.
 
     """
-    def __init__(self, config_builder):
-        self.config_builder = config_builder
+    def __init__(self, inventory, host_pattern, module):
+        self.config_builder = cb.ConfigBuilder()
+        self.config_builder.inventory = inventory
+        self.config_builder.host_pattern = host_pattern
+        self.config_builder.module = module
 
     def __call__(self, *args, **kwargs):
         self.config_builder.module_args = " ".join((
@@ -149,7 +149,7 @@ class ModuleMapper:
     the name of the function will be used as the name of the ansible module
     you're trying to use, i.e. for:
 
-        mm = ModuleMapper(config_builder)
+        mm = ModuleMapper(inventory, host_pattern)
         mm.shell(some, arguments)
 
     the underlying logic will pass 'shell' as the name of the ansible
@@ -157,14 +157,19 @@ class ModuleMapper:
 
     """
 
-    def __init__(self, config_builder):
-        self.config_builder = config_builder
+    def __init__(self, inventory, host_pattern):
+        self.inventory = inventory
+        self.host_pattern = host_pattern
 
     def __getattr__(self, name):
-        self.config_builder.module = name
-        res = ModuleArgsMapper(self.config_builder)
+        res = ModuleArgsMapper(self.inventory, self.host_pattern, module=name)
         LOGGER.debug(f'ModuleMapper __getattr__: {res}')
         return res
 
     def __str__(self):
-        return f'ModuleMapper<config_builder={self.config_builder}>'
+        return (
+            'ModuleMapper<'
+            f'inventory={self.inventory} '
+            f'host_pattern={self.host_pattern}'
+            '>'
+        )

@@ -24,7 +24,6 @@ from ovirtsdk4.types import (VnicProfile, Network, RegistrationConfiguration,
                              RegistrationVnicProfileMapping)
 
 from test_utils import network_utils_v4 as nu
-import nose.tools as nt
 
 
 class VnicSetup(object):
@@ -189,21 +188,22 @@ class VnicSetup(object):
     def _assert_profile_on_nic(self, nic_name, profile_name):
         nic = self._filter_named_item(nic_name, self._nics)
         profile = self._filter_named_item(profile_name, self._profiles)
-        nt.assert_equals(nic.vnic_profile.id, profile.id)
+        assert nic.vnic_profile.id == profile.id
 
     def _assert_a_profile_on_nic(self, nic_name, profile):
         nic = self._filter_named_item(nic_name, self._nics)
-        nt.assert_equals(nic.vnic_profile.id, profile.id)
+        assert nic.vnic_profile.id == profile.id
 
     def _assert_no_profile_on_nic(self, nic_name):
         nic = self._filter_named_item(nic_name, self._nics)
-        nt.assert_true(nic.vnic_profile is None and nic.network is None)
+        assert nic.vnic_profile is None
+        assert nic.network is None
 
     def _assert_not_found_on_nics(self, profile_name):
         nics_with_profiles = nu.filter_nics_with_profiles(self._nics)
         for nic in nics_with_profiles:
             profile = nu.get_profile_for_id(self.engine, nic.vnic_profile.id)
-            nt.assert_false(profile.name == profile_name)
+            assert profile.name != profile_name
 
     def _filter_named_item(self, name, collection):
         return next(item for item in collection if item.name == name)

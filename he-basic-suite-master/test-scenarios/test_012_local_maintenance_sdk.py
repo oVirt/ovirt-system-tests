@@ -25,17 +25,10 @@ from ovirtsdk4 import types
 
 import pytest
 
-from test_utils import ipv6_utils
-
 from ost_utils import assertions
 from ost_utils import he_utils
 
 VM_HE_NAME = 'HostedEngine'
-
-
-@pytest.fixture(scope='module', autouse=True)
-def setup_module():
-    ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
 def _hosted_engine_info(hosted_engine):

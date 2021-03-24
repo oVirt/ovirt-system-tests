@@ -27,12 +27,6 @@ from ost_utils import assertions
 from ost_utils.ansible import AnsibleExecutionError
 
 from test_utils import constants
-from test_utils import ipv6_utils, network_utils_v4
-
-
-@pytest.fixture(scope='module', autouse=True)
-def setup():
-    ipv6_utils.open_connection_to_api_with_ipv6_on_relevant_suite()
 
 
 def test_set_global_maintenance(ansible_host0):

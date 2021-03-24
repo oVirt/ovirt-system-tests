@@ -29,11 +29,12 @@ from selenium.common.exceptions import (ElementNotVisibleException,
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
-from ost_utils.selenium.constants import *
-
 DEBUG = False
 
 LOGGER = logging.getLogger(__name__)
+
+DRIVER_MAX_RETRIES = 200
+DRIVER_SLEEP_TIME = .12
 
 
 class DriverException(Exception):
@@ -142,7 +143,7 @@ class Driver:
 
                     hover = ActionChains(self.driver).move_to_element(ret)
                     hover.perform()
-                    time.sleep(LEFT_NAV_HOVER_TIME)
+                    time.sleep(DRIVER_SLEEP_TIME)
                     break
 
                 except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:

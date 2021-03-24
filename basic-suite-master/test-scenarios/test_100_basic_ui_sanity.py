@@ -42,7 +42,6 @@ from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.pytest.fixtures.virt import cirros_image_glance_template_name
-from ost_utils.selenium.constants import *
 from ost_utils.selenium.navigation.driver import *
 from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
 from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
@@ -450,9 +449,9 @@ def test_image_upload(ovirt_driver, save_screenshot, browser_name,
     image_name = "{}-{}".format(browser_name, int(time.time()))
 
     # Navigate and upload an image
-    ovirt_driver.hover_to_id(SEL_ID_STORAGE_MENU)
+    ovirt_driver.hover_to_id('MenuView_storageTab')
     save_screenshot('left_nav_hover_storage')
-    ovirt_driver.id_click(SEL_ID_DISKS_MENU)
+    ovirt_driver.id_click('MenuView_disksAnchor')
     save_screenshot('left_nav_clicked_disks')
     ovirt_driver.id_click('ActionPanelView_Upload')
     save_screenshot('left_nav_clicked_upload')

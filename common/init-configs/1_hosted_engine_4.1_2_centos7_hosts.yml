@@ -57,7 +57,7 @@ domains:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
         {%- else %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified.sh
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_he_extra_el7.sh
@@ -103,7 +103,7 @@ domains:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
         {%- else %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/add_local_repo.sh
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/add_tmp_part_el7.sh
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh

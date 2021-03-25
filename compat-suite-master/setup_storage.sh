@@ -1,1 +1,0 @@
-../basic-suite-master/setup_storage.sh

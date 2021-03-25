@@ -1,1 +1,0 @@
-../../common/deploy-scripts/setup_sar_stat.sh

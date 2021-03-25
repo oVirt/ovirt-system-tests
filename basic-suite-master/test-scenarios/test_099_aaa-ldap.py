@@ -45,12 +45,9 @@ def machine_389ds_ip(engine_ip):
     return engine_ip
 
 
-def test_add_ldap_provider(ansible_engine, ansible_machine_389ds,
+def test_add_ldap_provider(suite_dir, ansible_engine, ansible_machine_389ds,
                            machine_389ds_ip, engine_restart):
-    answer_file_src = os.path.join(
-        os.environ.get('SUITE'),
-        'aaa-ldap-answer-file.conf'
-    )
+    answer_file_src = os.path.join(suite_dir, 'aaa-ldap-answer-file.conf')
 
     with open(answer_file_src, 'r') as f:
         content = f.read()

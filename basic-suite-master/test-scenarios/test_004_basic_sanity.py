@@ -1574,12 +1574,12 @@ def test_reconstruct_master_domain(engine_api, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_ovf_import(engine_api, ost_cluster_name):
+def test_ovf_import(suite_dir, engine_api, ost_cluster_name):
     # Read the OVF file and replace the disk id
     engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_id = disk_service.get().id
-    ovf_file = os.path.join(os.environ['SUITE'], 'files', 'test-vm.ovf')
+    ovf_file = os.path.join(suite_dir, 'files', 'test-vm.ovf')
     ovf_text = open(ovf_file).read()
     ovf_text = ovf_text.replace(
         "ovf:diskId='52df5324-2230-40d9-9d3d-8cbb2aa33ba6'",

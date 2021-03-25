@@ -18,10 +18,11 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-from ost_utils.pytest.fixtures.ansible import *
+import os
 
-from ost_utils.pytest.fixtures.backend import backend, ansible_inventory
+import pytest
 
-from ost_utils.pytest.fixtures.engine import *
 
-from ost_utils.pytest.fixtures.env import suite_dir
+@pytest.fixture(scope='session')
+def suite_dir():
+    return os.environ.get('SUITE')

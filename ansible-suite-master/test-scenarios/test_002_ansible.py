@@ -21,7 +21,7 @@
 import os
 
 
-def test_ansible_run(ansible_engine, ansible_inventory):
+def test_ansible_run(suite_dir, ansible_engine, ansible_inventory):
     ansible_run_dir = '/tmp/ansible_run'
 
     for dir_name in ['inventory', 'env']:
@@ -31,17 +31,13 @@ def test_ansible_run(ansible_engine, ansible_inventory):
             recurse='yes'
         )
 
-    ansible_role_src = os.path.join(
-        os.environ.get('SUITE'), 'ovirt-deploy'
-    )
+    ansible_role_src = os.path.join(suite_dir, 'ovirt-deploy')
     ansible_engine.copy(
         src=ansible_role_src,
         dest=ansible_run_dir,
     )
 
-    ansible_playbook = os.path.join(
-        os.environ.get('SUITE'), 'engine.yml'
-    )
+    ansible_playbook = os.path.join(suite_dir, 'engine.yml')
     ansible_engine.copy(
         src=ansible_playbook,
         dest=f'{ansible_run_dir}/engine.yml',

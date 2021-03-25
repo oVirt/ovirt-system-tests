@@ -39,10 +39,8 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(engine_ip, ansible_engine):
-    answer_file_src = os.path.join(
-        os.environ.get('SUITE'), 'engine-answer-file.conf'
-    )
+def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
+    answer_file_src = os.path.join(suite_dir, 'engine-answer-file.conf')
 
     ansible_engine.copy(
         src=answer_file_src,

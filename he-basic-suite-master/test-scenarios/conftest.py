@@ -31,6 +31,7 @@ from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.backend import *
 from ost_utils.pytest.fixtures.defaults import *
 from ost_utils.pytest.fixtures.engine import *
+from ost_utils.pytest.fixtures.env import suite_dir
 from ost_utils.pytest.fixtures.network import *
 from ost_utils.pytest.fixtures.node import *
 from ost_utils.pytest.fixtures.sdk import *

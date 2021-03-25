@@ -28,7 +28,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_hosts
 
 
-def configure_metrics(ansible_engine, ansible_hosts):
+def configure_metrics(suite_dir, ansible_engine, ansible_hosts):
     """
      configure the setup for metrics collection. Essentially collectd and
      fluentd on each host and the engine. The engine will be also the central
@@ -38,7 +38,7 @@ def configure_metrics(ansible_engine, ansible_hosts):
 
     # Use ovirt-engine-metrics to configure collectd + fluentd
     configyml = os.path.join(
-        os.environ.get('SUITE'),
+        suite_dir,
         '../common/test-scenarios-files/metrics_bootstrap/config.yml'
     )
     ansible_engine.copy(src=configyml, dest='/etc/ovirt-engine-metrics/')
@@ -50,7 +50,7 @@ def configure_metrics(ansible_engine, ansible_hosts):
     # Configure the engine-vm as the fluentd aggregator
     if 'OST_FLUENTD_AGGREGATOR' in os.environ:
         metrics_bootstrap = os.path.join(
-            os.environ.get('SUITE'),
+            suite_dir,
             '../common/test-scenarios-files/metrics_bootstrap'
         )
         ansible_engine.copy(src=metrics_bootstrap, dest='/root/')
@@ -84,10 +84,10 @@ def run_log_collector(ansible_engine):
     ansible_engine.shell('rm -rf /dev/shm/sosreport-LogCollector-*')
 
 
-def test_metrics_and_log_collector(ansible_engine, ansible_hosts):
+def test_metrics_and_log_collector(suite_dir, ansible_engine, ansible_hosts):
     vt = utils.VectorThread(
         [
-            functools.partial(configure_metrics, ansible_engine,
+            functools.partial(configure_metrics, suite_dir, ansible_engine,
                               ansible_hosts),
             functools.partial(run_log_collector, ansible_engine),
         ],

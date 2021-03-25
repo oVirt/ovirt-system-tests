@@ -23,13 +23,17 @@ from __future__ import absolute_import
 import functools
 import os
 from os import EX_OK
+import pty
 import re
+import subprocess
+from time import sleep
 
 import pytest
 
 from ost_utils import ansible
 from ost_utils import assertions
 from ost_utils import engine_utils
+from ost_utils import shell
 from ost_utils import ssh
 from ost_utils import utils
 from ost_utils import versioning
@@ -157,6 +161,7 @@ _TEST_LIST = [
     "test_update_vm_pool",
     "test_remove_vm_pool",
     "test_check_snapshot_with_memory",
+    "test_vmconsole",
     "test_ovf_import",
     "test_vdsm_recovery",
 ]
@@ -724,6 +729,55 @@ def test_preview_snapshot_with_memory(engine_api):
     snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)
     vm_service.preview_snapshot(snapshot=snapshot, async=False,
                                 restore_memory=True)
+
+@order_by(_TEST_LIST)
+def test_vmconsole(engine_api, engine_ip):
+    engine = engine_api.system_service()
+    users_service = engine.users_service()
+    user = users_service.list(search='name=admin')[0]
+    keys_service = users_service.user_service(user.id).ssh_public_keys_service()
+    vms_service = engine.vms_service()
+    vm0_id = vms_service.list(search=f'name={VM0_NAME}')[0].id
+
+    deployment_dir = os.environ["PREFIX"]
+    ssh_key_path = os.path.join(deployment_dir, "current")
+
+    shell(['ssh-keygen', '-t', 'rsa', '-f', f'{ssh_key_path}/vmconsole_rsa', '-N', ''])
+    with open(f'{ssh_key_path}/vmconsole_rsa.pub') as f:
+        ssh_public_key = f.read()
+
+    keys_service.add(
+        key=types.SshPublicKey(
+            content=ssh_public_key
+        )
+    )
+
+    master, slave = pty.openpty()
+    vmconsole_process = subprocess.Popen(
+        ['ssh', '-t', '-o', 'StrictHostKeyChecking=no',
+         '-i', f'{ssh_key_path}/vmconsole_rsa', '-p', '2222', f'ovirt-vmconsole@{engine_ip}',
+         'connect', f'--vm-id={vm0_id}'],
+        stdin=slave,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        bufsize=0
+    )
+
+    vmconsole_in = os.fdopen(master, 'w')
+    connection_success = False
+    for i in range(30):
+        vmconsole_in.write('\n')
+        response = vmconsole_process.stdout.read(1)
+        if len(response.strip()) != 0:
+            message = response + vmconsole_process.stdout.readline()
+            if f"login as '{VM_USER_NAME}'" in message or f'{VM0_NAME} login' in message:
+                connection_success = True
+                break
+        sleep(1)
+    vmconsole_process.terminate()
+    # The test fails if the connection to vmconsole was unsuccessful after 30 seconds
+    assert connection_success
 
 
 @order_by(_TEST_LIST)

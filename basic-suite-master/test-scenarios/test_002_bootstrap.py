@@ -1375,6 +1375,9 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
         memory_policy=sdk4.types.MemoryPolicy(
             ballooning=True,
         ),
+        console=sdk4.types.Console(
+            enabled=True
+        ),
     )
 
     vm_params.name = BACKUP_VM_NAME

@@ -7,28 +7,33 @@ stage:
             distributions:
               - el8:
                   runtime-requirements:
+                    jenkins_master: upstream
                     hostdistro: same
                     support-nesting-level: 2
               - rhel8:
                   runtime-requirements:
+                    jenkins_master: psi
                     support-nesting-level: 2
                     hostdistro: same
         - he-basic_suite_master:
             distributions:
               - el8:
                   runtime-requirements:
+                    jenkins_master: upstream
                     hostdistro: same
                     support-nesting-level: 2
         - network_suite_master:
             distributions:
               - el8:
                   runtime-requirements:
+                    jenkins_master: upstream
                     hostdistro: same
                     support-nesting-level: 2
         - ansible_suite_master:
             distributions:
               - el8:
                   runtime-requirements:
+                    jenkins_master: upstream
                     hostdistro: same
                     support-nesting-level: 2
         - test-ost-container:
@@ -47,6 +52,7 @@ stage:
             distributions:
              - el8:
                  runtime-requirements:
+                   jenkins_master: upstream
                    hostdistro: same
                    support-nesting-level: 2
             runif:
@@ -58,6 +64,7 @@ stage:
             distributions:
              - el8:
                  runtime-requirements:
+                   jenkins_master: upstream
                    hostdistro: same
                    support-nesting-level: 2
             runif:

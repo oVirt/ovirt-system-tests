@@ -91,6 +91,7 @@
               - automake
               - createrepo
               - make
+              - rpm-build
             state: latest
           become: true
 

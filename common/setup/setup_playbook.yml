@@ -66,7 +66,7 @@
           become: true
           register: epel
 
-        - name: install required packages
+        - name: install required packages for OST
           dnf:
             name:
               - ansible
@@ -78,6 +78,16 @@
               - python3-ovirt-engine-sdk4
               - python3-paramiko
               - python3-requests
+            state: latest
+          become: true
+
+        - name: install required packages for building ost-images
+          dnf:
+            name:
+              - autoconf
+              - automake
+              - createrepo
+              - make
             state: latest
           become: true
 

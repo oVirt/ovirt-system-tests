@@ -70,6 +70,9 @@
           dnf:
             name:
               - ansible
+            state: present
+          dnf:
+            name:
               - git
               - lago
               - openssl

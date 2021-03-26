@@ -15,7 +15,6 @@ EXTRA_SOURCES=()
 RPMS_TO_INSTALL=()
 COVERAGE=false
 INSIDE_MOCK="$(if [ -n "${MOCK_EXTERNAL_USER}" ]; then echo 1; else echo 0; fi)"
-export USE_LAGO_OST_PLUGIN=${USE_LAGO_OST_PLUGIN:-$((rpm -qa | grep -q lago-ovirt) && echo 1 || echo 0)}
 
 usage () {
     echo "
@@ -188,7 +187,6 @@ render_jinja_templates () {
     export suite_name="${suite_name//./-}"
     export coverage="${COVERAGE}"
     export use_ost_images="${USE_OST_IMAGES}"
-    export use_lago_ost_plugin="${USE_LAGO_OST_PLUGIN}"
     export node_image="${OST_IMAGES_NODE}"
     export upgrade_image="${OST_IMAGES_UPGRADE}"
     export engine_image="${OST_IMAGES_ENGINE_INSTALLED}"
@@ -289,9 +287,6 @@ env_deploy () {
 
     local res=0
     cd "$PREFIX"
-    if [[ ${USE_LAGO_OST_PLUGIN} -eq 1 ]]; then
-        local ovirt_deploy="ovirt"
-    fi
     $CLI ${ovirt_deploy} deploy || res=$?
     cd -
     return "$res"
@@ -770,10 +765,6 @@ trap "on_sigterm" SIGTERM
 trap "on_exit" EXIT
 
 logger.info "Using $(lago --version 2>&1)"
-
-if [[ "${USE_LAGO_OST_PLUGIN}" -eq 1 ]]; then
-    logger.info "Using $(lago ovirt --version 2>&1)"
-fi
 
 check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"

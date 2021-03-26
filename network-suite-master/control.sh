@@ -25,9 +25,6 @@ setup_env() {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
-    if [[ ${USE_LAGO_OST_PLUGIN} -eq 1 ]]; then
-        env_repo_setup
-    fi
     if [[ -e "$SUITE/reposync-config-sdk4.repo" ]]; then
         install_local_rpms_without_reposync
     else
@@ -38,10 +35,8 @@ setup_env() {
 start_env() {
     env_start
     env_dump_ansible_hosts
-    if [[ ${USE_LAGO_OST_PLUGIN} -eq 0 ]]; then
-        env_wait_for_ssh
-        env_add_extra_repos
-    fi
+    env_wait_for_ssh
+    env_add_extra_repos
     env_copy_repo_file
     env_copy_config_file
     env_status

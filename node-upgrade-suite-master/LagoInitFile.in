@@ -45,10 +45,8 @@ domains:
       deploy-scripts:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
-        {%- elif env.use_lago_ost_plugin == "0" %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- else %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/{{ create_local_repo|default('add_local_repo.sh') }}
+        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}

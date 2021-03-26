@@ -32,32 +32,6 @@ from ost_utils.memoized import memoized
 from test_utils.constants import VM0_IP_HOST_PART
 
 
-if os.environ.get("USE_LAGO_OST_PLUGIN", "0") == "1":
-    from ovirtlago import testlib  # pylint: disable=import-error
-
-    def test_gen(tests, generator):
-        '''Run the given tests amending their names according to the context.
-
-        Tests suites are run repeatedly under different conditions, such as data
-        center version as defined by OST_DC_VERSION environment variable.  This
-        helper amends the run time test names to contain information about the
-        environment under which they were run.
-
-        Arguments:
-
-          test_names -- sequence of names of the tests to run
-          generator -- the calling test generator function providing test names to
-            nose
-        '''
-        ost_dc_version = os.environ.get('OST_DC_VERSION', None)
-        for t in testlib.test_sequence_gen(tests):
-            test_id = t.description
-            if ost_dc_version is not None:
-                test_id = '{}_{}'.format(test_id, ost_dc_version.replace('.', ''))
-            generator.__name__ = test_id
-            yield t
-
-
 @memoized
 def get_nics_service(engine, vm_name):
     vm_service = get_vm_service(engine, vm_name)
@@ -244,34 +218,6 @@ assert_finished_within_long = functools.partial(
     assert_finished_within,
     timeout=assertions.LONG_TIMEOUT
 )
-
-
-def get_luns(prefix, host, port, target, from_lun, to_lun=None):
-    out = prefix.virt_env.get_vm(host).ssh(['cat', '/root/multipath.txt']).out
-    if six.PY3:
-        out = out.decode('utf-8')
-    if to_lun is not None: # take a range of LUNs
-        lun_guids = out.splitlines()[from_lun:to_lun]
-    else: # take a single LUN from the list.
-        lun_guids = [out.splitlines()[from_lun]]
-    if prefix.virt_env.get_net(testlib.get_prefixed_name('net-storage')): # use -net-storage network
-       ips = prefix.virt_env.get_vm(host).ips_in_net(testlib.get_prefixed_name('net-storage'))
-    else: # or get all IPs if suite doesn't have net-storage network
-       ips = prefix.virt_env.get_vm(host).all_ips()
-    luns = []
-    for lun_id in lun_guids:
-        for ip in ips:
-            lun=types.LogicalUnit(
-                id=lun_id,
-                address=ip,
-                port=port,
-                target=target,
-                username='username',
-                password='password',
-            )
-            luns.append(lun)
-
-    return luns
 
 
 # unused in master, but sadly this is shared with he-basic-role-remote_suite_4.3, he-basic_suite_4.3, he-basic-iscsi_suite_4.3

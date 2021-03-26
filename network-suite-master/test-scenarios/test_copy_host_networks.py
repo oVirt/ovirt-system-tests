@@ -160,26 +160,26 @@ class CopyHostComparator(object):
         return (
             CopyHostComparator._neither_has_network_attached(nic0, nic1)
         ) or (
-            nic0.is_same_network_attachment(nic1)
-            and CopyHostComparator._network_attachment_correctly_copied(
+            nic0.is_same_network_attachment(nic1) and
+            CopyHostComparator._network_attachment_correctly_copied(
                 nic0, nic1)
         )
 
     @staticmethod
     def _neither_has_network_attached(nic0, nic1):
         return (
-            not nic0.is_network_attached()
-            and nic1.is_same_network_attachment(nic0)
+            not nic0.is_network_attached() and
+            nic1.is_same_network_attachment(nic0)
         )
 
     @staticmethod
     def _network_attachment_correctly_copied(nic0, nic1):
         return (
-            CopyHostComparator._non_static_ipv4_copied(nic0, nic1)
-            or CopyHostComparator._ipv4_static_protocol_disabled(nic0, nic1)
+            CopyHostComparator._non_static_ipv4_copied(nic0, nic1) or
+            CopyHostComparator._ipv4_static_protocol_disabled(nic0, nic1)
         ) and (
-            CopyHostComparator._non_static_ipv6_copied(nic0, nic1)
-            or CopyHostComparator._ipv6_static_protocol_disabled(nic0, nic1)
+            CopyHostComparator._non_static_ipv6_copied(nic0, nic1) or
+            CopyHostComparator._ipv6_static_protocol_disabled(nic0, nic1)
         )
 
     @staticmethod
@@ -197,8 +197,8 @@ class CopyHostComparator(object):
     @staticmethod
     def _non_static_ipv6_copied(nic0, nic1):
         return (
-            not nic0.is_static_ipv6()
-            and nic0.ipv6_boot_protocol_equals(nic1)
+            not nic0.is_static_ipv6() and
+            nic0.ipv6_boot_protocol_equals(nic1)
         )
 
     @staticmethod

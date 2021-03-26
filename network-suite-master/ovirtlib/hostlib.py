@@ -218,8 +218,8 @@ class Host(SDKRootEntity):
         removed_net_attachments = (
             self._get_complementary_net_attachments(
                 self._get_net_ids_for_attachment_data(
-                    list(attachments_data)
-                    + [self.get_mgmt_net_attachment_data()]
+                    list(attachments_data) +
+                    [self.get_mgmt_net_attachment_data()]
                 )
             )
             if remove_other_networks

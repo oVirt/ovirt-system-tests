@@ -105,7 +105,9 @@ domains:
         {%- else %}
         - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
+        {% if loop.first -%}
         - $OST_REPO_ROOT/common/deploy-scripts/add_tmp_part_el7.sh
+        {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
     artifacts:
       - /etc/resolv.conf

@@ -6,4 +6,3 @@ install_storage_with_lago_deploy: true
 install_ovirt_host: true
 system_requirements:
   disk_space_gb: 15
-create_local_repo: add_local_repo_no_ext_access.sh

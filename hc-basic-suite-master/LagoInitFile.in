@@ -49,11 +49,11 @@ domains:
       ovirt-capabilities:
         - snapshot-live-merge
       deploy-scripts:
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/add_local_repo.sh
-        - $LAGO_INITFILE_PATH/../common/deploy-scripts/setup_host_el7.sh
-        - $LAGO_INITFILE_PATH/hc_setup_host.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/add_local_repo.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
+        - $SUITE/hc_setup_host.sh
         {% if loop.first -%}
-        - $LAGO_INITFILE_PATH/setup_first_host.sh
+        - $SUITE/setup_first_host.sh
         {%- endif %}
     artifacts:
       - /var/log

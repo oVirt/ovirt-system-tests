@@ -46,13 +46,13 @@ domains:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - add_plain_repos.sh
         {%- else %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/dnf_upgrade.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_storage_unified_el7.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified_el8.sh
         {%- endif %}
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_engine.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_engine_el8.sh
     artifacts:
       - /var/log
       - /var/cache/ovirt-engine
@@ -98,9 +98,9 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_sar_stat.sh
-        - $LAGO_INITFILE_PATH/deploy-scripts/setup_host_el7.sh
-        - $LAGO_INITFILE_PATH/deploy-scripts/add_repos.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/add_repos.sh
     artifacts:
       - /etc/resolv.conf
       - /var/log

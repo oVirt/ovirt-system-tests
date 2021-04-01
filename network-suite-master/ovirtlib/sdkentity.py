@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #
 import abc
 
-import six
-
 import ovirtsdk4
 
 
@@ -36,8 +34,7 @@ class EntityCreationError(Exception):
     pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class SDKEntity(object):
+class SDKEntity(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._service = None
@@ -87,7 +84,7 @@ class SDKEntity(object):
 
     def update(self, **kwargs):
         sdk_type = self.get_sdk_type()
-        for key, value in six.viewitems(kwargs):
+        for key, value in kwargs.items():
             setattr(sdk_type, key, value)
         self._service.update(sdk_type)
 
@@ -105,8 +102,7 @@ class SDKEntity(object):
         self._service = service
 
 
-@six.add_metaclass(abc.ABCMeta)
-class SDKRootEntity(SDKEntity):
+class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):
 
     def __init__(self, parent_sdk_system):
         super(SDKRootEntity, self).__init__()
@@ -122,8 +118,7 @@ class SDKRootEntity(SDKEntity):
         pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class SDKSubEntity(SDKEntity):
+class SDKSubEntity(SDKEntity, metaclass=abc.ABCMeta):
 
     def __init__(self, parent_sdk_entity):
         super(SDKSubEntity, self).__init__()

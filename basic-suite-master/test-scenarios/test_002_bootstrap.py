@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014, 2017, 2019 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@ import random
 import ssl
 import tempfile
 import time
-
-from six.moves import http_client
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4

@@ -17,11 +17,9 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from http import server
 import os
 import threading
-
-from six.moves import BaseHTTPServer
-from six.moves.SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
 def create_repo_server(workdir, lago_env):
@@ -41,18 +39,18 @@ def create_repo_server(workdir, lago_env):
 
 
 def _create_http_server(listen_ip, listen_port, root_dir):
-    return BaseHTTPServer.HTTPServer(
+    return server.HTTPServer(
         (listen_ip, listen_port),
         _generate_request_handler(root_dir),
     )
 
 
 def _generate_request_handler(root_dir):
-    class _BetterHTTPRequestHandler(SimpleHTTPRequestHandler):
+    class _BetterHTTPRequestHandler(server.SimpleHTTPRequestHandler):
         __root_dir = root_dir
 
         def translate_path(self, path):
-            t_path = SimpleHTTPRequestHandler.translate_path(self, path)
+            t_path = server.SimpleHTTPRequestHandler.translate_path(self, path)
             short_t_path = t_path[len(os.getcwd()):].lstrip('/')
 
             return os.path.join(self.__root_dir, short_t_path)

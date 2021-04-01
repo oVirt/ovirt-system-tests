@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import os
 import ovirtsdk4.types as types
 import random
 import re
-import six
 import uuid
 from ost_utils import assertions
 from ost_utils.engine_utils import wait_for_event as TestEvent

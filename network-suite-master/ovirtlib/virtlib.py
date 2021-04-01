@@ -17,13 +17,12 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import configparser
+import http
 import io
 import time
 
 from contextlib import contextmanager
-
-from six.moves import configparser
-from six.moves import http_client
 
 import ovirtsdk4
 from ovirtsdk4 import types
@@ -361,7 +360,7 @@ class VmGraphicsConsole(SDKSubEntity):
         try:
             return self.service.remote_viewer_connection_file()
         except ovirtsdk4.Error as e:
-            if e.code == http_client.NO_CONTENT:
+            if e.code == http.HTTPStatus.NO_CONTENT:
                 raise EntityNotFoundError("Vm is down, no content found")
 
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@ from __future__ import absolute_import
 
 import copy
 from contextlib import contextmanager
+from urllib import parse
 
 import ovirtsdk4
 import requests
-
-from six.moves.urllib import parse as urlparse
 
 from ovirtsdk4 import types
 
@@ -131,7 +130,7 @@ def _send_post(token_id, url, data):
 
 def _send_delete(token_id, url, id):
     requests.delete(
-        urlparse.urljoin(url, id),
+        parse.urljoin(url, id),
         verify=False,
         headers={
             'X-Auth-Token': token_id

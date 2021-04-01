@@ -2,7 +2,6 @@
 #
 from __future__ import print_function, absolute_import
 import os
-from six import iteritems, itervalues
 import yaml
 from prettytable import PrettyTable
 from itertools import chain
@@ -48,13 +47,13 @@ def get_suite_rows(suite_path, totals_only):
     sr = get_suite_reuirements(suite_path)
     if sr is None:
         return []
-    totals = [['Totals'] + list(itervalues(sr['totals']))]
+    totals = [['Totals'] + list(sr['totals'].values())]
     if totals_only:
         return totals
     rows = chain(
         (
-            [dn] + list(itervalues(dr)) for dn, dr in
-            iteritems(sr['requirements'])
+            [dn] + list(dr.values()) for dn, dr in
+            sr['requirements'].items()
         ),
         totals,
     )
@@ -70,10 +69,10 @@ def get_suite_reuirements(suite_path):
         return
     requirements = {
         dname: get_domain_requirements(ddata)
-        for dname, ddata in iteritems(init_data.get('domains', {}))
+        for dname, ddata in init_data.get('domains', {}).items()
     }
     totals = {
-        field: sum(dr[field] for dr in itervalues(requirements))
+        field: sum(dr[field] for dr in requirements.values())
         for field in REUIREMENT_FIELDS
     }
     return dict(requirements=requirements, totals=totals)

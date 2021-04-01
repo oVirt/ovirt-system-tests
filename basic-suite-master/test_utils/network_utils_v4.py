@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-
-import six
 
 from ovirtsdk4.types import (BootProtocol, DataCenter, HostNic, Ip,
                              IpAddressAssignment, IpVersion, Network,
@@ -50,9 +48,6 @@ def detach_network_from_host(engine, host, network_name, bond_name=None):
     query = search=u'name={}'.format(
         test_utils.quote_search_string(network_name))
 
-    if six.PY2:
-        query = query.encode('utf-8')
-
     network_id = engine.networks_service().list(search=query)[0].id
 
     attachment = _get_attachment_by_id(host, network_id)
@@ -67,9 +62,6 @@ def detach_network_from_host(engine, host, network_name, bond_name=None):
 
 def modify_ip_config(engine, host, network_name, ip_configuration):
     query = u'name={}'.format(test_utils.quote_search_string(network_name))
-
-    if six.PY2:
-        query = query.encode('utf-8')
 
     network_id = engine.networks_service().list(search=query)[0].id
 
@@ -108,17 +100,13 @@ def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None,
     return assignments
 
 
-
-def netname_to_text(name):
-    return name.decode('utf-8') if six.PY2 else name
-
 def get_network_attachment(engine, host, network_name, dc_name):
     dc = test_utils.data_center_service(engine, dc_name)
 
     # CAVEAT: .list(search='name=Migration_Network') is ignored, and the first
     #         network returned happened to be VM_Network in my case
     network = next(net for net in dc.networks_service().list()
-                   if netname_to_text(net.name) == network_name)
+                   if net.name == network_name)
 
     return _get_attachment_by_id(host, network.id)
 
@@ -126,9 +114,6 @@ def get_network_attachment(engine, host, network_name, dc_name):
 def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
     cluster_service = test_utils.get_cluster_service(engine, cluster_name)
     query = u'name={}'.format(test_utils.quote_search_string(network_name))
-
-    if six.PY2:
-        query = query.encode('utf-8')
 
     network = engine.networks_service().list(search=query)[0]
     network_service = cluster_service.networks_service().network_service(
@@ -143,9 +128,6 @@ def set_network_required_in_cluster(engine, network_name, cluster_name,
                                     required):
     cluster_service = test_utils.get_cluster_service(engine, cluster_name)
     query = u'name={}'.format(test_utils.quote_search_string(network_name))
-
-    if six.PY2:
-        query = query.encode('utf-8')
 
     network = engine.networks_service().list(search=query)[0]
     network_service = cluster_service.networks_service().network_service(

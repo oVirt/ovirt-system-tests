@@ -8,17 +8,12 @@ install_dependencies() {
     "${PYTHON}" -m pip install -U pip==9.0.3
     "${PYTHON}" -m pip install contextlib2
     "${PYTHON}" -m pip install \
-        "flake8==3.5.0" \
         "isort==4.2.5" \
         "pytest==3.5" \
         "ansible-runner==1.4.4" \
         "decorator==4.4.0" \
         "openstacksdk==0.37"
     "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
-}
-
-run_static_analysis_flake() {
-    "${PYTHON}" -m flake8 --statistics --show-source "${SUITE}"
 }
 
 setup_env() {
@@ -64,7 +59,6 @@ run_tests() {
 run_suite () {
     install_dependencies
     setup_env
-    run_static_analysis_flake
     start_env
     run_tests
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,13 +59,26 @@ def test_deactivate_storage_domain(engine_api):
     #                            VM2_NAME, DC_NAME, CLUSTER_NAME)
     dc = test_utils.data_center_service(engine_api.system_service(), DC_NAME)
 
-    test_utils.get_attached_storage_domain(
-        dc, SD_SECOND_NFS_NAME, service=True).deactivate()
+    def _deactivate_with_running_ovf_update_task():
+        try:
+            test_utils.get_attached_storage_domain(
+                dc, SD_SECOND_NFS_NAME, service=True).deactivate()
+            return True
+        except ovirtsdk4.Error as err:
+            # The storage domain's deactivation may fail if it has running tasks.
+            # In case of updating ovf_store disks task (UploadStream),
+            # ignore. Otherwise, raise the exception.
+            if 'UploadStream' not in err.args[0]:
+                raise
+            return False
 
-    assertions.assert_equals_within_short(
-        lambda: test_utils.get_attached_storage_domain(
-            dc, SD_SECOND_NFS_NAME).status,
-        ovirtsdk4.types.StorageDomainStatus.MAINTENANCE)
+    assertions.assert_true_within_short(
+        _deactivate_with_running_ovf_update_task)
+    assertions.assert_true_within_short(
+        lambda:
+        test_utils.get_attached_storage_domain(
+            dc, SD_SECOND_NFS_NAME).status == ovirtsdk4.types.StorageDomainStatus.MAINTENANCE
+    )
 
 
 @order_by(_TEST_LIST)

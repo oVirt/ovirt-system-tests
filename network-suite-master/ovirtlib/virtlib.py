@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -193,7 +193,7 @@ class Vm(SDKRootEntity):
         that VM creation is complete and now the VM booting. In libvirt
         lifecycle terms the VM is 'defined' but not yet 'running'. In other
         words, the configuration of the VM has been successfully processed
-        by qemu\kvm
+        by qemu/kvm
         """
         self._wait_for_status((types.VmStatus.POWERING_UP, types.VmStatus.UP))
 

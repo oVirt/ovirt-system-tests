@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from fixtures.cluster import ovs_cluster  # NOQA: F401
-from fixtures.host import host_in_ovs_cluster  # NOQA: F401
+from fixtures.cluster import ovs_cluster
+from fixtures.host import host_in_ovs_cluster
 
-from fixtures.providers import default_ovn_provider  # NOQA: F401
-from fixtures.providers import default_ovn_provider_client  # NOQA: F401
-from fixtures.providers import ovn_network  # NOQA: F401
-from fixtures.providers import openstack_client_config  # NOQA: F401
+from fixtures.providers import default_ovn_provider
+from fixtures.providers import default_ovn_provider_client
+from fixtures.providers import ovn_network
+from fixtures.providers import openstack_client_config

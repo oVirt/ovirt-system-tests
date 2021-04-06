@@ -1,4 +1,4 @@
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import pytest
 from ost_utils import ansible
 from ost_utils.ansible import facts
 from ost_utils.ansible import module_mappers
-from ost_utils.ansible import patterns
 from ost_utils.ansible import private_dir
 
 

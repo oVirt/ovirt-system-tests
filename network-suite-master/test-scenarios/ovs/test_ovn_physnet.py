@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,16 +113,16 @@ def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
 def test_connect_vm_to_external_physnet(system, ovs_cluster,
                                         host_in_ovs_cluster, host_0, host_1,
                                         vm_in_ovn_network_up):
-        other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
+    other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
 
-        syncutil.sync(exec_func=_ping_successful,
-                      exec_func_args=(
-                          other_host.address,
-                          other_host.root_password,
-                          VM0_NAME,
-                          MAX_ICMP_DATA_SIZE
-                      ),
-                      success_criteria=lambda success: success)
+    syncutil.sync(exec_func=_ping_successful,
+                  exec_func_args=(
+                      other_host.address,
+                      other_host.root_password,
+                      VM0_NAME,
+                      MAX_ICMP_DATA_SIZE
+                  ),
+                  success_criteria=lambda success: success)
 
 
 @suite.xfail_suite_43('BZ 1817589')

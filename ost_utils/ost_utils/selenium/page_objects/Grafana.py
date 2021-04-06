@@ -11,7 +11,7 @@ class Grafana(Displayable):
         super(Grafana, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_xpath('//span[text()="Welcome to Grafana"]').is_displayed()
+        return self.ovirt_driver.driver.find_element_by_xpath('//h1[text()="Welcome to Grafana"] | //span[text()="Welcome to Grafana"]').is_displayed()
 
     def get_displayable_name(self):
         return 'Grafana'
@@ -20,8 +20,8 @@ class Grafana(Displayable):
         LOGGER.debug('Open dashboard ' + menu + '/' + submenu)
         self.ovirt_driver.xpath_wait_and_click('Grafana logo button', '//*[@class="sidemenu__logo"]')
         self.ovirt_driver.xpath_wait_and_click('Home button', '//div[@class="navbar"]//a[normalize-space()="Home"]')
-        self.ovirt_driver.xpath_wait_and_click(menu, '//div[@class="search-section"]//*[@class="search-section__header__text" and text() = "' + menu + '"]')
-        self.ovirt_driver.xpath_wait_and_click(submenu, '//*[@class="search-item__body-title" and text() = "' + submenu + '"]')
+        self.ovirt_driver.xpath_wait_and_click(menu, '//*[text() = "' + menu + '"]')
+        self.ovirt_driver.xpath_wait_and_click(submenu, '//*[text() = "' + submenu + '"]')
 
         self.ovirt_driver.wait_until('Breadcrumbs visible', self._is_breadcrumbs_visible, menu, submenu)
 

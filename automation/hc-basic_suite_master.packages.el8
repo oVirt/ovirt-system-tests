@@ -3,6 +3,8 @@ grubby
 lago
 lago-ovirt
 openssl
+ost-images-el8-he-installed
+ost-images-el8-host-installed
 podman
 python3-ansible-runner
 python3-devel

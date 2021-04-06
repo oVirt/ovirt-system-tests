@@ -2,6 +2,7 @@
 HOST1IP=$1
 HOST2IP=$2
 HOST3IP=$3
+OST_SSH_KEY=$4
 HOSTEDENGINE="hc-engine"
 DOMAIN=$(dnsdomainname)
 MYHOSTNAME=$(hostname | sed s/_/-/g)
@@ -39,8 +40,10 @@ HEADDR=$(\
 echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 
 # Update the engine address in other hosts too, for auto-addition to work
-ssh root@${HOST2IP} "echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts"
-ssh root@${HOST3IP} "echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts"
+ssh -i ${OST_SSH_KEY} root@${HOST2IP} \
+    "echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts"
+ssh -i ${OST_SSH_KEY} root@${HOST3IP} \
+    "echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts"
 
 sed \
     -e "s,@GW@,${HEGW},g" \
@@ -61,7 +64,10 @@ sed -i '/gather_facts: no/d'  ${PLAYBOOK_PATH}/tasks/gluster_deployment.yml
 
 cd ${PLAYBOOK_PATH}
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i gluster_inventory.yml hc_deployment.yml --extra-vars='@ohc_he_gluster_vars.json'
+ansible-playbook -i gluster_inventory.yml \
+    hc_deployment.yml \
+    --private-key ${OST_SSH_KEY} \
+    --extra-vars='@ohc_he_gluster_vars.json'
 
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then

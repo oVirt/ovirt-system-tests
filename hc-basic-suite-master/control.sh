@@ -48,31 +48,29 @@ he_deploy() {
     suite_name="${suite_name//./-}"
     HOST=lago-${suite_name}-host-
     VMPASS=123456
+    IDENENTITY_KEY="/etc/ssh/ssh_host_rsa_key"
     cd $PREFIX
 
-    echo "#########################"
-    echo "Setting up passwordless ssh"
     lago shell \
         ${HOST}0 \
-        ssh-keygen -t rsa -f /root/.ssh/id_rsa -N \"\"
+        sshpass \
+        -p "${VMPASS}" \
+        ssh-copy-id -o StrictHostKeyChecking=no \
+        -i ${IDENENTITY_KEY}.pub ${HOST}0
 
     lago shell \
         ${HOST}0 \
         sshpass \
         -p "${VMPASS}" \
-        ssh-copy-id -o StrictHostKeyChecking=no -i ${HOST}0
+        ssh-copy-id -o StrictHostKeyChecking=no \
+        -i ${IDENENTITY_KEY}.pub ${HOST}1
 
     lago shell \
         ${HOST}0 \
         sshpass \
         -p "${VMPASS}" \
-        ssh-copy-id -o StrictHostKeyChecking=no -i ${HOST}1
-
-    lago shell \
-        ${HOST}0 \
-        sshpass \
-        -p "${VMPASS}" \
-        ssh-copy-id -o StrictHostKeyChecking=no -i ${HOST}2
+        ssh-copy-id -o StrictHostKeyChecking=no \
+        -i ${IDENENTITY_KEY}.pub ${HOST}2
 
     lago shell \
         ${HOST}0 \
@@ -116,7 +114,7 @@ he_deploy() {
 
     lago shell \
         ${HOST}0 \
-        /root/exec_playbook.sh ${HOST}0 ${HOST}1 ${HOST}2
+        /root/exec_playbook.sh ${HOST}0 ${HOST}1 ${HOST}2 ${IDENENTITY_KEY}
 
     RET_CODE=$?
     if [ ${RET_CODE} -ne 0 ]; then

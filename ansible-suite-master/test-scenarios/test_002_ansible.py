@@ -53,5 +53,6 @@ def test_ansible_run(suite_dir, ansible_engine, ansible_inventory):
         dest=f'{ansible_run_dir}/env/ssh_key',
     )
 
-    ansible_engine.shell(f'ansible-runner -vvv --playbook engine.yml run {ansible_run_dir}')
-
+    ansible_engine.shell(
+        f'ansible-runner -vvv --playbook engine.yml run {ansible_run_dir}'
+    )

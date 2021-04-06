@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from tempfile import NamedTemporaryFile
 def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_engine.ping()
     ansible_hosts.ping()
+
 
 def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
     answer_file_src = os.path.join(suite_dir, 'engine-answer-file.conf')
@@ -54,11 +55,12 @@ def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
         )
 
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
+        sed = '{ n; s/INFO/DEBUG/ }'
         ansible_engine.shell(
             'sed -i '
-            '-e "/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }" '
-            '-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }" '
-            '-e "/.*<root-logger>/{ n; s/INFO/DEBUG/ }" '
+            f'-e "/.*logger category=\\"org.ovirt\\"/{sed}" '
+            f'-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{sed}" '
+            f'-e "/.*<root-logger>/{sed}" '
             '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
         )
 
@@ -70,10 +72,9 @@ def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
     )
     ansible_engine.shell('ss -anp')
 
-    #TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
+    # TODO: set iSCSI, NFS, LDAP ports in firewall & re-enable it.
     ansible_engine.systemd(name='firewalld', state='stopped')
 
     ansible_engine.systemd(name='ovirt-engine-notifier', state='started')
     ansible_engine.systemd(name='ovirt-engine', state='started')
     ansible_engine.systemd(name='ovirt-engine-dwhd', state='started')
-

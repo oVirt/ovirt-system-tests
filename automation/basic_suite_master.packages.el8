@@ -8,4 +8,3 @@ podman
 python3-ansible-runner
 python3-ovirt-engine-sdk4
 python3-pip
-python3-requests

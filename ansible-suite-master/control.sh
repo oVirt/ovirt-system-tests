@@ -14,8 +14,8 @@ run_suite () {
     cd "$OST_REPO_ROOT"
     declare failed=false
 
-    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
-    "${PYTHON}" -m pip install --user "pytest==6.2.2"
+    "${PYTHON}" -m tox -e deps
+    source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
 
     env_run_pytest_bulk "${SUITE}/test-scenarios" || failed=true
 

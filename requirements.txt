@@ -1,10 +1,8 @@
 # PIP requirements for OST
 -e ost_utils
-pylint==2.7.2
 pytest==6.2.2
-selenium
-tox
 # basic suite deps
 requests
+selenium
 # network suite deps
 openstacksdk==0.36.4

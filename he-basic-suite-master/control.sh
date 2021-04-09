@@ -12,9 +12,6 @@ setup_ipv6() {
 }
 
 run_suite(){
-    cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
-    "${PYTHON}" -m pip install --user "pytest==6.2.2"
-
     local suite="${SUITE?}"
     local curdir="${PWD?}"
     declare failed=false
@@ -36,6 +33,9 @@ run_suite(){
     env_deploy
 
     declare test_scenarios="${SUITE}/test-scenarios"
+
+    "${PYTHON}" -m tox -e deps
+    source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
 
     env_run_pytest_bulk "$test_scenarios" || failed=true
     env_collect "$curdir/test_logs/${suite##*/}"

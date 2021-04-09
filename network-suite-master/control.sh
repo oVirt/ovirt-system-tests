@@ -5,10 +5,8 @@ prep_suite () {
 }
 
 install_dependencies() {
-    "${PYTHON}" -m pip install --user \
-        "pytest==3.5" \
-        "openstacksdk==0.36.4"
-    "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
+    "${PYTHON}" -m tox -e deps
+    source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
 }
 
 setup_env() {

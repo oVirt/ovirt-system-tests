@@ -4,9 +4,8 @@
 # check dependencies
 check_dependencies() {
     [[ -d "$SUITE" ]] || { echo "$SUITE is not a suite directory"; return 2; }
-    pip3 install --user -q -r ${OST_REPO_ROOT}/requirements.txt
-    # update ost_utils all the time since we don't version it
-    pip3 install --user -q -e ost_utils
+    python3 -m pip install --user -q tox
+    python3 -m tox -r -e deps >/dev/null || { echo "tox dependencies failed. try \"tox -e deps\"."; return 3; }
     sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | egrep -q 'accept_ra ?= ?2' || {
         echo 'Missing accept_ra on at least one interface. "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
@@ -89,6 +88,7 @@ _run_tc () {
     local res=0
     local testcase=${@/#/$PWD/}
     local junitxml_file="$PREFIX/${TC:-$SUITE_NAME}.junit.xml"
+    source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
     PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 -u -B -m pytest \
         -s \
         -v \
@@ -100,6 +100,7 @@ _run_tc () {
         ${CUSTOM_REPOS_ARGS[@]} \
         ${testcase[@]} || res=$?
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
+    which deactivate &> /dev/null && deactivate
     return "$res"
 }
 # $1 test scenario .py file
@@ -130,7 +131,8 @@ EOT
 }
 
 run_linters() {
-   python3 -m tox -e flake8,pylint
+    echo "Running linters..."
+    python3 -m tox -q -e flake8,pylint
 }
 
 lago_cleanup() {

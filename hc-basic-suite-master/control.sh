@@ -160,7 +160,8 @@ run_suite () {
         return 1
     fi
 
-    "${PYTHON}" -m pip install --user "pytest==6.2.2"
+    "${PYTHON}" -m tox -e deps
+    source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
 
     declare test_scenarios="${SUITE}/test-scenarios"
     declare failed=false

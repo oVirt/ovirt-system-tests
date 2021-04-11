@@ -8,8 +8,13 @@ for node in /sys/devices/system/node/node*; do
 done
 
 # Configure libvirtd log
+
 mkdir -p /etc/libvirt
-echo 'log_outputs="2:file:/var/log/libvirt.log"' >> /etc/libvirt/libvirtd.conf
+# Libvirt logging for debugging qemu vms
+# https://www.libvirt.org/kbase/debuglogs.html#targeted-logging-for-debugging-qemu-vms
+# NOTE: filter order matters, util must be last to avoid noisy object logs.
+echo 'log_filters="1:libvirt 1:qemu 1:conf 1:security 3:event 3:json 3:file 3:object 1:util"' >> /etc/libvirt/libvirtd.conf
+echo 'log_outputs="1:file:/var/log/libvirt.log"' >> /etc/libvirt/libvirtd.conf
 
 setup_ipv6() {
     NIC="eth1"

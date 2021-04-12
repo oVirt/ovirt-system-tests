@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #
 import contextlib
 
-import contextlib2
-
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
 from ovirtlib import netattachlib
@@ -35,7 +33,7 @@ def test_sync_across_cluster(default_data_center, default_cluster,
     cluster_hosts_up = (host_0_up, host_1_up)
     with clusterlib.new_assigned_network(
             'sync-net', default_data_center, default_cluster) as sync_net:
-        with contextlib2.ExitStack() as stack:
+        with contextlib.ExitStack() as stack:
             for i, host in enumerate(cluster_hosts_up):
                 att_datum = create_attachment(sync_net, i)
                 stack.enter_context(

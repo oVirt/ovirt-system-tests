@@ -7,6 +7,5 @@ selenium
 tox
 # network suite deps
 openstacksdk
-contextlib2
 # there's a conflict between rpm and pip versions on regular el8 hosts
 requests

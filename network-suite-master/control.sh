@@ -6,7 +6,6 @@ prep_suite () {
 
 install_dependencies() {
     "${PYTHON}" -m pip install -U pip==9.0.3
-    "${PYTHON}" -m pip install contextlib2
     "${PYTHON}" -m pip install \
         "isort==4.2.5" \
         "pytest==3.5" \

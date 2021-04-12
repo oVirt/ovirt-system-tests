@@ -502,11 +502,11 @@ def test_verify_template_disk_copied_and_removed(system_service, cirros_image_gl
         glance_sd_disk_service.get().status == types.DiskStatus.OK
     )
 
-    num_of_disks = len(system_service.disks_service().list())
+    disk_id = glance_sd_disk_service.get().id
     glance_sd_disk_service.remove()
     assertions.assert_true_within_short(
         lambda:
-        len(system_service.disks_service().list()) == (num_of_disks - 1)
+        disk_id not in [disk.id for disk in iscsi_sd_service.disks_service().list()]
     )
 
 

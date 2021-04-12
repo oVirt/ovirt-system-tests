@@ -57,12 +57,15 @@ def test_deactivate_storage_domain(engine_api):
     # TODO: it should be tested in multiple runs or properly waited for.
     # VnicSetup.vnic_setup().init(engine_api.system_service(),
     #                            VM2_NAME, DC_NAME, CLUSTER_NAME)
+    engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine_api.system_service(), DC_NAME)
+    correlation_id = 'deactivate_storage_domain'
 
     def _deactivate_with_running_ovf_update_task():
         try:
             test_utils.get_attached_storage_domain(
-                dc, SD_SECOND_NFS_NAME, service=True).deactivate()
+                dc, SD_SECOND_NFS_NAME, service=True).deactivate(
+                query={'correlation_id': correlation_id})
             return True
         except ovirtsdk4.Error as err:
             # The storage domain's deactivation may fail if it has running tasks.
@@ -74,6 +77,12 @@ def test_deactivate_storage_domain(engine_api):
 
     assertions.assert_true_within_short(
         _deactivate_with_running_ovf_update_task)
+
+    # Wait for the storage deactivation to be finished.
+    # TODO Fix the code on engine, so the status will be changed once the operation finished.
+    assertions.assert_true_within_short(
+        lambda: test_utils.all_jobs_finished(engine, correlation_id)
+    )
     assertions.assert_true_within_short(
         lambda:
         test_utils.get_attached_storage_domain(

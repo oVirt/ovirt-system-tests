@@ -91,6 +91,35 @@ class BaseBackend(abc.ABC):
 
         """
 
+    @abc.abstractmethod
+    def deploy_scripts(self):
+        """Function returning a mapping of hostname --> list of deploy scripts.
+
+        Returns:
+            dict: Hostname --> list of deploy scripts.
+
+            Example value for basic suite:
+
+            {
+                'lago-basic-suite-master-engine': [
+                    '$OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh',
+                    '$OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh',
+                    '$OST_REPO_ROOT/common/deploy-scripts/setup_engine_el8.sh',
+                ],
+                'lago-basic-suite-master-host-0': [
+                    '$OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh',
+                    '$OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh',
+                    '$OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh',
+                ],
+                'lago-basic-suite-master-host-1': [
+                    '$OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh',
+                    '$OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh',
+                    '$OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh',
+                ]
+            }
+
+        """
+
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]
 

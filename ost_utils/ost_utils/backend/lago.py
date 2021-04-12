@@ -68,6 +68,15 @@ class LagoBackend(base.BaseBackend):
             for hostname in self.hostnames()
         }
 
+    def deploy_scripts(self):
+        init_file = self._init_file()
+        return {
+            hostname:
+                init_file['domains'][hostname].get(
+                    'metadata', {}).get('deploy-scripts', [])
+            for hostname in self.hostnames()
+        }
+
     @memoized.memoized
     def _status(self):
         status = shell.shell(

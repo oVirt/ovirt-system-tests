@@ -27,10 +27,7 @@ run_suite () {
 
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils
     "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
-    "${PYTHON}" -m pip install --user \
-        "importlib_metadata==2.0.0" \
-        "pytest==6.2.2" \
-        "zipp==1.2.0"
+    "${PYTHON}" -m pip install --user "pytest==6.2.2"
 
     env_run_pytest_bulk ${test_scenarios[@]} || failed=true
 

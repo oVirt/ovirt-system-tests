@@ -1,5 +1,5 @@
 #
-# Copyright 2016-2017 Red Hat, Inc.
+# Copyright 2016-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import ipaddress
 import logging
 
-from netaddr.ip import IPAddress
 from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
 import json
 
@@ -135,7 +135,10 @@ def prepare_migration_attachments_ipv4(system_service):
 
         actual_address = next(nic for nic in host_service.nics_service().list()
                               if nic.name == VLAN200_IF_NAME).ip.address
-        assert IPAddress(actual_address) == IPAddress(ip_address)
+        assert (
+            ipaddress.ip_address(actual_address) ==
+            ipaddress.ip_address(ip_address)
+        )
 
 
 def prepare_migration_attachments_ipv6(system_service):
@@ -157,7 +160,10 @@ def prepare_migration_attachments_ipv6(system_service):
 
         actual_address = next(nic for nic in host_service.nics_service().list()
                               if nic.name == VLAN200_IF_NAME).ipv6.address
-        assert IPAddress(actual_address) == IPAddress(ip_address)
+        assert (
+            ipaddress.ip_address(actual_address) ==
+            ipaddress.ip_address(ip_address)
+        )
 
 
 def set_postcopy_migration_policy(system_service):

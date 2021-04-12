@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Red Hat, Inc.
+# Copyright 2016-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 #
 from __future__ import absolute_import
 
-from netaddr.ip import IPAddress
+import ipaddress
+
 from ost_utils import backend
 from ost_utils import utils
 from ost_utils.pytest.fixtures.ansible import ansible_host0
@@ -91,11 +92,15 @@ def _attach_vm_network_to_host_static_config(api, network_name, host_num):
     host_nic = next(nic for nic in host_service.nics_service().list() if
                     nic.name == '{}.{}'.format(nic_name, VM_NETWORK_VLAN_ID))
 
-    assert IPAddress(host_nic.ip.address) == \
-        IPAddress(VM_NETWORK_IPv4_ADDR.format(host_num+1))
+    assert (
+        ipaddress.ip_address(host_nic.ip.address) ==
+        ipaddress.ip_address(VM_NETWORK_IPv4_ADDR.format(host_num+1))
+    )
 
-    assert IPAddress(host_nic.ipv6.address) == \
-         IPAddress(VM_NETWORK_IPv6_ADDR.format(host_num+1))
+    assert (
+        ipaddress.ip_address(host_nic.ipv6.address) ==
+        ipaddress.ip_address(VM_NETWORK_IPv6_ADDR.format(host_num+1))
+    )
 
 
 def test_attach_vm_network_to_host_0_static_config(engine_api,

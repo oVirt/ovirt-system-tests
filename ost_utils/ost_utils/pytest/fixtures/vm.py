@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import netaddr.core
-import netaddr.ip
+import ipaddress
 
 import pytest
 
@@ -57,9 +56,9 @@ def get_vm_ip(get_ansible_host_for_vm):
 
     def get_ip(vm_name_or_ip):
         try:
-            netaddr.ip.IPAddress(vm_name_or_ip)
+            ipaddress.ip_address(vm_name_or_ip)
             return vm_name_or_ip
-        except netaddr.core.AddrFormatError:
+        except ValueError:
             ansible_host = get_ansible_host_for_vm(vm_name_or_ip)
             ret = ansible_host.shell('dig +short {}'.format(vm_name_or_ip))
             return ret["stdout"].strip()

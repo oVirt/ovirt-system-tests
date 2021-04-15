@@ -89,7 +89,7 @@ EOT
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"
 
     # start the OST VMs, run deploy scripts and generate hosts for ansible tasks
-    lago start && lago deploy && lago ansible_hosts > $PREFIX/hosts
+    lago start && lago ansible_hosts > $PREFIX/hosts
 
     # ... and that's it
 }

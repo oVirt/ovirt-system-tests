@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright 2021 Red Hat, Inc.
 #
@@ -19,31 +18,17 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import functools
 import pytest
 
-from ost_utils import backend as _backend
+from ost_utils import utils
+from ost_utils.deployment_utils import package_mgmt
+from ost_utils.deployment_utils.scripts import run_scripts
 
 
-@pytest.fixture(scope="session")
-def backend():
-    return _backend.default_backend()
-
-
-@pytest.fixture(scope="session")
-def deploy_scripts(backend):
-    return backend.deploy_scripts()
-
-
-@pytest.fixture(scope="session")
-def all_hostnames(backend):
-    return backend.hostnames()
-
-
-@pytest.fixture(scope="session")
-def hosts_hostnames(backend):
-    return backend.hosts_hostnames()
-
-
-@pytest.fixture(scope="session")
-def ansible_inventory(backend):
-    return backend.ansible_inventory()
+@pytest.fixture(scope="session", autouse=True)
+def deploy(all_hostnames, deploy_scripts):
+    runs = [functools.partial(run_scripts, hostname, scripts)
+            for hostname, scripts in deploy_scripts.items()]
+    utils.invoke_different_funcs_in_parallel(*runs)
+    package_mgmt.check_installed_packages(all_hostnames)

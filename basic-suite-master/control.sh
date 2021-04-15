@@ -17,11 +17,7 @@ run_suite () {
     env_copy_config_file
     env_status
     cd "$OST_REPO_ROOT"
-    if ! env_deploy; then
-        env_collect "$PWD/test_logs/${SUITE_NAME}/post-000_deploy"
-        echo "@@@ ERROR: Failed in deploy stage"
-        return 1
-    fi
+
     declare test_scenarios="${SUITE}/test-scenarios"
     declare failed=false
 

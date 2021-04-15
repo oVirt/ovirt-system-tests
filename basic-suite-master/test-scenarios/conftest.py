@@ -37,11 +37,12 @@ from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 
 from ost_utils.pytest.fixtures.backend import all_hostnames
 from ost_utils.pytest.fixtures.backend import backend
+from ost_utils.pytest.fixtures.backend import deploy_scripts
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
 
-from ost_utils.pytest.fixtures.check_repos import check_installed_packages
-
 from ost_utils.pytest.fixtures.defaults import *
+
+from ost_utils.pytest.fixtures.deployment import deploy
 
 from ost_utils.pytest.fixtures.engine import *
 

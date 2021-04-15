@@ -5,16 +5,8 @@ nat-settings: &nat-settings
       end: 254
     management: False
 
-vm-common-settings: &vm-common-settings
-    root-password: 123456
-    service_provider: systemd
-    artifacts:
-      - /var/log
-      - /etc/resolv.conf
-
 domains:
   lago-{{ env.suite_name }}-engine:
-    <<: *vm-common-settings
     vm-type: default
     memory: 3584
     nics:
@@ -82,7 +74,6 @@ domains:
       - /tmp/dnf_yum.conf
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
-    <<: *vm-common-settings
     vm-type: default
     memory: 1792
     nics:
@@ -109,9 +100,6 @@ domains:
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
-        {% if env.use_ost_images != "1" and loop.first and install_ovirt_host|default(false) -%}
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_1st_host_el7.sh
-        {%- endif %}
     artifacts:
       - /etc/resolv.conf
       - /var/log

@@ -18,16 +18,14 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import contextlib
 import functools
-import os
-import ovirtsdk4.types as types
-import random
-import re
 import uuid
+
+import ovirtsdk4
+import ovirtsdk4.types as types
+
 from ost_utils import assertions
 from ost_utils.memoized import memoized
-from test_utils.constants import VM0_IP_HOST_PART
 
 
 @memoized
@@ -71,7 +69,7 @@ def get_disk_attachments_service(engine, vm_name):
 @memoized
 def get_template_service(engine, template_name):
     templates_service = engine.templates_service()
-    template = templates_service.list(search='name={}'.format(template_name))[0]
+    template = templates_service.list(search=f'name={template_name}')[0]
     if template is None:
         return None
     return templates_service.template_service(template.id)
@@ -184,7 +182,7 @@ def all_jobs_finished(engine, correlation_id):
         jobs = engine.jobs_service().list(
             search='correlation_id=%s' % correlation_id
         )
-    except:
+    except ovirtsdk4.Error:
         jobs = engine.jobs_service().list()
     return all(job.status != types.JobStatus.STARTED for job in jobs)
 
@@ -216,16 +214,6 @@ assert_finished_within_long = functools.partial(
     assert_finished_within,
     timeout=assertions.LONG_TIMEOUT
 )
-
-
-# unused in master, but sadly this is shared with he-basic-role-remote_suite_4.3, he-basic_suite_4.3, he-basic-iscsi_suite_4.3
-def get_vm0_ip_address(prefix):
-    gw_address = get_management_net(prefix).gw()
-    return '.'.join(gw_address.split('.')[0:3] + [VM0_IP_HOST_PART])
-
-
-def get_management_net(prefix):
-    return prefix.virt_env.get_net()
 
 
 def get_first_active_host_by_name(engine):

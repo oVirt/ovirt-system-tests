@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,4 @@
 DEFAULT_OVN_PROVIDER_NAME = 'ovirt-provider-ovn'
 ADD_HOST_TIMEOUT = 20 * 60
 ENGINE_VM_RESTART_TIMEOUT = 20 * 60
-# unused in master, but sadly this is shared with he-basic-role-remote_suite_4.3, he-basic_suite_4.3, he-basic-iscsi_suite_4.3
-VM0_IP_HOST_PART = '90'
 FLOATING_DISK_NAME = 'floating_disk'

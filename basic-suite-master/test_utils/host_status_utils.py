@@ -22,11 +22,13 @@ DC_NAME = 'test-dc'
 
 
 def _all_hosts_up(hosts_service, total_num_hosts, dc_name=DC_NAME):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(dc_name))
-    if len(installing_hosts) == total_num_hosts: # All hosts still installing
+    installing_hosts = hosts_service.list(search=(
+        f'datacenter={dc_name} AND status=installing or status=initializing'
+    ))
+    if len(installing_hosts) == total_num_hosts:  # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
+    up_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=up')
     if len(up_hosts) == total_num_hosts:
         return True
 
@@ -34,11 +36,13 @@ def _all_hosts_up(hosts_service, total_num_hosts, dc_name=DC_NAME):
 
 
 def _single_host_up(hosts_service, total_num_hosts, dc_name=DC_NAME):
-    installing_hosts = hosts_service.list(search='datacenter={} AND status=installing or status=initializing'.format(dc_name))
-    if len(installing_hosts) == total_num_hosts : # All hosts still installing
+    installing_hosts = hosts_service.list(search=(
+        f'datacenter={dc_name} AND status=installing or status=initializing'
+    ))
+    if len(installing_hosts) == total_num_hosts:  # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
+    up_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=up')
     if len(up_hosts):
         return True
 
@@ -46,7 +50,10 @@ def _single_host_up(hosts_service, total_num_hosts, dc_name=DC_NAME):
 
 
 def _check_problematic_hosts(hosts_service, dc_name=DC_NAME):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != up)'.format(dc_name))
+    problematic_hosts = hosts_service.list(search=(
+        f'datacenter={dc_name} AND status != installing '
+        'and status != initializing and status != up)'
+    ))
     if len(problematic_hosts):
         dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
         for host in problematic_hosts:

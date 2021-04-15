@@ -45,8 +45,7 @@ def attach_network_to_host(host, nic_name, network_name, ip_configuration,
 
 
 def detach_network_from_host(engine, host, network_name, bond_name=None):
-    query = search=u'name={}'.format(
-        test_utils.quote_search_string(network_name))
+    query = f'name={test_utils.quote_search_string(network_name)}'
 
     network_id = engine.networks_service().list(search=query)[0].id
 

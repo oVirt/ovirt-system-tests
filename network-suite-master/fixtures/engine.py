@@ -48,7 +48,7 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_service_up(engine_full_username, engine_password,
+def ovirt_engine_service_up(deploy, engine_full_username, engine_password,
                             ansible_engine, engine_facts):
     ANSWER_FILE_TMP = '/tmp/answer-file'
 

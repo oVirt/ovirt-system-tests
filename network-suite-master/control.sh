@@ -30,11 +30,6 @@ start_env() {
     env_copy_repo_file
     env_copy_config_file
     env_status
-    if ! env_deploy; then
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
-        echo "@@@ ERROR: Failed in deploy stage"
-        return 1
-    fi
     mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
 }
 

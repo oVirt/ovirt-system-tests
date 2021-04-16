@@ -20,7 +20,12 @@
 
 from ost_utils.pytest.fixtures.ansible import *
 
-from ost_utils.pytest.fixtures.backend import backend, ansible_inventory
+from ost_utils.pytest.fixtures.backend import all_hostnames
+from ost_utils.pytest.fixtures.backend import ansible_inventory
+from ost_utils.pytest.fixtures.backend import backend
+from ost_utils.pytest.fixtures.backend import deploy_scripts
+
+from ost_utils.pytest.fixtures.deployment import deploy
 
 from ost_utils.pytest.fixtures.engine import *
 

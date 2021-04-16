@@ -17,12 +17,6 @@ run_suite () {
     env_copy_config_file
     env_status
     cd "$OST_REPO_ROOT"
-    if ! env_deploy; then
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-000_deploy"
-        echo "@@@ ERROR: Failed in deploy stage"
-        return 1
-    fi
-
     declare failed=false
 
     cd "$OST_REPO_ROOT" && "${PYTHON}" -m pip install --user -e ost_utils

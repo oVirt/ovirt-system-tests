@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import pytest
 
 from ovirtlib import sshlib
 from ovirtlib import storagelib
+from ovirtlib.sdkentity import EntityNotFoundError
 
 
 DEFAULT_DOMAIN_NAME = 'nfs1'
@@ -35,21 +36,22 @@ def default_storage_domain(system, engine_facts, host_0_up,
     # workaround for BZ 1779280
     time.sleep(5)
     storage_domain = storagelib.StorageDomain(system)
-    storage_domain.create(name=DEFAULT_DOMAIN_NAME,
-                          domain_type=storagelib.StorageDomainType.DATA,
-                          host=host_0_up,
-                          host_storage_data=storagelib.HostStorageData(
-                              storage_type=storagelib.StorageType.NFS,
-                              address=engine_facts.ipv4_default_address,
-                              path=DEFAULT_DOMAIN_PATH,
-                              nfs_version=storagelib.NfsVersion.V4_2
+    try:
+        storage_domain.import_by_name(DEFAULT_DOMAIN_NAME)
+    except EntityNotFoundError:
+        storage_domain.create(name=DEFAULT_DOMAIN_NAME,
+                              domain_type=storagelib.StorageDomainType.DATA,
+                              host=host_0_up,
+                              host_storage_data=storagelib.HostStorageData(
+                                  storage_type=storagelib.StorageType.NFS,
+                                  address=engine_facts.ipv4_default_address,
+                                  path=DEFAULT_DOMAIN_PATH,
+                                  nfs_version=storagelib.NfsVersion.V4_2
+                                  )
                               )
-                          )
-    storage_domain.wait_for_unattached_status()
-
-    default_data_center.attach_storage_domain(storage_domain)
+        storage_domain.wait_for_unattached_status()
+        default_data_center.attach_storage_domain(storage_domain)
     default_data_center.wait_for_sd_active_status(storage_domain)
-
     return storage_domain
 
 

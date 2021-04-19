@@ -22,13 +22,7 @@ import pytest
 
 from ost_utils import ansible
 from ost_utils.ansible import facts
-from ost_utils.ansible import module_mappers
 from ost_utils.ansible import private_dir
-
-
-@pytest.fixture(scope="session")
-def ansible_engine():
-    return module_mappers.engine()
 
 
 @pytest.fixture(scope="session")

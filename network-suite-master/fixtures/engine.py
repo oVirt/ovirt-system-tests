@@ -1,4 +1,4 @@
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,21 +49,20 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 @pytest.fixture(scope='session', autouse=True)
 def ovirt_engine_service_up(deploy, engine_full_username, engine_password,
-                            ansible_engine, engine_facts):
+                            engine_facts):
     ANSWER_FILE_TMP = '/tmp/answer-file'
 
-    ansible_engine.copy(
-        src=ANSWER_FILE_SRC,
-        dest=ANSWER_FILE_TMP,
+    engine = sshlib.Node(
+        engine_facts.ipv4_default_address, engine_facts.ssh_password
     )
+    engine.sftp_put(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
 
     command = [
         'engine-setup',
         '--config-append={}'.format(ANSWER_FILE_TMP),
         '--accept-defaults',
     ]
-    sshlib.Node(engine_facts.ipv4_default_address,
-                engine_facts.ssh_password).exec_command(' '.join(command))
+    engine.exec_command(' '.join(command))
 
     syncutil.sync(exec_func=_create_engine_connection,
                   exec_func_args=(engine_facts.ipv4_default_address,

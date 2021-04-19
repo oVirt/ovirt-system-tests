@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,21 +22,24 @@ from fixtures import providers
 
 from ovirtlib import storagelib
 from ovirtlib import templatelib
+from ovirtlib.sdkentity import EntityNotFoundError
 
 
 @pytest.fixture(scope='session')
 def cirros_template(system, ovirt_image_repo, default_cluster,
                     default_storage_domain, cirros_image,
                     transformed_cirros_image):
-    ovirt_image_sd = storagelib.StorageDomain(system)
-    ovirt_image_sd.import_by_name(providers.OVIRT_IMAGE_REPO_NAME)
-
     cirros_template = transformed_cirros_image
-    default_storage_domain.import_image(
-        default_cluster, ovirt_image_sd, cirros_image,
-        template_name=cirros_template
-    )
+    try:
+        templatelib.get_template(system, cirros_template)
+    except EntityNotFoundError:
+        ovirt_image_sd = storagelib.StorageDomain(system)
+        ovirt_image_sd.import_by_name(providers.OVIRT_IMAGE_REPO_NAME)
 
-    templatelib.wait_for_template_ok_status(system, cirros_template)
+        default_storage_domain.import_image(
+            default_cluster, ovirt_image_sd, cirros_image,
+            template_name=cirros_template
+        )
+        templatelib.wait_for_template_ok_status(system, cirros_template)
 
     return cirros_template

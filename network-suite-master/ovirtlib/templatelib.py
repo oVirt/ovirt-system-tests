@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 from ovirtsdk4 import types
 
 from ovirtlib import syncutil
+from ovirtlib.sdkentity import EntityNotFoundError
 
 
 TEMPLATE_BLANK = 'Blank'
@@ -30,6 +31,13 @@ class TemplateStatus(object):
     OK = types.TemplateStatus.OK
     ILLEGAL = types.TemplateStatus.ILLEGAL
     LOCKED = types.TemplateStatus.LOCKED
+
+
+def get_template(system, template_name):
+    template = _get_template(system.templates_service, template_name)
+    if template is None:
+        raise EntityNotFoundError
+    return template
 
 
 def wait_for_template_ok_status(system, template_name):

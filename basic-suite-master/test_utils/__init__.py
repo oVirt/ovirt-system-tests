@@ -26,7 +26,6 @@ import random
 import re
 import uuid
 from ost_utils import assertions
-from ost_utils.engine_utils import wait_for_event as TestEvent
 from ost_utils.memoized import memoized
 from test_utils.constants import VM0_IP_HOST_PART
 

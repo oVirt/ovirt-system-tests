@@ -310,7 +310,7 @@ def test_add_dc(engine_api, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dcs_service = engine.data_centers_service()
-    with test_utils.TestEvent(engine, 950): # USER_ADD_STORAGE_POOL
+    with engine_utils.wait_for_event(engine, 950): # USER_ADD_STORAGE_POOL
         assert dcs_service.add(
             sdk4.types.DataCenter(
                 name=ost_dc_name,
@@ -327,7 +327,7 @@ def test_remove_default_dc(engine_api, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
-    with test_utils.TestEvent(engine, 954): # USER_REMOVE_STORAGE_POOL event
+    with engine_utils.wait_for_event(engine, 954): # USER_REMOVE_STORAGE_POOL event
         dc_service.remove()
 
 
@@ -338,7 +338,7 @@ def test_update_default_dc(engine_api, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
-    with test_utils.TestEvent(engine, 952): # USER_UPDATE_STORAGE_POOL event
+    with engine_utils.wait_for_event(engine, 952): # USER_UPDATE_STORAGE_POOL event
         dc_service.update(
             data_center=sdk4.types.DataCenter(
                 local=True
@@ -350,7 +350,7 @@ def test_update_default_dc(engine_api, ost_dc_name):
 def test_update_default_cluster(engine_api):
     engine = engine_api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
-    with test_utils.TestEvent(engine, 811): # USER_UPDATE_CLUSTER event
+    with engine_utils.wait_for_event(engine, 811): # USER_UPDATE_CLUSTER event
         cluster_service.update(
             cluster=sdk4.types.Cluster(
                 cpu=sdk4.types.Cpu(
@@ -366,7 +366,7 @@ def test_remove_default_cluster(engine_api, ost_cluster_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default cluster')
     engine = engine_api.system_service()
     cl_service = test_utils.get_cluster_service(engine, 'Default')
-    with test_utils.TestEvent(engine, 813): # USER_REMOVE_CLUSTER event
+    with engine_utils.wait_for_event(engine, 813): # USER_REMOVE_CLUSTER event
         cl_service.remove()
 
 
@@ -393,7 +393,7 @@ def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
     engine = engine_api.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
-    with test_utils.TestEvent(engine, 809):
+    with engine_utils.wait_for_event(engine, 809):
         assert clusters_service.add(
             sdk4.types.Cluster(
                 name=ost_cluster_name,
@@ -458,7 +458,7 @@ def test_add_hosts(engine_api, root_password, hostnames_to_add,
             deploy_hosted_engine=deploy_hosted_engine,
         )
 
-    with test_utils.TestEvent(engine, 42):
+    with engine_utils.wait_for_event(engine, 42):
         for hostname in hostnames_to_add:
             assert _add_host(hostname)
 
@@ -612,7 +612,7 @@ def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api,
     engine = engine_api.system_service()
     storage_domain_service = test_utils.get_storage_domain_service(engine, SD_ISCSI_NAME)
 
-    with test_utils.TestEvent(engine, 1022): # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
+    with engine_utils.wait_for_event(engine, 1022): # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
         storage_domain_service.refresh_luns(
             async=False,
             logical_units=sd_iscsi_host_luns
@@ -714,7 +714,7 @@ def test_list_glance_images(engine_api):
     )
 
     try:
-        with test_utils.TestEvent(system_service, 998):
+        with engine_utils.wait_for_event(system_service, 998):
             all_images = glance_domain_service.images_service().list()
         if not len(all_images):
             raise RuntimeError('No GLANCE images available')
@@ -822,7 +822,7 @@ def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
         ),
     )
 
-    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+    with engine_utils.wait_for_event(engine, 942): # NETWORK_ADD_NETWORK event
         assert engine.networks_service().add(network)
 
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
@@ -844,7 +844,7 @@ def test_add_non_vm_network(engine_api, ost_dc_name, ost_cluster_name):
         mtu=9000,
     )
 
-    with test_utils.TestEvent(engine, 942): # NETWORK_ADD_NETWORK event
+    with engine_utils.wait_for_event(engine, 942): # NETWORK_ADD_NETWORK event
         assert engine.networks_service().add(network)
 
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
@@ -855,7 +855,7 @@ def test_add_non_vm_network(engine_api, ost_dc_name, ost_cluster_name):
 def test_add_role(engine_api):
     engine = engine_api.system_service()
     roles_service = engine.roles_service()
-    with test_utils.TestEvent(engine, 864): # USER_ADD_ROLE_WITH_ACTION_GROUP event
+    with engine_utils.wait_for_event(engine, 864): # USER_ADD_ROLE_WITH_ACTION_GROUP event
         assert roles_service.add(
             sdk4.types.Role(
                 name='MyRole',
@@ -875,7 +875,7 @@ def test_add_role(engine_api):
 def test_add_affinity_label(engine_api):
     engine = engine_api.system_service()
     affinity_labels_service = engine.affinity_labels_service()
-    with test_utils.TestEvent(engine, 10380):
+    with engine_utils.wait_for_event(engine, 10380):
         assert affinity_labels_service.add(
             sdk4.types.AffinityLabel(
                 name='my_affinity_label',
@@ -888,7 +888,7 @@ def test_add_affinity_group(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
     affinity_group_service = cluster_service.affinity_groups_service()
-    with test_utils.TestEvent(engine, 10350):
+    with engine_utils.wait_for_event(engine, 10350):
         assert affinity_group_service.add(
             sdk4.types.AffinityGroup(
                 name='my_affinity_group',
@@ -907,7 +907,7 @@ def test_add_affinity_group(engine_api, ost_cluster_name):
 def test_add_bookmark(engine_api):
     engine = engine_api.system_service()
     bookmarks_service = engine.bookmarks_service()
-    with test_utils.TestEvent(engine, 350):
+    with engine_utils.wait_for_event(engine, 350):
         assert bookmarks_service.add(
             sdk4.types.Bookmark(
                 name='my_bookmark',
@@ -921,7 +921,7 @@ def test_add_cpu_profile(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
     cpu_profiles_service = engine.cpu_profiles_service()
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
-    with test_utils.TestEvent(engine, 10130): # USER_ADDED_CPU_PROFILE event
+    with engine_utils.wait_for_event(engine, 10130): # USER_ADDED_CPU_PROFILE event
         assert cpu_profiles_service.add(
             sdk4.types.CpuProfile(
                 name='my_cpu_profile',
@@ -937,7 +937,7 @@ def test_add_qos(engine_api, ost_dc_name):
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, ost_dc_name)
     qoss = dc_service.qoss_service()
-    with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
+    with engine_utils.wait_for_event(engine, 10110): # USER_ADDED_QOS event
         assert qoss.add(
             sdk4.types.Qos(
                 name='my_cpu_qos',
@@ -945,7 +945,7 @@ def test_add_qos(engine_api, ost_dc_name):
                 cpu_limit=99,
             ),
         )
-    with test_utils.TestEvent(engine, 10110): # USER_ADDED_QOS event
+    with engine_utils.wait_for_event(engine, 10110): # USER_ADDED_QOS event
         assert qoss.add(
             sdk4.types.Qos(
                 name='my_storage_qos',
@@ -964,7 +964,7 @@ def test_add_disk_profile(engine_api, ost_dc_name):
     attached_sds_service = dc_service.storage_domains_service()
     attached_sd = attached_sds_service.list()[0]
 
-    with test_utils.TestEvent(engine, 10120): # USER_ADDED_DISK_PROFILE event
+    with engine_utils.wait_for_event(engine, 10120): # USER_ADDED_DISK_PROFILE event
         assert disk_profiles_service.add(
             sdk4.types.DiskProfile(
                 name='my_disk_profile',
@@ -1090,7 +1090,7 @@ def test_check_update_host(engine_api, ost_dc_name, is_node_suite):
     engine = engine_api.system_service()
     host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
     events_service = engine.events_service()
-    with test_utils.TestEvent(engine, [884, 885]):
+    with engine_utils.wait_for_event(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
         # HOST_AVAILABLE_UPDATES_FINISHED(885)
         host_service.upgrade_check()
@@ -1100,7 +1100,7 @@ def test_check_update_host(engine_api, ost_dc_name, is_node_suite):
 def test_add_scheduling_policy(engine_api):
     engine = engine_api.system_service()
     scheduling_policies_service = engine.scheduling_policies_service()
-    with test_utils.TestEvent(engine, 9910):
+    with engine_utils.wait_for_event(engine, 9910):
         assert scheduling_policies_service.add(
             sdk4.types.SchedulingPolicy(
                 name='my_scheduling_policy',
@@ -1188,7 +1188,7 @@ def test_add_tag(engine_api):
 def test_add_mac_pool(engine_api):
     engine = engine_api.system_service()
     pools_service = engine.mac_pools_service()
-    with test_utils.TestEvent(engine, 10700): # MAC_POOL_ADD_SUCCESS event
+    with engine_utils.wait_for_event(engine, 10700): # MAC_POOL_ADD_SUCCESS event
         pool = pools_service.add(
             sdk4.types.MacPool(
                 name='mymacpool',
@@ -1203,7 +1203,7 @@ def test_add_mac_pool(engine_api):
         assert pool
 
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
-    with test_utils.TestEvent(engine, 811):
+    with engine_utils.wait_for_event(engine, 811):
         assert cluster_service.update(
             cluster=sdk4.types.Cluster(
                 mac_pool=sdk4.types.MacPool(
@@ -1273,7 +1273,7 @@ def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_s
 
     engine = engine_api.system_service()
 
-    with test_utils.TestEvent(engine, [9024, 9025]): #backup started event, completed
+    with engine_utils.wait_for_event(engine, [9024, 9025]): #backup started event, completed
         ansible_engine.shell(
             'engine-backup '
             '--mode=backup '
@@ -1314,7 +1314,7 @@ def test_add_vnic_passthrough_profile(engine_api):
     engine = engine_api.system_service()
     vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
 
-    with test_utils.TestEvent(engine, 1122):
+    with engine_utils.wait_for_event(engine, 1122):
         vnic_profile = vnic_service.add(
             profile=sdk4.types.VnicProfile(
                 name=PASSTHROUGH_VNIC_PROFILE,
@@ -1335,7 +1335,7 @@ def test_remove_vnic_passthrough_profile(engine_api):
                         if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
                         )
 
-    with test_utils.TestEvent(engine, 1126):
+    with engine_utils.wait_for_event(engine, 1126):
         vnic_service.profile_service(vnic_profile.id).remove()
         assert next((vp for vp in vnic_service.list()
                      if vp.name == PASSTHROUGH_VNIC_PROFILE), None) is None
@@ -1665,7 +1665,7 @@ def test_add_filter_parameter(engine_api, engine_ip):
     network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
         engine, VM0_NAME)
 
-    with test_utils.TestEvent(engine, 10912):
+    with engine_utils.wait_for_event(engine, 10912):
         assert network_filter_parameters_service.add(
             sdk4.types.NetworkFilterParameter(
                 name='GW_IP',
@@ -1683,7 +1683,7 @@ def test_add_serial_console_vm2(engine_api):
     vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
     if not vm.console.enabled:
         vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-        with test_utils.TestEvent(engine, 35): # USER_UPDATE_VM event
+        with engine_utils.wait_for_event(engine, 35): # USER_UPDATE_VM event
             vm_service.update(
                 sdk4.types.Vm(
                     console=sdk4.types.Console(
@@ -1697,7 +1697,7 @@ def test_add_serial_console_vm2(engine_api):
 def test_add_instance_type(engine_api):
     engine = engine_api.system_service()
     instance_types_service = engine.instance_types_service()
-    with test_utils.TestEvent(engine, 29):
+    with engine_utils.wait_for_event(engine, 29):
         assert instance_types_service.add(
             sdk4.types.InstanceType(
                 name='myinstancetype',
@@ -1761,7 +1761,7 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
 
     engine = engine_api.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
-    with test_utils.TestEvent(engine, 97):
+    with engine_utils.wait_for_event(engine, 97):
         disk_attachments_service.add(sdk4.types.DiskAttachment(
             disk=dlun_params,
             interface=sdk4.types.DiskInterface.VIRTIO_SCSI))

@@ -62,7 +62,7 @@ lago_init() {
     egrep -sh '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt} ${node_image/.qcow2/-pkglist.txt}
 
     # generate initialization script with an empty repo and any other additional custom repos to upgrade to
-    local add_repo=0
+    local add_repo=0 repo_prefix="extra-src-"
     cat << EOT > add_plain_repos.sh
 #!/bin/bash # generated file
 dnf config-manager --disable \*
@@ -71,11 +71,12 @@ echo '<repomd> <data type="primary"> <location href="repodata/primary.xml"/> </d
 echo '<metadata packages="0"/>' > /tmp/dummy/repodata/primary.xml
 echo -e "[dummy]\nname=dummy\nbaseurl=/tmp/dummy" > /etc/yum.repos.d/dummy.repo
 EOT
+    [[ "$2" = "-n" ]] && { shift; repo_prefix="extra-unchecked-src-"; }
     if [[ "$2" = "-s" ]]; then # inject additional repos
         echo "touch /etc/yum.repos.d/lagofy.repo" >> add_plain_repos.sh
         while [[ -n "$3" ]]; do
             shift; let add_repo++; echo "Add repo $add_repo: $2"
-            echo 'echo -e "[extra-src-'${add_repo}']\nname=extra-src-'${add_repo}'\nbaseurl='${2}'\ngpgcheck=0\nmodule_hotfixes=1\nsslverify=0\n" >> /etc/yum.repos.d/lagofy.repo' >> add_plain_repos.sh
+            echo 'echo -e "['${repo_prefix}${add_repo}']\nname='${repo_prefix}${add_repo}'\nbaseurl='${2}'\ngpgcheck=0\nmodule_hotfixes=1\nsslverify=0\n" >> /etc/yum.repos.d/lagofy.repo' >> add_plain_repos.sh
         done
         echo "dnf upgrade --nogpgcheck -y -x ovirt-release-master" >> add_plain_repos.sh
     fi
@@ -165,13 +166,13 @@ check_dependencies || return $?
 
 echo "you can run the following:
 
-lago_init <base_qcow_file> [-s additional_repo ...]
+lago_init <base_qcow_file> [-n] [-s additional_repo ...]
     to initialize the workspace with qcow-host and qcow-engine preinstalled images, and launch lago VMs (with  deployment scripts from LagoInitPlain file)
-    add extra repos with -s url1 url2 ...
+    add extra repos with -s url1 url2 ..., use -n if you do not want to check whether those repos were actually used
 lago status | stop | shell | console ...
     show environment status, shut down VMs, log into a running VM, etc
 run_tc <full path to test case file> [test function]
-    run single test case file, optionally only a single test case (e.g. \`pwd\`/basic-suite-master/test-scenarios/002_bootstrap.py test_add_role)
+    run single test case file, optionally only a single test case (e.g. \`pwd\`/basic-suite-master/test-scenarios/test_002_bootstrap.py test_add_role)
 run_since <full path to test case file> <test function>
     resume running of test case file after the test function (excluded)
 run_tests

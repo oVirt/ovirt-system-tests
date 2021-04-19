@@ -79,7 +79,7 @@ def test_deactivate_storage_domain(engine_api):
         _deactivate_with_running_ovf_update_task)
 
     # Wait for the storage deactivation to be finished.
-    # TODO Fix the code on engine, so the status will be changed once the operation finished.
+    # TODO Fix the code on engine, so the status will be changed once the operation finished (BZ 1949101).
     assertions.assert_true_within_short(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )

@@ -287,7 +287,7 @@ def test_list_glance_images(engine_api):
     )
 
     try:
-        with test_utils.TestEvent(system_service, 998):
+        with engine_utils.wait_for_event(system_service, 998):
             all_images = glance_domain_service.images_service().list()
         if not len(all_images):
             raise RuntimeError('No GLANCE images available')

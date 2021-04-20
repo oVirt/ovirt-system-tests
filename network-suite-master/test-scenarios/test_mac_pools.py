@@ -255,29 +255,30 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
 def test_move_mac_to_new_vm(
         system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
-
+    mac_addr_1 = '00:1a:4a:16:01:81'
+    mac_addr_2 = '00:1a:4a:16:01:82'
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vm_0.create(vm_name=VM0,
                     cluster=default_cluster,
                     template=cirros_template)
 
         vnic_0 = vm_0.create_vnic(NIC_NAME_1,
-                                  ovirtmgmt_vnic_profile, MAC_ADDR_1)
+                                  ovirtmgmt_vnic_profile, mac_addr_1)
         vm_0.wait_for_down_status()
 
         vm_0.run()
         vm_0.wait_for_up_status()
 
-        vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
+        vnic_0.hot_replace_mac_addr(mac_addr_2)
 
         vm_1.create(vm_name=VM1,
                     cluster=default_cluster,
                     template=cirros_template)
 
-        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, mac_addr_1)
 
         vnic_1 = vm_1.get_vnic(NIC_NAME_1)
-        assert vnic_1.mac_address == MAC_ADDR_1
+        assert vnic_1.mac_address == mac_addr_1
 
 
 @suite.skip_suites_below('4.4')

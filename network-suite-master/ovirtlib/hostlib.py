@@ -1,5 +1,5 @@
 
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -140,6 +140,13 @@ class Host(SDKRootEntity):
         )
         self._create_sdk_entity(sdk_type)
         self._root_password = root_password
+
+    def update(self, **kwargs):
+        syncutil.sync(
+            exec_func=super(Host, self).update,
+            exec_func_args=kwargs,
+            error_criteria=Host._is_update_error_non_transient
+        )
 
     def activate(self):
         syncutil.sync(
@@ -423,6 +430,13 @@ class Host(SDKRootEntity):
 
     def _get_existing_attachments(self):
         return list(self.service.network_attachments_service().list())
+
+    @staticmethod
+    def _is_update_error_non_transient(error_):
+        transient_errors = [
+            'Cannot edit Host. Related operation is currently in progress'
+        ]
+        return not Host._is_error_transient(error_, transient_errors)
 
     @staticmethod
     def _is_deactivate_error_non_transient(error_):

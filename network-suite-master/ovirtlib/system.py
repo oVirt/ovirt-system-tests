@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,6 +79,10 @@ class SDKSystemRoot(object):
     @property
     def networks_service(self):
         return self._system_service.networks_service()
+
+    @property
+    def jobs_service(self):
+        return self._system_service.jobs_service()
 
     def connect(self, url, username, password, ca_file=None, insecure=True):
         conn = Connection(url=url, username=username,

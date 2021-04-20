@@ -64,7 +64,7 @@ lago_init() {
     # generate initialization script with an empty repo and any other additional custom repos to upgrade to
     local add_repo=0 repo_prefix="extra-src-"
     cat << EOT > add_plain_repos.sh
-#!/bin/bash # generated file
+#!/bin/bash
 dnf config-manager --disable \*
 mkdir -p /tmp/dummy/repodata
 echo '<repomd> <data type="primary"> <location href="repodata/primary.xml"/> </data> </repomd>' > /tmp/dummy/repodata/repomd.xml

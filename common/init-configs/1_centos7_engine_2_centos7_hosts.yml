@@ -38,7 +38,7 @@ domains:
       ovirt-engine-password: 123
       deploy-scripts:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
-        - add_plain_repos.sh
+        - $OST_REPO_ROOT/add_plain_repos.sh
         {%- else %}
         - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
@@ -94,7 +94,7 @@ domains:
     metadata:
       deploy-scripts:
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
-        - add_plain_repos.sh
+        - $OST_REPO_ROOT/add_plain_repos.sh
         {%- else %}
         - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
         {%- endif %}

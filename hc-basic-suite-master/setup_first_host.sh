@@ -1,8 +1,22 @@
 #!/usr/bin/env bash -ex
 
 DIST=$(uname -r | sed -r  's/^.*\.([^\.]+)\.[^\.]+$/\1/')
+HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
 
-yum install -y --nogpgcheck ovirt-engine-appliance
+# This is needed in case we're using prebuilt ost-images.
+# In this scenario ssh keys are baked in to the qcows (so lago
+# doesn't inject its own ssh keys), but HE VM is built from scratch.
+copy_ssh_key() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/copy_ssh_key.yml
+---
+- name: Copy ssh key for root to HE VM
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', '/root/.ssh/authorized_keys') }}"
+EOF
+
+}
+
 
 echo "DIST = $DIST"
 if [[ "$DIST" =~ "el8" ]]; then
@@ -25,4 +39,4 @@ mount /dev/${DISK_DEV} /var/tmp
 chmod 1777 /var/tmp
 echo -e "/dev/${DISK_DEV}\t/var/tmp\t\t\txfs\tdefaults\t0 0" >> /etc/fstab
 
-
+copy_ssh_key

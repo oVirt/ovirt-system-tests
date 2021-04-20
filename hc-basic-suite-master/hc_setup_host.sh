@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+multipath -F
+
 DIST=$(uname -r | sed -r  's/^.*\.([^\.]+)\.[^\.]+$/\1/')
 
 if [[ "$DIST" =~ "el8" ]]; then

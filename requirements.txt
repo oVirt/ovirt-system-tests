@@ -1,5 +1,4 @@
 # PIP requirements for OST
-nose
 -e ost_utils
 pylint==2.7.2
 pytest==6.2.2

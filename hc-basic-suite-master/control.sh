@@ -145,13 +145,9 @@ run_suite () {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
-    env_repo_setup
-    if [[ -e "$SUITE/reposync-config-sdk4.repo" ]]; then
-        install_local_rpms_without_reposync
-    else
-        install_local_rpms
-    fi
+    env_add_extra_repos
     env_start
+    env_dump_ansible_hosts
     env_copy_config_file "host"
     env_copy_repo_file "host"
     env_status
@@ -164,16 +160,27 @@ run_suite () {
         return 1
     fi
 
-    declare test_scenarios=($(ls "$SUITE"/test-scenarios/*.py | sort))
+    "${PYTHON}" -m pip install --user "pytest==6.2.2"
+
+    export PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}"
+
+    declare test_scenarios=($(ls "$SUITE"/test-scenarios/test*.py | sort))
     declare failed=false
 
     for scenario in "${test_scenarios[@]}"; do
         echo "Running test scenario ${scenario##*/}"
-        env_run_test "$scenario" || failed=true
+        env_run_pytest "$scenario" || failed=true
         env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
         if $failed; then
             echo "@@@@ ERROR: Failed running $scenario"
             return 1
         fi
     done
+
+
+    if $failed; then
+        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        return 1
+    fi
+
 }

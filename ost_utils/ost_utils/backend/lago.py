@@ -21,6 +21,7 @@
 import json
 import os
 import tempfile
+import threading
 
 import yaml
 
@@ -34,6 +35,7 @@ class LagoBackend(base.BaseBackend):
     def __init__(self, prefix_path):
         self._prefix_path = prefix_path
         self._ansible_inventory = None
+        self._lock = threading.Lock()
 
     def iface_mapping(self):
         status = self._status()
@@ -49,15 +51,16 @@ class LagoBackend(base.BaseBackend):
         return mapping
 
     def ansible_inventory(self):
-        if self._ansible_inventory is None:
-            contents = shell.shell(["lago", "ansible_hosts"],
-                                   bytes_output=True,
-                                   cwd=self._prefix_path)
-            inventory = tempfile.NamedTemporaryFile()
-            inventory.write(contents)
-            inventory.flush()
-            os.fsync(inventory.fileno())
-            self._ansible_inventory = inventory
+        with self._lock:
+            if self._ansible_inventory is None:
+                contents = shell.shell(["lago", "ansible_hosts"],
+                                       bytes_output=True,
+                                       cwd=self._prefix_path)
+                inventory = tempfile.NamedTemporaryFile()
+                inventory.write(contents)
+                inventory.flush()
+                os.fsync(inventory.fileno())
+                self._ansible_inventory = inventory
 
         return self._ansible_inventory.name
 

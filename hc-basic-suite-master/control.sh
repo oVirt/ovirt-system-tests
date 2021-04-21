@@ -162,25 +162,14 @@ run_suite () {
 
     "${PYTHON}" -m pip install --user "pytest==6.2.2"
 
-    export PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}"
-
-    declare test_scenarios=($(ls "$SUITE"/test-scenarios/test*.py | sort))
+    declare test_scenarios="${SUITE}/test-scenarios"
     declare failed=false
 
-    for scenario in "${test_scenarios[@]}"; do
-        echo "Running test scenario ${scenario##*/}"
-        env_run_pytest "$scenario" || failed=true
-        env_collect "$PWD/test_logs/${SUITE##*/}/post-${scenario##*/}"
-        if $failed; then
-            echo "@@@@ ERROR: Failed running $scenario"
-            return 1
-        fi
-    done
+    env_run_pytest_bulk "$test_scenarios" || failed=true
 
-
+    env_collect "$curdir/test_logs/${suite##*/}"
     if $failed; then
-        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        echo "@@@@ ERROR: Failed running ${suite}"
         return 1
     fi
-
 }

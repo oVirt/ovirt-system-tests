@@ -20,7 +20,7 @@ run_suite () {
     "${PYTHON}" -m pip install --user -I selenium || echo "ERROR: pip failed, webdriver will fail to connect"
     "${PYTHON}" -m pip install --user "pytest==6.2.2"
 
-    env_run_pytest_bulk ${test_scenarios[@]} || failed=true
+    env_run_pytest_bulk "$test_scenarios" || failed=true
 
     if $failed; then
         echo "@@@@ ERROR: Failed running ${SUITE_NAME}"

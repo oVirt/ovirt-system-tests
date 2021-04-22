@@ -37,7 +37,7 @@ run_suite(){
 
     declare test_scenarios="${SUITE}/test-scenarios"
 
-    env_run_pytest_bulk ${test_scenarios[@]} || failed=true
+    env_run_pytest_bulk "$test_scenarios" || failed=true
     env_collect "$curdir/test_logs/${suite##*/}"
     if $failed; then
         echo "@@@@ ERROR: Failed running ${suite}"

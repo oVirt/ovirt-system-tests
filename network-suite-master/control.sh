@@ -15,11 +15,6 @@ setup_env() {
     env_init \
         "$1" \
         "$SUITE/LagoInitFile"
-    if [[ -e "$SUITE/reposync-config-sdk4.repo" ]]; then
-        install_local_rpms_without_reposync
-    else
-        install_local_rpms
-    fi
 }
 
 start_env() {
@@ -27,8 +22,6 @@ start_env() {
     env_dump_ansible_hosts
     env_wait_for_ssh
     env_add_extra_repos
-    env_copy_repo_file
-    env_copy_config_file
     env_status
     mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
 }

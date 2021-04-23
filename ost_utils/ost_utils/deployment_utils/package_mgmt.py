@@ -19,6 +19,8 @@
 #
 
 import logging
+import os.path
+import tempfile
 
 from collections import namedtuple
 
@@ -28,7 +30,45 @@ from ost_utils.ansible import module_mappers
 LOGGER = logging.getLogger(__name__)
 REPO_NAME = 'extra-src-'
 
+DUMMY_REPO_FILE = '''"
+[dummy]
+name=dummy
+baseurl={}
+"'''.replace('\n', '\\n')
+
+DUMMY_REPOMD_XML = '''"
+<repomd>
+    <data type=\\"primary\\">
+        <location href=\\"repodata/primary.xml\\"/>
+    </data>
+</repomd>
+"'''.replace('\n', '\\n')
+
+DUMMY_PRIMARY_XML = '"<metadata packages="0"/>"'
+
 Package = namedtuple('Package', ['name', 'version', 'repo'])
+
+
+def add_custom_repos(ansible_vm, repo_urls):
+    for i, repo_url in enumerate(repo_urls):
+        _add_custom_repo(ansible_vm, f"{REPO_NAME}{i + 1}", repo_url)
+
+
+def disable_all_repos(ansible_vm):
+    ansible_vm.shell('dnf config-manager --disable \'*\'')
+
+
+def add_dummy_repo(ansible_vm):
+    with tempfile.NamedTemporaryFile() as repo_dir:
+        repodata_path = os.path.join(repo_dir.name, 'repodata')
+        ansible_vm.file(path=repodata_path, mode='0777', state='directory',
+                        recurse=True)
+        ansible_vm.copy(content=DUMMY_PRIMARY_XML,
+                        dest=os.path.join(repodata_path, 'primary.xml'))
+        ansible_vm.copy(content=DUMMY_REPOMD_XML,
+                        dest=os.path.join(repodata_path, 'repomd.xml'))
+        ansible_vm.copy(content=DUMMY_REPO_FILE.format(repo_dir.name),
+                        dest='/etc/yum.repos.d/dummy.repo')
 
 
 def check_installed_packages(hostnames):
@@ -42,6 +82,15 @@ def check_installed_packages(hostnames):
            _check_if_no_packages_used(pckgs_dict) for pckgs_dict in
            vms_pckgs_dict_list):
         raise RuntimeError('None of user custom repos has been used')
+
+
+def _add_custom_repo(ansible_vm, name, url):
+    LOGGER.info(f"Adding repository to VM: {name} -> {url}")
+    ansible_vm.yum_repository(name=name, description=name, baseurl=url,
+                              gpgcheck=False, sslverify=False)
+    # 'module_hotfixes' option is not available with 'yum_repository' module
+    ansible_vm.ini_file(path=f"/etc/yum.repos.d/{name}.repo", section=name,
+                        option="module_hotfixes", value=1)
 
 
 def _get_custom_repos_packages(ansible_vm):

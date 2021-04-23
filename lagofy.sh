@@ -121,6 +121,8 @@ run_tc() {
 
 run_tests() {
     run_linters
+    echo "Wait for ssh on the VMs"
+    ansible -o -i $PREFIX/hosts -m wait_for_connection -a "timeout=120" -u "root" all
     TC= _run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
     return 0

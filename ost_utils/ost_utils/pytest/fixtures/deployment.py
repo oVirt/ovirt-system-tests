@@ -37,6 +37,9 @@ def deploy(ansible_all, all_hostnames, deploy_scripts, working_dir, request):
         LOGGER.info("Environment already deployed")
         return
 
+    LOGGER.info("Waiting for SSH on the VMs")
+    ansible_all.wait_for_connection(timeout=120)
+
     # disable all repos
     package_mgmt.disable_all_repos(ansible_all)
 

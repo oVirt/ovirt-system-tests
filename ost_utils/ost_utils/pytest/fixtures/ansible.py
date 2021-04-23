@@ -30,6 +30,11 @@ from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 
 
 @pytest.fixture(scope="session")
+def ansible_all():
+    return module_mappers.all()
+
+
+@pytest.fixture(scope="session")
 def ansible_engine():
     return module_mappers.engine()
 

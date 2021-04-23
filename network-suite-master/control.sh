@@ -21,7 +21,6 @@ start_env() {
     env_start
     env_dump_ansible_hosts
     env_wait_for_ssh
-    env_add_extra_repos
     env_status
     mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
 }
@@ -30,12 +29,18 @@ run_tests() {
     local artifacts_path="${OST_REPO_ROOT}/exported-artifacts"
     local junit_xml_path="${artifacts_path}/pytest.junit.xml"
 
+    CUSTOM_REPOS_ARGS=()
+    for custom_repo in ${EXTRA_SOURCES[@]}; do
+        CUSTOM_REPOS_ARGS+=("--custom-repo=${custom_repo}")
+    done
+
     "${PYTHON}" -B -m pytest \
         -s \
         -v \
         --durations=0 \
         --log-level=INFO \
         --junit-xml="$junit_xml_path" \
+        ${CUSTOM_REPOS_ARGS[@]} \
         "${SUITE}/test-scenarios"
 }
 

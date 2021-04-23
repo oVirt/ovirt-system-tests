@@ -21,6 +21,11 @@
 import pytest
 
 
+def pytest_addoption(parser):
+    parser.addoption('--custom-repo', action='append')
+    parser.addoption('--skip-custom-repos-check', action='store_true')
+
+
 def pytest_collection_modifyitems(session, config, items):
 
     def get_item_module(item):

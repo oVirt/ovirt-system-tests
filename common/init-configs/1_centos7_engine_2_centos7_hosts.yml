@@ -37,11 +37,6 @@ domains:
     metadata:
       ovirt-engine-password: 123
       deploy-scripts:
-        {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
-        - $OST_REPO_ROOT/add_plain_repos.sh
-        {%- else %}
-        - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
-        {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified_el8.sh
@@ -93,11 +88,6 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
-        - $OST_REPO_ROOT/add_plain_repos.sh
-        {%- else %}
-        - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
-        {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
     artifacts:

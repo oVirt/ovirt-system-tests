@@ -61,30 +61,19 @@ lago_init() {
     echo " containing"
     egrep -sh '(^ovirt-engine-4|^vdsm-4).*' ${engine_image/.qcow2/-pkglist-diff.txt} ${host_image/.qcow2/-pkglist-diff.txt} ${node_image/.qcow2/-pkglist.txt}
 
-    # generate initialization script with an empty repo and any other additional custom repos to upgrade to
-    local add_repo=0 repo_prefix="extra-src-"
-    cat << EOT > add_plain_repos.sh
-#!/bin/bash
-dnf config-manager --disable \*
-mkdir -p /tmp/dummy/repodata
-echo '<repomd> <data type="primary"> <location href="repodata/primary.xml"/> </data> </repomd>' > /tmp/dummy/repodata/repomd.xml
-echo '<metadata packages="0"/>' > /tmp/dummy/repodata/primary.xml
-echo -e "[dummy]\nname=dummy\nbaseurl=/tmp/dummy" > /etc/yum.repos.d/dummy.repo
-EOT
-    [[ "$2" = "-n" ]] && { shift; repo_prefix="extra-unchecked-src-"; }
+    # set pytest arguments for using custom repositories
+    CUSTOM_REPOS_ARGS=()
+    [[ "$2" = "-n" ]] && { shift; CUSTOM_REPOS_ARGS+=('--skip-custom-repos-check'); }
     if [[ "$2" = "-s" ]]; then # inject additional repos
-        echo "touch /etc/yum.repos.d/lagofy.repo" >> add_plain_repos.sh
         while [[ -n "$3" ]]; do
-            shift; let add_repo++; echo "Add repo $add_repo: $2"
-            echo 'echo -e "['${repo_prefix}${add_repo}']\nname='${repo_prefix}${add_repo}'\nbaseurl='${2}'\ngpgcheck=0\nmodule_hotfixes=1\nsslverify=0\n" >> /etc/yum.repos.d/lagofy.repo' >> add_plain_repos.sh
+            shift; CUSTOM_REPOS_ARGS+=("--custom-repo=$2")
         done
-        echo "dnf upgrade --nogpgcheck -y -x ovirt-release-master" >> add_plain_repos.sh
     fi
 
     lago_cleanup
 
     # final lago init file
-    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
+    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
 
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"
 
@@ -108,6 +97,7 @@ _run_tc () {
         --junit-xml="${junitxml_file}" \
         -o junit_family=xunit2 \
         --log-file="${OST_REPO_ROOT}/exported-artifacts/pytest.log" \
+        ${CUSTOM_REPOS_ARGS[@]} \
         ${testcase[@]} || res=$?
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
     return "$res"
@@ -162,6 +152,7 @@ export PREFIX=${OST_REPO_ROOT}/deployment-${SUITE_NAME}
 export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
+export CUSTOM_REPOS_ARGS=()
 lago() { /usr/bin/lago --workdir "$PREFIX" "$@"; }
 
 check_dependencies || return $?

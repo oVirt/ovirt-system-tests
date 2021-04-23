@@ -23,6 +23,7 @@ import pytest
 
 from ost_utils.pytest import pytest_collection_modifyitems
 
+from ost_utils.pytest.fixtures.ansible import ansible_all
 from ost_utils.pytest.fixtures.ansible import ansible_by_hostname
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures.ansible import ansible_collect_logs

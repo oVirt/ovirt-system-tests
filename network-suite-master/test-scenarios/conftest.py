@@ -60,6 +60,7 @@ from fixtures.data_center import default_data_center
 from fixtures.system import system
 
 # Import OST utils fixtures
+from ost_utils.pytest.fixtures.ansible import ansible_all
 from ost_utils.pytest.fixtures.ansible import ansible_by_hostname
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.ansible import ansible_host1

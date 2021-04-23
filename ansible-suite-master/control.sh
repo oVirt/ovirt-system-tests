@@ -11,7 +11,6 @@ run_suite () {
     env_start
     env_dump_ansible_hosts
     env_wait_for_ssh
-    env_add_extra_repos
     env_status
     cd "$OST_REPO_ROOT"
     declare failed=false

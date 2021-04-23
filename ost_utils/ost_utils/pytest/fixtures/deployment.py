@@ -32,16 +32,32 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def deploy(all_hostnames, deploy_scripts, working_dir):
+def deploy(ansible_all, all_hostnames, deploy_scripts, working_dir, request):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
         return
+
+    # disable all repos
+    package_mgmt.disable_all_repos(ansible_all)
+
+    # dnf is grumpy when it has no repos to work with
+    package_mgmt.add_dummy_repo(ansible_all)
+
+    # add custom repos
+    custom_repos = request.config.getoption('--custom-repo')
+    if custom_repos is not None:
+        package_mgmt.add_custom_repos(ansible_all, custom_repos)
+        ansible_all.shell(
+            'dnf upgrade --nogpgcheck -y -x ovirt-release-master'
+        )
+        # check if packages from custom repos were used
+        if not request.config.getoption('--skip-custom-repos-check'):
+            package_mgmt.check_installed_packages(all_hostnames)
 
     # run deployment scripts
     runs = [functools.partial(run_scripts, hostname, scripts)
             for hostname, scripts in deploy_scripts.items()]
     utils.invoke_different_funcs_in_parallel(*runs)
-    package_mgmt.check_installed_packages(all_hostnames)
 
     # mark env as deployed
     deployment_utils.mark_as_deployed(working_dir)

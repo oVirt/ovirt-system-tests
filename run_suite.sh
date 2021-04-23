@@ -336,11 +336,17 @@ env_run_pytest_bulk () {
     local junitxml_file="$PREFIX/$SUITE_NAME.junit.xml"
     get_pytest_log_level
 
+    CUSTOM_REPOS_ARGS=()
+    for custom_repo in ${EXTRA_SOURCES[@]}; do
+        CUSTOM_REPOS_ARGS+=("--custom-repo=${custom_repo}")
+    done
+
     "${PYTHON}" -B -m pytest \
         -s \
         -v \
         -x \
         --junit-xml="${junitxml_file}" \
+        ${CUSTOM_REPOS_ARGS[@]} \
         "$@" || res=$?
 
     [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}

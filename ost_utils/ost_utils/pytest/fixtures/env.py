@@ -26,3 +26,8 @@ import pytest
 @pytest.fixture(scope='session')
 def suite_dir():
     return os.environ.get('SUITE')
+
+
+@pytest.fixture(scope='session')
+def working_dir():
+    return os.environ.get('PREFIX')

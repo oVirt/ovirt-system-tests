@@ -19,16 +19,29 @@
 #
 
 import functools
+import logging
 import pytest
 
+from ost_utils import deployment_utils
 from ost_utils import utils
 from ost_utils.deployment_utils import package_mgmt
 from ost_utils.deployment_utils.scripts import run_scripts
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 @pytest.fixture(scope="session", autouse=True)
-def deploy(all_hostnames, deploy_scripts):
+def deploy(all_hostnames, deploy_scripts, working_dir):
+    if deployment_utils.is_deployed(working_dir):
+        LOGGER.info("Environment already deployed")
+        return
+
+    # run deployment scripts
     runs = [functools.partial(run_scripts, hostname, scripts)
             for hostname, scripts in deploy_scripts.items()]
     utils.invoke_different_funcs_in_parallel(*runs)
     package_mgmt.check_installed_packages(all_hostnames)
+
+    # mark env as deployed
+    deployment_utils.mark_as_deployed(working_dir)

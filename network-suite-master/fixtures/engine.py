@@ -48,8 +48,7 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_service_up(deploy, engine_full_username, engine_password,
-                            engine_facts):
+def ovirt_engine_setup(deploy, engine_facts):
     ANSWER_FILE_TMP = '/tmp/answer-file'
 
     engine = sshlib.Node(
@@ -64,6 +63,10 @@ def ovirt_engine_service_up(deploy, engine_full_username, engine_password,
     ]
     engine.exec_command(' '.join(command))
 
+
+@pytest.fixture(scope='session', autouse=True)
+def ovirt_engine_service_up(ovirt_engine_setup, engine_facts,
+                            engine_full_username, engine_password):
     syncutil.sync(exec_func=_create_engine_connection,
                   exec_func_args=(engine_facts.ipv4_default_address,
                                   engine_full_username,

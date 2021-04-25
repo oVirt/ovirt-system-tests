@@ -37,6 +37,7 @@ from fixtures.host import install_hosts_to_save_time
 
 from fixtures.engine import engine_full_username
 from fixtures.engine import engine_password
+from fixtures.engine import ovirt_engine_setup
 from fixtures.engine import ovirt_engine_service_up
 from fixtures.engine import api
 from fixtures.engine import test_invocation_logger

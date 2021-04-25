@@ -32,37 +32,6 @@ class SshException(Exception):
     pass
 
 
-def exec_command(address, password, command, username=DEFAULT_USER):
-    """
-    Execute a ssh command on a host
-    :param address: address of the endpoint
-    :param password: the password
-    :param command: command to be executed
-    :param username: the username, root if not specified
-    :returns stdout: the standard output of the command
-    :raises exc: Exception: if the command returns a non-zero exit status
-    Example:
-    hostname = sshlib.exec_command('192.168.1.5', 'password', 'hostname')
-    """
-
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.WarningPolicy())
-    client.connect(address, username=username, password=password)
-    try:
-        _, stdout, stderr = client.exec_command(command)
-        status = stdout.channel.recv_exit_status()
-        stdout_message = stdout.read()
-        if status != 0:
-            stderr_message = stderr.read()
-            raise SshException(
-                f'Ssh command "{command}" exited with status code {status}. '
-                f'Stderr: {stderr_message}. Stdout: {stdout_message}. '
-            )
-        return stdout_message
-    finally:
-        client.close()
-
-
 class Node(object):
     """
     A class to collect operations that need to be carried out on a node (host
@@ -70,17 +39,42 @@ class Node(object):
     """
 
     def __init__(self, address, password=ROOT_PASSWORD, username=DEFAULT_USER):
+        """
+        :param address: address of the endpoint
+        :param password: the password
+        :param username: the username, root if not specified
+        """
         self._address = address
         self._username = username
         self._password = password
 
     def exec_command(self, command):
-        return exec_command(
-            address=self._address,
-            password=self._password,
-            command=command,
-            username=self._username
-        )
+        """
+        Execute a ssh command on a host
+        :param command: command to be executed
+        :returns stdout: the standard output of the command
+        :raises exc: Exception: if the command returns a non-zero exit status
+        """
+
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.WarningPolicy())
+        client.connect(self._address, username=self._username,
+                       password=self._password)
+        try:
+            _, stdout, stderr = client.exec_command(command)
+            status = stdout.channel.recv_exit_status()
+            stdout_message = stdout.read()
+            if status != 0:
+                stderr_message = stderr.read()
+                raise SshException(
+                    f'Ssh command "{command}" exited with '
+                    f'status code {status}. '
+                    f'Stderr: {stderr_message}. '
+                    f'Stdout: {stdout_message}. '
+                )
+            return stdout_message
+        finally:
+            client.close()
 
     def set_mtu(self, iface_name, mtu_value):
         self.exec_command('ip link set {iface} mtu {mtu}'

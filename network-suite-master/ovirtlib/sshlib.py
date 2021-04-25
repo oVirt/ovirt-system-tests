@@ -16,7 +16,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 import logging
-
 import paramiko
 
 from ovirtlib import syncutil
@@ -47,6 +46,8 @@ class Node(object):
         self._address = address
         self._username = username
         self._password = password
+        self._client = paramiko.SSHClient()
+        self._client.set_missing_host_key_policy(paramiko.WarningPolicy())
 
     def exec_command(self, command):
         """
@@ -55,13 +56,9 @@ class Node(object):
         :returns stdout: the standard output of the command
         :raises exc: Exception: if the command returns a non-zero exit status
         """
-
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.WarningPolicy())
-        client.connect(self._address, username=self._username,
-                       password=self._password)
+        self._connect()
         try:
-            _, stdout, stderr = client.exec_command(command)
+            _, stdout, stderr = self._client.exec_command(command)
             status = stdout.channel.recv_exit_status()
             stdout_message = stdout.read()
             if status != 0:
@@ -74,7 +71,23 @@ class Node(object):
                 )
             return stdout_message
         finally:
-            client.close()
+            self._close()
+
+    def sftp_put(self, local_path, remote_path):
+        self._connect()
+        sftp = paramiko.SFTPClient.from_transport(self._client.get_transport())
+        try:
+            sftp.put(local_path, remote_path)
+        finally:
+            sftp.close()
+            self._close()
+
+    def _connect(self):
+        self._client.connect(self._address, username=self._username,
+                             password=self._password)
+
+    def _close(self):
+        self._client.close()
 
     def set_mtu(self, iface_name, mtu_value):
         self.exec_command('ip link set {iface} mtu {mtu}'

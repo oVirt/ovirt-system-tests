@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import os
 import pytest
 
 from ovirtlib.ansiblelib import Playbook
-from ovirtlib import sshlib as ssh
+from ovirtlib import sshlib
 from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 from testlib import shade_hack
@@ -164,12 +164,14 @@ def _create_namespaces(connections):
     namespaces = list()
     try:
         for host, port, _ in connections:
-            _exec(host, _add_namespace_command(port.name))
+            sshlib.Node(host.address, host.root_password).exec_command(
+                ' && '.join(_add_namespace_command(port.name)))
             namespaces.append((host, port.name))
         yield
     finally:
         for host, name in namespaces:
-            _exec(host, _delete_namespace_command(name))
+            sshlib.Node(host.address, host.root_password).exec_command(
+                ' && '.join(_delete_namespace_command(name)))
 
 
 @contextmanager
@@ -177,20 +179,21 @@ def _create_ovs_ports(connections):
     ports = list()
     try:
         for host, port, _ in connections:
-            _exec(host, _add_ovs_port_command(port.name))
+            sshlib.Node(host.address, host.root_password).exec_command(
+                ' && '.join(_add_ovs_port_command(port.name)))
             ports.append((host, port.name))
         for host, port, subnet in connections:
-            _exec(host, _configure_ovs_port_command(port, subnet) +
-                  _bind_port_to_logical_network(port))
+            sshlib.Node(host.address, host.root_password).exec_command(
+                ' && '.join(
+                    _configure_ovs_port_command(port, subnet) +
+                    _bind_port_to_logical_network(port)
+                )
+            )
         yield
     finally:
         for host, name in ports:
-            _exec(host, _delete_ovs_port_command(name))
-
-
-def _exec(host, commands):
-    ssh.exec_command(host.address, host.root_password,
-                     ' && '.join(commands))
+            sshlib.Node(host.address, host.root_password).exec_command(
+                ' && '.join(_delete_ovs_port_command(name)))
 
 
 def _add_namespace_command(name):

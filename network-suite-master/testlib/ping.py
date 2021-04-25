@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +40,6 @@ def ssh_ping(source, password, destination, data_size=56, netns=None):
     cmd = netns_prefix + 'ping -4 -c 1 -M do -s {} {}'.format(
         data_size, destination)
     try:
-        sshlib.exec_command(source, password, cmd)
+        sshlib.Node(source, password).exec_command(cmd)
     except SshException as err:
         raise PingFailed(err)

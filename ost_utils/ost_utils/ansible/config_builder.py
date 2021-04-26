@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,4 +55,6 @@ class ConfigBuilder:
         return config
 
     def __str__(self):
-        return f'ConfigBuilder<inventory={self.inventory}, host_pattern={self.host_pattern}, module={self.module}, module_args={self.module_args}>'
+        return (f'ConfigBuilder<inventory={self.inventory}, '
+                f'host_pattern={self.host_pattern}, module={self.module}, '
+                f'module_args={self.module_args}>')

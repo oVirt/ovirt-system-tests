@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ which will raise 'AnsibleExecutionError' on failure.
 
 """
 
+# flake8: noqa
 from ost_utils.ansible.facts import FactNotFound
 from ost_utils.ansible.logs_collector import LogsCollector
 from ost_utils.ansible.module_mappers import AnsibleExecutionError

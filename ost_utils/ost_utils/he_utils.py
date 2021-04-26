@@ -30,7 +30,8 @@ def he_status(ansible_host):
 
     def get_value():
         nonlocal ret
-        ansible_res = ansible_host.shell('hosted-engine --vm-status --json')['stdout']
+        ansible_res = ansible_host.shell(
+            'hosted-engine --vm-status --json')['stdout']
         try:
             status = json.loads(ansible_res)
         except ValueError:
@@ -101,8 +102,9 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
     """
     Updates the global maintenance mode and tests if the value was stored.
 
-    Sometimes there is a race condition where the command that modifies the global maintenance flag is ignored.
-    That is why the maintenance mode is updated repeatedly in a loop until it succeeds.
+    Sometimes there is a race condition where the command that modifies the
+    global maintenance flag is ignored. That is why the maintenance mode is
+    updated repeatedly in a loop until it succeeds.
 
     'mode' must be a bool value:
     True - set maintenance mode to global

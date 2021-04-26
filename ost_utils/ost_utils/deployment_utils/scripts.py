@@ -19,7 +19,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import functools
 import logging
 
 from os import path

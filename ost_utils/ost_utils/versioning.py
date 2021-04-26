@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ def require_version(major, minor):
 
 
 def guest_os_image_name():
-	return 'CirrOS 0.5.1 Custom for x86_64'
+    return 'CirrOS 0.5.1 Custom for x86_64'
 
 
 def transformed_guest_os_image_name():

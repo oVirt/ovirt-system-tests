@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -135,7 +135,8 @@ class ModuleArgsMapper:
             " ".join(args),
             " ".join("{}={}".format(k, v) for k, v in kwargs.items())
         )).strip()
-        LOGGER.debug(f'ModuleArgsMapper: __call__: module_args={self.config_builder.module_args}')
+        LOGGER.debug('ModuleArgsMapper: __call__: '
+                     f'module_args={self.config_builder.module_args}')
         return _run_ansible_runner(self.config_builder)
 
     def __str__(self):

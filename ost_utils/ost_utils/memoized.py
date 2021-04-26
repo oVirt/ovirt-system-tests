@@ -51,5 +51,3 @@ class memoized:
     def __get__(self, obj, objtype):
         '''Support instance methods.'''
         return functools.partial(self.__call__, obj)
-
-

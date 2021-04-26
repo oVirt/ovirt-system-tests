@@ -119,7 +119,8 @@ def _get_installed_packages(ansible_vm, repo_name):
     # call 'stty cols' to tell it that the terminal is wide.
     # A better solution, one day, might be to make dnf support outputting
     # such information in JSON, and parse this json if/where needed.
-    ansible_res = ansible_vm.shell(f'stty cols 300; dnf repo-pkgs {repo_name} list installed')
+    ansible_res = ansible_vm.shell(
+        f'stty cols 300; dnf repo-pkgs {repo_name} list installed')
     result = [(line.split()) for line in ansible_res['stdout'].split('\n')]
     _filter_results(result)
     return [

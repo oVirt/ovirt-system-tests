@@ -18,6 +18,7 @@ SSH_TRIES_DEFAULT = 20
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('paramiko.transport').setLevel(logging.WARNING)
 
+
 def ssh(
     ip_addr,
     command,

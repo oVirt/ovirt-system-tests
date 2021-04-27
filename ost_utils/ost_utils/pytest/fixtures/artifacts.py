@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,8 +33,12 @@ def artifacts_dir():
 
 
 @pytest.fixture(scope="session")
-def artifacts(backend):
-    return backend.artifacts()
+def artifacts(backend, all_hostnames, artifact_list):
+    try:
+        artifacts = backend.artifacts()
+    except KeyError:
+        artifacts = {hostname: artifact_list for hostname in all_hostnames}
+    return artifacts
 
 
 @pytest.fixture(scope="session", autouse=True)

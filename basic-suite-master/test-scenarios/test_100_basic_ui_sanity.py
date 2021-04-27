@@ -558,7 +558,7 @@ def test_grafana(ovirt_driver, save_screenshot, save_page_source, engine_usernam
         assert not grafana.is_error_visible()
         save_screenshot('grafana-dashboard-1')
 
-        grafana.open_dashboard('oVirt Trend Dashboards', 'Hosts Resource Usage Dashboard')
+        grafana.open_dashboard('oVirt Inventory Dashboards', 'Hosts Inventory Dashboard')
         assert not grafana.is_error_visible()
 
         save_screenshot('grafana-dashboard-2')

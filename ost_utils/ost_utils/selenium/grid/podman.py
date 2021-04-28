@@ -21,11 +21,14 @@
 import contextlib
 import logging
 
+import ost_utils.network_utils as network_utils
+
 from ost_utils.selenium.grid import CHROME_CONTAINER_IMAGE
 from ost_utils.selenium.grid import FIREFOX_CONTAINER_IMAGE
 from ost_utils.selenium.grid import HUB_CONTAINER_IMAGE
 from ost_utils.selenium.grid import common
 from ost_utils.shell import shell
+from ost_utils.shell import ShellError
 
 
 GRID_STARTUP_RETRIES = 3
@@ -127,14 +130,18 @@ def _grid(engine_fqdn, engine_ip, node_images, hub_image, hub_port):
 
 @contextlib.contextmanager
 def grid(engine_fqdn, engine_ip, node_images=None,
-         hub_image=HUB_CONTAINER_IMAGE, hub_port=HUB_PORT,
-         retries=GRID_STARTUP_RETRIES):
+         hub_image=HUB_CONTAINER_IMAGE, retries=GRID_STARTUP_RETRIES):
     for attempt in range(retries):
+        hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT+100)
+        LOGGER.debug(
+            f"Attempt no {attempt} to run the grid on {hub_port} port"
+        )
         try:
             with _grid(engine_fqdn, engine_ip, node_images, hub_image,
                        hub_port) as url:
+                LOGGER.debug(f"Grid is up: {url}")
                 yield url
-        except common.SeleniumGridError as e:
+        except (common.SeleniumGridError, ShellError):
             if attempt < retries - 1:
                 LOGGER.warning("Grid startup failed, retrying...")
             else:

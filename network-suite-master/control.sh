@@ -37,6 +37,7 @@ run_tests() {
         -s \
         -v \
         --durations=0 \
+        --setup-show \
         --log-level=INFO \
         --junit-xml="$junit_xml_path" \
         ${CUSTOM_REPOS_ARGS[@]} \

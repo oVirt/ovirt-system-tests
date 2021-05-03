@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,3 +43,11 @@ def wait_for_event(engine, event_id, timeout=assertions.LONG_TIMEOUT):
                any(e.code == e_id for e in events.list(from_=last_event)),
                timeout
             )
+
+
+def get_jobs_statuses(engine, correlation_id):
+    # Gets a list of jobs statuses by the specified correlation id.
+    jobs = engine.jobs_service().list(
+        search=f'correlation_id={correlation_id}'
+    )
+    return {job.status for job in jobs}

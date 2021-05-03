@@ -24,6 +24,7 @@ import ovirtsdk4
 import test_utils
 from test_utils.constants import FLOATING_DISK_NAME
 from ost_utils import assertions
+from ost_utils import engine_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.sdk import *
@@ -79,9 +80,9 @@ def test_deactivate_storage_domain(engine_api):
         _deactivate_with_running_ovf_update_task)
 
     # Wait for the storage deactivation to be finished.
-    # TODO Fix the code on engine, so the status will be changed once the operation finished (BZ 1949101).
-    assertions.assert_true_within_short(
-        lambda: test_utils.all_jobs_finished(engine, correlation_id)
+    assertions.assert_equals_within_short(
+        lambda:
+        engine_utils.get_jobs_statuses(engine, correlation_id), {ovirtsdk4.types.JobStatus.FINISHED}
     )
     assertions.assert_true_within_short(
         lambda:

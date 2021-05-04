@@ -7,7 +7,7 @@ prep_suite () {
 install_dependencies() {
     "${PYTHON}" -m pip install --user \
         "pytest==3.5" \
-        "openstacksdk==0.37"
+        "openstacksdk==0.36.4"
     "${PYTHON}" -m pip install --user -e "$OST_REPO_ROOT"/ost_utils
 }
 

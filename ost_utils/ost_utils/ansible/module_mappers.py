@@ -98,14 +98,23 @@ def _find_result(ansible_events):
         key=lambda e: e['created']
     )
 
+    results = {}
+
     for event in reversed(events):
         event_data = event.get('event_data', None)
         if event_data is not None:
             res = event_data.get('res', None)
             if res is not None:
-                return res
+                results[event_data['host']] = res
+            elif len(results) > 0:
+                break
 
-    return None
+    if len(results) == 0:
+        return None
+    elif len(results) == 1:
+        return results[next(iter(results))]
+
+    return results
 
 
 class ModuleArgsMapper:

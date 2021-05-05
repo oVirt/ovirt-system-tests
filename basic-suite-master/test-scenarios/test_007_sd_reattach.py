@@ -26,7 +26,6 @@ from test_utils.constants import FLOATING_DISK_NAME
 from ost_utils import assertions
 from ost_utils import engine_utils
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.sdk import *
 
 # TODO: uncomment once VnicSetup checks are fixed.

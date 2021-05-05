@@ -34,13 +34,11 @@ from ost_utils import ansible
 from ost_utils import assertions
 from ost_utils import engine_utils
 from ost_utils import host_utils
-from ost_utils import shell
+from ost_utils.shell import shell
 from ost_utils import ssh
 from ost_utils import utils
 from ost_utils import versioning
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.virt import *
 from ost_utils.pytest.fixtures.vm import *

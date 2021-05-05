@@ -28,6 +28,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_by_hostname
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.ansible import ansible_engine
+from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.ansible import ansible_host1
 from ost_utils.pytest.fixtures.ansible import ansible_hosts

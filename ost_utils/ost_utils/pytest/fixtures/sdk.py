@@ -21,9 +21,6 @@
 import pytest
 
 
-from ost_utils.pytest.fixtures.engine import *
-
-
 @pytest.fixture(scope="session")
 def system_service(engine_api):
     return engine_api.system_service()

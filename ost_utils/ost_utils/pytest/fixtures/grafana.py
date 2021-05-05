@@ -19,7 +19,6 @@
 #
 
 import pytest
-from ost_utils.pytest.fixtures.engine import engine_fqdn
 
 @pytest.fixture(scope="session")
 def grafana_admin_username():

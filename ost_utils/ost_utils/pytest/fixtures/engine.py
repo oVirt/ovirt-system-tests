@@ -30,8 +30,6 @@ from ost_utils import assertions
 from ost_utils import network_utils
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
-from ost_utils.pytest.fixtures.ansible import ansible_engine
-from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 from ost_utils.pytest.fixtures.network import management_network_name
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.selenium.grid.common import http_proxy_disabled

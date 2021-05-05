@@ -24,8 +24,6 @@ import os
 
 from ost_utils import utils
 from ost_utils.ansible import AnsibleExecutionError
-from ost_utils.pytest.fixtures.ansible import ansible_engine
-from ost_utils.pytest.fixtures.ansible import ansible_hosts
 
 
 def configure_metrics(suite_dir, ansible_engine, ansible_hosts):

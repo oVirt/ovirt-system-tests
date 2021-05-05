@@ -1,8 +1,6 @@
 from pprint import pprint
 from ost_utils import engine_utils
 from ost_utils import general_utils
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest import order_by
 import ovirtsdk4.types as types
 import logging

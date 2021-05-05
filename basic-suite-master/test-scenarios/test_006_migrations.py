@@ -30,8 +30,6 @@ import pytest
 import test_utils
 from test_utils import network_utils_v4, assert_finished_within_long
 from ost_utils import assertions
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.engine import *
 
 
 DC_NAME = 'test-dc'

@@ -1,15 +1,4 @@
 domains:
-  lago-{{ env.suite_name }}-engine:
-    vm-provider: ssh
-    vm-type: default
-    distro: el7
-    nics:
-      - net: lago-{{ env.suite_name }}-net-management
-        ip: 192.168.200.99
-      - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
-    metadata:
-      ovirt-engine-password: 123
-
   lago-{{ env.suite_name }}-storage:
     memory: 750
     vcpu: 1

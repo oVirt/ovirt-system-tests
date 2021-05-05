@@ -24,9 +24,6 @@ import socket
 
 from tempfile import NamedTemporaryFile
 
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.engine import *
-
 
 def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
     answer_file_src = os.path.join(suite_dir, 'engine-answer-file.conf')

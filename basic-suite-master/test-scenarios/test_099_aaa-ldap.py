@@ -26,8 +26,6 @@ import ovirtsdk4.types as types
 import pytest
 
 from ost_utils import engine_utils
-from ost_utils.pytest.fixtures.ansible import ansible_engine
-from ost_utils.pytest.fixtures.engine import *
 
 # AAA
 AAA_LDAP_USER = 'user1'

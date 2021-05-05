@@ -38,7 +38,6 @@ import test_utils
 from ost_utils import assertions
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
-from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.pytest.fixtures.virt import cirros_image_glance_template_name

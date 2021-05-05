@@ -26,9 +26,6 @@ import ost_utils.os_utils as os_utils
 import ost_utils.selenium.grid.docker as docker
 import ost_utils.selenium.grid.podman as podman
 
-from ost_utils.pytest.fixtures.engine import engine_fqdn
-from ost_utils.pytest.fixtures.engine import engine_ip
-
 
 def _has_podman():
     return os.system("podman --version &> /dev/null") == 0

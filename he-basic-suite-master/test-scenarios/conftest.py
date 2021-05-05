@@ -94,3 +94,23 @@ def hostnames_to_reboot(hostnames_to_add):  # pylint: disable=function-redefined
 @pytest.fixture(scope="session")
 def deploy_hosted_engine():  # pylint: disable=function-redefined
     return True
+
+
+@pytest.fixture(scope="session")
+def ansible_engine(ansible_he):  # pylint: disable=function-redefined
+    return ansible_he
+
+
+@pytest.fixture(scope="session")
+def ansible_engine_facts(ansible_he_facts):  # pylint: disable=function-redefined
+    return ansible_he_facts
+
+
+@pytest.fixture(scope="session")
+def engine_ips_for_network(engine_ip): # pylint: disable=function-redefined
+    return lambda _: [engine_ip]
+
+
+@pytest.fixture(scope="session")
+def engine_ip(he_ipv4_address): # pylint: disable=function-redefined
+    return he_ipv4_address

@@ -22,7 +22,6 @@ import ipaddress
 
 import pytest
 
-from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.sdk import *
 
 

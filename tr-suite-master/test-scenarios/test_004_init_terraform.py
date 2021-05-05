@@ -18,46 +18,45 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-from __future__ import absolute_import
-
-import pytest
 
 from os import environ, path
 
-from ost_utils import assertions
-from ost_utils import general_utils
-from ost_utils.pytest import order_by
+from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
-from ost_utils import utils
+from ost_utils.pytest.fixtures.env import suite_dir
 
-import logging
-LOGGER = logging.getLogger(__name__)
-
-def test_terraform(ansible_engine):
-    working_dir='/tmp'
+def test_init_terraform(ansible_engine, suite_dir):
+    working_dir = '/tmp'
+    func = 'func.sh'
+    script = 'test-init-terraform.sh'
     pr = os.environ.get('STD_CI_REFSPEC')
     if pr == None or not pr:
         pr = "master"
 
-    script_file=os.path.join(
-        os.environ.get('SUITE'), 'func.sh'
+    src_script_file=os.path.join(
+        suite_dir, func
+    )
+    dst_script_file=os.path.join(
+        working_dir, func
     )
     ansible_engine.copy(
-        src=script_file,
-        dest=f'{working_dir}/func.sh',
-        mode='0755',
+        src=src_script_file,
+        dest=dst_script_file,
+        mode='0755'
     )
-    script_file=os.path.join(
-        os.environ.get('SUITE'), 'test-init-terraform.sh'
+    src_script_file=os.path.join(
+        suite_dir, script
+    )
+    dst_script_file=os.path.join(
+        working_dir, script
     )
     ansible_engine.copy(
-        src=script_file,
-        dest=f'{working_dir}/test-init-terraform.sh',
-        mode='0755',
+        src=src_script_file,
+        dest=dst_script_file,
+        mode='0755'
     )
     ansible_engine.shell(
-        f'{working_dir}/test-init-terraform.sh '
+        f'{dst_script_file} '
         '-w /tmp '
         f'-t {pr}'
     )
-

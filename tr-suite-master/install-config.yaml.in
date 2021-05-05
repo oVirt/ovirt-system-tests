@@ -7,12 +7,11 @@ compute:
   platform:
     ovirt:
       cpu:
-        cores: 2
+        cores: 1
         sockets: 1
-      memoryMB: 2000
+      memoryMB: 512
       osDisk:
-        # 31 is used to trigger the instance customization (the disk size is 16 Gi)
-        sizeGB: 10
+        sizeGB: 1
       vmType: server
       instanceTypeID:
   replicas: 2
@@ -23,12 +22,11 @@ controlPlane:
   platform:
     ovirt:
       cpu:
-        cores: 2
+        cores: 1
         sockets: 1
-      memoryMB: 2000
+      memoryMB: 512
       osDisk:
-        # 31 is used to trigger the instance customization (the disk size is 16 Gi)
-        sizeGB: 20
+        sizeGB: 1
       vmType: server
       instanceTypeID:
   replicas: 3
@@ -50,7 +48,9 @@ platform:
     ingress_vip: 192.168.211.32
     ovirt_cluster_id: OVIRT_CLUSTER_ID
     ovirt_network_name: OVIRT_NETWORK_NAME
+    vnicProfileID: OVIRT_VNIC_PROFILE_ID
     ovirt_storage_domain_id: OVIRT_STORAGE_DOMAIN_ID
+    affinityGroups: []
 publish: External
 pullSecret: '{"auths":{"example.com":{"auth":"authorization value"}}}'
 sshKey: |

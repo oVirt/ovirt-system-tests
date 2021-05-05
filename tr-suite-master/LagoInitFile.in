@@ -13,7 +13,7 @@ domains:
   ost-{{ env.suite_name }}-engine:
     <<: *vm-common-settings
     vm-type: default
-    memory: 3584
+    memory: 8196
     nics:
       - net: lago-{{ env.suite_name}}-net-management
       - net: lago-{{ env.suite_name}}-net-storage
@@ -36,17 +36,25 @@ domains:
         name: iscsi
         dev: sdc
         format: raw
+      - comment: Additional swap
+        size: 4G
+        type: empty
+        name: swap
+        dev: sdb
+        format: raw
     metadata:
       ovirt-engine-password: 123
       deploy-scripts:
         - common/deploy-scripts/setup_sar_stat.sh
         - common/deploy-scripts/setup_storage.sh
         - common/deploy-scripts/setup_engine.sh
+        - common/deploy-scripts/test-extend-swap.sh
 {%- for i in range(hostCount) %}
   ost-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
     vm-type: default
-    memory: 8096
+    memory: 12292
+    vcpu: 4
     nics:
       - net: lago-{{ env.suite_name }}-net-management
       - net: lago-{{ env.suite_name }}-net-storage
@@ -59,6 +67,7 @@ domains:
         name: root
         dev: vda
         format: qcow2
+
     metadata:
       deploy-scripts:
         - common/deploy-scripts/setup_sar_stat.sh

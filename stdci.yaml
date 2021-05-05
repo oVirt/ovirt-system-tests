@@ -36,6 +36,12 @@ stage:
                     hostdistro: same
         - ansible_suite_master:
             distributions:
+             - el8:
+                 runtime-requirements:
+                   hostdistro: same
+                   support-nesting-level: 2
+        - tr_suite_master:
+            distributions:
               - el8:
                   runtime-requirements:
                     jenkins_master: upstream

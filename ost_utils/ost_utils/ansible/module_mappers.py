@@ -18,11 +18,12 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import logging
+
 import ansible_runner
 
 from ost_utils.ansible import config_builder as cb
 
-import logging
 LOGGER = logging.getLogger(__name__)
 
 

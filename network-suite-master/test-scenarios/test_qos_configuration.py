@@ -17,11 +17,10 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import pytest
-
 import contextlib
 
 from ovirtsdk4 import types
+import pytest
 
 from fixtures.host import ETH2
 

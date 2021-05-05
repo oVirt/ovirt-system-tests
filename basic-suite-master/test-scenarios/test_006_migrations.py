@@ -21,10 +21,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import ipaddress
+import json
 import logging
 
 from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
-import json
 
 import pytest
 from ost_utils import assertions

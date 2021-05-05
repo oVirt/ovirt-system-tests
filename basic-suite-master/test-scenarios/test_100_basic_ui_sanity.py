@@ -20,6 +20,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from datetime import datetime
 import functools
 import logging
 import os
@@ -27,12 +28,13 @@ import shutil
 import subprocess
 import sys
 import time
-import requests
-
-from datetime import datetime
 
 import ovirtsdk4.types as types
 import pytest
+import requests
+
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from ost_utils import assertions
 from ost_utils import test_utils
@@ -54,18 +56,6 @@ from ost_utils.selenium.grid import CHROME_VERSION
 from ost_utils.selenium.grid import FIREFOX_VERSION
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
-
-from selenium import webdriver
-from selenium.common.exceptions import (ElementNotVisibleException,
-                                        NoSuchElementException,
-                                        WebDriverException)
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
 LOGGER = logging.getLogger(__name__)
 

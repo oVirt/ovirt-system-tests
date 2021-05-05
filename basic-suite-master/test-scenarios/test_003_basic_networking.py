@@ -22,12 +22,13 @@ from __future__ import absolute_import
 
 import ipaddress
 
+from ovirtsdk4.types import Bonding, HostNic, Option
+
 from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils.pytest.fixtures.network import bonding_network_name
 from ost_utils.pytest.fixtures.network import management_network_name
-from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
 
 
 # DC/Cluster

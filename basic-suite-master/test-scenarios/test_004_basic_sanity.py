@@ -21,12 +21,16 @@
 from __future__ import absolute_import
 
 import functools
+import logging
 import os
 from os import EX_OK
 import pty
 import re
 import subprocess
 from time import sleep
+import uuid
+
+import ovirtsdk4.types as types
 
 import pytest
 
@@ -47,11 +51,6 @@ from ost_utils.pytest.fixtures.vm import *
 
 from ost_utils.storage_utils import backup
 
-import ovirtsdk4.types as types
-
-import uuid
-
-import logging
 LOGGER = logging.getLogger(__name__)
 
 

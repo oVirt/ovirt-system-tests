@@ -20,6 +20,7 @@
 from __future__ import absolute_import
 
 import functools
+import logging
 import os
 import random
 import ssl
@@ -50,7 +51,6 @@ from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
 
-import logging
 LOGGER = logging.getLogger(__name__)
 
 MB = 2 ** 20

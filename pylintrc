@@ -1,15 +1,71 @@
 [MESSAGES CONTROL]
 
-# TODO: Deal with single line ignores
-# TODO: Change W,R,C to separate disables and deal with them
-disable=W,  # warnings
-        R,  # refactoring
-        C   # conventions
+# TODO: Reformat code so that most of these can be removed eventually
+disable=superfluous-parens,
+        too-many-statements,
+        comparison-with-callable,
+        lost-exception,
+        reimported,
+        keyword-arg-before-vararg,
+        deprecated-method,
+        too-many-public-methods,
+        stop-iteration-return,
+        no-else-raise,
+        attribute-defined-outside-init,
+        protected-access,
+        super-init-not-called,
+        len-as-condition,
+        dangerous-default-value,
+        unnecessary-pass,
+        too-many-lines,
+        consider-using-in,
+        too-many-locals,
+        abstract-method,
+        singleton-comparison,
+        literal-comparison,
+        inconsistent-return-statements,
+        broad-except,
+        logging-not-lazy,
+        redefined-builtin,
+        cell-var-from-loop,
+        logging-format-interpolation,
+        useless-super-delegation,
+        trailing-newlines,
+        raise-missing-from,
+        no-self-use,
+        too-few-public-methods,
+        no-else-return,
+        useless-object-inheritance,
+        duplicate-code,
+        too-many-arguments,
+        logging-fstring-interpolation,
+        super-with-arguments,
+        arguments-differ,
+        wildcard-import,
+        unused-argument,
+        invalid-name,
+        unused-wildcard-import,
+        redefined-outer-name,
+        # Already covered by flake8:
+        unneeded-not,
+        line-too-long,
+        unnecessary-semicolon,
+        trailing-whitespace,
+        missing-final-newline,
+        bad-indentation,
+        multiple-statements,
+        bare-except,
+        undefined-variable,
+        unused-import,
+        unused-variable,
+        too-many-branches,
+        # We don't need to fix these:
+        fixme,
+        missing-class-docstring,
+        missing-module-docstring,
+        missing-function-docstring
 
 
 [FORMAT]
 # Expected format of line ending, e.g. empty (any line ending), LF or CRLF.
 expected-line-ending-format=LF
-
-# Maximum number of characters on a single line.
-max-line-length=79

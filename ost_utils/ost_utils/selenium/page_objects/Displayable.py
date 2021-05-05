@@ -1,5 +1,5 @@
 from .WithOvirtDriver import WithOvirtDriver
-from selenium.webdriver.support.ui import WebDriverWait
+
 
 class Displayable(WithOvirtDriver):
 

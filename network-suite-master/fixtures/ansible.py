@@ -19,10 +19,10 @@
 
 import pytest
 
+from testlib import suite
+
 from ost_utils import ansible
 from ost_utils.ansible import private_dir
-
-from testlib import suite
 
 
 @pytest.fixture(scope="session")

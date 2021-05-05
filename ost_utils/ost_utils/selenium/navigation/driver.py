@@ -20,12 +20,12 @@
 import logging
 import time
 
-from ost_utils import assertions
-
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException,
                                         StaleElementReferenceException)
 from selenium.webdriver.support.ui import WebDriverWait
+
+from ost_utils import assertions
 
 LOGGER = logging.getLogger(__name__)
 

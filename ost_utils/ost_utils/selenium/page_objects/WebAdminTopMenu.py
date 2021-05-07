@@ -18,6 +18,10 @@ class WebAdminTopMenu(Displayable):
 
     def logout(self):
         LOGGER.debug('Log out')
+        # overriding the window.onbeforeunload to prevent an intermittend alert saying
+        # Leave site? Changes you made may not be saved.
+        self.ovirt_driver.driver.execute_script(
+                'window.onbeforeunload = function() {console.log("overriden window.onbeforeunload called")};')
         self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="HeaderView_userName"]')
         self.ovirt_driver.xpath_wait_and_click('Logout menu', '//*[@id="HeaderView_logoutLink"]')
 

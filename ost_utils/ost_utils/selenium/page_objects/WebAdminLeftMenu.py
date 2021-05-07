@@ -7,6 +7,7 @@ from .PoolListView import PoolListView
 from .HostListView import HostListView
 from .ClusterListView import ClusterListView
 from .StorageDomainListView import StorageDomainListView
+from .DisksListView import DisksListView
 from .DashboardView import DashboardView
 
 LOGGER = logging.getLogger(__name__)
@@ -78,6 +79,14 @@ class WebAdminLeftMenu(Displayable):
         storage_domain_list_view = StorageDomainListView(self.ovirt_driver)
         storage_domain_list_view.wait_for_displayed()
         return storage_domain_list_view
+
+    def open_disks_list_view(self):
+        LOGGER.debug('Open disks list view')
+        self._open_storage_menu('Storage Domains', 'MenuView_disksAnchor')
+
+        disks_list_view = DisksListView(self.ovirt_driver)
+        disks_list_view.wait_for_displayed()
+        return disks_list_view
 
     def _open_dashboard_menu(self):
         self.ovirt_driver.xpath_wait_and_click('Dashboard menu', '//a[@href="#dashboard-main"]')

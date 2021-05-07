@@ -51,9 +51,7 @@ domains:
         - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
-        {%- if install_storage_with_lago_deploy|default(true) %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified.sh
-        {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_engine.sh
     artifacts:
       - /var/log

@@ -64,7 +64,7 @@ EOF
     systemctl restart NetworkManager
 fi
 
-# Increase ISCSI timeouts, see setup_storage_unified.sh
+# Increase ISCSI timeouts, see setup_storage.sh
 rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils
 sed -i 's/node.conn\[0\].timeo.noop_out_timeout = .*/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf
 

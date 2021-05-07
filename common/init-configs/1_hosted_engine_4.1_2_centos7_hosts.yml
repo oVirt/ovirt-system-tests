@@ -89,9 +89,6 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        {% if check_node_status -%}
-        - $OST_REPO_ROOT/common/deploy-scripts/check_node_status.sh
-        {%- endif %}
         {%- if env.add_plain_repos is defined and env.add_plain_repos|length %}
         - $OST_REPO_ROOT/add_plain_repos.sh
         {%- else %}

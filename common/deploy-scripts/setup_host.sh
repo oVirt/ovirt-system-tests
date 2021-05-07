@@ -1,14 +1,18 @@
 #!/bin/bash -xe
-set -ex
 
+# Only on ovirt-node
+if [[ $(which nodectl) ]]; then
+    nodectl check
+    echo 3 > /proc/sys/vm/drop_caches
+fi
+
+# Set up hugepages
 HUGEPAGES=3
-
 for node in /sys/devices/system/node/node*; do
     echo $HUGEPAGES > $node/hugepages/hugepages-2048kB/nr_hugepages;
 done
 
 # Configure libvirtd log
-
 mkdir -p /etc/libvirt
 # Libvirt logging for debugging qemu vms
 # https://www.libvirt.org/kbase/debuglogs.html#targeted-logging-for-debugging-qemu-vms
@@ -16,6 +20,7 @@ mkdir -p /etc/libvirt
 echo 'log_filters="1:libvirt 1:qemu 1:conf 1:security 3:event 3:json 3:file 3:object 1:util"' >> /etc/libvirt/libvirtd.conf
 echo 'log_outputs="1:file:/var/log/libvirt.log"' >> /etc/libvirt/libvirtd.conf
 
+# IPv6 setup
 setup_ipv6() {
     NIC="eth1"
     IPV6NET="fd8f:1391:3a82:"
@@ -46,18 +51,9 @@ setup_ipv6() {
     echo "${IPV6NET}${SUBNET}::${STORAGE_IP_SUFFIX} ${LOCAL_HOSTNAME_PREFIX}${STORAGE_NAME}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${STORAGE_NAME}" >> /etc/hosts
     echo "${IPV6NET}${SUBNET}::${HE_SUFFIX} ${LOCAL_HOSTNAME_PREFIX}${HE_NAME}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${HE_NAME}" >> /etc/hosts
 }
-
 if [[ $(hostname) == *"ipv6"* ]]; then
     setup_ipv6
 fi
-
-# increase ISCSI timeouts, see setup_storage_unified.sh
-rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils
-sed -i 's/node.conn\[0\].timeo.noop_out_timeout = 5/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf
-
-# unique initiator name
-echo "InitiatorName=`/sbin/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi
-
 if [[ ! -r /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf ]]; then
     cat << EOF > /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf
 [connection]
@@ -65,6 +61,13 @@ ipv6.addr-gen-mode=0
 ipv6.dhcp-duid=ll
 ipv6.dhcp-iaid=mac
 EOF
-
     systemctl restart NetworkManager
 fi
+
+# Increase ISCSI timeouts, see setup_storage_unified.sh
+rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils
+sed -i 's/node.conn\[0\].timeo.noop_out_timeout = .*/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf
+
+# Unique initiator name
+echo "InitiatorName=`/sbin/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi
+

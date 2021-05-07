@@ -4,4 +4,3 @@ templates:
 hostCount: 1
 system_requirements:
   disk_space_gb: 20
-check_node_status: 1

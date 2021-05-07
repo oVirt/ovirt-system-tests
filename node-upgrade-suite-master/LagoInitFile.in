@@ -50,7 +50,7 @@ domains:
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified_el8.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified.sh
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_engine_el8.sh
     artifacts:
@@ -99,7 +99,7 @@ domains:
     metadata:
       deploy-scripts:
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
         - $OST_REPO_ROOT/common/deploy-scripts/add_repos.sh
     artifacts:
       - /etc/resolv.conf

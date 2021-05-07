@@ -52,7 +52,7 @@ domains:
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         {%- if install_storage_with_lago_deploy|default(true) %}
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified_el8.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_unified.sh
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_engine_el8.sh
     artifacts:
@@ -108,10 +108,7 @@ domains:
         - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
         {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
-        {% if env.use_ost_images != "1" and loop.first and install_ovirt_host|default(false) -%}
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_1st_host_el7.sh
-        {%- endif %}
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
     artifacts:
       - /etc/resolv.conf
       - /var/log

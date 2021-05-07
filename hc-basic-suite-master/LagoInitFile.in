@@ -52,7 +52,7 @@ domains:
         - snapshot-live-merge
       deploy-scripts:
         - $OST_REPO_ROOT/common/deploy-scripts/dnf_upgrade.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_host_el7.sh
+        - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
         - $SUITE/hc_setup_host.sh
         {% if loop.first -%}
         - $SUITE/setup_first_host.sh

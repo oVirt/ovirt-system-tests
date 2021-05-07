@@ -1,10 +1,8 @@
 #!/bin/bash -xe
-set -xe
+
 MAIN_NFS_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_2"
 ISCSI_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_3"
 NUM_LUNS=5
-DIST=$(uname -r |awk -F\. '{print $(NF-1)}')
-
 
 setup_device() {
     local device=$1
@@ -129,47 +127,18 @@ setup_iscsi() {
     systemctl disable --now iscsi.service
 }
 
-install_firewalld() {
-    if [[ "$DIST" == "el7" ]]; then
-        if  ! rpm -q firewalld > /dev/null; then
-            {
-                yum install -y firewalld && \
-                {
-                systemctl enable firewalld
-                systemctl start firewalld
-                firewall-cmd --permanent --zone=public --add-interface=eth0
-                systemctl restart firewalld;
-                }
-            }
-        else
-            systemctl enable firewalld
-            systemctl start firewalld
-        fi
-    fi
-}
-
 configure_firewalld() {
-    if rpm -q firewalld > /dev/null; then
-        if ! systemctl status firewalld > /dev/null; then
-            systemctl start firewalld
-        fi
+    systemctl enable firewalld
+    systemctl start firewalld
 
-        firewall-cmd --permanent --add-service=iscsi-target
-        firewall-cmd --permanent --add-service=ldap
-        firewall-cmd --permanent --add-service=nfs
-        firewall-cmd --permanent --add-service=ntp
-        firewall-cmd --reload
-    fi
-}
-
-disable_firewalld() {
-    if rpm -q firewalld > /dev/null; then
-            systemctl disable --now firewalld || true
-    fi
+    firewall-cmd --permanent --add-service=iscsi-target
+    firewall-cmd --permanent --add-service=ldap
+    firewall-cmd --permanent --add-service=nfs
+    firewall-cmd --permanent --add-service=ntp
+    firewall-cmd --reload
 }
 
 setup_services() {
-    install_firewalld
     configure_firewalld
 
     # Configure rpc.mountd to use port 892

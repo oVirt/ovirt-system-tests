@@ -1,6 +1,5 @@
 #!/usr/bin/env bash -ex
 
-DIST=$(uname -r | sed -r  's/^.*\.([^\.]+)\.[^\.]+$/\1/')
 HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
 
 # This is needed in case we're using prebuilt ost-images.
@@ -18,12 +17,7 @@ EOF
 }
 
 
-echo "DIST = $DIST"
-if [[ "$DIST" =~ "el8" ]]; then
-    yum install -y --nogpgcheck ansible gluster-ansible-roles ovirt-hosted-engine-setup ovirt-ansible-hosted-engine-setup ovirt-ansible-repositories ovirt-ansible-engine-setup
-else
-    yum install -y --nogpgcheck ansible gluster-ansible-roles ovirt-ansible-hosted-engine-setup ovirt-ansible-repositories ovirt-ansible-engine-setup
-fi
+yum install -y --nogpgcheck ansible gluster-ansible-roles ovirt-hosted-engine-setup ovirt-ansible-hosted-engine-setup ovirt-ansible-repositories ovirt-ansible-engine-setup
 
 rm -rf /var/cache/yum/*
 

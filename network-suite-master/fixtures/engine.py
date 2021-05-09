@@ -22,6 +22,7 @@ import pytest
 from ovirtsdk4 import Connection
 
 from ovirtlib import eventlib
+from ovirtlib import joblib
 from ovirtlib import sshlib
 from ovirtlib import syncutil
 
@@ -117,3 +118,5 @@ def test_invocation_logger(system, request, host_0_up, host_1_up):
         f'vdsm-client Host echo message="{test_invoke}"')
     sshlib.Node(host_1_up.address, host_1_up.root_password).exec_command(
         f'vdsm-client Host echo message="{test_invoke}"')
+    events.add(description=f'OST - unfinished jobs: '
+                           f'{joblib.AllJobs(system).describe_started()}')

@@ -98,12 +98,16 @@ class Host(SDKRootEntity):
         return self._root_password
 
     @property
+    def status(self):
+        return self.get_sdk_type().status
+
+    @property
     def is_up(self):
-        return self.get_sdk_type().status == types.HostStatus.UP
+        return self.status == types.HostStatus.UP
 
     @property
     def is_in_maintenance(self):
-        return self.get_sdk_type().status == types.HostStatus.MAINTENANCE
+        return self.status == types.HostStatus.MAINTENANCE
 
     @property
     def is_spm(self):
@@ -328,19 +332,19 @@ class Host(SDKRootEntity):
         self.service.copy_host_networks(source_host=source_host.get_sdk_type())
 
     def wait_for_up_status(self, timeout=HOST_TIMEOUT_SHORT):
-        syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
+        syncutil.sync(exec_func=lambda: self.status,
                       exec_func_args=(),
                       success_criteria=self._host_up_status_success_criteria,
                       timeout=timeout)
 
     def wait_for_non_operational_status(self):
         NONOP = HostStatus.NON_OPERATIONAL
-        syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
+        syncutil.sync(exec_func=lambda: self.status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == NONOP)
 
     def wait_for_maintenance_status(self):
-        syncutil.sync(exec_func=lambda: self.get_sdk_type().status,
+        syncutil.sync(exec_func=lambda: self.status,
                       exec_func_args=(),
                       success_criteria=lambda s: s == HostStatus.MAINTENANCE)
 

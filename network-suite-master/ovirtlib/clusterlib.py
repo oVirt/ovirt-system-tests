@@ -170,6 +170,10 @@ class Cluster(SDKRootEntity):
             cluster.import_by_id(sdk_obj.id)
             yield cluster
 
+    def __str__(self):
+        return (f'<Cluster {self.name}, {self.network_switch_type},'
+                f' {self.id}>, {self.host_ids()}')
+
 
 class ClusterNetwork(SDKSubEntity):
 

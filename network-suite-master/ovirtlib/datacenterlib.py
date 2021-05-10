@@ -114,6 +114,9 @@ class DataCenter(SDKRootEntity):
             dc.import_by_id(sdk_obj.id)
             yield dc
 
+    def __str__(self):
+        return f'<Datacenter {self.name}, {self.status}, {self.id}>'
+
 
 @contextlib.contextmanager
 def attached_storage_domain(data_center, storage_domain):

@@ -208,6 +208,9 @@ class StorageDomain(SDKRootEntity):
             for lundata in logical_units
         ]
 
+    def __str__(self):
+        return f'<StorageDomain {self.name}, {self.status}, {self.id}>'
+
 
 class Disk(SDKRootEntity):
 

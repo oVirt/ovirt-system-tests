@@ -487,6 +487,10 @@ class Host(SDKRootEntity):
             nics.append(nic)
         return nics
 
+    def __str__(self):
+        return (f'<Host {self.name}, {self.status}, {self.is_spm}, {self.id},'
+                f' {self.address}>')
+
 
 @contextlib.contextmanager
 def setup_networks(host, attach_data=(), remove_other_networks=True,

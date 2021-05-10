@@ -152,6 +152,7 @@ class Host(SDKRootEntity):
             error_criteria=Host._is_update_error_non_transient
         )
 
+    @error.report_status
     def activate(self):
         syncutil.sync(
             exec_func=self._service.activate,
@@ -161,6 +162,7 @@ class Host(SDKRootEntity):
             timeout=3 * 60
         )
 
+    @error.report_status
     def deactivate(self):
         self.wait_for_up_status()
         syncutil.sync(

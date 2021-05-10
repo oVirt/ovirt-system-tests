@@ -21,6 +21,9 @@ import http
 
 import ovirtsdk4
 
+from ovirtlib import eventlib
+from ovirtlib import joblib
+
 
 def sd_deactivation_error_not_due_to_busy(error):
     """
@@ -57,3 +60,28 @@ def is_not_http_conflict(error):
     if not isinstance(error, ovirtsdk4.Error):
         return True
     return error.code != http.HTTPStatus.CONFLICT
+
+
+def report_status(func):
+    def inner(self, *args, **kwargs):
+        events = eventlib.EngineEvents(self.system)
+        description = _create_description('before', self)
+        events.add(description=description)
+
+        func(self, *args, **kwargs)
+        description = _create_description('after', self)
+        events.add(description=description)
+
+    def _create_description(when, self):
+        description = (f'OST - {self.__class__.__name__} '
+                       f'{when} {func.__name__}, ')
+        try:
+            description += f'status:{self.status}, '
+        except AttributeError:
+            pass
+        except ovirtsdk4.NotFoundError:
+            description += 'entity not found, '
+        description += f'jobs:{joblib.AllJobs(self.system).describe_started()}'
+        return description
+
+    return inner

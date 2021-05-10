@@ -56,12 +56,11 @@ class SDKEntity(metaclass=abc.ABCMeta):
     def get_sdk_type(self):
         return self._service.get()
 
-    @abc.abstractmethod
     def create(self, *args, **kwargs):
         """This method is responsible for creating and
         adding the entity to the system
         """
-        pass
+        raise NotImplementedError('not implemented yet')
 
     def import_by_name(self, name):
         entities = (entity for entity in self._parent_service.list()

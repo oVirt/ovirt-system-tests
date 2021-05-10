@@ -1,3 +1,3 @@
 #!/bin/bash -xe
 
-dnf upgrade -y --nobest
+dnf upgrade -y --nobest --nogpgcheck

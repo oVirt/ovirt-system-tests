@@ -5,42 +5,6 @@ prep_suite () {
     render_jinja_templates
 }
 
-env_copy_config_file() {
-
-    cd "$PREFIX"
-    reqsubstr=$1
-    for vm in $(lago --out-format flat status | \
-        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
-        ; do
-
-        echo "$vm"
-        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
-            "$CLI" copy-to-vm "$vm" "$SUITE/vars/main.yml" "/tmp/vars_main.yml"
-        fi
-    done
-    cd -
-}
-
-env_copy_repo_file() {
-
-    cd "$PREFIX"
-    host_type=$1
-    local reposync_file="reposync-config-${host_type}.repo"
-    local reqsubstr=$host_type
-    for vm in $(lago --out-format flat status | \
-        gawk 'match($0, /^VMs\/(.*)\/status:*/, m){ print m[1]; }')\
-        ; do
-
-        echo "$vm"
-        if [[ -z "${vm##*$reqsubstr*}" ]] ;then
-            if [[ -e "$SUITE/$reposync_file" ]]; then
-                "$CLI" copy-to-vm "$vm" "$SUITE/$reposync_file" "/etc/yum.repos.d/$reposync_file"
-            fi
-        fi
-    done
-    cd -
-}
-
 he_deploy() {
     local suite="${SUITE?}"
     local curdir="${PWD?}"
@@ -148,8 +112,6 @@ run_suite () {
     env_add_extra_repos
     env_start
     env_dump_ansible_hosts
-    env_copy_config_file "host"
-    env_copy_repo_file "host"
     env_status
     cd "$OST_REPO_ROOT"
     env_deploy

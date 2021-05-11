@@ -832,7 +832,6 @@ def cold_storage_migration(engine_api):
 
 
 @order_by(_TEST_LIST)
-@pytest.mark.xfail(reason="https://bugzilla.redhat.com/1951507")
 def test_live_storage_migration(engine_api):
     engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)

@@ -6,8 +6,8 @@
     default_ost_images_repo_url: 'https://templates.ovirt.org/yum/'
     default_ovirt_repo_url: 'https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm'
     default_ost_images_rpms:
-      - ost-images-el8-engine-installed
-      - ost-images-el8-host-installed
+      - ost-images-el8stream-engine-installed
+      - ost-images-el8stream-host-installed
 
   tasks:
     - name: enable nested virtualization on intel

@@ -15,7 +15,7 @@ _find_ssh_key() {
 }
 
 if [ ${USE_OST_IMAGES} -eq 1 ]; then
-    export OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:-el8}
+    export OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:-el8stream}
 
     export OST_IMAGES_BASE=$(_find_qcow "base")
     export OST_IMAGES_NODE=$(OST_IMAGES_DISTRO=node _find_qcow "base")

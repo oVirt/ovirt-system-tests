@@ -22,8 +22,6 @@ run_suite(){
     env_add_extra_repos
     env_start
     env_dump_ansible_hosts
-    env_copy_repo_file
-    env_copy_config_file
     cd "$OST_REPO_ROOT"
 
     if [[ ${suite} == *"ipv6"* ]]; then

@@ -71,3 +71,15 @@ sed -i 's/node.conn\[0\].timeo.noop_out_timeout = .*/node.conn\[0\].timeo.noop_o
 # Unique initiator name
 echo "InitiatorName=`/sbin/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi
 
+
+## add repo for node upgrade suite
+source /etc/os-release
+if [[ "$VARIANT_ID" =~ "ovirt-node" ]]; then
+    cat >/etc/yum.repos.d/latest-node.repo <<EOL
+[Latest-Ovirt-Node]
+name=Latest ovirt node
+baseurl=https://jenkins.ovirt.org/job/ovirt-node-ng-image_master_build-artifacts-el8-x86_64/lastSuccessfulBuild/artifact/exported-artifacts
+gpgcheck=0
+enabled=1
+EOL
+fi

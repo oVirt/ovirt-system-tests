@@ -98,7 +98,6 @@ domains:
       deploy-scripts:
         - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
         - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/add_repos.sh
     artifacts:
       - /etc/resolv.conf
       - /var/log

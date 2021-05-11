@@ -25,6 +25,7 @@ from ovirtlib import error
 from ovirtlib import netlib
 from ovirtlib import storagelib
 from ovirtlib import syncutil
+from ovirtlib.error import report_status
 from ovirtlib.sdkentity import SDKRootEntity
 
 
@@ -64,6 +65,7 @@ class DataCenter(SDKRootEntity):
             if qos.name in qos_names:
                 self._service.qoss_service().qos_service(qos.id).remove()
 
+    @report_status
     def wait_for_up_status(self):
         self._wait_for_status(types.DataCenterStatus.UP)
 

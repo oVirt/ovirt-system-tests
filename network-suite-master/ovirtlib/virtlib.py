@@ -27,6 +27,7 @@ from contextlib import contextmanager
 import ovirtsdk4
 from ovirtsdk4 import types
 
+from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import clusterlib
 from ovirtlib import syncutil
@@ -45,6 +46,7 @@ def vm_pool(system, size):
             if vm.service is None:
                 continue
             vm.remove()
+        joblib.RemoveVmJobs(system).wait_for_done()
 
 
 class SnapshotStatus(object):

@@ -30,6 +30,7 @@ class Playbook(object):
         self._idempotency_check_stats = None
         self._playbook = playbook
         self._extra_vars = extra_vars
+        self._extra_vars['ansible_python_interpreter'] = 'python3'
 
     @property
     def execution_stats(self):

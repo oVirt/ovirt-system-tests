@@ -24,6 +24,7 @@ import os
 import pytest
 
 from ovirtlib import clusterlib
+from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import sdkentity
 from ovirtlib import syncutil
@@ -97,8 +98,11 @@ def vnic_attached_to_ovn_network(system, vm_in_ovs_cluster_down,
 
 
 @pytest.fixture(scope='module')
-def vm_in_ovn_network_up(vm_in_ovs_cluster_down, vnic_attached_to_ovn_network):
+def vm_in_ovn_network_up(system, vm_in_ovs_cluster_down,
+                         vnic_attached_to_ovn_network):
     vm_in_ovs_cluster_down.run_once(cloud_init_hostname=VM0_NAME)
+    vm_in_ovs_cluster_down.wait_for_up_status()
+    joblib.LaunchVmJobs(system).wait_for_done()
     yield vm_in_ovs_cluster_down
 
 

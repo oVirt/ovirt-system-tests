@@ -68,3 +68,12 @@ class RemoveVmJobs(EngineJobs):
         super(RemoveVmJobs, self).__init__(
             parent_sdk_system, lambda description: 'Removing VM' in description
         )
+
+
+class LaunchVmJobs(EngineJobs):
+
+    def __init__(self, parent_sdk_system):
+        super(LaunchVmJobs, self).__init__(
+            parent_sdk_system,
+            lambda description: 'Launching VM' in description
+        )

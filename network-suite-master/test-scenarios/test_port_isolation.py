@@ -19,6 +19,7 @@ import pytest
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
+from ovirtlib import joblib
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import sshlib
@@ -98,6 +99,7 @@ def vms_up_on_same_host(system, default_cluster, cirros_template,
 
         vm_0.wait_for_up_status()
         vm_1.wait_for_up_status()
+        joblib.LaunchVmJobs(system).wait_for_done()
         yield
 
 

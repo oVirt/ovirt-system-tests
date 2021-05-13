@@ -71,6 +71,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 LOGGER = logging.getLogger(__name__)
 
 BROWSER_PLATFORM = 'LINUX'
+IMAGE_UPLOAD_DELAY = 30
 WINDOW_WIDTH = 1680
 WINDOW_HEIGHT = 1050
 
@@ -443,38 +444,29 @@ def image_local_path():
     return "/etc/hostname"
 
 
-def test_disks(ovirt_driver, save_screenshot, save_page_source,
-        browser_name, image_local_path):
+def test_image_upload(ovirt_driver, save_screenshot, browser_name,
+                      image_local_path):
+    image_name = "{}-{}".format(browser_name, int(time.time()))
 
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        disks_list_view = webadmin_menu.open_disks_list_view()
-
-        disks = disks_list_view.get_entities()
-        assert 'vm0_disk0' in disks
-        assert disks_list_view.is_new_button_enabled() is True
-        assert disks_list_view.is_edit_button_enabled() is False
-        assert disks_list_view.is_remove_button_enabled() is False
-        assert disks_list_view.is_move_button_enabled() is False
-        assert disks_list_view.is_copy_button_enabled() is False
-        assert disks_list_view.is_upload_button_enabled() is True
-
-        disks_list_view.select_entity('vm0_disk0')
-        assert disks_list_view.is_new_button_enabled() is True
-        assert disks_list_view.is_edit_button_enabled() is True
-        assert disks_list_view.is_remove_button_enabled() is True
-        assert disks_list_view.is_move_button_enabled() is True
-        assert disks_list_view.is_copy_button_enabled() is True
-        assert disks_list_view.is_upload_button_enabled() is True
-
-        image_name = "{}-{}".format(browser_name, int(time.time()))
-        disks_list_view.upload(image_local_path, image_name)
-
-        save_screenshot('disks-success')
-    except:
-        save_screenshot('disks-failed')
-        save_page_source('disks-failed')
-        raise
+    # Navigate and upload an image
+    ovirt_driver.hover_to_id('MenuView_storageTab')
+    save_screenshot('left_nav_hover_storage')
+    ovirt_driver.id_click('MenuView_disksAnchor')
+    save_screenshot('left_nav_clicked_disks')
+    ovirt_driver.id_click('ActionPanelView_Upload')
+    save_screenshot('left_nav_clicked_upload')
+    ovirt_driver.action_on_element('Start', 'click')
+    save_screenshot('left_nav_clicked_start')
+    ovirt_driver.action_on_element('UploadImagePopupView_fileUpload', 'send',
+                                   image_local_path)
+    save_screenshot('left_nav_file_uploaded')
+    ovirt_driver.action_on_element('VmDiskPopupWidget_alias', 'send',
+                                   image_name)
+    save_screenshot('left_nav_add_alias')
+    ovirt_driver.wait_for_id('UploadImagePopupView_Ok').click()
+    # wait for image upload
+    time.sleep(IMAGE_UPLOAD_DELAY)
+    save_screenshot('left_nav_ok_clicked')
 
 
 def test_dashboard(ovirt_driver, save_screenshot, save_page_source):

@@ -48,8 +48,6 @@ OVERLAP_REGEX = r".*MAC pool cannot contain ranges which overlap.*"
 NIC_NAME_1 = 'nic001'
 NIC_NAME_2 = 'nic002'
 
-VM0 = 'vm0'
-VM1 = 'vm1'
 
 SNAPSHOT_DESC = 'snapshot0'
 
@@ -64,10 +62,10 @@ def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
         allow_duplicates=True
     ) as mac_pool:
         with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(vm_name=VM0,
+            vm_0.create(vm_name='test_set_mac_pool_duplicate_macs_vm_0',
                         cluster=default_cluster,
                         template=templatelib.TEMPLATE_BLANK)
-            vm_1.create(vm_name=VM1,
+            vm_1.create(vm_name='test_set_mac_pool_duplicate_macs_vm_1',
                         cluster=default_cluster,
                         template=templatelib.TEMPLATE_BLANK)
 
@@ -89,7 +87,7 @@ def test_assign_vnic_with_full_mac_pool_capacity_fails(
         system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,)
     ):
         with virtlib.vm_pool(system, size=1) as (vm,):
-            vm.create(vm_name=VM0,
+            vm.create(vm_name='test_assign_vnic_with_full_mac_pool_vm_0',
                       cluster=default_cluster,
                       template=templatelib.TEMPLATE_BLANK)
             vm.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile)
@@ -102,7 +100,7 @@ def test_assign_vnic_with_full_mac_pool_capacity_fails(
 def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vm_0.create(vm_name=VM0,
+        vm_0.create(vm_name='test_undo_preview_snapshot_when_mac_used_vm_0',
                     cluster=default_cluster,
                     template=cirros_template)
         vm_0.wait_for_down_status()
@@ -119,7 +117,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
         nicless_snapshot.preview()
         nicless_snapshot.wait_for_preview_status()
 
-        vm_1.create(vm_name=VM1,
+        vm_1.create(vm_name='test_undo_preview_snapshot_when_mac_used_vm_1',
                     cluster=default_cluster,
                     template=cirros_template)
         vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
@@ -149,12 +147,12 @@ def test_mac_pools_in_different_clusters_dont_overlap(
     )
     with default_cluster_mac_pool, cluster_0_mac_pool:
         with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(vm_name=VM0,
+            vm_0.create(vm_name='test_mac_pools_in_different_clusters_vm_0',
                         cluster=default_cluster,
                         template=templatelib.TEMPLATE_BLANK)
             vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-            vm_1.create(vm_name=VM1,
+            vm_1.create(vm_name='test_mac_pools_in_different_clusters_vm_1',
                         cluster=cluster_0,
                         template=templatelib.TEMPLATE_BLANK)
             with pytest.raises(netlib.MacAddrInUseError):
@@ -199,7 +197,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
 
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vm_0.create(vm_name=VM0,
+        vm_0.create(vm_name='test_restore_snapshot_with_an_used_mac_vm_0',
                     cluster=default_cluster,
                     template=cirros_template)
         vnic_0 = vm_0.create_vnic(NIC_NAME_1,
@@ -213,7 +211,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
 
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
-        vm_1.create(vm_name=VM1,
+        vm_1.create(vm_name='test_restore_snapshot_with_an_used_mac_vm_1',
                     cluster=default_cluster,
                     template=cirros_template)
         vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
@@ -231,7 +229,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
         system, default_cluster, ovirtmgmt_vnic_profile, cirros_template):
 
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vm_0.create(vm_name=VM0,
+        vm_0.create(vm_name='test_move_stateless_vm_mac_to_new_vm_fails_vm_0',
                     cluster=default_cluster,
                     template=cirros_template,
                     stateless=True)
@@ -245,7 +243,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
-        vm_1.create(vm_name=VM1,
+        vm_1.create(vm_name='test_move_stateless_vm_mac_to_new_vm_fails_vm_1',
                     cluster=default_cluster,
                     template=cirros_template)
 
@@ -258,7 +256,7 @@ def test_move_mac_to_new_vm(
     mac_addr_1 = '00:1a:4a:16:01:81'
     mac_addr_2 = '00:1a:4a:16:01:82'
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vm_0.create(vm_name=VM0,
+        vm_0.create(vm_name='test_move_mac_to_new_vm_0',
                     cluster=default_cluster,
                     template=cirros_template)
 
@@ -271,7 +269,7 @@ def test_move_mac_to_new_vm(
 
         vnic_0.hot_replace_mac_addr(mac_addr_2)
 
-        vm_1.create(vm_name=VM1,
+        vm_1.create(vm_name='test_move_mac_to_new_vm_1',
                     cluster=default_cluster,
                     template=cirros_template)
 
@@ -329,7 +327,8 @@ def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
     with clusterlib.new_assigned_network(
             NET_NAME, default_dc, cluster_0) as net:
         with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(vm_name=VM0, cluster=cluster_0, template=BLANK)
+            vm_0.create(vm_name='_run_scenario_of_bz_1760170_vm_0',
+                        cluster=cluster_0, template=BLANK)
             vm_0.wait_for_down_status()
             vm_0.create_vnic(
                 netlib.OVIRTMGMT,
@@ -339,7 +338,8 @@ def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
             vnic.remove()
             vm_0.move_to_cluster(cluster_1)
 
-            vm_1.create(vm_name=VM1, cluster=cluster_0, template=BLANK)
+            vm_1.create(vm_name='_run_scenario_of_bz_1760170_vm_1',
+                        cluster=cluster_0, template=BLANK)
             vm_1.wait_for_down_status()
             vm_1.create_vnic(NET_NAME, net.vnic_profile())
 

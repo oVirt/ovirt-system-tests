@@ -192,7 +192,7 @@ def screenshots_dir(artifacts_dir):
 @pytest.fixture(scope="session")
 def save_screenshot(ovirt_driver, browser_name, screenshots_dir):
 
-    def save(description, delay=1):
+    def save(description, delay=0):
         date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         name = "{}_{}_{}.png".format(date, browser_name, description)
         path = os.path.join(screenshots_dir, name)
@@ -204,7 +204,7 @@ def save_screenshot(ovirt_driver, browser_name, screenshots_dir):
 @pytest.fixture(scope="session")
 def save_page_source(ovirt_driver, browser_name, screenshots_dir):
 
-    def save(description, delay=1):
+    def save(description, delay=0):
         date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         name = "{}_{}_{}.html".format(date, browser_name, description)
         path = os.path.join(screenshots_dir, name)

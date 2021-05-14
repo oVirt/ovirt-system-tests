@@ -92,6 +92,7 @@
               - createrepo
               - make
               - rpm-build
+              - virt-install
             state: latest
           become: true
 

@@ -52,7 +52,7 @@ set_selinux_on_nfs() {
 
 install_deps() {
     systemctl disable --now kdump.service
-    pkgs_to_install=(
+    required_pkgs=(
     "nfs-utils"
     "rpcbind"
     "lvm2"
@@ -61,10 +61,9 @@ install_deps() {
     "iscsi-initiator-utils"
     "policycoreutils-python-utils"
     )
-    rpm -q "${pkgs_to_install[@]}" >/dev/null || yum install --nogpgcheck -y "${pkgs_to_install[@]}" || {
-        ret=$?
-        echo "install failed with status $ret"
-        exit $ret
+    rpm -q "${required_pkgs[@]}" >/dev/null || {
+        echo "one of the required packages is missing: ${required_pkgs[@]}"
+        exit 10
     }
 }
 
@@ -158,8 +157,8 @@ setup_services() {
 
 install_deps_389ds() {
     if  ! rpm -q 389-ds-base 389-ds-base-legacy-tools > /dev/null; then
-        dnf module -y enable 389-ds
-        yum install --nogpgcheck -y 389-ds-base 389-ds-base-legacy-tools
+        echo "one of 389-ds-base or 389-ds-base-legacy-tools packages is missing"
+        exit 20
     fi
 }
 

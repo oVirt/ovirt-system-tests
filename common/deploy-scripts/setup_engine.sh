@@ -16,7 +16,7 @@ ADDR=$(/sbin/ip -4 -o addr show dev $NIC | awk '{split($4,a,"."); print a[1] "."
 echo "$ADDR engine" >> /etc/hosts
 
 # if you want to add anything here, please try to preinstall it first
-pkgs_to_install=(
+required_pkgs=(
     "net-snmp"
     "ovirt-engine"
     "ovirt-log-collector"
@@ -35,15 +35,9 @@ pkgs_to_install=(
 systemctl enable firewalld
 systemctl start firewalld
 
-if  ! rpm -q "${pkgs_to_install[@]}" >/dev/null; then
-    dnf module enable -y pki-deps 389-ds postgresql:12
-    # only required on CentOS, so check if it exists
-    dnf module list javapackages-tools && dnf module enable -y javapackages-tools
-    dnf install --nogpgcheck -y "${pkgs_to_install[@]}" || {
-        ret=$?
-        echo "install failed with status $ret"
-        exit $ret
-    }
+if  ! rpm -q "${required_pkgs[@]}" >/dev/null; then
+    echo "one of the required packages is missing: ${required_pkgs[@]}"
+    exit 10
 fi
 
 systemctl enable crond

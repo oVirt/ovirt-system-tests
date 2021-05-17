@@ -20,6 +20,7 @@
 
 import logging
 import os.path
+import re
 import tempfile
 
 from collections import namedtuple
@@ -45,6 +46,12 @@ DUMMY_REPOMD_XML = '''"
 "'''.replace('\n', '\\n')
 
 DUMMY_PRIMARY_XML = '"<metadata packages="0"/>"'
+
+OVIRT_PACKAGES_PATTERNS = (
+    re.compile('ovirt-engine-[0-9]'),
+    re.compile('vdsm-[0-9]'),
+)
+
 
 Package = namedtuple('Package', ['name', 'version', 'repo'])
 
@@ -76,12 +83,26 @@ def check_installed_packages(hostnames):
     for hostname in hostnames:
         vm_pckgs_dict = _get_custom_repos_packages(
             module_mappers.module_mapper_for(hostname))
-        LOGGER.info(f'packages installed on {hostname}: \n{vm_pckgs_dict}\n')
         vms_pckgs_dict_list.append(vm_pckgs_dict)
     if all(_check_if_user_specified_repos(pckgs_dict) and
            _check_if_no_packages_used(pckgs_dict) for pckgs_dict in
            vms_pckgs_dict_list):
         raise RuntimeError('None of user custom repos has been used')
+
+
+def report_ovirt_packages_versions(ansible_vms):
+    pkgs = set()
+
+    for res in ansible_vms.shell('rpm -qa').values():
+        pkgs.update(res['stdout'].splitlines())
+
+    matching_pkgs = filter(
+        lambda pkg: any(pat.match(pkg) for pat in OVIRT_PACKAGES_PATTERNS),
+        pkgs)
+
+    LOGGER.info('oVirt packages used on VMs:')
+    for pkg in sorted(matching_pkgs):
+        LOGGER.info(pkg)
 
 
 def _add_custom_repo(ansible_vm, name, url):

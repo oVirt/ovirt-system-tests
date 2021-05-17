@@ -57,6 +57,9 @@ def deploy(ansible_all, all_hostnames, deploy_scripts, working_dir, request):
         if not request.config.getoption('--skip-custom-repos-check'):
             package_mgmt.check_installed_packages(all_hostnames)
 
+    # report package versions
+    package_mgmt.report_ovirt_packages_versions(ansible_all)
+
     # run deployment scripts
     runs = [functools.partial(run_scripts, hostname, scripts)
             for hostname, scripts in deploy_scripts.items()]

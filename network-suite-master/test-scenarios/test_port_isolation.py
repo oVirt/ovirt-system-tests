@@ -27,8 +27,8 @@ from ovirtlib import virtlib
 
 
 ETH1 = 'eth1'
-VM0_NAME = 'vm0'
-VM1_NAME = 'vm1'
+VM0_NAME = 'test_port_isolation_vm_0'
+VM1_NAME = 'test_port_isolation_vm_1'
 VNIC0_NAME = 'eth1'
 VNIC1_NAME = 'eth2'
 PORT_ISOLATION_NET = 'test_isolated'

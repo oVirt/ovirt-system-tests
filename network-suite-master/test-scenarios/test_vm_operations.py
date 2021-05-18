@@ -29,7 +29,7 @@ from ovirtlib import templatelib
 from testlib import suite
 
 ETH1 = 'eth1'
-VM0 = 'vm0'
+VM0 = 'test_vm_operations_vm_0'
 MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
 MIG_NET_IPv4_ADDR_2 = '192.0.3.2'

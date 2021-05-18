@@ -29,7 +29,7 @@ from testlib import suite
 
 
 VNIC0_NAME = 'nic001'
-VM0_NAME = 'vm0'
+VM0_NAME = 'test_ovn_provider_integration_with_ovirt_vm_0'
 VNIC0_MAC = '00:1a:4a:17:15:50'
 
 

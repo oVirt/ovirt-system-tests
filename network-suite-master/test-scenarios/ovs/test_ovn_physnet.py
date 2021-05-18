@@ -41,7 +41,7 @@ MTU = 1000
 MAX_ICMP_DATA_SIZE = MTU - IP_ICMP_HEADER_SIZE
 VNIC0_NAME = 'vnic0'
 VNIC_INTERNAL = 'vnic-internal'
-VM0_NAME = 'vm0'
+VM0_NAME = 'test_ovn_physnet_vm_0'
 OVN_PHYSNET_NAME = 'ovn_ovirtmgmt'
 EXTERNAL_NETWORK = r'.*Only an external network may be attached to VM' \
                    r' in a cluster with OVS switch type'

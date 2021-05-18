@@ -68,7 +68,7 @@ def display_network_attached_to_host_0(host_0_up, display_network):
 def vm_0_with_display_network_and_disk(
         system, default_cluster, default_storage_domain,
         display_network_vnic_profile):
-    VM_0 = 'vm0'
+    VM_0 = 'test_unrestricted_display_network_name_vm_0'
     VNIC_1 = 'vnic1'
 
     with virtlib.vm_pool(system, size=1) as (vm_0,):

@@ -134,6 +134,7 @@ def chrome_capabilities():
     capabilities['platform'] = BROWSER_PLATFORM
     capabilities['version'] = CHROME_VERSION
     capabilities['acceptInsecureCerts'] = True
+    capabilities['goog:loggingPrefs'] = {'browser':'ALL'}
     return capabilities
 
 
@@ -177,174 +178,171 @@ def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
 
 
 @pytest.fixture(scope="session")
-def screenshots_dir(artifacts_dir):
+def selenium_artifacts_dir(artifacts_dir):
     dc_version = os.environ.get('OST_DC_VERSION', '')
-    path = os.path.join(artifacts_dir, 'screenshots%s/' % dc_version)
-
-    # make screenshot directory
-    if os.path.exists(path):
-        # clean up old directory
-        shutil.rmtree(path)
-    os.makedirs(path)
+    path = os.path.join(artifacts_dir, 'ui_tests_artifacts%s/' % dc_version)
+    os.makedirs(path, exist_ok=True)
     return path
 
 
 @pytest.fixture(scope="session")
-def save_screenshot(ovirt_driver, browser_name, screenshots_dir):
+def selenium_artifact_filename(browser_name):
 
-    def save(description, delay=0):
+    def _selenium_artifact_filename(description, extension):
         date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        name = "{}_{}_{}.png".format(date, browser_name, description)
-        path = os.path.join(screenshots_dir, name)
-        ovirt_driver.save_screenshot(path, delay)
+        return "{}_{}_{}.{}".format(date, browser_name, description, extension)
+
+    return _selenium_artifact_filename
+
+
+@pytest.fixture(scope="session")
+def selenium_artifact_full_path(selenium_artifacts_dir, selenium_artifact_filename):
+
+    def _selenium_artifact_full_path(description, extension):
+        return os.path.join(
+                selenium_artifacts_dir,
+                selenium_artifact_filename(description, extension))
+
+    return _selenium_artifact_full_path
+
+
+@pytest.fixture(scope="session")
+def save_screenshot(ovirt_driver, selenium_artifact_full_path):
+
+    def save(description):
+        ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'), 0)
 
     return save
 
 
 @pytest.fixture(scope="session")
-def save_page_source(ovirt_driver, browser_name, screenshots_dir):
+def save_page_source(ovirt_driver, selenium_artifact_full_path):
 
-    def save(description, delay=0):
-        date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        name = "{}_{}_{}.html".format(date, browser_name, description)
-        path = os.path.join(screenshots_dir, name)
-        ovirt_driver.save_page_source(path, delay)
+    def save(description):
+        ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'), 0)
 
     return save
 
+@pytest.fixture(scope="session")
+def save_console_log(ovirt_driver, selenium_artifact_full_path):
 
-def test_login(ovirt_driver, save_screenshot, save_page_source, engine_username,
-               engine_password, engine_cert):
+    def save(description):
+        if (ovirt_driver.driver.capabilities['browserName'] == 'chrome'):
+            ovirt_driver.save_console_log(selenium_artifact_full_path(description, 'txt'))
 
-    try:
-        save_screenshot('welcome-screen')
+    return save
 
-        welcome_screen = WelcomeScreen(ovirt_driver)
-        welcome_screen.wait_for_displayed()
-        welcome_screen.open_administration_portal()
-
-        login_screen = LoginScreen(ovirt_driver)
-        login_screen.wait_for_displayed()
-        login_screen.set_user_name(engine_username)
-        login_screen.set_user_password(engine_password)
-        login_screen.login()
-
-        webadmin_left_menu = WebAdminLeftMenu(ovirt_driver)
-        webadmin_left_menu.wait_for_displayed()
-
-        webadmin_top_menu = WebAdminTopMenu(ovirt_driver)
-        webadmin_top_menu.wait_for_displayed()
-
-        assert webadmin_left_menu.is_displayed()
-        assert webadmin_top_menu.is_displayed()
-
-        save_screenshot('login-success')
-    except:
-        save_screenshot('login-failed')
-        save_page_source('login-failed')
-        raise
+@pytest.fixture(scope="function", autouse=True)
+def after_test(request, save_screenshot, save_page_source, save_console_log):
+    yield
+    test_name = request.node.originalname
+    if request.session.testsfailed:
+        failed_file_name = test_name + "_failed"
+        save_screenshot(failed_file_name)
+        save_page_source(failed_file_name)
+        save_console_log(failed_file_name)
+    else:
+        save_screenshot(test_name + "_success")
 
 
-def test_clusters(ovirt_driver, save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        cluster_list_view = webadmin_menu.open_cluster_list_view()
+def test_login(ovirt_driver, save_screenshot,
+        engine_username, engine_password, engine_cert):
 
-        clusters = cluster_list_view.get_entities()
-        assert 'test-cluster' in clusters
+    save_screenshot('welcome-screen')
 
-        cluster_list_view.select_entity('test-cluster')
-        assert cluster_list_view.is_new_button_enabled() is True
-        assert cluster_list_view.is_edit_button_enabled() is True
-        assert cluster_list_view.is_upgrade_button_enabled() is True
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    welcome_screen.open_administration_portal()
 
-        save_screenshot('clusters-success')
-    except:
-        save_screenshot('clusters-failed')
-        save_page_source('clusters-failed')
-        raise
+    login_screen = LoginScreen(ovirt_driver)
+    login_screen.wait_for_displayed()
+    login_screen.set_user_name(engine_username)
+    login_screen.set_user_password(engine_password)
+    login_screen.login()
 
+    webadmin_left_menu = WebAdminLeftMenu(ovirt_driver)
+    webadmin_left_menu.wait_for_displayed()
 
-def test_hosts(ovirt_driver, ansible_host0_facts, save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        host_list_view = webadmin_menu.open_host_list_view()
+    webadmin_top_menu = WebAdminTopMenu(ovirt_driver)
+    webadmin_top_menu.wait_for_displayed()
 
-        host_name = ansible_host0_facts.get("ansible_hostname")
-        hosts = host_list_view.get_entities()
-        assert host_name in hosts
-        assert host_list_view.is_new_button_enabled() is True
-        assert host_list_view.is_edit_button_enabled() is False
-        assert host_list_view.is_remove_button_enabled() is False
-        assert host_list_view.is_management_button_enabled() is False
-        assert host_list_view.is_install_button_enabled() is False
-        assert host_list_view.is_host_console_button_enabled() is False
-
-        host_list_view.select_entity(host_name)
-        assert host_list_view.is_new_button_enabled() is True
-        assert host_list_view.is_edit_button_enabled() is True
-        assert host_list_view.is_remove_button_enabled() is False
-        assert host_list_view.is_management_button_enabled() is True
-        assert host_list_view.is_install_button_enabled() is True
-        assert host_list_view.is_host_console_button_enabled() is True
-
-        save_screenshot('hosts-success')
-    except:
-        save_screenshot('hosts-failed')
-        save_page_source('hosts-failed')
-        raise
+    assert webadmin_left_menu.is_displayed()
+    assert webadmin_top_menu.is_displayed()
 
 
-def test_templates(ovirt_driver, cirros_image_glance_template_name, save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        template_list_view = webadmin_menu.open_template_list_view()
+def test_clusters(ovirt_driver):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    cluster_list_view = webadmin_menu.open_cluster_list_view()
 
-        templates = template_list_view.get_entities()
-        assert 'Blank' in templates
-        assert cirros_image_glance_template_name in templates
-        assert template_list_view.is_new_vm_button_enabled() is False
-        assert template_list_view.is_import_button_enabled() is True
-        assert template_list_view.is_edit_button_enabled() is False
-        assert template_list_view.is_remove_button_enabled() is False
-        assert template_list_view.is_export_button_enabled() is False
+    clusters = cluster_list_view.get_entities()
+    assert 'test-cluster' in clusters
 
-        template_list_view.select_entity('Blank')
-        assert template_list_view.is_new_vm_button_enabled() is True
-        assert template_list_view.is_import_button_enabled() is True
-        assert template_list_view.is_edit_button_enabled() is True
-        assert template_list_view.is_remove_button_enabled() is False
-        assert template_list_view.is_export_button_enabled() is False
+    cluster_list_view.select_entity('test-cluster')
+    assert cluster_list_view.is_new_button_enabled() is True
+    assert cluster_list_view.is_edit_button_enabled() is True
+    assert cluster_list_view.is_upgrade_button_enabled() is True
 
-        template_list_view.select_entity(cirros_image_glance_template_name)
-        assert template_list_view.is_new_vm_button_enabled() is True
-        assert template_list_view.is_import_button_enabled() is True
-        assert template_list_view.is_edit_button_enabled() is True
-        assert template_list_view.is_remove_button_enabled() is True
-        assert template_list_view.is_export_button_enabled() is True
 
-        save_screenshot('templates-success')
-    except:
-        save_screenshot('templates-failed')
-        save_page_source('templates-failed')
-        raise
+def test_hosts(ovirt_driver, ansible_host0_facts):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    host_list_view = webadmin_menu.open_host_list_view()
 
-def test_pools(ovirt_driver, save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        pool_list_view = webadmin_menu.open_pool_list_view()
+    host_name = ansible_host0_facts.get("ansible_hostname")
+    hosts = host_list_view.get_entities()
+    assert host_name in hosts
+    assert host_list_view.is_new_button_enabled() is True
+    assert host_list_view.is_edit_button_enabled() is False
+    assert host_list_view.is_remove_button_enabled() is False
+    assert host_list_view.is_management_button_enabled() is False
+    assert host_list_view.is_install_button_enabled() is False
+    assert host_list_view.is_host_console_button_enabled() is False
 
-        pools = pool_list_view.get_entities()
-        assert not pools
-        assert pool_list_view.is_new_button_enabled() is True
-        assert pool_list_view.is_edit_button_enabled() is False
-        assert pool_list_view.is_remove_button_enabled() is False
+    host_list_view.select_entity(host_name)
+    assert host_list_view.is_new_button_enabled() is True
+    assert host_list_view.is_edit_button_enabled() is True
+    assert host_list_view.is_remove_button_enabled() is False
+    assert host_list_view.is_management_button_enabled() is True
+    assert host_list_view.is_install_button_enabled() is True
+    assert host_list_view.is_host_console_button_enabled() is True
 
-        save_screenshot('pools-success')
-    except:
-        save_screenshot('pools-failed')
-        save_page_source('pools-failed')
-        raise
+
+def test_templates(ovirt_driver, cirros_image_glance_template_name):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    template_list_view = webadmin_menu.open_template_list_view()
+
+    templates = template_list_view.get_entities()
+    assert 'Blank' in templates
+    assert cirros_image_glance_template_name in templates
+    assert template_list_view.is_new_vm_button_enabled() is False
+    assert template_list_view.is_import_button_enabled() is True
+    assert template_list_view.is_edit_button_enabled() is False
+    assert template_list_view.is_remove_button_enabled() is False
+    assert template_list_view.is_export_button_enabled() is False
+
+    template_list_view.select_entity('Blank')
+    assert template_list_view.is_new_vm_button_enabled() is True
+    assert template_list_view.is_import_button_enabled() is True
+    assert template_list_view.is_edit_button_enabled() is True
+    assert template_list_view.is_remove_button_enabled() is False
+    assert template_list_view.is_export_button_enabled() is False
+
+    template_list_view.select_entity(cirros_image_glance_template_name)
+    assert template_list_view.is_new_vm_button_enabled() is True
+    assert template_list_view.is_import_button_enabled() is True
+    assert template_list_view.is_edit_button_enabled() is True
+    assert template_list_view.is_remove_button_enabled() is True
+    assert template_list_view.is_export_button_enabled() is True
+
+
+def test_pools(ovirt_driver):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    pool_list_view = webadmin_menu.open_pool_list_view()
+
+    pools = pool_list_view.get_entities()
+    assert not pools
+    assert pool_list_view.is_new_button_enabled() is True
+    assert pool_list_view.is_edit_button_enabled() is False
+    assert pool_list_view.is_remove_button_enabled() is False
 
 @pytest.fixture
 def setup_virtual_machines(engine_api):
@@ -357,82 +355,69 @@ def setup_virtual_machines(engine_api):
 
 
 def test_virtual_machines(ovirt_driver, setup_virtual_machines,
-                          save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        vm_list_view = webadmin_menu.open_vm_list_view()
+        save_screenshot):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    vm_list_view = webadmin_menu.open_vm_list_view()
 
-        vms = vm_list_view.get_entities()
-        assert 'vm0' in vms
-        assert vm_list_view.is_new_button_enabled() is True
-        assert vm_list_view.is_edit_button_enabled() is False
-        assert vm_list_view.is_shutdown_button_enabled() is False
-        assert vm_list_view.is_export_button_enabled() is False
-        assert vm_list_view.is_migrate_button_enabled() is False
+    vms = vm_list_view.get_entities()
+    assert 'vm0' in vms
+    assert vm_list_view.is_new_button_enabled() is True
+    assert vm_list_view.is_edit_button_enabled() is False
+    assert vm_list_view.is_shutdown_button_enabled() is False
+    assert vm_list_view.is_export_button_enabled() is False
+    assert vm_list_view.is_migrate_button_enabled() is False
 
-        vm_list_view.select_entity('vm0')
-        assert vm_list_view.is_new_button_enabled() is True
-        assert vm_list_view.is_edit_button_enabled() is True
-        assert vm_list_view.is_shutdown_button_enabled() is True
-        assert vm_list_view.is_export_button_enabled() is False
-        assert vm_list_view.is_migrate_button_enabled() is True
+    vm_list_view.select_entity('vm0')
+    assert vm_list_view.is_new_button_enabled() is True
+    assert vm_list_view.is_edit_button_enabled() is True
+    assert vm_list_view.is_shutdown_button_enabled() is True
+    assert vm_list_view.is_export_button_enabled() is False
+    assert vm_list_view.is_migrate_button_enabled() is True
 
-        vm_list_view.poweroff()
-        assert vm_list_view.is_new_button_enabled() is True
-        assert vm_list_view.is_edit_button_enabled() is True
-        assert vm_list_view.is_shutdown_button_enabled() is False
-        assert vm_list_view.is_export_button_enabled() is True
-        assert vm_list_view.is_migrate_button_enabled() is False
+    vm_list_view.poweroff()
+    assert vm_list_view.is_new_button_enabled() is True
+    assert vm_list_view.is_edit_button_enabled() is True
+    assert vm_list_view.is_shutdown_button_enabled() is False
+    assert vm_list_view.is_export_button_enabled() is True
+    assert vm_list_view.is_migrate_button_enabled() is False
 
-        save_screenshot('vms-list-success')
+    save_screenshot('vms-list-success')
 
-        vm_detail_view = vm_list_view.open_detail_view('vm0')
-        assert vm_detail_view.get_name() == 'vm0'
-        assert vm_detail_view.get_status() == 'Down'
+    vm_detail_view = vm_list_view.open_detail_view('vm0')
+    assert vm_detail_view.get_name() == 'vm0'
+    assert vm_detail_view.get_status() == 'Down'
 
-        vm_list_view.run_once()
-        # Waiting for Powering Up instead of Up to speed up the test execution
-        vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
-        vm_status = vm_detail_view.get_status()
-        assert vm_status == 'Powering Up' or vm_status == 'Up'
-        save_screenshot('vms-after-run-once')
+    vm_list_view.run_once()
+    # Waiting for Powering Up instead of Up to speed up the test execution
+    vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
+    vm_status = vm_detail_view.get_status()
+    assert vm_status == 'Powering Up' or vm_status == 'Up'
+    save_screenshot('vms-after-run-once')
 
-        vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
-        vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
+    vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
+    vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
 
-        assert vm_vgpu_dialog.get_title() == 'Manage vGPU'
-        save_screenshot('vms-vgpu')
+    assert vm_vgpu_dialog.get_title() == 'Manage vGPU'
+    save_screenshot('vms-vgpu')
 
-        vm_vgpu_dialog.cancel()
-        save_screenshot('vms-success')
-    except:
-        save_screenshot('vms-failed')
-        save_page_source('vms-failed')
-        raise
+    vm_vgpu_dialog.cancel()
 
-def test_storage_domains(ovirt_driver, save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        storage_domain_list_view = webadmin_menu.open_storage_domain_list_view()
+def test_storage_domains(ovirt_driver):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    storage_domain_list_view = webadmin_menu.open_storage_domain_list_view()
 
-        domains = storage_domain_list_view.get_entities()
-        assert 'nfs' in domains
-        assert storage_domain_list_view.is_new_button_enabled() is True
-        assert storage_domain_list_view.is_import_button_enabled() is True
-        assert storage_domain_list_view.is_manage_button_enabled() is False
-        assert storage_domain_list_view.is_remove_button_enabled() is False
+    domains = storage_domain_list_view.get_entities()
+    assert 'nfs' in domains
+    assert storage_domain_list_view.is_new_button_enabled() is True
+    assert storage_domain_list_view.is_import_button_enabled() is True
+    assert storage_domain_list_view.is_manage_button_enabled() is False
+    assert storage_domain_list_view.is_remove_button_enabled() is False
 
-        storage_domain_list_view.select_entity('nfs')
-        assert storage_domain_list_view.is_new_button_enabled() is True
-        assert storage_domain_list_view.is_import_button_enabled() is True
-        assert storage_domain_list_view.is_manage_button_enabled() is True
-        assert storage_domain_list_view.is_remove_button_enabled() is False
-
-        save_screenshot('storage-domains-success')
-    except:
-        save_screenshot('storage-domains-failed')
-        save_page_source('storage-domains-failed')
-        raise
+    storage_domain_list_view.select_entity('nfs')
+    assert storage_domain_list_view.is_new_button_enabled() is True
+    assert storage_domain_list_view.is_import_button_enabled() is True
+    assert storage_domain_list_view.is_manage_button_enabled() is True
+    assert storage_domain_list_view.is_remove_button_enabled() is False
 
 
 @pytest.fixture(scope="session")
@@ -469,101 +454,73 @@ def test_image_upload(ovirt_driver, save_screenshot, browser_name,
     save_screenshot('left_nav_ok_clicked')
 
 
-def test_dashboard(ovirt_driver, save_screenshot, save_page_source):
-    try:
-        webadmin_menu = WebAdminLeftMenu(ovirt_driver)
-        dashboard = webadmin_menu.open_dashboard_view()
+def test_dashboard(ovirt_driver):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    dashboard = webadmin_menu.open_dashboard_view()
 
-        assert dashboard.data_centers_count() is 1
-        assert dashboard.clusters_count() is 1
-        assert dashboard.hosts_count() is 2
-        assert dashboard.storage_domains_count() is 3
-        assert dashboard.vm_count() is 6
-        assert dashboard.events_count() > 0
-
-        save_screenshot('dashboard-success')
-    except:
-        save_screenshot('dashboard-failed')
-        save_page_source('dashboard-failed')
-        raise
+    assert dashboard.data_centers_count() is 1
+    assert dashboard.clusters_count() is 1
+    assert dashboard.hosts_count() is 2
+    assert dashboard.storage_domains_count() is 3
+    assert dashboard.vm_count() is 6
+    assert dashboard.events_count() > 0
 
 
-def test_logout(ovirt_driver, save_screenshot, save_page_source, engine_webadmin_url):
+def test_logout(ovirt_driver, engine_webadmin_url):
+    webadmin_menu = WebAdminTopMenu(ovirt_driver)
+    webadmin_menu.wait_for_displayed()
+    webadmin_menu.logout()
 
-    try:
-        webadmin_menu = WebAdminTopMenu(ovirt_driver)
-        webadmin_menu.wait_for_displayed()
-        webadmin_menu.logout()
+    # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
+    ovirt_driver.driver.get(engine_webadmin_url)
 
-        # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
-        ovirt_driver.driver.get(engine_webadmin_url)
-
-        welcome_screen = WelcomeScreen(ovirt_driver)
-        welcome_screen.wait_for_displayed()
-        assert welcome_screen.is_user_logged_out()
-
-        save_screenshot('logout-success')
-    except:
-        save_screenshot('logout-failed')
-        save_page_source('logout-failed')
-        raise
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    assert welcome_screen.is_user_logged_out()
 
 
-def test_userportal(ovirt_driver, save_screenshot, save_page_source,
-        engine_username, engine_password):
+def test_userportal(ovirt_driver, engine_username, engine_password):
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    welcome_screen.open_user_portal()
 
-    try:
-        welcome_screen = WelcomeScreen(ovirt_driver)
-        welcome_screen.wait_for_displayed()
-        welcome_screen.open_user_portal()
+    login_screen = LoginScreen(ovirt_driver)
+    login_screen.wait_for_displayed()
+    login_screen.set_user_name(engine_username)
+    login_screen.set_user_password(engine_password)
+    login_screen.login()
 
-        login_screen = LoginScreen(ovirt_driver)
-        login_screen.wait_for_displayed()
-        login_screen.set_user_name(engine_username)
-        login_screen.set_user_password(engine_password)
-        login_screen.login()
+    vm_portal = VmPortal(ovirt_driver)
+    vm_portal.wait_for_displayed()
 
-        vm_portal = VmPortal(ovirt_driver)
-        vm_portal.wait_for_displayed()
-
-        vm0_status = vm_portal.get_vm_status('vm0')
-        assert vm0_status == 'Powering up' or vm0_status == 'Running'
-        save_screenshot('vm-portal-success')
-    except:
-        save_screenshot('vm-portal-failed')
-        save_page_source('vm-portal-failed')
-        raise
+    vm0_status = vm_portal.get_vm_status('vm0')
+    assert vm0_status == 'Powering up' or vm0_status == 'Running'
 
 
-def test_grafana(ovirt_driver, save_screenshot, save_page_source, engine_username,
+def test_grafana(ovirt_driver, save_screenshot, engine_username,
                engine_password, engine_webadmin_url):
-    try:
 
-        ovirt_driver.driver.get(engine_webadmin_url)
+    ovirt_driver.driver.get(engine_webadmin_url)
 
-        welcome_screen = WelcomeScreen(ovirt_driver)
-        welcome_screen.wait_for_displayed()
-        welcome_screen.open_monitoring_portal()
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    welcome_screen.open_monitoring_portal()
 
-        grafana_login = GrafanaLoginScreen(ovirt_driver)
-        grafana_login.wait_for_displayed()
-        save_screenshot('grafana-login')
-        grafana_login.use_ovirt_engine_auth()
+    grafana_login = GrafanaLoginScreen(ovirt_driver)
+    grafana_login.wait_for_displayed()
+    save_screenshot('grafana-login')
+    grafana_login.use_ovirt_engine_auth()
 
-        grafana = Grafana(ovirt_driver)
-        grafana.wait_for_displayed()
-        save_screenshot('grafana')
+    grafana = Grafana(ovirt_driver)
+    grafana.wait_for_displayed()
+    save_screenshot('grafana')
 
-        grafana.open_dashboard('oVirt Executive Dashboards', 'Data Center Dashboard')
-        assert not grafana.is_error_visible()
-        save_screenshot('grafana-dashboard-1')
+    grafana.open_dashboard('oVirt Executive Dashboards', 'Data Center Dashboard')
+    assert not grafana.is_error_visible()
+    save_screenshot('grafana-dashboard-1')
 
-        grafana.open_dashboard('oVirt Inventory Dashboards', 'Hosts Inventory Dashboard')
-        assert not grafana.is_error_visible()
+    grafana.open_dashboard('oVirt Inventory Dashboards', 'Hosts Inventory Dashboard')
+    assert not grafana.is_error_visible()
 
-        save_screenshot('grafana-dashboard-2')
-    except:
-        save_screenshot('grafana-failed')
-        save_page_source('grafana-failed')
-        raise
+    save_screenshot('grafana-dashboard-2')
 

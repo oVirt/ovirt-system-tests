@@ -218,6 +218,15 @@ class Driver:
         with open(path, "w") as text_file:
             text_file.write(self.driver.page_source.encode('utf-8').decode())
 
+    def save_console_log(self, path):
+        with open(path, "w") as text_file:
+            logs = self.driver.get_log('browser')
+            if logs:
+                for entry in logs:
+                    text_file.write(f'{entry}\n\n')
+            else:
+                text_file.write('No console log entries found')
+
     def id_wait_and_click(self, message, element_id, wait_long=False):
         self.xpath_wait_and_click(message, '//*[@id="' + element_id + '"]', wait_long)
 

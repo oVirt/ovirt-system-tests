@@ -37,6 +37,9 @@ class EngineJobs(SDKRootEntity):
             if self._job_description_predicate(job.description)
         ]
 
+    def describe(self):
+        return [f'{job.description}:{job.status}' for job in self.list()]
+
     def describe_started(self):
         started = self._list_for_status((JobStatus.STARTED,))
         return [job.description for job in started]

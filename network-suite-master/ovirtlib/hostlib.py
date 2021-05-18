@@ -25,6 +25,7 @@ from ovirtsdk4 import types
 
 from ovirtlib import clusterlib
 from ovirtlib import error
+from ovirtlib import joblib
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import syncutil
@@ -161,6 +162,7 @@ class Host(SDKRootEntity):
             error_criteria=Host._is_activate_error_non_transient,
             timeout=3 * 60
         )
+        joblib.ActivateHostJobs(self.system).wait_for_done()
 
     @error.report_status
     def deactivate(self):

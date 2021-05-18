@@ -62,6 +62,15 @@ class AllJobs(EngineJobs):
         super(AllJobs, self).__init__(parent_sdk_system, lambda d: True)
 
 
+class ActivateHostJobs(EngineJobs):
+
+    def __init__(self, parent_sdk_system):
+        super(ActivateHostJobs, self).__init__(
+            parent_sdk_system,
+            lambda description: 'Activating Host' in description
+        )
+
+
 class RemoveVmJobs(EngineJobs):
 
     def __init__(self, parent_sdk_system):

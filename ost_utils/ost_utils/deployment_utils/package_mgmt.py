@@ -27,8 +27,6 @@ from collections import namedtuple
 
 import requests
 
-from ost_utils.ansible import AnsibleExecutionError
-from ost_utils.ansible import module_mappers
 
 LOGGER = logging.getLogger(__name__)
 REPO_NAME = 'extra-src-'
@@ -108,16 +106,18 @@ def add_dummy_repo(ansible_vm):
                         dest='/etc/yum.repos.d/dummy.repo')
 
 
-def check_installed_packages(hostnames):
-    vms_pckgs_dict_list = []
-    for hostname in hostnames:
-        vm_pckgs_dict = _get_custom_repos_packages(
-            module_mappers.module_mapper_for(hostname))
-        vms_pckgs_dict_list.append(vm_pckgs_dict)
-    if all(_check_if_user_specified_repos(pckgs_dict) and
-           _check_if_no_packages_used(pckgs_dict) for pckgs_dict in
-           vms_pckgs_dict_list):
-        raise RuntimeError('None of user custom repos has been used')
+def check_installed_packages(ansible_vms):
+    used_repos = _used_custom_repo_names(ansible_vms)
+
+    if len(used_repos) == 0:
+        return
+
+    for repo in used_repos:
+        if len(_get_installed_packages(ansible_vms, repo)) > 0:
+            return
+
+    raise RuntimeError('None of user custom repos has been used. '
+                       'Your packages are too old!')
 
 
 def report_ovirt_packages_versions(ansible_vms):
@@ -144,22 +144,20 @@ def _add_custom_repo(ansible_vm, name, url):
                         option="module_hotfixes", value=1)
 
 
-def _get_custom_repos_packages(ansible_vm):
-    installed_packages = {}
+def _used_custom_repo_names(ansible_vms):
+    repo_names = []
+
     for repo_no in range(1, 100):
         repo_name = f'{REPO_NAME}{repo_no}'
-        try:
-            installed_packages[repo_name] = _get_installed_packages(ansible_vm,
-                                                                    repo_name)
+        result = ansible_vms.shell(f'dnf repolist {repo_name}')
+        if all(len(res['stdout'].strip()) == 0 for res in result.values()):
+            break
+        repo_names.append(repo_name)
 
-        except AnsibleExecutionError as e:
-            if 'Error: Unknown repo' in str(e):
-                break
-            raise
-    return installed_packages
+    return repo_names
 
 
-def _get_installed_packages(ansible_vm, repo_name):
+def _get_installed_packages(ansible_vms, repo_name):
     # dnf adapts its output to the width of the terminal.
     # If it fails to find this width out (which it does using:
     # fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
@@ -170,26 +168,19 @@ def _get_installed_packages(ansible_vm, repo_name):
     # call 'stty cols' to tell it that the terminal is wide.
     # A better solution, one day, might be to make dnf support outputting
     # such information in JSON, and parse this json if/where needed.
-    ansible_res = ansible_vm.shell(
+    results = ansible_vms.shell(
         f'stty cols 300; dnf repo-pkgs {repo_name} list installed')
-    result = [(line.split()) for line in ansible_res['stdout'].split('\n')]
-    _filter_results(result)
+
     return [
-        Package(*line) for line in result
+        Package(*line.split())
+        for res in results.values()
+        for line in _filter_results(res['stdout'].splitlines())
     ]
 
 
 def _filter_results(result):
     try:
-        indx = result.index(['Installed', 'Packages'])
+        indx = result.index('Installed Packages')
     except ValueError:
-        return result.clear()
-    del result[0:indx+1]
-
-
-def _check_if_no_packages_used(pckgs_dict):
-    return all(not pckgs_list for pckgs_list in pckgs_dict.values())
-
-
-def _check_if_user_specified_repos(pckgs_dict):
-    return bool(pckgs_dict.keys())
+        return []
+    return result[indx+1:]

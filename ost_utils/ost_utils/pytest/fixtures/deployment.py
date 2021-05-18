@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def deploy(ansible_all, all_hostnames, deploy_scripts, working_dir, request):
+def deploy(ansible_all, deploy_scripts, working_dir, request):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
         return
@@ -56,7 +56,7 @@ def deploy(ansible_all, all_hostnames, deploy_scripts, working_dir, request):
         )
         # check if packages from custom repos were used
         if not request.config.getoption('--skip-custom-repos-check'):
-            package_mgmt.check_installed_packages(all_hostnames)
+            package_mgmt.check_installed_packages(ansible_all)
 
     # report package versions
     package_mgmt.report_ovirt_packages_versions(ansible_all)

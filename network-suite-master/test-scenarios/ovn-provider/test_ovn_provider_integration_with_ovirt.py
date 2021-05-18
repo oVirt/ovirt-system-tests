@@ -22,6 +22,7 @@ from contextlib import contextmanager
 import pytest
 
 from ovirtlib import clusterlib
+from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import virtlib
 from testlib import suite
@@ -56,6 +57,7 @@ def running_vm_0(ovirt_external_network, system, default_cluster,
         vm_0.wait_for_down_status()
         vm_0.run()
         vm_0.wait_for_up_status()
+        joblib.LaunchVmJobs(system).wait_for_done()
         yield vm_0
 
 

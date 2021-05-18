@@ -20,6 +20,7 @@
 import pytest
 
 from ovirtlib import clusterlib
+from ovirtlib import joblib
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import templatelib
@@ -84,9 +85,9 @@ def vm_0_with_display_network_and_disk(
 
 @pytest.mark.usefixtures('host_1_up', 'display_network_attached_to_host_0')
 def test_run_vm_with_unrestricted_display_network_name(
-        vm_0_with_display_network_and_disk):
+        system, vm_0_with_display_network_and_disk):
     vm_0_with_display_network_and_disk.run()
     vm_0_with_display_network_and_disk.wait_for_up_status()
-
+    joblib.LaunchVmJobs(system).wait_for_done()
     vm_0_with_display_network_and_disk.stop()
     vm_0_with_display_network_and_disk.wait_for_down_status()

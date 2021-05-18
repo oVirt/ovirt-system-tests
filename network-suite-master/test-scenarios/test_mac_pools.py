@@ -20,6 +20,7 @@
 import pytest
 
 from ovirtlib import clusterlib
+from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
@@ -107,7 +108,7 @@ def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
 
         vm_0.run()
         vm_0.wait_for_up_status()
-
+        joblib.LaunchVmJobs(system).wait_for_done()
         nicless_snapshot = vm_0.create_snapshot(SNAPSHOT_DESC)
 
         vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
@@ -206,7 +207,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
 
         vm_0.run()
         vm_0.wait_for_up_status()
-
+        joblib.LaunchVmJobs(system).wait_for_done()
         snapshot = vm_0.create_snapshot(SNAPSHOT_DESC)
 
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
@@ -240,7 +241,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
         vm_0.run()
         vm_0.wait_for_up_status()
-
+        joblib.LaunchVmJobs(system).wait_for_done()
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
         vm_1.create(vm_name='test_move_stateless_vm_mac_to_new_vm_fails_vm_1',
@@ -266,7 +267,7 @@ def test_move_mac_to_new_vm(
 
         vm_0.run()
         vm_0.wait_for_up_status()
-
+        joblib.LaunchVmJobs(system).wait_for_done()
         vnic_0.hot_replace_mac_addr(mac_addr_2)
 
         vm_1.create(vm_name='test_move_mac_to_new_vm_1',

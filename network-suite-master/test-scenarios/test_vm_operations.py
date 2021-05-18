@@ -23,6 +23,7 @@ from ovirtlib import virtlib
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import clusterlib
+from ovirtlib import joblib
 from ovirtlib import datacenterlib
 from ovirtlib import templatelib
 from testlib import suite
@@ -69,6 +70,7 @@ def running_vm_0(system, default_cluster, default_storage_domain,
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.run()
         vm.wait_for_up_status()
+        joblib.LaunchVmJobs(system).wait_for_done()
         yield vm
 
 

@@ -40,6 +40,9 @@ def deploy(ansible_all, deploy_scripts, working_dir, request):
     LOGGER.info("Waiting for SSH on the VMs")
     ansible_all.wait_for_connection(timeout=120)
 
+    # set static hostname to match the one assigned by DNS
+    ansible_all.shell("hostnamectl set-hostname $(hostname)")
+
     # disable all repos
     package_mgmt.disable_all_repos(ansible_all)
 

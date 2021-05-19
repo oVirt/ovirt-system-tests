@@ -28,17 +28,6 @@ from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *
 
 
-# workaround for https://issues.redhat.com/browse/RHV-39904
-def test_set_hostnames(ansible_by_hostname, all_hostnames):
-    for hostname in all_hostnames:
-        ansible_by_hostname(hostname).hostname(name=hostname)
-
-
-def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
-    ansible_engine.ping()
-    ansible_hosts.ping()
-
-
 def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
     answer_file_src = os.path.join(suite_dir, 'engine-answer-file.conf')
 

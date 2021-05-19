@@ -614,7 +614,7 @@ def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api,
 
     with engine_utils.wait_for_event(engine, 1022): # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
         storage_domain_service.refresh_luns(
-            async=False,
+            async_=False,
             logical_units=sd_iscsi_host_luns
         )
 

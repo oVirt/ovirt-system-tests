@@ -336,7 +336,7 @@ def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
            .network_service(network_id)
     )
     network_service.import_(
-        _async=False,
+        async_=False,
         data_center=ovirtsdk4.types.DataCenter(
             id=datacenter_id
         ),

@@ -739,7 +739,7 @@ def test_preview_snapshot_with_memory(engine_api):
     vm_service.stop()
     _verify_vm_state(engine, VM0_NAME, types.VmStatus.DOWN)
     snapshot = test_utils.get_snapshot(engine, VM0_NAME, SNAPSHOT_DESC_MEM)
-    vm_service.preview_snapshot(snapshot=snapshot, async=False,
+    vm_service.preview_snapshot(snapshot=snapshot, async_=False,
                                 restore_memory=True)
 
 @order_by(_TEST_LIST)
@@ -815,7 +815,7 @@ def cold_storage_migration(engine_api):
     for domain in [SD_ISCSI_NAME, SD_SECOND_NFS_NAME]:
         with engine_utils.wait_for_event(engine, 2008): # USER_MOVED_DISK(2,008)
             disk_service.move(
-                async=False,
+                async_=False,
                 storage_domain=types.StorageDomain(
                     name=domain
                 )
@@ -838,7 +838,7 @@ def test_live_storage_migration(engine_api):
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     correlation_id = 'live_storage_migration'
     disk_service.move(
-        async=False,
+        async_=False,
         filter=False,
         storage_domain=types.StorageDomain(
             name=SD_ISCSI_NAME
@@ -875,7 +875,7 @@ def test_export_vm2(engine_api):
         vm_service.export_to_path_on_host(
             host=types.Host(id=host.id),
             directory=OVA_DIR,
-            filename=OVA_VM_EXPORT_NAME, async=True
+            filename=OVA_VM_EXPORT_NAME, async_=True
         )
 
 
@@ -932,7 +932,7 @@ def _import_ova(engine, correlation_id, vm_name, imported_url, storage_domain, c
                     id=host.id
                 ),
                 sparse=True
-            ), async=True, query={'correlation_id': correlation_id}
+            ), async_=True, query={'correlation_id': correlation_id}
         )
 
 
@@ -1162,7 +1162,7 @@ def test_offline_snapshot_restore(engine_api):
     with engine_utils.wait_for_event(engine, [46, 71]):
         # USER_TRY_BACK_TO_SNAPSHOT - 46
         # USER_TRY_BACK_TO_SNAPSHOT_FINISH_SUCCESS - 71
-        vm_service.preview_snapshot(snapshot=snapshot, async=False, restore_memory=False)
+        vm_service.preview_snapshot(snapshot=snapshot, async_=False, restore_memory=False)
     assertions.assert_true_within_short(
         lambda: test_utils.get_snapshot(engine, VM2_NAME, SNAPSHOT_DESC_OFF).snapshot_status ==
                 types.SnapshotStatus.IN_PREVIEW
@@ -1181,7 +1181,7 @@ def test_verify_offline_snapshot_restore(engine_api):
     with engine_utils.wait_for_event(engine, [94, 95]):
         # USER_COMMIT_RESTORE_FROM_SNAPSHOT_START - 94
         # USER_COMMIT_RESTORE_FROM_SNAPSHOT_FINISH_SUCCESS - 95
-        vm_service.commit_snapshot(async=False)
+        vm_service.commit_snapshot(async_=False)
 
 
 @order_by(_TEST_LIST)
@@ -1231,7 +1231,7 @@ def test_template_export(engine_api, cirros_image_glance_template_name):
             host=types.Host(id=host.id),
             directory=OVA_DIR,
             filename=OVA_TEMP_EXPORT_NAME,
-            async=True,
+            async_=True,
             query={'correlation_id': correlation_id}
         )
 

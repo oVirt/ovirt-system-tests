@@ -30,6 +30,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.ansible import ansible_host1
+from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.ansible import ansible_storage
 
 from ost_utils.pytest.fixtures.artifacts import artifacts

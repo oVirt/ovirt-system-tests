@@ -44,7 +44,7 @@ def test_ansible_run(suite_dir, ansible_engine, ansible_inventory):
     )
 
     ansible_engine.copy(
-        src=ansible_inventory,
+        src=ansible_inventory.dir,
         dest=f'{ansible_run_dir}/inventory/hosts',
     )
 

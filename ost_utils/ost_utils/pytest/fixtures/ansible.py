@@ -22,7 +22,8 @@
 import pytest
 
 from ost_utils import ansible
-from ost_utils import backend
+from ost_utils.ansible import inventory
+from ost_utils.ansible.facts import Facts
 from ost_utils.ansible import module_mappers
 from ost_utils.ansible import private_dir
 from ost_utils.ansible.facts import Facts
@@ -61,10 +62,10 @@ def ansible_host1(ansible_by_hostname, host1_hostname):
 
 
 @pytest.fixture(scope="session")
-def ansible_by_hostname():
+def ansible_by_hostname(ansible_inventory):
 
     def module_mapper_for(host_pattern):
-        inventory = backend.default_backend().ansible_inventory()
+        inventory = ansible_inventory.dir
         return module_mappers.ModuleMapper(inventory, host_pattern)
 
     def seq_to_ansible_pattern(seq):
@@ -125,3 +126,10 @@ def ansible_clean_private_dirs():
 def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
     yield
     ansible.LogsCollector.save(artifacts_dir)
+
+
+@pytest.fixture(scope="session")
+def ansible_inventory(backend, working_dir):
+    inv = inventory.Inventory(working_dir)
+    inv.add('backend', backend.ansible_inventory_str())
+    return inv

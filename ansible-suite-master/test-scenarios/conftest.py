@@ -25,7 +25,6 @@ from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 
 from ost_utils.pytest.fixtures.backend import all_hostnames
-from ost_utils.pytest.fixtures.backend import ansible_inventory
 from ost_utils.pytest.fixtures.backend import backend
 from ost_utils.pytest.fixtures.backend import backend_engine_hostname
 from ost_utils.pytest.fixtures.backend import deploy_scripts

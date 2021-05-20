@@ -54,14 +54,11 @@ class BaseBackend(abc.ABC):
         """
 
     @abc.abstractmethod
-    def ansible_inventory(self):
-        """Returns a path to a file containing ansible inventory for the VMs.
-
-        The file should be deleted after the deriving class is garbage
-        collected.
+    def ansible_inventory_str(self):
+        """Returns a string with the contents of an ansible inventory for the VMs.
 
         Returns:
-            str: Path to ansible inventory file.
+            str: Contents of an ansible inventory.
 
         """
 

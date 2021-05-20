@@ -26,6 +26,7 @@ from ost_utils.pytest import pytest_collection_modifyitems
 from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.ansible import ansible_engine
+from ost_utils.pytest.fixtures.ansible import ansible_inventory
 
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir

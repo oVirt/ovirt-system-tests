@@ -62,8 +62,3 @@ def host1_hostname(hosts_hostnames):
 @pytest.fixture(scope="session")
 def storage_hostname(backend):
     return backend.storage_hostname()
-
-
-@pytest.fixture(scope="session")
-def ansible_inventory(backend):
-    return backend.ansible_inventory()

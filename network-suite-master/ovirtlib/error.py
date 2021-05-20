@@ -73,15 +73,15 @@ def report_status(func):
         events.add(description=description)
 
     def _create_description(when, self):
-        description = (f'OST - {self.__class__.__name__} '
+        description = (f'OST - jobs: {self.__class__.__name__} '
                        f'{when} {func.__name__}, ')
         try:
-            description += f'status:{self.status}, '
+            description += f'status: {self.status}, '
         except AttributeError:
             pass
         except ovirtsdk4.NotFoundError:
             description += 'entity not found, '
-        description += f'jobs:{joblib.AllJobs(self.system).describe_started()}'
+        description += f'jobs: {joblib.AllJobs(self.system).describe()}'
         return description
 
     return inner

@@ -49,7 +49,7 @@ def vm_pool(system, size):
             vm.remove()
         joblib.RemoveVmJobs(system).wait_for_done()
         eventlib.EngineEvents(system).add(
-            f'OST - jobs: vm pool remove vms: '
+            f'OST - jobs: on vm pool remove vms: '
             f'{joblib.RemoveVmJobs(system).describe()}'
         )
 

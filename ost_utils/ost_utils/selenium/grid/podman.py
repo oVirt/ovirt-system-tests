@@ -95,6 +95,7 @@ def _nodes(images, hub_port, pod_name, engine_dns_entry):
             "-e", "HUB_PORT={}".format(hub_port),
             "-e", "SE_OPTS=-port {}".format(next(NODE_PORT_GEN)),
             "-e", "DISPLAY=:{}".format(next(NODE_DISPLAY_ADDR_GEN)),
+            "-e", "VNC_NO_PASSWORD=1",
             "--pod", pod_name,
             image
         ]).strip()

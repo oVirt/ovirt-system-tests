@@ -17,7 +17,7 @@ cmd_for_rollbackt = "imgbase rollback"
 cmd_for_getting_unactive_layer = "imgbase layout | grep ^[a-z] |" \
     " grep -v $(imgbase w | grep -o 'ovirt[^+]*')"
 cmd_for_removing_layer = "imgbase base --remove {}"
-cmd_for_getting_current_version = r'imgbase w | grep -Po "(\d+\.){2}\d+-"'
+cmd_for_getting_current_version = r'imgbase w | grep -Po "(\d+\.){3}\d+-"'
 
 
 def _check_if_other_layer_exists(ansible_host):

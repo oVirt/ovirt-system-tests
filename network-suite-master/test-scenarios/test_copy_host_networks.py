@@ -23,6 +23,7 @@ import contextlib
 import pytest
 
 from ovirtlib import clusterlib
+from ovirtlib import joblib
 from ovirtlib import hostlib
 from ovirtlib.netattachlib import BondingData
 from ovirtlib.netattachlib import NetworkAttachmentData as AttachData
@@ -119,7 +120,7 @@ def host_config(networks):
 
 
 @pytest.fixture(scope='module')
-def networks(default_data_center, default_cluster):
+def networks(system, default_data_center, default_cluster):
     vm_net_ctx = clusterlib.new_assigned_network(
         VM_NET_NAME, default_data_center, default_cluster)
 
@@ -135,6 +136,7 @@ def networks(default_data_center, default_cluster):
     vm_vlan_30_net_1_ctx = clusterlib.new_assigned_network(
         VLAN_30_NET_NAME_1, default_data_center, default_cluster, vlan=30)
 
+    joblib.AllJobs(system).wait_for_done()
     with vm_net_ctx as vm_network, \
             vm_vlan_10_net_ctx as vm_vlan_10_network, \
             vm_vlan_20_net_ctx as vm_vlan_20_network, \

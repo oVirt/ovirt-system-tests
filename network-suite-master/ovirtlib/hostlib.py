@@ -174,6 +174,7 @@ class Host(SDKRootEntity):
             success_criteria=lambda s: self.is_in_maintenance,
             error_criteria=Host._is_deactivate_error_non_transient
         )
+        joblib.AllJobs(self.system).wait_for_done()
 
     @contextlib.contextmanager
     def toggle_cluster(self, target_cluster):

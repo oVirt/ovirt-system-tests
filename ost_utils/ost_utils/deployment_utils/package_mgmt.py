@@ -25,6 +25,8 @@ import tempfile
 
 from collections import namedtuple
 
+import requests
+
 from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.ansible import module_mappers
 
@@ -54,6 +56,34 @@ OVIRT_PACKAGES_PATTERNS = (
 
 
 Package = namedtuple('Package', ['name', 'version', 'repo'])
+
+
+def expand_jenkins_repos(custom_repos):
+    expanded_repos = set()
+    for repo_url in custom_repos:
+        if requests.get(repo_url + '/repodata/repomd.xml').ok:
+            expanded_repos.add(repo_url)
+            continue
+
+        lvl1_page = requests.get(repo_url + '/api/json?depth=3')
+        lvl1_page.raise_for_status()
+        lvl1_page = lvl1_page.json()
+
+        url = lvl1_page['url']
+        if url.endswith('/'):
+            url = url[:-1]
+
+        repo_list = set()
+        for artifact in lvl1_page.get('artifacts', []):
+            if not artifact['relativePath'].endswith('rpm'):
+                continue
+            relative_path = artifact['relativePath'].split('/')[0]
+            new_url = f'{url}/artifact/{relative_path}'
+            repo_list.add(new_url)
+
+        expanded_repos.update(repo_list)
+
+    return list(expanded_repos)
 
 
 def add_custom_repos(ansible_vm, repo_urls):

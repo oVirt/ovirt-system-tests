@@ -49,6 +49,7 @@ def deploy(ansible_all, all_hostnames, deploy_scripts, working_dir, request):
     # add custom repos
     custom_repos = request.config.getoption('--custom-repo')
     if custom_repos is not None:
+        custom_repos = package_mgmt.expand_jenkins_repos(custom_repos)
         package_mgmt.add_custom_repos(ansible_all, custom_repos)
         ansible_all.shell(
             'dnf upgrade --nogpgcheck -y -x ovirt-release-master'

@@ -35,6 +35,7 @@ class EngineJobs(SDKRootEntity):
         return [
             job for job in self._parent_service.list()
             if self._job_description_predicate(job.description)
+            and 'Adding an External Event' not in job.description
         ]
 
     def describe(self):

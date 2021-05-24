@@ -99,7 +99,7 @@ def vms_up_on_same_host(system, default_cluster, cirros_template,
 
         vm_0.wait_for_up_status()
         vm_1.wait_for_up_status()
-        joblib.LaunchVmJobs(system).wait_for_done()
+        joblib.AllJobs(system).wait_for_done()
         yield
 
 

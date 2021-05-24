@@ -47,7 +47,7 @@ def vm_pool(system, size):
             if vm.service is None:
                 continue
             vm.remove()
-        joblib.RemoveVmJobs(system).wait_for_done()
+        joblib.AllJobs(system).wait_for_done()
         eventlib.EngineEvents(system).add(
             f'OST - jobs: on vm pool remove vms: '
             f'{joblib.RemoveVmJobs(system).describe()}'

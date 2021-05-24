@@ -162,7 +162,7 @@ class Host(SDKRootEntity):
             error_criteria=Host._is_activate_error_non_transient,
             timeout=3 * 60
         )
-        joblib.ActivateHostJobs(self.system).wait_for_done()
+        joblib.AllJobs(self.system).wait_for_done()
 
     @error.report_status
     def deactivate(self):

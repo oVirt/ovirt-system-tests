@@ -70,7 +70,7 @@ def running_vm_0(system, default_cluster, default_storage_domain,
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.run()
         vm.wait_for_up_status()
-        joblib.LaunchVmJobs(system).wait_for_done()
+        joblib.AllJobs(system).wait_for_done()
         yield vm
 
 

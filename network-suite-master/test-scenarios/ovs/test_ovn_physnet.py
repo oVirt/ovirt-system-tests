@@ -102,7 +102,7 @@ def vm_in_ovn_network_up(system, vm_in_ovs_cluster_down,
                          vnic_attached_to_ovn_network):
     vm_in_ovs_cluster_down.run_once(cloud_init_hostname=VM0_NAME)
     vm_in_ovs_cluster_down.wait_for_up_status()
-    joblib.LaunchVmJobs(system).wait_for_done()
+    joblib.AllJobs(system).wait_for_done()
     yield vm_in_ovs_cluster_down
 
 

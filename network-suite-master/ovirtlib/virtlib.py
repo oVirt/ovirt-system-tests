@@ -27,7 +27,6 @@ from contextlib import contextmanager
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from ovirtlib import eventlib
 from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import clusterlib
@@ -48,10 +47,6 @@ def vm_pool(system, size):
                 continue
             vm.remove()
         joblib.AllJobs(system).wait_for_done()
-        eventlib.EngineEvents(system).add(
-            f'OST - jobs: on vm pool remove vms: '
-            f'{joblib.AllJobs(system).describe_ill_fated()}'
-        )
 
 
 class SnapshotStatus(object):

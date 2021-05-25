@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 from ovirtsdk4.types import JobStatus
 
+from ovirtlib import eventlib
 from ovirtlib import syncutil
 from ovirtlib.sdkentity import SDKRootEntity
 
@@ -54,10 +55,26 @@ class EngineJobs(SDKRootEntity):
         )
 
     def wait_for_done(self):
+        self._report_started()
+        self._report_ill_fated()
         syncutil.sync(
             exec_func=lambda: self.done,
             exec_func_args=(),
             success_criteria=lambda done: done
+        )
+        self._report_started()
+        self._report_ill_fated()
+
+    def _report_started(self):
+        eventlib.EngineEvents(self.system).add(
+            f'OST - jobs: on wait for done - started jobs: '
+            f'{self.describe_started()} '
+        )
+
+    def _report_ill_fated(self):
+        eventlib.EngineEvents(self.system).add(
+            f'OST - jobs: on wait for done:'
+            f'{self.describe_ill_fated()}'
         )
 
     def _list_for_status(self, job_statuses):

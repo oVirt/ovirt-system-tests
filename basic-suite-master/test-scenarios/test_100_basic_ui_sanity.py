@@ -244,6 +244,33 @@ def after_test(request, save_screenshot, save_page_source, save_console_log):
         save_screenshot(test_name + "_success")
 
 
+@pytest.fixture(scope="session")
+def user_login(ovirt_driver):
+    def login(username, password):
+        login_screen = LoginScreen(ovirt_driver)
+        login_screen.wait_for_displayed()
+        login_screen.set_user_name(username)
+        login_screen.set_user_password(password)
+        login_screen.login()
+    return login
+
+
+def test_non_admin_login_to_webadmin(ovirt_driver,
+                                     nonadmin_username,
+                                     nonadmin_password,
+                                     engine_webadmin_url,
+                                     user_login):
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    welcome_screen.open_administration_portal()
+    user_login(nonadmin_username, nonadmin_password)
+
+    assert welcome_screen.is_error_message_displayed()
+    assert 'not authorized' in welcome_screen.get_error_message()
+    assert welcome_screen.is_user_logged_in(nonadmin_username)
+    welcome_screen.logout()
+    assert welcome_screen.is_user_logged_out()
+
 def test_login(ovirt_driver, save_screenshot,
         engine_username, engine_password, engine_cert):
 
@@ -485,26 +512,33 @@ def test_logout(ovirt_driver, engine_webadmin_url):
     assert welcome_screen.is_user_logged_out()
 
 
-def test_userportal(ovirt_driver, engine_username, engine_password):
+def test_userportal(ovirt_driver, nonadmin_username, nonadmin_password,
+                    user_login, engine_webadmin_url):
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
     welcome_screen.open_user_portal()
 
-    login_screen = LoginScreen(ovirt_driver)
-    login_screen.wait_for_displayed()
-    login_screen.set_user_name(engine_username)
-    login_screen.set_user_password(engine_password)
-    login_screen.login()
+    user_login(nonadmin_username, nonadmin_password)
 
     vm_portal = VmPortal(ovirt_driver)
     vm_portal.wait_for_displayed()
 
+    # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
+    assert vm_portal.get_vm_count() is 1
     vm0_status = vm_portal.get_vm_status('vm0')
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
+    vm_portal.logout()
+
+    # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
+    ovirt_driver.driver.get(engine_webadmin_url)
+
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    assert welcome_screen.is_user_logged_out()
 
 
 def test_grafana(ovirt_driver, save_screenshot, engine_username,
-               engine_password, engine_webadmin_url):
+                 engine_password, engine_webadmin_url, user_login):
 
     ovirt_driver.driver.get(engine_webadmin_url)
 
@@ -516,6 +550,7 @@ def test_grafana(ovirt_driver, save_screenshot, engine_username,
     grafana_login.wait_for_displayed()
     save_screenshot('grafana-login')
     grafana_login.use_ovirt_engine_auth()
+    user_login(engine_username, engine_password)
 
     grafana = Grafana(ovirt_driver)
     grafana.wait_for_displayed()
@@ -529,4 +564,3 @@ def test_grafana(ovirt_driver, save_screenshot, engine_username,
     assert not grafana.is_error_visible()
 
     save_screenshot('grafana-dashboard-2')
-

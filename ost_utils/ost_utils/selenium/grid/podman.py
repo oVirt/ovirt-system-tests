@@ -20,6 +20,7 @@
 
 import contextlib
 import logging
+import os
 
 import ost_utils.network_utils as network_utils
 
@@ -52,7 +53,8 @@ def _log_issues(pod_name, hub_name, node_names, podman_cmd):
 
 @contextlib.contextmanager
 def _pod(hub_port, podman_cmd):
-    name = shell([podman_cmd, "pod", "create", "--network=slirp4netns", "-p",
+    network_backend = ["--network=slirp4netns"] if os.getuid() == 0 else []
+    name = shell([podman_cmd, "pod", "create", *network_backend, "-p",
                  f"{hub_port}:{hub_port}"]).strip()
     try:
         yield name

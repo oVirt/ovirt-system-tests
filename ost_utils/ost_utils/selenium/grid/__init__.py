@@ -18,9 +18,9 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-CHROME_CONTAINER_IMAGE = 'selenium/node-chrome-debug:3.141.59-20210422'
-FIREFOX_CONTAINER_IMAGE = 'selenium/node-firefox-debug:3.141.59-20210422'
-HUB_CONTAINER_IMAGE = 'selenium/hub:3.141.59-20210422'
+CHROME_CONTAINER_IMAGE = 'docker.io/selenium/node-chrome-debug:3.141.59-20210422'
+FIREFOX_CONTAINER_IMAGE = 'docker.io/selenium/node-firefox-debug:3.141.59-20210422'
+HUB_CONTAINER_IMAGE = 'docker.io/selenium/hub:3.141.59-20210422'
 
 # selenium grid update 20210422 uses these versions:
 CHROME_VERSION = '90.0.4430.85'

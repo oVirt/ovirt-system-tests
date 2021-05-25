@@ -119,4 +119,4 @@ def test_invocation_logger(system, request, host_0_up, host_1_up):
     sshlib.Node(host_1_up.address, host_1_up.root_password).exec_command(
         f'vdsm-client Host echo message="{test_invoke}"')
     events.add(description=f'OST - jobs: on test invocation: '
-                           f'{joblib.AllJobs(system).describe()}')
+                           f'{joblib.AllJobs(system).describe_ill_fated()}')

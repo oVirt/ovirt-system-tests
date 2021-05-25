@@ -38,12 +38,15 @@ class EngineJobs(SDKRootEntity):
             and 'Adding an External Event' not in job.description
         ]
 
-    def describe(self):
-        return [f'{job.description}:{job.status}' for job in self.list()]
-
     def describe_started(self):
         started = self._list_for_status((JobStatus.STARTED,))
         return [job.description for job in started]
+
+    def describe_ill_fated(self):
+        ill_fated = self._list_for_status(
+            (JobStatus.ABORTED, JobStatus.UNKNOWN, JobStatus.FAILED)
+        )
+        return [f'{job.description}:{job.status}' for job in ill_fated]
 
     def done(self):
         return not self._list_for_status(

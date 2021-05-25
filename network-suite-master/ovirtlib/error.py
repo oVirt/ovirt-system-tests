@@ -81,7 +81,8 @@ def report_status(func):
             pass
         except ovirtsdk4.NotFoundError:
             description += 'entity not found, '
-        description += f'jobs: {joblib.AllJobs(self.system).describe()}'
+        description += (f'jobs: '
+                        f'{joblib.AllJobs(self.system).describe_ill_fated()}')
         return description
 
     return inner

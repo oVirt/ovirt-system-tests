@@ -50,7 +50,7 @@ def vm_pool(system, size):
         joblib.AllJobs(system).wait_for_done()
         eventlib.EngineEvents(system).add(
             f'OST - jobs: on vm pool remove vms: '
-            f'{joblib.RemoveVmJobs(system).describe()}'
+            f'{joblib.AllJobs(system).describe_ill_fated()}'
         )
 
 

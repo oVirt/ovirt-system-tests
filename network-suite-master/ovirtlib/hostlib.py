@@ -458,7 +458,8 @@ class Host(SDKRootEntity):
     @staticmethod
     def _is_activate_error_non_transient(error_):
         transient_errors = [
-            'Cannot activate Host. Related operation is currently in progress'
+            'Cannot activate Host. Related operation is currently in progress',
+            'Cannot activate Host. Host in Up status'
         ]
         return not Host._is_error_transient(error_, transient_errors)
 

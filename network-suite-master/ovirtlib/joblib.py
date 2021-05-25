@@ -54,6 +54,7 @@ class EngineJobs(SDKRootEntity):
         syncutil.sync(
             exec_func=lambda: self.done,
             exec_func_args=(),
+            success_criteria=lambda done: done
         )
 
     def _list_for_status(self, job_statuses):

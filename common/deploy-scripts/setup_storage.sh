@@ -121,6 +121,7 @@ setup_iscsi() {
     iscsiadm -m node -L all
     rescan-scsi-bus.sh
     ls /dev/disk/by-id/scsi-36* | cut -d - -f 3 | sort > /root/multipath.txt
+    [[ $(wc -l /root/multipath.txt | cut -f1 -d " ") == $NUM_LUNS ]] || { echo "We need to see exactly $NUM_LUNS LUNs:"; ls -l /dev/disk/by-id/scsi-36*; exit 1; }
     iscsiadm -m node -U all
     iscsiadm -m node -o delete
     systemctl disable --now iscsi.service

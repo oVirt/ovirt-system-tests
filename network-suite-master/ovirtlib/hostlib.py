@@ -25,6 +25,7 @@ from ovirtsdk4 import types
 
 from ovirtlib import clusterlib
 from ovirtlib import error
+from ovirtlib import eventlib
 from ovirtlib import joblib
 from ovirtlib import netattachlib
 from ovirtlib import netlib
@@ -178,6 +179,9 @@ class Host(SDKRootEntity):
 
     @contextlib.contextmanager
     def toggle_cluster(self, target_cluster):
+        eventlib.EngineEvents(self.system).add(
+            f'OST - before toggle cluster: {self.name} is spm({self.is_spm})'
+        )
         current_cluster = self.get_cluster()
         try:
             self.change_cluster(target_cluster)

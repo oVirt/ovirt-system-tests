@@ -85,3 +85,15 @@ gpgcheck=0
 enabled=1
 EOL
 fi
+
+# FIPS setup for encrypted VNC
+# FIXME this just duplicates what ovirt-vnc-sasl.yml does
+if [[ $(cat /proc/sys/crypto/fips_enabled) == 1 ]]; then
+    cat > /etc/sasl2/qemu.conf << EOF
+mech_list: scram-sha-1
+sasldb_path: /etc/sasl2/vnc_passwd.db
+EOF
+    echo dummy_password | saslpasswd2 -a dummy_db -f /etc/sasl2/vnc_passwd.db dummy_user -p
+    chown qemu:qemu /etc/sasl2/vnc_passwd.db
+    sed -i "s/^#vnc_sasl =.*/vnc_sasl = 1/" /etc/libvirt/qemu.conf
+fi

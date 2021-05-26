@@ -24,7 +24,9 @@ import ovirtsdk4
 from ovirtsdk4 import types
 
 from ovirtlib import datacenterlib
+from ovirtlib import eventlib
 from ovirtlib import netlib
+from ovirtlib import syncutil
 
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
@@ -145,6 +147,9 @@ class Cluster(SDKRootEntity):
             if sdk_host.cluster.id == self.id
         ]
 
+    def is_empty(self):
+        return not self.host_ids()
+
     def mgmt_network(self):
         return next(network for network in self.networks() if
                     types.NetworkUsage.MANAGEMENT in network.usages)
@@ -159,6 +164,24 @@ class Cluster(SDKRootEntity):
 
     def sync_all_networks(self):
         self.service.sync_all_networks()
+
+    def remove(self):
+        self.wait_until_empty()
+        super(Cluster, self).remove()
+
+    def wait_until_empty(self):
+        self._report_is_empty('before')
+        syncutil.sync(
+            exec_func=self.is_empty,
+            exec_func_args=(),
+            success_criteria=lambda empty: empty
+        )
+        self._report_is_empty('after')
+
+    def _report_is_empty(self, when):
+        eventlib.EngineEvents(self.system).add(
+            f'OST - {when} wait until empty: cluster empty({self.is_empty()})'
+        )
 
     def _get_parent_service(self, system):
         return system.clusters_service

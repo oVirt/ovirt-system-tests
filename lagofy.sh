@@ -70,12 +70,13 @@ lago_init() {
     lago_cleanup
 
     # final lago init file
-    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image use_ost_images=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
+    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image add_plain_repos=1 use_ost_images=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
 
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"
 
     # start the OST VMs, run deploy scripts and generate hosts for ansible tasks
-    lago start && lago ansible_hosts > $PREFIX/hosts
+    # FIXME needed until HE moves deployment code to pytest
+    lago start && ( [[ $SUITE_NAME != "he-basic-suite-master" ]] && : || lago deploy ) && lago ansible_hosts > $PREFIX/hosts
 
     # ... and that's it
 }

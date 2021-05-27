@@ -87,3 +87,7 @@ class LagoBackend(base.BaseBackend):
 
         with open(path, 'rb') as init_file:
             return yaml.safe_load(init_file.read())
+
+    @memoized.memoized
+    def libvirt_net_name(self, net_name):
+        return self._status()["Prefix"]["Networks"][net_name]["libvirt_name"]

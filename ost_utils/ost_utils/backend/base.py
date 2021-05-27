@@ -154,3 +154,7 @@ class BaseBackend(abc.ABC):
     @memoized.memoized
     def bonding_network_name(self):
         return next(nn for nn in self.network_names() if "bonding" in nn)
+
+    @abc.abstractmethod
+    def libvirt_net_name(self, net_name):
+        pass

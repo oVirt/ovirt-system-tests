@@ -155,7 +155,7 @@ export CUSTOM_REPOS_ARGS=()
 lago() {
     if [[ "$1" == "shell" && -n "$2" ]]; then
         local ssh=$(sed -n "/^lago/ s/ansible[a-z_]*=//g p" $PREFIX/hosts | while IFS=\  read -r host ip key; do
-        [[ "$2" == "${host}" ]] && $(ping -c1 -w1 ${ip} &>/dev/null) && { echo "ssh -t -i ${key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${ip}"; break; }
+        [[ "$2" == "${host}" ]] && $(ping -c1 -w1 ${ip} &>/dev/null) && { shift 2; echo "ssh -t -i ${key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${ip} $@"; break; }
         done)
         [ -n "${ssh}" ] || { echo "$2 not running"; return 1; }
         eval ${ssh}

@@ -70,7 +70,7 @@ lago_init() {
     lago_cleanup
 
     # final lago init file
-    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image add_plain_repos=1 use_ost_images=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
+    suite_name="$SUITE_NAME" engine_image=$engine_image node_image=$node_image host_image=$host_image upgrade_image=$upgrade_image he_image=$he_image add_plain_repos=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
 
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"
 

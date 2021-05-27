@@ -23,10 +23,8 @@ domains:
       - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
     disks:
       - type: template
-        {% if env.use_ost_images == "1" -%}
         template_type: qcow2
         path: {{ env.upgrade_image }}
-        {%- endif %}
         name: root
         dev: vda
         format: qcow2

@@ -1,7 +1,5 @@
 #!/bin/bash -xe
 
-export USE_OST_IMAGES=${USE_OST_IMAGES:-$((rpm -qa | grep -q ost-images) && echo 1 || echo 0)}
-
 # This directory has to be visible by both processes
 # outside mock (libvirt) and inside mock (lago)
 _OST_IMAGES_ROOT="/var/lib/lago"
@@ -14,20 +12,18 @@ _find_ssh_key() {
     rpm -ql ost-images-${OST_IMAGES_DISTRO}-base | grep 'id_rsa$'
 }
 
-if [ ${USE_OST_IMAGES} -eq 1 ]; then
-    export OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:-el8stream}
+export OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:-el8stream}
 
-    export OST_IMAGES_BASE=$(_find_qcow "base")
-    export OST_IMAGES_NODE=$(OST_IMAGES_DISTRO=node _find_qcow "base")
-    export OST_IMAGES_UPGRADE=$(_find_qcow "upgrade")
-    export OST_IMAGES_ENGINE_DEPS_INSTALLED=$(_find_qcow "engine-deps-installed")
-    export OST_IMAGES_HOST_DEPS_INSTALLED=$(_find_qcow "host-deps-installed")
-    export OST_IMAGES_ENGINE_INSTALLED=$(_find_qcow "engine-installed")
-    export OST_IMAGES_HOST_INSTALLED=$(_find_qcow "host-installed")
-    export OST_IMAGES_HE_INSTALLED=$(_find_qcow "he-installed")
+export OST_IMAGES_BASE=$(_find_qcow "base")
+export OST_IMAGES_NODE=$(OST_IMAGES_DISTRO=node _find_qcow "base")
+export OST_IMAGES_UPGRADE=$(_find_qcow "upgrade")
+export OST_IMAGES_ENGINE_DEPS_INSTALLED=$(_find_qcow "engine-deps-installed")
+export OST_IMAGES_HOST_DEPS_INSTALLED=$(_find_qcow "host-deps-installed")
+export OST_IMAGES_ENGINE_INSTALLED=$(_find_qcow "engine-installed")
+export OST_IMAGES_HOST_INSTALLED=$(_find_qcow "host-installed")
+export OST_IMAGES_HE_INSTALLED=$(_find_qcow "he-installed")
 
-    export OST_IMAGES_SSH_KEY=$(_find_ssh_key)
-fi
+export OST_IMAGES_SSH_KEY=$(_find_ssh_key)
 
 _fix_permissions() {
     chown "$(whoami):qemu" "$1"

@@ -186,7 +186,6 @@ render_jinja_templates () {
     # export the suite name so jinja can interpolate it in the template
     export suite_name="${suite_name//./-}"
     export coverage="${COVERAGE}"
-    export use_ost_images="${USE_OST_IMAGES}"
     export node_image="${OST_IMAGES_NODE}"
     export upgrade_image="${OST_IMAGES_UPGRADE}"
     export engine_image="${OST_IMAGES_ENGINE_INSTALLED}"
@@ -388,7 +387,7 @@ env_cleanup() {
         env_libvirt_cleanup "${SUITE_NAME}" "$uid"
     fi
 
-    if [ ${USE_OST_IMAGES} -eq 1 -a ${INSIDE_MOCK} -eq 1 ]; then
+    if [ ${INSIDE_MOCK} -eq 1 ]; then
         cleanup_ost_images
     fi
 
@@ -779,7 +778,7 @@ logger.info  "Environment will be deployed at $PREFIX"
 export PYTHONPATH="${PYTHONPATH}:${SUITE}"
 source "${SUITE}/control.sh"
 
-if [ ${USE_OST_IMAGES} -eq 1 -a ${INSIDE_MOCK} -eq 1 ]; then
+if [ ${INSIDE_MOCK} -eq 1 ]; then
     prepare_images_for_mock
 fi
 

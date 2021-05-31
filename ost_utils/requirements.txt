@@ -4,5 +4,5 @@ paramiko
 future
 nose
 sh
-click
+click==7.0
 PyYAML

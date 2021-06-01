@@ -503,6 +503,7 @@ def test_userportal(ovirt_driver, engine_username, engine_password):
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
 
 
+@pytest.mark.xfail(reason="broken home page links")
 def test_grafana(ovirt_driver, save_screenshot, engine_username,
                engine_password, engine_webadmin_url):
 

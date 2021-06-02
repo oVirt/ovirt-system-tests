@@ -171,7 +171,6 @@ class Host(SDKRootEntity):
 
     @error.report_status
     def deactivate(self):
-        self.wait_for_up_status()
         syncutil.sync(
             exec_func=self._service.deactivate,
             exec_func_args=(),
@@ -459,7 +458,8 @@ class Host(SDKRootEntity):
     def _is_deactivate_error_non_transient(error_):
         transient_errors = [
             'Host has asynchronous running tasks',
-            'Host is contending'
+            'Host is contending',
+            'Host is already in Maintenance mode',
         ]
         return not Host._is_error_transient(error_, transient_errors)
 

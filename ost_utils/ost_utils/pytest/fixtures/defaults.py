@@ -50,6 +50,7 @@ def hostnames_to_reboot(hosts_hostnames):
 def deploy_hosted_engine():
     return False
 
+
 @pytest.fixture(scope="session")
 def artifact_list():
     return [
@@ -78,3 +79,8 @@ def artifact_list():
         '/var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log',
         '/var/log',
     ]
+
+
+@pytest.fixture(scope="session")
+def ansible_vms_to_deploy(ansible_all):
+    return ansible_all

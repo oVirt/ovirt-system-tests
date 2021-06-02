@@ -99,6 +99,10 @@ class Host(SDKRootEntity):
     def root_password(self):
         return self._root_password
 
+    @root_password.setter
+    def root_password(self, password):
+        self._root_password = password
+
     @property
     def status(self):
         return self.get_sdk_type().status

@@ -22,8 +22,6 @@ import pytest
 from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
-ROOT_PASSWORD = '123456'
-
 
 @pytest.fixture(scope='session')
 def host_0(system, default_cluster, host0_facts):
@@ -76,9 +74,10 @@ def _create_host(system, default_cluster, host_facts):
     host = hostlib.Host(system)
     try:
         host.import_by_name(host_facts.hostname)
+        host.root_password = host_facts.ssh_password
     except EntityNotFoundError:
         host.create(
             default_cluster, host_facts.hostname,
             host_facts.ipv4_default_address,
-            ROOT_PASSWORD)
+            host_facts.ssh_password)
     return host

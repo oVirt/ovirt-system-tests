@@ -152,7 +152,7 @@ class Host(SDKRootEntity):
         self._root_password = root_password
 
     def update(self, **kwargs):
-        syncutil.sync(
+        return syncutil.sync(
             exec_func=super(Host, self).update,
             exec_func_args=kwargs,
             error_criteria=Host._is_update_error_non_transient
@@ -195,7 +195,11 @@ class Host(SDKRootEntity):
     def change_cluster(self, cluster):
         spm_before_deactivate = self.is_spm
         self.deactivate()
-        self.update(cluster=cluster.get_sdk_type())
+        syncutil.sync(
+            exec_func=self.update,
+            exec_func_args={'cluster': cluster.get_sdk_type()},
+            success_criteria=lambda sdk_type: sdk_type.cluster.id == cluster.id
+        )
         self.activate()
         if spm_before_deactivate:
             # Deactivation removed SPM status from this host and caused the DC

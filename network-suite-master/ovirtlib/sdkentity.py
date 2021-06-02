@@ -85,7 +85,7 @@ class SDKEntity(metaclass=abc.ABCMeta):
         sdk_type = self.get_sdk_type()
         for key, value in kwargs.items():
             setattr(sdk_type, key, value)
-        self._service.update(sdk_type)
+        return self._service.update(sdk_type)
 
     def _create_sdk_entity(self, sdk_type):
         try:

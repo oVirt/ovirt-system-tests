@@ -22,7 +22,7 @@ import os
 import re
 
 
-_DC_VERSION = '4.5'
+_DC_VERSION = '4.6'
 
 
 def cluster_version():

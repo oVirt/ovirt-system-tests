@@ -75,8 +75,7 @@ lago_init() {
     lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"
 
     # start the OST VMs, run deploy scripts and generate hosts for ansible tasks
-    # FIXME needed until HE moves deployment code to pytest
-    lago start && ( [[ $SUITE_NAME != "he-basic-suite-master" ]] && : || lago deploy ) && lago ansible_hosts > $PREFIX/hosts
+    lago start && lago ansible_hosts > $PREFIX/hosts
 
     # ... and that's it
 }

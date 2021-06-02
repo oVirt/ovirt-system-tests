@@ -18,17 +18,12 @@ run_suite(){
     env_init \
         "$1" \
         "$suite/LagoInitFile"
-    env_wait_for_ssh
-    env_add_extra_repos
     env_start
-    env_dump_ansible_hosts
     cd "$OST_REPO_ROOT"
 
     if [[ ${suite} == *"ipv6"* ]]; then
         setup_ipv6
     fi
-
-    env_deploy
 
     declare test_scenarios="${SUITE}/test-scenarios"
 

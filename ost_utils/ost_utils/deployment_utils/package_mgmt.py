@@ -90,7 +90,7 @@ def add_custom_repos(ansible_vm, repo_urls):
 
 
 def disable_all_repos(ansible_vm):
-    ansible_vm.shell('dnf config-manager --disable \'*\'')
+    ansible_vm.shell('dnf config-manager --disable \'*\' || :')
 
 
 def add_dummy_repo(ansible_vm):

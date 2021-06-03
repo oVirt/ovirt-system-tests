@@ -26,6 +26,7 @@
     cluster: "{{ cluster_name }}"
     override_iptables: true
     timeout: 1200
+    reboot_after_installation: false
     poll_interval: 10
   with_together:
     - "{{ host_names}}"

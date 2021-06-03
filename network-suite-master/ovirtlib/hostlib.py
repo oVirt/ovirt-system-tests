@@ -198,7 +198,10 @@ class Host(SDKRootEntity):
         syncutil.sync(
             exec_func=self.update,
             exec_func_args={'cluster': cluster.get_sdk_type()},
-            success_criteria=lambda sdk_type: sdk_type.cluster.id == cluster.id
+            success_criteria=lambda sdk_type: (
+                    hasattr(sdk_type, 'cluster')
+                    and sdk_type.cluster.id == cluster.id
+            )
         )
         self.activate()
         if spm_before_deactivate:

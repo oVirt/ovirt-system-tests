@@ -423,38 +423,38 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 
 @versioning.require_version(4, 2)
-def test_use_ovn_provider(engine_api, engine_ip):
+def test_use_ovn_provider(engine_api, engine_ip_url):
     engine = engine_api.system_service()
     provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
 
-    token_id = _get_auth_token(engine_ip)
+    token_id = _get_auth_token(engine_ip_url)
 
-    _validate_db_empty(token_id, engine_ip)
+    _validate_db_empty(token_id, engine_ip_url)
 
     with _disable_auto_sync(engine_api, provider_id):
         network1_id = _add_network(
             token_id,
-            engine_ip,
+            engine_ip_url,
             NETWORK_1,
         )
 
         subnet1_id = _add_subnet(
             token_id,
-            engine_ip,
+            engine_ip_url,
             SUBNET_1,
             network1_id,
         )
 
         port1_id = _add_port(
             token_id,
-            engine_ip,
+            engine_ip_url,
             PORT_1,
             network1_id,
         )
 
-        _validate_network(token_id, engine_ip, NETWORK_1, network1_id)
-        _validate_port(token_id, engine_ip, PORT_1, port1_id, network1_id)
-        _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
+        _validate_network(token_id, engine_ip_url, NETWORK_1, network1_id)
+        _validate_port(token_id, engine_ip_url, PORT_1, port1_id, network1_id)
+        _validate_subnet(token_id, engine_ip_url, SUBNET_1, subnet1_id, network1_id)
 
         datacenter_id = _get_datacenter_id(engine_api)
         _import_network_to_ovirt_if_missing(engine_api, provider_id, network1_id, datacenter_id)
@@ -465,8 +465,8 @@ def test_use_ovn_provider(engine_api, engine_ip):
         _remove_iface_from_vm(engine_api, VM0_NAME, IFACE_NAME)
         _remove_network_from_ovirt(engine_api, datacenter_id, ovirt_network_id)
 
-        _delete_port(token_id, engine_ip, port1_id)
-        _delete_subnet(token_id, engine_ip, subnet1_id)
-        _delete_network(token_id, engine_ip, network1_id)
+        _delete_port(token_id, engine_ip_url, port1_id)
+        _delete_subnet(token_id, engine_ip_url, subnet1_id)
+        _delete_network(token_id, engine_ip_url, network1_id)
 
-    _validate_db_empty(token_id, engine_ip)
+    _validate_db_empty(token_id, engine_ip_url)

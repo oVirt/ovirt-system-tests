@@ -1037,12 +1037,6 @@ def test_verify_add_vm1_from_template(engine_api):
     _verify_vm_disks_state(engine, VM1_NAME, types.DiskStatus.OK)
 
 
-@pytest.fixture(scope="session")
-def management_gw_ip(engine_ip):
-    gw_ip = engine_ip.split('.')[:3] + ['1']
-    return '.'.join(gw_ip)
-
-
 @order_by(_TEST_LIST)
 def test_cold_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
     _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.DOWN)

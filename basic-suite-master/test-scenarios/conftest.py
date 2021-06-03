@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #
 
 import pytest
+
+from ost_utils import network_utils
 
 from ost_utils.pytest import pytest_collection_modifyitems
 
@@ -60,6 +62,8 @@ from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import suite_dir
 from ost_utils.pytest.fixtures.env import working_dir
 
+from ost_utils.pytest.fixtures.network import management_gw_ip
+
 from ost_utils.pytest.fixtures.node import *
 
 from ost_utils.pytest.fixtures.sdk import *
@@ -76,7 +80,7 @@ def sd_iscsi_host_ips(engine_storage_ips):  # pylint: disable=function-redefined
 
 @pytest.fixture(scope="session")
 def sd_nfs_host_storage_ip(engine_storage_ips):  # pylint: disable=function-redefined
-    return engine_storage_ips[0]
+    return network_utils.ip_to_url(engine_storage_ips[0])
 
 
 @pytest.fixture(scope="session")

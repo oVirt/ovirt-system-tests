@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,11 @@ def engine_ips_for_network(ansible_engine_facts, backend):
 @pytest.fixture(scope="session")
 def engine_ip(engine_ips_for_network, management_network_name):
     return engine_ips_for_network(management_network_name)[0]
+
+
+@pytest.fixture(scope="session")
+def engine_ip_url(engine_ip):
+    return network_utils.ip_to_url(engine_ip)
 
 
 @pytest.fixture(scope="session")
@@ -96,8 +101,8 @@ def engine_password():
 
 
 @pytest.fixture(scope="session")
-def engine_api_url(engine_ip):
-    return 'https://{}/ovirt-engine/api'.format(engine_ip)
+def engine_api_url(engine_ip_url):
+    return f'https://{engine_ip_url}/ovirt-engine/api'
 
 
 @pytest.fixture(scope="session")
@@ -128,14 +133,14 @@ def engine_api(engine_full_username, engine_password, engine_api_url):
 
 
 @pytest.fixture(scope="session")
-def engine_cert(engine_fqdn, engine_ip):
+def engine_cert(engine_fqdn, engine_ip_url):
     with http_proxy_disabled():
         with tempfile.NamedTemporaryFile(prefix="engine-cert",
                                          suffix=".pem") as cert_file:
             shell([
                 "curl", "-fsS",
                 "-m", "10",
-                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip),
+                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip_url),
                 "-o", cert_file.name,
                 "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(engine_fqdn)
             ])
@@ -143,19 +148,19 @@ def engine_cert(engine_fqdn, engine_ip):
 
 
 @pytest.fixture(scope="session")
-def engine_download(request, engine_fqdn, engine_ip):
+def engine_download(request, engine_fqdn, engine_ip_url):
 
     def download(url, path=None, timeout=10):
         args = ["curl", "-fsS", "-m", str(timeout)]
 
         if url.startswith("https"):
             args.extend([
-                "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip),
+                "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip_url),
                 "--cacert", request.getfixturevalue("engine_cert")
             ])
         else:
             args.extend([
-                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip),
+                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip_url),
             ])
 
         if path is not None:

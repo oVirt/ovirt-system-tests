@@ -1592,8 +1592,7 @@ def test_add_filter(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_filter_parameter(engine_api, engine_ip):
-    vm_gw = '.'.join(engine_ip.split('.')[0:3] + ['1'])
+def test_add_filter_parameter(engine_api, management_gw_ip):
     engine = engine_api.system_service()
     network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
         engine, VM0_NAME)
@@ -1602,7 +1601,7 @@ def test_add_filter_parameter(engine_api, engine_ip):
         assert network_filter_parameters_service.add(
             sdk4.types.NetworkFilterParameter(
                 name='GW_IP',
-                value=vm_gw
+                value=management_gw_ip
             )
         )
 

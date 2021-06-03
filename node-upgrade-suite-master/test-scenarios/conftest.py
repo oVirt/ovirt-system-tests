@@ -40,6 +40,8 @@ from ost_utils.pytest.fixtures.defaults import *
 
 from ost_utils.pytest.fixtures.env import suite_dir
 
+from ost_utils.pytest.fixtures.network import management_gw_ip
+
 from ost_utils.pytest.fixtures.node import *
 
 from ost_utils.pytest.fixtures.storage import *

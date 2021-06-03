@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import ipaddress
 import socket
 
 
@@ -40,3 +41,7 @@ def get_ips(backend, ansible_facts, network_name):
         for iface in ifaces
     ]
     return ips
+
+
+def ip_to_url(ip):
+    return f'[{ip}]' if ipaddress.ip_address(ip).version == 6 else ip

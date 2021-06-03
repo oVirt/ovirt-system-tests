@@ -74,12 +74,13 @@ WINDOW_WIDTH = 1680
 WINDOW_HEIGHT = 1050
 
 
-def test_secure_connection_should_fail_without_root_ca(engine_fqdn, engine_ip,
-                                                       engine_webadmin_url):
+def test_secure_connection_should_fail_without_root_ca(
+    engine_fqdn, engine_ip_url, engine_webadmin_url
+):
     with pytest.raises(ShellError) as e:
         shell([
             "curl", "-sS",
-            "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip),
+            "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip_url),
             engine_webadmin_url
         ])
 
@@ -88,12 +89,12 @@ def test_secure_connection_should_fail_without_root_ca(engine_fqdn, engine_ip,
         "not trusted by the user" in e.value.err
 
 
-def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip,
-                                                       engine_cert,
-                                                       engine_webadmin_url):
+def test_secure_connection_should_succeed_with_root_ca(
+    engine_fqdn, engine_ip_url, engine_cert, engine_webadmin_url
+):
     shell([
         "curl", "-sS",
-        "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip),
+        "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip_url),
         "--cacert", engine_cert,
         engine_webadmin_url
     ])

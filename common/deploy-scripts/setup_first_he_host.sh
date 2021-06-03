@@ -23,19 +23,6 @@ EOF
 
 }
 
-# Workaround for https://bugzilla.redhat.com/1959720
-fix_broken_hostname() {
-    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/fix_broken_hostname.yml
----
-- name: Fix broken hostname package
-  lineinfile:
-    path: /usr/lib/systemd/system/nis-domainname.service
-    line: "After=network-online.target"
-    state: absent
-EOF
-
-}
-
 setup_ipv4() {
     MYADDR=$(\
         /sbin/ip -4 -o addr show dev eth0 \
@@ -96,7 +83,6 @@ EOF
 }
 
 copy_ssh_key
-fix_broken_hostname
 
 if [[ $(hostname) == *"ipv6"* ]]; then
     setup_ipv6

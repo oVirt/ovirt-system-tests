@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -ex
+#!/bin/bash -ex
 
 HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
 
@@ -17,6 +17,9 @@ EOF
 }
 
 
+# FIXME this should be moved to ost-images instead. Repositories are NOT supposed to be enabled
+dnf config-manager --enable \*
+dnf config-manager --disable media-\*
 yum install -y --nogpgcheck ansible gluster-ansible-roles ovirt-hosted-engine-setup ovirt-ansible-hosted-engine-setup ovirt-ansible-repositories ovirt-ansible-engine-setup
 
 rm -rf /var/cache/yum/*

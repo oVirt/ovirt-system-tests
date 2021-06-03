@@ -110,6 +110,7 @@ UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
 
 _TEST_LIST = [
+    "test_he_deploy",
     "test_verify_engine_certs",
     "test_engine_health_status",
     "test_list_glance_images",
@@ -208,6 +209,11 @@ def _wait_for_status(hosts_service, dc_name, status):
         else:
             up_status_seen = False
     return all_hosts
+
+
+@order_by(_TEST_LIST)
+def test_he_deploy(suite_dir):
+    shell.shell([suite_dir + '/he_deploy.sh'])
 
 
 @pytest.mark.parametrize("key_format, verification_fn", [

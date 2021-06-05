@@ -158,6 +158,15 @@ class Host(SDKRootEntity):
             error_criteria=Host._is_update_error_non_transient
         )
 
+    def force_select_spm(self):
+        return self.service.force_select_spm()
+
+    def hand_over_spm(self, storage_domain, candidate_spm):
+        if self.is_spm and candidate_spm.is_up:
+            candidate_spm.force_select_spm()
+            candidate_spm.wait_for_spm_status()
+            joblib.AllJobs(self.system).wait_for_done()
+
     @error.report_status
     def activate(self):
         syncutil.sync(
@@ -376,6 +385,11 @@ class Host(SDKRootEntity):
         syncutil.sync(exec_func=self.networks_out_of_sync,
                       exec_func_args=(networks,),
                       success_criteria=lambda s: s)
+
+    def wait_for_spm_status(self):
+        syncutil.sync(exec_func=lambda: self.is_spm,
+                      exec_func_args=(),
+                      success_criteria=lambda spm: spm)
 
     def _get_parent_service(self, system):
         return system.hosts_service

@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -346,15 +346,21 @@ def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
 
 
 @pytest.fixture(scope='function')
-def host_0_in_cluster_0(host_0_up, cluster_0):
+def host_0_in_cluster_0(default_storage_domain, cluster_0,
+                        host_0_up, host_1_up):
+    host_0_up.hand_over_spm(default_storage_domain, host_1_up)
     with host_0_up.toggle_cluster(cluster_0):
         yield
+        host_0_up.hand_over_spm(default_storage_domain, host_1_up)
 
 
 @pytest.fixture(scope='function')
-def host_1_in_cluster_1(host_1_up, cluster_1):
+def host_1_in_cluster_1(default_storage_domain, cluster_1,
+                        host_0_up, host_1_up):
+    host_1_up.hand_over_spm(default_storage_domain, host_0_up)
     with host_1_up.toggle_cluster(cluster_1):
         yield
+        host_1_up.hand_over_spm(default_storage_domain, host_0_up)
 
 
 @pytest.fixture(scope='module')

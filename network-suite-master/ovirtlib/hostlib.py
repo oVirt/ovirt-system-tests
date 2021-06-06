@@ -159,12 +159,16 @@ class Host(SDKRootEntity):
         )
 
     def force_select_spm(self):
-        return self.service.force_select_spm()
+        syncutil.sync(
+            exec_func=self.service.force_select_spm,
+            exec_func_args=(),
+            success_criteria=lambda r: self.is_spm,
+            error_criteria=Host._is_force_select_spm_error_non_transient
+        )
 
-    def hand_over_spm(self, storage_domain, candidate_spm):
+    def hand_over_spm(self, candidate_spm):
         if self.is_spm and candidate_spm.is_up:
             candidate_spm.force_select_spm()
-            candidate_spm.wait_for_spm_status()
             joblib.AllJobs(self.system).wait_for_done()
 
     @error.report_status
@@ -489,6 +493,14 @@ class Host(SDKRootEntity):
         transient_errors = [
             'Cannot activate Host. Related operation is currently in progress',
             'Cannot activate Host. Host in Up status'
+        ]
+        return not Host._is_error_transient(error_, transient_errors)
+
+    @staticmethod
+    def _is_force_select_spm_error_non_transient(error_):
+        transient_errors = [
+            'Cannot force select SPM. The Storage Pool has running tasks',
+            'is already SPM or contending',
         ]
         return not Host._is_error_transient(error_, transient_errors)
 

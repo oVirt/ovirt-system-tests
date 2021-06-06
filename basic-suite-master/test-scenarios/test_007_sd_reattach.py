@@ -71,7 +71,7 @@ def test_deactivate_storage_domain(engine_api):
             # The storage domain's deactivation may fail if it has running tasks.
             # In case of updating ovf_store disks task (UploadStream),
             # ignore. Otherwise, raise the exception.
-            if ('UploadStream' and 'OVF') not in err.args[0]:
+            if not (('UploadStream' in err.args[0]) or ('OVF' in err.args[0])):
                 raise
             return False
 

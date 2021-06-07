@@ -56,6 +56,11 @@ def sd_destroy_error_not_due_to_busy(error):
     )
 
 
+def is_not_ovirt_or_unlisted(error, error_list):
+    return not (isinstance(error, ovirtsdk4.Error) and
+                [err for err in error_list if err in str(error)])
+
+
 def is_not_http_conflict(error):
     if not isinstance(error, ovirtsdk4.Error):
         return True

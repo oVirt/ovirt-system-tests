@@ -20,7 +20,6 @@ import contextlib
 import functools
 from types import MethodType
 
-import ovirtsdk4
 from ovirtsdk4 import types
 
 from ovirtlib import clusterlib
@@ -155,7 +154,9 @@ class Host(SDKRootEntity):
         return syncutil.sync(
             exec_func=super(Host, self).update,
             exec_func_args=kwargs,
-            error_criteria=Host._is_update_error_non_transient
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
+                'Cannot edit Host. Related operation is currently in progress'
+            ])
         )
 
     def force_select_spm(self):
@@ -163,7 +164,10 @@ class Host(SDKRootEntity):
             exec_func=self.service.force_select_spm,
             exec_func_args=(),
             success_criteria=lambda r: self.is_spm,
-            error_criteria=Host._is_force_select_spm_error_non_transient
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
+                'Cannot force select SPM. The Storage Pool has running tasks',
+                'is already SPM or contending',
+            ])
         )
 
     def hand_over_spm(self, candidate_spm):
@@ -177,7 +181,10 @@ class Host(SDKRootEntity):
             exec_func=self._service.activate,
             exec_func_args=(),
             success_criteria=lambda s: self.is_up,
-            error_criteria=Host._is_activate_error_non_transient,
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
+                'Related operation is currently in progress',
+                'Cannot activate Host. Host in Up status',
+            ]),
             timeout=3 * 60
         )
         joblib.AllJobs(self.system).wait_for_done()
@@ -189,7 +196,11 @@ class Host(SDKRootEntity):
             exec_func_args=(),
             timeout=3 * 60,
             success_criteria=lambda s: self.is_in_maintenance,
-            error_criteria=Host._is_deactivate_error_non_transient
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
+                'Host has asynchronous running tasks',
+                'Host is contending',
+                'Host is already in Maintenance mode',
+            ])
         )
         joblib.AllJobs(self.system).wait_for_done()
 
@@ -471,44 +482,6 @@ class Host(SDKRootEntity):
 
     def _get_existing_attachments(self):
         return list(self.service.network_attachments_service().list())
-
-    @staticmethod
-    def _is_update_error_non_transient(error_):
-        transient_errors = [
-            'Cannot edit Host. Related operation is currently in progress'
-        ]
-        return not Host._is_error_transient(error_, transient_errors)
-
-    @staticmethod
-    def _is_deactivate_error_non_transient(error_):
-        transient_errors = [
-            'Host has asynchronous running tasks',
-            'Host is contending',
-            'Host is already in Maintenance mode',
-        ]
-        return not Host._is_error_transient(error_, transient_errors)
-
-    @staticmethod
-    def _is_activate_error_non_transient(error_):
-        transient_errors = [
-            'Cannot activate Host. Related operation is currently in progress',
-            'Cannot activate Host. Host in Up status'
-        ]
-        return not Host._is_error_transient(error_, transient_errors)
-
-    @staticmethod
-    def _is_force_select_spm_error_non_transient(error_):
-        transient_errors = [
-            'Cannot force select SPM. The Storage Pool has running tasks',
-            'is already SPM or contending',
-        ]
-        return not Host._is_error_transient(error_, transient_errors)
-
-    @staticmethod
-    def _is_error_transient(error_, transient_errors):
-        error_msg = error_.args[0]
-        return (isinstance(error_, ovirtsdk4.Error) and
-                [err for err in transient_errors if err in error_msg])
 
     def refresh_capabilities(self):
         self.service.refresh()

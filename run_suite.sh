@@ -348,7 +348,10 @@ env_run_pytest_bulk () {
         ${CUSTOM_REPOS_ARGS[@]} \
         "$@" || res=$?
 
-    [[ "$res" -ne 0 ]] && xmllint --format ${junitxml_file}
+    [[ "$res" -ne 0 ]] && {
+        xmllint --format ${junitxml_file};
+        ./common/scripts/parse_junitxml.py ${junitxml_file} ${PREFIX}/result.txt
+    }
     return "$res"
 }
 

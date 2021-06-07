@@ -166,6 +166,7 @@ class Host(SDKRootEntity):
             success_criteria=lambda r: self.is_spm,
             error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
                 'Cannot force select SPM. The Storage Pool has running tasks',
+                'Cannot force select SPM. Unknown Data Center status',
                 'is already SPM or contending',
             ])
         )

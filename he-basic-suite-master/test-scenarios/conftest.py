@@ -28,7 +28,7 @@ from ost_utils.ansible import module_mappers
 
 from ost_utils.pytest import pytest_collection_modifyitems
 
-from ost_utils.pytest.fixtures.artifacts import artifacts_dir
+from ost_utils.pytest.fixtures.artifacts import *
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.backend import *
 from ost_utils.pytest.fixtures.defaults import *

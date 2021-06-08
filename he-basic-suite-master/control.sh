@@ -31,7 +31,6 @@ run_suite(){
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
 
     env_run_pytest_bulk "$test_scenarios" || failed=true
-    env_collect "$curdir/test_logs/${suite##*/}"
     if $failed; then
         echo "@@@@ ERROR: Failed running ${suite}"
         return 1

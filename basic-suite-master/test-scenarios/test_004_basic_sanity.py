@@ -122,7 +122,6 @@ _TEST_LIST = [
     "test_cold_incremental_backup_vm2",
     "test_run_vms",
     "test_attach_snapshot_to_backup_vm",
-    "test_remove_vm2_backup_checkpoints",
     "test_verify_transient_folder",
     "test_verify_and_remove_cloned_vm",
     "test_remove_backup_vm_and_backup_snapshot",
@@ -138,6 +137,7 @@ _TEST_LIST = [
     "test_template_update",
     "test_verify_vm2_exported",
     "test_live_incremental_backup_vm2",
+    "test_remove_vm2_backup_checkpoints",
     "test_import_vm1",
     "test_ha_recovery",
     "test_verify_suspend_resume_vm0",
@@ -544,11 +544,13 @@ def test_attach_snapshot_to_backup_vm(engine_api):
 
 @order_by(_TEST_LIST)
 def test_remove_vm2_backup_checkpoints(engine_api, get_vm_service_for_vm):
-    # Removing the 2 checkpoints created in the cold backup test
+    # Removing all the checkpoints created during backup tests
+    # to prevent testing QEMU crash that will cause inconsistent bitmaps,
+    # so the disk migration will failed - https://bugzilla.redhat.com/1946084.
     _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
     vm2_checkpoints_service = get_vm_service_for_vm(VM2_NAME).checkpoints_service()
-    backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
-    backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
+    for _ in get_vm_service_for_vm(VM2_NAME).checkpoints_service().list():
+        backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
 
 
 @order_by(_TEST_LIST)

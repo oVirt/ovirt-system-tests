@@ -1,4 +1,4 @@
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
+
+from fixtures.host import ETH2
+from fixtures.host import ETH3
+
 from ovirtlib import hostlib
 from ovirtlib import netattachlib
 from ovirtlib import sshlib
@@ -22,8 +26,6 @@ from ovirtlib import syncutil
 from testlib import suite
 
 BOND_NAME = 'bond0'
-SLAVE1 = 'eth2'
-SLAVE2 = 'eth3'
 
 
 class ActiveSlaveNotChangedError(Exception):
@@ -34,7 +36,7 @@ class ActiveSlaveNotChangedError(Exception):
 def test_bond_active_slave(system, default_data_center, default_cluster,
                            host_0_up):
     bond_data = netattachlib.ActiveSlaveBonding(
-        BOND_NAME, slave_names=(SLAVE1, SLAVE2)
+        BOND_NAME, slave_names=(ETH2, ETH3)
     )
     with hostlib.setup_networks(host_0_up, bonding_data=(bond_data,)):
         bond = hostlib.Bond(host_0_up)

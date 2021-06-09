@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #
 import pytest
 
+from fixtures.host import ETH1
+
 from ovirtlib import virtlib
 from ovirtlib import netattachlib
 from ovirtlib import netlib
@@ -28,7 +30,6 @@ from ovirtlib import datacenterlib
 from ovirtlib import templatelib
 from testlib import suite
 
-ETH1 = 'eth1'
 VM0 = 'test_vm_operations_vm_0'
 MIG_NET = 'mig-net'
 MIG_NET_IPv4_ADDR_1 = '192.0.3.1'

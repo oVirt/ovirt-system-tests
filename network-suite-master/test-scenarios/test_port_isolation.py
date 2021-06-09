@@ -17,6 +17,8 @@
 # Refer to the README and COPYING files for full details of the license
 import pytest
 
+from fixtures.host import ETH1
+
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
 from ovirtlib import joblib
@@ -26,7 +28,6 @@ from ovirtlib import sshlib
 from ovirtlib import virtlib
 
 
-ETH1 = 'eth1'
 VM0_NAME = 'test_port_isolation_vm_0'
 VM1_NAME = 'test_port_isolation_vm_1'
 VNIC0_NAME = 'eth1'

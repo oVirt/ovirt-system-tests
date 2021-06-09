@@ -19,12 +19,12 @@
 #
 import contextlib
 
+from fixtures.host import ETH2
+
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
 from ovirtlib import netattachlib
 from ovirtlib import sshlib as ssh
-
-ETH2 = 'eth2'
 
 
 def test_sync_across_cluster(default_data_center, default_cluster,

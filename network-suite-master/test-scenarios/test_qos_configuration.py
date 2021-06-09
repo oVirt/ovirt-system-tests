@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@ import contextlib
 
 from ovirtsdk4 import types
 
+from fixtures.host import ETH2
+
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
 from ovirtlib import netattachlib
@@ -31,7 +33,6 @@ from ovirtlib import templatelib
 from ovirtlib import virtlib
 
 DEFAULT_NAME = 'Default'
-ETH2 = 'eth2'
 HOST_QOS = 'host_qos'
 VM_QOS = 'vm_qos'
 QOS_NAMES = (HOST_QOS, VM_QOS)

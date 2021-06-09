@@ -23,6 +23,12 @@ from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
 
+ETH0 = 'eth0'
+ETH1 = 'eth1'
+ETH2 = 'eth2'
+ETH3 = 'eth3'
+
+
 @pytest.fixture(scope='session')
 def host_0(system, default_cluster, host0_facts):
     return _create_host(system, default_cluster, host0_facts)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 # Refer to the README and COPYING files for full details of the license
 #
 import pytest
+
+from fixtures.host import ETH1
 
 from ovirtlib import clusterlib
 from ovirtlib import joblib
@@ -51,7 +53,6 @@ def display_network_vnic_profile(system, display_network):
 
 @pytest.fixture(scope='module')
 def display_network_attached_to_host_0(host_0_up, display_network):
-    ETH1 = 'eth1'
     DISP_NET_IPv4_ADDR_1 = '192.0.3.1'
     DISP_NET_IPv4_MASK = '255.255.255.0'
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,10 @@ import contextlib
 
 import pytest
 
+from fixtures.host import ETH1
+from fixtures.host import ETH2
+from fixtures.host import ETH3
+
 from ovirtlib import clusterlib
 from ovirtlib import joblib
 from ovirtlib import hostlib
@@ -30,9 +34,6 @@ from ovirtlib.netattachlib import NetworkAttachmentData as AttachData
 
 from testlib import suite
 
-ETH1 = 'eth1'
-ETH2 = 'eth2'
-ETH3 = 'eth3'
 BOND0 = 'bond0'
 
 VM_NET_NAME = 'vm-net'

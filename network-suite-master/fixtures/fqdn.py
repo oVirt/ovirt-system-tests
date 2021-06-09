@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,9 +32,9 @@ class EngineNotResorvableError(Exception):
 
 @pytest.fixture(scope='session')
 def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts):
-    provider_ip = f'provider-host={engine_facts.ipv4_default_address}'
+    provider_ip = f'provider-host={engine_facts.default_ip}'
     provider_fqdn = f'provider-host={_fetch_fqdn(ANSWER_FILE_SRC)}'
-    engine = sshlib.Node(engine_facts.ipv4_default_address)
+    engine = sshlib.Node(engine_facts.default_ip)
     try:
         engine.global_replace_str_in_file(provider_fqdn, provider_ip, OVN_CONF)
         engine.restart_service('ovirt-provider-ovn')
@@ -62,8 +62,7 @@ def host0_eth2_ipv6(host0_facts):
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
-    host_0 = sshlib.Node(host0_facts.ipv4_default_address,
-                         host0_facts.ssh_password)
+    host_0 = sshlib.Node(host0_facts.default_ip, host0_facts.ssh_password)
     return _enable_dynamic_ipv6(host_0, 'eth2')
 
 
@@ -76,8 +75,7 @@ def host0_eth1_ipv6(host0_facts):
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
-    host_0 = sshlib.Node(host0_facts.ipv4_default_address,
-                         host0_facts.ssh_password)
+    host_0 = sshlib.Node(host0_facts.default_ip, host0_facts.ssh_password)
     return _enable_dynamic_ipv6(host_0, 'eth1')
 
 
@@ -92,8 +90,7 @@ def engine_storage_ipv6(engine_facts):
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
-    engine = sshlib.Node(engine_facts.ipv4_default_address,
-                         engine_facts.ssh_password)
+    engine = sshlib.Node(engine_facts.default_ip, engine_facts.ssh_password)
     ENGINE_STORAGE_NIC = 'eth1'
     return _enable_dynamic_ipv6(engine, ENGINE_STORAGE_NIC)
 

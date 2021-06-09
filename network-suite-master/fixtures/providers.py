@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,8 +59,7 @@ def openstack_client_config(engine_facts, engine_password,
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
-                    'auth_url': OPENSTACK_AUTH_URL.format(
-                        engine_facts.ipv4_default_address),
+                    'auth_url': OPENSTACK_AUTH_URL.format(engine_facts.url_ip),
                     'username': OPENSTACK_USERNAME,
                     'password': engine_password
                 },

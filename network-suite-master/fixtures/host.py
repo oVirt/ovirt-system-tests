@@ -1,4 +1,4 @@
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,8 +76,6 @@ def _create_host(system, default_cluster, host_facts):
         host.import_by_name(host_facts.hostname)
         host.root_password = host_facts.ssh_password
     except EntityNotFoundError:
-        host.create(
-            default_cluster, host_facts.hostname,
-            host_facts.ipv4_default_address,
-            host_facts.ssh_password)
+        host.create(default_cluster, host_facts.hostname,
+                    host_facts.default_ip, host_facts.ssh_password)
     return host

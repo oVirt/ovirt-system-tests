@@ -44,7 +44,7 @@ def engine_password():
 @pytest.fixture(scope='session')
 def api(ovirt_engine_service_up, engine_facts, engine_full_username,
         engine_password):
-    return _create_engine_connection(engine_facts.ipv4_default_address,
+    return _create_engine_connection(engine_facts.url_ip,
                                      engine_full_username, engine_password)
 
 
@@ -52,9 +52,7 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 def ovirt_engine_setup(deploy, engine_facts):
     ANSWER_FILE_TMP = '/tmp/answer-file'
 
-    engine = sshlib.Node(
-        engine_facts.ipv4_default_address, engine_facts.ssh_password
-    )
+    engine = sshlib.Node(engine_facts.default_ip, engine_facts.ssh_password)
     engine.sftp_put(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
 
     command = [
@@ -69,7 +67,7 @@ def ovirt_engine_setup(deploy, engine_facts):
 def ovirt_engine_service_up(ovirt_engine_setup, engine_facts,
                             engine_full_username, engine_password):
     syncutil.sync(exec_func=_create_engine_connection,
-                  exec_func_args=(engine_facts.ipv4_default_address,
+                  exec_func_args=(engine_facts.url_ip,
                                   engine_full_username,
                                   engine_password),
                   success_criteria=lambda api: isinstance(api, Connection),
@@ -97,8 +95,7 @@ def _exec_engine_config(engine_facts, key, value):
         '--set',
         '{0}={1}'.format(key, value),
     ]
-    node = sshlib.Node(engine_facts.ipv4_default_address,
-                       engine_facts.ssh_password)
+    node = sshlib.Node(engine_facts.default_ip, engine_facts.ssh_password)
     result = node.exec_command(' '.join(command))
 
     assert result.code == 0, (

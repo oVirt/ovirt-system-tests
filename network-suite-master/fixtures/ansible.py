@@ -17,6 +17,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import ipaddress
 import pytest
 
 from ost_utils import ansible
@@ -76,14 +77,19 @@ class MachineFacts(object):
     cases.
     """
 
-    def __init__(self, ipv4_default, hostname, ssh_password='123456'):
-        self._ipv4_default = ipv4_default
+    def __init__(self, default_ip, hostname, ssh_password='123456'):
+        self._default_ip = default_ip
+        self._url_ip = self._make_url_ip()
         self._hostname = hostname
         self._ssh_password = ssh_password
 
     @property
-    def ipv4_default_address(self):
-        return self._ipv4_default
+    def default_ip(self):
+        return self._default_ip
+
+    @property
+    def url_ip(self):
+        return self._url_ip
 
     @property
     def hostname(self):
@@ -92,3 +98,7 @@ class MachineFacts(object):
     @property
     def ssh_password(self):
         return self._ssh_password
+
+    def _make_url_ip(self):
+        ip = ipaddress.ip_address(self._default_ip)
+        return self._default_ip if ip.version == 4 else f'[{self._default_ip}]'

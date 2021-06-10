@@ -37,8 +37,6 @@ HOST_QOS = 'host_qos'
 VM_QOS = 'vm_qos'
 QOS_NAMES = (HOST_QOS, VM_QOS)
 QOS_NET = 'qos-net'
-QOS_NET_IPv4_ADDR = '192.168.123.3'
-QOS_NET_IPv4_MASK = '255.255.255.0'
 QOS_VP = 'qos_vp'
 NIC2 = 'nic2'
 VM0 = 'vm_for_test_qos_config'
@@ -135,8 +133,7 @@ def test_setup_net_with_qos(system, default_data_center, default_cluster,
 
 
 def _create_net_attachment_data(qos_net):
-    ip_assign = netattachlib.StaticIpv4Assignment(
-        addr=QOS_NET_IPv4_ADDR, mask=QOS_NET_IPv4_MASK
-    )
-    att_data = netattachlib.NetworkAttachmentData(qos_net, ETH2, (ip_assign,))
+    no4 = netattachlib.NoIpv4Assignment()
+    no6 = netattachlib.NoIpv6Assignment()
+    att_data = netattachlib.NetworkAttachmentData(qos_net, ETH2, (no4, no6))
     return att_data

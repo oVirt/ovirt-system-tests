@@ -24,8 +24,6 @@ import pytest
 from ost_utils import engine_object_names
 from ost_utils import he_utils
 
-from ost_utils.ansible import module_mappers
-
 from ost_utils.pytest import pytest_collection_modifyitems
 
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
@@ -33,6 +31,7 @@ from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.backend import *
 from ost_utils.pytest.fixtures.defaults import *
 from ost_utils.pytest.fixtures.deployment import deploy
+from ost_utils.pytest.fixtures.deployment import run_scripts
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import *
 from ost_utils.pytest.fixtures.network import *
@@ -43,10 +42,8 @@ from ost_utils.pytest.running_time import *
 
 
 @pytest.fixture(scope="session")
-def ansible_vms_to_deploy(hosts_hostnames):  # pylint: disable=function-redefined
-    hostnames = [*hosts_hostnames]
-    hosts_pattern = "~({})".format("|".join(hostnames))
-    return module_mappers.module_mapper_for(hosts_pattern)
+def ansible_vms_to_deploy(hosts_hostnames, ansible_by_hostname):  # pylint: disable=function-redefined
+    return ansible_by_hostname(hosts_hostnames)
 
 
 # hosted-engine suites use a separate storage VM, but use the management

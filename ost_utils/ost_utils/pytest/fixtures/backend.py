@@ -35,6 +35,11 @@ def deploy_scripts(backend):
 
 
 @pytest.fixture(scope="session")
+def backend_engine_hostname(backend):
+    return backend.engine_hostname()
+
+
+@pytest.fixture(scope="session")
 def all_hostnames(backend):
     return backend.hostnames()
 
@@ -42,6 +47,16 @@ def all_hostnames(backend):
 @pytest.fixture(scope="session")
 def hosts_hostnames(backend):
     return backend.hosts_hostnames()
+
+
+@pytest.fixture(scope="session")
+def host0_hostname(hosts_hostnames):
+    return hosts_hostnames[0]
+
+
+@pytest.fixture(scope="session")
+def host1_hostname(hosts_hostnames):
+    return hosts_hostnames[1]
 
 
 @pytest.fixture(scope="session")

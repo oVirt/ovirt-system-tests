@@ -20,19 +20,37 @@
 
 import functools
 import logging
+import os
+
 import pytest
 
 from ost_utils import deployment_utils
 from ost_utils import utils
 from ost_utils.deployment_utils import package_mgmt
-from ost_utils.deployment_utils.scripts import run_scripts
 
 
 LOGGER = logging.getLogger(__name__)
 
 
+@pytest.fixture(scope="session")
+def run_scripts(ansible_by_hostname):
+    def do_run_scripts(hostname, scripts):
+        ansible_handle = ansible_by_hostname(hostname)
+        for script in scripts:
+            expanded = os.path.expandvars(script)
+            LOGGER.info(f"Running {expanded} on {hostname}")
+            ansible_handle.script(expanded)
+    return do_run_scripts
+
+
 @pytest.fixture(scope="session", autouse=True)
-def deploy(ansible_vms_to_deploy, deploy_scripts, working_dir, request):
+def deploy(
+    ansible_vms_to_deploy,
+    deploy_scripts,
+    working_dir,
+    request,
+    run_scripts,
+):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
         return

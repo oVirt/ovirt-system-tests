@@ -21,31 +21,30 @@ import ipaddress
 import pytest
 
 from ost_utils import ansible
-from ost_utils.ansible import facts
 from ost_utils.ansible import private_dir
 
 
 @pytest.fixture(scope="session")
-def engine_facts():
+def engine_facts(ansible_engine_facts):
     return MachineFacts(
-        facts.engine().get('ansible_default_ipv4').get('address'),
-        facts.engine().get('ansible_hostname')
+        ansible_engine_facts.get('ansible_default_ipv4').get('address'),
+        ansible_engine_facts.get('ansible_hostname')
     )
 
 
 @pytest.fixture(scope="session")
-def host0_facts():
+def host0_facts(ansible_host0_facts):
     return MachineFacts(
-        facts.host0().get('ansible_default_ipv4').get('address'),
-        facts.host0().get('ansible_hostname')
+        ansible_host0_facts.get('ansible_default_ipv4').get('address'),
+        ansible_host0_facts.get('ansible_hostname')
     )
 
 
 @pytest.fixture(scope="session")
-def host1_facts():
+def host1_facts(ansible_host1_facts):
     return MachineFacts(
-        facts.host1().get('ansible_default_ipv4').get('address'),
-        facts.host1().get('ansible_hostname')
+        ansible_host1_facts.get('ansible_default_ipv4').get('address'),
+        ansible_host1_facts.get('ansible_hostname')
     )
 
 

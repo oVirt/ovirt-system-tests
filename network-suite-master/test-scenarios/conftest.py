@@ -62,18 +62,27 @@ from fixtures.system import system
 # Import OST utils fixtures
 from ost_utils.pytest.fixtures.ansible import ansible_all
 from ost_utils.pytest.fixtures.ansible import ansible_by_hostname
+from ost_utils.pytest.fixtures.ansible import ansible_engine
+from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host0
+from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host1
+from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
 from ost_utils.pytest.fixtures.ansible import ansible_storage
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 from ost_utils.pytest.fixtures.backend import all_hostnames
 from ost_utils.pytest.fixtures.backend import backend
+from ost_utils.pytest.fixtures.backend import backend_engine_hostname
 from ost_utils.pytest.fixtures.backend import deploy_scripts
+from ost_utils.pytest.fixtures.backend import host0_hostname
+from ost_utils.pytest.fixtures.backend import host1_hostname
+from ost_utils.pytest.fixtures.backend import hosts_hostnames
 from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
 from ost_utils.pytest.fixtures.defaults import artifact_list
 from ost_utils.pytest.fixtures.deployment import deploy
+from ost_utils.pytest.fixtures.deployment import run_scripts
 from ost_utils.pytest.fixtures.env import working_dir
 from ost_utils.pytest.fixtures.virt import cirros_image
 from ost_utils.pytest.fixtures.virt import transformed_cirros_image

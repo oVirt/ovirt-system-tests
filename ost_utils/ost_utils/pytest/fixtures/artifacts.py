@@ -24,7 +24,7 @@ import os
 import pytest
 
 from ost_utils import utils
-from ost_utils.ansible import artifacts_collector as ac
+from ost_utils import shell
 
 
 @pytest.fixture(scope="session")
@@ -42,10 +42,27 @@ def artifacts(backend, all_hostnames, artifact_list):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def collect_artifacts(artifacts_dir, artifacts):
+def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
+    def collect(hostname, artifacts_list, target_dir):
+        artifacts_list_string = ','.join(artifacts_list)
+        ansible_handle = ansible_by_hostname(hostname)
+        archive_name = "artifacts.tar.gz"
+        local_archive_dir = os.path.join(target_dir, "test_logs", hostname)
+        local_archive_path = os.path.join(local_archive_dir, archive_name)
+        remote_archive_path = os.path.join("/tmp", archive_name)
+        os.makedirs(local_archive_dir, exist_ok=True)
+        ansible_handle.archive(path=artifacts_list_string, dest=remote_archive_path)
+        ansible_handle.fetch(
+            src=remote_archive_path, dest=local_archive_path, flat='yes'
+        )
+        shell.shell(
+            ["tar", "-xf", local_archive_path, "-C", local_archive_dir]
+        )
+        shell.shell(["rm", local_archive_path])
+
     yield
     calls = [
-        functools.partial(ac.collect, hostname, artifact_list, artifacts_dir)
+        functools.partial(collect, hostname, artifact_list, artifacts_dir)
         for hostname, artifact_list in artifacts.items()
     ]
     utils.invoke_different_funcs_in_parallel(*calls)

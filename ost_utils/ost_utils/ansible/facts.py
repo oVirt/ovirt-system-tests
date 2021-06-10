@@ -18,10 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import functools
 import threading
-
-from ost_utils.ansible import module_mappers
 
 
 class FactNotFound(Exception):
@@ -31,26 +28,6 @@ class FactNotFound(Exception):
 
     def __str__(self):
         return f"Could not find fact: {self.fact}"
-
-
-@functools.lru_cache()
-def engine():
-    return Facts(module_mappers.engine())
-
-
-@functools.lru_cache()
-def host0():
-    return Facts(module_mappers.host0())
-
-
-@functools.lru_cache()
-def host1():
-    return Facts(module_mappers.host1())
-
-
-@functools.lru_cache()
-def storage():
-    return Facts(module_mappers.storage())
 
 
 class Facts:

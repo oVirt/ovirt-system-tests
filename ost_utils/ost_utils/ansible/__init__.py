@@ -37,7 +37,7 @@ runner:
 
 Can be written with the utils provided as:
 
-    localhost = module_mapper_for('localhost')
+    localhost = ModuleMapper('inventory', 'localhost')
     localhost.shell(cmd='whoami')
 
 which will raise 'AnsibleExecutionError' on failure.

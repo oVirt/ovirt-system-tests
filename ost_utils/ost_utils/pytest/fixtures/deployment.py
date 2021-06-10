@@ -43,6 +43,16 @@ def deploy(ansible_vms_to_deploy, deploy_scripts, working_dir, request):
     # set static hostname to match the one assigned by DNS
     ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
 
+    # temporary workaround for broken libvirt:
+    # https://bugzilla.redhat.com/show_bug.cgi?id=1970277
+    results = (
+        result["stdout"]
+        for result in ansible_vms_to_deploy.shell(
+            "rpm -qa | { grep libvirt-7 || true; }").values()
+    )
+    if any(r.find("libvirt-7.4.0-1.el8s.x86_64") >= 0 for r in results):
+        ansible_vms_to_deploy.shell("dnf downgrade -y libvirt qemu-kvm || true")
+
     # disable all repos
     package_mgmt.disable_all_repos(ansible_vms_to_deploy)
 

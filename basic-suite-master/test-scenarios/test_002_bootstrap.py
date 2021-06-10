@@ -175,6 +175,8 @@ _TEST_LIST = [
     "test_add_vm_network",
     "test_verify_glance_import",
     "test_verify_engine_backup",
+    "test_add_nonadmin_user",
+    "test_add_vm_permissions_to_user",
 ]
 
 
@@ -1770,3 +1772,43 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
         attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
         assert attachment_service.get() is not None, \
             'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
+
+
+@order_by(_TEST_LIST)
+def test_add_nonadmin_user(engine_api, ansible_engine, nonadmin_username,
+                           nonadmin_password):
+    ansible_engine.shell(
+        f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
+    ansible_engine.shell(
+        f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
+            --password-valid-to='2125-08-15 10:30:00Z' \
+            --password=pass:{nonadmin_password}")
+    domain = types.Domain(name='internal-authz')
+    users_service = engine_api.system_service().users_service()
+    with engine_utils.wait_for_event(engine_api.system_service(), 149): # USER_ADD(149)
+        users_service.add(
+            types.User(user_name=f'{nonadmin_username}@internal-authz',
+                       domain=domain),
+        )
+
+
+@order_by(_TEST_LIST)
+def test_add_vm_permissions_to_user(engine_api, ansible_engine,
+                                    nonadmin_username):
+    user_id = ansible_engine.shell(
+        f"ovirt-aaa-jdbc-tool user show {nonadmin_username} --attribute=id"
+    )['stdout_lines'][0]
+    vms_service = engine_api.system_service().vms_service()
+    vm = vms_service.list(search='name=vm0')[0]
+    permissions_service = vms_service.vm_service(vm.id).permissions_service()
+    with engine_utils.wait_for_event(engine_api.system_service(), 850): # PERMISSION_ADD(850)
+        permissions_service.add(
+            types.Permission(
+                user=types.User(
+                    id=user_id,
+                ),
+                role=types.Role(
+                    name='UserRole',
+                ),
+            ),
+        )

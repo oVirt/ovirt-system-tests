@@ -103,6 +103,16 @@ def engine_api_url(engine_ip):
 
 
 @pytest.fixture(scope="session")
+def nonadmin_username():
+    return "non_admin_user"
+
+
+@pytest.fixture(scope="session")
+def nonadmin_password():
+    return "123456"
+
+
+@pytest.fixture(scope="session")
 def engine_api(engine_full_username, engine_password, engine_api_url):
     api = sdk4.Connection(
         url=engine_api_url,

@@ -56,7 +56,7 @@ def display_network_attached_to_host_0(host_0_up, display_network):
     DISP_NET_IPv4_ADDR_1 = '192.0.3.1'
     DISP_NET_IPv4_MASK = '255.255.255.0'
 
-    ip_assign = netattachlib.StaticIpAssignment(
+    ip_assign = netattachlib.StaticIpv4Assignment(
         addr=DISP_NET_IPv4_ADDR_1, mask=DISP_NET_IPv4_MASK)
     disp_att_data = netattachlib.NetworkAttachmentData(
         display_network, ETH1, [ip_assign])

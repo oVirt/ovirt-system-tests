@@ -63,7 +63,7 @@ def cluster_hosts_up(default_cluster, system):
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
         for i, host in enumerate(cluster_hosts_up):
-            ip_assign = netattachlib.StaticIpAssignment(
+            ip_assign = netattachlib.StaticIpv4Assignment(
                 addr=REQ_NET_IPv4_ADDR_PREFIX + str(i + 2),
                 mask=REQ_NET_IPv4_MASK)
             req_att_data = netattachlib.NetworkAttachmentData(

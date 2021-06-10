@@ -46,7 +46,7 @@ def test_sync_across_cluster(default_data_center, default_cluster,
 
 
 def create_attachment(network, i):
-    ip_assign = netattachlib.StaticIpAssignment(
+    ip_assign = netattachlib.StaticIpv4Assignment(
         addr='192.168.125.' + str(i + 2), mask='255.255.255.0'
     )
     att_datum = netattachlib.NetworkAttachmentData(network, ETH2, (ip_assign,))

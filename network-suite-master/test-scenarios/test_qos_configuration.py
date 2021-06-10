@@ -135,7 +135,7 @@ def test_setup_net_with_qos(system, default_data_center, default_cluster,
 
 
 def _create_net_attachment_data(qos_net):
-    ip_assign = netattachlib.StaticIpAssignment(
+    ip_assign = netattachlib.StaticIpv4Assignment(
         addr=QOS_NET_IPv4_ADDR, mask=QOS_NET_IPv4_MASK
     )
     att_data = netattachlib.NetworkAttachmentData(qos_net, ETH2, (ip_assign,))

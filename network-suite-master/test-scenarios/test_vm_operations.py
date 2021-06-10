@@ -77,7 +77,7 @@ def running_vm_0(system, default_cluster, default_storage_domain,
 
 @pytest.fixture
 def host_0_with_mig_net(migration_network, host_0_up):
-    ip_assign = netattachlib.StaticIpAssignment(
+    ip_assign = netattachlib.StaticIpv4Assignment(
         addr=MIG_NET_IPv4_ADDR_1, mask=MIG_NET_IPv4_MASK)
     mig_att_data = netattachlib.NetworkAttachmentData(
         migration_network, ETH1, [ip_assign])
@@ -88,7 +88,7 @@ def host_0_with_mig_net(migration_network, host_0_up):
 
 @pytest.fixture
 def host_1_with_mig_net(migration_network, host_1_up):
-    ip_config = netattachlib.StaticIpAssignment(
+    ip_config = netattachlib.StaticIpv4Assignment(
         addr=MIG_NET_IPv4_ADDR_2, mask=MIG_NET_IPv4_MASK)
     mig_att_data = netattachlib.NetworkAttachmentData(
         migration_network, ETH1, [ip_config])

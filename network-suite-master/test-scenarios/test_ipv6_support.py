@@ -52,11 +52,9 @@ def test_non_mgmt_display_network_over_ipv6(system, default_data_center,
     with netlib.new_network('ipv6-disp_net', default_data_center) as net:
         with clusterlib.network_assignment(default_cluster, net) as cl_net:
             cl_net.set_usages((netlib.NetworkUsage.DISPLAY,))
-            no_v4 = netattachlib.NoIpAssignment()
-            v6_no_gw = netattachlib.StaticIpAssignment(
-                version=netattachlib.IpVersion.V6,
-                addr=host0_eth2_ipv6,
-                mask='64',
+            no_v4 = netattachlib.NoIpv4Assignment()
+            v6_no_gw = netattachlib.StaticIpv6Assignment(
+                addr=host0_eth2_ipv6, prefix='64'
             )
             attach_data = netattachlib.NetworkAttachmentData(
                 net, 'eth2', (no_v4, v6_no_gw)

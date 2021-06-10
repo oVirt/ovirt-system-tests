@@ -34,7 +34,7 @@ DYNAMIC_IP_CONFIG = [
 
 class IpAssignment(object):
 
-    def __init__(self, addr, mask, gateway=None, version=IpVersion.V4,
+    def __init__(self, version, addr, mask, gateway=None,
                  boot_protocol=None):
         self._ip = types.Ip(addr, gateway, mask, version)
         self._boot_protocol = boot_protocol
@@ -60,18 +60,33 @@ class IpAssignment(object):
         return self._boot_protocol
 
 
-class StaticIpAssignment(IpAssignment):
+class StaticIpv4Assignment(IpAssignment):
 
     def __init__(self, addr, mask, gateway=None, version=IpVersion.V4):
-        super(StaticIpAssignment, self).__init__(addr, mask, gateway, version,
-                                                 types.BootProtocol.STATIC)
+        super(StaticIpv4Assignment, self).__init__(
+            version, addr, mask, gateway, types.BootProtocol.STATIC
+        )
 
 
-class NoIpAssignment(IpAssignment):
+class StaticIpv6Assignment(IpAssignment):
+
+    def __init__(self, addr, prefix, gateway=None, version=IpVersion.V6):
+        super(StaticIpv6Assignment, self).__init__(
+            version, addr, prefix, gateway, types.BootProtocol.STATIC
+        )
+
+
+class NoIpv4Assignment(IpAssignment):
 
     def __init__(self, version=IpVersion.V4):
-        super(NoIpAssignment, self).__init__(None, None, None, version,
-                                             types.BootProtocol.NONE)
+        super(NoIpv4Assignment, self).__init__(version, None, None, None,
+                                               types.BootProtocol.NONE)
+
+
+class NoIpv6Assignment(IpAssignment):
+    def __init__(self, version=IpVersion.V6):
+        super(NoIpv6Assignment, self).__init__(version, None, None, None,
+                                               types.BootProtocol.NONE)
 
 
 class NetworkAttachmentData(object):
@@ -175,10 +190,10 @@ class NetworkAttachmentData(object):
         :return: netattachlib.IpAssignment
         """
         return IpAssignment(
+            ip_address_assignment.ip.version,
             ip_address_assignment.ip.address,
             ip_address_assignment.ip.netmask,
             ip_address_assignment.ip.gateway,
-            ip_address_assignment.ip.version,
             ip_address_assignment.assignment_method
         )
 

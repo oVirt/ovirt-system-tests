@@ -99,7 +99,7 @@ _run_tc () {
         ${testcase[@]} || res=$?
     [[ "$res" -ne 0 ]] && {
         xmllint --format ${junitxml_file}
-        ./common/scripts/parse_junitxml.py ${junitxml_file} ${PREFIX}/result.txt
+        ./common/scripts/parse_junitxml.py ${junitxml_file} "${OST_REPO_ROOT}/exported-artifacts/result.txt"
     }
     which deactivate &> /dev/null && deactivate
     return "$res"

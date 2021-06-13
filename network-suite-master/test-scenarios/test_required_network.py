@@ -28,8 +28,6 @@ from ovirtlib import clusterlib
 
 
 REQ_NET = 'req-net'
-REQ_NET_IPv4_ADDR_PREFIX = '192.0.3.'
-REQ_NET_IPv4_MASK = '255.255.255.0'
 
 
 @pytest.fixture(scope='module')
@@ -64,11 +62,10 @@ def cluster_hosts_up(default_cluster, system):
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
         for i, host in enumerate(cluster_hosts_up):
-            ip_assign = netattachlib.StaticIpv4Assignment(
-                addr=REQ_NET_IPv4_ADDR_PREFIX + str(i + 2),
-                mask=REQ_NET_IPv4_MASK)
+            no_v4 = netattachlib.NoIpv4Assignment()
+            no_v6 = netattachlib.NoIpv6Assignment()
             req_att_data = netattachlib.NetworkAttachmentData(
-                req_net, ETH1, [ip_assign])
+                req_net, ETH1, [no_v4, no_v6])
             host.setup_networks([req_att_data])
     except Exception as e:
         # if setup fails for some of the hosts roll it back before aborting

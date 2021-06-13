@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,12 +72,7 @@ def sync(exec_func,
     """
     end_time = _monothonic_time() + timeout
 
-    if isinstance(exec_func_args, collections.Mapping):
-        kwargs = exec_func_args
-        args = ()
-    else:
-        args = exec_func_args
-        kwargs = {}
+    args, kwargs = _parse_args(exec_func_args)
 
     try:
         result = exec_func(*args, **kwargs)
@@ -104,6 +99,29 @@ def sync(exec_func,
                 return result
 
     raise Timeout(result)
+
+
+def re_run(exec_func, exec_func_args, count, interval):
+    args, kwargs = _parse_args(exec_func_args)
+    results = []
+    for _ in range(count):
+        try:
+            r = exec_func(*args, **kwargs)
+        except Exception as e:
+            r = e
+        results.append(r)
+        time.sleep(interval)
+    return results
+
+
+def _parse_args(exec_func_args):
+    if isinstance(exec_func_args, collections.Mapping):
+        kwargs = exec_func_args
+        args = ()
+    else:
+        args = exec_func_args
+        kwargs = {}
+    return args, kwargs
 
 
 def _monothonic_time():

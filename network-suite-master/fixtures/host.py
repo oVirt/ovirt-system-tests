@@ -19,7 +19,9 @@
 
 import pytest
 
+from ovirtlib import eventlib
 from ovirtlib import hostlib
+from ovirtlib import syncutil
 from ovirtlib.sdkentity import EntityNotFoundError
 
 
@@ -35,8 +37,8 @@ def host_0(system, default_cluster, host0_facts):
 
 
 @pytest.fixture(scope='session')
-def host_0_up(host_0):
-    _wait_for_host_install(host_0)
+def host_0_up(system, host_0):
+    _wait_for_host_install(system, host_0)
     return host_0
 
 
@@ -46,8 +48,8 @@ def host_1(system, default_cluster, host1_facts):
 
 
 @pytest.fixture(scope='session')
-def host_1_up(host_1):
-    _wait_for_host_install(host_1)
+def host_1_up(system, host_1):
+    _wait_for_host_install(system, host_1)
     return host_1
 
 
@@ -66,8 +68,17 @@ def host_in_ovs_cluster(
     default_data_center.wait_for_up_status()
 
 
-def _wait_for_host_install(host):
+def _wait_for_host_install(system, host):
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
+    results = syncutil.re_run(exec_func=host.wait_for_up_status,
+                              exec_func_args=(),
+                              count=6,
+                              interval=10)
+    eventlib.EngineEvents(system).add(description=f'OST - retry wait for host '
+                                      f'up after install {host.name}: '
+                                      f'{[str(r) for r in results]}')
+    if isinstance(results[-1], Exception):
+        raise results[-1]
 
 
 @pytest.fixture(scope='session', autouse=True)

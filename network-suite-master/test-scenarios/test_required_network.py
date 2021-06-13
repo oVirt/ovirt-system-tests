@@ -19,13 +19,14 @@
 #
 import pytest
 
+from fixtures.host import ETH1
+
 from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import hostlib
 from ovirtlib import clusterlib
 
 
-ETH1 = 'eth1'
 REQ_NET = 'req-net'
 REQ_NET_IPv4_ADDR_PREFIX = '192.0.3.'
 REQ_NET_IPv4_MASK = '255.255.255.0'

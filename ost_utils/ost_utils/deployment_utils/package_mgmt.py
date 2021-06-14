@@ -81,7 +81,7 @@ def expand_jenkins_repos(custom_repos):
 
         expanded_repos.update(repo_list)
 
-    return list(expanded_repos)
+    return list(r for r in expanded_repos if 'ppc64le' not in r)
 
 
 def add_custom_repos(ansible_vm, repo_urls):

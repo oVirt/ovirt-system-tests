@@ -23,8 +23,6 @@ import os.path
 import re
 import tempfile
 
-from collections import namedtuple
-
 import requests
 
 
@@ -51,9 +49,6 @@ OVIRT_PACKAGES_PATTERNS = (
     re.compile('ovirt-engine-[0-9]'),
     re.compile('vdsm-[0-9]'),
 )
-
-
-Package = namedtuple('Package', ['name', 'version', 'repo'])
 
 
 def expand_jenkins_repos(custom_repos):
@@ -113,7 +108,7 @@ def check_installed_packages(ansible_vms):
         return
 
     for repo in used_repos:
-        if len(_get_installed_packages(ansible_vms, repo)) > 0:
+        if _are_any_packages_used(ansible_vms, repo):
             return
 
     raise RuntimeError('None of user custom repos has been used. '
@@ -157,25 +152,17 @@ def _used_custom_repo_names(ansible_vms):
     return repo_names
 
 
-def _get_installed_packages(ansible_vms, repo_name):
-    # dnf adapts its output to the width of the terminal.
-    # If it fails to find this width out (which it does using:
-    # fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
-    # ), it defaults to 80 chars.
-    # If a package name + version + repo is wider than that, it will
-    # split the output across more than one line.
-    # This breaks our simplistic parsing. To work around this,
-    # call 'stty cols' to tell it that the terminal is wide.
-    # A better solution, one day, might be to make dnf support outputting
-    # such information in JSON, and parse this json if/where needed.
-    results = ansible_vms.shell(
-        f'stty cols 300; dnf repo-pkgs {repo_name} list installed')
-
-    return [
-        Package(*line.split())
+def _are_any_packages_used(ansible_vms, repo_name):
+    results = ansible_vms.shell(f'dnf repo-pkgs {repo_name} list installed')
+    filtered_results = [
+        line
         for res in results.values()
         for line in _filter_results(res['stdout'].splitlines())
     ]
+
+    LOGGER.debug(f'Packages used: {filtered_results}')
+
+    return len(filtered_results) > 0
 
 
 def _filter_results(result):

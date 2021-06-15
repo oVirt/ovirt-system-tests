@@ -38,8 +38,8 @@ from ost_utils.selenium.grid.common import http_proxy_disabled
 
 
 @pytest.fixture(scope="session")
-def engine_ips_for_network(ansible_engine_facts):
-    return functools.partial(network_utils.get_ips, ansible_engine_facts)
+def engine_ips_for_network(ansible_engine_facts, backend):
+    return functools.partial(network_utils.get_ips, backend, ansible_engine_facts)
 
 
 @pytest.fixture(scope="session")

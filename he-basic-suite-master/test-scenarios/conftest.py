@@ -34,6 +34,7 @@ from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import *
+from ost_utils.pytest.fixtures.he import *
 from ost_utils.pytest.fixtures.network import *
 from ost_utils.pytest.fixtures.node import *
 from ost_utils.pytest.fixtures.sdk import *

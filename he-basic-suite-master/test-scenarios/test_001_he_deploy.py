@@ -20,10 +20,8 @@
 
 import os
 
-from ost_utils import backend
 
-
-def test_he_deploy(suite_dir, ansible_host0, ansible_storage):
+def test_he_deploy(suite_dir, ansible_host0, ansible_storage, he_host_name):
     answer_file_src = os.path.join(suite_dir, 'answers.conf.in')
     ansible_host0.copy(
         src=answer_file_src,
@@ -33,7 +31,6 @@ def test_he_deploy(suite_dir, ansible_host0, ansible_storage):
     setup_file_src = os.path.join(suite_dir, 'setup_first_he_host.sh')
     ansible_host0.copy(src=setup_file_src, dest='/root/', mode='preserve')
 
-    he_name = backend.default_backend().engine_hostname()
-    ansible_host0.shell(f'/root/setup_first_he_host.sh {he_name}')
+    ansible_host0.shell(f'/root/setup_first_he_host.sh {he_host_name}')
 
     ansible_storage.shell('fstrim -va')

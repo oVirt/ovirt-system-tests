@@ -20,8 +20,6 @@
 
 import socket
 
-from ost_utils import backend
-
 
 def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
     for port in range(start, stop):
@@ -34,9 +32,9 @@ def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
     raise RuntimeError("No free port could be found")
 
 
-def get_ips(ansible_facts, network_name):
+def get_ips(backend, ansible_facts, network_name):
     hostname = ansible_facts.get("ansible_hostname")
-    ifaces = backend.default_backend().ifaces_for(hostname, network_name)
+    ifaces = backend.ifaces_for(hostname, network_name)
     ips = [
         ansible_facts.get(f'ansible_{iface}').get('ipv4').get('address')
         for iface in ifaces

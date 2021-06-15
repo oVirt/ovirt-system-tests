@@ -22,7 +22,6 @@ from __future__ import absolute_import
 
 import ipaddress
 
-from ost_utils import backend
 from ost_utils import utils
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.engine import *
@@ -70,13 +69,13 @@ def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
     return attachment
 
 
-def _attach_vm_network_to_host_static_config(api, network_name, host_num):
+def _attach_vm_network_to_host_static_config(api, network_name, host_num, backend):
     engine = api.system_service()
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[host_num]
     host_service = engine.hosts_service().host_service(id=host.id)
 
-    nic_name = backend.default_backend().ifaces_for(host.name, network_name)[0]  # eth0
+    nic_name = backend.ifaces_for(host.name, network_name)[0]  # eth0
     ip_configuration = network_utils_v4.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR.format(host_num+1),
         VM_NETWORK_IPv4_MASK,
@@ -104,9 +103,10 @@ def _attach_vm_network_to_host_static_config(api, network_name, host_num):
 
 
 def test_attach_vm_network_to_host_0_static_config(engine_api,
-                                                   management_network_name):
+                                                   management_network_name,
+                                                   backend):
     _attach_vm_network_to_host_static_config(engine_api, management_network_name,
-                                             host_num=0)
+                                             host_num=0, backend=backend)
 
 
 def test_modify_host_0_ip_to_dhcp(engine_api):
@@ -137,13 +137,13 @@ def test_detach_vm_network_from_host_0(engine_api):
     assert not _host_is_attached_to_network(engine, host_service, VM_NETWORK)
 
 
-def test_bond_nics(engine_api, bonding_network_name):
+def test_bond_nics(engine_api, bonding_network_name, backend):
     engine = engine_api.system_service()
 
     def _bond_nics(number, host):
         slaves = [
             HostNic(name=nic)
-            for nic in backend.default_backend().ifaces_for(host.name, bonding_network_name)
+            for nic in backend.ifaces_for(host.name, bonding_network_name)
         ]
 
         options = [
@@ -207,9 +207,11 @@ def test_remove_bonding(engine_api):
 
 
 def test_attach_vm_network_to_both_hosts_static_config(engine_api,
-                                                       management_network_name):
+                                                       management_network_name,
+                                                       backend):
     # preparation for 004 and 006
     for host_num in (0, 1):
         _attach_vm_network_to_host_static_config(engine_api,
                                                  management_network_name,
-                                                 host_num)
+                                                 host_num,
+                                                 backend=backend)

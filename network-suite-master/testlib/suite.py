@@ -23,9 +23,21 @@ import os
 import ovirtsdk4
 import pytest
 
+from testlib import address_family
 
 SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
 SUITE_VERSION = SUITE_NAME.split('-')[-1]
+
+
+def af():
+    """
+    The address family to use for all connections in the session.
+    IP_VERSION environment variable expected values: '4' or '6'.
+    """
+    try:
+        return address_family.AF(os.environ['IP_VERSION'])
+    except KeyError:
+        return address_family.AF('4')
 
 
 def xfail_suite_master(reason, raises=None):

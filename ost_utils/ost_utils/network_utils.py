@@ -38,7 +38,7 @@ def get_ips(ansible_facts, network_name):
     hostname = ansible_facts.get("ansible_hostname")
     ifaces = backend.default_backend().ifaces_for(hostname, network_name)
     ips = [
-        ansible_facts.get("ansible_{}.ipv4.address".format(iface))
+        ansible_facts.get(f'ansible_{iface}').get('ipv4').get('address')
         for iface in ifaces
     ]
     return ips

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import threading
-
 
 class FactNotFound(Exception):
 
@@ -31,47 +29,29 @@ class FactNotFound(Exception):
 
 
 class Facts:
-    """Uses ModuleMapper and gather_facts module to obtain and cache facts
+    """
+    Uses ModuleMapper and gather_facts module to obtain and cache facts
     about a VM.
-
-    For the rationale behind per-thread caching please see the docs on
-    PrivateDir class.
-
     """
 
     def __init__(self, module_mapper):
-        self._thread_local = threading.local()
         self._module_mapper = module_mapper
         self._cache = {}
 
-    @property
-    def facts_gathered(self):
-        return self._thread_local.__dict__.setdefault('facts_gathered', False)
-
-    @facts_gathered.setter
-    def facts_gathered(self, value):
-        self._thread_local.facts_gathered = value
-
-    def get(self, fact):
-        if not self.facts_gathered:
+    def get_all(self):
+        if not self._cache:
             self.refresh()
+        return self._cache
 
-        if fact in self._cache:
-            return self._cache[fact]
-
-        result = self._module_mapper.debug(var=fact)
-
-        if result is not None:
-            value = result.get(fact, None)
-            if value == "VARIABLE IS NOT DEFINED!":
-                raise FactNotFound(fact)
-            if value is not None:
-                self._cache[fact] = value
-                return value
-
-        raise FactNotFound(fact)
+    def get(self, key):
+        """
+        :param str key: key in the outermost level of the facts dict.
+         to get a leaf value in the facts dict use -
+         self.get('ansible_eth0').get('ipv4').get('address')
+        """
+        if not self._cache:
+            self.refresh()
+        return self._cache[key]
 
     def refresh(self):
-        self._cache = {}
-        self._module_mapper.gather_facts()
-        self.facts_gathered = True
+        self._cache = self._module_mapper.gather_facts()['ansible_facts']

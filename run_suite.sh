@@ -193,6 +193,29 @@ render_jinja_templates () {
     export he_installed_image="${OST_IMAGES_HE_INSTALLED}"
     "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
     cat "$dest"
+    check_if_images_installed
+}
+
+check_if_images_installed() {
+    grep 'path:' $LAGO_INIT_FILE | while read -r line; do
+      path=$(echo $line | cut --complement -d ":" -f 1)
+      if [ -z "$path" ]; then
+        logger.error "One or more OST image required by ${SUITE_NAME} on ${OST_IMAGES_DISTRO} is not installed:"
+        for image in upgrade_image engine_installed_image host_installed_image node_image he_installed_image; do
+          if [ -z ${!image} ]; then
+            local ost_images_distro=${OST_IMAGES_DISTRO}
+            if [ ${image} == node_image ]; then
+              ost_images_distro='node'
+              image='base'
+            fi
+            rpm_name="ost-images-${ost_images_distro}-${image//_/-}"
+            rpm_name="${rpm_name%-image}"
+            logger.error "${image} is missing! You can install it with: 'sudo dnf install ${rpm_name}'"
+          fi
+        done
+        exit 1
+      fi
+    done
 }
 
 get_pytest_log_level() {

@@ -42,7 +42,7 @@ def default_storage_domain(system, engine_facts, host_0_up,
                               host=host_0_up,
                               host_storage_data=storagelib.HostStorageData(
                                   storage_type=storagelib.StorageType.NFS,
-                                  address=engine_facts.url_ip,
+                                  address=engine_facts.default_ip(urlize=True),
                                   path=DEFAULT_DOMAIN_PATH,
                                   nfs_version=storagelib.NfsVersion.V4_2
                                   )
@@ -56,7 +56,7 @@ def default_storage_domain(system, engine_facts, host_0_up,
 @pytest.fixture(scope='session')
 def lun_id(engine_facts):
     # Reads a lun id value from the file
-    node = sshlib.Node(engine_facts.default_ip, engine_facts.ssh_password)
+    node = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
     ret = node.exec_command(' '.join(['cat', '/root/multipath.txt']))
     assert ret.code == 0
     return ret.out.splitlines()[0]

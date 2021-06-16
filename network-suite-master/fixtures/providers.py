@@ -59,7 +59,8 @@ def openstack_client_config(engine_facts, engine_password,
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
-                    'auth_url': OPENSTACK_AUTH_URL.format(engine_facts.url_ip),
+                    'auth_url': OPENSTACK_AUTH_URL.format(
+                        engine_facts.default_ip(urlize=True)),
                     'username': OPENSTACK_USERNAME,
                     'password': engine_password
                 },

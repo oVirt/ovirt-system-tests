@@ -26,26 +26,17 @@ from ost_utils.ansible import private_dir
 
 @pytest.fixture(scope="session")
 def engine_facts(ansible_engine_facts):
-    return MachineFacts(
-        ansible_engine_facts.get('ansible_default_ipv4').get('address'),
-        ansible_engine_facts.get('ansible_hostname')
-    )
+    return MachineFacts(ansible_engine_facts.get_all())
 
 
 @pytest.fixture(scope="session")
 def host0_facts(ansible_host0_facts):
-    return MachineFacts(
-        ansible_host0_facts.get('ansible_default_ipv4').get('address'),
-        ansible_host0_facts.get('ansible_hostname')
-    )
+    return MachineFacts(ansible_host0_facts.get_all())
 
 
 @pytest.fixture(scope="session")
 def host1_facts(ansible_host1_facts):
-    return MachineFacts(
-        ansible_host1_facts.get('ansible_default_ipv4').get('address'),
-        ansible_host1_facts.get('ansible_hostname')
-    )
+    return MachineFacts(ansible_host1_facts.get_all())
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -61,43 +52,27 @@ def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
 
 
 class MachineFacts(object):
-    """
-    ost_utils.ansible.ansible_facts retrieves information from the remote
-    machine whenever its get attribute is called. When an ansible service is
-    present and fetches the facts MachineFacts caches the ansible response as a
-    simple collection of machine access info.
-    When an ansible service is not present in an independent environment
-    MachineFacts can be easily instantiated with access info for the engine and
-    hosts in the environment, enabling fast and easy setup for testing and
-    debugging.
 
-    MachineFacts therefore serves as an adapter that encapsulates dependency
-    upon the ost_utils-ansible stack from the network suite for multiple use
-    cases.
-    """
-
-    def __init__(self, default_ip, hostname, ssh_password='123456'):
-        self._default_ip = default_ip
-        self._url_ip = self._make_url_ip()
-        self._hostname = hostname
+    def __init__(self, ansible_facts_dict, ssh_password='123456'):
+        self._facts = ansible_facts_dict
         self._ssh_password = ssh_password
 
     @property
     def default_ip(self):
-        return self._default_ip
+        return self._facts['ansible_default_ipv4']['address']
 
     @property
     def url_ip(self):
-        return self._url_ip
+        return self._make_url_ip()
 
     @property
     def hostname(self):
-        return self._hostname
+        return self._facts['ansible_hostname']
 
     @property
     def ssh_password(self):
         return self._ssh_password
 
     def _make_url_ip(self):
-        ip = ipaddress.ip_address(self._default_ip)
-        return self._default_ip if ip.version == 4 else f'[{self._default_ip}]'
+        ip = ipaddress.ip_address(self.default_ip)
+        return self.default_ip if ip.version == 4 else f'[{self.default_ip}]'

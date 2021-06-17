@@ -37,7 +37,7 @@ from ovirtlib.sdkentity import SDKSubEntity
 from testlib import suite
 
 HOST_TIMEOUT_SHORT = 5 * 60
-HOST_TIMEOUT_LONG = 15 * 60
+HOST_TIMEOUT_LONG = 20 * 60
 SETUP_NETWORKS_TIMEOUT = 3 * 60
 
 

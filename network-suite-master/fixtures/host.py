@@ -56,9 +56,7 @@ def host_1_up(system, host_1):
 @pytest.fixture(scope='session')
 def host_in_ovs_cluster(
         system, ovs_cluster, default_cluster, default_data_center):
-    host_id = default_cluster.host_ids()[0]
-    host = hostlib.Host(system)
-    host.import_by_id(host_id)
+    host = _non_spm_host(system, default_cluster.host_ids())
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
     with host.toggle_cluster(ovs_cluster):
         host.sync_all_networks()
@@ -66,6 +64,14 @@ def host_in_ovs_cluster(
         yield host
     host.sync_all_networks()
     default_data_center.wait_for_up_status()
+
+
+def _non_spm_host(system, host_ids):
+    for host_id in host_ids:
+        host = hostlib.Host(system)
+        host.import_by_id(host_id)
+        if host.is_not_spm or id == host_ids[-1]:
+            return host
 
 
 def _wait_for_host_install(system, host):

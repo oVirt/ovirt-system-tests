@@ -188,9 +188,9 @@ render_jinja_templates () {
     export coverage="${COVERAGE}"
     export node_image="${OST_IMAGES_NODE}"
     export upgrade_image="${OST_IMAGES_UPGRADE}"
-    export engine_image="${OST_IMAGES_ENGINE_INSTALLED}"
-    export host_image="${OST_IMAGES_HOST_INSTALLED}"
-    export he_image="${OST_IMAGES_HE_INSTALLED}"
+    export engine_installed_image="${OST_IMAGES_ENGINE_INSTALLED}"
+    export host_installed_image="${OST_IMAGES_HOST_INSTALLED}"
+    export he_installed_image="${OST_IMAGES_HE_INSTALLED}"
     "${PYTHON}" "${OST_REPO_ROOT}/common/scripts/render_jinja_templates.py" "$src" > "$dest"
     cat "$dest"
 }

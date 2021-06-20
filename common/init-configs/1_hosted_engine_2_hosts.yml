@@ -71,9 +71,9 @@ domains:
         {% if root_disk_path -%}
         path: {{ root_disk_path -}}
         {% elif loop.first -%}
-        path: {{ env.he_image }}
+        path: {{ env.he_installed_image }}
         {% else -%}
-        path: {{ env.host_image }}
+        path: {{ env.host_installed_image }}
         {%- endif %}
     metadata:
       deploy-scripts:

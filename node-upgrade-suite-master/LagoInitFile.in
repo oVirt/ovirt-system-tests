@@ -24,7 +24,7 @@ domains:
       - template_name: {{ templates.engine }}
         type: template
         template_type: qcow2
-        path: {{ env.engine_image }}
+        path: {{ env.engine_installed_image }}
         name: root
         dev: vda
         format: qcow2

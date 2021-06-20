@@ -18,9 +18,11 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import datetime
 import functools
 import logging
 import os
+import pprint
 
 import pytest
 
@@ -39,8 +41,17 @@ def run_scripts(ansible_by_hostname):
         ansible_handle = ansible_by_hostname(hostname)
         for script in scripts:
             expanded = os.path.expandvars(script)
-            LOGGER.info(f"Running {expanded} on {hostname}")
-            ansible_handle.script(expanded)
+            start = datetime.datetime.now()
+            LOGGER.info(f"Running script {expanded} on {hostname}")
+            res = ansible_handle.script(expanded)
+            duration = int((datetime.datetime.now() - start).total_seconds())
+            LOGGER.info(
+                f"Finished script {expanded} on {hostname} ({duration}s)"
+            )
+            LOGGER.debug(
+                f"Finished script {expanded} on {hostname}, result:\n%s",
+                pprint.pformat(res),
+            )
     return do_run_scripts
 
 

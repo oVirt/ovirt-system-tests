@@ -36,7 +36,7 @@ def test_initialize_engine(suite_dir, engine_ip, ansible_engine):
         dest='/tmp/answer-file',
     )
 
-    host_name = socket.getfqdn()
+    host_name = socket.gethostname()
     host_ip = socket.gethostbyname(host_name)
 
     with NamedTemporaryFile(mode='w') as sso_conf:

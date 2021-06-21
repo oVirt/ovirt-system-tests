@@ -89,7 +89,8 @@ def disable_all_repos(ansible_vm):
 
 
 def add_dummy_repo(ansible_vm):
-    with tempfile.NamedTemporaryFile() as repo_dir:
+    # force location to /var/tmp/ to survive VM restart
+    with tempfile.NamedTemporaryFile(dir='/var/tmp') as repo_dir:
         repodata_path = os.path.join(repo_dir.name, 'repodata')
         ansible_vm.file(path=repodata_path, mode='0777', state='directory',
                         recurse=True)

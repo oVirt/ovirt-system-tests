@@ -409,6 +409,17 @@ class Host(SDKRootEntity):
                       exec_func_args=(),
                       success_criteria=lambda spm: spm)
 
+    def workaround_bz_1779280(self):
+        results = syncutil.re_run(exec_func=self.wait_for_up_status,
+                                  exec_func_args=(),
+                                  count=6,
+                                  interval=10)
+        eventlib.EngineEvents(self.system).add(
+            description=f'OST - retry wait for host up after install '
+                        f'{self.name}: {[str(r) for r in results]}'
+        )
+        return results
+
     def _get_parent_service(self, system):
         return system.hosts_service
 

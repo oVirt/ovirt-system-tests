@@ -17,7 +17,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import time
 
 import pytest
 
@@ -33,8 +32,7 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 @pytest.fixture(scope='session')
 def default_storage_domain(system, engine_facts, host_0_up,
                            default_data_center):
-    # workaround for BZ 1779280
-    time.sleep(5)
+    host_0_up.workaround_bz_1779280()
     storage_domain = storagelib.StorageDomain(system)
     try:
         storage_domain.import_by_name(DEFAULT_DOMAIN_NAME)

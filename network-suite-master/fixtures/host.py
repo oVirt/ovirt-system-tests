@@ -19,9 +19,7 @@
 
 import pytest
 
-from ovirtlib import eventlib
 from ovirtlib import hostlib
-from ovirtlib import syncutil
 from ovirtlib.sdkentity import EntityNotFoundError
 
 
@@ -76,13 +74,7 @@ def _non_spm_host(system, host_ids):
 
 def _wait_for_host_install(system, host):
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
-    results = syncutil.re_run(exec_func=host.wait_for_up_status,
-                              exec_func_args=(),
-                              count=6,
-                              interval=10)
-    eventlib.EngineEvents(system).add(description=f'OST - retry wait for host '
-                                      f'up after install {host.name}: '
-                                      f'{[str(r) for r in results]}')
+    results = host.workaround_bz_1779280()
     if isinstance(results[-1], Exception):
         raise results[-1]
 

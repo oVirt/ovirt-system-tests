@@ -28,21 +28,6 @@ from ost_utils.backend.virsh import network
 
 from ost_utils.pytest.fixtures.backend import backend
 
-# lago uses a simple scheme to do 1-1 mapping of IPv4 address
-# to MAC address and to IPv6 address. So in theory we could have
-# only the IPv4 address hard-coded and have the others calculated -
-# either calling lago (internal?) functions or duplicating here the
-# calculation. But I think hard-coding everything is enough in this
-# case, and also makes it much easier to grep for stuff later.
-# As-is, the constants below match what lago would have done when supplied
-# with only the IPv4 address 192.168.200.99 and calculating IPv6 and MAC
-# based on it. In principle, since we now do not rely on lago for this,
-# we could use other random addresses. TODO: generalize this, also for
-# allowing to run more than one copy of OST on the same machine (so at
-# least one copy will not be able to use 192.168.200), and perhaps also
-# allow doing this completely random - just pick a random MAC address,
-# let dhcp (libvirt) allocate appropriate IPv4/IPv6 addresses based on
-# the subnet, and use that.
 
 @pytest.fixture(scope="session")
 def he_mac_address():
@@ -51,13 +36,19 @@ def he_mac_address():
 
 
 @pytest.fixture(scope="session")
-def he_ipv4_address():
-    return '192.168.200.99'
+def he_ipv4_address(ansible_host0_facts):
+    host0_ipv4 = ansible_host0_facts.get('ansible_default_ipv4').get('address')
+    return '{}.99'.format('.'.join(host0_ipv4.split('.')[:3]))
 
 
 @pytest.fixture(scope="session")
-def he_ipv6_address():
-    return 'fd8f:1391:3a82:200::c0a8:c863'
+def he_ipv6_address(ansible_host0_facts):
+    host0_ipv6 = ansible_host0_facts.get('ansible_default_ipv6').get('address')
+    *prefix, lasthextet = host0_ipv6.split(':')
+    return '{prefix}:{prelast}63'.format(
+        prefix=':'.join(prefix),
+        prelast=lasthextet[:2],
+    )
 
 
 @pytest.fixture(scope="session")
@@ -67,7 +58,7 @@ def he_host_name(backend):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def ansible_he(
     management_network_name,
     ansible_inventory,

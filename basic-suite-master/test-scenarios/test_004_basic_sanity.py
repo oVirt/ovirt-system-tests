@@ -1522,7 +1522,9 @@ def test_hotplug_disk(assert_vm_is_alive, engine_api):
                 status=None,
                 sparse=True,
             ),
-            interface=types.DiskInterface.VIRTIO,
+            # FIXME - move back to VIRTIO once we have a libvirt fix for
+            # https://bugzilla.redhat.com/1970277
+            interface=types.DiskInterface.VIRTIO_SCSI,
             bootable=False,
             active=True
         )

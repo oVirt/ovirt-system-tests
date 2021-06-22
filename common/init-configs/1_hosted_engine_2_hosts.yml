@@ -75,16 +75,8 @@ domains:
         {% else -%}
         path: {{ env.host_image }}
         {%- endif %}
-      - name: tmp
-        size: 80G
-        type: empty
-        dev: sda
-        format: qcow2
     metadata:
       deploy-scripts:
-        {% if loop.first -%}
-        - $OST_REPO_ROOT/common/deploy-scripts/add_tmp_part.sh
-        {%- endif %}
         - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
     artifacts:
       - /etc/resolv.conf

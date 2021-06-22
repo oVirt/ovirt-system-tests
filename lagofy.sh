@@ -56,7 +56,7 @@ lago_init() {
     export OST_IMAGES_SSH_KEY="${ssh_key}"
 
     local comma="Using images "
-    for i in $engine_image $host_image $he_image, $node_image; do echo -n $([ -e $i ] && { echo -n "$comma"; rpm -qf $i &>/dev/null && rpm -qf $i || echo $i; }); comma=", "; done
+    for i in $engine_image $host_image $he_image, $node_image; do echo -n $([ -e $i ] && { echo -n "$comma"; rpm -qf $i &>/dev/null && rpm -qf $i || echo $i; }); comma=", "; done; echo
 
     # set pytest arguments for using custom repositories
     CUSTOM_REPOS_ARGS=()
@@ -112,7 +112,7 @@ run_tc() {
 }
 
 run_tests() {
-    run_linters
+    run_linters || return 1
     TC= _run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
     return 0

@@ -41,6 +41,7 @@ from ost_utils import backend
 from ost_utils import engine_object_names
 from ost_utils import engine_utils
 from ost_utils import general_utils
+from ost_utils import host_utils
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.ansible import *
@@ -178,95 +179,6 @@ _TEST_LIST = [
     "test_add_nonadmin_user",
     "test_add_vm_permissions_to_user",
 ]
-
-
-def _hosts_in_dc(api, dc_name=engine_object_names.TEST_DC_NAME, random_host=False):
-    hosts_service = api.system_service().hosts_service()
-    all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
-    up_hosts = [host for host in all_hosts if host.status == types.HostStatus.UP]
-    if up_hosts:
-        if random_host:
-            return random.choice(up_hosts)
-        else:
-            return sorted(up_hosts, key=lambda host: host.name)
-    hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
-    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
-    raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
-
-def _random_host_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
-    return _hosts_in_dc(api, dc_name, True)
-
-def _random_host_service_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
-    host = _hosts_in_dc(api, dc_name, True)
-    return api.system_service().hosts_service().host_service(id=host.id)
-
-def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
-    installing_hosts = hosts_service.list(
-        search='datacenter={} AND status=installing or status=initializing '
-               'or status=connecting or status=reboot'.format(dc_name)
-    )
-    if len(installing_hosts) == total_num_hosts: # All hosts still installing
-        return False
-
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
-    if len(up_hosts) == total_num_hosts:
-        return True
-
-    # sometimes a second host is fast enough to go up without master SD, it then goes NonOperational with 5min autorecovery, let's poke it
-    nonop_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational'.format(dc_name))
-    if len(nonop_hosts):
-        for host in nonop_hosts:
-            host_service = hosts_service.host_service(host.id)
-            host_service.activate()
-        return False
-
-    _check_problematic_hosts(hosts_service, dc_name)
-
-def _single_host_up(hosts_service, total_num_hosts, dc_name):
-    installing_hosts = hosts_service.list(
-        search='datacenter={} AND status=installing or status=initializing '
-               'or status=connecting or status=reboot'.format(dc_name)
-    )
-    if len(installing_hosts) == total_num_hosts : # All hosts still installing
-        return False
-
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
-    if len(up_hosts):
-        return True
-
-    _check_problematic_hosts(hosts_service, dc_name)
-
-def _check_problematic_hosts(hosts_service, dc_name):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up'.format(dc_name))
-    if len(problematic_hosts):
-        dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
-        for host in problematic_hosts:
-            host_service = hosts_service.host_service(host.id)
-            dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
-        raise RuntimeError(dump_hosts)
-
-
-def _host_status_to_print(hosts_service, hosts_list):
-    dump_hosts = ''
-    for host in hosts_list:
-            host_service_info = hosts_service.host_service(host.id)
-            dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
-    return dump_hosts
-
-def _wait_for_status(hosts_service, dc_name, status):
-    up_status_seen = False
-    for _ in general_utils.linear_retrier(attempts=12, iteration_sleeptime=10):
-        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
-        up_hosts = [host for host in all_hosts if host.status == status]
-        LOGGER.debug(_host_status_to_print(hosts_service, all_hosts))
-        # we use up_status_seen because we make sure the status is not flapping
-        if up_hosts:
-            if up_status_seen:
-                break
-            up_status_seen = True
-        else:
-            up_status_seen = False
-    return all_hosts
 
 
 @pytest.mark.parametrize("key_format, verification_fn", [
@@ -466,26 +378,30 @@ def test_add_hosts(engine_api, root_password, hostnames_to_add,
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_hosts(engine_api, ost_dc_name):
-    hosts_service = engine_api.system_service().hosts_service()
-    hosts_status = hosts_service.list(search='datacenter={}'.format(ost_dc_name))
-    total_hosts = len(hosts_status)
-    dump_hosts = _host_status_to_print(hosts_service, hosts_status)
-    LOGGER.debug('Host status, verify_add_hosts:\n {}'.format(dump_hosts))
+def test_verify_add_hosts(hosts_service, ost_dc_name):
+    up_host = None
+
+    def find_up_host():
+        nonlocal up_host
+        up_host = host_utils.find_single_up_host(hosts_service, ost_dc_name)
+        return up_host is not None
+
     assertions.assert_true_within(
-        lambda: _single_host_up(hosts_service, total_hosts, ost_dc_name),
+        find_up_host,
         timeout=constants.ADD_HOST_TIMEOUT
     )
+
+    host_utils.wait_for_flapping_host(hosts_service, ost_dc_name, up_host.id)
+
 
 @order_by(_TEST_LIST)
-def test_verify_add_all_hosts(engine_api, ost_dc_name):
-    hosts_service = engine_api.system_service().hosts_service()
-    total_hosts = len(hosts_service.list(search='datacenter={}'.format(ost_dc_name)))
-
+def test_verify_add_all_hosts(hosts_service, ost_dc_name):
     assertions.assert_true_within(
-        lambda: _all_hosts_up(hosts_service, total_hosts, ost_dc_name),
+        lambda: host_utils.all_hosts_up(hosts_service, ost_dc_name),
         timeout=constants.ADD_HOST_TIMEOUT
     )
+
+    host_utils.wait_for_flapping_host(hosts_service, ost_dc_name)
 
 
 @order_by(_TEST_LIST)
@@ -537,18 +453,22 @@ def sd_iscsi_host_luns(sd_iscsi_host_lun_uuids, sd_iscsi_host_ips,
 
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'iscsi', reason='not using iscsi')
-def test_add_iscsi_master_storage_domain(engine_api, sd_iscsi_host_luns, ost_dc_name):
-    add_iscsi_storage_domain(engine_api, sd_iscsi_host_luns, ost_dc_name)
+def test_add_iscsi_master_storage_domain(engine_api, hosts_service,
+                                         sd_iscsi_host_luns, ost_dc_name):
+    add_iscsi_storage_domain(engine_api, hosts_service, sd_iscsi_host_luns,
+                             ost_dc_name)
 
 
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
-def test_add_nfs_master_storage_domain(engine_api, sd_nfs_host_storage_ip, ost_dc_name):
-    add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, ost_dc_name)
+def test_add_nfs_master_storage_domain(engine_api, hosts_service,
+                                       sd_nfs_host_storage_ip, ost_dc_name):
+    add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_ip,
+                           ost_dc_name)
 
 
-def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, dc_name):
-    random_host = _random_host_from_dc(engine_api, dc_name)
+def add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name):
+    random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_NFS_NAME, random_host,
@@ -557,8 +477,8 @@ def add_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, dc_name):
 
 
 # TODO: add this over the storage network and with IPv6
-def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, dc_name):
-    random_host = _random_host_from_dc(engine_api, dc_name)
+def add_second_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name):
+    random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_SECOND_NFS_NAME, random_host,
@@ -566,21 +486,26 @@ def add_second_nfs_storage_domain(engine_api, sd_nfs_host_storage_ip, dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_add_secondary_storage_domains(engine_api, sd_nfs_host_storage_ip,
+def test_add_secondary_storage_domains(engine_api, hosts_service,
+                                       sd_nfs_host_storage_ip,
                                        sd_iscsi_host_luns, ost_dc_name):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
                 functools.partial(add_nfs_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip, ost_dc_name),
+                                  hosts_service, sd_nfs_host_storage_ip,
+                                  ost_dc_name),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 # Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, engine_api,
-#                                  sd_nfs_host_storage_ip, ost_dc_name),
+#                                  hosts_service, sd_nfs_host_storage_ip,
+#                                  ost_dc_name),
                 functools.partial(add_templates_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip, ost_dc_name),
+                                  hosts_service, sd_nfs_host_storage_ip,
+                                  ost_dc_name),
                 functools.partial(add_second_nfs_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip, ost_dc_name),
+                                  hosts_service, sd_nfs_host_storage_ip,
+                                  ost_dc_name),
 
             ],
         )
@@ -588,15 +513,19 @@ def test_add_secondary_storage_domains(engine_api, sd_nfs_host_storage_ip,
         vt = utils.VectorThread(
             [
                 functools.partial(add_iscsi_storage_domain, engine_api,
-                                  sd_iscsi_host_luns, ost_dc_name),
+                                  hosts_service, sd_iscsi_host_luns,
+                                  ost_dc_name),
 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
 #Bug-Url: http://bugzilla.redhat.com/1463263
 #                functools.partial(add_iso_storage_domain, engine_api,
-#                                  sd_nfs_host_storage_ip, ost_dc_name),
+#                                  hosts_service, sd_nfs_host_storage_ip,
+#                                  ost_dc_name),
                 functools.partial(add_templates_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip, ost_dc_name),
+                                  hosts_service, sd_nfs_host_storage_ip,
+                                  ost_dc_name),
                 functools.partial(add_second_nfs_storage_domain, engine_api,
-                                  sd_nfs_host_storage_ip, ost_dc_name),
+                                  hosts_service, sd_nfs_host_storage_ip,
+                                  ost_dc_name),
 
             ],
         )
@@ -651,7 +580,7 @@ def test_add_glance_images(
     vt.join_all()
 
 
-def add_iscsi_storage_domain(engine_api, luns, dc_name):
+def add_iscsi_storage_domain(engine_api, hosts_service, luns, dc_name):
     v4_domain = versioning.cluster_version_ok(4, 1)
     p = sdk4.types.StorageDomain(
         name=SD_ISCSI_NAME,
@@ -661,7 +590,7 @@ def add_iscsi_storage_domain(engine_api, luns, dc_name):
         data_center=sdk4.types.DataCenter(
             name=dc_name,
         ),
-        host=_random_host_from_dc(engine_api, dc_name),
+        host=host_utils.random_up_host(hosts_service, dc_name),
         storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
@@ -675,8 +604,9 @@ def add_iscsi_storage_domain(engine_api, luns, dc_name):
     domain.add(engine_api, p, dc_name)
 
 
-def add_iso_storage_domain(engine_api, sd_host_storage_ip, dc_name):
-    random_host = _random_host_from_dc(engine_api, dc_name)
+def add_iso_storage_domain(engine_api, hosts_service, sd_host_storage_ip,
+                           dc_name):
+    random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_ISO_NAME, random_host, sd_host_storage_ip,
@@ -684,8 +614,9 @@ def add_iso_storage_domain(engine_api, sd_host_storage_ip, dc_name):
                    nfs_version='v3')
 
 
-def add_templates_storage_domain(engine_api, sd_host_storage_ip, dc_name):
-    random_host = _random_host_from_dc(engine_api, dc_name)
+def add_templates_storage_domain(engine_api, hosts_service, sd_host_storage_ip,
+                                 dc_name):
+    random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
     nfs.add_domain(engine_api, SD_TEMPLATES_NAME, random_host,
@@ -1030,8 +961,8 @@ def test_get_domains(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_devices(engine_api, ost_dc_name):
-    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
+def test_get_host_devices(hosts_service, ost_dc_name):
+    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
     for i in range(10):
         devices_service = host_service.devices_service()
         devices = sorted(devices_service.list(), key=lambda device: device.name)
@@ -1046,8 +977,8 @@ def test_get_host_devices(engine_api, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_hooks(engine_api, ost_dc_name):
-    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
+def test_get_host_hooks(hosts_service, ost_dc_name):
+    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
     hooks_list = ''
@@ -1060,8 +991,8 @@ def test_get_host_hooks(engine_api, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_stats(engine_api, ost_dc_name):
-    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
+def test_get_host_stats(hosts_service, ost_dc_name):
+    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
     stats_list = ''
@@ -1074,8 +1005,8 @@ def test_get_host_stats(engine_api, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_numa_nodes(engine_api, ost_dc_name):
-    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
+def test_get_host_numa_nodes(hosts_service, ost_dc_name):
+    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
@@ -1086,11 +1017,12 @@ def test_get_host_numa_nodes(engine_api, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_check_update_host(engine_api, ost_dc_name, is_node_suite):
+def test_check_update_host(engine_api, hosts_service, ost_dc_name,
+                           is_node_suite):
     if is_node_suite:
         pytest.skip('Skip test_check_update_host on node suites - done later')
     engine = engine_api.system_service()
-    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
+    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
     events_service = engine.events_service()
     with engine_utils.wait_for_event(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
@@ -1149,11 +1081,12 @@ def test_get_operating_systems(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_fence_agent(engine_api, ost_dc_name):
+def test_add_fence_agent(hosts_service, ost_dc_name):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
-    host_service = _random_host_service_from_dc(engine_api, ost_dc_name)
+    host_service = host_utils.random_up_host_service(hosts_service,
+                                                     ost_dc_name)
 
     fence_agents_service = host_service.fence_agents_service()
     pytest.skip('Enabling this may affect tests. Needs further tests')

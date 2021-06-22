@@ -33,6 +33,7 @@ import pytest
 from ost_utils import ansible
 from ost_utils import assertions
 from ost_utils import engine_utils
+from ost_utils import host_utils
 from ost_utils import shell
 from ost_utils import ssh
 from ost_utils import utils
@@ -49,7 +50,6 @@ from ost_utils.storage_utils import backup
 import ovirtsdk4.types as types
 
 import test_utils
-from test_utils import host_status_utils
 from test_utils import constants
 
 import uuid
@@ -196,12 +196,9 @@ def vm_ssh(get_vm_ip, vm_user, vm_password):
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_all_hosts(engine_api, ost_dc_name):
-    hosts_service = engine_api.system_service().hosts_service()
-    total_hosts = len(hosts_service.list(search='datacenter={}'.format(ost_dc_name)))
-
+def test_verify_add_all_hosts(hosts_service, ost_dc_name):
     assertions.assert_true_within(
-        lambda: host_status_utils._all_hosts_up(hosts_service, total_hosts, dc_name=ost_dc_name),
+        lambda: host_utils.all_hosts_up(hosts_service, ost_dc_name),
         timeout=constants.ADD_HOST_TIMEOUT
     )
 
@@ -1186,11 +1183,11 @@ def test_verify_offline_snapshot_restore(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_vdsm_recovery(ansible_by_hostname, engine_api):
-    engine = engine_api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM0_NAME)
+def test_vdsm_recovery(system_service, hosts_service, ost_dc_name,
+                       ansible_by_hostname):
+    vm_service = test_utils.get_vm_service(system_service, VM0_NAME)
     host_id = vm_service.get().host.id
-    host_service = engine.hosts_service().host_service(host_id)
+    host_service = hosts_service.host_service(host_id)
     host_name = host_service.get().name
     ansible_host = ansible_by_hostname(host_name)
 
@@ -1205,6 +1202,9 @@ def test_vdsm_recovery(ansible_by_hostname, engine_api):
         lambda:
         host_service.get().status == types.HostStatus.UP
     )
+
+    host_utils.wait_for_flapping_host(hosts_service, ost_dc_name, host_id)
+
     assertions.assert_true_within_short(
         lambda:
         vm_service.get().status == types.VmStatus.UP

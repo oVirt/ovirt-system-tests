@@ -107,7 +107,9 @@
     vm_name: "{{ vm_name1 }}"
     size: 1GiB
     format: cow
-    interface: virtio
+    # FIXME - move back to virtio once we have a libvirt fix for
+    # https://bugzilla.redhat.com/1970277
+    interface: virtio_scsi
     storage_domain: "{{ nfs_name }}"
 
 - name: Create vm pool

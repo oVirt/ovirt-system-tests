@@ -85,6 +85,8 @@ stage:
       script:
         fromfile: 'automation/{{ substage }}.sh'
   - build-artifacts:
+      distributions:
+          - el8
       script:
         fromfile: 'automation/build-artifacts.sh'
 runtime-requirements:

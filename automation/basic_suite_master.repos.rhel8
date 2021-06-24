@@ -4,4 +4,4 @@ sbonazzo-el8-collection,https://copr-be.cloud.fedoraproject.org/results/sbonazzo
 ost-stuff,https://download.copr.fedorainfracloud.org/results/tinez/ost-stuff/epel-8-$basearch/
 ## epel - from python3-koji
 epel,http://mirrors.mit.edu/epel/8/Everything/x86_64/
-ost-images,http://dev-18.rhev.lab.eng.brq.redhat.com/
+ost-images,http://nike15.rhev.lab.eng.brq.redhat.com/

@@ -113,7 +113,9 @@ def check_installed_packages(ansible_vms):
             return
 
     raise RuntimeError('None of user custom repos has been used. '
-                       'Your packages are too old!')
+                       'Your packages are too old. If you are trying to test '
+                       'your patch, please rebase on top of latest master '
+                       'branch!')
 
 
 def report_ovirt_packages_versions(ansible_vms):

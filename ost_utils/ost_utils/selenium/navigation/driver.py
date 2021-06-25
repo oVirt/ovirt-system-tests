@@ -124,36 +124,6 @@ class Driver:
             LOGGER.debug('id_click couldnt find element %s' % id)
             raise
 
-    def hover_to_id(self, id):
-
-        try:
-            for x in range(1, DRIVER_MAX_RETRIES):
-
-                # try to find the element. That requires its own wait loop, so it lives
-                # in another method for clarity
-                if DEBUG:
-                    LOGGER.debug("self.wait_for_id(%s)" % id)
-
-                ret = self.wait_for_id(id)
-
-                try:
-                    # try to hover over it. This may or may not work, hence the surrounding wait loop
-                    if DEBUG:
-                        LOGGER.debug("hover.perform() on %s" % ret)
-
-                    hover = ActionChains(self.driver).move_to_element(ret)
-                    hover.perform()
-                    time.sleep(DRIVER_SLEEP_TIME)
-                    break
-
-                except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:
-                    time.sleep(DRIVER_SLEEP_TIME)
-
-        except DriverException as e:
-            self.driver.save_screenshot('%s hover_to_id couldnt find element %s.png' % (time.time(), id))
-            LOGGER.debug('hover_to_id couldnt find element %s' % id)
-            raise
-
     def retry_if_stale(self, method_to_retry, *args):
         success = False
         return_value = None

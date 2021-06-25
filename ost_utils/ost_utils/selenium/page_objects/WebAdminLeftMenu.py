@@ -1,5 +1,6 @@
 import logging
 import time
+from selenium.webdriver.common.action_chains import ActionChains
 from .Displayable import Displayable
 from .VmListView import VmListView
 from .TemplateListView import TemplateListView
@@ -98,8 +99,14 @@ class WebAdminLeftMenu(Displayable):
         self._open_menu('MenuView_storageTab', menu_name, menu_id)
 
     def _open_menu(self, menu_group, menu_name, menu_id):
-        # time.sleep(x) helps to overcome problem when the menu is not clicked - maybe some background gwt queries are still running?
-        time.sleep(5)
-        self.ovirt_driver.hover_to_id(menu_group)
-        time.sleep(1)
-        self.ovirt_driver.id_wait_and_click(menu_name + ' menu', menu_id)
+        menu_element = self.ovirt_driver.driver.find_element_by_id(menu_group)
+        submenu_element = self.ovirt_driver.driver.find_element_by_id(menu_id)
+        self.ovirt_driver.wait_until(f'sub menu "{menu_name}" is visible  in the left menu',
+                self._submenu_is_displayed,
+                menu_element,
+                submenu_element)
+        submenu_element.click()
+
+    def _submenu_is_displayed(self, menu_element, submenu_element):
+        ActionChains(self.ovirt_driver.driver).move_to_element(menu_element).perform()
+        return submenu_element.is_displayed()

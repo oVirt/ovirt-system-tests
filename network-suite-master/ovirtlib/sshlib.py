@@ -21,11 +21,12 @@ import paramiko
 import pytest
 
 from ovirtlib import syncutil
+from testlib import suite
 
 DEFAULT_USER = 'root'
 ROOT_PASSWORD = '123456'
 TIMEOUT = 60 * 5
-
+LOGGER = logging.getLogger(__name__)
 logging.getLogger('paramiko.transport').setLevel(logging.WARNING)
 
 
@@ -136,11 +137,10 @@ class Node(object):
     def ping_from_netns(self, target, data_size=56, from_netns=None):
         """
         Ping a given destination from source.
-
         :parameter source: the host which executes the ping command
         :parameter password: the root password for the host source
         :parameter target: the target of the ping command
-        :parameter data_size: the size of the data payload
+        :parameter data_size: size of payload without headers
         :parameter netns: optional networking namespace in which to execute
         """
         netns_prefix = f'ip netns exec {from_netns} ' if from_netns else ''
@@ -149,14 +149,47 @@ class Node(object):
                               f'{target}')
         self.exec_command(cmd)
 
-    def ping(self, target_ip, iface_name):
+    def assert_no_ping(self, target, data_size=56, pmtudisc='do'):
+        with pytest.raises(SshException, match=r'status code 1') as e:
+            self.ping(target, data_size=data_size, pmtudisc=pmtudisc)
+        if e:
+            LOGGER.debug(f'sshlib.assert_no_ping raised {e.value.args[0]}')
+
+    def ping_successful(self, target, data_size=56, pmtudisc='do'):
+        try:
+            self.ping(target, data_size=data_size, pmtudisc=pmtudisc)
+            return True
+        except SshException:
+            return False
+
+    def ping(self, target, iface_name=None, data_size=56, pmtudisc=None):
         """
-        Ping an ip address via the specified interface
-        :param target_ip: str
-        :param iface_name: str
+        Ping an ip address or hostname via the specified interface
+        :param str target: ip or hostname
+        :param str iface_name: interface name to ping from
+        :param int data_size: size of payload without headers
+        :param str pmtudisc: fragmenting policy
         """
-        version = ipaddress.ip_address(target_ip).version
-        self.exec_command(f'ping -{version} -c 1 -I {iface_name} {target_ip}')
+        try:
+            version = ipaddress.ip_address(target).version
+        except ValueError as e:
+            if 'does not appear to be an IPv4 or IPv6 address' in str(e):
+                # assume target is a hostname
+                version = suite.af().version
+            else:
+                raise e
+        options = [
+            f'-{version}',
+            '-c 1',
+            f'-s {data_size}',
+        ]
+        if iface_name:
+            options.append(f'-I {iface_name}')
+        if pmtudisc:
+            options.append(f'-M {pmtudisc}')
+        cmd = f'ping {" ".join(options)} {target}'
+        LOGGER.debug(cmd)
+        self.exec_command(cmd)
 
     def get_global_ip(self, iface_name, ip_version):
         """

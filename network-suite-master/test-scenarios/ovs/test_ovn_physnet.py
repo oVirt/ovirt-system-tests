@@ -28,10 +28,9 @@ from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import sdkentity
 from ovirtlib import syncutil
+from ovirtlib import sshlib
 from ovirtlib import virtlib
 from ovirtlib.ansiblelib import Playbook
-from testlib.ping import PingFailed
-from testlib.ping import ssh_ping
 from testlib import shade_hack
 from testlib import suite
 
@@ -104,6 +103,19 @@ def vm_in_ovn_network_up(system, vm_in_ovs_cluster_down,
     yield vm_in_ovs_cluster_down
 
 
+@pytest.fixture(scope='module')
+def ssh_host_not_in_ovs_cluster(host_not_in_ovs_cluster):
+    return sshlib.Node(
+        host_not_in_ovs_cluster.address, host_not_in_ovs_cluster.root_password
+    )
+
+
+@pytest.fixture(scope='module')
+def host_not_in_ovs_cluster(host_in_ovs_cluster, host_0, host_1):
+    return next(candidate for candidate in [host_0, host_1]
+                if candidate.id != host_in_ovs_cluster.id)
+
+
 def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
                                               ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(vm_in_ovs_cluster_down)
@@ -113,90 +125,46 @@ def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
 
 @suite.xfail_suite_43('BZ 1817589')
 def test_connect_vm_to_external_physnet(system, ovs_cluster,
-                                        host_in_ovs_cluster, host_0, host_1,
+                                        ssh_host_not_in_ovs_cluster,
                                         vm_in_ovn_network_up):
-    other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
-
-    syncutil.sync(exec_func=_ping_successful,
-                  exec_func_args=(
-                      other_host.address,
-                      other_host.root_password,
-                      VM0_NAME,
-                      MAX_ICMP_DATA_SIZE
-                  ),
+    syncutil.sync(exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
+                  exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
                   success_criteria=lambda success: success)
 
 
 @suite.xfail_suite_43('BZ 1817589')
-def test_max_mtu_size(system, ovs_cluster, host_in_ovs_cluster, host_0, host_1,
+def test_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
                       ovn_physnet_small_mtu, vm_in_ovn_network_up):
-    other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
-
-    syncutil.sync(exec_func=_ping_successful,
-                  exec_func_args=(
-                      other_host.address,
-                      other_host.root_password,
-                      VM0_NAME,
-                      MAX_ICMP_DATA_SIZE
-                  ),
+    syncutil.sync(exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
+                  exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
                   success_criteria=lambda success: success)
-
-    with pytest.raises(PingFailed, match=r'status code 1'):
-        ssh_ping(other_host.address,
-                 other_host.root_password,
-                 VM0_NAME,
-                 data_size=MAX_ICMP_DATA_SIZE + 1)
+    ssh_host_not_in_ovs_cluster.assert_no_ping(VM0_NAME,
+                                               MAX_ICMP_DATA_SIZE + 1)
 
 
 @suite.skip_suites_below('4.3')
 @suite.xfail_suite_43('BZ 1817589')
-def test_security_groups_allow_icmp(system, ovs_cluster, host_in_ovs_cluster,
-                                    host_0, host_1,
+def test_security_groups_allow_icmp(system, ovs_cluster,
+                                    host_not_in_ovs_cluster,
+                                    ssh_host_not_in_ovs_cluster,
                                     default_ovn_provider_client,
                                     ovn_physnet_small_mtu,
                                     vm_in_ovn_network_up,
                                     vnic_attached_to_ovn_network):
-    other_host = _other_host(host_in_ovs_cluster, [host_0, host_1])
-    syncutil.sync(exec_func=_ping_successful,
-                  exec_func_args=(
-                      other_host.address,
-                      other_host.root_password,
-                      VM0_NAME,
-                      MAX_ICMP_DATA_SIZE
-                  ),
+    syncutil.sync(exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
+                  exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
                   success_criteria=lambda success: success)
 
     with _enable_port_security(vnic_attached_to_ovn_network,
                                default_ovn_provider_client):
-        with pytest.raises(PingFailed, match=r'status code 1'):
-            ssh_ping(other_host.address,
-                     other_host.root_password,
-                     VM0_NAME,
-                     data_size=MAX_ICMP_DATA_SIZE)
+        ssh_host_not_in_ovs_cluster.assert_no_ping(VM0_NAME,
+                                                   MAX_ICMP_DATA_SIZE)
 
-        with _allow_icmp_from_host(other_host):
-            syncutil.sync(exec_func=_ping_successful,
-                          exec_func_args=(
-                              other_host.address,
-                              other_host.root_password,
-                              VM0_NAME,
-                              MAX_ICMP_DATA_SIZE
-                          ),
-                          success_criteria=lambda success: success)
-
-
-def _other_host(host, candidates):
-    return next(
-        candidate for candidate in candidates if candidate.id != host.id
-    )
-
-
-def _ping_successful(source, password, destination, data_size):
-    try:
-        ssh_ping(source, password, destination, data_size)
-        return True
-    except PingFailed:
-        return False
+        with _allow_icmp_from_host(host_not_in_ovs_cluster):
+            syncutil.sync(
+                exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
+                exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
+                success_criteria=lambda success: success)
 
 
 @contextmanager

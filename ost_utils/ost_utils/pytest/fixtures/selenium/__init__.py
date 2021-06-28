@@ -62,7 +62,7 @@ def _env_hub_url():
 
 
 @pytest.fixture(scope="session")
-def hub_url(engine_fqdn, engine_ip):
+def hub_url(engine_fqdn, engine_ip, selenium_artifacts_dir):
     env_url = _env_hub_url()
 
     if env_url is not None:
@@ -70,8 +70,10 @@ def hub_url(engine_fqdn, engine_ip):
     else:
         backend = _grid_backend()
         if backend == "podman" or backend == "podman-remote":
-            with podman.grid(engine_fqdn, engine_ip,
-                             podman_cmd=backend) as hub_url:
+            videos_artifacts_dir = selenium_artifacts_dir
+            with podman.grid(engine_fqdn, engine_ip, podman_cmd=backend,
+                             videos_artifacts_dir=videos_artifacts_dir
+                             ) as hub_url:
                 yield hub_url
         elif backend == "docker":
             with docker.grid(engine_fqdn, engine_ip) as hub_url:

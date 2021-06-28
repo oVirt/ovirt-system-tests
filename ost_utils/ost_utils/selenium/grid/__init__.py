@@ -21,6 +21,7 @@
 CHROME_CONTAINER_IMAGE = 'quay.io/ovirt/node-chrome-debug:3.141.59-20210422'
 FIREFOX_CONTAINER_IMAGE = 'quay.io/ovirt/node-firefox-debug:3.141.59-20210422'
 HUB_CONTAINER_IMAGE = 'quay.io/ovirt/hub:3.141.59-20210422'
+FFMPEG_CONTAINER_IMAGE = 'selenium/video:ffmpeg-4.3.1-20210618'
 
 # selenium grid update 20210422 uses these versions:
 CHROME_VERSION = '90.0.4430.85'

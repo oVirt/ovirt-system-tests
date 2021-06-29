@@ -45,9 +45,16 @@ def perform_vm_backup(
 
     backup_service.finalize()
 
-    assertions.assert_true_within_long(
-        lambda: len(vm_backup_service.list()) == 0
-    )
+    # TODO: commenting out this assert that is now wrong due to VM
+    #  backup change in behavior. The correct check should be to check for
+    #  BackupPhase.SUCCEEDED status vs. expecting an empty list.
+    #  Waiting till the up-to-date ovirtsdk4.types are used by the OST.
+    #  The follow-up patch is already ready and should be merged ASAP.
+    #  This is just a temporary solution.
+    #
+    # assertions.assert_true_within_long(
+    #     lambda: len(vm_backup_service.list()) == 0
+    # )
     assertions.assert_true_within_long(
         lambda:
         disks_service.disk_service(disk.id).get().status == types.DiskStatus.OK

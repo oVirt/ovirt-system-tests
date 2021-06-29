@@ -68,6 +68,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host1
 from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
+from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.ansible import ansible_storage
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir

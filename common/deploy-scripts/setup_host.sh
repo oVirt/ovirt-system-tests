@@ -54,15 +54,6 @@ setup_ipv6() {
 if [[ $(hostname) == *"ipv6"* ]]; then
     setup_ipv6
 fi
-if [[ ! -r /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf ]]; then
-    cat << EOF > /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf
-[connection]
-ipv6.addr-gen-mode=0
-ipv6.dhcp-duid=ll
-ipv6.dhcp-iaid=mac
-EOF
-    systemctl restart NetworkManager
-fi
 
 # Increase ISCSI timeouts and disable MD5 (FIPS), see setup_storage.sh
 rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils

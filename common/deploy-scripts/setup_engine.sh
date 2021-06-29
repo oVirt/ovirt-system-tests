@@ -73,13 +73,3 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 systemctl start snmptrapd
 systemctl enable snmptrapd
 
-if [[ ! -r /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf ]]; then
-    cat << EOF > /etc/NetworkManager/conf.d/10-stable-ipv6-addr.conf
-[connection]
-ipv6.addr-gen-mode=0
-ipv6.dhcp-duid=ll
-ipv6.dhcp-iaid=mac
-EOF
-
-    systemctl restart NetworkManager
-fi

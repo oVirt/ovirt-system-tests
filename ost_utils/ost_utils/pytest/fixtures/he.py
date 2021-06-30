@@ -19,6 +19,7 @@
 #
 
 import os
+import random
 import tempfile
 
 import pytest
@@ -31,8 +32,9 @@ from ost_utils.pytest.fixtures.backend import backend
 
 @pytest.fixture(scope="session")
 def he_mac_address():
-    # This is also hard-coded in the answerfile. TODO: de-duplicate
-    return '54:52:c0:a8:c8:63'
+    return '54:52:{}'.format(
+        ':'.join(('{:02x}'.format(random.randrange(255)) for i in range(4)))
+    )
 
 
 @pytest.fixture(scope="session")

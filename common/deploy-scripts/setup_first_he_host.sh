@@ -1,6 +1,8 @@
 #!/bin/bash -x
 HOSTEDENGINE="$1"
 shift
+HE_MAC_ADDRESS="$1"
+shift
 
 DOMAIN=$(dnsdomainname)
 MYHOSTNAME="$(hostname | sed s/_/-/g)"
@@ -101,6 +103,7 @@ sed \
     -e "s,@STORAGEHOSTNAME@,${STORAGEHOSTNAME},g" \
     -e "s,@INTERFACE@,${INTERFACE},g" \
     -e "s,@PREFIX@,${PREFIX},g" \
+    -e "s,@HE_MAC_ADDRESS@,${HE_MAC_ADDRESS},g" \
     < /root/hosted-engine-deploy-answers-file.conf.in \
     > /root/hosted-engine-deploy-answers-file.conf
 

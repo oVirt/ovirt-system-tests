@@ -22,28 +22,12 @@ import time
 
 from ost_utils import assertions
 
-from selenium.common.exceptions import (ElementNotVisibleException,
-                                        NoSuchElementException,
+from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException,
                                         StaleElementReferenceException)
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
-DEBUG = False
-
 LOGGER = logging.getLogger(__name__)
-
-DRIVER_MAX_RETRIES = 200
-DRIVER_SLEEP_TIME = .12
-
-
-class DriverException(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
 
 class Driver:
 
@@ -51,102 +35,6 @@ class Driver:
 
         # this is a selenium webdriver instance
         self.driver = driver
-
-    def wait_for_id(self, text):
-
-        elem = None
-
-        for x in range(1, DRIVER_MAX_RETRIES):
-            try:
-                if DEBUG:
-                    LOGGER.debug("self.driver.find_element_by_id(%s)" % text)
-                elem = self.driver.find_element_by_id(text)
-                break
-            except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:
-                time.sleep(DRIVER_SLEEP_TIME)
-
-        if elem is None:
-            self.driver.save_screenshot('%s could not locate by id %s.png' % (time.time(), text))
-            LOGGER.debug("could not locate by id: " + text)
-            raise DriverException("could not locate by id: " + text)
-
-        return elem
-
-    def action_on_element(self, text, action, path=None):
-        elem = None
-        find_by = 'id'
-
-        for x in range(1, DRIVER_MAX_RETRIES):
-            try:
-                if DEBUG:
-                    LOGGER.debug("self.driver.find_element_by_id(%s)" % text)
-                elif action == 'click':
-                    elem = self.driver.find_element_by_link_text(text)
-                    elem.click()
-                    find_by = 'text'
-                elif action == 'send':
-                    elem = self.driver.find_element_by_id(text)
-                    elem.send_keys(path)
-                break
-            except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:
-                time.sleep(DRIVER_SLEEP_TIME)
-
-        if elem is None:
-            self.driver.save_screenshot('%s could not locate by %s %s.png' % (time.time(), find_by, text))
-            LOGGER.debug("could not locate by text: " + text)
-            raise DriverException("could not locate by text: " + text)
-        return elem
-
-    def id_click(self, id):
-
-        try:
-            for x in range(1, DRIVER_MAX_RETRIES):
-
-                # try to find the element. That requires its own wait loop, so it lives
-                # in another method for clarity
-                if DEBUG:
-                    LOGGER.debug("self.wait_for_id(%s)" % id)
-
-                ret = self.wait_for_id(id)
-
-                try:
-                    # try to click it. This may or may not work, hence the surrounding wait loop
-                    if DEBUG:
-                        LOGGER.debug("" + str(ret) + ".click()")
-
-                    ret.click()
-                    break
-                except (NoSuchElementException, WebDriverException, ElementNotVisibleException) as e:
-                    time.sleep(DRIVER_SLEEP_TIME)
-
-        except DriverException as e:
-            self.driver.save_screenshot('%s id_click couldnt find element %s.png' % (time.time(), id))
-            LOGGER.debug('id_click couldnt find element %s' % id)
-            raise
-
-    def retry_if_stale(self, method_to_retry, *args):
-        success = False
-        return_value = None
-        exception = None
-
-        for x in range(1, DRIVER_MAX_RETRIES):
-            try:
-                if DEBUG:
-                    LOGGER.debug("self.driver.retry_if_stale(%s)" % method_to_retry)
-
-                return_value = method_to_retry(*args)
-                success = True
-                break
-            except StaleElementReferenceException as e:
-                time.sleep(DRIVER_SLEEP_TIME)
-                exception = e
-
-        if not success:
-            self.save_screenshot("stale-element")
-            LOGGER.debug("StaleElementReferenceException occurred max times, stop retrying")
-            raise exception
-
-        return return_value
 
     def execute_in_frame(self, xpath, method, *args):
         result = None
@@ -158,33 +46,10 @@ class Driver:
             self.driver.switch_to.default_content()
             return result
 
-    def safe_close_dialog(self):
-
-        try:
-            dialog_close_button = self.driver.find_element_by_css_selector('.modal-header .close')
-            if dialog_close_button:
-                dialog_close_button.click()
-                if DEBUG:
-                    LOGGER.debug("force closed a dialog")
-        except NoSuchElementException as e:
-            pass
-
-    def shutdown(self):
-        self.driver.quit()
-
-    def refresh(self):
-        self.driver.refresh()
-
-    def save_screenshot(self, path, delay=0):
-        if delay > 0 and delay <= 10:
-            time.sleep(delay)
-
+    def save_screenshot(self, path):
         self.driver.save_screenshot(path)
 
-    def save_page_source(self, path, delay=0):
-        if delay > 0 and delay <= 10:
-            time.sleep(delay)
-
+    def save_page_source(self, path):
         with open(path, "w") as text_file:
             text_file.write(self.driver.page_source.encode('utf-8').decode())
 
@@ -197,34 +62,20 @@ class Driver:
             else:
                 text_file.write('No console log entries found')
 
-    def id_wait_and_click(self, message, element_id, wait_long=False):
-        self.xpath_wait_and_click(message, '//*[@id="' + element_id + '"]', wait_long)
-
     def is_id_present(self, idx):
-        try:
-            self.driver.find_element_by_id(idx)
-            return True
-        except NoSuchElementException:
-            return False
+        return self.is_xpath_present(f'//*[@id="{idx}"]')
 
     def is_class_name_present(self, class_name):
         try:
-            self.driver.find_element_by_class_name(class_name)
+            self.retry_if_stale(
+                # better works for cases with multiple cases
+                # than //*[contains(@class, 'class_name')]
+                self.driver.find_element_by_class_name,
+                class_name
+                )
             return True
         except NoSuchElementException:
             return False
-
-    def button_wait_and_click(self, text):
-        return self.xpath_wait_and_click('Button ' + text, '//button[text()="' + text + '"]')
-
-    def is_button_displayed(self, text):
-        return self.is_xpath_displayed('//button[text()="' + text + '"]')
-
-    def is_button_enabled(self, text):
-        return self.is_xpath_enabled('//button[text()="' + text + '"]')
-
-    def button_click(self, xpath):
-        self.xpath_click('//button[text()="' + xpath + '"]')
 
     def is_xpath_present(self, xpath):
         try:
@@ -238,57 +89,83 @@ class Driver:
 
     def is_xpath_displayed(self, xpath):
         return self.retry_if_stale(
-            self._is_xpath_displayed,
-            xpath
-            )
+            lambda:
+                self.is_xpath_present(xpath) and
+                self.driver.find_element_by_xpath(xpath).is_displayed())
 
-    def _is_xpath_displayed(self, xpath):
-        return self.driver.find_element_by_xpath(xpath).is_displayed()
+    def is_button_enabled(self, text):
+        return self.is_xpath_enabled(f'//button[text()="{text}"]')
 
     def is_xpath_enabled(self, xpath):
         return self.retry_if_stale(
-            self._is_xpath_enabled,
-            xpath
-            )
-
-    def _is_xpath_enabled(self, xpath):
-        return self.driver.find_element_by_xpath(xpath).is_enabled()
+            lambda: self.driver.find_element_by_xpath(xpath).is_enabled())
 
     def xpath_click(self, xpath):
         return self.retry_if_stale(
-            self._xpath_click,
-            xpath
-            )
+            lambda: self.driver.find_element_by_xpath(xpath).click())
 
-    def _xpath_click(self, xpath):
-        self.driver.find_element_by_xpath(xpath).click()
+    def id_wait_and_click(self, message, element_id, wait_long=False):
+        self.xpath_wait_and_click(message,
+                f'//*[@id="{element_id}"]', wait_long)
+
+    def button_wait_and_click(self, text):
+        return self.xpath_wait_and_click(f'Button {text}',
+                f'//button[text()="{text}"]')
 
     def xpath_wait_and_click(self, message, xpath, wait_long=False):
         wait_until = self.wait_until
         if wait_long:
             wait_until = self.wait_long_until
 
-        wait_until(message + ' is not displayed', self.is_xpath_displayed, xpath)
-        wait_until(message + ' is not enabled', self.is_xpath_enabled, xpath)
+        wait_until(f'{message} is not displayed',
+                self.is_xpath_displayed, xpath)
+        wait_until(f'{message} is not enabled',
+                self.is_xpath_enabled, xpath)
         self.xpath_click(xpath)
 
     def wait_until(self, message, condition_method, *args):
-        self._wait_until(message, assertions.SHORT_TIMEOUT, condition_method, *args)
+        self._wait_until(
+                message,
+                assertions.SHORT_TIMEOUT,
+                condition_method,
+                *args)
 
     def wait_long_until(self, message, condition_method, *args):
-        self._wait_until(message, assertions.LONG_TIMEOUT, condition_method, *args)
+        self._wait_until(
+                message,
+                assertions.LONG_TIMEOUT,
+                condition_method,
+                *args)
 
     def _wait_until(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout).until(ConditionClass(condition_method, *args), message)
+        WebDriverWait(self.driver, timeout).until(
+                ConditionClass(condition_method, *args), message)
 
     def wait_while(self, message, condition_method, *args):
-        self._wait_while(message, assertions.SHORT_TIMEOUT, condition_method, *args)
+        self._wait_while(
+                message,
+                assertions.SHORT_TIMEOUT,
+                condition_method,
+                *args)
 
     def wait_long_while(self, message, condition_method, *args):
-        self._wait_while(message, assertions.LONG_TIMEOUT, condition_method, *args)
+        self._wait_while(
+                message,
+                assertions.LONG_TIMEOUT,
+                condition_method,
+                *args)
 
     def _wait_while(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout).until_not(ConditionClass(condition_method, *args), message)
+        WebDriverWait(self.driver, timeout).until_not(
+                ConditionClass(condition_method, *args), message)
+
+    def retry_if_stale(self, method_to_retry, *args):
+        condition = StaleExceptionOccurredCondition(method_to_retry, *args)
+        WebDriverWait(self.driver, assertions.LONG_TIMEOUT).until_not(
+                condition, 'StaleElementReferenceException occurred')
+        if condition.error is not None:
+            raise condition.error
+        return condition.result
 
 class ConditionClass:
     def __init__(self, condition_method, *args):
@@ -297,3 +174,23 @@ class ConditionClass:
 
     def __call__(self, driver):
         return self.condition_method(*self.args)
+
+class StaleExceptionOccurredCondition:
+    def __init__(self, method_to_execute, *args):
+        self.method_to_execute = method_to_execute
+        self.args = args
+        self.result = None
+        self.error = None
+
+    def __call__(self, driver):
+        try:
+            self.result = self.method_to_execute(*self.args)
+            return False
+        # ignore StaleElementReferenceException and try again
+        except StaleElementReferenceException:
+            return True
+        # throw any other exception, even NoSuchElementException ignored
+        # by WebDriverWait by default
+        except Exception as e:
+            self.error = e
+            return False

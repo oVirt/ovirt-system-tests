@@ -26,12 +26,19 @@ class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
     def get_displayable_name(self):
         return self.entity_type.capitalize() + ' list view'
 
+    def click_menu_button(self, main_button_id):
+        self.ovirt_driver.xpath_click(f'//button[@id="{main_button_id}"]')
+
+    def click_menu_dropdown_button(self, main_button_id, dropdown_button_text):
+        self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]/button[@data-toggle="dropdown"]')
+        self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]//a[text()="{dropdown_button_text}"]')
+
     def open_detail_view(self, entity_name):
         LOGGER.debug('Open detail of ' + self.entity_type + ' ' + entity_name)
         names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
 
         if entity_name in names_to_ids:
-            self.ovirt_driver.id_click(names_to_ids[entity_name])
+            self.ovirt_driver.xpath_click(f'//*[@id="{names_to_ids[entity_name]}"]')
         else:
             raise Exception('No ' + self.entity_type + ' with the name ' + entity_name + ' found')
 

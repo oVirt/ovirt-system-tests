@@ -173,7 +173,7 @@ def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
     try:
         yield ovirt_driver
     finally:
-        ovirt_driver.shutdown()
+        ovirt_driver.driver.quit()
 
 
 @pytest.fixture(scope="session")
@@ -209,7 +209,7 @@ def selenium_artifact_full_path(selenium_artifacts_dir, selenium_artifact_filena
 def save_screenshot(ovirt_driver, selenium_artifact_full_path):
 
     def save(description):
-        ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'), 0)
+        ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'))
 
     return save
 
@@ -218,7 +218,7 @@ def save_screenshot(ovirt_driver, selenium_artifact_full_path):
 def save_page_source(ovirt_driver, selenium_artifact_full_path):
 
     def save(description):
-        ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'), 0)
+        ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'))
 
     return save
 

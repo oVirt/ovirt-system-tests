@@ -36,8 +36,7 @@ class VmListView(EntityListView):
     def poweroff(self):
         LOGGER.debug('Power off selected vm')
         self.close_notification_safely()
-        self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Shutdown"]/button[@data-toggle="dropdown"]')
-        self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Shutdown"]//a[text()="Power Off"]')
+        self.click_menu_dropdown_button('ActionPanelView_Shutdown', 'Power Off')
 
         self.ovirt_driver.button_wait_and_click('OK')
         # TODO this was using wait_and_close_success_notification_safely but it didn't work reliably.
@@ -48,8 +47,7 @@ class VmListView(EntityListView):
     def run_once(self):
         LOGGER.debug('Run once selected vm')
         self.close_notification_safely()
-        self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Run"]/button[@data-toggle="dropdown"]')
-        self.ovirt_driver.xpath_click('//div[@id="ActionPanelView_Run"]//a[text()="Run Once"]')
+        self.click_menu_dropdown_button('ActionPanelView_Run', 'Run Once')
 
         self.ovirt_driver.xpath_wait_and_click('Button Run', '//div[@id="VmRunOncePopupView_OnRunOnce"]/button[text()="OK"]')
         # To shorten the test execution time we are not waiting for the success notification to appear. The tests have to

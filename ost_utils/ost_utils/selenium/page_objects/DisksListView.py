@@ -32,12 +32,17 @@ class DisksListView(EntityListView):
     def upload(self, image_local_path, image_name):
         LOGGER.debug(f'Upload image from local path {image_local_path}')
 
-        self.ovirt_driver.id_click('ActionPanelView_Upload')
-        self.ovirt_driver.action_on_element('Start', 'click')
-        self.ovirt_driver.action_on_element('UploadImagePopupView_fileUpload', 'send',
-                image_local_path)
-        self.ovirt_driver.action_on_element('VmDiskPopupWidget_alias', 'send',
-                image_name)
-        self.ovirt_driver.wait_for_id('UploadImagePopupView_Ok').click()
+        self.click_menu_dropdown_button('ActionPanelView_Upload', 'Start')
+
+        self.ovirt_driver.wait_until('Upload image dialog is not displayed',
+                self.ovirt_driver.is_xpath_present,
+                '//*[@id="UploadImagePopupView_fileUpload"]')
+        self.ovirt_driver.driver.find_element_by_id('UploadImagePopupView_fileUpload').send_keys(image_local_path)
+        self.ovirt_driver.wait_until('Upload image dialog is not displayed',
+                self.ovirt_driver.is_xpath_displayed,
+                '//*[@id="VmDiskPopupWidget_alias"]')
+        self.ovirt_driver.driver.find_element_by_id('VmDiskPopupWidget_alias').send_keys(image_name)
+
+        self.ovirt_driver.id_wait_and_click('OK button is not displayed and enabled', 'UploadImagePopupView_Ok')
         self.ovirt_driver.wait_long_until('Waiting for disk to appear in disk list',
                 lambda: image_name in self.get_entities())

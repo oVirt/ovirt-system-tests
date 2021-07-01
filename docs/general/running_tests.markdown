@@ -12,25 +12,23 @@ Start by cloning the git repo:
     $ git clone git://gerrit.ovirt.org/ovirt-system-tests
 ```
 
-As the tests that we are going to run are for ovirt-engine 4.0, we have to add<br>
-the oVirt 4.0 release repository to our system so it will pull in the sdk<br>
-package, the following works for any centos/fedora distro:
-
-```
-    # yum install -y http://resources.ovirt.org/pub/yum-repo/ovirt-release40.rpm
-```
-
-Once you have the code and the repo, you can run the run_suite.sh script to<br>
-run any of the suites available:
+Once you have the code and the repo, go to the project:
 
 ```
     $ cd ovirt-system-tests
-    $ ./run_suite.sh basic-suite-4.0
 ```
 
-**NOTE**: this will download a lot of VM images the first time it runs, check<br>
-the section "`template-repo.json: Sources for templates`_" on how to use local<br>
-mirrors if available.
+For the first time, need to run setup_for_ost.sh in order for properly setting up a bare system to run OST:
+
+```
+    $ ./setup_for_ost.sh
+```
+
+Then you can run the run_suite.sh script to run any of the suites available:
+
+```
+    $ ./run_suite.sh basic-suite-4.0
+```
 
 Remember that you don't need root access to run it, if you have permission<br>
 issues, make sure you followed the guidelines in the user permissions section before.<br>

@@ -30,12 +30,14 @@ from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.ansible import ansible_host1
+from ost_utils.pytest.fixtures.ansible import ansible_hosts
 from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.ansible import ansible_storage
 
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
+from ost_utils.pytest.fixtures.artifacts import collect_vdsm_coverage_artifacts
 
 from ost_utils.pytest.fixtures.backend import all_hostnames
 from ost_utils.pytest.fixtures.backend import backend

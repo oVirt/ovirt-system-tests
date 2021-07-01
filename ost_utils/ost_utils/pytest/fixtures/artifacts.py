@@ -23,6 +23,7 @@ import os
 
 import pytest
 
+from ost_utils import coverage
 from ost_utils import utils
 from ost_utils import shell
 
@@ -66,3 +67,13 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
         for hostname, artifact_list in artifacts.items()
     ]
     utils.invoke_different_funcs_in_parallel(*calls)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def collect_vdsm_coverage_artifacts(artifacts_dir, ansible_host0,
+                                    ansible_hosts):
+    yield
+    if os.environ.get("coverage", "false") == "true":
+        output_path = os.path.join(artifacts_dir, "coverage/")
+        os.makedirs(output_path, exist_ok=True)
+        coverage.vdsm.collect(ansible_host0, ansible_hosts, output_path)

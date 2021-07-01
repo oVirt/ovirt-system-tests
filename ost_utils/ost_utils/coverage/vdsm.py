@@ -46,6 +46,14 @@ source = vdsm, yajsonrpc'
 
 def setup(ansible_hosts):
     logging.debug('Setting up VDSM coverage...')
+
+    # ulgy workaround for FIPS...
+    ansible_hosts.replace(
+        path='/usr/lib64/python3.6/site-packages/coverage/misc.py',
+        regexp='md5',
+        replace='sha1'
+    )
+
     ansible_hosts.copy(
         dest=VDSM_COVERAGE_CONF_PATH, content=VDSM_COVERAGE_CONF
     )

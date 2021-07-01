@@ -24,6 +24,7 @@ import os
 
 import pytest
 
+from ost_utils import coverage
 from ost_utils import deployment_utils
 from ost_utils import utils
 from ost_utils.deployment_utils import package_mgmt
@@ -46,6 +47,7 @@ def run_scripts(ansible_by_hostname):
 @pytest.fixture(scope="session", autouse=True)
 def deploy(
     ansible_vms_to_deploy,
+    ansible_hosts,
     deploy_scripts,
     working_dir,
     request,
@@ -86,6 +88,10 @@ def deploy(
     runs = [functools.partial(run_scripts, hostname, scripts)
             for hostname, scripts in deploy_scripts.items()]
     utils.invoke_different_funcs_in_parallel(*runs)
+
+    # setup vdsm coverage on hosts if desired
+    if os.environ.get("coverage", "false") == "true":
+        coverage.vdsm.setup(ansible_hosts)
 
     # mark env as deployed
     deployment_utils.mark_as_deployed(working_dir)

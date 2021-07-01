@@ -17,3 +17,5 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+
+from . import vdsm  # noqa: F401

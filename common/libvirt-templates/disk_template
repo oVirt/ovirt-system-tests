@@ -1,0 +1,6 @@
+<disk type='file' device='disk'>
+  <driver name='qemu' type='raw' cache='writeback' discard='unmap'/>
+  <source file='@DISK_FILE@' index='2'/>
+  <target dev='@DISK_DEV@' bus='scsi'/>
+  <serial>@DISK_SERIAL@</serial>
+</disk>

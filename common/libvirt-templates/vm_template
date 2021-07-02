@@ -1,0 +1,68 @@
+<domain type='kvm'>
+   <metadata>
+    <ost:ost xmlns:ost="OST metadata">
+      <ost-deploy-scripts>
+        @DEPLOY_SCRIPTS@
+      </ost-deploy-scripts>
+    </ost:ost>
+  </metadata>
+  <name>@VM_FULLNAME@</name>
+  <memory unit='MiB'>@MEMSIZE@</memory>
+  <vcpu placement='static'>2</vcpu>
+  <iothreads>1</iothreads>
+  <os>
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <bootmenu enable='no'/>
+    <bios useserial='yes'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <cpu mode='host-passthrough' check='none' migratable='on'>
+    <topology sockets='2' dies='1' cores='1' threads='1'/>
+    <numa>
+      <cell id='0' cpus='0' memory='@MEMSIZE_NUMA@' unit='MiB'/>
+      <cell id='1' cpus='1' memory='@MEMSIZE_NUMA@' unit='MiB'/>
+    </numa>
+  </cpu>
+  <clock offset='utc'>
+    <timer name='kvmclock'/>
+  </clock>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='@OST_ROOTDISK@'/>
+      <target dev='vda' bus='virtio'/>
+      <boot order='1'/>
+      <serial>1</serial>
+    </disk>
+    @DISKS@
+    <controller type='usb' model='none'/>
+    <serial type='file' append='on'>
+      <source path='@SERIALLOG@'/>
+    </serial>
+    <console type='pty'>
+      <target type='virtio'/>
+    </console>
+    @NICS@
+    <channel type='unix'>
+        <source mode='bind'/>
+        <target type='virtio' name='org.qemu.guest_agent.0'/>
+      </channel>
+    <video>
+      <model type='none'/>
+    </video>
+    <memballoon model='none'/>
+    <rng model='virtio'>
+      <backend model='random'>/dev/urandom</backend>
+    </rng>
+  </devices>
+</domain>
+

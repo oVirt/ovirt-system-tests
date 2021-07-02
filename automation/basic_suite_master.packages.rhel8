@@ -1,5 +1,6 @@
 ansible
 grubby
+jq
 lago
 mercurial
 openssl

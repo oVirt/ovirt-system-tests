@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 
 # This script is meant to be run within a mock environment, using
 # mock_runner.sh or chrooter, from the root of the repository:
@@ -25,11 +25,20 @@ SUITE=${SUITE%.*}
 echo "Running suite: $SUITE"
 
 if [[ "${RUNNING_IN_PSI}" == "true" ]]; then
+    # TODO because the hosts are not set up with setup_for_ost.sh, and it only works because stdci runs this as root
+    semanage permissive -a virtlogd_t
     # $distro is passed from stdci, not a good idea to depend on it, but there's currently no other way how to choose which ost-image to use
     echo "Distro: ${distro:=el8stream}"
     mkdir -p exported-artifacts
-    { source lagofy.sh $SUITE && lago_init /usr/share/ost-images/${distro}-engine-installed.qcow2 && run_tests; } 2>&1 | tee exported-artifacts/ost_run_tests.log
-    exit $?
+    {
+      source lagofy.sh $SUITE $distro &&
+        cp ${OST_IMAGES_SSH_KEY}* /tmp &&
+        OST_IMAGES_SSH_KEY=/tmp/$(basename $OST_IMAGES_SSH_KEY) &&
+        chmod 600 ${OST_IMAGES_SSH_KEY}* &&
+        ost_run_tests;
+      res=$?;
+    } 2>&1 | tee exported-artifacts/ost_run_tests.log
+    exit $res
 fi
 
 SUITE_REAL_PATH=$(realpath "$SUITE")

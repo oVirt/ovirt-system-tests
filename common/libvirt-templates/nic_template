@@ -1,0 +1,6 @@
+<interface type="network">
+  <mac address="54:52:c0:a8:@SUBNETHEX@:@IDXHEX@"/>
+  <source network="@NET_NAME@"/>
+  <model type="virtio"/>
+  <driver name="vhost" queues="2"/>
+</interface>

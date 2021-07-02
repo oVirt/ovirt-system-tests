@@ -1,9 +1,290 @@
 #!/bin/bash
-[[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh [suite]"; exit 1; }
+
+_deployment_exists() {
+  [[ -s "$PREFIX/uuid" ]] || { echo "no deployment"; return 1; }
+  return 0
+}
+
+ost_status() {
+  _deployment_exists || return 1
+  local uuid=$(cat $PREFIX/uuid)
+  echo  "{"
+
+  declare -A nets
+  for i in $(virsh net-list --name | grep ^ost${uuid}); do
+    nets[$i]=$(virsh net-dumpxml $i | grep "metadata comment" | cut -d \" -f 2)
+  done
+
+  echo -en "  \"Networks\": {"
+  net_comma="\n"
+  for net in ${!nets[@]}; do
+    echo -en "${net_comma}    \"${nets[$net]}\": \"${net}\""
+    net_comma=",\n"
+  done
+  echo -en "\n  },\n"
+
+  echo -en "  \"VMs\": {"
+  vm_comma="\n"
+  for vm_full in $(virsh list --name | grep ^${uuid}); do
+   local vm=$(cut -d - -f 2- <<< $vm_full)
+   echo -en "${vm_comma}    \"$vm\": "
+    vm_nets=$(virsh domiflist $vm_full | grep network | tr -s " " | cut -d " " -f 4)
+    echo -en "{\n"
+    echo "      \"IP\": \"$(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>&1)\", "
+    echo "      \"state\": \"$(virsh domstate $vm_full 2>&1)\", "
+    echo "      \"deploy-scripts\": ["
+    deploy_open=""
+    for deploy in $(virsh dumpxml ${vm_full}  | sed -n '/<ost-deploy-scripts>/{:a;n;/<\/ost-deploy-scripts>/b;p;ba}' | sed 's|.*name="\(.*\)"/>|\1|g'); do
+      echo -en "${deploy_open}        \"${deploy}\""
+      deploy_open=",\n"
+    done
+    echo -en "\n      ],\n      \"NICs\": {\n"
+    net_comma=""
+    local idx=0
+    for net in $vm_nets; do
+      echo -en "${net_comma}        \"eth${idx}\": \"${nets[$net]}\""
+      net_comma=",\n"
+      (( idx++ ))
+    done
+    echo -en "\n      }"
+    echo -en "\n    }"
+    vm_comma=",\n"
+  done
+  echo -ne "\n  }\n}\n"
+}
+
+ost_destroy() {
+  _deployment_exists || return 1
+  local uuid=$(cat $PREFIX/uuid)
+  [[ -n "$uuid" ]] || { echo "no UUID"; return 1; }
+  virsh net-list --name | grep ^ost${uuid} | xargs -rn1 virsh net-destroy
+  virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
+  rm -rf "$PREFIX"
+  unset OST_INITIALIZED
+}
+
+# ost_init [suite] [distro]
+ost_init() {
+
+  # _generate_network "host-1-eth1 host-1-eth2 host-2-eth1..."
+  # create separate networks for each NIC entry.
+  # generate IPs (IPv4, IPv6) on 192.168.$SUBNET.$HOSTIDX where HOSTIDX starts with 2
+  # on management network ($management_net) generates DNS entries in form of ost-{suite}-{iface}
+  _generate_network() {
+    SUBNETHEX=$(printf %x $SUBNET)
+    IPV4=
+    IPV6=
+    HOSTIDX=2
+    NET_NAME="ost$UUID-$SUBNET"
+    if [[ "$NET_TYPE" = "$management_net" ]]; then
+      DNS="<dns forwardPlainNames='no'>"
+    else
+      DNS="<dns enable='no'>"
+    fi
+    for name in $1; do
+      IDXHEX=$(printf "%.2d" ${HOSTIDX})
+      ipidx_map[$name]="${HOSTIDX}"
+      eth_map[$name]="$NET_TYPE"
+      [[ "$NET_TYPE" == "$management_net" ]] && {
+        DNS+="<host ip='192.168.${SUBNET}.${HOSTIDX}'><hostname>ost-${SUITE_NAME}-${name}</hostname></host>"
+        DNS+="<host ip='fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}'><hostname>ost-${SUITE_NAME}-${name}</hostname></host>"
+      }
+      IPV4+="<host mac='54:52:c0:a8:${SUBNETHEX}:${IDXHEX}' name='ost-${SUITE_NAME}-${name}' ip='192.168.${SUBNET}.${HOSTIDX}'/>"
+      IPV6+="<host id='0:3:0:1:54:52:c0:a8:${SUBNETHEX}:${IDXHEX}' name='ost-${SUITE_NAME}-${name}' ip='fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}'/>"
+      (( HOSTIDX++ ))
+    done
+    DNS+="</dns>"
+  }
+
+  # finds unused subnet in the OST range
+  _find_free_subnet() {
+    SUBNET=$(seq 150 199 | egrep -vw "$(virsh net-list --name | grep ^ost | cut -d- -f2 | tr "\n" '|' | sed 's/^/(/; s/|$/)/')" | head -1)
+    [[ -n "$SUBNET" ]] || { echo -e "\nno available subnet"; return 1; }
+  }
+
+  # _render <template_file>
+  _render() {
+    sed "
+      s|@UUID@|${UUID}|g;
+      s|@VM_FULLNAME@|${VM_FULLNAME}|g;
+      s|@DEPLOY_SCRIPTS@|${DEPLOY_SCRIPTS}|g;
+      s|@MEMSIZE@|${MEMSIZE}|g;
+      s|@MEMSIZE_NUMA@|$((MEMSIZE/2))|g;
+      s|@SERIALLOG@|${SERIALLOG}|g;
+      s|@OST_ROOTDISK@|${OST_ROOTDISK}|g;
+      s|@DISKS@|${DISKS}|g;
+      s|@DISK_DEV@|${DISK_DEV}|g;
+      s|@DISK_SERIAL@|${DISK_SERIAL}|g;
+      s|@DISK_FILE@|${DISK_FILE}|g;
+      s|@NICS@|${NICS}|g;
+      s|@NET_NAME@|${NET_NAME}|g;
+      s|@NET_TYPE@|${NET_TYPE}|g;
+      s|@SUBNET@|${SUBNET}|g;
+      s|@SUBNETHEX@|${SUBNETHEX}|g;
+      s|@IDXHEX@|${IDXHEX}|g;
+      s|@DNS@|${DNS}|g;
+      s|@IPV4@|${IPV4}|g;
+      s|@IPV6@|${IPV6}|g;
+      " "$1"
+  }
+
+  # support readable comments in json
+  jqr() {
+    grep -v ^# ${ost_conf} | jq -r "$@"
+  }
+
+declare -A net_map=()
+declare -A ipidx_map=()
+declare -A eth_map=()
+ansible_hosts=
+
+SUITE=${SUITE:=${OST_REPO_ROOT}/${1:-basic-suite-master}}
+SUITE_NAME="${SUITE##*/}"
+OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:=${2:-el8stream}}
+
+[[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
+[[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
+[[ -d "$SUITE" ]] || { echo "$SUITE is not a suite directory"; return 1; }
+
+echo "Suite: $SUITE_NAME, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
+
+. common/helpers/ost-images.sh
+
+mkdir "$PREFIX"
+mkdir "$PREFIX/logs"
+mkdir "$PREFIX/images"
+chcon -t svirt_image_t "$PREFIX/images"
+
+# generate global 8 char UUID and persist
+# VMs with name <uuid>-ost-<suite>-<vmname>
+UUID=$(uuidgen | cut -c -8)
+echo $UUID > "$PREFIX/uuid"
+
+ost_conf="$SUITE/ost.json"
+[[ -f "$ost_conf" ]] || { echo "no ost.conf in $SUITE"; return 1; }
+
+# run the whole creation in subshell with a lock so that we do not explode on concurrent network allocation
+(
+  flock -w 120 9
+  cd "${OST_REPO_ROOT}"
+
+  # parse networks and create them on unused subnets
+  for NET_TYPE in $(jqr ".networks | keys | join(\" \")"); do
+    net_template=$(jqr ".networks[\"${NET_TYPE}\"].template")
+    host_nics=$(jqr ".networks[\"${NET_TYPE}\"].nics[]" | tr '\n' ' ')
+    [[ -n "$(jqr ".networks[\"${NET_TYPE}\"].is_management // empty")" ]] && management_net=$NET_TYPE
+    [[ -r "$net_template" ]] || { echo "net $NET_TYPE: template $net_template does not exist"; return 1; }
+    echo -n "Creating network $NET_TYPE, subnet "
+    _find_free_subnet || return 1
+    echo $SUBNET
+    net_map[$NET_TYPE]="$SUBNET"
+    _generate_network "$host_nics"
+    _render ${net_template} | virsh net-create /dev/stdin
+  done
+  [[ -z "$management_net" ]] && { echo "no management network defined"; return 1; }
+
+  # parse VMs and create them
+  for VM_NAME in $(jqr ".vms | keys | join(\" \")"); do
+    vm_template=$(jqr ".vms[\"${VM_NAME}\"].template")
+    echo -n "Creating VM $VM_NAME with NICs "
+    [[ -r "$vm_template" ]] || { echo -e "VM $VM_NAME: template $vm_template does not exist"; return 1; }
+
+    # generate VM NICs with network mappings
+    NICS=
+    for NIC_NAME in $(jqr ".vms[\"${VM_NAME}\"].nics | keys | join(\" \")"); do
+      nic_template=$(jqr ".vms[\"${VM_NAME}\"].nics[\"${NIC_NAME}\"].template")
+      [[ -r "$nic_template" ]] || { echo -e "\nNIC $NIC_NAME: template $nic_template does not exist"; return 1; }
+      net="${eth_map[$NIC_NAME]}"
+      echo -n "$NIC_NAME($net) "
+      SUBNET="${net_map[$net]}"
+      SUBNETHEX=$(printf %x $SUBNET)
+      IDXHEX=$(printf %x ${ipidx_map[$NIC_NAME]})
+      [[ "$net" ]] || { echo -e "\nNIC $NIC_NAME not found in list of networks ${eth_map[@]}"; return 1; }
+      [[ "$SUBNET" ]] || { echo -e "\nnetwork $net not found in defined networks ${net_map[@]}"; return 1; }
+      [[ "$IDXHEX" ]] || { echo -e "\nVM $VM_NAME not found in host ip mappings ${ipidx_map[@]}"; return 1; }
+      # ansible IP is on the management network
+      [[ "$net" == "$management_net" ]] && ansible_ip="192.168.${SUBNET}.${ipidx_map[$NIC_NAME]}"
+      NET_NAME="ost$UUID-${SUBNET}"
+      NICS+=$(_render ${nic_template} | tr -d "\t\n")
+    done
+
+    # deploy scripts
+    DEPLOY_SCRIPTS=
+    for script in $(jqr ".vms[\"${VM_NAME}\"][\"deploy-scripts\"][]");
+      do DEPLOY_SCRIPTS+="<script name=\"${script}\"/>"
+    done
+
+    # create root disk
+    echo -n " and disks "
+    vm_rootdisk_var=$(jqr ".vms[\"${VM_NAME}\"].root_disk_var")
+    [[ -r "${!vm_rootdisk_var}" ]] || { echo -e "\nroot disk ${!vm_rootdisk_var} doesn't exist"; return 1; }
+    OST_ROOTDISK="${PREFIX}/images/${VM_NAME}-root.qcow2"
+    qemu-img create -q -f qcow2 -b ${!vm_rootdisk_var} -F qcow2 $OST_ROOTDISK
+    echo -n "root($(basename ${!vm_rootdisk_var})) "
+
+    # create additional empty disks
+    DISKS=
+    DISK_SERIAL=2
+    for DISK_DEV in $(jqr ".vms[\"${VM_NAME}\"].disks | keys | join(\" \")"); do
+      disk_template=$(jqr ".vms[\"${VM_NAME}\"].disks[\"${DISK_DEV}\"].template")
+      DISK_SIZE=$(jqr ".vms[\"${VM_NAME}\"].disks[\"${DISK_DEV}\"].size")
+      [[ -r "$disk_template" ]] || { echo -e "\ndisk $DISK_DEV: template $disk_template does not exist"; return 1; }
+      DISK_FILE="$PREFIX/images/${VM_NAME}-${DISK_DEV}.qcow2"
+      qemu-img create -q -f qcow2 -o preallocation=metadata "${DISK_FILE}" "${DISK_SIZE}"
+      echo -n "${DISK_DEV}(${DISK_SIZE}) "
+      DISKS+=$(_render ${disk_template} | tr -d "\t\n")
+      (( DISK_SERIAL++ ))
+    done
+
+    # create the VM
+    VM_FULLNAME="${UUID}-ost-${SUITE_NAME}-${VM_NAME}"
+    MEMSIZE=$(jqr ".vms[\"${VM_NAME}\"].memory")
+    SERIALLOG="$PREFIX/logs/$VM_NAME"
+    echo
+    _render ${vm_template} | virsh create /dev/stdin
+
+    # generate ansible inventory line per host:
+    # <VM name> ansible_host=<IP> ansible_ssh_private_key_file=<key_file>
+    ansible_hosts+="ost-${SUITE_NAME}-${VM_NAME} ansible_host=${ansible_ip} ansible_ssh_private_key_file=${OST_IMAGES_SSH_KEY}\n"
+
+  done
+
+  # final ansible hosts file
+  echo -e $ansible_hosts > $PREFIX/hosts
+
+
+) 9>/tmp/ost.lock || return 1
+}
+
+# TODO this can use DNS instead
+ost_shell() {
+  _deployment_exists || return 1
+  if [[ -n "$1" ]]; then
+      local ssh=$(sed -n "/^ost/ s/ansible[a-z_]*=//g p" $PREFIX/hosts | while IFS=\  read -r host ip key; do
+      [[ "$1" == "${host}" ]] && $(ping -c1 -w1 ${ip} &>/dev/null) && { shift; echo "ssh -t -i ${key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${ip} $@"; break; }
+      done)
+      [ -n "${ssh}" ] || { echo "$1 not running"; return 1; }
+      eval ${ssh}
+  else
+      local uuid=$(cat $PREFIX/uuid)
+      echo -e "ost_shell <host> [command ...]\n"
+      virsh list --name | sed -n "/^${uuid}-ost/ s/${uuid}-//p"
+  fi
+}
+
+ost_console() {
+  _deployment_exists || return 1
+  local uuid=$(cat $PREFIX/uuid)
+  if [[ -n "$1" ]]; then
+    virsh console "${uuid}-$1" --devname console1
+  else
+      echo -e "ost_console <host>\n"
+      virsh list --name | sed -n "/^${uuid}-ost/ s/${uuid}-//p"
+  fi
+}
 
 # check dependencies
-check_dependencies() {
-    [[ -d "$SUITE" ]] || { echo "$SUITE is not a suite directory"; return 2; }
+ost_check_dependencies() {
     python3 -m pip install --user -q tox
     python3 -m tox -r -e deps >/dev/null || { echo "tox dependencies failed. try \"tox -e deps\"."; return 3; }
     sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | egrep -q 'accept_ra ?= ?2' || {
@@ -28,61 +309,25 @@ check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    rpm --quiet -q lago python3-ovirt-engine-sdk4 python3-paramiko ansible python3-ansible-runner openssl || {
+    rpm --quiet -q python3-ovirt-engine-sdk4 python3-paramiko ansible python3-ansible-runner openssl || {
         echo Missing mandatory rpm
         return 9
     }
     podman info |grep -A5 '^  search' | grep -q 'docker.io' || {
         sed -i "/^registries.*registry.access.redhat.com/ c registries = ['registry.access.redhat.com', 'registry.redhat.io', 'docker.io', 'quay.io']" /etc/containers/registries.conf
     }
+    export OST_INITIALIZED=yes
     return 0
 }
 
-# init workspace and spin up the VMs
-# lago_init [-s repo1 repo2 ...]
-lago_init() {
-    # does not have to be in /var/lib/lago/store
-    QCOW=$(realpath "$1")
-    [ -n "$QCOW" -a -e "$QCOW" ] || { echo "Image file $1 doesn't exist"; return 1; }
-    local engine_image=${QCOW/-host/-engine}
-    local node_image=${QCOW%/*}/node-base.qcow2
-    local host_image=${QCOW/-engine/-host}
-    local upgrade_image=${host_image/-host-installed/-upgrade}
-    local he_image=${host_image/-host/-he}
-    local ssh_key=${he_image/-he-installed*/_id_rsa}
-
-    # We need this to make ansible suite working.
-    # Remove once we expose the ssh key with the backend
-    export OST_IMAGES_SSH_KEY="${ssh_key}"
-
-    local comma="Using images "
-    for i in $engine_image $host_image $he_image, $node_image; do echo -n $([ -e $i ] && { echo -n "$comma"; rpm -qf $i &>/dev/null && rpm -qf $i || echo $i; }); comma=", "; done; echo
-
-    # set pytest arguments for using custom repositories
-    CUSTOM_REPOS_ARGS=()
-    [[ "$2" = "-n" ]] && { shift; CUSTOM_REPOS_ARGS+=('--skip-custom-repos-check'); }
-    if [[ "$2" = "-s" ]]; then # inject additional repos
-        while [[ -n "$3" ]]; do
-            shift; CUSTOM_REPOS_ARGS+=("--custom-repo=$2")
-        done
-    fi
-
-    lago_cleanup
-
-    # final lago init file
-    suite_name="$SUITE_NAME" engine_installed_image=$engine_image node_image=$node_image host_installed_image=$host_image upgrade_image=$upgrade_image he_installed_image=$he_image use_ost_images=1 python3 common/scripts/render_jinja_templates.py "${LAGO_INIT_FILE_IN}" > "${LAGO_INIT_FILE}"
-
-    lago init --ssh-key ${ssh_key} --skip-bootstrap "$PREFIX" "${LAGO_INIT_FILE}"
-
-    # start the OST VMs, run deploy scripts and generate hosts for ansible tasks
-    lago start && lago ansible_hosts > $PREFIX/hosts
-
-    # ... and that's it
+ost_linters() {
+    echo "Running linters..."
+    python3 -m tox -q -e flake8,pylint
 }
 
 # $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py
 # TC individual test to run
-_run_tc () {
+_ost_run_tc () {
     local res=0
     local testcase=${@/#/$PWD/}
     local junitxml_file="$PREFIX/${TC:-$SUITE_NAME}.junit.xml"
@@ -106,83 +351,45 @@ _run_tc () {
 }
 # $1 test scenario .py file
 # $2 individual test to run, e.g. test_add_direct_lun_vm0
-run_tc() {
+ost_run_tc() {
     local testcase=$(realpath $1)
-    TC=$2 _run_tc "$1"
-}
-
-run_tests() {
-    run_linters || return 1
-    TC= _run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
-    echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
-    return 0
+    TC=$2 _ost_run_tc "$1"
 }
 
 # $1=tc file, $2=test name
-run_since() {
+ost_run_after() {
     { PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 << EOT
 exec(open('$1').read())
 since=_TEST_LIST.index('$2')
-print('%s' % '\n'.join(_TEST_LIST[since:]))
+print('%s' % '\n'.join(_TEST_LIST[since+1:]))
 EOT
     } | while IFS= read -r i; do
-        TC=$i _run_tc $1
+        TC=$i _ost_run_tc $1
         [[ $? -ne 0 ]] && break
     done
 }
 
-run_linters() {
-    echo "Running linters..."
-    python3 -m tox -q -e flake8,pylint
+# ost_run_tests [pytest args ...]
+ost_run_tests() {
+    _deployment_exists || return 1
+
+    ost_linters || return 1
+
+    CUSTOM_REPOS_ARGS="$@"
+    TC= _ost_run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
+    echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
+    return 0
 }
 
-lago_cleanup() {
-    # cleanup lago deployment env $1 (or the default $PREFIX)
-    WHAT=${1:-$PREFIX}
-    [[ -d "$WHAT" ]] && { lago --workdir "$WHAT" stop || true ; rm -rf "$WHAT"; echo "Removed existing $WHAT"; }
-}
 
+[[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh"; exit 1; }
+export OST_REPO_ROOT=${OST_REPO_ROOT:=$(realpath "$PWD")}
+export PREFIX="${OST_REPO_ROOT}/deployment"
 
-export OST_REPO_ROOT=$(realpath "$PWD")
-export SUITE=${OST_REPO_ROOT}/${1:-basic-suite-master}
-export SUITE_NAME="${SUITE##*/}"
-echo -n "Suite $SUITE_NAME - "
-export LAGO_INIT_FILE="${SUITE}/LagoInitFile"
-export LAGO_INIT_FILE_IN="${LAGO_INIT_FILE}.in"
-export PREFIX=${OST_REPO_ROOT}/deployment-${SUITE_NAME}
+export SUITE
+export OST_IMAGES_DISTRO
+export SUITE_NAME
 export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
-export CUSTOM_REPOS_ARGS=()
-lago() {
-    if [[ "$1" == "shell" && -n "$2" ]]; then
-        local ssh=$(sed -n "/^ost/ s/ansible[a-z_]*=//g p" $PREFIX/hosts | while IFS=\  read -r host ip key; do
-        [[ "$2" == "${host}" ]] && $(ping -c1 -w1 ${ip} &>/dev/null) && { shift 2; echo "ssh -t -i ${key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${ip} $@"; break; }
-        done)
-        [ -n "${ssh}" ] || { echo "$2 not running"; return 1; }
-        eval ${ssh}
-    else
-        /usr/bin/lago --workdir "$PREFIX" "$@"
-    fi
-}
-
-check_dependencies || return $?
-
-echo "you can run the following:
-
-lago_init <base_qcow_file> [-n] [-s additional_repo ...]
-    to initialize the workspace with qcow-host and qcow-engine preinstalled images, and launch lago VMs (with  deployment scripts from LagoInitPlain file)
-    add extra repos with -s url1 url2 ..., use -n if you do not want to check whether those repos were actually used
-lago status | stop | shell | console ...
-    show environment status, shut down VMs, log into a running VM, etc
-run_tc <full path to test case file> [test function]
-    run single test case file, optionally only a single test case (e.g. \`pwd\`/basic-suite-master/test-scenarios/test_002_bootstrap.py test_add_role)
-run_since <full path to test case file> <test function>
-    resume running of test case file after the test function (excluded)
-run_tests
-    run the whole suite
-run_linters
-    run flake8 and pylint linters
-lago_cleanup [workdir]
-    stop and remove the running lago environment. [workdir] use different deployment directory than the current suite
-"
+export LIBVIRT_DEFAULT_URI="qemu:///system"

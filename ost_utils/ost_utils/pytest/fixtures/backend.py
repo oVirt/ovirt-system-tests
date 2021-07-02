@@ -24,11 +24,15 @@ import os
 import pytest
 
 from ost_utils.backend import lago
+from ost_utils.backend import ost
 
 
 @pytest.fixture(scope="session")
 def backend():
-    return lago.LagoBackend(os.environ["PREFIX"])
+    if "OST_INITIALIZED" in os.environ:
+        return ost.OstBackend(os.environ["PREFIX"])
+    else:
+        return lago.LagoBackend(os.environ["PREFIX"])
 
 
 @pytest.fixture(scope="session")

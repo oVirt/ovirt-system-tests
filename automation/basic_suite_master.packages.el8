@@ -1,5 +1,6 @@
 ansible
 grubby
+jq
 lago
 openssl
 ost-images-el8stream-engine-installed

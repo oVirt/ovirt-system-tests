@@ -90,19 +90,6 @@ on_exit() {
     env_status || logger.error "Failed to dump env status"
 }
 
-on_sigterm() {
-    local dest="${OST_REPO_ROOT}/test_logs/${SUITE_NAME}/post-suite-sigterm"
-
-    set +e
-    export CLI
-    export -f env_collect
-    timeout \
-        120s \
-        bash -c "env_collect $dest"
-
-    exit 143
-}
-
 verify_system_requirements() {
     local prefix="${1:?}"
 
@@ -376,17 +363,6 @@ env_run_pytest_bulk () {
         ./common/scripts/parse_junitxml.py ${junitxml_file} "${OST_REPO_ROOT}/exported-artifacts/result.txt"
     }
     return "$res"
-}
-
-
-env_collect () {
-    local tests_out_dir="${1?}"
-
-    [[ -e "${tests_out_dir%/*}" ]] || mkdir -p "${tests_out_dir%/*}"
-    cd "$PREFIX/current"
-    $CLI collect --output "$tests_out_dir"
-    cp -a "logs" "$tests_out_dir/lago_logs"
-    cd -
 }
 
 
@@ -792,7 +768,6 @@ mkdir -p "$PREFIX"
 "${PYTHON}" -m pip install --user tox==3.21.0
 "${PYTHON}" -m tox -e flake8,pylint
 
-trap "on_sigterm" SIGTERM
 trap "on_exit" EXIT
 
 logger.info "Using $(lago --version 2>&1)"

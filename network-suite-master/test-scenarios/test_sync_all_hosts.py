@@ -34,23 +34,18 @@ def test_sync_across_cluster(default_data_center, default_cluster,
     with clusterlib.new_assigned_network(
             'sync-net', default_data_center, default_cluster) as sync_net:
         with contextlib.ExitStack() as stack:
-            for i, host in enumerate(cluster_hosts_up):
-                att_datum = create_attachment(sync_net, i)
+            for host in cluster_hosts_up:
+                net_attachment = netattachlib.NetworkAttachmentData(
+                    sync_net, ETH2, (netattachlib.NO_V4, netattachlib.NO_V6))
                 stack.enter_context(
-                    hostlib.setup_networks(host, (att_datum,))
+                    hostlib.setup_networks(host, (net_attachment,))
                 )
                 stack.enter_context(unsynced_host_network(host))
+            for host in cluster_hosts_up:
+                host.wait_for_networks_out_of_sync((sync_net,))
             default_cluster.sync_all_networks()
             for host in cluster_hosts_up:
                 host.wait_for_networks_in_sync()
-
-
-def create_attachment(network, i):
-    ip_assign = netattachlib.StaticIpv4Assignment(
-        addr='192.168.125.' + str(i + 2), mask='255.255.255.0'
-    )
-    att_datum = netattachlib.NetworkAttachmentData(network, ETH2, (ip_assign,))
-    return att_datum
 
 
 @contextlib.contextmanager

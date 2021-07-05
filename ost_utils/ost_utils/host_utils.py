@@ -21,6 +21,7 @@
 import logging
 import random
 
+import ovirtsdk4 as sdk
 import ovirtsdk4.types as types
 
 from ost_utils import general_utils
@@ -141,8 +142,12 @@ def _poke_nonop_hosts(hosts_service, dc_name):
 
     for host in nonop_hosts:
         host_service = hosts_service.host_service(host.id)
-        host_service.activate()
-        poked = True
+        try:
+            host_service.activate()
+            poked = True
+        except sdk.Error as e:
+            if 'Related operation is currently in progress' not in str(e):
+                raise
 
     return poked
 

@@ -52,35 +52,5 @@ def deploy_hosted_engine():
 
 
 @pytest.fixture(scope="session")
-def artifact_list():
-    return [
-        '/etc/dnf',
-        '/etc/firewalld',
-        '/etc/httpd/conf',
-        '/etc/httpd/conf.d',
-        '/etc/httpd/conf.modules.d',
-        '/etc/ovirt-engine',
-        '/etc/ovirt-engine-dwh',
-        '/etc/ovirt-engine-metrics',
-        '/etc/ovirt-engine-setup.conf.d',
-        '/etc/ovirt-engine-setup.env.d',
-        '/etc/ovirt-host-deploy.conf.d',
-        '/etc/ovirt-imageio-proxy',
-        '/etc/ovirt-provider-ovn',
-        '/etc/ovirt-vmconsole',
-        '/etc/ovirt-web-ui',
-        '/etc/resolv.conf',
-        '/etc/sysconfig',
-        '/etc/yum',
-        '/etc/yum.repos.d',
-        '/tmp/dnf_yum.conf',
-        '/var/cache/ovirt-engine',
-        '/var/lib/ovirt-engine/setup/answers',
-        '/var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log',
-        '/var/log',
-    ]
-
-
-@pytest.fixture(scope="session")
 def ansible_vms_to_deploy(ansible_all):
     return ansible_all

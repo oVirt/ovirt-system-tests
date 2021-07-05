@@ -22,6 +22,7 @@ from ost_utils.pytest.fixtures.ansible import *
 
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
+from ost_utils.pytest.fixtures.artifacts import artifact_list
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 
 from ost_utils.pytest.fixtures.backend import all_hostnames
@@ -33,7 +34,6 @@ from ost_utils.pytest.fixtures.backend import host1_hostname
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
 
 from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
-from ost_utils.pytest.fixtures.defaults import artifact_list
 
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts

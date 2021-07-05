@@ -10,8 +10,6 @@ domains:
         ip: 192.168.200.99
     metadata:
       ovirt-engine-password: 123
-    artifacts:
-      - /var/log
 
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
@@ -56,8 +54,6 @@ domains:
         {% if loop.first -%}
         - $SUITE/setup_first_host.sh
         {%- endif %}
-    artifacts:
-      - /var/log
 {%- endfor %}
 
 nets:

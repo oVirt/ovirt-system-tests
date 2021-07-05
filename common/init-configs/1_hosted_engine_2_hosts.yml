@@ -9,10 +9,6 @@ domains:
       - net: lago-{{ env.suite_name }}-net-mgmt-ipv6
     metadata:
       ovirt-engine-password: 123
-    artifacts:
-      - /etc/resolv.conf
-      - /var/log
-      - /etc/yum.repos.d
 
   lago-{{ env.suite_name }}-storage:
     memory: 750
@@ -50,10 +46,6 @@ domains:
       deploy-scripts:
         - $OST_REPO_ROOT/common/deploy-scripts/setup_storage.sh
         - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_he_extra.sh
-    artifacts:
-      - /etc/resolv.conf
-      - /var/log
-      - /etc/yum.repos.d
 
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
@@ -78,13 +70,6 @@ domains:
     metadata:
       deploy-scripts:
         - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
-    artifacts:
-      - /etc/resolv.conf
-      - /var/log
-      - /etc/yum.repos.d
-      {% if env.coverage == "true" -%}
-      - /var/lib/vdsm/coverage
-      {%- endif %}
 {%- endfor %}
 
 nets:

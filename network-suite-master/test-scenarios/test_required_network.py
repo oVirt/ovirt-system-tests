@@ -62,10 +62,8 @@ def cluster_hosts_up(default_cluster, system):
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
         for i, host in enumerate(cluster_hosts_up):
-            no_v4 = netattachlib.NoIpv4Assignment()
-            no_v6 = netattachlib.NoIpv6Assignment()
             req_att_data = netattachlib.NetworkAttachmentData(
-                req_net, ETH1, [no_v4, no_v6])
+                req_net, ETH1, (netattachlib.NO_V4, netattachlib.NO_V6))
             host.setup_networks([req_att_data])
     except Exception as e:
         # if setup fails for some of the hosts roll it back before aborting

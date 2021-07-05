@@ -83,10 +83,16 @@ class NoIpv4Assignment(IpAssignment):
                                                types.BootProtocol.NONE)
 
 
+NO_V4 = NoIpv4Assignment()
+
+
 class NoIpv6Assignment(IpAssignment):
     def __init__(self, version=IpVersion.V6):
         super(NoIpv6Assignment, self).__init__(version, None, None, None,
                                                types.BootProtocol.NONE)
+
+
+NO_V6 = NoIpv6Assignment()
 
 
 class NetworkAttachmentData(object):

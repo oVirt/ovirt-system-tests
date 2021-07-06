@@ -19,15 +19,6 @@
 #
 
 
-class FactNotFound(Exception):
-
-    def __init__(self, fact):
-        self.fact = fact
-
-    def __str__(self):
-        return f"Could not find fact: {self.fact}"
-
-
 class Facts:
     """
     Uses ModuleMapper and gather_facts module to obtain and cache facts

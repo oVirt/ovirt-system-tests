@@ -5,6 +5,7 @@
 _OST_IMAGES_ROOT="/var/lib/lago"
 
 _find_qcow() {
+    rpm -q ost-images-${OST_IMAGES_DISTRO}-${1} 1>&2
     rpm -ql ost-images-${OST_IMAGES_DISTRO}-${1} | grep qcow2
 }
 

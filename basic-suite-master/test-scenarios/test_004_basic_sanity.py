@@ -742,7 +742,7 @@ def test_preview_snapshot_with_memory(engine_api):
                                 restore_memory=True)
 
 @order_by(_TEST_LIST)
-def test_vmconsole(engine_api, engine_ip):
+def test_vmconsole(engine_api, engine_ip, working_dir):
     engine = engine_api.system_service()
     users_service = engine.users_service()
     user = users_service.list(search='name=admin')[0]
@@ -750,11 +750,8 @@ def test_vmconsole(engine_api, engine_ip):
     vms_service = engine.vms_service()
     vm0_id = vms_service.list(search=f'name={VM0_NAME}')[0].id
 
-    deployment_dir = os.environ["PREFIX"]
-    ssh_key_path = os.path.join(deployment_dir, "current")
-
-    shell(['ssh-keygen', '-t', 'rsa', '-f', f'{ssh_key_path}/vmconsole_rsa', '-N', ''])
-    with open(f'{ssh_key_path}/vmconsole_rsa.pub') as f:
+    shell(['ssh-keygen', '-t', 'rsa', '-f', f'{working_dir}/vmconsole_rsa', '-N', ''])
+    with open(f'{working_dir}/vmconsole_rsa.pub') as f:
         ssh_public_key = f.read()
 
     keys_service.add(
@@ -766,7 +763,7 @@ def test_vmconsole(engine_api, engine_ip):
     master, slave = pty.openpty()
     vmconsole_process = subprocess.Popen(
         ['ssh', '-t', '-o', 'StrictHostKeyChecking=no',
-         '-i', f'{ssh_key_path}/vmconsole_rsa', '-p', '2222', f'ovirt-vmconsole@{engine_ip}',
+         '-i', f'{working_dir}/vmconsole_rsa', '-p', '2222', f'ovirt-vmconsole@{engine_ip}',
          'connect', f'--vm-id={vm0_id}'],
         stdin=slave,
         stdout=subprocess.PIPE,

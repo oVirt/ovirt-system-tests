@@ -1,0 +1,13 @@
+[Unit]
+Description=Run dig loop service - part of ovirt-system-tests
+Wants=network.target network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/local/sbin/run_dig_loop.sh
+StandardOutput=syslog
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

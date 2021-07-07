@@ -21,6 +21,34 @@
 import os
 
 
+def test_run_dig_loop(
+    suite_dir,
+    ansible_hosts,
+):
+    dig_loop_src_dir = os.path.join(suite_dir, 'dig_loop')
+    ansible_hosts.copy(
+        src=os.path.join(
+            dig_loop_src_dir,
+            'run_dig_loop.sh',
+        ),
+        dest='/usr/local/sbin',
+        mode='preserve',
+    )
+    ansible_hosts.copy(
+        src=os.path.join(
+            dig_loop_src_dir,
+            'rundigloop.service',
+        ),
+        dest='/etc/systemd/system',
+    )
+    ansible_hosts.systemd(
+        daemon_reload='yes',
+        name='rundigloop',
+        state='started',
+        enabled='yes',
+    )
+
+
 def test_he_deploy(
     root_dir,
     suite_dir,

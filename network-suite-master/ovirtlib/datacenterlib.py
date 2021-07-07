@@ -116,8 +116,13 @@ class DataCenter(SDKRootEntity):
             dc.import_by_id(sdk_obj.id)
             yield dc
 
-    def __str__(self):
-        return f'<Datacenter {self.name}, {self.status}, {self.id}>'
+    def __repr__(self):
+        return (
+            f'<Datacenter| '
+            f'name:{self.name} '
+            f'status:{self.status}, '
+            f'id:{self.id}>'
+        )
 
 
 @contextlib.contextmanager

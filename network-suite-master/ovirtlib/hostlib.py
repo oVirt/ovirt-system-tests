@@ -521,9 +521,15 @@ class Host(SDKRootEntity):
             nics.append(nic)
         return nics
 
-    def __str__(self):
-        return (f'<Host {self.name}, {self.status}, {self.is_spm}, {self.id},'
-                f' {self.address}>')
+    def __repr__(self):
+        return (
+            f'<Host| '
+            f'name:{self.name}, '
+            f'address:{self.address}, '
+            f'status:{self.status}, '
+            f'is_spm:{self.is_spm}, '
+            f'id:{self.id}>'
+        )
 
 
 @contextlib.contextmanager

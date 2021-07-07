@@ -193,9 +193,14 @@ class Cluster(SDKRootEntity):
             cluster.import_by_id(sdk_obj.id)
             yield cluster
 
-    def __str__(self):
-        return (f'<Cluster {self.name}, {self.network_switch_type},'
-                f' {self.id}>, {self.host_ids()}')
+    def __repr__(self):
+        return (
+            f'<Cluster| '
+            f'name:{self.name}, '
+            f'switch:{self.network_switch_type}, '
+            f'host ids:{self.host_ids()}, '
+            f'id:{self.id}>'
+        )
 
 
 class ClusterNetwork(SDKSubEntity):

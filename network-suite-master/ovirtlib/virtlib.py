@@ -27,6 +27,7 @@ from contextlib import contextmanager
 import ovirtsdk4
 from ovirtsdk4 import types
 
+from ovirtlib import hostlib
 from ovirtlib import joblib
 from ovirtlib import netlib
 from ovirtlib import clusterlib
@@ -68,7 +69,9 @@ class Vm(SDKRootEntity):
 
     @property
     def host(self):
-        return self.get_sdk_type().host
+        host = hostlib.Host(self.system)
+        host.import_by_id(self.get_sdk_type().host.id)
+        return host
 
     @property
     def status(self):
@@ -256,6 +259,17 @@ class Vm(SDKRootEntity):
             vm = Vm(system)
             vm.import_by_id(sdk_obj.id)
             yield vm
+
+    def __repr__(self):
+        return (
+            f'<Vm| '
+            f'name:{self.name}, '
+            f'status:{self.status}, '
+            f'host:{self.host.name}, '
+            f'cluster:{self.cluster.name}, '
+            f'dc:{self._get_data_center().name}, '
+            f'id:{self.id}>'
+        )
 
 
 class VmSnapshot(SDKSubEntity):

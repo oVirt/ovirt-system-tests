@@ -169,6 +169,14 @@ class Node(object):
     def restart_service(self, service_name):
         return self.exec_command(f'systemctl restart {service_name}')
 
+    def __repr__(self):
+        return (
+            f'<Node| '
+            f'address:{self._address}, '
+            f'username:{self._username},'
+            f'password:{self._password}>'
+        )
+
 
 class CirrosNode(Node):
     """

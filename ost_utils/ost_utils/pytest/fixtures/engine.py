@@ -186,3 +186,76 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
                                             allowed_exceptions=[ShellError])
 
     return restart
+
+
+@pytest.fixture(scope="session")
+def engine_answer_file_contents():
+    return ('# action=setup\n'
+            '[environment:default]\n'
+            'OVESETUP_DIALOG/confirmSettings=bool:True\n'
+            'OVESETUP_CONFIG/applicationMode=str:both\n'
+            'OVESETUP_CONFIG/remoteEngineSetupStyle=none:None\n'
+            'OVESETUP_CONFIG/adminPassword=str:123\n'
+            'OVESETUP_CONFIG/storageIsLocal=bool:False\n'
+            'OVESETUP_CONFIG/firewallManager=str:firewalld\n'
+            'OVESETUP_CONFIG/remoteEngineHostRootPassword=none:None\n'
+            'OVESETUP_CONFIG/firewallChangesReview=none:None\n'
+            'OVESETUP_CONFIG/updateFirewall=bool:True\n'
+            'OVESETUP_CONFIG/remoteEngineHostSshPort=none:None\n'
+            'OVESETUP_CONFIG/fqdn=str:engine\n'
+            'OVESETUP_CONFIG/storageType=none:None\n'
+            'OSETUP_RPMDISTRO/requireRollback=none:None\n'
+            'OSETUP_RPMDISTRO/enableUpgrade=bool:True\n'
+            'OVESETUP_DB/database=str:engine\n'
+            'OVESETUP_DB/fixDbViolations=none:None\n'
+            'OVESETUP_DB/secured=bool:False\n'
+            'OVESETUP_DB/host=str:localhost\n'
+            'OVESETUP_DB/user=str:engine\n'
+            'OVESETUP_DB/securedHostValidation=bool:False\n'
+            'OVESETUP_DB/port=int:5432\n'
+            'OVESETUP_ENGINE_CORE/enable=bool:True\n'
+            'OVESETUP_CORE/engineStop=none:None\n'
+            'OVESETUP_SYSTEM/memCheckEnabled=bool:False\n'
+            'OVESETUP_SYSTEM/nfsConfigEnabled=bool:False\n'
+            'OVESETUP_PKI/organization=str:Test\n'
+            'OVESETUP_CONFIG/isoDomainMountPoint=none:None\n'
+            'OVESETUP_CONFIG/isoDomainName=none:None\n'
+            'OVESETUP_CONFIG/isoDomainACL=none:None\n'
+            'OVESETUP_AIO/configure=none:None\n'
+            'OVESETUP_AIO/storageDomainName=none:None\n'
+            'OVESETUP_AIO/storageDomainDir=none:None\n'
+            'OVESETUP_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
+            'OVESETUP_APACHE/configureRootRedirection=bool:True\n'
+            'OVESETUP_APACHE/configureSsl=bool:True\n'
+            'OVESETUP_CONFIG/websocketProxyConfig=bool:True\n'
+            'OVESETUP_ENGINE_CONFIG/fqdn=str:engine\n'
+            'OVESETUP_CONFIG/sanWipeAfterDelete=bool:False\n'
+            'OVESETUP_VMCONSOLE_PROXY_CONFIG/vmconsoleProxyConfig=bool:True\n'
+            'OVESETUP_DWH_CORE/enable=bool:True\n'
+            'OVESETUP_DWH_CONFIG/dwhDbBackupDir=str:/var/lib/ovirt-engine-dwh/backups\n'
+            'OVESETUP_DWH_DB/database=str:ovirt_engine_history\n'
+            'OVESETUP_DWH_DB/disconnectExistingDwh=none:None\n'
+            'OVESETUP_DWH_DB/dumper=str:pg_custom\n'
+            'OVESETUP_DWH_DB/filter=none:None\n'
+            'OVESETUP_DWH_DB/host=str:localhost\n'
+            'OVESETUP_DWH_DB/password=str:uf5vskEpdSeflQnwAdp4ZO\n'
+            'OVESETUP_DWH_DB/performBackup=none:None\n'
+            'OVESETUP_DWH_DB/port=int:5432\n'
+            'OVESETUP_DWH_DB/restoreBackupLate=bool:True\n'
+            'OVESETUP_DWH_DB/restoreJobs=int:2\n'
+            'OVESETUP_DWH_DB/secured=bool:False\n'
+            'OVESETUP_DWH_DB/securedHostValidation=bool:False\n'
+            'OVESETUP_DWH_DB/user=str:ovirt_engine_history\n'
+            'OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
+            'OVESETUP_DWH_CONFIG/scale=str:1\n'
+            'OVESETUP_OVN/ovirtProviderOvnUser=str:admin@internal\n'
+            'OVESETUP_OVN/ovirtProviderOvnPassword=str:123\n'
+            'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n')
+
+
+@pytest.fixture(scope="session")
+def engine_answer_file_path(engine_answer_file_contents, artifacts_dir):
+    file_path = f'{artifacts_dir}/answer-file'
+    with open(file_path, 'w') as f:
+        f.write(engine_answer_file_contents)
+    return file_path

@@ -2,6 +2,5 @@ templates:
   engine: el8.2-base
   host: el8.2-base
 hostCount: 2
-install_ovirt_host: true
 system_requirements:
   disk_space_gb: 15

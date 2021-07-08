@@ -130,6 +130,12 @@
         mode: 0751
       become: true
 
+    - name: allow virtlogd to write console logs
+      selinux_permissive:
+        name: virtlogd_t
+        permissive: true
+      become: true
+
   handlers:
     - name: reboot
       debug:

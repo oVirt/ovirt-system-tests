@@ -189,13 +189,13 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents():
+def engine_answer_file_contents(engine_password):
     return ('# action=setup\n'
             '[environment:default]\n'
             'OVESETUP_DIALOG/confirmSettings=bool:True\n'
             'OVESETUP_CONFIG/applicationMode=str:both\n'
             'OVESETUP_CONFIG/remoteEngineSetupStyle=none:None\n'
-            'OVESETUP_CONFIG/adminPassword=str:123\n'
+            f'OVESETUP_CONFIG/adminPassword=str:{engine_password}\n'
             'OVESETUP_CONFIG/storageIsLocal=bool:False\n'
             'OVESETUP_CONFIG/firewallManager=str:firewalld\n'
             'OVESETUP_CONFIG/remoteEngineHostRootPassword=none:None\n'
@@ -249,7 +249,7 @@ def engine_answer_file_contents():
             'OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
             'OVESETUP_DWH_CONFIG/scale=str:1\n'
             'OVESETUP_OVN/ovirtProviderOvnUser=str:admin@internal\n'
-            'OVESETUP_OVN/ovirtProviderOvnPassword=str:123\n'
+            f'OVESETUP_OVN/ovirtProviderOvnPassword=str:{engine_password}\n'
             'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n')
 
 

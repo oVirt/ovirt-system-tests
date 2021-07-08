@@ -40,5 +40,6 @@ from ost_utils.pytest.fixtures.deployment import run_scripts
 
 from ost_utils.pytest.fixtures.engine import *
 
+from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import suite_dir
 from ost_utils.pytest.fixtures.env import working_dir

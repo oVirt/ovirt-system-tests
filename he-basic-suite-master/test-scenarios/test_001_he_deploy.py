@@ -22,13 +22,25 @@ import os
 
 
 def test_he_deploy(
+    root_dir,
     suite_dir,
     ansible_host0,
     ansible_storage,
     he_host_name,
     he_mac_address,
 ):
-    answer_file_src = os.path.join(suite_dir, 'answers.conf.in')
+    # not very nice. Better than duplicating whole file or symlinking though...
+    if 'ssg' in os.environ.get('SUITE_NAME'):
+        answer_file_src = os.path.join(
+            root_dir,
+            'common/answer-files/he-node-ng-ssg-suite-master.conf.in'
+        )
+    else:
+        answer_file_src = os.path.join(
+            root_dir,
+            'common/answer-files/hosted-engine-deploy-answers-file.conf.in'
+        )
+
     ansible_host0.copy(
         src=answer_file_src,
         dest='/root/hosted-engine-deploy-answers-file.conf.in'

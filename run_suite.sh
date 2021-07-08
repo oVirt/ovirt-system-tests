@@ -133,7 +133,6 @@ get_engine_version() {
 
 env_init () {
 
-    local template_repo="${1:-$SUITE/template-repo.json}"
     local initfile="${2:-$SUITE/init.json}"
     local extra_args
 
@@ -144,8 +143,7 @@ env_init () {
     $CLI init \
         $PREFIX \
         "$initfile" \
-        ${extra_args} \
-        --template-repo-path "$template_repo"
+        ${extra_args}
 }
 
 put_host_image() {

@@ -1,5 +1,2 @@
-templates:
-  engine: el8.2-base
-  host: el8.2-base
 hostCount: 2
 

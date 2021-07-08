@@ -1,6 +1,3 @@
-templates:
-  engine: el8.2-base
-  host: el8.2-base
 hostCount: 2
 system_requirements:
   disk_space_gb: 15

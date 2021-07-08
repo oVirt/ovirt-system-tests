@@ -1,4 +1,1 @@
-templates:
-  engine: el8.2-base-beta-1
-  host: el8.2-base-beta-1
 hostCount: 2

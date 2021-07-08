@@ -18,8 +18,7 @@ domains:
       - net: lago-{{ env.suite_name}}-net-management
       - net: lago-{{ env.suite_name}}-net-storage
     disks:
-      - template_name: {{ templates.engine }}
-        type: template
+      - type: template
         template_type: qcow2
         path: {{ env.engine_installed_image }}
         name: root
@@ -54,8 +53,7 @@ domains:
       - net: lago-{{ env.suite_name }}-net-bonding
       - net: lago-{{ env.suite_name }}-net-bonding
     disks:
-      - template_name: {{ templates.host }}
-        type: template
+      - type: template
         template_type: qcow2
         path: {{ env.host_installed_image }}
         name: root

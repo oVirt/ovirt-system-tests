@@ -1,6 +1,3 @@
-templates:
-  storage: el7.6-base-3
-  host: el7.6-base-3
 hostCount: 2
 system_requirements:
   disk_space_gb: 15

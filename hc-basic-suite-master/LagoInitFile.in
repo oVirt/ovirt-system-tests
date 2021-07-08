@@ -19,8 +19,7 @@ domains:
     nics:
       - net: lago-{{ env.suite_name}}-net-management
     disks:
-      - template_name: {{ templates.host }}
-        type: template
+      - type: template
         template_type: qcow2
         path: {{ env.host_installed_image }}
         name: root

@@ -3,6 +3,8 @@ HOSTEDENGINE="$1"
 shift
 HE_MAC_ADDRESS="$1"
 shift
+HEADDR="$1"
+shift
 
 DOMAIN=$(dnsdomainname)
 MYHOSTNAME="$(hostname | sed s/_/-/g)"
@@ -37,11 +39,6 @@ setup_ipv4() {
     HEGW=$(\
         /sbin/ip -4 -o addr show dev eth0 \
         | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}'\
-        | awk -F/ '{print $1}' \
-    )
-    HEADDR=$(\
-        /sbin/ip -4 -o addr show dev eth0 \
-        | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".99"}'\
         | awk -F/ '{print $1}' \
     )
     echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts

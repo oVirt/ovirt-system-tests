@@ -189,7 +189,7 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents(engine_password):
+def engine_answer_file_contents(engine_password, engine_fqdn):
     return ('# action=setup\n'
             '[environment:default]\n'
             'OVESETUP_DIALOG/confirmSettings=bool:True\n'
@@ -202,7 +202,7 @@ def engine_answer_file_contents(engine_password):
             'OVESETUP_CONFIG/firewallChangesReview=none:None\n'
             'OVESETUP_CONFIG/updateFirewall=bool:True\n'
             'OVESETUP_CONFIG/remoteEngineHostSshPort=none:None\n'
-            'OVESETUP_CONFIG/fqdn=str:engine\n'
+            f'OVESETUP_CONFIG/fqdn=str:{engine_fqdn}\n'
             'OVESETUP_CONFIG/storageType=none:None\n'
             'OSETUP_RPMDISTRO/requireRollback=none:None\n'
             'OSETUP_RPMDISTRO/enableUpgrade=bool:True\n'
@@ -228,7 +228,7 @@ def engine_answer_file_contents(engine_password):
             'OVESETUP_APACHE/configureRootRedirection=bool:True\n'
             'OVESETUP_APACHE/configureSsl=bool:True\n'
             'OVESETUP_CONFIG/websocketProxyConfig=bool:True\n'
-            'OVESETUP_ENGINE_CONFIG/fqdn=str:engine\n'
+            f'OVESETUP_ENGINE_CONFIG/fqdn=str:{engine_fqdn}\n'
             'OVESETUP_CONFIG/sanWipeAfterDelete=bool:False\n'
             'OVESETUP_VMCONSOLE_PROXY_CONFIG/vmconsoleProxyConfig=bool:True\n'
             'OVESETUP_DWH_CORE/enable=bool:True\n'

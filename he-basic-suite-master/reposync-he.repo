@@ -1,6 +1,0 @@
-[ovirt-appliance-master-el8]
-name=oVirt Appliance
-baseurl=http://resources.ovirt.org/repos/ovirt/tested/master/rpm/el8/
-enabled=1
-max_connections=10
-includepkgs=ovirt-engine-appliance

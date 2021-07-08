@@ -5,7 +5,6 @@ Welcome to oVirt System Tests Documentation Page!
 * [Introduction - What is OST?](general/introduction.markdown)
 * [Installation - Getting Started](general/installation.markdown)
 * [First run - Running your first OST](general/running_tests.markdown)
-* [Reposync file - Creating updated file](general/reposync_build.markdown)
 * [FAQ](general/faq.markdown)
 
 ## CI

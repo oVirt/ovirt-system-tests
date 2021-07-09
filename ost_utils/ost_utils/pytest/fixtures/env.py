@@ -24,6 +24,11 @@ import pytest
 
 
 @pytest.fixture(scope='session')
+def root_dir():
+    return os.environ.get('OST_REPO_ROOT')
+
+
+@pytest.fixture(scope='session')
 def suite_dir():
     return os.environ.get('SUITE')
 

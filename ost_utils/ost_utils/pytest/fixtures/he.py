@@ -69,7 +69,6 @@ def ansible_he(
     he_ipv4_address,
     he_ipv6_address,
     he_host_name,
-    working_dir,
     ansible_by_hostname,
 ):
     network.add_name(
@@ -79,13 +78,14 @@ def ansible_he(
         ipv4_address=he_ipv4_address,
         ipv6_address=he_ipv6_address,
     )
+    ssh_key_file = os.environ.get('OST_IMAGES_SSH_KEY')
     ansible_inventory.add(
         he_host_name,
         (
             '[default]\n'
             f'{he_host_name} '
             f'ansible_host={he_ipv4_address} '
-            f'ansible_ssh_private_key_file={working_dir}/current/id_rsa\n'
+            f'ansible_ssh_private_key_file={ssh_key_file}\n'
         ).encode()
     )
     return ansible_by_hostname(he_host_name)

@@ -39,9 +39,9 @@ domains:
     metadata:
       ovirt-engine-password: 123
       deploy-scripts:
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_engine.sh
+        - common/deploy-scripts/setup_sar_stat.sh
+        - common/deploy-scripts/setup_storage.sh
+        - common/deploy-scripts/setup_engine.sh
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
@@ -61,8 +61,8 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_sar_stat.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
+        - common/deploy-scripts/setup_sar_stat.sh
+        - common/deploy-scripts/setup_host.sh
 {%- endfor %}
 nets:
   lago-{{ env.suite_name }}-net-management:

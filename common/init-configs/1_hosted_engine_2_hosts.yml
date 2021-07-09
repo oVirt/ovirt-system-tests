@@ -33,8 +33,8 @@ domains:
         format: qcow2
     metadata:
       deploy-scripts:
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage.sh
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_storage_he_extra.sh
+        - common/deploy-scripts/setup_storage.sh
+        - common/deploy-scripts/setup_storage_he_extra.sh
 
 {%- for i in range(hostCount) %}
   lago-{{ env.suite_name }}-host-{{ i }}:
@@ -58,7 +58,7 @@ domains:
         {%- endif %}
     metadata:
       deploy-scripts:
-        - $OST_REPO_ROOT/common/deploy-scripts/setup_host.sh
+        - common/deploy-scripts/setup_host.sh
 {%- endfor %}
 
 nets:

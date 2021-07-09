@@ -46,7 +46,10 @@ def test_he_deploy(
         dest='/root/hosted-engine-deploy-answers-file.conf.in'
     )
 
-    setup_file_src = os.path.join(suite_dir, 'setup_first_he_host.sh')
+    setup_file_src = os.path.join(
+        root_dir,
+        'common/deploy-scripts/setup_first_he_host.sh'
+    )
     ansible_host0.copy(src=setup_file_src, dest='/root/', mode='preserve')
 
     ansible_host0.shell(

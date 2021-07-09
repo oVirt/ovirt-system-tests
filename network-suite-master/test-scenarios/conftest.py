@@ -88,6 +88,7 @@ from ost_utils.pytest.fixtures.deployment import run_scripts
 from ost_utils.pytest.fixtures.engine import engine_answer_file_contents
 from ost_utils.pytest.fixtures.engine import engine_answer_file_path
 from ost_utils.pytest.fixtures.engine import engine_fqdn
+from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import working_dir
 from ost_utils.pytest.fixtures.virt import cirros_image
 from ost_utils.pytest.fixtures.virt import transformed_cirros_image

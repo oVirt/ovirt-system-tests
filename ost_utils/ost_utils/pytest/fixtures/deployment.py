@@ -36,20 +36,19 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
-def run_scripts(ansible_by_hostname):
+def run_scripts(ansible_by_hostname, root_dir):
     def do_run_scripts(hostname, scripts):
         ansible_handle = ansible_by_hostname(hostname)
         for script in scripts:
-            expanded = os.path.expandvars(script)
             start = datetime.datetime.now()
-            LOGGER.info(f"Running script {expanded} on {hostname}")
-            res = ansible_handle.script(expanded)
+            LOGGER.info(f"[{hostname}] Starting {script}")
+            res = ansible_handle.script(os.path.join(root_dir, script))
             duration = int((datetime.datetime.now() - start).total_seconds())
             LOGGER.info(
-                f"Finished script {expanded} on {hostname} ({duration}s)"
+                f"[{hostname}] Finished {script} ({duration}s)"
             )
             LOGGER.debug(
-                f"Finished script {expanded} on {hostname}, result:\n%s",
+                f"[{hostname}] Finished {script}, result:\n%s",
                 pprint.pformat(res),
             )
     return do_run_scripts

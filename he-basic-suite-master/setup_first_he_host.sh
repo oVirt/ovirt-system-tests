@@ -1,1 +1,0 @@
-../common/deploy-scripts/setup_first_he_host.sh

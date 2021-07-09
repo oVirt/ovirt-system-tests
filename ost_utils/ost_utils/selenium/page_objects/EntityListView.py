@@ -29,6 +29,9 @@ class EntityListView(Displayable,WithBreadcrumbs,WithNotifications):
     def click_menu_button(self, main_button_id):
         self.ovirt_driver.xpath_click(f'//button[@id="{main_button_id}"]')
 
+    def click_menu_dropdown_top_button(self, main_button_id):
+        self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]')
+
     def click_menu_dropdown_button(self, main_button_id, dropdown_button_text):
         self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]/button[@data-toggle="dropdown"]')
         self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]//a[text()="{dropdown_button_text}"]')

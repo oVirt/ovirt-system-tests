@@ -45,12 +45,101 @@ class VmListView(EntityListView):
         self.ovirt_driver.wait_while('Shutdown button is still enabled', self.is_shutdown_button_enabled)
 
     def run_once(self):
-        LOGGER.debug('Run once selected vm')
+        LOGGER.debug('Open run once dialog')
         self.close_notification_safely()
-        self.click_menu_dropdown_button('ActionPanelView_Run', 'Run Once')
+        self.click_menu_dropdown_button(
+                'ActionPanelView_Run', 'Run Once')
 
-        self.ovirt_driver.xpath_wait_and_click('Button Run', '//div[@id="VmRunOncePopupView_OnRunOnce"]/button[text()="OK"]')
-        # To shorten the test execution time we are not waiting for the success notification to appear. The tests have to
+        run_once_dialog = RunOnceDialog(self.ovirt_driver)
+        run_once_dialog.wait_for_displayed()
+        return run_once_dialog
+
+    def open_console(self):
+        LOGGER.debug('Open console')
+        self.click_menu_dropdown_top_button(
+                'ActionPanelView_ConsoleConnectCommand')
+
+        novnc_console = NoVncConsole(self.ovirt_driver)
+        novnc_console.wait_for_displayed()
+        return novnc_console
+
+class RunOnceDialog(Displayable):
+
+    def __init__(self, ovirt_driver):
+        super(RunOnceDialog, self).__init__(ovirt_driver)
+
+    def is_displayed(self):
+        return self.ovirt_driver.is_xpath_displayed(
+                '//*[@id="VmRunOncePopupWidget"]')
+
+    def get_displayable_name(self):
+        return 'Run once dialog'
+
+    def toggle_console_options(self):
+        LOGGER.debug('Toggle console options')
+        self.ovirt_driver.xpath_click('//td[text()="Console"]')
+
+    def select_vnc(self):
+        LOGGER.debug('Select VNC')
+        self.ovirt_driver.xpath_wait_and_click(
+                'VNC radiobutton',
+                '//*[@id="VmRunOncePopupWidget_displayConsoleVnc"]')
+
+    def run(self):
+        LOGGER.debug('Run once selected vm')
+        self.ovirt_driver.xpath_wait_and_click(
+                'Button Run',
+                '//div[@id="VmRunOncePopupView_OnRunOnce"]/button[text()="OK"]'
+                )
+        # To shorten the test execution time we are not waiting for the
+        # success notification to appear. The tests have to
         # implement their own wait logic (e.g wait only for Powering Up state)
-        self.ovirt_driver.wait_while('Run button is still enabled', self.ovirt_driver.is_button_enabled, "Run")
+        self.ovirt_driver.wait_while(
+                'Run button is still enabled',
+                self.ovirt_driver.is_button_enabled,
+                "Run")
 
+class NoVncConsole(Displayable):
+
+    def __init__(self, ovirt_driver):
+        super(NoVncConsole, self).__init__(ovirt_driver)
+
+    def is_displayed(self):
+        if len(self.ovirt_driver.driver.window_handles) < 2:
+            return False
+
+        if (self.ovirt_driver.driver.current_window_handle
+                is not self.ovirt_driver.driver.window_handles[1]):
+            self.ovirt_driver.driver.switch_to.window(
+                    self.ovirt_driver.driver.window_handles[1])
+        return self.ovirt_driver.is_xpath_displayed('//div[@id="status"]')
+
+    def get_displayable_name(self):
+        return 'Run once dialog'
+
+    def wait_for_loaded(self):
+        LOGGER.debug('Wait for VNC console to be loaded')
+        self.ovirt_driver.wait_long_while(
+                'VNC console is still loading',
+                self.ovirt_driver.is_xpath_displayed,
+                '//div[@id="status" and text() = "Loading"]')
+
+    def wait_for_connected(self):
+        LOGGER.debug('Wait for VNC console to be connected')
+        self.ovirt_driver.wait_long_while(
+                'VNC console is still connecting',
+                self.ovirt_driver.is_xpath_displayed,
+                '//div[@id="status" and text() = "Connecting"]')
+
+    def is_connected(self):
+        return self.ovirt_driver.is_xpath_displayed(
+                '//div[@id="status" and contains(text(), "Connected")]')
+
+    def is_vnc_screen_displayed(self):
+        return self.ovirt_driver.is_xpath_displayed(
+                '//div[@id="screen"]//canvas')
+
+    def close(self):
+        self.ovirt_driver.driver.close()
+        self.ovirt_driver.driver.switch_to.window(
+                self.ovirt_driver.driver.window_handles[0])

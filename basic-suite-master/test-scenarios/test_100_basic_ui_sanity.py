@@ -413,7 +413,11 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
     assert vm_detail_view.get_name() == 'vm0'
     assert vm_detail_view.get_status() == 'Down'
 
-    vm_list_view.run_once()
+    run_once_dialog = vm_list_view.run_once()
+    run_once_dialog.toggle_console_options()
+    run_once_dialog.select_vnc()
+    run_once_dialog.run()
+
     # Waiting for Powering Up instead of Up to speed up the test execution
     vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
     vm_status = vm_detail_view.get_status()
@@ -438,6 +442,17 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
     save_screenshot('vms-vgpu')
 
     vm_vgpu_dialog.cancel()
+
+    novnc_console = vm_list_view.open_console()
+    novnc_console.wait_for_loaded()
+    novnc_console.wait_for_connected()
+
+    assert novnc_console.is_connected() is True
+    assert novnc_console.is_vnc_screen_displayed() is True
+
+    save_screenshot('vms-console')
+
+    novnc_console.close()
 
 def test_storage_domains(ovirt_driver):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)

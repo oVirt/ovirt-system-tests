@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from urllib import parse
 
 import ovirtsdk4
+import pytest
 import requests
 
 from ovirtsdk4 import types
@@ -77,6 +78,12 @@ SUBNETS = {
     }
 
 }
+
+ALREADY_IMPORTED = (
+    f"Cannot add Network. The name of the logical network "
+    f"'{NETWORK_1}' is already used by an existing logical "
+    f"network in the same data-center"
+)
 
 
 def _request_auth_token(engine_name):
@@ -326,7 +333,7 @@ def _disable_auto_sync(api, provider_id):
             )
 
 
-def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
+def _import_network_to_ovirt_if_missing(api, provider_id, network_id, datacenter_id):
     network_service = (
         api.system_service()
            .openstack_network_providers_service()
@@ -334,12 +341,16 @@ def _import_network_to_ovirt(api, provider_id, network_id, datacenter_id):
            .networks_service()
            .network_service(network_id)
     )
-    network_service.import_(
-        async_=False,
-        data_center=ovirtsdk4.types.DataCenter(
-            id=datacenter_id
-        ),
-    )
+    dc = ovirtsdk4.types.DataCenter(id=datacenter_id)
+    try:
+        network_service.import_(async_=False, data_center=dc)
+    except ovirtsdk4.Error as e:
+        # engine might have internally synced with the provider by now
+        if ALREADY_IMPORTED not in str(e):
+            raise e
+    with pytest.raises(ovirtsdk4.Error, match=ALREADY_IMPORTED):
+        # test re-import not possible
+        network_service.import_(async_=False, data_center=dc)
 
 
 def _get_ovirt_network(api, datacenter_id, network_name):
@@ -446,7 +457,7 @@ def test_use_ovn_provider(engine_api, engine_ip):
         _validate_subnet(token_id, engine_ip, SUBNET_1, subnet1_id, network1_id)
 
         datacenter_id = _get_datacenter_id(engine_api)
-        _import_network_to_ovirt(engine_api, provider_id, network1_id, datacenter_id)
+        _import_network_to_ovirt_if_missing(engine_api, provider_id, network1_id, datacenter_id)
         _validate_vnic_profile(engine_api, NETWORK_1)
         ovirt_network_id = _get_ovirt_network(engine_api, datacenter_id, NETWORK_1)
         _add_network_to_cluster(engine_api, datacenter_id, ovirt_network_id)

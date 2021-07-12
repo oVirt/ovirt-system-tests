@@ -21,8 +21,6 @@ import pytest
 from ovirtlib import sshlib
 from ovirtlib import syncutil
 
-from fixtures.engine import ANSWER_FILE_SRC
-
 OVN_CONF = '/etc/ovirt-provider-ovn/conf.d/10-setup-ovirt-provider-ovn.conf'
 
 
@@ -31,9 +29,10 @@ class EngineNotResorvableError(Exception):
 
 
 @pytest.fixture(scope='session')
-def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts):
+def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts,
+                                    engine_answer_file_path):
     provider_ip = f'provider-host={engine_facts.default_ip(urlize=True)}'
-    provider_fqdn = f'provider-host={_fetch_fqdn(ANSWER_FILE_SRC)}'
+    provider_fqdn = f'provider-host={_fetch_fqdn(engine_answer_file_path)}'
     engine = sshlib.Node(engine_facts.default_ip())
     try:
         engine.global_replace_str_in_file(provider_fqdn, provider_ip, OVN_CONF)

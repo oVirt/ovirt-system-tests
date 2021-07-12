@@ -16,8 +16,6 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
-import os
-
 import pytest
 from ovirtsdk4 import Connection
 
@@ -25,10 +23,6 @@ from ovirtlib import eventlib
 from ovirtlib import joblib
 from ovirtlib import sshlib
 from ovirtlib import syncutil
-
-
-ANSWER_FILE_SRC = os.path.join(os.environ.get('SUITE'),
-                               'engine-answer-file.conf')
 
 
 @pytest.fixture(scope="session")
@@ -49,11 +43,11 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_setup(deploy, engine_facts):
+def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
     ANSWER_FILE_TMP = '/tmp/answer-file'
 
     engine = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
-    engine.sftp_put(ANSWER_FILE_SRC, ANSWER_FILE_TMP)
+    engine.sftp_put(engine_answer_file_path, ANSWER_FILE_TMP)
 
     command = [
         'engine-setup',

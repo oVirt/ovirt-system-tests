@@ -189,7 +189,8 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents(engine_password, engine_fqdn):
+def engine_answer_file_contents(engine_password, engine_fqdn,
+                                engine_full_username):
     return ('# action=setup\n'
             '[environment:default]\n'
             'OVESETUP_DIALOG/confirmSettings=bool:True\n'
@@ -248,7 +249,7 @@ def engine_answer_file_contents(engine_password, engine_fqdn):
             'OVESETUP_DWH_DB/user=str:ovirt_engine_history\n'
             'OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
             'OVESETUP_DWH_CONFIG/scale=str:1\n'
-            'OVESETUP_OVN/ovirtProviderOvnUser=str:admin@internal\n'
+            f'OVESETUP_OVN/ovirtProviderOvnUser=str:{engine_full_username}\n'
             f'OVESETUP_OVN/ovirtProviderOvnPassword=str:{engine_password}\n'
             'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n')
 

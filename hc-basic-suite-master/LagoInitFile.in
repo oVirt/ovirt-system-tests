@@ -1,5 +1,5 @@
 domains:
-  lago-{{ env.suite_name }}-engine:
+  ost-{{ env.suite_name }}-engine:
     vm-provider: ssh
     vm-type: default
     ssh-password: 123456
@@ -12,7 +12,7 @@ domains:
       ovirt-engine-password: 123
 
 {%- for i in range(hostCount) %}
-  lago-{{ env.suite_name }}-host-{{ i }}:
+  ost-{{ env.suite_name }}-host-{{ i }}:
     vm-type: default
     distro: el8
     memory: 5120

@@ -388,7 +388,7 @@ env_libvirt_cleanup() {
     elif [[ ${INSIDE_MOCK} -eq 1 ]]; then
         local domains=($( \
             virsh -c qemu:///system list --all --name \
-            | egrep "[[:alnum:]]*-lago-${suite}-" \
+            | egrep "[[:alnum:]]*-ost-${suite}-" \
             | egrep -v "vdsm-ovirtmgmt" \
         ))
         local nets=($( \

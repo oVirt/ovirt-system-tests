@@ -37,14 +37,14 @@
     state: present
     name: cockpit-ovirt-dashboard
   delegate_to: "{{ item }}"
-  with_items: ['lago-ansible-suite-master-host-0', 'lago-ansible-suite-master-host-1']
+  with_items: ['ost-ansible-suite-master-host-0', 'ost-ansible-suite-master-host-1']
 
 - name: Remove temporary RPM files
   file:
     state: absent
     path: "/dev/shm/*rpm"
   delegate_to: "{{ item }}"
-  with_items: ['lago-ansible-suite-master-host-0', 'lago-ansible-suite-master-host-1']
+  with_items: ['ost-ansible-suite-master-host-0', 'ost-ansible-suite-master-host-1']
 
 - name: Add NFS storage
   ovirt_storage_domain:

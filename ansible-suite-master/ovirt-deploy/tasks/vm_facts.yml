@@ -3,14 +3,14 @@
   setup:
     filter: ansible_fqdn
   delegate_to: "{{ item }}"
-  with_items: ['lago-ansible-suite-master-host-0', 'lago-ansible-suite-master-host-1']
+  with_items: ['ost-ansible-suite-master-host-0', 'ost-ansible-suite-master-host-1']
   register: tmp_host_names
 
 - name: Fetch host IP addresses
   setup:
     filter: ansible_default_ipv4
   delegate_to: "{{ item }}"
-  with_items: ['lago-ansible-suite-master-host-0', 'lago-ansible-suite-master-host-1']
+  with_items: ['ost-ansible-suite-master-host-0', 'ost-ansible-suite-master-host-1']
   register: tmp_host_ips
 
 - name: Fetch engine IP address

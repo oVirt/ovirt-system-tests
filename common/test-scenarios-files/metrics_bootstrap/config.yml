@@ -1,4 +1,4 @@
-fluentd_fluentd_host: lago-basic-suite-master-engine
+fluentd_fluentd_host: ost-basic-suite-master-engine
 fluentd_use_ssl: false
-ovirt_env_name: lago-engine
+ovirt_env_name: ost-engine
 fluentd_output_plugin: fluentd

@@ -35,16 +35,16 @@ class BaseBackend(abc.ABC):
             Example value for basic suite:
 
             {
-                'lago-basic-suite-master-engine': {
+                'ost-basic-suite-master-engine': {
                     'lago-basic-suite-master-net-management': ['eth0'],
                     'lago-basic-suite-master-net-storage': ['eth1']
                 },
-                'lago-basic-suite-master-host-0': {
+                'ost-basic-suite-master-host-0': {
                     'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
                     'lago-basic-suite-master-net-management': ['eth0'],
                     'lago-basic-suite-master-net-storage': ['eth1']
                 },
-                 'lago-basic-suite-master-host-1': {
+                 'ost-basic-suite-master-host-1': {
                     'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
                     'lago-basic-suite-master-net-management': ['eth0'],
                     'lago-basic-suite-master-net-storage': ['eth1']
@@ -72,15 +72,15 @@ class BaseBackend(abc.ABC):
             Example value for basic suite:
 
             {
-                'lago-basic-suite-master-engine': [
+                'ost-basic-suite-master-engine': [
                     '/var/log',
                     '/var/cache/ovirt-engine',
                 ],
-                'lago-basic-suite-master-host-0': [
+                'ost-basic-suite-master-host-0': [
                     '/etc/resolv.conf',
                     '/var/log',
                 ],
-                'lago-basic-suite-master-host-1': [
+                'ost-basic-suite-master-host-1': [
                     '/etc/resolv.conf',
                     '/var/log',
                 ]
@@ -98,15 +98,15 @@ class BaseBackend(abc.ABC):
             Example value for basic suite:
 
             {
-                'lago-basic-suite-master-engine': [
+                'ost-basic-suite-master-engine': [
                     'common/deploy-scripts/setup_sar_stat.sh',
                     'common/deploy-scripts/setup_engine.sh',
                 ],
-                'lago-basic-suite-master-host-0': [
+                'ost-basic-suite-master-host-0': [
                     'common/deploy-scripts/setup_sar_stat.sh',
                     'common/deploy-scripts/setup_host.sh',
                 ],
-                'lago-basic-suite-master-host-1': [
+                'ost-basic-suite-master-host-1': [
                     'common/deploy-scripts/setup_sar_stat.sh',
                     'common/deploy-scripts/setup_host.sh',
                 ]

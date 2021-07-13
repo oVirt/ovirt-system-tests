@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST=lago-${SUITE_NAME}-host-
+HOST=ost-${SUITE_NAME}-host-
 VMPASS=123456
 IDENENTITY_KEY="/etc/ssh/ssh_host_rsa_key"
 cd $PREFIX

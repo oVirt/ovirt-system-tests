@@ -69,7 +69,7 @@ install_deps() {
 
 
 setup_iscsi() {
-    # this is ugly, assumes that dedicated storage VMs (lago-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master). And in both cases these are assumed to be ipv4, ipv6-only suite should probably change that
+    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master). And in both cases these are assumed to be ipv4, ipv6-only suite should probably change that
     if [[ $(hostname) == *"-storage" ]]; then
         IP=$(ip -4 addr show eth0 | grep -oP "(?<=inet ).*(?=/)")
     else

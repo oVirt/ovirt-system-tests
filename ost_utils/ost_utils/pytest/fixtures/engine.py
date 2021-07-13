@@ -65,7 +65,7 @@ def engine_fqdn(ansible_engine_facts):
     if 'he' in os.environ.get('SUITE_NAME'):
         return ansible_engine_facts.get("ansible_fqdn")
     elif 'hc' in os.environ.get('SUITE_NAME'):
-        return "lago-hc-basic-suite-master-engine.lago.local"
+        return "ost-hc-basic-suite-master-engine.lago.local"
     else:
         # TODO:
         # Currently, basic-suite-master and a few others are using

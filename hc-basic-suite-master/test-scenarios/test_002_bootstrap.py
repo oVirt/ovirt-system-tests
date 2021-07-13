@@ -229,7 +229,7 @@ def test_he_deploy(suite_dir):
 @order_by(_TEST_LIST)
 def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
                              engine_download):
-    #engine_fqdn = "lago-hc-basic-suite-master-engine"
+    #engine_fqdn = "ost-hc-basic-suite-master-engine"
     url = 'http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format={}'
 
     with http_proxy_disabled(), tempfile.NamedTemporaryFile() as tmp:

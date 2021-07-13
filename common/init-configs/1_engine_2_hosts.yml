@@ -6,7 +6,7 @@ nat-settings: &nat-settings
     management: False
 
 domains:
-  lago-{{ env.suite_name }}-engine:
+  ost-{{ env.suite_name }}-engine:
     vm-type: default
     memory: 3584
     nics:
@@ -38,7 +38,7 @@ domains:
         - common/deploy-scripts/setup_storage.sh
         - common/deploy-scripts/setup_engine.sh
 {%- for i in range(hostCount) %}
-  lago-{{ env.suite_name }}-host-{{ i }}:
+  ost-{{ env.suite_name }}-host-{{ i }}:
     vm-type: default
     memory: 1792
     nics:

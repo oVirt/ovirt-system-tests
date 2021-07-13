@@ -10,7 +10,7 @@ vm-common-settings: &vm-common-settings
     service_provider: systemd
 
 domains:
-  lago-{{ env.suite_name }}-engine:
+  ost-{{ env.suite_name }}-engine:
     <<: *vm-common-settings
     vm-type: default
     memory: 3584
@@ -43,7 +43,7 @@ domains:
         - common/deploy-scripts/setup_storage.sh
         - common/deploy-scripts/setup_engine.sh
 {%- for i in range(hostCount) %}
-  lago-{{ env.suite_name }}-host-{{ i }}:
+  ost-{{ env.suite_name }}-host-{{ i }}:
     <<: *vm-common-settings
     vm-type: default
     memory: 1792

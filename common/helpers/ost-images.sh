@@ -54,6 +54,12 @@ prepare_images_for_mock() {
         _fix_permissions "${dest}"
     done
 
+    local key_dest="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_DIR})"
+    cp "${OST_IMAGES_SSH_KEY}" "${key_dest}"
+    cp "${OST_IMAGES_SSH_KEY}.pub" "${key_dest}.pub"
+    chmod 600 "${key_dest}"
+    export OST_IMAGES_SSH_KEY="${key_dest}"
+
     export OST_IMAGES_BASE="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_BASE})"
     export OST_IMAGES_NODE="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_NODE})"
     export OST_IMAGES_UPGRADE="${OST_IMAGES_DIR}/$(basename ${OST_IMAGES_UPGRADE})"

@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,17 +39,17 @@ def ansible_machine_389ds(ansible_engine):
 
 
 @pytest.fixture(scope="session")
-def machine_389ds_ip(engine_ip):
-    return engine_ip
+def machine_389ds_fqdn(ansible_machine_389ds):
+    return ansible_machine_389ds.shell('hostname -f')['stdout']
 
 
 def test_add_ldap_provider(root_dir, ansible_engine, ansible_machine_389ds,
-                           machine_389ds_ip, engine_restart):
+                           machine_389ds_fqdn, engine_restart):
     answer_file_src = os.path.join(root_dir, 'common/answer-files/aaa-ldap-answer-file.conf')
 
     with open(answer_file_src, 'r') as f:
         content = f.read()
-        content = content.replace('@389DS_IP@', machine_389ds_ip)
+        content = content.replace('@389DS_IP@', machine_389ds_fqdn)
 
     with tempfile.NamedTemporaryFile(mode='w') as temp:
         temp.write(content)

@@ -133,7 +133,7 @@ def test_setup_net_with_qos(system, default_data_center, default_cluster,
 
 
 def _create_net_attachment_data(qos_net):
-    no4 = netattachlib.NoIpv4Assignment()
-    no6 = netattachlib.NoIpv6Assignment()
-    att_data = netattachlib.NetworkAttachmentData(qos_net, ETH2, (no4, no6))
+    att_data = netattachlib.NetworkAttachmentData(
+        qos_net, ETH2, (netattachlib.NO_V4, netattachlib.NO_V6)
+    )
     return att_data

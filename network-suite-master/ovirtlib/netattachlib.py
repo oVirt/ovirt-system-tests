@@ -25,13 +25,6 @@ class IpVersion(object):
     V6 = types.IpVersion.V6
 
 
-DYNAMIC_IP_CONFIG = [
-    types.IpAddressAssignment(assignment_method=types.BootProtocol.DHCP),
-    types.IpAddressAssignment(assignment_method=types.BootProtocol.DHCP,
-                              ip=types.Ip(version=IpVersion.V6))
-]
-
-
 class IpAssignment(object):
 
     def __init__(self, version, addr, mask, gateway=None,
@@ -76,23 +69,18 @@ class StaticIpv6Assignment(IpAssignment):
         )
 
 
-class NoIpv4Assignment(IpAssignment):
-
-    def __init__(self, version=IpVersion.V4):
-        super(NoIpv4Assignment, self).__init__(version, None, None, None,
-                                               types.BootProtocol.NONE)
-
-
-NO_V4 = NoIpv4Assignment()
-
-
-class NoIpv6Assignment(IpAssignment):
-    def __init__(self, version=IpVersion.V6):
-        super(NoIpv6Assignment, self).__init__(version, None, None, None,
-                                               types.BootProtocol.NONE)
-
-
-NO_V6 = NoIpv6Assignment()
+NO_V4 = IpAssignment(IpVersion.V4, None, None, None, types.BootProtocol.NONE)
+NO_V6 = IpAssignment(IpVersion.V6, None, None, None, types.BootProtocol.NONE)
+IPV4_DHCP = IpAssignment(
+    IpVersion.V4, None, None, None, types.BootProtocol.DHCP
+)
+IPV6_POLY_DHCP_AUTOCONF = IpAssignment(
+    IpVersion.V6, None, None, None, types.BootProtocol.POLY_DHCP_AUTOCONF
+)
+DYNAMIC_IP_ASSIGN = {
+    'inet': IPV4_DHCP,
+    'inet6': IPV6_POLY_DHCP_AUTOCONF
+}
 
 
 class NetworkAttachmentData(object):

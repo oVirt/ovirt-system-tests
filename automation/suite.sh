@@ -27,7 +27,8 @@ echo "Running suite: $SUITE"
 if [[ "${RUNNING_IN_PSI}" == "true" ]]; then
     # $distro is passed from stdci, not a good idea to depend on it, but there's currently no other way how to choose which ost-image to use
     echo "Distro: ${distro:=el8stream}"
-    { source lagofy.sh $SUITE && lago_init /usr/share/ost-images/${distro}-engine-installed.qcow2 && run_tests; } &> exported-artifacts/ost_run_tests.log
+    mkdir -p exported-artifacts
+    { source lagofy.sh $SUITE && lago_init /usr/share/ost-images/${distro}-engine-installed.qcow2 && run_tests; } 2>&1 | tee exported-artifacts/ost_run_tests.log
     exit $?
 fi
 

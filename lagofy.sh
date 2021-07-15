@@ -83,14 +83,21 @@ ost_init() {
     fi
     for name in $1; do
       IDXHEX=$(printf "%.2d" ${HOSTIDX})
-      ipidx_map[$name]="${HOSTIDX}"
+      nicidx_map[$name]="${HOSTIDX}"
       eth_map[$name]="$NET_TYPE"
+      hostname="ost-${SUITE_NAME}-${name}"
+      ipv4_ip="192.168.${SUBNET}.${HOSTIDX}"
+      ipv4_mac="54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
+      ipv6_ip="fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}"
+      ipv6_mac="0:3:0:1:54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
       [[ "$NET_TYPE" == "$management_net" ]] && {
-        DNS+="<host ip='192.168.${SUBNET}.${HOSTIDX}'><hostname>ost-${SUITE_NAME}-${name}</hostname></host>"
-        DNS+="<host ip='fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}'><hostname>ost-${SUITE_NAME}-${name}</hostname></host>"
+        DNS+="<host ip='${ipv4_ip}'><hostname>${hostname}</hostname></host>"
+        DNS+="<host ip='${ipv6_ip}'><hostname>${hostname}</hostname></host>"
       }
-      IPV4+="<host mac='54:52:c0:a8:${SUBNETHEX}:${IDXHEX}' name='ost-${SUITE_NAME}-${name}' ip='192.168.${SUBNET}.${HOSTIDX}'/>"
-      IPV6+="<host id='0:3:0:1:54:52:c0:a8:${SUBNETHEX}:${IDXHEX}' name='ost-${SUITE_NAME}-${name}' ip='fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}'/>"
+      nicip_map[$name]="${ipv4_ip}"
+      [[ -n "$ipv6_only" ]] && nicip_map[$name]="${ipv6_ip}"
+      IPV4+="<host mac='${ipv4_mac}' name='${hostname}' ip='${ipv4_ip}'/>"
+      IPV6+="<host id='${ipv6_mac}' name='${hostname}' ip='${ipv6_ip}'/>"
       (( HOSTIDX++ ))
     done
     DNS+="</dns>"
@@ -134,13 +141,15 @@ ost_init() {
   }
 
 declare -A net_map=()
-declare -A ipidx_map=()
+declare -A nicidx_map=()
+declare -A nicip_map=()
 declare -A eth_map=()
 ansible_hosts=
 
 SUITE=${SUITE:=${OST_REPO_ROOT}/${1:-basic-suite-master}}
 SUITE_NAME="${SUITE##*/}"
 OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:=${2:-el8stream}}
+ipv6_only=
 
 [[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
 [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
@@ -198,12 +207,12 @@ ost_conf="$SUITE/ost.json"
       echo -n "$NIC_NAME($net) "
       SUBNET="${net_map[$net]}"
       SUBNETHEX=$(printf %x $SUBNET)
-      IDXHEX=$(printf %x ${ipidx_map[$NIC_NAME]})
+      IDXHEX=$(printf %x ${nicidx_map[$NIC_NAME]})
       [[ "$net" ]] || { echo -e "\nNIC $NIC_NAME not found in list of networks ${eth_map[@]}"; return 1; }
       [[ "$SUBNET" ]] || { echo -e "\nnetwork $net not found in defined networks ${net_map[@]}"; return 1; }
-      [[ "$IDXHEX" ]] || { echo -e "\nVM $VM_NAME not found in host ip mappings ${ipidx_map[@]}"; return 1; }
+      [[ "$IDXHEX" ]] || { echo -e "\nVM $VM_NAME not found in host ip mappings ${nicidx_map[@]}"; return 1; }
       # ansible IP is on the management network
-      [[ "$net" == "$management_net" ]] && ansible_ip="192.168.${SUBNET}.${ipidx_map[$NIC_NAME]}"
+      [[ "$net" == "$management_net" ]] && ansible_ip="${nicip_map[$NIC_NAME]}"
       NET_NAME="ost$UUID-${SUBNET}"
       NICS+=$(_render ${nic_template} | tr -d "\t\n")
     done

@@ -44,9 +44,10 @@ def test_ping_to_external_port_succeeds(vm_nodes, isolated_vnics_up_with_ip):
 
 
 def test_ping_to_isolated_port_fails(vm_nodes, isolated_vnics_up_with_ip):
-    vm1_isolated_ip = vm_nodes[1].get_ipv4_of_interface(PORT_ISOLATED_VNIC)
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[0].ping4(vm1_isolated_ip, PORT_ISOLATED_VNIC)
+        vm_nodes[0].ping4(isolated_vnics_up_with_ip[1], PORT_ISOLATED_VNIC)
+    with pytest.raises(sshlib.SshException, match=PING_FAILED):
+        vm_nodes[1].ping4(isolated_vnics_up_with_ip[0], PORT_ISOLATED_VNIC)
 
 
 @pytest.fixture(scope='module')
@@ -67,8 +68,12 @@ def vm_nodes(vms_ovirtmgmt_ip):
 
 @pytest.fixture(scope='module')
 def isolated_vnics_up_with_ip(vm_nodes):
+    ips = []
     for vm_node in vm_nodes:
         vm_node.assign_ip_with_dhcp_client(PORT_ISOLATED_VNIC)
+        ip = vm_node.get_ipv4_of_interface(PORT_ISOLATED_VNIC)
+        ips.append(ip)
+    return ips
 
 
 @pytest.fixture(scope='module')

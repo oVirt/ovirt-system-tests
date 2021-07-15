@@ -50,47 +50,9 @@ setup_ipv4() {
     PREFIX=24
 }
 
-setup_ipv6() {
-    IPV6NET="fd8f:1391:3a82:"
-    SUBNET=${IPV6_SUBNET}
-    HE_SUFFIX=250
-    INTERFACE=eth1
-    PREFIX=64
-
-    HOSTNAME_PREFIX=$(hostname | awk '{gsub(/[^-]*.[^-]*$/,""); print}')
-    HEGW=${IPV6NET}${SUBNET}::1
-    HEADDR=${IPV6NET}${SUBNET}::${HE_SUFFIX}
-
-    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_after_engine_setup/ipv6_dns_setup.yml
----
-- name: Add /etc/hosts IPv6 entry for host-1
-  lineinfile:
-    dest: /etc/hosts
-    line: "${IPV6NET}${SUBNET}::101 ${HOSTNAME_PREFIX}host-1"
-EOF
-
-    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_after_engine_setup/disable_ssh_dns_lookup.yml
----
-- name: Disable SSH reverse DNS lookup
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regex: "^UseDNS"
-    line: "UseDNS no"
-- name: Restart sshd to make it effective
-  systemd:
-    state: restarted
-    name: sshd
-EOF
-
-}
-
 copy_ssh_key
 
-if [[ $(hostname) == *"ipv6"* ]]; then
-    setup_ipv6
-else
-    setup_ipv4
-fi
+setup_ipv4
 
 sed \
     -e "s,@GW@,${HEGW},g" \

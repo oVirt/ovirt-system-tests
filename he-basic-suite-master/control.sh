@@ -5,12 +5,6 @@ prep_suite () {
     render_jinja_templates
 }
 
-setup_ipv6() {
-    export IPV6_ONLY=True
-    export IPV6_SUBNET=$(python "${OST_REPO_ROOT}/he-basic-ipv6-suite-master/find_ipv6_subnet.py" \
-    "$PREFIX" "lago-${SUITE##*/}-net-mgmt-ipv6")
-}
-
 run_suite(){
     local suite="${SUITE?}"
     local curdir="${PWD?}"
@@ -20,10 +14,6 @@ run_suite(){
         "$suite/LagoInitFile"
     env_start
     cd "$OST_REPO_ROOT"
-
-    if [[ ${suite} == *"ipv6"* ]]; then
-        setup_ipv6
-    fi
 
     declare test_scenarios="${SUITE}/test-scenarios"
 

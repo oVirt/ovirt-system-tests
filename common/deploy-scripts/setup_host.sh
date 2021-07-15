@@ -20,41 +20,6 @@ mkdir -p /etc/libvirt
 echo 'log_filters="1:libvirt 1:qemu 1:conf 1:security 3:event 3:json 3:file 3:object 1:util"' >> /etc/libvirt/libvirtd.conf
 echo 'log_outputs="1:file:/var/log/libvirt.log"' >> /etc/libvirt/libvirtd.conf
 
-# IPv6 setup
-setup_ipv6() {
-    NIC="eth1"
-    IPV6NET="fd8f:1391:3a82:"
-    SUBNET=${IPV6_SUBNET}
-    HOST_LOCAL_PREFIX=10
-    ADDR_PREFIX=64
-    HOST_LOCAL_SUFFIX=$(hostname | awk '{split($0, a, "-"); print a[length(a)]}')
-    HOST_COUNT=2
-    DOMAIN=$(dnsdomainname)
-    LOCAL_HOSTNAME_PREFIX=$(hostname | awk '{gsub(/[^-]*.[^-]*$/,""); print}')
-    HOST_NAME="host"
-    STORAGE_NAME="storage"
-    STORAGE_IP_SUFFIX=200
-    HE_NAME="engine"
-    HE_SUFFIX=250
-
-    nmcli con modify ${NIC} ipv6.addresses ${IPV6NET}${SUBNET}::${HOST_LOCAL_PREFIX}${HOST_LOCAL_SUFFIX}/${ADDR_PREFIX} \
-    ipv6.gateway ${IPV6NET}${SUBNET}::1 ipv6.method manual
-
-    nmcli con modify ${NIC} ipv4.method disabled
-
-    nmcli con up ${NIC}
-
-    for ((i=0;i<${HOST_COUNT};i++)); do
-        echo  "${IPV6NET}${SUBNET}::${HOST_LOCAL_PREFIX}${i} ${LOCAL_HOSTNAME_PREFIX}${HOST_NAME}-${i}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${HOST_NAME}-${i}" >> /etc/hosts
-    done
-
-    echo "${IPV6NET}${SUBNET}::${STORAGE_IP_SUFFIX} ${LOCAL_HOSTNAME_PREFIX}${STORAGE_NAME}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${STORAGE_NAME}" >> /etc/hosts
-    echo "${IPV6NET}${SUBNET}::${HE_SUFFIX} ${LOCAL_HOSTNAME_PREFIX}${HE_NAME}.${DOMAIN} ${LOCAL_HOSTNAME_PREFIX}${HE_NAME}" >> /etc/hosts
-}
-if [[ $(hostname) == *"ipv6"* ]]; then
-    setup_ipv6
-fi
-
 # Increase ISCSI timeouts and disable MD5 (FIPS), see setup_storage.sh
 rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils
 sed -i 's/#node.session.auth.authmethod = CHAP/node.session.auth.authmethod = CHAP/g' /etc/iscsi/iscsid.conf

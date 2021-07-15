@@ -30,8 +30,8 @@ from ovirtlib import virtlib
 
 VM0_NAME = 'test_port_isolation_vm_0'
 VM1_NAME = 'test_port_isolation_vm_1'
-VNIC0_NAME = 'eth1'
-VNIC1_NAME = 'eth2'
+VNIC0_NAME = 'eth0'
+PORT_ISOLATED_VNIC = 'eth1'
 PORT_ISOLATION_NET = 'test_isolated'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
@@ -41,15 +41,15 @@ PING_FAILED = '100% packet loss'
 def test_ping_to_external_port_succeeds(vms_ovirtmgmt_ip):
     for ip in vms_ovirtmgmt_ip:
         vm_node = sshlib.Node(ip, VM_PASSWORD, VM_USERNAME)
-        vm_node.ping4('8.8.8.8', ETH1)
+        vm_node.ping4('8.8.8.8', PORT_ISOLATED_VNIC)
 
 
 def test_ping_to_isolated_port_fails(vms_ovirtmgmt_ip):
     vm_node0 = sshlib.Node(vms_ovirtmgmt_ip[0], VM_PASSWORD, VM_USERNAME)
     vm_node1 = sshlib.Node(vms_ovirtmgmt_ip[1], VM_PASSWORD, VM_USERNAME)
-    vm1_port_isolated_ip = vm_node1.get_ipv4_of_interface(ETH1)
+    vm1_port_isolated_ip = vm_node1.get_ipv4_of_interface(PORT_ISOLATED_VNIC)
     try:
-        vm_node0.ping4(vm1_port_isolated_ip, ETH1)
+        vm_node0.ping4(vm1_port_isolated_ip, PORT_ISOLATED_VNIC)
         raise PingSucceededException
     except sshlib.SshException as err:
         if PING_FAILED not in str(err):
@@ -63,7 +63,7 @@ def vms_ovirtmgmt_ip(host_1_up, vms_up_on_same_host):
     for name in [VM0_NAME, VM1_NAME]:
         ovirtmgmt_ip = host_node.lookup_ip_address_with_dns_query(name)
         vm_node = sshlib.CirrosNode(ovirtmgmt_ip, VM_PASSWORD, VM_USERNAME)
-        vm_node.assign_ip_with_dhcp_client(ETH1)
+        vm_node.assign_ip_with_dhcp_client(PORT_ISOLATED_VNIC)
         vms_ovirtmgmt_ip.append(ovirtmgmt_ip)
     yield vms_ovirtmgmt_ip
 
@@ -92,7 +92,7 @@ def vms_up_on_same_host(system, default_cluster, cirros_template,
             )
             vm_vnic1 = netlib.Vnic(vm)
             vm_vnic1.create(
-                name=VNIC1_NAME,
+                name=PORT_ISOLATED_VNIC,
                 vnic_profile=port_isolation_network.vnic_profile(),
             )
             vm.wait_for_down_status()

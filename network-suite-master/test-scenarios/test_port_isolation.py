@@ -32,28 +32,21 @@ VM0_NAME = 'test_port_isolation_vm_0'
 VM1_NAME = 'test_port_isolation_vm_1'
 VNIC0_NAME = 'eth0'
 PORT_ISOLATED_VNIC = 'eth1'
-PORT_ISOLATION_NET = 'test_isolated'
+PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
 PING_FAILED = '100% packet loss'
 
 
-def test_ping_to_external_port_succeeds(vms_ovirtmgmt_ip):
-    for ip in vms_ovirtmgmt_ip:
-        vm_node = sshlib.Node(ip, VM_PASSWORD, VM_USERNAME)
+def test_ping_to_external_port_succeeds(vm_nodes, isolated_vnics_up_with_ip):
+    for vm_node in vm_nodes:
         vm_node.ping4('8.8.8.8', PORT_ISOLATED_VNIC)
 
 
-def test_ping_to_isolated_port_fails(vms_ovirtmgmt_ip):
-    vm_node0 = sshlib.Node(vms_ovirtmgmt_ip[0], VM_PASSWORD, VM_USERNAME)
-    vm_node1 = sshlib.Node(vms_ovirtmgmt_ip[1], VM_PASSWORD, VM_USERNAME)
-    vm1_port_isolated_ip = vm_node1.get_ipv4_of_interface(PORT_ISOLATED_VNIC)
-    try:
-        vm_node0.ping4(vm1_port_isolated_ip, PORT_ISOLATED_VNIC)
-        raise PingSucceededException
-    except sshlib.SshException as err:
-        if PING_FAILED not in str(err):
-            raise
+def test_ping_to_isolated_port_fails(vm_nodes, isolated_vnics_up_with_ip):
+    vm1_isolated_ip = vm_nodes[1].get_ipv4_of_interface(PORT_ISOLATED_VNIC)
+    with pytest.raises(sshlib.SshException, match=PING_FAILED):
+        vm_nodes[0].ping4(vm1_isolated_ip, PORT_ISOLATED_VNIC)
 
 
 @pytest.fixture(scope='module')
@@ -62,10 +55,20 @@ def vms_ovirtmgmt_ip(host_1_up, vms_up_on_same_host):
     host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
     for name in [VM0_NAME, VM1_NAME]:
         ovirtmgmt_ip = host_node.lookup_ip_address_with_dns_query(name)
-        vm_node = sshlib.CirrosNode(ovirtmgmt_ip, VM_PASSWORD, VM_USERNAME)
-        vm_node.assign_ip_with_dhcp_client(PORT_ISOLATED_VNIC)
         vms_ovirtmgmt_ip.append(ovirtmgmt_ip)
-    yield vms_ovirtmgmt_ip
+    return vms_ovirtmgmt_ip
+
+
+@pytest.fixture(scope='module')
+def vm_nodes(vms_ovirtmgmt_ip):
+    return (sshlib.CirrosNode(vms_ovirtmgmt_ip[0], VM_PASSWORD, VM_USERNAME),
+            sshlib.CirrosNode(vms_ovirtmgmt_ip[1], VM_PASSWORD, VM_USERNAME))
+
+
+@pytest.fixture(scope='module')
+def isolated_vnics_up_with_ip(vm_nodes):
+    for vm_node in vm_nodes:
+        vm_node.assign_ip_with_dhcp_client(PORT_ISOLATED_VNIC)
 
 
 @pytest.fixture(scope='module')

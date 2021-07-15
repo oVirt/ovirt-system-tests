@@ -149,25 +149,28 @@ class Node(object):
                               f'{target}')
         self.exec_command(cmd)
 
-    def ping4(self, target_ipv4, iface_name):
+    def ping(self, target_ip, iface_name):
         """
-        Ping a v4 ip address via the specified interface
-        :param target_ipv4: str
+        Ping an ip address via the specified interface
+        :param target_ip: str
         :param iface_name: str
         """
-        self.exec_command(f'ping -4 -c 1 -I {iface_name} {target_ipv4}')
+        version = ipaddress.ip_address(target_ip).version
+        self.exec_command(f'ping -{version} -c 1 -I {iface_name} {target_ip}')
 
-    def get_ipv4_of_interface(self, interface):
+    def get_global_ip(self, iface_name, ip_version):
         """
-        :param interface: str
-        :return: ipv4 address as a string
+        :param str iface_name: interface name
+        :param str ip_version: '4' or '6'
+        :return: ipv4 or global ipv6 address as string
         """
-        return self.exec_command(
-            f"ip -4 -o addr show {interface}|awk '{{print $4}}'"
-            "|cut -d '/' -f 1"
-        ).decode('utf-8').strip()
+        cmd = (f"ip -{ip_version} -o addr show {iface_name}"
+               f" |awk '{{print $4}}' |cut -d '/' -f 1")
+        if ip_version == '6':
+            cmd += ' |grep -v fe80'
+        return self.exec_command(cmd).decode('utf-8').strip()
 
-    def lookup_ip_address_with_dns_query(self, hostname):
+    def lookup_ip_address_with_dns_query(self, hostname, ip_version):
         """
         Wait for the ip address to update in the dns lookup
         :param hostname: str
@@ -175,17 +178,18 @@ class Node(object):
         """
         return syncutil.sync(
             exec_func=self._lookup_ip_address_with_dns_query,
-            exec_func_args=(hostname,),
+            exec_func_args=(hostname, ip_version),
             success_criteria=lambda ip: ip != '',
             timeout=TIMEOUT
         )
 
-    def _lookup_ip_address_with_dns_query(self, hostname):
+    def _lookup_ip_address_with_dns_query(self, hostname, ip_version):
         """
         :param hostname: str
         :return: ipv4 address as a string
         """
-        cmd = f'dig +short {hostname}'
+        record_type = 'AAAA' if ip_version == '6' else 'A'
+        cmd = f'dig +short {hostname} {record_type}'
         return self.exec_command(cmd).decode('utf-8').strip()
 
     def global_replace_str_in_file(self, old, new, filename):
@@ -211,7 +215,7 @@ class CirrosNode(Node):
 
     def assign_ip_with_dhcp_client(self, iface_name):
         """
-        run dhcp client to assign an ipv4 address for the specified interface
-        :param iface_name: str
+        run dhcp client to assign an ip addresses for the specified interface
+        :param str iface_name: interface name
         """
         self.exec_command(f'sudo /sbin/cirros-dhcpc up {iface_name}')

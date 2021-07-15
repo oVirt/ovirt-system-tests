@@ -27,6 +27,7 @@ from ovirtlib import netlib
 from ovirtlib import sshlib
 from ovirtlib import virtlib
 
+from testlib import suite
 
 VM0_NAME = 'test_port_isolation_vm_0'
 VM1_NAME = 'test_port_isolation_vm_1'
@@ -36,18 +37,24 @@ PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
 PING_FAILED = '100% packet loss'
+EXTERNAL_IP = {
+    'inet': '8.8.8.8',
+    'inet6': '2001:4860:4860::8888'
+}
 
 
+@pytest.mark.xfail(suite.af().is6,
+                   reason='CI does not provide external ipv6 connectivity')
 def test_ping_to_external_port_succeeds(vm_nodes, isolated_vnics_up_with_ip):
     for vm_node in vm_nodes:
-        vm_node.ping4('8.8.8.8', PORT_ISOLATED_VNIC)
+        vm_node.ping(EXTERNAL_IP[suite.af().family], PORT_ISOLATED_VNIC)
 
 
 def test_ping_to_isolated_port_fails(vm_nodes, isolated_vnics_up_with_ip):
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[0].ping4(isolated_vnics_up_with_ip[1], PORT_ISOLATED_VNIC)
+        vm_nodes[0].ping(isolated_vnics_up_with_ip[1], PORT_ISOLATED_VNIC)
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[1].ping4(isolated_vnics_up_with_ip[0], PORT_ISOLATED_VNIC)
+        vm_nodes[1].ping(isolated_vnics_up_with_ip[0], PORT_ISOLATED_VNIC)
 
 
 @pytest.fixture(scope='module')
@@ -55,7 +62,9 @@ def vms_ovirtmgmt_ip(host_1_up, vms_up_on_same_host):
     vms_ovirtmgmt_ip = []
     host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
     for name in [VM0_NAME, VM1_NAME]:
-        ovirtmgmt_ip = host_node.lookup_ip_address_with_dns_query(name)
+        ovirtmgmt_ip = host_node.lookup_ip_address_with_dns_query(
+            name, suite.af().version
+        )
         vms_ovirtmgmt_ip.append(ovirtmgmt_ip)
     return vms_ovirtmgmt_ip
 
@@ -71,7 +80,7 @@ def isolated_vnics_up_with_ip(vm_nodes):
     ips = []
     for vm_node in vm_nodes:
         vm_node.assign_ip_with_dhcp_client(PORT_ISOLATED_VNIC)
-        ip = vm_node.get_ipv4_of_interface(PORT_ISOLATED_VNIC)
+        ip = vm_node.get_global_ip(PORT_ISOLATED_VNIC, suite.af().version)
         ips.append(ip)
     return ips
 
@@ -118,7 +127,9 @@ def port_isolation_network(default_data_center, default_cluster, host_1_up):
         PORT_ISOLATION_NET, default_data_center, default_cluster,
         port_isolation=True
     ) as network:
-        attach_data = netattachlib.NetworkAttachmentData(network, ETH1)
+        attach_data = netattachlib.NetworkAttachmentData(
+            network, ETH1, (netattachlib.DYNAMIC_IP_ASSIGN[suite.af().family],)
+        )
         with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
             yield network
 

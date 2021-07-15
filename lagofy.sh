@@ -19,7 +19,7 @@ check_dependencies() {
         echo "Can not connect to libvirt. Fix it!"
         return 6
     }
-    [[ $(id -G |tr \  "\n" | grep "^$(id -g qemu)$" | wc -l) -ne 1 ]] && {
+    [[ $(id -G |tr \  "\n" | grep "^$(id -g qemu)$" | wc -l) -ne 1 && $(id -g) -ne 0 ]] && {
         echo "Add your group to qemu's group: \"usermod -a -G qemu $(id -ng)\""
         return 7
     }

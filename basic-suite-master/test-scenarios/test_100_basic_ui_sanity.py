@@ -424,6 +424,17 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
     vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
 
     assert vm_vgpu_dialog.get_title() == 'Manage vGPU'
+
+    vgpu_table_row_1_data = vm_vgpu_dialog.get_row_data(1)
+    assert vgpu_table_row_1_data[2] == 'nvidia-11'
+    assert vgpu_table_row_1_data[3] == 'GRID M10-2B'
+    assert vgpu_table_row_1_data[4] == '2'
+    assert vgpu_table_row_1_data[5] == '45'
+    assert vgpu_table_row_1_data[6] == '4096x2160'
+    assert vgpu_table_row_1_data[7] == '2048M'
+    assert vgpu_table_row_1_data[8] == '4'
+    assert vgpu_table_row_1_data[9] == '0'
+
     save_screenshot('vms-vgpu')
 
     vm_vgpu_dialog.cancel()

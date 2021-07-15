@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import hooking
 
@@ -14,52 +14,39 @@ def createParams():
             "product_id" : "0x13ba",
             "mdev" : {
                 "nvidia-11" : {
+                    "name" : "GRID M10-2B",
                     "available_instances" : 2,
                     "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
                 },
 		"nvidia-12" : {
-                    "available_instances" : 2,
+                    "name" : "GRID M10-2C",
+                    "available_instances" : 0,
                     "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
                 },
 		"nvidia-13" : {
-                    "available_instances" : 2,
+                    "name" : "GRID M10-4B",
+                    "available_instances" : 3,
                     "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
                 },
 		"nvidia-14" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
+                    "name" : "GRID M10-5C",
+                    "available_instances" : 16,
+                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=16"
                 },
 		"nvidia-21" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
+                    "name" : "GRID C10-2B",
+                    "available_instances" : 16,
+                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=16"
                 },
 		"nvidia-22" : {
+                    "name" : "GRID C13-2B",
                     "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
-                },
-		"nvidia-23" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
-                },
-		"nvidia-24" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
-                },
-		"nvidia-25" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
-                },
-		"nvidia-257" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
-                },
-		"nvidia-258" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
+                    "description" : "num_heads=1, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
                 },
 		"nvidia-259" : {
-                    "available_instances" : 2,
-                    "description" : "num_heads=2, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
+                    "name" : "GRID M10-5O",
+                    "available_instances" : 1,
+                    "description" : "num_heads=4, frl_config=45, framebuffer=2048M, max_resolution=4096x2160, max_instance=4"
                 }
             }
         }

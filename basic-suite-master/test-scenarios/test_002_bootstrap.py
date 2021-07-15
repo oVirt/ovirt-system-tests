@@ -165,7 +165,7 @@ _TEST_LIST = [
     "test_verify_add_all_hosts",
     "test_complete_hosts_setup",
     "test_get_host_devices",
-    "test_get_host_hooks",
+    "test_get_host_hook",
     "test_get_host_stats",
     "test_add_secondary_storage_domains",
     "test_resize_and_refresh_storage_domain",
@@ -975,17 +975,26 @@ def test_get_host_devices(hosts_service, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_get_host_hooks(hosts_service, ost_dc_name):
+def test_get_host_hook(hosts_service, ost_dc_name, ansible_hosts, root_dir):
+    # add hook to host
+    hook_full_path = os.path.join(
+            root_dir,
+            'common/test-scenarios-files/vds_hooks/add_mdevs.py')
+    ansible_hosts.copy(
+            src=hook_full_path,
+            dest='/usr/libexec/vdsm/hooks/after_hostdev_list_by_caps',
+            mode='preserve')
+
+    # refresh host capabilities
     host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    host_service.refresh()
+
+    # get and assert the hooks
     hooks_service = host_service.hooks_service()
     hooks = sorted(hooks_service.list(), key=lambda hook: hook.name)
-    hooks_list = ''
-    for hook in hooks:
-        if hook.name == '50_vhostmd':
-            return True
-        else:
-            hooks_list += (hook.name + '; ')
-    raise RuntimeError('could not find 50_vhostmd hook in host hooks: {0}'.format(hooks_list))
+    hooks_list = ''.join(f'{hook.name};' for hook in hooks)
+
+    assert 'add_mdevs' in hooks_list
 
 
 @order_by(_TEST_LIST)

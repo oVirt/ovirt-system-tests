@@ -61,18 +61,27 @@ class VmVgpuDialog(Displayable):
         super(VmVgpuDialog, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        dialog_displayed = self.ovirt_driver.driver.find_element_by_css_selector('.modal-dialog,.pf-c-modal-box').is_displayed()
-        title_displayed = self.ovirt_driver.driver.find_element_by_css_selector('h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title').is_displayed()
-        return dialog_displayed and title_displayed
+        dialog_displayed = self.ovirt_driver.driver.find_element_by_css_selector(
+                '.modal-dialog,.pf-c-modal-box').is_displayed()
+        spinner_displayed = self.ovirt_driver.is_xpath_displayed(
+                '//div[contains(@class, "spinner")]')
+        return dialog_displayed and not spinner_displayed
 
     def get_displayable_name(self):
         return 'Manage vGPU dialog'
 
     def get_title(self):
-        return self.ovirt_driver.driver.find_element_by_css_selector('h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title').text
+        return self.ovirt_driver.driver.find_element_by_css_selector(
+                'h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title').text
+
+    def get_row_data(self, row_index):
+        row_tds = self.ovirt_driver.driver.find_elements_by_xpath(
+                f'//table[contains(@class, "vgpu-table")]/tbody[{row_index}]/tr/td')
+        return list(map(lambda td: td.text, row_tds))
 
     def cancel(self):
         LOGGER.debug('Cancel vGPU dialog')
-        self.ovirt_driver.driver.find_element_by_xpath('//div[@class="modal-footer"]//button[. = "Cancel"]|//div[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]|//footer[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]').click()
+        self.ovirt_driver.driver.find_element_by_xpath(
+                '//div[@class="modal-footer"]//button[. = "Cancel"]|//div[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]|//footer[@class="pf-c-modal-box__footer"]//button[contains(@class,"pf-m-link")]').click()
         self.wait_for_not_displayed()
 

@@ -1,0 +1,19 @@
+<network>
+  <metadata comment="@NET_TYPE@"/>
+  <name>@NET_NAME@</name>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='@NET_NAME@' stp='on' delay='0'/>
+  <domain name='lago.local' localOnly='yes'/>
+  @DNS@
+  <ip address='192.168.@SUBNET@.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.@SUBNET@.100' end='192.168.@SUBNET@.254'/>
+      @IPV4@
+    </dhcp>
+  </ip>
+</network>
+

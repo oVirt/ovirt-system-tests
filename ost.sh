@@ -4,7 +4,7 @@ help() {
 echo "
 $0 command [arguments]
 
-run <suite> <distro> [<pytest args>...]
+run [-4|-6] <suite> <distro> [<pytest args>...]
     initializes the workspace with preinstalled distro ost-images, launches VMs and runs the whole suite
     add extra repos with --custom-repo=url
     skip check that extra repo is actually used with --skip-custom-repos-check
@@ -25,9 +25,10 @@ source lagofy.sh
 cmd=$1; shift
 case "$cmd" in
   run)
+    [[ "$1" =~ ^-4$|^-6$ ]] && { ipv=$1; shift; }
     suite=$1; shift
     distro=$1; shift
-    ost_init $suite $distro || exit 1
+    ost_init $ipv $suite $distro || exit 1
     ost_run_tests $@ || exit 1
     ;;
   status)

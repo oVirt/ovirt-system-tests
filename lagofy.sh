@@ -45,7 +45,7 @@ ost_destroy() {
   unset OST_INITIALIZED
 }
 
-# ost_init [suite] [distro]
+# ost_init [-4|-6] [suite] [distro]
 ost_init() {
 
   # _generate_network "host-1-eth1 host-1-eth2 host-2-eth1..."
@@ -127,11 +127,13 @@ declare -A nicidx_map=()
 declare -A nicip_map=()
 declare -A eth_map=()
 ansible_hosts=
+ipv4_only=; ipv6_only=
+[[ "$1" == "-4" ]] && { ipv4_only=yes; shift; }
+[[ "$1" == "-6" ]] && { ipv6_only=yes; shift; }
 
-SUITE=${SUITE:=${OST_REPO_ROOT}/${1:-basic-suite-master}}
+SUITE="${OST_REPO_ROOT}/${1:-basic-suite-master}"
 SUITE_NAME="${SUITE##*/}"
-OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:=${2:-el8stream}}
-ipv6_only=
+OST_IMAGES_DISTRO="${2:-el8stream}"
 
 [[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
 [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
@@ -162,6 +164,8 @@ ost_conf="$SUITE/ost.json"
   # parse networks and create them on unused subnets
   for NET_TYPE in $(jqr ".networks | keys | join(\" \")"); do
     net_template=$(jqr ".networks[\"${NET_TYPE}\"].template")
+    [[ "$ipv4_only" ]] && net_template+=".ipv4"
+    [[ "$ipv6_only" ]] && net_template+=".ipv6"
     host_nics=$(jqr ".networks[\"${NET_TYPE}\"].nics[]" | tr '\n' ' ')
     [[ -n "$(jqr ".networks[\"${NET_TYPE}\"].is_management // empty")" ]] && management_net=$NET_TYPE
     [[ -r "$net_template" ]] || { echo "net $NET_TYPE: template $net_template does not exist"; return 1; }

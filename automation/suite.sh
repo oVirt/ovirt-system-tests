@@ -8,6 +8,10 @@
 # or
 # $ chrooter -s automation/basic_suite_4.0.sh
 #
+# OR
+#
+# on a bare metal host that has been set up with setup_for_ost.sh
+# In that case it uses lagofy.sh instead of run_suite.sh
 
 source common/helpers/python.sh
 
@@ -19,6 +23,13 @@ SUITE=${SUITE##*/}
 SUITE=${SUITE%.*}
 
 echo "Running suite: $SUITE"
+
+if [[ "${RUNNING_IN_PSI}" == "true" ]]; then
+    # $distro is passed from stdci, not a good idea to depend on it, but there's currently no other way how to choose which ost-image to use
+    echo "Distro: ${distro:=el8stream}"
+    { source lagofy.sh $SUITE && lago_init /usr/share/ost-images/${distro}-engine-installed.qcow2 && run_tests; } &> exported-artifacts/ost_run_tests.log
+    exit $?
+fi
 
 SUITE_REAL_PATH=$(realpath "$SUITE")
 

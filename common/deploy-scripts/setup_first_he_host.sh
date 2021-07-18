@@ -8,17 +8,7 @@ shift
 
 DOMAIN=$(dnsdomainname)
 MYHOSTNAME="$(hostname | sed s/_/-/g)"
-STORAGEHOSTNAME="${HOSTEDENGINE/engine/storage}"
-VMPASS=123456
-ENGINEPASS=123456
 HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
-INTERFACE=eth0
-PREFIX=24
-HEGW=$(\
-    /sbin/ip -4 -o addr show dev ${INTERFACE} scope global \
-    | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}'\
-    | awk -F/ '{print $1}' \
-)
 
 # This is needed in case we're using prebuilt ost-images.
 # In this scenario ssh keys are baked in to the qcows (so lago
@@ -90,25 +80,10 @@ copy_dependencies
 
 add_he_to_hosts
 
-sed \
-    -e "s,@GW@,${HEGW},g" \
-    -e "s,@ADDR@,${HEADDR},g" \
-    -e "s,@VMPASS@,${VMPASS},g" \
-    -e "s,@ENGINEPASS@,${ENGINEPASS},g" \
-    -e "s,@DOMAIN@,${DOMAIN},g" \
-    -e "s,@MYHOSTNAME@,${MYHOSTNAME}.${DOMAIN},g" \
-    -e "s,@HOSTEDENGINE@,${HOSTEDENGINE},g" \
-    -e "s,@STORAGEHOSTNAME@,${STORAGEHOSTNAME},g" \
-    -e "s,@INTERFACE@,${INTERFACE},g" \
-    -e "s,@PREFIX@,${PREFIX},g" \
-    -e "s,@HE_MAC_ADDRESS@,${HE_MAC_ADDRESS},g" \
-    < /root/hosted-engine-deploy-answers-file.conf.in \
-    > /root/hosted-engine-deploy-answers-file.conf
-
 fstrim -va
 rm -rf /var/cache/yum/*
 # TODO currently we only pass IPv4 for HE and that breaks on dual stack since host-0 resolves to IPv6 and the setup code gets confused
-hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf --ansible-extra-vars=he_force_ip4=true
+hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."

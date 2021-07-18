@@ -12,6 +12,7 @@ from ost_utils import he_utils
 
 from ost_utils.pytest import pytest_collection_modifyitems
 
+from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.artifacts import *
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.backend import *
@@ -117,4 +118,5 @@ def engine_ips_for_network(engine_ip):  # pylint: disable=function-redefined
 def engine_ip(
     he_ipv4_address, he_ipv6_address
 ):  # pylint: disable=function-redefined
-    return he_ipv4_address or he_ipv6_address
+    # Follow the DNS resolution preferring IPv6
+    return he_ipv6_address or he_ipv4_address

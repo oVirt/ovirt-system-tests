@@ -6,6 +6,7 @@
 import ipaddress
 import os
 import random
+import tempfile
 
 import pytest
 
@@ -118,7 +119,67 @@ def he_interface(ansible_host0_facts):
 
 @pytest.fixture(scope="session")
 def he_ip_address(he_ipv4_address, he_ipv6_address):
-# This follows the same preference as DNS resolution
+    # This follows the same preference as DNS resolution
     if he_ipv6_address:
         return he_ipv6_address
     return he_ipv4_address
+
+
+@pytest.fixture(scope="session")
+def he_engine_answer_file_contents(
+    he_host_name,
+    he_domain_name,
+    he_interface,
+    management_gw_ip,
+    host0_hostname,
+    storage_hostname,
+    he_mac_address,
+    he_ip_address,
+    he_ip_prefix,
+    engine_password,
+    root_password,
+):
+    return (
+        '[environment:init]\n'
+        'DIALOG/autoAcceptDefault=bool:True\n'
+        '[environment:default]\n'
+        'OVEHOSTED_CORE/screenProceed=bool:True\n'
+        'OVEHOSTED_CORE/deployProceed=bool:True\n'
+        'OVEHOSTED_CORE/confirmSettings=bool:True\n'
+        'OVEHOSTED_CORE/skipTTYCheck=bool:True\n'
+        f'OVEHOSTED_NETWORK/fqdn=str:{he_host_name}.{he_domain_name}\n'
+        f'OVEHOSTED_NETWORK/bridgeIf=str:{he_interface}\n'
+        'OVEHOSTED_NETWORK/firewallManager=str:iptables\n'
+        f'OVEHOSTED_NETWORK/gateway=str:{management_gw_ip}\n'
+        f'OVEHOSTED_ENGINE/adminPassword=str:{engine_password}\n'
+        f'OVEHOSTED_ENGINE/appHostName=str:{host0_hostname}.'
+        f'{he_domain_name}\n'
+        'OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter\n'
+        'OVEHOSTED_STORAGE/domainType=str:nfs3\n'
+        'OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage\n'
+        f'OVEHOSTED_STORAGE/storageDomainConnection=str:'
+        f'{storage_hostname}:/exports/nfs_he\n'
+        'OVEHOSTED_VM/vmMemSizeMB=int:3171\n'
+        'OVEHOSTED_CORE/memCheckRequirements=bool:False\n'
+        f'OVEHOSTED_VM/vmMACAddr=str:{he_mac_address}\n'
+        'OVEHOSTED_VM/vmVCpus=str:2\n'
+        f'OVEHOSTED_VM/cloudinitInstanceDomainName=str:{he_domain_name}\n'
+        f'OVEHOSTED_VM/cloudinitInstanceHostName=str:{he_host_name}.'
+        f'{he_domain_name}\n'
+        f'OVEHOSTED_VM/cloudinitVMStaticCIDR=str:{he_ip_address}'
+        f'/{he_ip_prefix}\n'
+        f'OVEHOSTED_VM/cloudinitRootPwd=str:{root_password}\n'
+        'OVEHOSTED_VM/cloudinitVMETCHOSTS=bool:True\n'
+        f'OVEHOSTED_VM/cloudinitVMDNS=str:{management_gw_ip}\n'
+        'OVEHOSTED_VM/rootSshAccess=str:yes\n'
+        'OVEHOSTED_VM/rootSshPubkey=str:\n'
+        'OVEHOSTED_VDSM/cpu=str:model_SandyBridge\n'
+    )
+
+
+@pytest.fixture(scope="session")
+def he_engine_answer_file_path(he_engine_answer_file_contents):
+    with tempfile.NamedTemporaryFile(mode="w+t") as tmp:
+        tmp.writelines(he_engine_answer_file_contents)
+        tmp.flush()
+        yield tmp.name

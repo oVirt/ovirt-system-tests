@@ -31,10 +31,6 @@ import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 import pytest
 
-import test_utils
-from test_utils import network_utils_v4
-from test_utils import constants
-
 from ost_utils import assertions
 from ost_utils import backend
 from ost_utils import engine_object_names
@@ -50,6 +46,7 @@ from ost_utils.storage_utils import glance
 from ost_utils.storage_utils import lun
 from ost_utils.storage_utils import nfs
 from ost_utils import shell
+from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
 

@@ -27,9 +27,9 @@ from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOpti
 import json
 
 import pytest
-import test_utils
-from test_utils import network_utils_v4, assert_finished_within_long
 from ost_utils import assertions
+from ost_utils import network_utils
+from ost_utils import test_utils
 
 
 DC_NAME = 'test-dc'
@@ -67,11 +67,11 @@ def all_hosts_hostnames(system_service):
 
 @pytest.fixture(scope="module")
 def prepare_migration_vlan(system_service):
-    assert network_utils_v4.set_network_usages_in_cluster(
+    assert network_utils.set_network_usages_in_cluster(
         system_service, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
-    assert network_utils_v4.set_network_mtu(
+    assert network_utils.set_network_mtu(
         system_service, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
 
 
@@ -92,7 +92,7 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
     LOGGER.debug('source host: {}'.format(src_host))
     LOGGER.debug('destination host: {}'.format(dst_host))
 
-    assert_finished_within_long(
+    test_utils.assert_finished_within_long(
         vm_service.migrate,
         system_service,
         host=Host(name=dst_host)
@@ -124,11 +124,11 @@ def prepare_migration_attachments_ipv4(system_service):
 
         ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
 
-        ip_configuration = network_utils_v4.create_static_ip_configuration(
+        ip_configuration = network_utils.create_static_ip_configuration(
             ipv4_addr=ip_address,
             ipv4_mask=MIGRATION_NETWORK_IPv4_MASK)
 
-        network_utils_v4.attach_network_to_host(
+        network_utils.attach_network_to_host(
             host_service, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
 
         actual_address = next(nic for nic in host_service.nics_service().list()
@@ -149,11 +149,11 @@ def prepare_migration_attachments_ipv6(system_service):
 
         ip_address = MIGRATION_NETWORK_IPv6_ADDR.format(index)
 
-        ip_configuration = network_utils_v4.create_static_ip_configuration(
+        ip_configuration = network_utils.create_static_ip_configuration(
             ipv6_addr=ip_address,
             ipv6_mask=MIGRATION_NETWORK_IPv6_MASK)
 
-        network_utils_v4.modify_ip_config(
+        network_utils.modify_ip_config(
             system_service, host_service, MIGRATION_NETWORK, ip_configuration)
 
         actual_address = next(nic for nic in host_service.nics_service().list()

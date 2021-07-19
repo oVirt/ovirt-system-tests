@@ -22,10 +22,9 @@ import functools
 
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
-import test_utils
-from test_utils import network_utils_v4
-
 from ost_utils import assertions
+from ost_utils import network_utils
+from ost_utils import test_utils
 from ost_utils import utils
 
 
@@ -37,7 +36,7 @@ LABELED_NET_VLAN_ID = 600
 
 def _host_is_attached_to_network(engine, host, network_name, dc_name):
     try:
-        network_utils_v4.get_network_attachment(
+        network_utils.get_network_attachment(
             engine, host, network_name, dc_name)
     except StopIteration:  # there is no attachment of the network to the host
         return False

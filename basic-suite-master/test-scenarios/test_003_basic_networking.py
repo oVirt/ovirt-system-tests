@@ -22,13 +22,12 @@ from __future__ import absolute_import
 
 import ipaddress
 
+from ost_utils import network_utils
+from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils.pytest.fixtures.network import bonding_network_name
 from ost_utils.pytest.fixtures.network import management_network_name
 from ovirtsdk4.types import Bonding, HostNic, Option, VnicProfile, VnicPassThrough, VnicPassThroughMode
-
-import test_utils
-from test_utils import network_utils_v4
 
 
 # DC/Cluster
@@ -55,7 +54,7 @@ MIGRATION_NETWORK_IPv6_MASK = '64'
 
 def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
     try:
-        attachment = network_utils_v4.get_network_attachment(
+        attachment = network_utils.get_network_attachment(
             engine, host, network_name, DC_NAME)
     except StopIteration:  # there is no attachment of the network to the host
         return False
@@ -74,13 +73,13 @@ def _attach_vm_network_to_host_static_config(api, network_name, host_num, backen
     host_service = engine.hosts_service().host_service(id=host.id)
 
     nic_name = backend.ifaces_for(host.name, network_name)[0]  # eth0
-    ip_configuration = network_utils_v4.create_static_ip_configuration(
+    ip_configuration = network_utils.create_static_ip_configuration(
         VM_NETWORK_IPv4_ADDR.format(host_num+1),
         VM_NETWORK_IPv4_MASK,
         VM_NETWORK_IPv6_ADDR.format(host_num+1),
         VM_NETWORK_IPv6_MASK)
 
-    network_utils_v4.attach_network_to_host(
+    network_utils.attach_network_to_host(
         host_service,
         nic_name,
         VM_NETWORK,
@@ -112,9 +111,9 @@ def test_modify_host_0_ip_to_dhcp(engine_api):
 
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)
-    ip_configuration = network_utils_v4.create_dhcp_ip_configuration()
+    ip_configuration = network_utils.create_dhcp_ip_configuration()
 
-    network_utils_v4.modify_ip_config(engine, host_service, VM_NETWORK,
+    network_utils.modify_ip_config(engine, host_service, VM_NETWORK,
                                       ip_configuration)
 
     # TODO: once the VLANs/dnsmasq issue is resolved,
@@ -128,9 +127,9 @@ def test_detach_vm_network_from_host_0(engine_api):
     host = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)[0]
     host_service = engine.hosts_service().host_service(id=host.id)
 
-    network_utils_v4.set_network_required_in_cluster(
+    network_utils.set_network_required_in_cluster(
         engine, VM_NETWORK, CLUSTER_NAME, False)
-    network_utils_v4.detach_network_from_host(engine, host_service, VM_NETWORK)
+    network_utils.detach_network_from_host(engine, host_service, VM_NETWORK)
 
     assert not _host_is_attached_to_network(engine, host_service, VM_NETWORK)
 
@@ -153,14 +152,14 @@ def test_bond_nics(engine_api, bonding_network_name, backend):
             name=BOND_NAME,
             bonding=Bonding(slaves=slaves, options=options))
 
-        ip_configuration = network_utils_v4.create_static_ip_configuration(
+        ip_configuration = network_utils.create_static_ip_configuration(
             MIGRATION_NETWORK_IPv4_ADDR.format(number),
             MIGRATION_NETWORK_IPv4_MASK,
             MIGRATION_NETWORK_IPv6_ADDR.format(number),
             MIGRATION_NETWORK_IPv6_MASK)
 
         host_service = engine.hosts_service().host_service(id=host.id)
-        network_utils_v4.attach_network_to_host(
+        network_utils.attach_network_to_host(
             host_service, BOND_NAME, MIGRATION_NETWORK, ip_configuration,
             [bond])
 
@@ -190,10 +189,10 @@ def test_remove_bonding(engine_api):
 
     def _remove_bonding(host):
         host_service = engine.hosts_service().host_service(id=host.id)
-        network_utils_v4.detach_network_from_host(
+        network_utils.detach_network_from_host(
             engine, host_service, MIGRATION_NETWORK, BOND_NAME)
 
-    network_utils_v4.set_network_required_in_cluster(engine, MIGRATION_NETWORK,
+    network_utils.set_network_required_in_cluster(engine, MIGRATION_NETWORK,
                                                      CLUSTER_NAME, False)
     utils.invoke_in_parallel(
         _remove_bonding, test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME))

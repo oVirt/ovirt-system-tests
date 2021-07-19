@@ -32,10 +32,12 @@ import pytest
 
 from ost_utils import ansible
 from ost_utils import assertions
+from ost_utils import constants
 from ost_utils import engine_utils
 from ost_utils import host_utils
 from ost_utils.shell import shell
 from ost_utils import ssh
+from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
 from ost_utils.pytest import order_by
@@ -46,9 +48,6 @@ from ost_utils.pytest.fixtures.vm import *
 from ost_utils.storage_utils import backup
 
 import ovirtsdk4.types as types
-
-import test_utils
-from test_utils import constants
 
 import uuid
 

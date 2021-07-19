@@ -32,12 +32,9 @@ import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 import pytest
 
-import test_utils
-from test_utils import network_utils_v4
-from test_utils import constants
-
 from ost_utils import assertions
 from ost_utils import backend
+from ost_utils import constants
 from ost_utils import engine_object_names
 from ost_utils import engine_utils
 from ost_utils import general_utils
@@ -46,12 +43,14 @@ from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.pytest.fixtures.virt import *
+from ost_utils import network_utils
 from ost_utils.selenium.grid.common import http_proxy_disabled
 from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
 from ost_utils.storage_utils import lun
 from ost_utils.storage_utils import nfs
 from ost_utils import shell
+from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
 
@@ -304,7 +303,7 @@ def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default cluster')
     engine = engine_api.system_service()
     clusters_service = engine.clusters_service()
-    provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
+    provider_id = network_utils.get_default_ovn_provider_id(engine)
     with engine_utils.wait_for_event(engine, 809):
         assert clusters_service.add(
             sdk4.types.Cluster(
@@ -743,7 +742,7 @@ def test_add_quota_cluster_limits(engine_api, ost_dc_name):
 def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
 
-    network = network_utils_v4.create_network_params(
+    network = network_utils.create_network_params(
         VM_NETWORK,
         ost_dc_name,
         description='VM Network (originally on VLAN {})'.format(
@@ -764,7 +763,7 @@ def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
 def test_add_non_vm_network(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
 
-    network = network_utils_v4.create_network_params(
+    network = network_utils.create_network_params(
         MIGRATION_NETWORK,
         ost_dc_name,
         description='Non VM Network on VLAN 200, MTU 9000',

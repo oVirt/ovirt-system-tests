@@ -24,9 +24,8 @@ import pytest
 
 from ost_utils import he_utils
 from ost_utils import assertions
+from ost_utils import constants
 from ost_utils.ansible import AnsibleExecutionError
-
-from test_utils import constants
 
 
 def test_set_global_maintenance(ansible_host0):

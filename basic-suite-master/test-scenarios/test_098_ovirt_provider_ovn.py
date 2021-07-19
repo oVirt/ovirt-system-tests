@@ -29,10 +29,10 @@ import requests
 
 from ovirtsdk4 import types
 
-import test_utils
 from ost_utils import assertions
+from ost_utils import network_utils
+from ost_utils import test_utils
 from ost_utils import versioning
-from test_utils import network_utils_v4
 
 
 VM0_NAME = 'vm0'
@@ -425,7 +425,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 @versioning.require_version(4, 2)
 def test_use_ovn_provider(engine_api, engine_ip_url):
     engine = engine_api.system_service()
-    provider_id = network_utils_v4.get_default_ovn_provider_id(engine)
+    provider_id = network_utils.get_default_ovn_provider_id(engine)
 
     token_id = _get_auth_token(engine_ip_url)
 

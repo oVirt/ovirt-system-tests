@@ -33,9 +33,10 @@ from datetime import datetime
 
 import ovirtsdk4.types as types
 import pytest
-import test_utils
 
 from ost_utils import assertions
+from ost_utils import test_utils
+from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.grafana import *
@@ -53,7 +54,6 @@ from ost_utils.selenium.grid import CHROME_VERSION
 from ost_utils.selenium.grid import FIREFOX_VERSION
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
-from test_utils.constants import *
 
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotVisibleException,

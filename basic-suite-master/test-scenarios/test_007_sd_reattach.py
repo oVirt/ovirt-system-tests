@@ -21,14 +21,13 @@ from __future__ import absolute_import
 
 import ovirtsdk4
 
-import test_utils
-from test_utils.constants import FLOATING_DISK_NAME
 from ost_utils import assertions
 from ost_utils import engine_utils
+from ost_utils import test_utils
+from ost_utils.constants import FLOATING_DISK_NAME
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.sdk import *
-
-from test_utils.vnic_setup import VnicSetup
+from ost_utils.vnic_setup import VnicSetup
 
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'

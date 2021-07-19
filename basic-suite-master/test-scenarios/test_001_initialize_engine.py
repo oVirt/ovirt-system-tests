@@ -76,8 +76,6 @@ def test_engine_config(ansible_engine, engine_restart):
     ansible_engine.shell("engine-config --set VdsLocalDisksLowFreeSpace=400")
     ansible_engine.shell("engine-config --set OvfUpdateIntervalInMinutes=10")
     ansible_engine.shell("engine-config --set ServerRebootTimeout=120")
-    ansible_engine.shell(
-        "engine-config --set IsIncrementalBackupSupported=True --cver=4.4")
     ansible_engine.shell("engine-config --set ClientModeVncDefault=NoVnc")
 
     engine_restart()

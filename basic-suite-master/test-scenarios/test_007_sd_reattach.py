@@ -73,14 +73,18 @@ def test_deactivate_storage_domain(engine_api):
                 raise
             return False
 
+    def _is_deactivation_job_finished():
+        deactivation_job_statuses = engine_utils.get_jobs_statuses(engine, correlation_id)
+        return ((ovirtsdk4.types.JobStatus.FINISHED in deactivation_job_statuses) and
+                not (ovirtsdk4.types.JobStatus.STARTED in deactivation_job_statuses))
+
     assertions.assert_true_within_short(
         _deactivate_with_running_ovf_update_task)
 
     # Wait for the storage deactivation to be finished.
-    assertions.assert_equals_within_short(
-        lambda:
-        engine_utils.get_jobs_statuses(engine, correlation_id), {ovirtsdk4.types.JobStatus.FINISHED}
-    )
+    assertions.assert_true_within_short(
+        _is_deactivation_job_finished)
+
     assertions.assert_true_within_short(
         lambda:
         test_utils.get_attached_storage_domain(

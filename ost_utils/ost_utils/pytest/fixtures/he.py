@@ -102,3 +102,23 @@ def he_ip_prefix(backend, ansible_host0_facts):
         ansible_host0_facts.get("ansible_hostname")
     ][backend.management_network_name()][0]
     return 64 if ipaddress.ip_address(mgmt_ip).version == 6 else 24
+
+
+@pytest.fixture(scope="session")
+def he_domain_name(ansible_host0_facts):
+    return ansible_host0_facts.get('ansible_domain')
+
+
+@pytest.fixture(scope="session")
+def he_interface(ansible_host0_facts):
+    if ansible_host0_facts.get('ansible_default_ipv6'):
+        return ansible_host0_facts.get('ansible_default_ipv6').get('interface')
+    return ansible_host0_facts.get('ansible_default_ipv4').get('interface')
+
+
+@pytest.fixture(scope="session")
+def he_ip_address(he_ipv4_address, he_ipv6_address):
+# This follows the same preference as DNS resolution
+    if he_ipv6_address:
+        return he_ipv6_address
+    return he_ipv4_address

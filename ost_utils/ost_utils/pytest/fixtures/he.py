@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-
+import ipaddress
 import os
 import random
 
@@ -94,3 +94,11 @@ def ansible_he(
 @pytest.fixture(scope="session")
 def ansible_he_facts(ansible_he):
     return facts.Facts(ansible_he)
+
+
+@pytest.fixture(scope="session")
+def he_ip_prefix(backend, ansible_host0_facts):
+    mgmt_ip = backend.ip_mapping()[
+        ansible_host0_facts.get("ansible_hostname")
+    ][backend.management_network_name()][0]
+    return 64 if ipaddress.ip_address(mgmt_ip).version == 6 else 24

@@ -19,7 +19,6 @@
 #
 import configparser
 import http
-import io
 import time
 
 from contextlib import contextmanager
@@ -344,11 +343,11 @@ class VmGraphicsConsole(SDKSubEntity):
 
     @property
     def host(self):
-        return next(item[1] for item in self._config if item[0] == 'host')
+        return self._config.get('host')
 
     @property
     def port(self):
-        return next(item[1] for item in self._config if item[0] == 'port')
+        return self._config.get('port')
 
     def _get_parent_service(self, vm):
         return vm.service.graphics_consoles_service()
@@ -360,7 +359,7 @@ class VmGraphicsConsole(SDKSubEntity):
         _id = self._get_console_id(protocol)
         self.import_by_id(_id)
         parser = self._get_remote_viewer_file_parser()
-        self._config = parser.items('virt-viewer')
+        self._config = parser['virt-viewer']
 
     def _get_console_id(self, protocol):
         return next(gcs.id for gcs in self._parent_service.list()
@@ -369,7 +368,7 @@ class VmGraphicsConsole(SDKSubEntity):
     def _get_remote_viewer_file_parser(self):
         viewer_file = self._get_remote_viewer_file()
         parser = configparser.ConfigParser()
-        parser.readfp(io.BytesIO(viewer_file))
+        parser.read_string(viewer_file)
         return parser
 
     def _get_remote_viewer_file(self):

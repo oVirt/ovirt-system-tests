@@ -10,9 +10,9 @@ local-tmp=$LOCALTMP
 output=/dev/shm
 EOF
 
-# engine 4 resolves its FQDN
-NIC=$(ip route | awk '$1=="default" {print $5; exit}')
-ADDR=$(/sbin/ip -4 -o addr show dev $NIC | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1}')
+# add "engine" to /etc/hosts. This should be eliminated in favor of FQDN everywhere.
+# relies on eth0 being the management network.
+ADDR=$(/sbin/ip -o addr show dev eth0 scope global | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
 echo "$ADDR engine" >> /etc/hosts
 
 # if you want to add anything here, please try to preinstall it first

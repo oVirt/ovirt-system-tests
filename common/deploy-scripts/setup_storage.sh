@@ -69,12 +69,14 @@ install_deps() {
 
 
 setup_iscsi() {
-    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master). And in both cases these are assumed to be ipv4, ipv6-only suite should probably change that
+    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master).
     if [[ $(hostname) == *"-storage" ]]; then
-        IP=$(ip -4 addr show eth0 | grep -oP "(?<=inet ).*(?=/)")
+        NIC=eth0
     else
-        IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet ).*(?=/)")
+        NIC=eth1
     fi
+    IP=$(/sbin/ip -o addr show dev $NIC scope global | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
+
     pvcreate --zero n /dev/${ISCSI_DEV}
     vgcreate --zero n vg1_storage /dev/${ISCSI_DEV}
     targetcli /iscsi create iqn.2014-07.org.ovirt:storage
@@ -166,15 +168,11 @@ install_deps_389ds() {
 }
 
 setup_389ds() {
-    DOMAIN=lago.local
+    DOMAIN=$(dnsdomainname)
     PASSWORD=12345678
-    HOSTNAME=$(hostname | sed s/_/-/g)."$DOMAIN"
-    NIC=$(ip route |awk '$1=="default" {print $5; exit}')
-    ADDR=$(\
-      /sbin/ip -4 -o addr show dev $NIC \
-      | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
-      | awk -F/ '{print $1}'\
-    )
+    HOSTNAME=$(sed -E "s/(.${DOMAIN})?$/.${DOMAIN}/" <<<$(hostname))
+    # assumes eth0 is the management network, that works both for basic suite and HE suites where there is a single eth0 for both storage and management
+    ADDR=$(/sbin/ip -o addr show dev eth0 scope global | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
     cat >> answer_file.inf <<EOC
 [General]
 FullMachineName= @HOSTNAME@

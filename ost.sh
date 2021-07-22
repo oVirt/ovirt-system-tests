@@ -26,9 +26,9 @@ cmd=$1; shift
 case "$cmd" in
   run)
     suite=$1; shift
-    distro=$2; shift
+    distro=$1; shift
     ost_init $suite $distro || exit 1
-    ost_run_tests $@
+    ost_run_tests $@ || exit 1
     ;;
   status)
     ost_status

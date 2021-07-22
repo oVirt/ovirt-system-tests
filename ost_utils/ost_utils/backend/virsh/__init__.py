@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ from ost_utils import memoized
 from ost_utils import shell
 
 
-class OstBackend(base.BaseBackend):
+class VirshBackend(base.BaseBackend):
 
     def __init__(self, prefix_path):
         self._prefix_path = prefix_path

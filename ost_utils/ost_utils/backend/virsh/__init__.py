@@ -19,14 +19,12 @@
 #
 
 import ipaddress
-import json
 import os
 import xml.etree.ElementTree as ET
 
 from collections import namedtuple
 
 from ost_utils.backend import base
-from ost_utils import memoized
 from ost_utils.shell import shell
 
 
@@ -52,14 +50,13 @@ class VirshBackend(base.BaseBackend):
         self._vms = self._get_vms(self._uuid, networks)
 
     def iface_mapping(self):
-        status = self._status()
-
         mapping = {}
 
-        for vm_name, vm_desc in status["VMs"].items():
+        for vm_name, vm_info in self._vms.items():
             networks = mapping.setdefault(vm_name, {})
-            for nic_name, nic_desc in vm_desc["NICs"].items():
-                networks.setdefault(nic_desc, []).append(nic_name)
+            for nic_name, nic_info in vm_info.nics.items():
+                network_name = nic_info.network_info.name
+                networks.setdefault(network_name, []).append(nic_name)
 
         return mapping
 
@@ -72,28 +69,10 @@ class VirshBackend(base.BaseBackend):
         return self._ansible_inventory_str
 
     def deploy_scripts(self):
-        status = self._status()
+        return {vm.name: vm.deploy_scripts for vm in self._vms.values()}
 
-        mapping = {}
-
-        for vm_name, vm_desc in status["VMs"].items():
-            deploy_scripts = mapping.setdefault(vm_name, [])
-            for deploy_script in vm_desc["deploy-scripts"]:
-                deploy_scripts.append(deploy_script)
-
-        return mapping
-
-    @memoized.memoized
-    def _status(self):
-        status = shell(
-            ["bash", "-c", "source lagofy.sh; ost_status"],
-            cwd=self._prefix_path + "/..",
-        )
-        return json.loads(status)
-
-    @memoized.memoized
     def libvirt_net_name(self, net_name):
-        return self._status()["Networks"][net_name]
+        return self._networks[net_name].libvirt_name
 
     @staticmethod
     def _get_networks(uuid):

@@ -528,6 +528,7 @@ class Host(SDKRootEntity):
             f'address:{self.address}, '
             f'status:{self.status}, '
             f'is_spm:{self.is_spm}, '
+            f'cluster:{self.get_cluster().name}, '
             f'id:{self.id}>'
         )
 

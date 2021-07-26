@@ -84,3 +84,7 @@ def test_he_deploy(
         f'/root/setup_first_he_host.sh {he_host_name} {he_mac_address}')
 
     ansible_storage.shell('fstrim -va')
+
+
+def test_add_engine_to_artifacts(artifacts, he_host_name, artifact_list):
+    artifacts[he_host_name] = artifact_list

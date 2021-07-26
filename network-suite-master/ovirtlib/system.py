@@ -84,6 +84,10 @@ class SDKSystemRoot(object):
     def jobs_service(self):
         return self._system_service.jobs_service()
 
+    @property
+    def users_service(self):
+        return self._system_service.users_service()
+
     def connect(self, url, username, password, ca_file=None, insecure=True):
         conn = Connection(url=url, username=username,
                           password=password, insecure=insecure,

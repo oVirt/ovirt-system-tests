@@ -23,6 +23,7 @@ from ovirtlib import eventlib
 from ovirtlib import joblib
 from ovirtlib import sshlib
 from ovirtlib import syncutil
+from ovirtlib import userlib
 
 
 @pytest.fixture(scope="session")
@@ -33,6 +34,13 @@ def engine_full_username():
 @pytest.fixture(scope="session")
 def engine_password():
     return "123"
+
+
+@pytest.fixture(scope="session")
+def engine_admin(system):
+    admin = userlib.User(system)
+    admin.import_by_name('admin')
+    return admin
 
 
 @pytest.fixture(scope='session')

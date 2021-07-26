@@ -55,13 +55,6 @@ class LagoBackend(base.BaseBackend):
             self._ansible_inventory_str = contents
         return self._ansible_inventory_str
 
-    def artifacts(self):
-        init_file = self._init_file()
-        return {
-            hostname: init_file['domains'][hostname]['artifacts']
-            for hostname in self.hostnames()
-        }
-
     def deploy_scripts(self):
         init_file = self._init_file()
         return {

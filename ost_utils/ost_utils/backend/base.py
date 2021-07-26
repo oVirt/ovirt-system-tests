@@ -63,32 +63,6 @@ class BaseBackend(abc.ABC):
         """
 
     @abc.abstractmethod
-    def artifacts(self):
-        """Function returning a mapping of hostname --> list of artifacts
-
-        Returns:
-            dict: Hostname --> list of artifacts.
-
-            Example value for basic suite:
-
-            {
-                'ost-basic-suite-master-engine': [
-                    '/var/log',
-                    '/var/cache/ovirt-engine',
-                ],
-                'ost-basic-suite-master-host-0': [
-                    '/etc/resolv.conf',
-                    '/var/log',
-                ],
-                'ost-basic-suite-master-host-1': [
-                    '/etc/resolv.conf',
-                    '/var/log',
-                ]
-            }
-
-        """
-
-    @abc.abstractmethod
     def deploy_scripts(self):
         """Function returning a mapping of hostname --> list of deploy scripts.
 

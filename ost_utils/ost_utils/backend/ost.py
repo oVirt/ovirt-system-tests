@@ -51,9 +51,6 @@ class OstBackend(base.BaseBackend):
             self._ansible_inventory_str = contents
         return self._ansible_inventory_str
 
-    def artifacts(self):
-        return {}
-
     def deploy_scripts(self):
         status = self._status()
 

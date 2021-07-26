@@ -64,12 +64,8 @@ def artifact_list():
 
 
 @pytest.fixture(scope="session")
-def artifacts(backend, all_hostnames, artifact_list):
-    try:
-        artifacts = backend.artifacts()
-    except KeyError:
-        artifacts = {hostname: artifact_list for hostname in all_hostnames}
-    return artifacts
+def artifacts(all_hostnames, artifact_list):
+    return {hostname: artifact_list for hostname in all_hostnames}
 
 
 @pytest.fixture(scope="session", autouse=True)

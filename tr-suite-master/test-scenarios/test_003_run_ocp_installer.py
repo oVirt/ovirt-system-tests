@@ -37,7 +37,6 @@ def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_u
     network_name = 'ovirtmgmt'
     ovirt_config = 'ovirt-config.yaml.in'
     install_config = 'install-config.yaml.in'
-    func = 'func.sh'
     script = 'test-run-ocp-installer.sh'
     ovirt_vnic_profile_id = ''
     engine = engine_api.system_service()
@@ -82,17 +81,6 @@ def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_u
         src=src_script_file,
         dest=dst_script_file,
         mode='0666'
-    )
-    src_script_file=os.path.join(
-        suite_dir, func
-    )
-    dst_script_file=os.path.join(
-        working_dir, func
-    )
-    ansible_engine.copy(
-        src=src_script_file,
-        dest=dst_script_file,
-        mode='0755'
     )
     src_script_file=os.path.join(
         suite_dir, script

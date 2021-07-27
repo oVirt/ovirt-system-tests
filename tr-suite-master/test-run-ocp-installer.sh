@@ -94,16 +94,6 @@ validate_uuid "OVIRT_CLUSTER_ID" "${OVIRT_CLUSTER_ID}"
 validate_uuid "OVIRT_STORAGE_DOMAIN_ID" "${OVIRT_STORAGE_DOMAIN_ID}"
 validate_uuid "OVIRT_VNIC_PROFILE_ID" "${OVIRT_VNIC_PROFILE_ID}"
 
-# compile OCP installer
-cd ${INSTALLER_DIR}
-info "compiling OCP installer"
-./hack/build.sh
-
-if [[ $? -ne 0 ]]; then
-    git_cleanup_and_error "failed to compile OCP installer"
-fi
-
-
 # create ovirt-config.yaml
 info "creating ovirt-config.yaml"
 

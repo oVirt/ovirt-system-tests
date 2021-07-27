@@ -8,49 +8,31 @@ _deployment_exists() {
 ost_status() {
   _deployment_exists || return 1
   local uuid=$(cat $PREFIX/uuid)
-  echo  "{"
 
   declare -A nets
   for i in $(virsh net-list --name | grep ^ost${uuid}); do
     nets[$i]=$(virsh net-dumpxml $i | grep "metadata comment" | cut -d \" -f 2)
   done
 
-  echo -en "  \"Networks\": {"
-  net_comma="\n"
-  for net in ${!nets[@]}; do
-    echo -en "${net_comma}    \"${nets[$net]}\": \"${net}\""
-    net_comma=",\n"
-  done
-  echo -en "\n  },\n"
-
-  echo -en "  \"VMs\": {"
-  vm_comma="\n"
+  echo "Networks:"
+  for net in ${!nets[@]}; do echo "  ${nets[$net]}: ${net}"; done
+  echo "VMs:"
   for vm_full in $(virsh list --name | grep ^${uuid}); do
    local vm=$(cut -d - -f 2- <<< $vm_full)
-   echo -en "${vm_comma}    \"$vm\": "
+   echo "  $vm"
     vm_nets=$(virsh domiflist $vm_full | grep network | tr -s " " | cut -d " " -f 4)
-    echo -en "{\n"
-    echo "      \"IP\": \"$(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>&1)\", "
-    echo "      \"state\": \"$(virsh domstate $vm_full 2>&1)\", "
-    echo "      \"deploy-scripts\": ["
-    deploy_open=""
-    for deploy in $(virsh dumpxml ${vm_full}  | sed -n '/<ost-deploy-scripts>/{:a;n;/<\/ost-deploy-scripts>/b;p;ba}' | sed 's|.*name="\(.*\)"/>|\1|g'); do
-      echo -en "${deploy_open}        \"${deploy}\""
-      deploy_open=",\n"
-    done
-    echo -en "\n      ],\n      \"NICs\": {\n"
+    echo "   state: $(virsh domstate $vm_full 2>&1)"
+    echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>&1)"
+    echo -n "   NICs: "
     net_comma=""
     local idx=0
     for net in $vm_nets; do
-      echo -en "${net_comma}        \"eth${idx}\": \"${nets[$net]}\""
-      net_comma=",\n"
+      echo -en "${net_comma}eth${idx}(${nets[$net]})"
+      net_comma=", "
       (( idx++ ))
     done
-    echo -en "\n      }"
-    echo -en "\n    }"
-    vm_comma=",\n"
+    echo -ne "\n\n"
   done
-  echo -ne "\n  }\n}\n"
 }
 
 ost_destroy() {

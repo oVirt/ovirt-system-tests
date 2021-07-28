@@ -71,13 +71,9 @@ if [[ ${terraform_installed} -eq 0 ]]; then
     dnf install -y dnf-plugins-core
     dnf config-manager --add-repo ${terraform_repo}
     dnf install -y terraform
-    # currently there is a problem in terraform rpm that makes it fail
-    # the following ia a workaround that installs terraform RPM ignoring
-    # errors
     if [[ $? -ne 0 ]]; then
-        dnf download terraform
-        rpm=$(find . -name "*terraform*.rpm" -print)
-        rpm --nodigest --nofiledigest -iv ${rpm}
+        echo "ERROR: Failed to install terraform package."
+        exit 1
     fi
 fi
 

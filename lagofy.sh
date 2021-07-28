@@ -87,7 +87,7 @@ ost_init() {
 
   # finds unused subnet in the OST range
   _find_free_subnet() {
-    SUBNET=$(seq 150 199 | egrep -vw "$(virsh net-list --name | grep ^ost | cut -d- -f2 | tr "\n" '|' | sed 's/^/(/; s/|$/)/')" | head -1)
+    SUBNET=$(seq 200 254 | egrep -vw "$(virsh net-list --name | grep ^ost | cut -d- -f2 | tr "\n" '|' | sed 's/^/(/; s/|$/)/')" | head -1)
     [[ -n "$SUBNET" ]] || { echo -e "\nno available subnet"; return 1; }
   }
 

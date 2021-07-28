@@ -27,11 +27,14 @@ from collections import namedtuple
 from ost_utils.backend import base
 from ost_utils.shell import shell
 
+DHCPEntry = namedtuple("DHCPEntry", "hostname mac_or_id ip")
 
-NICInfo = namedtuple("NICInfo", "name libvirt_name mac network_info")
+NICInfo = namedtuple("NICInfo", "name libvirt_name mac network_info "
+                                "ip4_dhcp_entry ip6_dhcp_entry")
 
 NetworkInfo = namedtuple(
-    "NetworkInfo", "name libvirt_name ip4_gw ip4_prefix ip6_gw ip6_prefix"
+    "NetworkInfo", "name libvirt_name ip4_gw ip4_prefix ip4_dhcp_entries "
+                   "ip6_gw ip6_prefix ip6_dhcp_entries"
 )
 
 VMInfo = namedtuple("VMInfo", "name libvirt_name nics deploy_scripts")
@@ -75,6 +78,20 @@ class VirshBackend(base.BaseBackend):
         return self._networks[net_name].libvirt_name
 
     @staticmethod
+    def _get_dhcp_entries(ip_node):
+        dhcp_entries = {}
+
+        for libvirt_dhcp_entry in ip_node.findall("./dhcp/host"):
+            hostname = libvirt_dhcp_entry.get("name")
+            mac_or_id = libvirt_dhcp_entry.get(
+                "mac", libvirt_dhcp_entry.get("id")
+            )
+            ip = ipaddress.ip_address(libvirt_dhcp_entry.get("ip"))
+            dhcp_entries[mac_or_id] = DHCPEntry(hostname, mac_or_id, ip)
+
+        return dhcp_entries
+
+    @staticmethod
     def _get_networks(uuid):
         libvirt_net_names = [
             name
@@ -92,25 +109,49 @@ class VirshBackend(base.BaseBackend):
 
             ip4_gw = None
             ip4_prefix = None
+            ip4_dhcp_entries = {}
             ip6_gw = None
             ip6_prefix = None
+            ip6_dhcp_entries = {}
 
             for node in xml.findall("./ip"):
                 if node.get("family", None) == "ipv6":
                     ip6_gw = ipaddress.ip_address(node.get("address"))
                     ip6_prefix = int(node.get("prefix"))
+                    ip6_dhcp_entries = VirshBackend._get_dhcp_entries(node)
                 else:
                     ip4_gw = ipaddress.ip_address(node.get("address"))
                     netmask = node.get("netmask")
                     ip4_prefix = ipaddress.IPv4Network(
                         f"0.0.0.0/{netmask}"
                     ).prefixlen
+                    ip4_dhcp_entries = VirshBackend._get_dhcp_entries(node)
 
             networks[ost_net_name] = NetworkInfo(
-                ost_net_name, name, ip4_gw, ip4_prefix, ip6_gw, ip6_prefix
+                ost_net_name, name, ip4_gw, ip4_prefix, ip4_dhcp_entries,
+                ip6_gw, ip6_prefix, ip6_dhcp_entries
             )
 
         return networks
+
+    @staticmethod
+    def _find_dhcp_entries_for_nic(mac, networks):
+        ip4_dhcp_entry = None
+        ip6_dhcp_entry = None
+
+        for network in networks.values():
+            for dhcp_entry in network.ip4_dhcp_entries.values():
+                if dhcp_entry.mac_or_id == mac:
+                    ip4_dhcp_entry = dhcp_entry
+                    break
+            for dhcp_entry in network.ip6_dhcp_entries.values():
+                if dhcp_entry.mac_or_id.endswith(mac):
+                    ip6_dhcp_entry = dhcp_entry
+                    break
+            if ip4_dhcp_entry is not None and ip6_dhcp_entry is not None:
+                break
+
+        return (ip4_dhcp_entry, ip6_dhcp_entry)
 
     @staticmethod
     def _get_nics(domain_xml, networks):
@@ -125,7 +166,11 @@ class VirshBackend(base.BaseBackend):
             mac = nic.find("./mac[@address]").get("address")
             libvirt_network = nic.find("./source[@network]").get("network")
             network_info = networks[libvirt_network]
-            nics[name] = NICInfo(name, libvirt_name, mac, network_info)
+            (ip4_dhcp_entry, ip6_dhcp_entry) = (
+                VirshBackend._find_dhcp_entries_for_nic(mac, networks)
+            )
+            nics[name] = NICInfo(name, libvirt_name, mac, network_info,
+                                 ip4_dhcp_entry, ip6_dhcp_entry)
 
         return nics
 

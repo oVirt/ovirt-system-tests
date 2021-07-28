@@ -3,13 +3,12 @@
 .bash_history
 coverage/
 !ost_utils/ost_utils/coverage/
-deployment-*
-**/LagoInitFile
-logs*
-test_logs/
-mocker-*
+/deployment
+/deployment-*
+/exported-artifacts
 *.egg-info
 *-venv
+
 #IDE files
 ##########
 .settings

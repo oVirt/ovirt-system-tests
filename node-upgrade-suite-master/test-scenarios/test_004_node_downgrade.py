@@ -1,4 +1,7 @@
 from pprint import pprint
+
+import pytest
+
 from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils.pytest import order_by
@@ -15,7 +18,7 @@ cmd_for_rollbackt = "imgbase rollback"
 cmd_for_getting_unactive_layer = "imgbase layout | grep ^[a-z] |" \
     " grep -v $(imgbase w | grep -o 'ovirt[^+]*')"
 cmd_for_removing_layer = "imgbase base --remove {}"
-cmd_for_getting_current_version = r'imgbase w | grep -Po "(\d+\.){3}\d+-"'
+cmd_for_getting_current_version = r'imgbase w | grep -Po "(\d+\.){2,}\d+-"'
 
 
 def _check_if_other_layer_exists(ansible_host):
@@ -59,6 +62,7 @@ def _revert_yum_status(ansible_host):
         "yum remove -y ovirt-node-ng-image-update-placeholder")
     ansible_host.shell("rpm -i --nodeps {}".format(ver))
 
+@pytest.mark.skip(' [2021-08-08] Skip ovirt-node downgrade')
 def test_downgrade_host(engine_api, ansible_by_hostname):
 
     engine = engine_api.system_service()

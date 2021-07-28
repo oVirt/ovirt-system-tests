@@ -50,15 +50,6 @@ stage:
         - test-ost-container:
             runif:
               filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']
-        - check_docs:
-            runif:
-              filechanged: ['automation/create-docs*', 'docs/*']
-            script:
-              fromfile: 'automation/check-docs.sh'
-            runtime-requirements:
-              # Docs check/build doesn't require bare metal, so it's better
-              # to overwrite the global config of nesting support.
-              support-nesting-level: 0
         - ost_core_change:
             distributions:
              - el8:

@@ -5,8 +5,21 @@ Welcome to the oVirt System Tests source repository.
 This repository is hosted on [gerrit.ovirt.org:ovirt-system-tests](https://gerrit.ovirt.org/#/admin/projects/ovirt-system-tests)
 and a **backup** of it is hosted on [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests)
 
-Checkout the [oVirt Sytem Tests Introduction page](http://ovirt-system-tests.readthedocs.io/en/latest/) for more info about this project.
+# System requirements
+====================
 
+#### Operating System
+Currently OST can run on RHEL or CentOS Stream at least roughly matching the version used by oVirt or RHV.
+Latest CentOS Stream or RHEL 8 should work.
+
+#### Disk Space
+ost-images packages that contain the preinstalled images are fairly large, make sure you have enough disk space,
+15 GB per each distro variant in /usr/share. Additional space is needed for actual suite run,
+another 5GB at least in the directory where you run tests from.
+
+#### Memory
+The memory requirements are derived from the VM specs you'll have in the test suite, it is recommended that the host you're using will have at
+least 16GB of RAM, though basic suite still runs with 8GB.
 
 ## How to contribute
 
@@ -18,7 +31,7 @@ Please submit patches to [gerrit.ovirt.org:ovirt-system-tests](https://gerrit.ov
 If you are not familiar with the review process for Gerrit patches you can read about [Working with oVirt Gerrit](https://ovirt.org/develop/dev-process/working-with-gerrit.html)
 on the [oVirt](https://ovirt.org/) website.
 
-**NOTE**: We might not notice pull requests that you create on Github, because we only use Github for backups.
+**NOTE**: We might not notice pull requests that you create on Github, because we only use Github as a read-only backup.
 
 
 ### Found a bug or documentation issue?
@@ -30,7 +43,56 @@ join [oVirt Development forum / mailing list](https://lists.ovirt.org/admin/list
 If you have any other questions, please join [oVirt Development forum / mailing list](https://lists.ovirt.org/admin/lists/devel.ovirt.org/) and ask there.
 
 
+# Running the tests
+
+Make sure your machine is set up with `setup_for_ost.sh`
+You can use `ost.sh` for running the complete suite on a concrete ost-images distro
+E.g. `./ost.sh run basic-suite-master el8stream`
+
+The environment is left running after it finishes so that you can examine or further use the created environment.
+Do not forget to clean up with `./ost.sh destroy`
+
+When the environment is up you can use `./ost.sh shell` to connect to the VMs.
+`./ost.sh status` shows a little overview of how the OST environment is laid out on the host system.
+
+## Advanced use
+
+ost.sh internally uses bash functions from lagofy.sh that you can source into your (bash only, other shells are not supported) environment
+and use for more granular control.
+Functions starting with ost_ and OST_ variables can be used to bring up the VMs with custom images, boot OST environment without running tests,
+or to run individual test cases.
+
+You can also access the web ui easily, locate the engine's IP address in `./ost.sh status`. In case of Hosted Engine-based suites where
+the engine VM is not declared in OST you can inspect the DNS entries of management network by `virsh net-dumpxml`.
+Once you've located the engine VM's IP, add it to `/etc/hosts`. You have to use **the exact FQDN** (for basic suite you can also use just `engine`)
+Now, log in to the web-UI at:
+
+* URL: `https://engine/ovirt-engine/webadmin/`
+* Username: `admin`
+* Password: `123`
+* Profile: `internal`
+
+If you're running OST on a remote machine, you can tunnel a local
+port directly to the destination machine - from your local machine:
+```
+    $ ssh -L 8443:192.168.200.2:443 USER@HOST_RUNNING_OST
+            ----  =================      ~~~~~~~~~~~~~~~~
+            (*)   (**)                       (***)
+
+    (*)   - The port on the local machine that the tunnel will be available at.
+    (**)  - The machine IP, visible from the *host running OST* . This is were the traffic is tunneled to.
+            Usually 192.168.200.2 is the address of ovirt-engine
+    (***) - The host running OST which can reach the VMs network and will tunnel the connection.
+```
+
 # Development
+
+Make sure your machine is set up with `setup_for_ost.sh`
+OST is designed to run concurrently under single non-root user, but in separate checkouts.
+At runtime it creates "deployment" and "exported-artifacts" directories in the workspace.
+
+Make sure that your new code doesn't depend on anything on the OST host,
+whenever you need something it's usually a better idea to run that inside one of the VMs.
 
 ## Running tox tests
 
@@ -38,10 +100,12 @@ For developers of OST, a quick flake8 and pylint runs are available to identify 
 syntax errors, typos, unused import etc.
 
 To run the flake8/pylint, you'll need to have tox installed. To run pylint
-without import errors you should also have ovirtdsk4, lago and
-ansible-runner installed.
+without import errors you should also have ovirtdsk4 and ansible-runner installed.
 
 Running flake8 and pylint tests:
 ```
 tox -e flake8,pylint
+
 ```
+
+or `ost_linters` lagofy function.

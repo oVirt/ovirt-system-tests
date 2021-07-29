@@ -27,6 +27,8 @@ from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 from ost_utils.pytest.fixtures.artifacts import generate_sar_stat_plots
 
 from ost_utils.pytest.fixtures.backend import all_hostnames
+from ost_utils.pytest.fixtures.ansible import ansible_execution_environment
+from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.backend import backend
 from ost_utils.pytest.fixtures.backend import backend_engine_hostname
 from ost_utils.pytest.fixtures.backend import deploy_scripts

@@ -25,22 +25,36 @@ from ost_utils.ansible.collection import engine_setup
 
 
 def test_initialize_engine(
-    engine_ip, ansible_engine, engine_answer_file_path, ssh_key_file
+    working_dir,
+    ansible_engine,
+    ansible_inventory,
+    engine_ip,
+    root_dir,
+    ssh_key_file,
+    engine_hostname,
+    engine_answer_file_path,
+    artifacts_dir,
+    ansible_execution_environment,
 ):
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
         ansible_engine.shell(
             'sed -i '
             '-e "/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }" '
-            '-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }" '
+            '-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }" '  # noqa: E501
             '-e "/.*<root-logger>/{ n; s/INFO/DEBUG/ }" '
             '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
         )
 
     engine_setup(
+        working_dir,
         ansible_engine,
+        ansible_inventory,
         engine_ip,
-        answer_file_path=engine_answer_file_path,
         ssh_key_path=ssh_key_file,
+        artifacts_dir=artifacts_dir,
+        execution_environment_tag=ansible_execution_environment,
+        engine_hostname=engine_hostname,
+        answer_file_path=engine_answer_file_path,
         ovirt_engine_setup_offline='true',
         ovirt_engine_setup_engine_configs=[
             {'key': 'VdsLocalDisksLowFreeSpace', 'value': '400'},

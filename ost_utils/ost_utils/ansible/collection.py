@@ -20,44 +20,73 @@
 
 import json
 import os
-import shutil
 import socket
-import tarfile
-import tempfile
-import uuid
 import yaml
 
-
-def _run_playbook(ansible_engine, playbook_yaml, ssh_key_path=None):
-    run_uuid = uuid.uuid4()
-    tmp_path = tempfile.NamedTemporaryFile().name
-    for dir_name in ['inventory', 'env', 'project']:
-        ansible_engine.file(
-            path=os.path.join(tmp_path, dir_name),
-            state='directory',
-            recurse='yes',
-        )
-    if ssh_key_path:
-        ansible_engine.copy(
-            src=ssh_key_path,
-            dest=os.path.join(tmp_path, 'env/ssh_key'),
-        )
-
-    ansible_engine.copy(
-        content="'{}'".format(yaml.dump(playbook_yaml)),
-        dest=os.path.join(tmp_path, 'project/playbook.yml'),
-    )
-
-    ansible_engine.shell(
-        f'ansible-runner -i {run_uuid} -vvv -p playbook.yml run {tmp_path}'
-    )
-
-    return (tmp_path, run_uuid)
+from ost_utils.shell import shell
 
 
-def _get_role_playbook(role_name, **kwargs):
+def _run_playbook(
+    playbook_yaml,
+    working_dir,
+    artifacts_dir,
+    execution_environment_tag,
+    ansible_inventory=None,
+    ssh_key_path=None,
+):
+    # Move of the run artifacts to the working_dir because
+    # ansible-navigator logs each run artifacts to /tmp/
+    ansible_artifacts_tmp_dir = os.path.join(working_dir, 'ansible-artifacts')
+    os.makedirs(ansible_artifacts_tmp_dir, exist_ok=True)
+
+    # Create playbook file from passed yaml
+    playbook_path = os.path.join(working_dir, 'playbook.yml')
+    with open(playbook_path, "w") as file:
+        yaml.dump(playbook_yaml, file)
+
+    playbook_log_path = os.path.join(working_dir, 'playbook-artifacts.json')
+
+    # Running the playbook inside a container
+    cmd = [
+        'ansible-navigator',
+        'run',
+        playbook_path,
+        '-vvv',
+        '--execution-environment-image',
+        execution_environment_tag,
+        '--mode',
+        'stdout',
+        '--playbook-artifact-save-as',
+        playbook_log_path,
+        '--ansible-runner-artifact-dir',
+        ansible_artifacts_tmp_dir,
+        '--execution-environment-volume-mounts',
+        f'{ssh_key_path}:{ssh_key_path}',
+        '--pull-policy',
+        'never',
+        '--display-color',
+        'false',
+    ]
+
+    if ansible_inventory:
+        cmd.append('-i')
+        cmd.append(ansible_inventory.dir)
+
+    stdout = shell(cmd)
+
+    ansible_logs_path = os.path.join(artifacts_dir, 'ansible_logs')
+    os.makedirs(ansible_logs_path, exist_ok=True)
+
+    log_path = os.path.join(ansible_logs_path, 'ansible-collection-stdout.log')
+    if stdout:
+        with open(log_path, 'a+') as file:
+            file.write(stdout + '\n')
+
+
+def _get_role_playbook(role_name, host, **kwargs):
     playbook = f'''
-    - hosts: localhost
+    - hosts: {host}
+      remote_user: root
       roles:
         - {role_name}
       collections:
@@ -68,19 +97,35 @@ def _get_role_playbook(role_name, **kwargs):
     return playbook_yaml
 
 
-def infra(ansible_engine, **kwargs):
-    playbook_yaml = _get_role_playbook('infra', **kwargs)
-    _run_playbook(ansible_engine, playbook_yaml)
+def infra(
+    working_dir,
+    ansible_inventory,
+    artifacts_dir,
+    execution_environment_tag,
+    **kwargs,
+):
+    playbook_yaml = _get_role_playbook('infra', 'localhost', **kwargs)
+    _run_playbook(
+        playbook_yaml,
+        working_dir,
+        artifacts_dir,
+        execution_environment_tag,
+    )
 
 
 def engine_setup(
-    ansible_engine, engine_ip, answer_file_path, ssh_key_path, **kwargs
+    working_dir,
+    ansible_engine,
+    ansible_inventory,
+    engine_ip,
+    answer_file_path,
+    ssh_key_path,
+    engine_hostname,
+    artifacts_dir,
+    execution_environment_tag,
+    **kwargs,
 ):
-    ansible_engine.copy(
-        src=answer_file_path,
-        dest='/root/engine-answer-file',
-    )
-    kwargs['ovirt_engine_setup_answer_file_path'] = '/root/engine-answer-file'
+    kwargs['ovirt_engine_setup_answer_file_path'] = answer_file_path
 
     host_name = socket.gethostname()
     host_ip = socket.gethostbyname(host_name)
@@ -91,13 +136,25 @@ def engine_setup(
         mode='0644',
     )
 
-    playbook_yaml = _get_role_playbook('engine_setup', **kwargs)
-    _run_playbook(ansible_engine, playbook_yaml, ssh_key_path)
+    playbook_yaml = _get_role_playbook(
+        'engine_setup', engine_hostname, **kwargs
+    )
+
+    _run_playbook(
+        playbook_yaml,
+        working_dir,
+        artifacts_dir,
+        execution_environment_tag,
+        ansible_inventory,
+        ssh_key_path,
+    )
 
 
 class CollectionMapper:
-    def __init__(self, ansible_engine):
-        self._ansible_engine = ansible_engine
+    def __init__(self, working_dir, artifacts_dir, execution_environment_tag):
+        self.working_dir = working_dir
+        self.artifacts_dir = artifacts_dir
+        self.execution_environment_tag = execution_environment_tag
 
     def __getattr__(self, name):
         self.name = name
@@ -112,47 +169,26 @@ class CollectionMapper:
         playbook_yaml = yaml.safe_load(playbook)
         playbook_yaml[0]['tasks'][0][f'ovirt.ovirt.{self.name}'] = kwargs
 
-        remote_tmp_path, run_uuid = _run_playbook(
-            self._ansible_engine, playbook_yaml
+        _run_playbook(
+            playbook_yaml,
+            self.working_dir,
+            self.artifacts_dir,
+            self.execution_environment_tag,
         )
 
-        return self._collect_module_data(remote_tmp_path, run_uuid)
+        return self._collect_module_data()
 
-    def _collect_module_data(self, remote_tmp_path, run_uuid):
-        local_tmp_dir = tempfile.mkdtemp()
-        archive_name = 'artifacts.tar.gz'
-        local_archive_path = os.path.join(local_tmp_dir, archive_name)
-        remote_archive_path = os.path.join("/tmp", archive_name)
-        job_events_path = os.path.join(
-            local_tmp_dir, str(run_uuid), 'job_events'
+    def _collect_module_data(self):
+        playbook_log_path = os.path.join(
+            self.working_dir, 'playbook-artifacts.json'
         )
-        try:
-            self._ansible_engine.archive(
-                path=os.path.join(remote_tmp_path, 'artifacts', str(run_uuid)),
-                dest=remote_archive_path,
-            )
-            self._ansible_engine.fetch(
-                src=remote_archive_path,
-                dest=f'{local_tmp_dir}/',
-                flat='yes',
-            )
-
-            with tarfile.open(local_archive_path, "r:gz") as tar:
-                tar.extractall(path=local_tmp_dir)
-
-            job_events = [
-                os.path.join(job_events_path, job_dir)
-                for job_dir in os.listdir(job_events_path)
-            ]
-            for file in job_events:
-                with open(file) as json_file:
-                    data = json.load(json_file)
-                    if (
-                        data.get('event_data', {}).get('task_action', None)
-                        == f'ovirt.ovirt.{self.name}'
-                        and data.get('event_data').get('res', None) is not None
-                    ):
-                        return data.get('event_data').get('res')
-            return None
-        finally:
-            shutil.rmtree(local_tmp_dir)
+        with open(playbook_log_path) as file:
+            data = json.load(file)
+            tasks = (data.get('plays')[0]).get('tasks')
+            for task in tasks:
+                if (
+                    task.get('task') == f'ovirt.ovirt.{self.name}'
+                    and task.get('res', None) is not None
+                ):
+                    return task.get('res')
+        return None

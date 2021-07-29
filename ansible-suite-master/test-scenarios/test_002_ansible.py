@@ -22,15 +22,30 @@ from ost_utils.ansible.collection import CollectionMapper, infra
 from ost_utils.storage_utils import lun
 
 
-def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):
+def test_ansible_run(
+    ansible_inventory,
+    ansible_engine,
+    hostnames_to_add,
+    engine_ip,
+    engine_storage_ips,
+    engine_full_username,
+    engine_password,
+    working_dir,
+    artifacts_dir,
+    ansible_execution_environment,
+):
     infra(
-        ansible_engine=ansible_engine,
-        engine_fqdn="localhost",
-        engine_user="admin@internal",
-        engine_password="123",
+        working_dir,
+        ansible_inventory,
+        artifacts_dir,
+        execution_environment_tag=ansible_execution_environment,
+        engine_fqdn=engine_ip,
+        engine_user=engine_full_username,
+        engine_password=engine_password,
         engine_cafile="/etc/pki/ovirt-engine/ca.pem",
         data_center_name="test-dc",
         compatibility_version=4.4,
+        ansible_async_dir='/home/runner/.ansible_async',
         clusters=[
             {
                 "name": "test-cluster",
@@ -142,12 +157,16 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):
         ],
     )
 
-    collection = CollectionMapper(ansible_engine)
+    collection = CollectionMapper(
+        working_dir,
+        artifacts_dir,
+        ansible_execution_environment,
+    )
 
     ovirt_auth = collection.ovirt_auth(
-        url="https://localhost/ovirt-engine/api",
-        username="admin@internal",
-        password="123",
+        hostname=engine_ip,
+        username=engine_full_username,
+        password=engine_password,
         insecure="true",
     )['ansible_facts']['ovirt_auth']
 

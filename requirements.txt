@@ -1,5 +1,6 @@
 # PIP requirements for OST
 -e ost_utils
+ansible-navigator
 pytest==6.2.2
 # basic suite deps
 requests

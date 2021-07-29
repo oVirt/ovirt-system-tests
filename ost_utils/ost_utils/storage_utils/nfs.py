@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,9 +23,17 @@ import ovirtsdk4 as sdk4
 from ost_utils.storage_utils import domain
 
 
-def add_domain(engine_api, sd_nfs_name, sd_nfs_host, sd_nfs_host_storage_ip,
-               mount_path, dc_name, sd_format='v4', sd_type='data',
-               nfs_version='v4_2'):
+def add_domain(
+    engine_api,
+    sd_nfs_name,
+    sd_nfs_host,
+    sd_nfs_host_storage_ip,
+    mount_path,
+    dc_name,
+    sd_format='v4',
+    sd_type='data',
+    nfs_version='v4_2',
+):
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':
@@ -54,7 +62,7 @@ def add_domain(engine_api, sd_nfs_name, sd_nfs_host, sd_nfs_host_storage_ip,
             address=sd_nfs_host_storage_ip,
             path=mount_path,
             nfs_version=nfs_vers,
-        )
+        ),
     )
 
     domain.add(engine_api, p, dc_name)

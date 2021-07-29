@@ -51,7 +51,7 @@ def setup(ansible_hosts):
     ansible_hosts.replace(
         path='/usr/lib64/python3.6/site-packages/coverage/misc.py',
         regexp='md5',
-        replace='sha1'
+        replace='sha1',
     )
 
     ansible_hosts.copy(

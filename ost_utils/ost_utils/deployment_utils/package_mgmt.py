@@ -33,7 +33,9 @@ DUMMY_REPO_FILE = '''"
 [dummy]
 name=dummy
 baseurl={}
-"'''.replace('\n', '\\n')
+"'''.replace(
+    '\n', '\\n'
+)
 
 DUMMY_REPOMD_XML = '''"
 <repomd>
@@ -41,7 +43,9 @@ DUMMY_REPOMD_XML = '''"
         <location href=\\"repodata/primary.xml\\"/>
     </data>
 </repomd>
-"'''.replace('\n', '\\n')
+"'''.replace(
+    '\n', '\\n'
+)
 
 DUMMY_PRIMARY_XML = '"<metadata packages="0"/>"'
 
@@ -92,14 +96,21 @@ def add_dummy_repo(ansible_vm):
     # force location to /var/tmp/ to survive VM restart
     with tempfile.NamedTemporaryFile(dir='/var/tmp') as repo_dir:
         repodata_path = os.path.join(repo_dir.name, 'repodata')
-        ansible_vm.file(path=repodata_path, mode='0777', state='directory',
-                        recurse=True)
-        ansible_vm.copy(content=DUMMY_PRIMARY_XML,
-                        dest=os.path.join(repodata_path, 'primary.xml'))
-        ansible_vm.copy(content=DUMMY_REPOMD_XML,
-                        dest=os.path.join(repodata_path, 'repomd.xml'))
-        ansible_vm.copy(content=DUMMY_REPO_FILE.format(repo_dir.name),
-                        dest='/etc/yum.repos.d/dummy.repo')
+        ansible_vm.file(
+            path=repodata_path, mode='0777', state='directory', recurse=True
+        )
+        ansible_vm.copy(
+            content=DUMMY_PRIMARY_XML,
+            dest=os.path.join(repodata_path, 'primary.xml'),
+        )
+        ansible_vm.copy(
+            content=DUMMY_REPOMD_XML,
+            dest=os.path.join(repodata_path, 'repomd.xml'),
+        )
+        ansible_vm.copy(
+            content=DUMMY_REPO_FILE.format(repo_dir.name),
+            dest='/etc/yum.repos.d/dummy.repo',
+        )
 
 
 def check_installed_packages(ansible_vms):
@@ -112,10 +123,12 @@ def check_installed_packages(ansible_vms):
         if _are_any_packages_used(ansible_vms, repo):
             return
 
-    raise RuntimeError('None of user custom repos has been used. '
-                       'Your packages are too old. If you are trying to test '
-                       'your patch, please rebase on top of latest master '
-                       'branch!')
+    raise RuntimeError(
+        'None of user custom repos has been used. '
+        'Your packages are too old. If you are trying to test '
+        'your patch, please rebase on top of latest master '
+        'branch!'
+    )
 
 
 def report_ovirt_packages_versions(ansible_vms):
@@ -126,7 +139,8 @@ def report_ovirt_packages_versions(ansible_vms):
 
     matching_pkgs = filter(
         lambda pkg: any(pat.match(pkg) for pat in OVIRT_PACKAGES_PATTERNS),
-        pkgs)
+        pkgs,
+    )
 
     LOGGER.info('oVirt packages used on VMs:')
     for pkg in sorted(matching_pkgs):
@@ -135,11 +149,20 @@ def report_ovirt_packages_versions(ansible_vms):
 
 def _add_custom_repo(ansible_vm, name, url):
     LOGGER.info(f"Adding repository to VM: {name} -> {url}")
-    ansible_vm.yum_repository(name=name, description=name, baseurl=url,
-                              gpgcheck=False, sslverify=False)
+    ansible_vm.yum_repository(
+        name=name,
+        description=name,
+        baseurl=url,
+        gpgcheck=False,
+        sslverify=False,
+    )
     # 'module_hotfixes' option is not available with 'yum_repository' module
-    ansible_vm.ini_file(path=f"/etc/yum.repos.d/{name}.repo", section=name,
-                        option="module_hotfixes", value=1)
+    ansible_vm.ini_file(
+        path=f"/etc/yum.repos.d/{name}.repo",
+        section=name,
+        option="module_hotfixes",
+        value=1,
+    )
 
 
 def _used_custom_repo_names(ansible_vms):
@@ -173,4 +196,4 @@ def _filter_results(result):
         indx = result.index('Installed Packages')
     except ValueError:
         return []
-    return result[indx+1:]
+    return result[indx + 1 :]

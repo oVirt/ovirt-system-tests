@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,12 +27,15 @@ from ost_utils import engine_utils
 def add(api, domain, dc_name):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
-    with engine_utils.wait_for_event(system_service, 956): # USER_ADD_STORAGE_DOMAIN(956)
+    with engine_utils.wait_for_event(
+        system_service, 956
+    ):  # USER_ADD_STORAGE_DOMAIN(956)
         sd = sds_service.add(domain)
 
         sd_service = sds_service.storage_domain_service(sd.id)
         assertions.assert_true_within_long(
-            lambda: sd_service.get().status == sdk4.types.StorageDomainStatus.UNATTACHED
+            lambda: sd_service.get().status
+            == sdk4.types.StorageDomainStatus.UNATTACHED
         )
 
     data_centers = system_service.data_centers_service()
@@ -48,7 +51,10 @@ def add(api, domain, dc_name):
                 id=sd.id,
             ),
         )
-        attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
+        attached_sd_service = attached_sds_service.storage_domain_service(
+            sd.id
+        )
         assertions.assert_true_within_long(
-            lambda: attached_sd_service.get().status == sdk4.types.StorageDomainStatus.ACTIVE
+            lambda: attached_sd_service.get().status
+            == sdk4.types.StorageDomainStatus.ACTIVE
         )

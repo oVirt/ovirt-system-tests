@@ -635,7 +635,7 @@ mkdir -p "$PREFIX"
 }
 
 "${PYTHON}" -m pip install --user tox==3.21.0
-"${PYTHON}" -m tox -e flake8,pylint
+"${PYTHON}" -m tox -e flake8,pylint,black
 
 trap "on_exit" EXIT
 

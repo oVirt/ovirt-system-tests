@@ -102,10 +102,9 @@ syntax errors, typos, unused import etc.
 To run the flake8/pylint, you'll need to have tox installed. To run pylint
 without import errors you should also have ovirtdsk4 and ansible-runner installed.
 
-Running flake8 and pylint tests:
+Running linting tests:
 ```
-tox -e flake8,pylint
-
+tox -e flake8,pylint,black
 ```
 
 or `ost_linters` lagofy function.

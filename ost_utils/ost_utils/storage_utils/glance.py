@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ def add_domain(system_service, sd_name, url):
         name=sd_name,
         description=sd_name,
         url=url,
-        requires_authentication=False
+        requires_authentication=False,
     )
 
     try:
@@ -39,7 +39,8 @@ def add_domain(system_service, sd_name, url):
 
         def get():
             providers = [
-                provider for provider in providers_service.list()
+                provider
+                for provider in providers_service.list()
                 if provider.name == sd_name
             ]
             if not providers:
@@ -51,10 +52,13 @@ def add_domain(system_service, sd_name, url):
             else:
                 return False
 
-        assertions.assert_true_within_short(func=get, allowed_exceptions=[sdk4.NotFoundError])
+        assertions.assert_true_within_short(
+            func=get, allowed_exceptions=[sdk4.NotFoundError]
+        )
     except (AssertionError, sdk4.NotFoundError):
         # RequestError if add method was failed.
-        # AssertionError if add method succeed but we couldn't verify that glance was actually added
+        # AssertionError if add method succeed but we couldn't verify that
+        # glance was actually added
         return None
 
     return glance.pop()
@@ -64,7 +68,8 @@ def check_connectivity(system_service, sd_name):
     avail = False
     providers_service = system_service.openstack_image_providers_service()
     providers = [
-        provider for provider in providers_service.list()
+        provider
+        for provider in providers_service.list()
         if provider.name == sd_name
     ]
     if providers:
@@ -78,28 +83,49 @@ def check_connectivity(system_service, sd_name):
     return avail
 
 
-def import_image(system_service, image_name, template_name, disk_name,
-                 dest_storage_domain, dest_cluster, sd_name,
-                 as_template=False):
+def import_image(
+    system_service,
+    image_name,
+    template_name,
+    disk_name,
+    dest_storage_domain,
+    dest_cluster,
+    sd_name,
+    as_template=False,
+):
     storage_domains_service = system_service.storage_domains_service()
-    glance_storage_domain = storage_domains_service.list(search='name={}'.format(sd_name))[0]
-    images = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().list()
+    glance_storage_domain = storage_domains_service.list(
+        search='name={}'.format(sd_name)
+    )[0]
+    images = (
+        storage_domains_service.storage_domain_service(
+            glance_storage_domain.id
+        )
+        .images_service()
+        .list()
+    )
     image = [x for x in images if x.name == image_name][0]
-    image_service = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().image_service(image.id)
-    result = image_service.import_(
+    image_service = (
+        storage_domains_service.storage_domain_service(
+            glance_storage_domain.id
+        )
+        .images_service()
+        .image_service(image.id)
+    )
+    image_service.import_(
         storage_domain=types.StorageDomain(
-           name=dest_storage_domain,
+            name=dest_storage_domain,
         ),
         template=types.Template(
             name=template_name,
         ),
         cluster=types.Cluster(
-           name=dest_cluster,
+            name=dest_cluster,
         ),
         import_as_template=as_template,
-        disk=types.Disk(
-            name=disk_name
-        ),
+        disk=types.Disk(name=disk_name),
     )
-    disk = system_service.disks_service().list(search='name={}'.format(disk_name))[0]
+    disk = system_service.disks_service().list(
+        search='name={}'.format(disk_name)
+    )[0]
     assert disk

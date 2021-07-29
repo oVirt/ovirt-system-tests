@@ -63,6 +63,22 @@ class VirshBackend(base.BaseBackend):
 
         return mapping
 
+    def ip_mapping(self):
+        mapping = {}
+
+        for vm_name, vm_info in self._vms.items():
+            networks = mapping.setdefault(vm_name, {})
+            for nic_name, nic_info in vm_info.nics.items():
+                network_name = nic_info.network_info.name
+                ip_list = networks.setdefault(network_name, [])
+                # TODO: prefer ipv6 over ipv4 once it works
+                if nic_info.ip4_dhcp_entry is not None:
+                    ip_list.append(nic_info.ip4_dhcp_entry.ip)
+                elif nic_info.ip6_dhcp_entry is not None:
+                    ip_list.append(nic_info.ip6_dhcp_entry.ip)
+
+        return mapping
+
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
             contents = shell(

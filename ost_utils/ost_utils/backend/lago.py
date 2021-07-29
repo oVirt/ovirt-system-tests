@@ -18,6 +18,7 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
+import ipaddress
 import json
 import os
 
@@ -44,6 +45,21 @@ class LagoBackend(base.BaseBackend):
             networks = mapping.setdefault(vm_name, {})
             for nic_name, nic_desc in vm_desc["NICs"].items():
                 networks.setdefault(nic_desc["network"], []).append(nic_name)
+
+        return mapping
+
+    def ip_mapping(self):
+        status = self._status()
+        vms = status["Prefix"]["VMs"]
+
+        mapping = {}
+
+        for vm_name, vm_desc in vms.items():
+            networks = mapping.setdefault(vm_name, {})
+            for nic_desc in vm_desc["NICs"].values():
+                network_name = nic_desc["network"]
+                ip_address = ipaddress.ip_address(nic_desc["ip"])
+                networks.setdefault(network_name, []).append(ip_address)
 
         return mapping
 

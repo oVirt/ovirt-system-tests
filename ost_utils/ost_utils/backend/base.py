@@ -25,6 +25,7 @@ from ost_utils import memoized
 
 class BaseBackend(abc.ABC):
 
+    # DEPRECATED
     @abc.abstractmethod
     def iface_mapping(self):
         """Function returning a mapping of hostname --> networks --> ifaces
@@ -48,6 +49,33 @@ class BaseBackend(abc.ABC):
                     'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
                     'lago-basic-suite-master-net-management': ['eth0'],
                     'lago-basic-suite-master-net-storage': ['eth1']
+                }
+            }
+
+        """
+
+    @abc.abstractmethod
+    def ip_mapping(self):
+        """Function returning a mapping of hostname --> networks --> ips
+
+        Returns:
+            dict: Hostname --> networks --> ips.
+
+            Example value:
+
+            {
+                'ost-basic-suite-master-engine': {
+                    'management': [
+                        IPv4Address('192.168.200.2'),
+                        IPv6Address('fd8f:1391:3a82:150::c0a8:9602')
+                    ],
+                    'storage': [
+                        IPv4Address('192.168.201.2'),
+                        IPv6Address('fd8f:1391:3a82:150::c0a9:9603')
+                    ]
+                },
+                'ost-basic-suite-master-host-0': {
+                    ...
                 }
             }
 
@@ -88,12 +116,13 @@ class BaseBackend(abc.ABC):
 
         """
 
+    # DEPRECATED
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]
 
     @memoized.memoized
     def hostnames(self):
-        return set(self.iface_mapping().keys())
+        return set(self.ip_mapping().keys())
 
     @memoized.memoized
     def engine_hostname(self):
@@ -113,7 +142,7 @@ class BaseBackend(abc.ABC):
     def network_names(self):
         return {
             network_name
-            for mapping in self.iface_mapping().values()
+            for mapping in self.ip_mapping().values()
             for network_name in mapping.keys()
         }
 

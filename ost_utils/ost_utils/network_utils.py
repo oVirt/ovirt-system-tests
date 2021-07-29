@@ -42,21 +42,9 @@ def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
 
 def get_ips(backend, ansible_facts, network_name):
     hostname = ansible_facts.get("ansible_hostname")
-    ifaces = backend.ifaces_for(hostname, network_name)
-    try:
-        ips = [
-            ansible_facts.get(f'ansible_{iface}').get('ipv4').get('address')
-            for iface in ifaces
-        ]
-    # Prefer IPv4, but if there's no address then assume this is IPv6-only env
-    except AttributeError:
-        ips = [
-            address['address']
-            for iface in ifaces
-            for address in ansible_facts.get(f'ansible_{iface}').get('ipv6')
-            if address['scope'] == 'global'
-        ]
-    return ips
+
+    # TODO: return non-stringified ip addresses
+    return [str(ip) for ip in backend.ip_mapping()[hostname][network_name]]
 
 
 def ip_to_url(ip):

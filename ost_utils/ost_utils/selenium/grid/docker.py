@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,14 +42,23 @@ def _log_issues(hub_name, node_names):
 
 
 def _get_ip(name):
-    ip = shell([
-        "docker", "inspect", "-f",
-        "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}", name
-    ]).strip()
+    ip = shell(
+        [
+            "docker",
+            "inspect",
+            "-f",
+            "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+            name,
+        ]
+    ).strip()
 
     if ip == "":
-        raise RuntimeError(("Could not get ip address of container. "
-            "See previous messages for probable docker failure"))
+        raise RuntimeError(
+            (
+                "Could not get ip address of container. "
+                "See previous messages for probable docker failure"
+            )
+        )
 
     return ip
 
@@ -66,12 +75,18 @@ def _network(network_name):
 
 @contextlib.contextmanager
 def _hub(image, port, network_name):
-    name = shell([
-        "docker", "run", "-d",
-        "-p", "{0}:{0}".format(port),
-        "--net", network_name,
-        image
-    ]).strip()
+    name = shell(
+        [
+            "docker",
+            "run",
+            "-d",
+            "-p",
+            "{0}:{0}".format(port),
+            "--net",
+            network_name,
+            image,
+        ]
+    ).strip()
 
     try:
         yield name, _get_ip(name)
@@ -84,15 +99,23 @@ def _nodes(images, hub_ip, hub_port, network_name, engine_dns_entry):
     names = []
 
     for image in images:
-        name = shell([
-            "docker", "run", "-d",
-            "--add-host={}".format(engine_dns_entry),
-            "--net", network_name,
-            "-e", "HUB_HOST={}".format(hub_ip),
-            "-e", "HUB_PORT={}".format(hub_port),
-            "-v", "/dev/shm:/dev/shm",
-            image
-        ]).strip()
+        name = shell(
+            [
+                "docker",
+                "run",
+                "-d",
+                "--add-host={}".format(engine_dns_entry),
+                "--net",
+                network_name,
+                "-e",
+                "HUB_HOST={}".format(hub_ip),
+                "-e",
+                "HUB_PORT={}".format(hub_port),
+                "-v",
+                "/dev/shm:/dev/shm",
+                image,
+            ]
+        ).strip()
 
         names.append(name)
 
@@ -104,19 +127,29 @@ def _nodes(images, hub_ip, hub_port, network_name, engine_dns_entry):
 
 
 @contextlib.contextmanager
-def grid(engine_fqdn, engine_ip, node_images=None,
-         hub_image=HUB_CONTAINER_IMAGE, hub_port=HUB_PORT,
-         network_name=NETWORK_NAME):
+def grid(
+    engine_fqdn,
+    engine_ip,
+    node_images=None,
+    hub_image=HUB_CONTAINER_IMAGE,
+    hub_port=HUB_PORT,
+    network_name=NETWORK_NAME,
+):
     if node_images is None:
         node_images = [CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE]
 
-    engine_dns_entry="{}:{}".format(engine_fqdn, engine_ip)
+    engine_dns_entry = "{}:{}".format(engine_fqdn, engine_ip)
 
     with common.http_proxy_disabled():
         with _network(network_name):
             with _hub(hub_image, hub_port, network_name) as (hub_name, hub_ip):
-                with _nodes(node_images, hub_ip, hub_port, network_name,
-                            engine_dns_entry) as node_names:
+                with _nodes(
+                    node_images,
+                    hub_ip,
+                    hub_port,
+                    network_name,
+                    engine_dns_entry,
+                ) as node_names:
                     url = common.GRID_URL_TEMPLATE.format(hub_ip, hub_port)
                     try:
                         common.grid_health_check(url, len(node_images))

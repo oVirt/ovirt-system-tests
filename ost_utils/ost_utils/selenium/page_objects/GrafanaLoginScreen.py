@@ -13,7 +13,9 @@ class GrafanaLoginScreen(Displayable):
         super(GrafanaLoginScreen, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_xpath(self.OAUTH_XPATH).is_displayed()
+        return self.ovirt_driver.driver.find_element_by_xpath(
+            self.OAUTH_XPATH
+        ).is_displayed()
 
     def get_displayable_name(self):
         return 'Grafana login screen'
@@ -21,4 +23,3 @@ class GrafanaLoginScreen(Displayable):
     def use_ovirt_engine_auth(self):
         LOGGER.debug('Open oVirt Engine Auth')
         self.ovirt_driver.xpath_click(self.OAUTH_XPATH)
-

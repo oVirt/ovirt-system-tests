@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,9 +42,10 @@ NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
 
 
 def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
-    LOGGER.error("Pod inspection: \n%s" % shell([
-        podman_cmd, "pod", "inspect", pod_name
-    ]))
+    LOGGER.error(
+        "Pod inspection: \n%s"
+        % shell([podman_cmd, "pod", "inspect", pod_name])
+    )
     LOGGER.error("Hub logs: \n%s" % shell([podman_cmd, "logs", hub_name]))
     for name in node_names:
         LOGGER.error(
@@ -59,8 +60,16 @@ def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
 @contextlib.contextmanager
 def _pod(hub_port, podman_cmd):
     network_backend = ["--network=slirp4netns"] if os.getuid() == 0 else []
-    name = shell([podman_cmd, "pod", "create", *network_backend, "-p",
-                 f"{hub_port}:{hub_port}"]).strip()
+    name = shell(
+        [
+            podman_cmd,
+            "pod",
+            "create",
+            *network_backend,
+            "-p",
+            f"{hub_port}:{hub_port}",
+        ]
+    ).strip()
     try:
         yield name
     finally:
@@ -69,14 +78,20 @@ def _pod(hub_port, podman_cmd):
 
 @contextlib.contextmanager
 def _hub(image, hub_port, pod_name, podman_cmd):
-    name = shell([
-        podman_cmd, "run",
-        "-d",
-        "-e", "SE_OPTS=-port {}".format(hub_port),
-        "-v", "/dev/shm:/dev/shm",
-        "--pod", pod_name,
-        image
-    ]).strip()
+    name = shell(
+        [
+            podman_cmd,
+            "run",
+            "-d",
+            "-e",
+            "SE_OPTS=-port {}".format(hub_port),
+            "-v",
+            "/dev/shm:/dev/shm",
+            "--pod",
+            pod_name,
+            image,
+        ]
+    ).strip()
     try:
         yield name
     finally:
@@ -95,23 +110,30 @@ def _nodes(images, hub_port, pod_name, engine_dns_entry, podman_cmd):
 
     for image in images:
         display = next(NODE_DISPLAY_ADDR_GEN)
-        name = shell([
-            podman_cmd, "run", "-d",
-            "-v", "/dev/shm:/dev/shm",
-            "--add-host={}".format(engine_dns_entry),
-            "-e", "HUB_HOST={}".format(HUB_IP),
-            "-e", "HUB_PORT={}".format(hub_port),
-            "-e", "SE_OPTS=-port {}".format(next(NODE_PORT_GEN)),
-            "-e", "DISPLAY=:{}".format(display),
-            "-e", "VNC_NO_PASSWORD=1",
-            "--pod", pod_name,
-            image
-        ]).strip()
-        nodes_dict.update({
-            image: {
-                'name': name, 'display': display
-            }
-        })
+        name = shell(
+            [
+                podman_cmd,
+                "run",
+                "-d",
+                "-v",
+                "/dev/shm:/dev/shm",
+                "--add-host={}".format(engine_dns_entry),
+                "-e",
+                "HUB_HOST={}".format(HUB_IP),
+                "-e",
+                "HUB_PORT={}".format(hub_port),
+                "-e",
+                "SE_OPTS=-port {}".format(next(NODE_PORT_GEN)),
+                "-e",
+                "DISPLAY=:{}".format(display),
+                "-e",
+                "VNC_NO_PASSWORD=1",
+                "--pod",
+                pod_name,
+                image,
+            ]
+        ).strip()
+        nodes_dict.update({image: {'name': name, 'display': display}})
 
     try:
         yield nodes_dict
@@ -125,16 +147,25 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, videos_artifacts_dir):
     videos = []
     if videos_artifacts_dir is not None:
         for image, values in nodes_dict.items():
-            video = shell([
-                podman_cmd, "run", "-d",
-                "-v", f"{videos_artifacts_dir}:/videos:Z",
-                "-e", f"DISPLAY_CONTAINER_NAME={' '}",
-                "-e", f"DISPLAY={values['display']}",
-                "-e", f"FILE_NAME=video-{image.split('/')[-1].split('-')[1]}"
-                      f".mp4",
-                "--pod", pod_name,
-                FFMPEG_CONTAINER_IMAGE,
-            ]).strip()
+            video = shell(
+                [
+                    podman_cmd,
+                    "run",
+                    "-d",
+                    "-v",
+                    f"{videos_artifacts_dir}:/videos:Z",
+                    "-e",
+                    f"DISPLAY_CONTAINER_NAME={' '}",
+                    "-e",
+                    f"DISPLAY={values['display']}",
+                    "-e",
+                    f"FILE_NAME=video-{image.split('/')[-1].split('-')[1]}"
+                    f".mp4",
+                    "--pod",
+                    pod_name,
+                    FFMPEG_CONTAINER_IMAGE,
+                ]
+            ).strip()
             videos.append(video)
 
     try:
@@ -146,44 +177,76 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, videos_artifacts_dir):
 
 
 @contextlib.contextmanager
-def _grid(engine_fqdn, engine_ip, node_images, hub_image, hub_port, podman_cmd,
-          videos_artifacts_dir):
+def _grid(
+    engine_fqdn,
+    engine_ip,
+    node_images,
+    hub_image,
+    hub_port,
+    podman_cmd,
+    videos_artifacts_dir,
+):
     if node_images is None:
         node_images = [CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE]
 
-    engine_dns_entry="{}:{}".format(engine_fqdn, engine_ip)
+    engine_dns_entry = "{}:{}".format(engine_fqdn, engine_ip)
 
     with common.http_proxy_disabled():
         with _pod(hub_port, podman_cmd) as pod_name:
             with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
-                with _nodes(node_images, hub_port, pod_name,
-                            engine_dns_entry, podman_cmd) as nodes_dict:
-                    node_names = [node_dict['name'] for node_dict in
-                                  nodes_dict.values()]
-                    with _video_recorders(pod_name, podman_cmd, nodes_dict,
-                                          videos_artifacts_dir)as videos_names:
+                with _nodes(
+                    node_images,
+                    hub_port,
+                    pod_name,
+                    engine_dns_entry,
+                    podman_cmd,
+                ) as nodes_dict:
+                    node_names = [
+                        node_dict['name'] for node_dict in nodes_dict.values()
+                    ]
+                    with _video_recorders(
+                        pod_name, podman_cmd, nodes_dict, videos_artifacts_dir
+                    ) as videos_names:
                         url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
                         try:
                             common.grid_health_check(url, len(node_images))
                             yield url
                         except common.SeleniumGridError:
-                            _log_issues(pod_name, hub_name, node_names,
-                                        podman_cmd, videos_names)
+                            _log_issues(
+                                pod_name,
+                                hub_name,
+                                node_names,
+                                podman_cmd,
+                                videos_names,
+                            )
                             raise
 
 
 @contextlib.contextmanager
-def grid(engine_fqdn, engine_ip, node_images=None,
-         hub_image=HUB_CONTAINER_IMAGE, retries=GRID_STARTUP_RETRIES,
-         podman_cmd="podman", videos_artifacts_dir=None):
+def grid(
+    engine_fqdn,
+    engine_ip,
+    node_images=None,
+    hub_image=HUB_CONTAINER_IMAGE,
+    retries=GRID_STARTUP_RETRIES,
+    podman_cmd="podman",
+    videos_artifacts_dir=None,
+):
     for attempt in range(retries):
-        hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT+100)
+        hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT + 100)
         LOGGER.debug(
             f"Attempt no {attempt} to run the grid on {hub_port} port"
         )
         try:
-            with _grid(engine_fqdn, engine_ip, node_images, hub_image,
-                       hub_port, podman_cmd, videos_artifacts_dir) as url:
+            with _grid(
+                engine_fqdn,
+                engine_ip,
+                node_images,
+                hub_image,
+                hub_port,
+                podman_cmd,
+                videos_artifacts_dir,
+            ) as url:
                 LOGGER.debug(f"Grid is up: {url}")
                 yield url
         except (common.SeleniumGridError, ShellError):

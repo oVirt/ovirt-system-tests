@@ -1,9 +1,14 @@
 from .EntityListView import EntityListView
 
-class HostListView(EntityListView):
 
+class HostListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(HostListView, self).__init__(ovirt_driver, 'host', ['Compute', 'Hosts'], 'MainHostView_table_content_col2_row')
+        super(HostListView, self).__init__(
+            ovirt_driver,
+            'host',
+            ['Compute', 'Hosts'],
+            'MainHostView_table_content_col2_row',
+        )
 
     def is_new_button_enabled(self):
         return self.ovirt_driver.is_button_enabled('New')

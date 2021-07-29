@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ def grid_health_check(hub_url, expected_node_count=None):
     for i in range(GRID_STARTUP_WAIT_RETRIES):
         try:
             out = shell(["curl", "-sSL", status_url])
-            if json.loads(out)["value"]["ready"] == True:
+            if json.loads(out)["value"]["ready"] is True:
                 break
         except ShellError:
             pass

@@ -1,5 +1,5 @@
 import logging
-import time
+
 from selenium.webdriver.common.action_chains import ActionChains
 from .Displayable import Displayable
 from .VmListView import VmListView
@@ -15,12 +15,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WebAdminLeftMenu(Displayable):
-
     def __init__(self, ovirt_driver):
         super(WebAdminLeftMenu, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.is_class_name_present('nav-pf-vertical-collapsible-menus')
+        return self.ovirt_driver.is_class_name_present(
+            'nav-pf-vertical-collapsible-menus'
+        )
 
     def get_displayable_name(self):
         return 'WebAdmin left menu'
@@ -90,7 +91,9 @@ class WebAdminLeftMenu(Displayable):
         return disks_list_view
 
     def _open_dashboard_menu(self):
-        self.ovirt_driver.xpath_wait_and_click('Dashboard menu', '//a[@href="#dashboard-main"]')
+        self.ovirt_driver.xpath_wait_and_click(
+            'Dashboard menu', '//a[@href="#dashboard-main"]'
+        )
 
     def _open_compute_menu(self, menu_name, menu_id):
         self._open_menu('compute', menu_name, menu_id)
@@ -101,12 +104,16 @@ class WebAdminLeftMenu(Displayable):
     def _open_menu(self, menu_group, menu_name, menu_id):
         menu_element = self.ovirt_driver.driver.find_element_by_id(menu_group)
         submenu_element = self.ovirt_driver.driver.find_element_by_id(menu_id)
-        self.ovirt_driver.wait_until(f'sub menu "{menu_name}" is visible  in the left menu',
-                self._submenu_is_displayed,
-                menu_element,
-                submenu_element)
+        self.ovirt_driver.wait_until(
+            f'sub menu "{menu_name}" is visible  in the left menu',
+            self._submenu_is_displayed,
+            menu_element,
+            submenu_element,
+        )
         submenu_element.click()
 
     def _submenu_is_displayed(self, menu_element, submenu_element):
-        ActionChains(self.ovirt_driver.driver).move_to_element(menu_element).perform()
+        ActionChains(self.ovirt_driver.driver).move_to_element(
+            menu_element
+        ).perform()
         return submenu_element.is_displayed()

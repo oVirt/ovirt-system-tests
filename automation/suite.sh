@@ -32,9 +32,12 @@ if [[ "${RUNNING_IN_PSI}" == "true" ]]; then
     mkdir -p exported-artifacts
     {
       source lagofy.sh $SUITE $distro &&
+        export OST_IMAGES_DISTRO=$distro &&
+        source "$OST_REPO_ROOT/common/helpers/ost-images.sh" &&
         cp ${OST_IMAGES_SSH_KEY}* /tmp &&
         OST_IMAGES_SSH_KEY=/tmp/$(basename $OST_IMAGES_SSH_KEY) &&
         chmod 600 ${OST_IMAGES_SSH_KEY}* &&
+        ost_init $SUITE &&
         ost_run_tests;
       res=$?;
     } 2>&1 | tee exported-artifacts/ost_run_tests.log

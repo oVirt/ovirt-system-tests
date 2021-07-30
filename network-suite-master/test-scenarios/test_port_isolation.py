@@ -40,9 +40,9 @@ EXTERNAL_IP = {
     'inet': '8.8.8.8',
     'inet6': '2001:4860:4860::8888'
 }
-Iface = namedtuple('Iface', ['name'])
-IFACE_0 = Iface('eth0')
-IFACE_ISOLATED = Iface('eth1')
+Iface = namedtuple('Iface', ['name', 'ipv6'])
+IFACE_0 = Iface('eth0', 'fd8f:1391:3a82:200::cafe:e0')
+IFACE_ISOLATED = Iface('eth1', 'fd8f:1391:3a82:201::cafe:e1')
 
 
 @pytest.mark.xfail(suite.af().is6,
@@ -60,14 +60,17 @@ def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
 
 
 @pytest.fixture(scope='module')
-def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1):
+def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1, serial_console):
     vms_ovirtmgmt_ip = []
-    host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
-    for name in [VM0_NAME, VM1_NAME]:
-        ovirtmgmt_ip = host_node.lookup_ip_address_with_dns_query(
-            name, suite.af().version
-        )
-        vms_ovirtmgmt_ip.append(ovirtmgmt_ip)
+    for vm in vms_up_on_host_1:
+        if suite.af().is6:
+            ip = IFACE_0.ipv6
+            serial_console.add_static_ip(vm.id, f'{ip}/64', IFACE_0.name)
+        else:
+            host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
+            ip = host_node.lookup_ip_address_with_dns_query(vm.name,
+                                                            suite.af().version)
+        vms_ovirtmgmt_ip.append(ip)
     return vms_ovirtmgmt_ip
 
 
@@ -78,7 +81,23 @@ def vm_nodes(vms_ovirtmgmt_ip):
 
 
 @pytest.fixture(scope='module')
-def isolated_ifaces_up_with_ip(vm_nodes):
+def isolated_ifaces_up_with_ip(vm_nodes, vms_up_on_host_1, serial_console):
+    if suite.af().is6:
+        return isolated_ifaces_up_with_ipv6(vms_up_on_host_1, serial_console)
+    else:
+        return isolated_ifaces_up_with_ipv4(vm_nodes)
+
+
+def isolated_ifaces_up_with_ipv6(vms_up_on_host_1, serial_console):
+    ips = []
+    for vm in vms_up_on_host_1:
+        ip = IFACE_ISOLATED.ipv6
+        serial_console.add_static_ip(vm.id, f'{ip}/64', IFACE_ISOLATED.name)
+        ips.append(ip)
+    return ips
+
+
+def isolated_ifaces_up_with_ipv4(vm_nodes):
     ips = []
     for vm_node in vm_nodes:
         vm_node.assign_ip_with_dhcp_client(IFACE_ISOLATED.name)

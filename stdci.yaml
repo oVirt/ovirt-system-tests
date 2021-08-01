@@ -47,6 +47,13 @@ stage:
                     jenkins_master: upstream
                     hostdistro: same
                     support-nesting-level: 2
+        - node-upgrade_suite_master:
+            distributions:
+              - el8:
+                  runtime-requirements:
+                    jenkins_master: upstream
+                    hostdistro: same
+                    support-nesting-level: 2
         - test-ost-container:
             runif:
               filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']

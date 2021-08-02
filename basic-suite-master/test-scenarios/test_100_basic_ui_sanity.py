@@ -370,6 +370,7 @@ def setup_virtual_machines(engine_api):
         )
 
 
+@pytest.mark.xfail(reason="VNC console fails to open on FIPS hosts")
 def test_virtual_machines(ovirt_driver, setup_virtual_machines,
         save_screenshot):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)

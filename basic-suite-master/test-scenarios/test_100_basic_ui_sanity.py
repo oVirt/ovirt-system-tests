@@ -370,7 +370,6 @@ def setup_virtual_machines(engine_api):
         )
 
 
-@pytest.mark.xfail(reason="VNC console fails to open on FIPS hosts")
 def test_virtual_machines(ovirt_driver, setup_virtual_machines,
         save_screenshot):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
@@ -433,6 +432,9 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
     save_screenshot('vms-vgpu')
 
     vm_vgpu_dialog.cancel()
+
+    # TODO uncomment once VNC console works
+    pytest.skip("VNC console fails to open on FIPS hosts")
 
     novnc_console = vm_list_view.open_console()
     novnc_console.wait_for_loaded()

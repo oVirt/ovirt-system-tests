@@ -12,6 +12,13 @@ STORAGEHOSTNAME="${HOSTEDENGINE/engine/storage}"
 VMPASS=123456
 ENGINEPASS=123
 HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
+INTERFACE=eth0
+PREFIX=24
+HEGW=$(\
+    /sbin/ip -4 -o addr show dev ${INTERFACE} scope global \
+    | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}'\
+    | awk -F/ '{print $1}' \
+)
 
 # This is needed in case we're using prebuilt ost-images.
 # In this scenario ssh keys are baked in to the qcows (so lago
@@ -27,29 +34,13 @@ EOF
 
 }
 
-setup_ipv4() {
-    MYADDR=$(\
-        /sbin/ip -4 -o addr show dev eth0 \
-        | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
-        | awk -F/ '{print $1}' \
-    )
-
-    echo "${MYADDR} ${MYHOSTNAME}.${DOMAIN} ${MYHOSTNAME}" >> /etc/hosts
-
-    HEGW=$(\
-        /sbin/ip -4 -o addr show dev eth0 \
-        | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}'\
-        | awk -F/ '{print $1}' \
-    )
+add_he_to_hosts() {
     echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
-
-    INTERFACE=eth0
-    PREFIX=24
 }
 
 copy_ssh_key
 
-setup_ipv4
+add_he_to_hosts
 
 sed \
     -e "s,@GW@,${HEGW},g" \
@@ -68,7 +59,8 @@ sed \
 
 fstrim -va
 rm -rf /var/cache/yum/*
-hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
+# TODO currently we only pass IPv4 for HE and that breaks on dual stack since host-0 resolves to IPv6 and the setup code gets confused
+hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf --ansible-extra-vars=he_force_ip4=true
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."

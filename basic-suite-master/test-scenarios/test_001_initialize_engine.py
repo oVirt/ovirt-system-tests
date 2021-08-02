@@ -20,36 +20,12 @@
 from __future__ import absolute_import
 
 import os
-import socket
 
-from tempfile import NamedTemporaryFile
+from ost_utils.ansible.collection import engine_setup
 
 
-def test_initialize_engine(suite_dir, engine_ip, ansible_engine,
-                           engine_answer_file_path):
-    ansible_engine.copy(
-        src=engine_answer_file_path,
-        dest='/root/engine-answer-file',
-    )
-
-    host_name = socket.gethostname()
-    host_ip = socket.gethostbyname(host_name)
-
-    with NamedTemporaryFile(mode='w') as sso_conf:
-        sso_conf.write(
-            (
-                'SSO_ALTERNATE_ENGINE_FQDNS='
-                '"${{SSO_ALTERNATE_ENGINE_FQDNS}} {0} {1} {2}"\n'
-            ).format(engine_ip, host_name, host_ip)
-        )
-        sso_conf.flush()
-        os.fsync(sso_conf.fileno())
-        ansible_engine.copy(
-            src=sso_conf.name,
-            dest='/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf',
-            mode='0644'
-        )
-
+def test_initialize_engine(engine_ip, ansible_engine,
+                           engine_answer_file_path, ssh_key_file):
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
         ansible_engine.shell(
             'sed -i '
@@ -59,23 +35,33 @@ def test_initialize_engine(suite_dir, engine_ip, ansible_engine,
             '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
         )
 
-    ansible_engine.shell(
-        'engine-setup '
-        '--config-append=/root/engine-answer-file '
-        '--accept-defaults '
-        '--offline '
+    engine_setup(
+        ansible_engine,
+        engine_ip,
+        answer_file_path=engine_answer_file_path,
+        ssh_key_path=ssh_key_file,
+        ovirt_engine_setup_offline='true',
+        ovirt_engine_setup_engine_configs=[
+            {
+                'key':'VdsLocalDisksLowFreeSpace',
+                'value': '400'
+            },
+            {
+                'key':'OvfUpdateIntervalInMinutes',
+                'value': '10'
+            },
+            {
+                'key':'ServerRebootTimeout',
+                'value': '120'
+            },
+            {
+                'key':'ClientModeVncDefault',
+                'value': 'NoVnc'
+            },
+        ]
     )
     ansible_engine.shell('ss -anp')
 
     ansible_engine.systemd(name='ovirt-engine-notifier', state='started')
     ansible_engine.systemd(name='ovirt-engine', state='started')
     ansible_engine.systemd(name='ovirt-engine-dwhd', state='started')
-
-
-def test_engine_config(ansible_engine, engine_restart):
-    ansible_engine.shell("engine-config --set VdsLocalDisksLowFreeSpace=400")
-    ansible_engine.shell("engine-config --set OvfUpdateIntervalInMinutes=10")
-    ansible_engine.shell("engine-config --set ServerRebootTimeout=120")
-    ansible_engine.shell("engine-config --set ClientModeVncDefault=NoVnc")
-
-    engine_restart()

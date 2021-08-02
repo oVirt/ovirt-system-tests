@@ -28,7 +28,7 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(ansible_engine, engine_ip, root_dir):
+def test_initialize_engine(ansible_engine, engine_ip, root_dir, ssh_key_file):
     engine_setup(
         ansible_engine,
         engine_ip,
@@ -38,6 +38,6 @@ def test_initialize_engine(ansible_engine, engine_ip, root_dir):
             'answer-files',
             'engine-answer-file.conf'
         ),
-        ssh_key_path=os.environ.get('OST_IMAGES_SSH_KEY'),
+        ssh_key_path=ssh_key_file,
         ovirt_engine_setup_offline='true',
     )

@@ -30,7 +30,6 @@ from ost_utils import shell
 
 
 class LagoBackend(base.BaseBackend):
-
     def __init__(self, prefix_path):
         self._prefix_path = prefix_path
         self._ansible_inventory_str = None
@@ -65,18 +64,20 @@ class LagoBackend(base.BaseBackend):
 
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
-            contents = shell.shell(["lago", "ansible_hosts"],
-                                   bytes_output=True,
-                                   cwd=self._prefix_path)
+            contents = shell.shell(
+                ["lago", "ansible_hosts"],
+                bytes_output=True,
+                cwd=self._prefix_path,
+            )
             self._ansible_inventory_str = contents
         return self._ansible_inventory_str
 
     def deploy_scripts(self):
         init_file = self._init_file()
         return {
-            hostname:
-                init_file['domains'][hostname].get(
-                    'metadata', {}).get('deploy-scripts', [])
+            hostname: init_file['domains'][hostname]
+            .get('metadata', {})
+            .get('deploy-scripts', [])
             for hostname in self.hostnames()
         }
 

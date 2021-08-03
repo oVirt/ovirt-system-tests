@@ -29,12 +29,15 @@ from ost_utils.shell import shell
 
 DHCPEntry = namedtuple("DHCPEntry", "hostname mac_or_id ip")
 
-NICInfo = namedtuple("NICInfo", "name libvirt_name mac network_info "
-                                "ip4_dhcp_entry ip6_dhcp_entry")
+NICInfo = namedtuple(
+    "NICInfo",
+    "name libvirt_name mac network_info " "ip4_dhcp_entry ip6_dhcp_entry",
+)
 
 NetworkInfo = namedtuple(
-    "NetworkInfo", "name libvirt_name ip4_gw ip4_prefix ip4_dhcp_entries "
-                   "ip6_gw ip6_prefix ip6_dhcp_entries"
+    "NetworkInfo",
+    "name libvirt_name ip4_gw ip4_prefix ip4_dhcp_entries "
+    "ip6_gw ip6_prefix ip6_dhcp_entries",
 )
 
 VMInfo = namedtuple("VMInfo", "name libvirt_name nics deploy_scripts")
@@ -144,8 +147,14 @@ class VirshBackend(base.BaseBackend):
                     ip4_dhcp_entries = VirshBackend._get_dhcp_entries(node)
 
             networks[ost_net_name] = NetworkInfo(
-                ost_net_name, name, ip4_gw, ip4_prefix, ip4_dhcp_entries,
-                ip6_gw, ip6_prefix, ip6_dhcp_entries
+                ost_net_name,
+                name,
+                ip4_gw,
+                ip4_prefix,
+                ip4_dhcp_entries,
+                ip6_gw,
+                ip6_prefix,
+                ip6_dhcp_entries,
             )
 
         return networks
@@ -182,11 +191,18 @@ class VirshBackend(base.BaseBackend):
             mac = nic.find("./mac[@address]").get("address")
             libvirt_network = nic.find("./source[@network]").get("network")
             network_info = networks[libvirt_network]
-            (ip4_dhcp_entry, ip6_dhcp_entry) = (
-                VirshBackend._find_dhcp_entries_for_nic(mac, networks)
+            (
+                ip4_dhcp_entry,
+                ip6_dhcp_entry,
+            ) = VirshBackend._find_dhcp_entries_for_nic(mac, networks)
+            nics[name] = NICInfo(
+                name,
+                libvirt_name,
+                mac,
+                network_info,
+                ip4_dhcp_entry,
+                ip6_dhcp_entry,
             )
-            nics[name] = NICInfo(name, libvirt_name, mac, network_info,
-                                 ip4_dhcp_entry, ip6_dhcp_entry)
 
         return nics
 

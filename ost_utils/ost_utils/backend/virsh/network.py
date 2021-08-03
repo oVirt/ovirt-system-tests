@@ -36,7 +36,8 @@ def add_name(
     def run_net_update_add(*extra_args):
         cmd = (
             'virsh',
-            '-c', 'qemu:///system',
+            '-c',
+            'qemu:///system',
             'net-update',
             libvirt_net_name,
             'add',
@@ -57,11 +58,7 @@ def add_name(
     def run_net_update_add_dns(name, ip):
         run_net_update_add(
             'dns-host',
-            (
-                f"<host ip='{ip}'> "
-                f"  <hostname>{name}</hostname> "
-                "</host>"
-            ),
+            (f"<host ip='{ip}'> " f"  <hostname>{name}</hostname> " "</host>"),
             '--live',
         )
 
@@ -89,6 +86,7 @@ def add_name(
                 "/>"
             ),
             '--live',
-            '--parent-index', '1',
+            '--parent-index',
+            '1',
         )
         run_net_update_add_dns(host_name, ipv6_address)

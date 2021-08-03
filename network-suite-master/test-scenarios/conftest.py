@@ -35,6 +35,7 @@ from fixtures.host import host_0_up
 from fixtures.host import host_1_up
 from fixtures.host import install_hosts_to_save_time
 
+from fixtures.engine import engine_admin
 from fixtures.engine import engine_full_username
 from fixtures.engine import engine_password
 from fixtures.engine import ovirt_engine_setup
@@ -53,6 +54,7 @@ from fixtures.storage import lun_id
 from fixtures.providers import ovirt_image_repo
 
 from fixtures.virt import cirros_template
+from fixtures.virt import vmconsole_rsa
 
 from fixtures.data_center import data_centers_service
 from fixtures.data_center import default_data_center

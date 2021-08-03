@@ -16,6 +16,12 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+from collections import namedtuple
+
+import contextlib
+import logging
+import os
+import random
 import pytest
 
 from fixtures import providers
@@ -23,6 +29,11 @@ from fixtures import providers
 from ovirtlib import storagelib
 from ovirtlib import templatelib
 from ovirtlib.sdkentity import EntityNotFoundError
+
+from ost_utils import shell
+
+LOGGER = logging.getLogger(__name__)
+Rsa = namedtuple('Rsa', ['public_key_content', 'private_key_path'])
 
 
 @pytest.fixture(scope='session')
@@ -43,3 +54,19 @@ def cirros_template(system, ovirt_image_repo, default_cluster,
         templatelib.wait_for_template_ok_status(system, cirros_template)
 
     return cirros_template
+
+
+@pytest.fixture(scope='session')
+def vmconsole_rsa():
+    private_key_path = f'/tmp/vmconsole_rsa_{random.randrange(1, 2**31)}'
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(f'{private_key_path}')
+        os.remove(f'{private_key_path}.pub')
+    shell.shell([
+        'ssh-keygen', '-t', 'rsa', '-f', f'{private_key_path}', '-N', ''
+    ])
+    with open(f'{private_key_path}.pub') as f:
+        public_key_content = f.read()
+        LOGGER.debug(f'read vmconsole public key {public_key_content}')
+    return Rsa(public_key_content=public_key_content,
+               private_key_path=f'{private_key_path}')

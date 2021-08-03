@@ -34,14 +34,19 @@ from testlib import suite
 VM_BLANK = 'test_vm_operations_blank_vm'
 VM_CIRROS = 'test_vm_operations_cirros_vm'
 MIG_NET = 'mig-net'
-MIG_NET_IPv4_ADDR_1 = '192.0.3.1'
-MIG_NET_IPv4_ADDR_2 = '192.0.3.2'
-MIG_NET_IPv4_MASK = '255.255.255.0'
 NIC1_NAME = 'nic1'
 NIC2_NAME = 'nic2'
 SERIAL_NET = 'test_serial_vmconsole_net'
 CIRROS_NIC = 'eth1'
 CIRROS_IPV6 = 'fd8f:1391:3a82::cafe:cafe/64'
+STATIC_ASSIGN_1 = {
+    'inet': netattachlib.StaticIpv4Assignment('192.0.3.1', '255.255.255.0'),
+    'inet6': netattachlib.StaticIpv6Assignment('fd8f:192:0:3::1', '64')
+}
+STATIC_ASSIGN_2 = {
+    'inet': netattachlib.StaticIpv4Assignment('192.0.3.2', '255.255.255.0'),
+    'inet6': netattachlib.StaticIpv6Assignment('fd8f:192:0:3::2', '64')
+}
 
 
 @pytest.fixture
@@ -97,10 +102,8 @@ def running_blank_vm(system, default_cluster, default_storage_domain,
 
 @pytest.fixture
 def host_0_with_mig_net(migration_network, host_0_up):
-    ip_assign = netattachlib.StaticIpv4Assignment(
-        addr=MIG_NET_IPv4_ADDR_1, mask=MIG_NET_IPv4_MASK)
     mig_att_data = netattachlib.NetworkAttachmentData(
-        migration_network, ETH1, [ip_assign])
+        migration_network, ETH1, (STATIC_ASSIGN_1[suite.af().family],))
     host_0_up.setup_networks([mig_att_data])
     yield host_0_up
     host_0_up.remove_networks((migration_network,))
@@ -108,10 +111,8 @@ def host_0_with_mig_net(migration_network, host_0_up):
 
 @pytest.fixture
 def host_1_with_mig_net(migration_network, host_1_up):
-    ip_config = netattachlib.StaticIpv4Assignment(
-        addr=MIG_NET_IPv4_ADDR_2, mask=MIG_NET_IPv4_MASK)
     mig_att_data = netattachlib.NetworkAttachmentData(
-        migration_network, ETH1, [ip_config])
+        migration_network, ETH1, (STATIC_ASSIGN_2[suite.af().family],))
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up
     host_1_up.remove_networks((migration_network,))

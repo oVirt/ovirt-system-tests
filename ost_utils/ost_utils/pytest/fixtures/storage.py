@@ -26,7 +26,9 @@ from ost_utils import network_utils
 
 @pytest.fixture(scope="session")
 def storage_ips_for_network(ansible_storage_facts, backend):
-    return functools.partial(network_utils.get_ips, backend, ansible_storage_facts)
+    return functools.partial(
+        network_utils.get_ips, backend, ansible_storage_facts
+    )
 
 
 @pytest.fixture(scope="session")

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,14 +27,15 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(session, config, items):
-
     def get_item_module(item):
         return item.location[0]
 
     def get_item_ordering(item):
         mark = item.get_closest_marker('run')
         if not mark:
-            raise RuntimeError(f"Some tests don't have ordering defined: {item}")
+            raise RuntimeError(
+                f"Some tests don't have ordering defined: {item}"
+            )
         return mark.kwargs.get('order')
 
     def module_uses_item_ordering(module_items):
@@ -55,7 +56,6 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 def order_by(test_list):
-
     def wrapper(test_fn):
         try:
             idx = test_list.index(test_fn.__name__)

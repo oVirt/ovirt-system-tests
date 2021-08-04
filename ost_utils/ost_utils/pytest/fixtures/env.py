@@ -27,13 +27,16 @@ import pytest
 def root_dir():
     return os.environ.get('OST_REPO_ROOT')
 
+
 @pytest.fixture(scope='session')
 def suite():
     return os.environ.get('SUITE')
 
+
 @pytest.fixture(scope='session')
 def suite_dir(root_dir, suite):
     return os.path.join(root_dir, suite)
+
 
 @pytest.fixture(scope='session')
 def working_dir():

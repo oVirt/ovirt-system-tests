@@ -68,12 +68,17 @@ def hub_url(engine_fqdn, engine_ip, selenium_artifacts_dir):
         backend = _grid_backend()
         if backend == "podman" or backend == "podman-remote":
             videos_artifacts_dir = selenium_artifacts_dir
-            with podman.grid(engine_fqdn, engine_ip, podman_cmd=backend,
-                             videos_artifacts_dir=videos_artifacts_dir
-                             ) as hub_url:
+            with podman.grid(
+                engine_fqdn,
+                engine_ip,
+                podman_cmd=backend,
+                videos_artifacts_dir=videos_artifacts_dir,
+            ) as hub_url:
                 yield hub_url
         elif backend == "docker":
             with docker.grid(engine_fqdn, engine_ip) as hub_url:
                 yield hub_url
         else:
-            raise RuntimeError("No container backend available to set up the grid")
+            raise RuntimeError(
+                "No container backend available to set up the grid"
+            )

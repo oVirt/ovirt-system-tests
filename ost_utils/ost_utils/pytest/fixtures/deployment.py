@@ -44,13 +44,12 @@ def run_scripts(ansible_by_hostname, root_dir):
             LOGGER.info(f"[{hostname}] Starting {script}")
             res = ansible_handle.script(os.path.join(root_dir, script))
             duration = int((datetime.datetime.now() - start).total_seconds())
-            LOGGER.info(
-                f"[{hostname}] Finished {script} ({duration}s)"
-            )
+            LOGGER.info(f"[{hostname}] Finished {script} ({duration}s)")
             LOGGER.debug(
                 f"[{hostname}] Finished {script}, result:\n%s",
                 pprint.pformat(res),
             )
+
     return do_run_scripts
 
 
@@ -95,8 +94,10 @@ def deploy(
     package_mgmt.report_ovirt_packages_versions(ansible_vms_to_deploy)
 
     # run deployment scripts
-    runs = [functools.partial(run_scripts, hostname, scripts)
-            for hostname, scripts in deploy_scripts.items()]
+    runs = [
+        functools.partial(run_scripts, hostname, scripts)
+        for hostname, scripts in deploy_scripts.items()
+    ]
     utils.invoke_different_funcs_in_parallel(*runs)
 
     # setup vdsm coverage on hosts if desired

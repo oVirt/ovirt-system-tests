@@ -38,7 +38,9 @@ from ost_utils.selenium.grid.common import http_proxy_disabled
 
 @pytest.fixture(scope="session")
 def engine_ips_for_network(ansible_engine_facts, backend):
-    return functools.partial(network_utils.get_ips, backend, ansible_engine_facts)
+    return functools.partial(
+        network_utils.get_ips, backend, ansible_engine_facts
+    )
 
 
 @pytest.fixture(scope="session")
@@ -136,33 +138,48 @@ def engine_api(engine_full_username, engine_password, engine_api_url):
 @pytest.fixture(scope="session")
 def engine_cert(engine_fqdn, engine_ip_url):
     with http_proxy_disabled():
-        with tempfile.NamedTemporaryFile(prefix="engine-cert",
-                                         suffix=".pem") as cert_file:
-            shell([
-                "curl", "-fsS",
-                "-m", "10",
-                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip_url),
-                "-o", cert_file.name,
-                "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(engine_fqdn)
-            ])
+        with tempfile.NamedTemporaryFile(
+            prefix="engine-cert", suffix=".pem"
+        ) as cert_file:
+            shell(
+                [
+                    "curl",
+                    "-fsS",
+                    "-m",
+                    "10",
+                    "--resolve",
+                    "{}:80:{}".format(engine_fqdn, engine_ip_url),
+                    "-o",
+                    cert_file.name,
+                    "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(
+                        engine_fqdn
+                    ),
+                ]
+            )
             yield cert_file.name
 
 
 @pytest.fixture(scope="session")
 def engine_download(request, engine_fqdn, engine_ip_url):
-
     def download(url, path=None, timeout=10):
         args = ["curl", "-fsS", "-m", str(timeout)]
 
         if url.startswith("https"):
-            args.extend([
-                "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip_url),
-                "--cacert", request.getfixturevalue("engine_cert")
-            ])
+            args.extend(
+                [
+                    "--resolve",
+                    "{}:443:{}".format(engine_fqdn, engine_ip_url),
+                    "--cacert",
+                    request.getfixturevalue("engine_cert"),
+                ]
+            )
         else:
-            args.extend([
-                "--resolve", "{}:80:{}".format(engine_fqdn, engine_ip_url),
-            ])
+            args.extend(
+                [
+                    "--resolve",
+                    "{}:80:{}".format(engine_fqdn, engine_ip_url),
+                ]
+            )
 
         if path is not None:
             args.extend(["-o", path])
@@ -176,88 +193,93 @@ def engine_download(request, engine_fqdn, engine_ip_url):
 
 @pytest.fixture(scope="session")
 def engine_restart(ansible_engine, engine_download, engine_fqdn):
-
     def restart():
         ansible_engine.systemd(name='ovirt-engine', state='stopped')
         ansible_engine.systemd(name='ovirt-engine', state='started')
 
-        health_url = 'http://{}/ovirt-engine/services/health'.format(engine_fqdn)
+        health_url = 'http://{}/ovirt-engine/services/health'.format(
+            engine_fqdn
+        )
 
         def engine_is_alive():
             with http_proxy_disabled():
                 engine_download(health_url)
                 return True
 
-        assertions.assert_true_within_short(engine_is_alive,
-                                            allowed_exceptions=[ShellError])
+        assertions.assert_true_within_short(
+            engine_is_alive, allowed_exceptions=[ShellError]
+        )
 
     return restart
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents(engine_password, engine_fqdn,
-                                engine_full_username):
-    return ('# action=setup\n'
-            '[environment:default]\n'
-            'OVESETUP_DIALOG/confirmSettings=bool:True\n'
-            'OVESETUP_CONFIG/applicationMode=str:both\n'
-            'OVESETUP_CONFIG/remoteEngineSetupStyle=none:None\n'
-            f'OVESETUP_CONFIG/adminPassword=str:{engine_password}\n'
-            'OVESETUP_CONFIG/storageIsLocal=bool:False\n'
-            'OVESETUP_CONFIG/firewallManager=str:firewalld\n'
-            'OVESETUP_CONFIG/remoteEngineHostRootPassword=none:None\n'
-            'OVESETUP_CONFIG/firewallChangesReview=none:None\n'
-            'OVESETUP_CONFIG/updateFirewall=bool:True\n'
-            'OVESETUP_CONFIG/remoteEngineHostSshPort=none:None\n'
-            f'OVESETUP_CONFIG/fqdn=str:{engine_fqdn}\n'
-            'OVESETUP_CONFIG/storageType=none:None\n'
-            'OSETUP_RPMDISTRO/requireRollback=none:None\n'
-            'OSETUP_RPMDISTRO/enableUpgrade=bool:True\n'
-            'OVESETUP_DB/database=str:engine\n'
-            'OVESETUP_DB/fixDbViolations=none:None\n'
-            'OVESETUP_DB/secured=bool:False\n'
-            'OVESETUP_DB/host=str:localhost\n'
-            'OVESETUP_DB/user=str:engine\n'
-            'OVESETUP_DB/securedHostValidation=bool:False\n'
-            'OVESETUP_DB/port=int:5432\n'
-            'OVESETUP_ENGINE_CORE/enable=bool:True\n'
-            'OVESETUP_CORE/engineStop=none:None\n'
-            'OVESETUP_SYSTEM/memCheckEnabled=bool:False\n'
-            'OVESETUP_SYSTEM/nfsConfigEnabled=bool:False\n'
-            'OVESETUP_PKI/organization=str:Test\n'
-            'OVESETUP_CONFIG/isoDomainMountPoint=none:None\n'
-            'OVESETUP_CONFIG/isoDomainName=none:None\n'
-            'OVESETUP_CONFIG/isoDomainACL=none:None\n'
-            'OVESETUP_AIO/configure=none:None\n'
-            'OVESETUP_AIO/storageDomainName=none:None\n'
-            'OVESETUP_AIO/storageDomainDir=none:None\n'
-            'OVESETUP_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
-            'OVESETUP_APACHE/configureRootRedirection=bool:True\n'
-            'OVESETUP_APACHE/configureSsl=bool:True\n'
-            'OVESETUP_CONFIG/websocketProxyConfig=bool:True\n'
-            f'OVESETUP_ENGINE_CONFIG/fqdn=str:{engine_fqdn}\n'
-            'OVESETUP_CONFIG/sanWipeAfterDelete=bool:False\n'
-            'OVESETUP_VMCONSOLE_PROXY_CONFIG/vmconsoleProxyConfig=bool:True\n'
-            'OVESETUP_DWH_CORE/enable=bool:True\n'
-            'OVESETUP_DWH_CONFIG/dwhDbBackupDir=str:/var/lib/ovirt-engine-dwh/backups\n'
-            'OVESETUP_DWH_DB/database=str:ovirt_engine_history\n'
-            'OVESETUP_DWH_DB/disconnectExistingDwh=none:None\n'
-            'OVESETUP_DWH_DB/dumper=str:pg_custom\n'
-            'OVESETUP_DWH_DB/filter=none:None\n'
-            'OVESETUP_DWH_DB/host=str:localhost\n'
-            'OVESETUP_DWH_DB/password=str:uf5vskEpdSeflQnwAdp4ZO\n'
-            'OVESETUP_DWH_DB/performBackup=none:None\n'
-            'OVESETUP_DWH_DB/port=int:5432\n'
-            'OVESETUP_DWH_DB/restoreBackupLate=bool:True\n'
-            'OVESETUP_DWH_DB/restoreJobs=int:2\n'
-            'OVESETUP_DWH_DB/secured=bool:False\n'
-            'OVESETUP_DWH_DB/securedHostValidation=bool:False\n'
-            'OVESETUP_DWH_DB/user=str:ovirt_engine_history\n'
-            'OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
-            'OVESETUP_DWH_CONFIG/scale=str:1\n'
-            f'OVESETUP_OVN/ovirtProviderOvnUser=str:{engine_full_username}\n'
-            f'OVESETUP_OVN/ovirtProviderOvnPassword=str:{engine_password}\n'
-            'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n')
+def engine_answer_file_contents(
+    engine_password, engine_fqdn, engine_full_username
+):
+    return (
+        '# action=setup\n'
+        '[environment:default]\n'
+        'OVESETUP_DIALOG/confirmSettings=bool:True\n'
+        'OVESETUP_CONFIG/applicationMode=str:both\n'
+        'OVESETUP_CONFIG/remoteEngineSetupStyle=none:None\n'
+        f'OVESETUP_CONFIG/adminPassword=str:{engine_password}\n'
+        'OVESETUP_CONFIG/storageIsLocal=bool:False\n'
+        'OVESETUP_CONFIG/firewallManager=str:firewalld\n'
+        'OVESETUP_CONFIG/remoteEngineHostRootPassword=none:None\n'
+        'OVESETUP_CONFIG/firewallChangesReview=none:None\n'
+        'OVESETUP_CONFIG/updateFirewall=bool:True\n'
+        'OVESETUP_CONFIG/remoteEngineHostSshPort=none:None\n'
+        f'OVESETUP_CONFIG/fqdn=str:{engine_fqdn}\n'
+        'OVESETUP_CONFIG/storageType=none:None\n'
+        'OSETUP_RPMDISTRO/requireRollback=none:None\n'
+        'OSETUP_RPMDISTRO/enableUpgrade=bool:True\n'
+        'OVESETUP_DB/database=str:engine\n'
+        'OVESETUP_DB/fixDbViolations=none:None\n'
+        'OVESETUP_DB/secured=bool:False\n'
+        'OVESETUP_DB/host=str:localhost\n'
+        'OVESETUP_DB/user=str:engine\n'
+        'OVESETUP_DB/securedHostValidation=bool:False\n'
+        'OVESETUP_DB/port=int:5432\n'
+        'OVESETUP_ENGINE_CORE/enable=bool:True\n'
+        'OVESETUP_CORE/engineStop=none:None\n'
+        'OVESETUP_SYSTEM/memCheckEnabled=bool:False\n'
+        'OVESETUP_SYSTEM/nfsConfigEnabled=bool:False\n'
+        'OVESETUP_PKI/organization=str:Test\n'
+        'OVESETUP_CONFIG/isoDomainMountPoint=none:None\n'
+        'OVESETUP_CONFIG/isoDomainName=none:None\n'
+        'OVESETUP_CONFIG/isoDomainACL=none:None\n'
+        'OVESETUP_AIO/configure=none:None\n'
+        'OVESETUP_AIO/storageDomainName=none:None\n'
+        'OVESETUP_AIO/storageDomainDir=none:None\n'
+        'OVESETUP_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
+        'OVESETUP_APACHE/configureRootRedirection=bool:True\n'
+        'OVESETUP_APACHE/configureSsl=bool:True\n'
+        'OVESETUP_CONFIG/websocketProxyConfig=bool:True\n'
+        f'OVESETUP_ENGINE_CONFIG/fqdn=str:{engine_fqdn}\n'
+        'OVESETUP_CONFIG/sanWipeAfterDelete=bool:False\n'
+        'OVESETUP_VMCONSOLE_PROXY_CONFIG/vmconsoleProxyConfig=bool:True\n'
+        'OVESETUP_DWH_CORE/enable=bool:True\n'
+        'OVESETUP_DWH_CONFIG/dwhDbBackupDir=str:/var/lib/ovirt-engine-dwh/backups\n'
+        'OVESETUP_DWH_DB/database=str:ovirt_engine_history\n'
+        'OVESETUP_DWH_DB/disconnectExistingDwh=none:None\n'
+        'OVESETUP_DWH_DB/dumper=str:pg_custom\n'
+        'OVESETUP_DWH_DB/filter=none:None\n'
+        'OVESETUP_DWH_DB/host=str:localhost\n'
+        'OVESETUP_DWH_DB/password=str:uf5vskEpdSeflQnwAdp4ZO\n'
+        'OVESETUP_DWH_DB/performBackup=none:None\n'
+        'OVESETUP_DWH_DB/port=int:5432\n'
+        'OVESETUP_DWH_DB/restoreBackupLate=bool:True\n'
+        'OVESETUP_DWH_DB/restoreJobs=int:2\n'
+        'OVESETUP_DWH_DB/secured=bool:False\n'
+        'OVESETUP_DWH_DB/securedHostValidation=bool:False\n'
+        'OVESETUP_DWH_DB/user=str:ovirt_engine_history\n'
+        'OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
+        'OVESETUP_DWH_CONFIG/scale=str:1\n'
+        f'OVESETUP_OVN/ovirtProviderOvnUser=str:{engine_full_username}\n'
+        f'OVESETUP_OVN/ovirtProviderOvnPassword=str:{engine_password}\n'
+        'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n'
+    )
 
 
 @pytest.fixture(scope="session")

@@ -27,7 +27,6 @@ from ost_utils.pytest.fixtures.sdk import *
 
 @pytest.fixture(scope="session")
 def get_hosts_hostname_for_vm(hosts_service, get_vm_service_for_vm):
-
     def hostname_for(vm_name):
         vm_service = get_vm_service_for_vm(vm_name)
         host_id = vm_service.get().host.id
@@ -43,7 +42,6 @@ def get_hosts_hostname_for_vm(hosts_service, get_vm_service_for_vm):
 
 @pytest.fixture(scope="session")
 def get_ansible_host_for_vm(ansible_by_hostname, get_hosts_hostname_for_vm):
-
     def ansible_host_for(vm_name):
         return ansible_by_hostname(get_hosts_hostname_for_vm(vm_name))
 
@@ -52,7 +50,6 @@ def get_ansible_host_for_vm(ansible_by_hostname, get_hosts_hostname_for_vm):
 
 @pytest.fixture(scope="session")
 def get_vm_ip(get_ansible_host_for_vm):
-
     def get_ip(vm_name_or_ip):
         try:
             ipaddress.ip_address(vm_name_or_ip)
@@ -67,7 +64,6 @@ def get_vm_ip(get_ansible_host_for_vm):
 
 @pytest.fixture(scope="session")
 def get_vm_libvirt_xml(get_ansible_host_for_vm):
-
     def get_xml(vm_name):
         ansible_host = get_ansible_host_for_vm(vm_name)
         ret = ansible_host.shell('virsh -r dumpxml {}'.format(vm_name))

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,14 +20,11 @@
 
 import os
 import random
-import tempfile
 
 import pytest
 
 from ost_utils.ansible import facts
 from ost_utils.backend.virsh import network
-
-from ost_utils.pytest.fixtures.backend import backend
 
 
 @pytest.fixture(scope="session")
@@ -39,8 +36,8 @@ def he_mac_address():
 
 # FIXME this is not a good idea when there are multiple networks currently, as
 # the ansible_default_ipv4 returns IP form a random gateway, and currently all
-# OST networks result in a gateway for that particular network. It should return
-# IP on the management network only
+# OST networks result in a gateway for that particular network. It should
+# return IP on the management network only
 @pytest.fixture(scope="session")
 def he_ipv4_address(ansible_host0_facts):
     host0_ipv4 = ansible_host0_facts.get('ansible_default_ipv4').get('address')
@@ -52,8 +49,8 @@ def he_ipv4_address(ansible_host0_facts):
 
 # FIXME this is not a good idea when there are multiple networks currently, as
 # the ansible_default_ipv6 returns IP form a random gateway, and currently all
-# OST networks result in a gateway for that particular network. It should return
-# IP on the management network only
+# OST networks result in a gateway for that particular network. It should
+# return IP on the management network only
 @pytest.fixture(scope="session")
 def he_ipv6_address(ansible_host0_facts):
     host0_ipv6 = ansible_host0_facts.get('ansible_default_ipv6').get('address')
@@ -97,7 +94,7 @@ def ansible_he(
             f'{he_host_name} '
             f'ansible_host={he_ipv4_address} '
             f'ansible_ssh_private_key_file={ssh_key_file}\n'
-        ).encode()
+        ).encode(),
     )
     return ansible_by_hostname(he_host_name)
 

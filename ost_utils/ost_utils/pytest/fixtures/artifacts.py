@@ -79,7 +79,9 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
         local_archive_path = os.path.join(local_archive_dir, archive_name)
         remote_archive_path = os.path.join("/tmp", archive_name)
         os.makedirs(local_archive_dir, exist_ok=True)
-        ansible_handle.archive(path=artifacts_list_string, dest=remote_archive_path)
+        ansible_handle.archive(
+            path=artifacts_list_string, dest=remote_archive_path
+        )
         ansible_handle.fetch(
             src=remote_archive_path, dest=local_archive_path, flat='yes'
         )
@@ -97,8 +99,9 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def collect_vdsm_coverage_artifacts(artifacts_dir, ansible_host0,
-                                    ansible_hosts):
+def collect_vdsm_coverage_artifacts(
+    artifacts_dir, ansible_host0, ansible_hosts
+):
     yield
     if os.environ.get("coverage", "false") == "true":
         output_path = os.path.join(artifacts_dir, "coverage/")

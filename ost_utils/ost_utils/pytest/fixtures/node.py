@@ -20,6 +20,7 @@
 
 import pytest
 
+
 @pytest.fixture(scope="session")
 def is_node_suite():
     return False

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import pytest
 
 from ost_utils import ansible
 from ost_utils.ansible import inventory
-from ost_utils.ansible.facts import Facts
 from ost_utils.ansible import module_mappers
 from ost_utils.ansible import private_dir
 from ost_utils.ansible.facts import Facts
@@ -63,7 +62,6 @@ def ansible_host1(ansible_by_hostname, host1_hostname):
 
 @pytest.fixture(scope="session")
 def ansible_by_hostname(ansible_inventory):
-
     def module_mapper_for(host_pattern):
         inventory = ansible_inventory.dir
         return module_mappers.ModuleMapper(inventory, host_pattern)

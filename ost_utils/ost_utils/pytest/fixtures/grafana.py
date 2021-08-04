@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,18 +20,21 @@
 
 import pytest
 
+
 @pytest.fixture(scope="session")
 def grafana_admin_username():
     return "admin"
 
+
 @pytest.fixture(scope="session")
 def grafana_admin_password():
     return "123"
+
 
 @pytest.fixture(scope="session")
 def grafana_admin_api(
     engine_ip_url, grafana_admin_username, grafana_admin_password
 ):
     return "http://{}:{}@{}/ovirt-engine-grafana/api".format(
-        grafana_admin_username, grafana_admin_password, engine_ip_url)
-
+        grafana_admin_username, grafana_admin_password, engine_ip_url
+    )

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -58,7 +58,6 @@ def vms_service(system_service):
 
 @pytest.fixture(scope="session")
 def get_vm_service_for_vm(vms_service):
-
     def service_for(vm_name):
         vms = vms_service.list(search='name={}'.format(vm_name))
         if len(vms) != 1:

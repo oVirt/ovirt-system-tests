@@ -73,9 +73,10 @@ ost_init() {
       ipv6_ip="fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}"
       ipv6_mac="0:3:0:1:54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
       [[ "$NET_TYPE" == "$management_net" ]] && {
-        DNS+="<host ip='${ipv4_ip}'><hostname>${hostname}</hostname></host>"
-        DNS+="<host ip='${ipv6_ip}'><hostname>${hostname}</hostname></host>"
+        [[ -n "$ipv6_only" ]] || DNS+="<host ip='${ipv4_ip}'><hostname>${hostname}</hostname></host>"
+        [[ -n "$ipv4_only" ]] || DNS+="<host ip='${ipv6_ip}'><hostname>${hostname}</hostname></host>"
       }
+      # this prefers IPv4 as management IP for ansible...maybe worth changing to prefer IPv6 once we're fully compatible with IPv6
       nicip_map[$name]="${ipv4_ip}"
       [[ -n "$ipv6_only" ]] && nicip_map[$name]="${ipv6_ip}"
       IPV4+="<host mac='${ipv4_mac}' name='${hostname}' ip='${ipv4_ip}'/>"

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,13 +34,9 @@ class LogsCollector:
         raw_logs_path = os.path.join(logs_path, "raw")
         os.makedirs(raw_logs_path, exist_ok=True)
 
-        cls._save_raw_events(
-            pd.PrivateDir.event_data_files(), raw_logs_path
-        )
+        cls._save_raw_events(pd.PrivateDir.event_data_files(), raw_logs_path)
 
-        cls._save_events_stdouts(
-            pd.PrivateDir.event_data_files(), logs_path
-        )
+        cls._save_events_stdouts(pd.PrivateDir.event_data_files(), logs_path)
 
     @classmethod
     def _save_raw_events(cls, event_data_files, target_dir):

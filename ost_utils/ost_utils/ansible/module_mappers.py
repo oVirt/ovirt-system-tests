@@ -28,7 +28,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AnsibleExecutionError(Exception):
-
     def __init__(self, rc, stdout):
         self.rc = rc
         self.stdout = stdout
@@ -44,10 +43,7 @@ def _run_ansible_runner(config_builder):
     LOGGER.debug(f'_run_ansible_runner: after run: {runner}')
 
     if runner.status != 'successful':
-        raise AnsibleExecutionError(
-            rc=runner.rc,
-            stdout=runner.stdout.read()
-        )
+        raise AnsibleExecutionError(rc=runner.rc, stdout=runner.stdout.read())
 
     return _find_result(runner.events)
 
@@ -57,7 +53,7 @@ def _find_result(ansible_events):
 
     events = sorted(
         (e for e in ansible_events if 'created' in e),
-        key=lambda e: e['created']
+        key=lambda e: e['created'],
     )
 
     results = {}
@@ -95,6 +91,7 @@ class ModuleArgsMapper:
     for the module.
 
     """
+
     def __init__(self, inventory, host_pattern, module):
         self.config_builder = cb.ConfigBuilder()
         self.config_builder.inventory = inventory
@@ -102,12 +99,16 @@ class ModuleArgsMapper:
         self.config_builder.module = module
 
     def __call__(self, *args, **kwargs):
-        self.config_builder.module_args = " ".join((
-            " ".join(args),
-            " ".join("{}={}".format(k, v) for k, v in kwargs.items())
-        )).strip()
-        LOGGER.debug('ModuleArgsMapper: __call__: '
-                     f'module_args={self.config_builder.module_args}')
+        self.config_builder.module_args = " ".join(
+            (
+                " ".join(args),
+                " ".join("{}={}".format(k, v) for k, v in kwargs.items()),
+            )
+        ).strip()
+        LOGGER.debug(
+            'ModuleArgsMapper: __call__: '
+            f'module_args={self.config_builder.module_args}'
+        )
         return _run_ansible_runner(self.config_builder)
 
     def __str__(self):

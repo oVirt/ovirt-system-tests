@@ -49,13 +49,15 @@ class ConfigBuilder:
             module=self.module,
             module_args=self.module_args,
             private_data_dir=pd.PrivateDir.get(),
-            quiet=True
+            quiet=True,
         )
         config.prepare()
         LOGGER.debug(f'ConfigBuilder prepare: {config}')
         return config
 
     def __str__(self):
-        return (f'ConfigBuilder<inventory={self.inventory}, '
-                f'host_pattern={self.host_pattern}, module={self.module}, '
-                f'module_args={self.module_args}>')
+        return (
+            f'ConfigBuilder<inventory={self.inventory}, '
+            f'host_pattern={self.host_pattern}, module={self.module}, '
+            f'module_args={self.module_args}>'
+        )

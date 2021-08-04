@@ -35,7 +35,7 @@ def _run_playbook(ansible_engine, playbook_yaml, ssh_key_path=None):
         ansible_engine.file(
             path=os.path.join(tmp_path, dir_name),
             state='directory',
-            recurse='yes'
+            recurse='yes',
         )
     if ssh_key_path:
         ansible_engine.copy(
@@ -73,8 +73,9 @@ def infra(ansible_engine, **kwargs):
     _run_playbook(ansible_engine, playbook_yaml)
 
 
-def engine_setup(ansible_engine, engine_ip, answer_file_path, ssh_key_path,
-                 **kwargs):
+def engine_setup(
+    ansible_engine, engine_ip, answer_file_path, ssh_key_path, **kwargs
+):
     ansible_engine.copy(
         src=answer_file_path,
         dest='/root/engine-answer-file',
@@ -87,7 +88,7 @@ def engine_setup(ansible_engine, engine_ip, answer_file_path, ssh_key_path,
     ansible_engine.copy(
         content=f'SSO_ALTERNATE_ENGINE_FQDNS="${{SSO_ALTERNATE_ENGINE_FQDNS}} {host_ip} {host_name} {engine_ip}"\n',  # noqa: E501
         dest='/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf',
-        mode='0644'
+        mode='0644',
     )
 
     playbook_yaml = _get_role_playbook('engine_setup', **kwargs)
@@ -112,7 +113,8 @@ class CollectionMapper:
         playbook_yaml[0]['tasks'][0][f'ovirt.ovirt.{self.name}'] = kwargs
 
         remote_tmp_path, run_uuid = _run_playbook(
-            self._ansible_engine, playbook_yaml)
+            self._ansible_engine, playbook_yaml
+        )
 
         return self._collect_module_data(remote_tmp_path, run_uuid)
 
@@ -122,7 +124,8 @@ class CollectionMapper:
         local_archive_path = os.path.join(local_tmp_dir, archive_name)
         remote_archive_path = os.path.join("/tmp", archive_name)
         job_events_path = os.path.join(
-            local_tmp_dir, str(run_uuid), 'job_events')
+            local_tmp_dir, str(run_uuid), 'job_events'
+        )
         try:
             self._ansible_engine.archive(
                 path=os.path.join(remote_tmp_path, 'artifacts', str(run_uuid)),
@@ -137,12 +140,18 @@ class CollectionMapper:
             with tarfile.open(local_archive_path, "r:gz") as tar:
                 tar.extractall(path=local_tmp_dir)
 
-            job_events = [os.path.join(job_events_path, job_dir)
-                          for job_dir in os.listdir(job_events_path)]
+            job_events = [
+                os.path.join(job_events_path, job_dir)
+                for job_dir in os.listdir(job_events_path)
+            ]
             for file in job_events:
                 with open(file) as json_file:
                     data = json.load(json_file)
-                    if data.get('event_data', {}).get('task_action', None) == f'ovirt.ovirt.{self.name}' and data.get('event_data').get('res', None) is not None:  # noqa: E501
+                    if (
+                        data.get('event_data', {}).get('task_action', None)
+                        == f'ovirt.ovirt.{self.name}'
+                        and data.get('event_data').get('res', None) is not None
+                    ):
                         return data.get('event_data').get('res')
             return None
         finally:

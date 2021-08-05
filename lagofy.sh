@@ -67,7 +67,7 @@ ost_init() {
       IDXHEX=$(printf "%.2d" ${HOSTIDX})
       nicidx_map[$name]="${HOSTIDX}"
       eth_map[$name]="$NET_TYPE"
-      hostname="ost-${SUITE_NAME}-${name}"
+      hostname="ost-${SUITE}-${name}"
       ipv4_ip="192.168.${SUBNET}.${HOSTIDX}"
       ipv4_mac="54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
       ipv6_ip="fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}"
@@ -131,15 +131,14 @@ ipv4_only=; ipv6_only=
 [[ "$1" == "-4" ]] && { ipv4_only=yes; shift; }
 [[ "$1" == "-6" ]] && { ipv6_only=yes; shift; }
 
-SUITE="${OST_REPO_ROOT}/${1:-basic-suite-master}"
-SUITE_NAME="${SUITE##*/}"
+SUITE="${1:-basic-suite-master}"
 OST_IMAGES_DISTRO="${2:-el8stream}"
 
 [[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
 [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
-[[ -d "$SUITE" ]] || { echo "$SUITE is not a suite directory"; return 1; }
+[[ -d "$OST_REPO_ROOT/$SUITE" ]] || { echo "$OST_REPO_ROOT/$SUITE is not a suite directory"; return 1; }
 
-echo "Suite: $SUITE_NAME, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
+echo "Suite: $SUITE, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
 
 . common/helpers/ost-images.sh
 
@@ -153,7 +152,7 @@ chcon -t svirt_image_t "$PREFIX/images"
 UUID=$(uuidgen | cut -c -8)
 echo $UUID > "$PREFIX/uuid"
 
-ost_conf="$SUITE/ost.json"
+ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
 [[ -f "$ost_conf" ]] || { echo "no ost.conf in $SUITE"; return 1; }
 
 # run the whole creation in subshell with a lock so that we do not explode on concurrent network allocation
@@ -232,7 +231,7 @@ ost_conf="$SUITE/ost.json"
     done
 
     # create the VM
-    VM_FULLNAME="${UUID}-ost-${SUITE_NAME}-${VM_NAME}"
+    VM_FULLNAME="${UUID}-ost-${SUITE}-${VM_NAME}"
     MEMSIZE=$(jqr ".vms[\"${VM_NAME}\"].memory")
     SERIALLOG="$PREFIX/logs/$VM_NAME"
     echo
@@ -240,7 +239,7 @@ ost_conf="$SUITE/ost.json"
 
     # generate ansible inventory line per host:
     # <VM name> ansible_host=<IP> ansible_ssh_private_key_file=<key_file>
-    ansible_hosts+="ost-${SUITE_NAME}-${VM_NAME} ansible_host=${ansible_ip} ansible_ssh_private_key_file=${OST_IMAGES_SSH_KEY}\n"
+    ansible_hosts+="ost-${SUITE}-${VM_NAME} ansible_host=${ansible_ip} ansible_ssh_private_key_file=${OST_IMAGES_SSH_KEY}\n"
 
   done
 
@@ -325,9 +324,9 @@ ost_linters() {
 _ost_run_tc () {
     local res=0
     local testcase=${@/#/$PWD/}
-    local junitxml_file="$PREFIX/${TC:-$SUITE_NAME}.junit.xml"
+    local junitxml_file="$PREFIX/${TC:-$SUITE}.junit.xml"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 -u -B -m pytest \
+    python3 -u -B -m pytest \
         -s \
         -v \
         -x \
@@ -353,7 +352,7 @@ ost_run_tc() {
 
 # $1=tc file, $2=test name
 ost_run_after() {
-    { PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${SUITE}" python3 << EOT
+    { python3 << EOT
 exec(open('$1').read())
 since=_TEST_LIST.index('$2')
 print('%s' % '\n'.join(_TEST_LIST[since+1:]))
@@ -371,20 +370,20 @@ ost_run_tests() {
     ost_linters || return 1
 
     CUSTOM_REPOS_ARGS="$@"
-    TC= _ost_run_tc "${SUITE_NAME}/test-scenarios" || { echo "\x1b[31mERROR: Failed running $SUITE :-(\x1b[0m"; return 1; }
-    echo -e "\x1b[32m $SUITE - All tests passed :-) \x1b[0m"
+    TC= _ost_run_tc "${SUITE}/test-scenarios" || { echo "\x1b[31mERROR: Failed running ${SUITE} :-(\x1b[0m"; return 1; }
+    echo -e "\x1b[32m ${SUITE} - All tests passed :-) \x1b[0m"
     return 0
 }
 
 
-[[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh"; exit 1; }
-export OST_REPO_ROOT=${OST_REPO_ROOT:=$(realpath "$PWD")}
+[[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh [OST_REPO_ROOT dir]"; exit 1; }
+export OST_REPO_ROOT=$(realpath "$PWD")
 export PREFIX="${OST_REPO_ROOT}/deployment"
 
 export SUITE
 export OST_IMAGES_DISTRO
-export SUITE_NAME
 export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
 export LIBVIRT_DEFAULT_URI="qemu:///system"
+PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}"

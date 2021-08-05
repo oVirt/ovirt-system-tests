@@ -51,14 +51,14 @@ def test_run_dig_loop(
 
 def test_he_deploy(
     root_dir,
-    suite_dir,
+    suite,
     ansible_host0,
     ansible_storage,
     he_host_name,
     he_mac_address,
 ):
     # not very nice. Better than duplicating whole file or symlinking though...
-    if 'ssg' in os.environ.get('SUITE_NAME'):
+    if 'ssg' in suite:
         answer_file_src = os.path.join(
             root_dir,
             'common/answer-files/he-node-ng-ssg-suite-master.conf.in'

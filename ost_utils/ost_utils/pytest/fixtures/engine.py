@@ -30,6 +30,7 @@ from ost_utils import assertions
 from ost_utils import network_utils
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
+from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.network import management_network_name
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.selenium.grid.common import http_proxy_disabled
@@ -61,10 +62,10 @@ def engine_hostname(ansible_engine_facts):
 
 
 @pytest.fixture(scope="session")
-def engine_fqdn(ansible_engine_facts):
-    if 'he' in os.environ.get('SUITE_NAME'):
+def engine_fqdn(ansible_engine_facts, suite):
+    if 'he' in suite:
         return ansible_engine_facts.get("ansible_fqdn")
-    elif 'hc' in os.environ.get('SUITE_NAME'):
+    elif 'hc' in suite:
         return "ost-hc-basic-suite-master-engine.lago.local"
     else:
         # TODO:

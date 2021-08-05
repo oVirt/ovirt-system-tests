@@ -26,7 +26,7 @@ This script runs a single suite of tests (a directory of tests repo)
 
 Positional arguments:
     SUITE
-        Path to directory that contains the suite to be executed
+        name of the suite to be executed
 
 Optional arguments:
     -o,--output PATH
@@ -159,7 +159,7 @@ put_host_image() {
 }
 
 render_jinja_templates () {
-    local suite_name="${SUITE_NAME}"
+    local suite_name="${SUITE}"
     local src="${LAGO_INIT_FILE_IN}"
     local dest="${LAGO_INIT_FILE}"
 
@@ -180,7 +180,7 @@ check_if_images_installed() {
     grep 'path:' $LAGO_INIT_FILE | while read -r line; do
       path=$(echo $line | cut --complement -d ":" -f 1)
       if [ -z "$path" ]; then
-        logger.error "One or more OST image required by ${SUITE_NAME} on ${OST_IMAGES_DISTRO} is not installed:"
+        logger.error "One or more OST image required by ${SUITE} on ${OST_IMAGES_DISTRO} is not installed:"
         for image in upgrade_image engine_installed_image host_installed_image node_image he_installed_image; do
           if [ -z ${!image} ]; then
             local ost_images_distro=${OST_IMAGES_DISTRO}
@@ -308,7 +308,7 @@ env_run_pytest () {
 
 env_run_pytest_bulk () {
     local res=0
-    local junitxml_file="$PREFIX/$SUITE_NAME.junit.xml"
+    local junitxml_file="$PREFIX/$SUITE.junit.xml"
     get_pytest_log_level
 
     CUSTOM_REPOS_ARGS=()
@@ -352,7 +352,7 @@ env_cleanup() {
     fi
     if [[ "$res" -ne 0 ]]; then
         logger.info "Lago cleanup did not work (that is ok), forcing libvirt"
-        env_libvirt_cleanup "${SUITE_NAME}" "$uid"
+        env_libvirt_cleanup "${SUITE}" "$uid"
     fi
 
     if [ ${INSIDE_MOCK} -eq 1 ]; then
@@ -591,17 +591,14 @@ fi
 
 export OST_REPO_ROOT="$PWD"
 
-# Resolves to suite's path, i.e. '/home/me/ovirt-system-tests/basic-suite-master'
-export SUITE="$(realpath --no-symlinks "$1")"
-
 # Suite's name, i.e. 'basic-suite-master'
-export SUITE_NAME="${SUITE##*/}"
+export SUITE="$1"
 
 export LAGO_INIT_FILE="${SUITE}/LagoInitFile"
 export LAGO_INIT_FILE_IN="${LAGO_INIT_FILE}.in"
 
 # If no deployment path provided, set the default
-[[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE_NAME}"
+[[ -z "$PREFIX" ]] && PREFIX="$PWD/deployment-${SUITE}"
 export PREFIX
 
 export ANSIBLE_NOCOLOR="1"
@@ -645,7 +642,7 @@ check_ram "$RECOMMENDED_RAM_IN_MB"
 logger.info  "Running suite found in $SUITE"
 logger.info  "Environment will be deployed at $PREFIX"
 
-export PYTHONPATH="${PYTHONPATH}:${SUITE}"
+export PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}/${SUITE}"
 source "${SUITE}/control.sh"
 
 if [ ${INSIDE_MOCK} -eq 1 ]; then

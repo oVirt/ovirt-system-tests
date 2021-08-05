@@ -25,8 +25,8 @@ import pytest
 
 from testlib import address_family
 
-SUITE_NAME = os.path.split(os.environ['SUITE'])[-1]
-SUITE_VERSION = SUITE_NAME.split('-')[-1]
+SUITE = os.environ['SUITE']
+SUITE_VERSION = SUITE.split('-')[-1]
 
 
 def af():
@@ -42,7 +42,7 @@ def af():
 
 def xfail_suite_master(reason, raises=None):
     return pytest.mark.xfail(
-            condition=SUITE_NAME.endswith('master'),
+            condition=SUITE.endswith('master'),
             reason=reason,
             raises=raises,
             run=False
@@ -51,7 +51,7 @@ def xfail_suite_master(reason, raises=None):
 
 def xfail_suite_43(reason):
     return pytest.mark.xfail(
-            condition=SUITE_NAME.endswith('4.3'),
+            condition=SUITE.endswith('4.3'),
             reason=reason,
             run=False
             )

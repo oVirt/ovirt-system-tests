@@ -20,7 +20,7 @@ run_suite () {
     env_run_pytest_bulk "${SUITE}/test-scenarios" || failed=true
 
     if $failed; then
-        echo "@@@@ ERROR: Failed running ${SUITE_NAME}"
+        echo "@@@@ ERROR: Failed running ${SUITE}"
         return 1
     fi
 }

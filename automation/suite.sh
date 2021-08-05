@@ -31,7 +31,7 @@ if [[ "${RUNNING_IN_PSI}" == "true" ]]; then
     echo "Distro: ${distro:=el8stream}"
     mkdir -p exported-artifacts
     {
-      source lagofy.sh $SUITE $distro &&
+      source lagofy.sh "$PWD" &&
         export OST_IMAGES_DISTRO=$distro &&
         source "$OST_REPO_ROOT/common/helpers/ost-images.sh" &&
         cp ${OST_IMAGES_SSH_KEY}* /tmp &&

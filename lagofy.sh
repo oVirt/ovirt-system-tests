@@ -134,13 +134,13 @@ ipv4_only=; ipv6_only=
 SUITE="${1:-basic-suite-master}"
 OST_IMAGES_DISTRO="${2:-el8stream}"
 
-[[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
 [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
 [[ -d "$OST_REPO_ROOT/$SUITE" ]] || { echo "$OST_REPO_ROOT/$SUITE is not a suite directory"; return 1; }
 
 echo "Suite: $SUITE, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
-
 . common/helpers/ost-images.sh
+
+[[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
 
 mkdir "$PREFIX"
 mkdir "$PREFIX/logs"
@@ -322,6 +322,9 @@ ost_linters() {
 # $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py
 # TC individual test to run
 _ost_run_tc () {
+    _deployment_exists || return 1
+    [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
+
     local res=0
     local testcase=${@/#/$PWD/}
     local junitxml_file="$PREFIX/${TC:-$SUITE}.junit.xml"
@@ -365,8 +368,6 @@ EOT
 
 # ost_run_tests [pytest args ...]
 ost_run_tests() {
-    _deployment_exists || return 1
-
     ost_linters || return 1
 
     CUSTOM_REPOS_ARGS="$@"

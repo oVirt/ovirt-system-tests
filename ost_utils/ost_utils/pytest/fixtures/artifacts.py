@@ -55,9 +55,11 @@ def artifact_list():
         '/etc/sysconfig',
         '/etc/yum',
         '/etc/yum.repos.d',
+        '/root',
         '/tmp/dnf_yum.conf',
         '/var/cache/ovirt-engine',
         '/var/lib/ovirt-engine/setup/answers',
+        '/var/lib/pgsql/initdb_postgresql.log',
         '/var/log',
     ]
 

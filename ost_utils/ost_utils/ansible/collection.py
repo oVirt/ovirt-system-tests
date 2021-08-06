@@ -77,9 +77,9 @@ def engine_setup(ansible_engine, engine_ip, answer_file_path, ssh_key_path,
                  **kwargs):
     ansible_engine.copy(
         src=answer_file_path,
-        dest='/tmp/answer-file',
+        dest='/root/engine-answer-file',
     )
-    kwargs['ovirt_engine_setup_answer_file_path'] = '/tmp/answer-file'
+    kwargs['ovirt_engine_setup_answer_file_path'] = '/root/engine-answer-file'
 
     host_name = socket.gethostname()
     host_ip = socket.gethostbyname(host_name)

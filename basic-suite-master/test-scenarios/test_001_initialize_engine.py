@@ -29,7 +29,7 @@ def test_initialize_engine(suite_dir, engine_ip, ansible_engine,
                            engine_answer_file_path):
     ansible_engine.copy(
         src=engine_answer_file_path,
-        dest='/tmp/answer-file',
+        dest='/root/engine-answer-file',
     )
 
     host_name = socket.gethostname()
@@ -61,7 +61,7 @@ def test_initialize_engine(suite_dir, engine_ip, ansible_engine,
 
     ansible_engine.shell(
         'engine-setup '
-        '--config-append=/tmp/answer-file '
+        '--config-append=/root/engine-answer-file '
         '--accept-defaults '
         '--offline '
     )

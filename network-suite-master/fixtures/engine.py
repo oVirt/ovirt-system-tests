@@ -44,7 +44,7 @@ def api(ovirt_engine_service_up, engine_facts, engine_full_username,
 
 @pytest.fixture(scope='session', autouse=True)
 def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
-    ANSWER_FILE_TMP = '/tmp/answer-file'
+    ANSWER_FILE_TMP = '/root/engine-answer-file'
 
     engine = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
     engine.sftp_put(engine_answer_file_path, ANSWER_FILE_TMP)

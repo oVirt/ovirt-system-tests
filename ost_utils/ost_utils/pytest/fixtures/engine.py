@@ -261,8 +261,8 @@ def engine_answer_file_contents(engine_password, engine_fqdn,
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_path(engine_answer_file_contents, artifacts_dir):
-    file_path = f'{artifacts_dir}/answer-file'
+def engine_answer_file_path(engine_answer_file_contents, working_dir):
+    file_path = os.path.join(working_dir, 'engine-answer-file')
     with open(file_path, 'w') as f:
         f.write(engine_answer_file_contents)
     return file_path

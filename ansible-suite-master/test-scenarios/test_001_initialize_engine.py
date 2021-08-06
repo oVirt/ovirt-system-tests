@@ -28,12 +28,12 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(ansible_engine, engine_ip):
+def test_initialize_engine(ansible_engine, engine_ip, root_dir):
     engine_setup(
         ansible_engine,
         engine_ip,
         answer_file_path=os.path.join(
-            os.environ.get('OST_REPO_ROOT'),
+            root_dir,
             'common',
             'answer-files',
             'engine-answer-file.conf'

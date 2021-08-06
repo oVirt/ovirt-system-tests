@@ -24,6 +24,8 @@ import ovirtsdk4
 from ovirtlib import eventlib
 from ovirtlib import joblib
 
+DELIM = '--------------------------------------'
+
 
 def sd_deactivation_error_not_due_to_busy(error):
     """
@@ -78,8 +80,8 @@ def report_status(func):
         events.add(description=description)
 
     def _create_description(when, self):
-        description = (f'OST - jobs: {self.__class__.__name__} '
-                       f'{when} {func.__name__}, ')
+        description = (f'{DELIM} OST - {when}: '
+                       f'{self.__class__.__name__} {func.__name__}, ')
         try:
             description += f'status: {self.status}, '
         except AttributeError:

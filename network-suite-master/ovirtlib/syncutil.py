@@ -21,8 +21,10 @@ import collections
 import os
 import time
 
+from ovirtlib import eventlib
 
 DEFAULT_TIMEOUT = 120
+DELIM = '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
 
 class Timeout(Exception):
@@ -39,7 +41,9 @@ def sync(exec_func,
          exec_func_args,
          success_criteria=lambda result: True,
          error_criteria=lambda error: True,
-         timeout=DEFAULT_TIMEOUT):
+         timeout=DEFAULT_TIMEOUT,
+         sdk_entity=None,
+         ):
     """Sync an operation until it either:
 
     - succeeds (according to the success_criteria specified)
@@ -68,6 +72,8 @@ def sync(exec_func,
     :param success_criteria: callable
     :param error_criteria: callable
     :param timeout: int
+    :param sdk_entity: ovirtlib instance for which auditing to engine.log
+                       before each retry is desired
     :return: the result of running the exec_func
     """
     end_time = _monothonic_time() + timeout
@@ -75,6 +81,7 @@ def sync(exec_func,
     args, kwargs = _parse_args(exec_func_args)
 
     try:
+        _audit(exec_func, sdk_entity, 0)
         result = exec_func(*args, **kwargs)
     except Exception as e:
         if error_criteria(e):
@@ -84,9 +91,12 @@ def sync(exec_func,
         if success_criteria(result):
             return result
 
+    i = 0
     while _monothonic_time() < end_time:
+        i += 1
         time.sleep(3)
         try:
+            _audit(exec_func, sdk_entity, i)
             result = exec_func(*args, **kwargs)
         except Exception as e:
             if success_criteria(e):
@@ -99,6 +109,17 @@ def sync(exec_func,
                 return result
 
     raise Timeout(result)
+
+
+def _audit(exec_func, sdk_entity, i):
+    if sdk_entity:
+        try:
+            repr = sdk_entity.__repr__()
+        except Exception:
+            repr = f'{sdk_entity.__class__.__name__}.__repr__() call failed'
+        eventlib.EngineEvents(sdk_entity.system).add(
+            f'{DELIM} OST - retry[{i}] {exec_func.__name__}: {repr}'
+        )
 
 
 def re_run(exec_func, exec_func_args, count, interval):

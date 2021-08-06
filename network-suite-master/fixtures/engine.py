@@ -101,8 +101,9 @@ def _exec_engine_config(engine_facts, key, value):
 
 @pytest.fixture(scope='function', autouse=True)
 def test_invocation_logger(system, request, host_0_up, host_1_up):
+    delim = '**************************************'
     events = eventlib.EngineEvents(system)
-    test_invoke = 'OST invoked: ' + str(request.node.nodeid)
+    test_invoke = f'{delim} OST - invoked: ' + str(request.node.nodeid)
     events.add(description=test_invoke,
                comment='delimiter for test function invocation in engine log')
     sshlib.Node(host_0_up.address, host_0_up.root_password).exec_command(

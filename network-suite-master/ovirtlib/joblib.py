@@ -56,14 +56,15 @@ class EngineJobs(SDKRootEntity):
 
     def wait_for_done(self):
         self._report_started()
-        self._report_ill_fated()
-        syncutil.sync(
-            exec_func=lambda: self.done,
-            exec_func_args=(),
-            success_criteria=lambda done: done
-        )
-        self._report_started()
-        self._report_ill_fated()
+        # there is a small window for TOCTTOU error here
+        if not self.done():
+            syncutil.sync(
+                exec_func=lambda: self.done,
+                exec_func_args=(),
+                success_criteria=lambda done: done
+            )
+            self._report_started()
+            self._report_ill_fated()
 
     def _report_started(self):
         eventlib.EngineEvents(self.system).add(

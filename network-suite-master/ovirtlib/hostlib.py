@@ -156,7 +156,8 @@ class Host(SDKRootEntity):
             exec_func_args=kwargs,
             error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
                 'Cannot edit Host. Related operation is currently in progress'
-            ])
+            ]),
+            sdk_entity=self,
         )
 
     def force_select_spm(self):
@@ -176,7 +177,6 @@ class Host(SDKRootEntity):
             candidate_spm.force_select_spm()
             joblib.AllJobs(self.system).wait_for_done()
 
-    @error.report_status
     def activate(self):
         syncutil.sync(
             exec_func=self._service.activate,
@@ -186,11 +186,11 @@ class Host(SDKRootEntity):
                 'Related operation is currently in progress',
                 'Cannot activate Host. Host in Up status',
             ]),
-            timeout=3 * 60
+            timeout=3 * 60,
+            sdk_entity=self,
         )
         joblib.AllJobs(self.system).wait_for_done()
 
-    @error.report_status
     def deactivate(self):
         syncutil.sync(
             exec_func=self._service.deactivate,
@@ -201,7 +201,8 @@ class Host(SDKRootEntity):
                 'Host has asynchronous running tasks',
                 'Host is contending',
                 'Host is already in Maintenance mode',
-            ])
+            ]),
+            sdk_entity=self,
         )
         joblib.AllJobs(self.system).wait_for_done()
 
@@ -217,6 +218,7 @@ class Host(SDKRootEntity):
         finally:
             self.change_cluster(current_cluster)
 
+    @error.report_status
     def change_cluster(self, cluster):
         spm_before_deactivate = self.is_spm
         self.deactivate()
@@ -226,7 +228,8 @@ class Host(SDKRootEntity):
             success_criteria=lambda sdk_type: (
                     hasattr(sdk_type, 'cluster')
                     and sdk_type.cluster.id == cluster.id
-            )
+            ),
+            sdk_entity=self,
         )
         self.activate()
         if spm_before_deactivate:

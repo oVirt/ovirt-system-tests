@@ -58,7 +58,6 @@ def artifact_list():
         '/tmp/dnf_yum.conf',
         '/var/cache/ovirt-engine',
         '/var/lib/ovirt-engine/setup/answers',
-        '/var/lib/pgsql/upgrade_rh-postgresql95-postgresql.log',
         '/var/log',
     ]
 

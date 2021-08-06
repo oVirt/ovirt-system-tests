@@ -23,6 +23,8 @@ import time
 
 from ovirtlib import eventlib
 
+DEFAULT_DELAY_START = 0
+DEFAULT_INTERVAL = 3
 DEFAULT_TIMEOUT = 120
 DELIM = '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
@@ -41,6 +43,8 @@ def sync(exec_func,
          exec_func_args,
          success_criteria=lambda result: True,
          error_criteria=lambda error: True,
+         delay_start=DEFAULT_DELAY_START,
+         retry_interval=DEFAULT_INTERVAL,
          timeout=DEFAULT_TIMEOUT,
          sdk_entity=None,
          ):
@@ -71,6 +75,8 @@ def sync(exec_func,
     :param exec_func_args: tuple/dict
     :param success_criteria: callable
     :param error_criteria: callable
+    :param delay_start: time to wait before first call to exec_func
+    :param retry_interval: time between retries of exec_func
     :param timeout: int
     :param sdk_entity: ovirtlib instance for which auditing to engine.log
                        before each retry is desired
@@ -81,6 +87,7 @@ def sync(exec_func,
     args, kwargs = _parse_args(exec_func_args)
 
     try:
+        time.sleep(delay_start)
         _audit(exec_func, sdk_entity, 0)
         result = exec_func(*args, **kwargs)
     except Exception as e:
@@ -94,7 +101,7 @@ def sync(exec_func,
     i = 0
     while _monothonic_time() < end_time:
         i += 1
-        time.sleep(3)
+        time.sleep(retry_interval)
         try:
             _audit(exec_func, sdk_entity, i)
             result = exec_func(*args, **kwargs)

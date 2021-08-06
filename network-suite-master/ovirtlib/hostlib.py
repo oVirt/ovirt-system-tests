@@ -186,6 +186,8 @@ class Host(SDKRootEntity):
                 'Related operation is currently in progress',
                 'Cannot activate Host. Host in Up status',
             ]),
+            delay_start=30,
+            retry_interval=30,
             timeout=3 * 60,
             sdk_entity=self,
         )

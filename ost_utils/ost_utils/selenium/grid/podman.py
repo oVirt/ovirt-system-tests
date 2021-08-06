@@ -59,13 +59,17 @@ def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
 
 @contextlib.contextmanager
 def _pod(hub_port, podman_cmd):
-    network_backend = ["--network=slirp4netns"] if os.getuid() == 0 else []
+    network_backend = os.getenv('PODMAN_NETWORK_BACKEND')
+    if network_backend is None:
+        network_backend_options = []
+    else:
+        network_backend_options = [f"--network={network_backend}"]
     name = shell(
         [
             podman_cmd,
             "pod",
             "create",
-            *network_backend,
+            *network_backend_options,
             "-p",
             f"{hub_port}:{hub_port}",
         ]

@@ -543,7 +543,10 @@ def test_userportal(ovirt_driver, nonadmin_username, nonadmin_password,
     vm_portal.wait_for_displayed()
 
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
-    assert vm_portal.get_vm_count() is 1
+    assertions.assert_true_within_short(
+        lambda:
+        vm_portal.get_vm_count() is 1
+    )
     vm0_status = vm_portal.get_vm_status('vm0')
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
     vm_portal.logout()

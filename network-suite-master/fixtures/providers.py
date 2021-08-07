@@ -25,6 +25,7 @@ import yaml
 from ovirtlib.providerlib import OpenStackImageProviders
 from ovirtlib.providerlib import OpenStackNetwork
 from ovirtlib.providerlib import OpenStackNetworkProvider
+from testlib import suite
 
 
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'
@@ -69,7 +70,7 @@ def openstack_client_config(engine_facts, engine_password,
         }
     }
     os_client_config_file_path = os.path.join(
-        os.environ.get('SUITE'), OPENSTACK_CLIENT_CONFIG_FILE
+        suite.suite_dir(), OPENSTACK_CLIENT_CONFIG_FILE
     )
     with open(os_client_config_file_path, 'w') as cloud_config_file:
         yaml.dump(cloud_config, cloud_config_file, default_flow_style=False)

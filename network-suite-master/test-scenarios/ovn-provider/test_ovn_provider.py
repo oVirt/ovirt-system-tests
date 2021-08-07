@@ -27,9 +27,9 @@ from ovirtlib import sshlib
 from testlib.ping import PingFailed
 from testlib.ping import ssh_ping
 from testlib import shade_hack
+from testlib import suite
 
 
-PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
 NETWORK10_NAME = 'net10'
 NETWORK10_PORT1_NAME = 'net10_port1'
 NETWORK11_PORT1_NAME = 'net11_port1'
@@ -149,7 +149,7 @@ def test_ovn_provider_cleanup_scenario(openstack_client_config):
 
 
 def _test_ovn_provider(playbook_name):
-    playbook_path = os.path.join(PLAYBOOK_DIR, playbook_name)
+    playbook_path = os.path.join(suite.playbook_dir(), playbook_name)
     playbook = Playbook(playbook_path)
     playbook.run()
 

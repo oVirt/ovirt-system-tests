@@ -46,8 +46,6 @@ OVN_PHYSNET_NAME = 'ovn_ovirtmgmt'
 EXTERNAL_NETWORK = r'.*Only an external network may be attached to VM' \
                    r' in a cluster with OVS switch type'
 
-PLAYBOOK_DIR = os.path.join(os.environ.get('SUITE'), 'ansible')
-
 
 @pytest.fixture(scope='module')
 def ovn_physnet_small_mtu(default_data_center, ovirtmgmt_network, ovs_cluster,
@@ -251,7 +249,7 @@ def _forbid_icmp_from_host(host):
 
 
 def _provision_icmp_rule(source_ip, action):
-    playbook_path = os.path.join(PLAYBOOK_DIR,
+    playbook_path = os.path.join(suite.playbook_dir(),
                                  action +
                                  '_icmp_rule_on_default_sec_group.yml')
     playbook = Playbook(

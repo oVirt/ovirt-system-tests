@@ -330,7 +330,7 @@ _ost_run_tc () {
     local testcase=${@/#/$PWD/}
     local junitxml_file="$PREFIX/${TC:-$SUITE}.junit.xml"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
-    python3 -u -B -m pytest \
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" python3 -u -B -m pytest \
         -s \
         -v \
         -x \
@@ -356,7 +356,7 @@ ost_run_tc() {
 
 # $1=tc file, $2=test name
 ost_run_after() {
-    { python3 << EOT
+    { PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" python3 << EOT
 exec(open('$1').read())
 since=_TEST_LIST.index('$2')
 print('%s' % '\n'.join(_TEST_LIST[since+1:]))

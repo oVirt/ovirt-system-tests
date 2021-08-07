@@ -29,6 +29,14 @@ SUITE = os.environ['SUITE']
 SUITE_VERSION = SUITE.split('-')[-1]
 
 
+def suite_dir():
+    return os.path.join(os.environ['OST_REPO_ROOT'], os.environ['SUITE'])
+
+
+def playbook_dir():
+    return os.path.join(suite_dir(), 'ansible')
+
+
 def af():
     """
     The address family to use for all connections in the session.

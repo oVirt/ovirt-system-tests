@@ -12,7 +12,7 @@ install_dependencies() {
 setup_env() {
     env_init \
         "$1" \
-        "$SUITE/LagoInitFile"
+        "${OST_REPO_ROOT}/${SUITE}/LagoInitFile"
 }
 
 start_env() {
@@ -39,7 +39,7 @@ run_tests() {
         --log-level=INFO \
         --junit-xml="$junit_xml_path" \
         ${CUSTOM_REPOS_ARGS[@]} \
-        "${SUITE}/test-scenarios"
+        "${OST_REPO_ROOT}/${SUITE}/test-scenarios"
 }
 
 run_suite () {

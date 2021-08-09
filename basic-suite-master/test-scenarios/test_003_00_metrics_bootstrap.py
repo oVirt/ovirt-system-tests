@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +22,39 @@ from __future__ import absolute_import
 import functools
 import os
 
+import pytest
+
 from ost_utils import utils
 from ost_utils.ansible import AnsibleExecutionError
+
+
+LOG_COLLECTOR = """\
+'[LogCollector]
+user={engine_full_username}
+passwd={engine_password}
+engine={engine_fqdn}:443
+local-tmp={local_tmp}
+output=/dev/shm
+'""".replace(
+    '\n', '\\n'
+)
+
+
+@pytest.fixture
+def setup_log_collector(
+    ansible_engine, engine_password, engine_fqdn, engine_full_username
+):
+    local_tmp = ansible_engine.tempfile(
+        path='/dev/shm', state='directory')['path']
+    ansible_engine.copy(
+        dest='/root/ovirt-log-collector.conf',
+        content=LOG_COLLECTOR.format(
+            engine_full_username=engine_full_username,
+            engine_password=engine_password,
+            engine_fqdn=engine_fqdn,
+            local_tmp=local_tmp,
+        ),
+    )
 
 
 def configure_metrics(suite_dir, ansible_engine, ansible_hosts):
@@ -82,7 +113,9 @@ def run_log_collector(ansible_engine):
     ansible_engine.shell('rm -rf /dev/shm/sosreport-LogCollector-*')
 
 
-def test_metrics_and_log_collector(suite_dir, ansible_engine, ansible_hosts):
+def test_metrics_and_log_collector(
+    setup_log_collector, suite_dir, ansible_engine, ansible_hosts
+):
     vt = utils.VectorThread(
         [
             functools.partial(configure_metrics, suite_dir, ansible_engine,

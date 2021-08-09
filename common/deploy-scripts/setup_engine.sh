@@ -1,15 +1,5 @@
 #!/bin/bash -xe
 
-LOCALTMP=$(mktemp --dry-run /dev/shm/XXXXXX)
-cat > /root/ovirt-log-collector.conf << EOF
-[LogCollector]
-user=admin@internal
-passwd=123
-engine=engine:443
-local-tmp=$LOCALTMP
-output=/dev/shm
-EOF
-
 # add "engine" to /etc/hosts. This should be eliminated in favor of FQDN everywhere.
 # relies on eth0 being the management network.
 ADDR=$(/sbin/ip -o addr show dev eth0 scope global | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')

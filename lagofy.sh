@@ -58,11 +58,6 @@ ost_init() {
     IPV6=
     HOSTIDX=2
     NET_NAME="ost$UUID-$SUBNET"
-    if [[ "$NET_TYPE" = "$management_net" ]]; then
-      DNS="<dns forwardPlainNames='no'>"
-    else
-      DNS="<dns enable='no'>"
-    fi
     for name in $1; do
       IDXHEX=$(printf "%.2d" ${HOSTIDX})
       nicidx_map[$name]="${HOSTIDX}"
@@ -72,10 +67,8 @@ ost_init() {
       ipv4_mac="54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
       ipv6_ip="fd8f:1391:3a82:${SUBNET}::c0a8:${SUBNETHEX}${IDXHEX}"
       ipv6_mac="0:3:0:1:54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
-      [[ "$NET_TYPE" == "$management_net" ]] && {
-        [[ -n "$ipv6_only" ]] || DNS+="<host ip='${ipv4_ip}'><hostname>${hostname}</hostname></host>"
-        [[ -n "$ipv4_only" ]] || DNS+="<host ip='${ipv6_ip}'><hostname>${hostname}</hostname></host>"
-      }
+      [[ -n "$ipv6_only" ]] || dns_entries+="<host ip='${ipv4_ip}'><hostname>${hostname}</hostname></host>"
+      [[ -n "$ipv4_only" ]] || dns_entries+="<host ip='${ipv6_ip}'><hostname>${hostname}</hostname></host>"
       # this prefers IPv4 as management IP for ansible...maybe worth changing to prefer IPv6 once we're fully compatible with IPv6
       nicip_map[$name]="${ipv4_ip}"
       [[ -n "$ipv6_only" ]] && nicip_map[$name]="${ipv6_ip}"
@@ -83,7 +76,12 @@ ost_init() {
       IPV6+="<host id='${ipv6_mac}' name='${hostname}' ip='${ipv6_ip}'/>"
       (( HOSTIDX++ ))
     done
-    DNS+="</dns>"
+    if [[ "$NET_TYPE" = "$management_net" ]]; then
+      # adds all acumulated DNS entries so far, i.e. management network needs to be the last one generated
+      DNS="<dns forwardPlainNames='no'>${dns_entries}</dns>"
+    else
+      DNS="<dns enable='no'/>"
+    fi
   }
 
   # finds unused subnet in the OST range
@@ -161,8 +159,9 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
   flock -w 120 9
   cd "${OST_REPO_ROOT}"
 
-  # parse networks and create them on unused subnets
-  for NET_TYPE in $(jqr ".networks | keys | join(\" \")"); do
+  # parse networks and create them on unused subnets (sorted so that  management is the last one to include all DNS entries)
+  dns_entries=
+  for NET_TYPE in $(jqr ".networks | to_entries | map ({\"net\":.key} + {\"mgmt\":.value.is_management}) | sort_by(.mgmt==true) | .[].net"); do
     net_template=$(jqr ".networks[\"${NET_TYPE}\"].template")
     [[ "$ipv4_only" ]] && net_template+=".ipv4"
     [[ "$ipv6_only" ]] && net_template+=".ipv6"

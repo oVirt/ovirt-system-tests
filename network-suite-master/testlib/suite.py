@@ -43,7 +43,7 @@ def af():
     IP_VERSION environment variable expected values: '4' or '6'.
     """
     try:
-        return address_family.AF(os.environ['IP_VERSION'])
+        return address_family.AF(os.environ['IP_VERSION_TEMP'])
     except KeyError:
         return address_family.AF('4')
 

@@ -41,10 +41,13 @@ def he_mac_address():
 @pytest.fixture(scope="session")
 def he_ipv4_address(ansible_host0_facts):
     host0_ipv4 = ansible_host0_facts.get('ansible_default_ipv4').get('address')
-    return '{prefix}.{suffix}'.format(
-        prefix='.'.join(host0_ipv4.split('.')[:3]),
-        suffix=random.randrange(50, 100),
-    )
+    res = None
+    if host0_ipv4:
+        res = '{prefix}.{suffix}'.format(
+            prefix='.'.join(host0_ipv4.split('.')[:3]),
+            suffix=random.randrange(50, 100),
+        )
+    return res
 
 
 # FIXME this is not a good idea when there are multiple networks currently, as
@@ -54,11 +57,14 @@ def he_ipv4_address(ansible_host0_facts):
 @pytest.fixture(scope="session")
 def he_ipv6_address(ansible_host0_facts):
     host0_ipv6 = ansible_host0_facts.get('ansible_default_ipv6').get('address')
-    *prefix, lasthextet = host0_ipv6.split(':')
-    return '{prefix}:{prelast}63'.format(
-        prefix=':'.join(prefix),
-        prelast=lasthextet[:2],
-    )
+    res = None
+    if host0_ipv6:
+        *prefix, lasthextet = host0_ipv6.split(':')
+        res = '{prefix}:{prelast}63'.format(
+            prefix=':'.join(prefix),
+            prelast=lasthextet[:2],
+        )
+    return res
 
 
 @pytest.fixture(scope="session")

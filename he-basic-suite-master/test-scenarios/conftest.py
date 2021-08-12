@@ -112,5 +112,5 @@ def engine_ips_for_network(engine_ip): # pylint: disable=function-redefined
 
 
 @pytest.fixture(scope="session")
-def engine_ip(he_ipv4_address): # pylint: disable=function-redefined
-    return he_ipv4_address
+def engine_ip(he_ipv4_address, he_ipv6_address): # pylint: disable=function-redefined
+    return he_ipv4_address or he_ipv6_address

@@ -56,7 +56,7 @@ def test_he_deploy(
     ansible_storage,
     he_host_name,
     he_mac_address,
-    he_ipv4_address,
+    engine_ip,
 ):
     # not very nice. Better than duplicating whole file or symlinking though...
     if 'ssg' in suite:
@@ -85,7 +85,7 @@ def test_he_deploy(
         '/root/setup_first_he_host.sh '
         f'{he_host_name} '
         f'{he_mac_address} '
-        f'{he_ipv4_address}'
+        f'{engine_ip}'
     )
 
     ansible_storage.shell('fstrim -va')

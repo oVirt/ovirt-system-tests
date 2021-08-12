@@ -37,6 +37,7 @@ from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
 
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts
+from ost_utils.pytest.fixtures.deployment import set_sar_interval
 
 from ost_utils.pytest.fixtures.engine import *
 

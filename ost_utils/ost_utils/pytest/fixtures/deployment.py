@@ -53,6 +53,28 @@ def run_scripts(ansible_by_hostname, root_dir):
     return do_run_scripts
 
 
+@pytest.fixture(scope="session")
+def set_sar_interval(ansible_all, root_dir):
+    def do_set_sar_interval():
+        ansible_all.file(
+            path='/etc/systemd/system/sysstat-collect.timer.d',
+            state='directory',
+        )
+        sar_stat_src_dir = os.path.join(root_dir, 'common/sar_stat')
+        ansible_all.copy(
+            src=os.path.join(sar_stat_src_dir, 'override.conf'),
+            dest='/etc/systemd/system/sysstat-collect.timer.d',
+        )
+        ansible_all.systemd(
+            daemon_reload='yes',
+            name='sysstat-collect.timer',
+            state='started',
+            enabled='yes',
+        )
+
+    return do_set_sar_interval
+
+
 @pytest.fixture(scope="session", autouse=True)
 def deploy(
     ansible_vms_to_deploy,
@@ -61,6 +83,7 @@ def deploy(
     working_dir,
     request,
     run_scripts,
+    set_sar_interval,
 ):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
@@ -103,6 +126,9 @@ def deploy(
     # setup vdsm coverage on hosts if desired
     if os.environ.get("coverage", "false") == "true":
         coverage.vdsm.setup(ansible_hosts)
+
+    # setup sar stat utility
+    set_sar_interval()
 
     # mark env as deployed
     deployment_utils.mark_as_deployed(working_dir)

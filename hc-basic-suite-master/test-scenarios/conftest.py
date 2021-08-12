@@ -32,6 +32,7 @@ from ost_utils.pytest.fixtures.backend import *
 from ost_utils.pytest.fixtures.defaults import *
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts
+from ost_utils.pytest.fixtures.deployment import set_sar_interval
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import *
 from ost_utils.pytest.fixtures.network import *

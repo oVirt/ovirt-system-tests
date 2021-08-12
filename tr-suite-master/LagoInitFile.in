@@ -45,7 +45,6 @@ domains:
     metadata:
       ovirt-engine-password: 123
       deploy-scripts:
-        - common/deploy-scripts/setup_sar_stat.sh
         - common/deploy-scripts/setup_storage.sh
         - common/deploy-scripts/setup_engine.sh
         - common/deploy-scripts/test-extend-swap.sh
@@ -70,7 +69,6 @@ domains:
 
     metadata:
       deploy-scripts:
-        - common/deploy-scripts/setup_sar_stat.sh
         - common/deploy-scripts/setup_host.sh
 {%- endfor %}
 nets:

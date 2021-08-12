@@ -32,7 +32,6 @@
     "template": "common/libvirt-templates/vm_template",
     "memory": "8192",
     "deploy-scripts": [
-      "common/deploy-scripts/setup_sar_stat.sh",
       "common/deploy-scripts/setup_storage.sh",
       "common/deploy-scripts/setup_engine.sh"
     ],
@@ -56,7 +55,6 @@
     "template": "common/libvirt-templates/vm_template",
     "memory": "12292",
     "deploy-scripts": [
-      "common/deploy-scripts/setup_sar_stat.sh",
       "common/deploy-scripts/setup_host.sh"
     ],
     "nics": {
@@ -72,7 +70,6 @@
     "template": "common/libvirt-templates/vm_template",
     "memory": "12292",
     "deploy-scripts": [
-      "common/deploy-scripts/setup_sar_stat.sh",
       "common/deploy-scripts/setup_host.sh"
     ],
     "nics": {

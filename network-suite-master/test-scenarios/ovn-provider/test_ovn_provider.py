@@ -42,7 +42,11 @@ class OvnNetwork(object):
 
 
 def test_ovn_provider_create_scenario(openstack_client_config):
-    _test_ovn_provider('create_scenario.yml')
+    scenario = {
+        'inet': 'create_scenario.yml',
+        'inet6': 'create_scenario_ipv6.yml',
+    }
+    _test_ovn_provider(scenario[suite.af().family])
 
 
 def test_validate_ovn_provider_connectivity(
@@ -206,10 +210,11 @@ def _configure_ovs_port_command(port, subnet):
     ip = port.fixed_ips[0]['ip_address']
     mac = port.mac_address
     gw = subnet.gateway_ip
+    prefix = '64' if suite.af().is6 else '24'
     commands = [
         'ip link set ' + name + ' netns ' + name,
         'ip netns exec ' + name + ' ip link set ' + name + ' address ' + mac,
-        'ip netns exec ' + name + ' ip addr add ' + ip + '/24 dev ' + name,
+        'ip netns exec ' + name + ' ip a add ' + ip + f'/{prefix} dev ' + name,
         'ip netns exec ' + name + ' ip link set ' + name + ' up',
         'ip netns exec ' + name + ' ip route add default via ' + gw,
     ]

@@ -1,0 +1,135 @@
+---
+- name: Create network net10
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net10
+  register: net10
+
+- name: Create subnet net10_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net10.id }}"
+    name: net10_subnet1
+    ip_version: 6
+    cidr: fd8f:10:10::0/64
+    gateway_ip: fd8f:10:10::1
+    ipv6_address_mode: dhcpv6-stateful
+  register: net10_subnet1
+
+- name: Create port net10_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net10_port1
+    network: net10
+    fixed_ips:
+      - ip_address: fd8f:10:10::11
+
+- name: Create network net11
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net11
+  register: net11
+
+- name: Create subnet net11_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net11.id }}"
+    name: net11_subnet1
+    ip_version: 6
+    cidr: fd8f:10:11::0/64
+    gateway_ip: fd8f:10:11::1
+    ipv6_address_mode: dhcpv6-stateful
+  register: net11_subnet1
+
+- name: Create port net11_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net11_port1
+    network: net11
+    fixed_ips:
+      - ip_address: fd8f:10:11::11
+
+- name: Create network net12
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net12
+  register: net12
+
+- name: Create subnet net12_subnet 1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net12.id }}"
+    name: net12_subnet1
+    ip_version: 6
+    cidr: fd8f:10:12::0/64
+    gateway_ip: fd8f:10:12::1
+    ipv6_address_mode: dhcpv6-stateful
+  register: net12_subnet1
+
+- name: Create port net12_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net12_port1
+    network: net12
+    fixed_ips:
+      - ip_address: fd8f:10:12::11
+
+- name: Create network net14
+  os_network:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net14
+  register: net14
+
+- name: Create subnet net14_subnet1
+  os_subnet:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network_name: "{{ net14.id }}"
+    name: net14_subnet1
+    ip_version: 6
+    cidr: fd8f:10:14::0/64
+    gateway_ip: fd8f:10:14::1
+    ipv6_address_mode: dhcpv6-stateful
+  register: net14_subnet1
+
+- name: Create port net14_port1
+  os_port:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: net14_port1
+    network: net14
+    fixed_ips:
+      - ip_address: fd8f:10:14::11
+
+- name: Create router router0
+  os_router:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: router0
+    network: "{{net12.id}}"
+    enable_snat: no
+    external_fixed_ips:
+      - subnet: "{{net12_subnet1.id}}"
+        ip: fd8f:10:12::aaa
+    interfaces:
+        - net10_subnet1
+        - net11_subnet1
+
+- name: Create router router1
+  os_router:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: router1
+    interfaces:
+        - net12_subnet1
+        - net14_subnet1

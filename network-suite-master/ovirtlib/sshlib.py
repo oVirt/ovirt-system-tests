@@ -15,8 +15,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
+import ipaddress
 import logging
 import paramiko
+import pytest
 
 from ovirtlib import syncutil
 
@@ -123,6 +125,29 @@ class Node(object):
         if res is not None:
             res = res[(res.find('via ') + len('via ')):res.find(' dev')]
         return res
+
+    def assert_no_ping_from_netns(self, target, from_netns):
+        with pytest.raises(SshException, match='100% packet loss'):
+            self.ping_from_netns(target=target, from_netns=from_netns)
+
+    def assert_ping_from_netns(self, target, from_netns):
+        self.ping_from_netns(target=target, from_netns=from_netns)
+
+    def ping_from_netns(self, target, data_size=56, from_netns=None):
+        """
+        Ping a given destination from source.
+
+        :parameter source: the host which executes the ping command
+        :parameter password: the root password for the host source
+        :parameter target: the target of the ping command
+        :parameter data_size: the size of the data payload
+        :parameter netns: optional networking namespace in which to execute
+        """
+        netns_prefix = f'ip netns exec {from_netns} ' if from_netns else ''
+        version = ipaddress.ip_address(target).version
+        cmd = netns_prefix + (f'ping -{version} -c 1 -M do -s {data_size} '
+                              f'{target}')
+        self.exec_command(cmd)
 
     def ping4(self, target_ipv4, iface_name):
         """

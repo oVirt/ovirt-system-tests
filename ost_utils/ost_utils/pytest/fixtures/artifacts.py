@@ -79,6 +79,13 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
         local_archive_path = os.path.join(local_archive_dir, archive_name)
         remote_archive_path = os.path.join("/tmp", archive_name)
         os.makedirs(local_archive_dir, exist_ok=True)
+        # Get the journal right before collecting, so that we get all
+        # records we can. Does not make that much sense here, but doing
+        # this in its own fixture, including making the effort to schedule
+        # it right before current, would needlessly complicate the code.
+        ansible_handle.shell(
+            'journalctl -a --no-pager > /var/log/journalctl.log'
+        )
         ansible_handle.archive(
             path=artifacts_list_string, dest=remote_archive_path
         )

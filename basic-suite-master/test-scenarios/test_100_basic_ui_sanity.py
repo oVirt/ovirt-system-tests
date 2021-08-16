@@ -131,12 +131,12 @@ def chrome_capabilities():
     scope="session",
     params=[
         pytest.param(
-            firefox_capabilities(),
-            id="firefox"
-        ),
-        pytest.param(
             chrome_capabilities(),
             id="chrome"
+        ),
+        pytest.param(
+            firefox_capabilities(),
+            id="firefox"
         ),
     ]
 )

@@ -17,6 +17,9 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 
 class AF(object):
@@ -24,8 +27,10 @@ class AF(object):
     Address family class
     """
     def __init__(self, version):
-        if version != '4' and version != '6':
-            raise ValueError("version must be '4' or '6'")
+        if version not in ['4', '6']:
+            LOGGER.warning(f'suite invoked with unsupported version {version}.'
+                           f'using version 4')
+            version = '4'
         self._version = version
 
     @property

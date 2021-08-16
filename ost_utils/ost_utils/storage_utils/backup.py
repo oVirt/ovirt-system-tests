@@ -110,8 +110,10 @@ def perform_incremental_vm_backup(
                 from_checkpoint_id=full_checkpoint_id,
                 correlation_id="incremental_" + correlation_id,
             )
+            break
         except sdk4.Error as err:
-            LOGGER.warning("Exception: {} ".format(err))
+            LOGGER.warning("Iteration: #{}".format(i))
+            LOGGER.warning("Exception: {}".format(err))
             if i < 2 and err.args[0] in allowed_errors:
                 LOGGER.info(
                     "Incremental backup failed due to race condition, "

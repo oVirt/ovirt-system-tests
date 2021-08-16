@@ -78,7 +78,7 @@ def ovn_physnet_small_mtu(default_data_center, ovirtmgmt_network, ovs_cluster,
 
 @pytest.fixture(scope='module')
 def vm_in_ovs_cluster_down(system, ovs_cluster, host_in_ovs_cluster,
-                           cirros_template):
+                           default_storage_domain, cirros_template):
     with virtlib.vm_pool(system, size=1) as (vm,):
         vm.create(vm_name=VM0_NAME, cluster=ovs_cluster,
                   template=cirros_template)

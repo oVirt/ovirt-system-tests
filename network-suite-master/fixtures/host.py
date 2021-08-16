@@ -58,10 +58,10 @@ def host_in_ovs_cluster(
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
     with host.toggle_cluster(ovs_cluster):
         host.sync_all_networks()
-        default_data_center.wait_for_up_status()
+        host.wait_for_networks_in_sync()
         yield host
     host.sync_all_networks()
-    default_data_center.wait_for_up_status()
+    host.wait_for_networks_in_sync()
 
 
 def _non_spm_host(system, host_ids):

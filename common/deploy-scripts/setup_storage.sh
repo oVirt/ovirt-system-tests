@@ -171,8 +171,6 @@ setup_389ds() {
     DOMAIN=$(dnsdomainname)
     PASSWORD=12345678
     HOSTNAME=$(sed -E "s/(.${DOMAIN})?$/.${DOMAIN}/" <<<$(hostname))
-    # assumes eth0 is the management network, that works both for basic suite and HE suites where there is a single eth0 for both storage and management
-    ADDR=$(/sbin/ip -o addr show dev eth0 scope global | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
     cat >> answer_file.inf <<EOC
 [General]
 FullMachineName= @HOSTNAME@

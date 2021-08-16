@@ -65,16 +65,7 @@ def engine_hostname(ansible_engine_facts):
 
 @pytest.fixture(scope="session")
 def engine_fqdn(ansible_engine_facts, suite):
-    if 'he' in suite:
-        return ansible_engine_facts.get("ansible_fqdn")
-    elif 'hc' in suite:
-        return "ost-hc-basic-suite-master-engine.lago.local"
-    else:
-        # TODO:
-        # Currently, basic-suite-master and a few others are using
-        # fqdn 'engine'. Convert them to use a real fqdn created by
-        # the backend and then remove the else part.
-        return "engine"
+    return ansible_engine_facts.get("ansible_fqdn")
 
 
 @pytest.fixture(scope="session")

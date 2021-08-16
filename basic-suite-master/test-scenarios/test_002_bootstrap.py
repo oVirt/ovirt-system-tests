@@ -343,8 +343,8 @@ def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
 
 @order_by(_TEST_LIST)
 def test_sync_time(ansible_hosts, engine_hostname):
-    ansible_hosts.shell('chronyc -4 add server {}'.format(engine_hostname))
-    ansible_hosts.shell('chronyc -4 makestep')
+    ansible_hosts.shell('chronyc add server {}'.format(engine_hostname))
+    ansible_hosts.shell('chronyc makestep')
 
 
 @order_by(_TEST_LIST)

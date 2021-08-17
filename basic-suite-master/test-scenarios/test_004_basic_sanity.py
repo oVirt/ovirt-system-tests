@@ -461,9 +461,7 @@ def test_clone_powered_off_vm(system_service, vms_service, ost_cluster_name):
             ),
         )
     )
-    _verify_vm_state(system_service, VM_TO_CLONE_NAME, types.VmStatus.DOWN)
-
-    vm_to_clone_service = test_utils.get_vm_service(system_service, VM_TO_CLONE_NAME)
+    vm_to_clone_service = _verify_vm_state(system_service, VM_TO_CLONE_NAME, types.VmStatus.DOWN)
     vm_to_clone_disk_attachments_service = test_utils.get_disk_attachments_service(
         system_service, VM_TO_CLONE_NAME)
     floating_disk_service = test_utils.get_disk_service(system_service, FLOATING_DISK_NAME)
@@ -540,9 +538,9 @@ def test_remove_vm2_backup_checkpoints(engine_api, get_vm_service_for_vm):
     # Removing all the checkpoints created during backup tests
     # to prevent testing QEMU crash that will cause inconsistent bitmaps,
     # so the disk migration will failed - https://bugzilla.redhat.com/1946084.
-    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
-    vm2_checkpoints_service = get_vm_service_for_vm(VM2_NAME).checkpoints_service()
-    for _ in get_vm_service_for_vm(VM2_NAME).checkpoints_service().list():
+    vm2_service = _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
+    vm2_checkpoints_service = vm2_service.checkpoints_service()
+    for _ in vm2_checkpoints_service.list():
         backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
 
 
@@ -563,9 +561,6 @@ def test_verify_transient_folder(assert_vm_is_alive, engine_api,
 
 @order_by(_TEST_LIST)
 def test_verify_and_remove_cloned_vm(system_service):
-    cloned_vm_service = test_utils.get_vm_service(system_service, CLONED_VM_NAME)
-    vm_to_clone_service = test_utils.get_vm_service(system_service, VM_TO_CLONE_NAME)
-
     correlation_id = 'clone_powered_off_vm'
 
     assertions.assert_true_within_short(
@@ -573,7 +568,7 @@ def test_verify_and_remove_cloned_vm(system_service):
         test_utils.all_jobs_finished(system_service, correlation_id)
     )
 
-    _verify_vm_state(system_service, CLONED_VM_NAME, types.VmStatus.DOWN)
+    cloned_vm_service = _verify_vm_state(system_service, CLONED_VM_NAME, types.VmStatus.DOWN)
     _verify_vm_disks_state(system_service, CLONED_VM_NAME, types.DiskStatus.OK)
 
     vm_to_clone_snapshots_service = test_utils.get_vm_snapshots_service(
@@ -584,6 +579,7 @@ def test_verify_and_remove_cloned_vm(system_service):
     )
 
     num_of_vms = len(system_service.vms_service().list())
+    vm_to_clone_service = test_utils.get_vm_service(system_service, VM_TO_CLONE_NAME)
     vm_to_clone_service.remove(
         detach_only=True
     )
@@ -858,8 +854,7 @@ def test_live_storage_migration(engine_api):
 @order_by(_TEST_LIST)
 def test_export_vm2(engine_api):
     engine = engine_api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-    _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
+    vm_service = _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
     host = test_utils.get_first_active_host_by_name(engine)
 
     with engine_utils.wait_for_event(engine, 1223): # IMPORTEXPORT_STARTING_EXPORT_VM_TO_OVA event
@@ -1052,8 +1047,8 @@ def test_verify_add_vm1_from_template(engine_api):
 
 @order_by(_TEST_LIST)
 def test_cold_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
-    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.DOWN)
-    vm2_backups_service = get_vm_service_for_vm(VM2_NAME).backups_service()
+    vm2_service = _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.DOWN)
+    vm2_backups_service = vm2_service.backups_service()
     backup.perform_incremental_vm_backup(
         engine_api, vm2_backups_service, DISK2_NAME, "cold_vm_backup")
 
@@ -1098,8 +1093,8 @@ def test_verify_vm2_run(engine_api):
 
 @order_by(_TEST_LIST)
 def test_live_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
-    _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
-    vm2_backups_service = get_vm_service_for_vm(VM2_NAME).backups_service()
+    vm2_service = _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
+    vm2_backups_service = vm2_service.backups_service()
     backup.perform_incremental_vm_backup(
         engine_api, vm2_backups_service, DISK2_NAME, "live_vm_backup")
 
@@ -1137,8 +1132,7 @@ def test_ha_recovery(engine_api, get_ansible_host_for_vm):
 @order_by(_TEST_LIST)
 def test_offline_snapshot_restore(engine_api):
     engine = engine_api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-    _verify_vm_state(engine, VM2_NAME, types.VmStatus.DOWN)
+    vm_service = _verify_vm_state(engine, VM2_NAME, types.VmStatus.DOWN)
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM2_NAME)
     disk = disk_attachments_service.list()[0]
     snapshots_service = vm_service.snapshots_service()
@@ -1173,9 +1167,8 @@ def test_offline_snapshot_restore(engine_api):
 @order_by(_TEST_LIST)
 def test_verify_offline_snapshot_restore(engine_api):
     engine = engine_api.system_service()
-    vm_service = test_utils.get_vm_service(engine, VM2_NAME)
 
-    _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
+    vm_service = _verify_vm_state(engine, VM2_NAME, types.VmStatus.UP)
     vm_service.stop()
     _verify_vm_state(engine, VM2_NAME, types.VmStatus.DOWN)
     with engine_utils.wait_for_event(engine, [94, 95]):

@@ -146,7 +146,7 @@ _TEST_LIST = [
     "test_next_run_unplug_cpu",
     "test_disk_operations",
     "test_offline_snapshot_restore",
-    "test_import_template_as_vm",
+    "test_import_template",
     "test_live_storage_migration",
     "test_verify_offline_snapshot_restore",
     "test_remove_vm2_lease",
@@ -901,18 +901,21 @@ def test_verify_template_exported(engine_api, cirros_image_glance_template_name)
     )
 
 
-def _import_ova(engine, correlation_id, vm_name, imported_url, storage_domain, cluster_name):
-    sd = engine.storage_domains_service().list(search='name={}'.format(storage_domain))[0]
-    cluster = engine.clusters_service().list(search='name={}'.format(cluster_name))[0]
+@order_by(_TEST_LIST)
+def test_import_vm1(engine_api, ost_cluster_name):
+    engine = engine_api.system_service()
+    sd = engine.storage_domains_service().list(search='name={}'.format(SD_ISCSI_NAME))[0]
+    cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
     imports_service = engine.external_vm_imports_service()
     host = test_utils.get_first_active_host_by_name(engine)
+    correlation_id = "test_validate_ova_import_vm"
 
-    with engine_utils.wait_for_event(engine, 1165): # IMPORTEXPORT_STARTING_IMPORT_VM
+    with engine_utils.wait_for_event(engine, 1165):  # IMPORTEXPORT_STARTING_IMPORT_VM
         imports_service.add(
             types.ExternalVmImport(
-                name=vm_name,
+                name=IMPORTED_VM_NAME,
                 provider=types.ExternalVmProviderType.KVM,
-                url=imported_url,
+                url=IMPORTED_OVA_NAME,
                 cluster=types.Cluster(
                     id=cluster.id
                 ),
@@ -928,47 +931,59 @@ def _import_ova(engine, correlation_id, vm_name, imported_url, storage_domain, c
 
 
 @order_by(_TEST_LIST)
-def test_import_vm1(engine_api, ost_cluster_name):
-    _import_ova(engine_api.system_service(),
-                "test_validate_ova_import_vm",
-                IMPORTED_VM_NAME,
-                IMPORTED_OVA_NAME,
-                SD_ISCSI_NAME,
-                ost_cluster_name)
-
-
-def _verify_vm_import(
-    engine,
-    correlation_id,
-    vm_name=IMPORTED_VM_NAME
-):
-    assertions.assert_true_within_long(
-        lambda:
-        test_utils.all_jobs_finished(engine, correlation_id)
-    )
-    _verify_vm_state(engine, vm_name, types.VmStatus.DOWN)
-
-
-@order_by(_TEST_LIST)
 def test_verify_vm_import(engine_api):
-    _verify_vm_import(engine_api.system_service(), "test_validate_ova_import_vm")
+    engine = engine_api.system_service()
+    correlation_id = "test_validate_ova_import_vm"
+
+    assertions.assert_true_within_long(
+        lambda: test_utils.all_jobs_finished(engine, correlation_id)
+    )
+    assertions.assert_true_within_short(
+        lambda: test_utils.get_vm_service(engine, IMPORTED_VM_NAME) is not None
+    )
 
 
 @order_by(_TEST_LIST)
-def test_import_template_as_vm(engine_api, ost_cluster_name):
-    _import_ova(engine_api.system_service(),
-                "test_validate_ova_import_temp",
-                IMPORTED_TEMP_NAME,
-                IMPORTED_TEMP_OVA_NAME,
-                SD_NFS_NAME,
-                ost_cluster_name)
+def test_import_template(engine_api, ost_cluster_name):
+    engine = engine_api.system_service()
+    sd = engine.storage_domains_service().list(search='name={}'.format(SD_NFS_NAME))[0]
+    cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
+    imports_service = engine.external_template_imports_service()
+    host = test_utils.get_first_active_host_by_name(engine)
+    correlation_id = "test_validate_ova_import_temp"
+
+    with engine_utils.wait_for_event(engine, 1163):  # IMPORTEXPORT_STARTING_IMPORT_TEMPLATE
+        imports_service.add(
+            types.ExternalTemplateImport(
+                template=types.Template(
+                    name=IMPORTED_TEMP_NAME
+                ),
+                url=IMPORTED_TEMP_OVA_NAME,
+                cluster=types.Cluster(
+                    id=cluster.id
+                ),
+                storage_domain=types.StorageDomain(
+                    id=sd.id
+                ),
+                host=types.Host(
+                    id=host.id
+                ),
+                clone=True
+            ), async_=True, query={'correlation_id': correlation_id}
+        )
 
 
 @order_by(_TEST_LIST)
 def test_verify_template_import(engine_api):
-    _verify_vm_import(engine_api.system_service(),
-                      "test_validate_ova_import_temp",
-                      IMPORTED_TEMP_NAME)
+    engine = engine_api.system_service()
+    correlation_id = "test_validate_ova_import_temp"
+
+    assertions.assert_true_within_long(
+        lambda: test_utils.all_jobs_finished(engine, correlation_id)
+    )
+    assertions.assert_true_within_short(
+        lambda: test_utils.get_template_service(engine, IMPORTED_TEMP_NAME) is not None
+    )
 
 
 @order_by(_TEST_LIST)

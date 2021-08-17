@@ -17,7 +17,10 @@
 #
 # Refer to the README and COPYING files for full details of the license
 #
+import logging
 import ansible_runner
+
+LOGGER = logging.getLogger(__name__)
 
 
 class AnsibleExecutionFailure(Exception):
@@ -50,5 +53,8 @@ class Playbook(object):
             extravars=self._extra_vars,
             inventory='localhost ansible_connection=local')
         if runner.status != 'successful':
+            LOGGER.error(f'failed running playbook {self._playbook} '
+                         f'with status {runner.status}.\n'
+                         f'stdout: {runner.stdout.read()}')
             raise AnsibleExecutionFailure
         return runner.stats

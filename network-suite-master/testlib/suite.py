@@ -20,6 +20,7 @@
 from distutils.version import LooseVersion
 import os
 
+import logging
 import ovirtsdk4
 import pytest
 
@@ -27,6 +28,7 @@ from testlib import address_family
 
 SUITE = os.environ['SUITE']
 SUITE_VERSION = SUITE.split('-')[-1]
+LOGGER = logging.getLogger(__name__)
 
 
 def suite_dir():
@@ -42,10 +44,16 @@ def af():
     The address family to use for all connections in the session.
     IP_VERSION environment variable expected values: '4' or '6'.
     """
+    default_ip_version = '4'
     try:
-        return address_family.AF(os.environ['IP_VERSION'])
+        version = os.environ['IP_VERSION']
+        if version not in ['4', '6']:
+            LOGGER.warning(f'suite invoked with unsupported version '
+                           f'"{version}". using version {default_ip_version}')
+            version = default_ip_version
     except KeyError:
-        return address_family.AF('4')
+        version = default_ip_version
+    return address_family.AF(version)
 
 
 def xfail_suite_master(reason, raises=None):

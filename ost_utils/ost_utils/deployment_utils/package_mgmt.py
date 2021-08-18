@@ -50,7 +50,9 @@ DUMMY_REPOMD_XML = '''"
 DUMMY_PRIMARY_XML = '"<metadata packages="0"/>"'
 
 OVIRT_PACKAGES_PATTERNS = (
+    re.compile('ovirt-ansible-collection-[0-9]'),
     re.compile('ovirt-engine-[0-9]'),
+    re.compile('python3-ovirt-engine-sdk4-[0-9]'),
     re.compile('vdsm-[0-9]'),
 )
 

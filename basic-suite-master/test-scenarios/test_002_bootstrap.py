@@ -178,21 +178,27 @@ _TEST_LIST = [
 ]
 
 
-@pytest.mark.parametrize("key_format, verification_fn", [
-    pytest.param(
-        'X509-PEM-CA',
-        lambda path: shell.shell(["openssl", "x509", "-in", path, "-text", "-noout"]),
-        id="CA certificate"
-    ),
-    pytest.param(
-        'OPENSSH-PUBKEY',
-        lambda path: shell.shell(["ssh-keygen", "-l", "-f", path]),
-        id="ssh pubkey"
-    ),
-])
+@pytest.mark.parametrize(
+    "key_format, verification_fn",
+    [
+        pytest.param(
+            'X509-PEM-CA',
+            lambda path: shell.shell(
+                ["openssl", "x509", "-in", path, "-text", "-noout"]
+            ),
+            id="CA certificate",
+        ),
+        pytest.param(
+            'OPENSSH-PUBKEY',
+            lambda path: shell.shell(["ssh-keygen", "-l", "-f", path]),
+            id="ssh pubkey",
+        ),
+    ],
+)
 @order_by(_TEST_LIST)
-def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
-                             engine_download):
+def test_verify_engine_certs(
+    key_format, verification_fn, engine_fqdn, engine_download
+):
     url = 'http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format={}'
 
     with http_proxy_disabled(), tempfile.NamedTemporaryFile() as tmp:
@@ -201,7 +207,8 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
             verification_fn(tmp.name)
         except shell.ShellError:
             LOGGER.debug(
-                "Certificate verification failed. Certificate contents:\n")
+                "Certificate verification failed. Certificate contents:\n"
+            )
             LOGGER.debug(tmp.read())
             raise
 
@@ -221,13 +228,13 @@ def test_add_dc(engine_api, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dcs_service = engine.data_centers_service()
-    with engine_utils.wait_for_event(engine, 950): # USER_ADD_STORAGE_POOL
+    with engine_utils.wait_for_event(engine, 950):  # USER_ADD_STORAGE_POOL
         assert dcs_service.add(
             sdk4.types.DataCenter(
                 name=ost_dc_name,
                 description='APIv4 DC',
                 local=False,
-                version=sdk4.types.Version(major=DC_VER_MAJ,minor=DC_VER_MIN),
+                version=sdk4.types.Version(major=DC_VER_MAJ, minor=DC_VER_MIN),
             ),
         )
 
@@ -238,7 +245,9 @@ def test_remove_default_dc(engine_api, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
-    with engine_utils.wait_for_event(engine, 954): # USER_REMOVE_STORAGE_POOL event
+    with engine_utils.wait_for_event(
+        engine, 954
+    ):  # USER_REMOVE_STORAGE_POOL event
         dc_service.remove()
 
 
@@ -249,24 +258,20 @@ def test_update_default_dc(engine_api, ost_dc_name):
         pytest.skip(' [2020-12-01] hosted-engine suites only use Default DC')
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, 'Default')
-    with engine_utils.wait_for_event(engine, 952): # USER_UPDATE_STORAGE_POOL event
-        dc_service.update(
-            data_center=sdk4.types.DataCenter(
-                local=True
-            )
-        )
+    with engine_utils.wait_for_event(
+        engine, 952
+    ):  # USER_UPDATE_STORAGE_POOL event
+        dc_service.update(data_center=sdk4.types.DataCenter(local=True))
 
 
 @order_by(_TEST_LIST)
 def test_update_default_cluster(engine_api):
     engine = engine_api.system_service()
     cluster_service = test_utils.get_cluster_service(engine, 'Default')
-    with engine_utils.wait_for_event(engine, 811): # USER_UPDATE_CLUSTER event
+    with engine_utils.wait_for_event(engine, 811):  # USER_UPDATE_CLUSTER event
         cluster_service.update(
             cluster=sdk4.types.Cluster(
-                cpu=sdk4.types.Cpu(
-                    architecture=sdk4.types.Architecture.PPC64
-                )
+                cpu=sdk4.types.Cpu(architecture=sdk4.types.Architecture.PPC64)
             )
         )
 
@@ -274,10 +279,12 @@ def test_update_default_cluster(engine_api):
 @order_by(_TEST_LIST)
 def test_remove_default_cluster(engine_api, ost_cluster_name):
     if ost_cluster_name != engine_object_names.TEST_CLUSTER_NAME:
-        pytest.skip(' [2020-12-01] hosted-engine suites only use Default cluster')
+        pytest.skip(
+            ' [2020-12-01] hosted-engine suites only use Default cluster'
+        )
     engine = engine_api.system_service()
     cl_service = test_utils.get_cluster_service(engine, 'Default')
-    with engine_utils.wait_for_event(engine, 813): # USER_REMOVE_CLUSTER event
+    with engine_utils.wait_for_event(engine, 813):  # USER_REMOVE_CLUSTER event
         cl_service.remove()
 
 
@@ -288,11 +295,11 @@ def test_add_dc_quota(engine_api, ost_dc_name):
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     assert quotas_service.add(
-        types.Quota (
+        types.Quota(
             name=DC_QUOTA_NAME,
             description='DC-QUOTA-DESCRIPTION',
             data_center=datacenter,
-            cluster_soft_limit_pct=99
+            cluster_soft_limit_pct=99,
         )
     )
 
@@ -300,7 +307,9 @@ def test_add_dc_quota(engine_api, ost_dc_name):
 @order_by(_TEST_LIST)
 def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
     if ost_cluster_name != engine_object_names.TEST_CLUSTER_NAME:
-        pytest.skip(' [2020-12-01] hosted-engine suites only use Default cluster')
+        pytest.skip(
+            ' [2020-12-01] hosted-engine suites only use Default cluster'
+        )
     engine = engine_api.system_service()
     clusters_service = engine.clusters_service()
     provider_id = network_utils.get_default_ovn_provider_id(engine)
@@ -312,10 +321,7 @@ def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
                 data_center=sdk4.types.DataCenter(
                     name=ost_dc_name,
                 ),
-                version=sdk4.types.Version(
-                    major=DC_VER_MAJ,
-                    minor=DC_VER_MIN
-                ),
+                version=sdk4.types.Version(major=DC_VER_MAJ, minor=DC_VER_MIN),
                 ballooning_enabled=True,
                 ksm=sdk4.types.Ksm(
                     enabled=True,
@@ -348,9 +354,15 @@ def test_sync_time(ansible_hosts, engine_hostname):
 
 
 @order_by(_TEST_LIST)
-def test_add_hosts(engine_api, root_password, hostnames_to_add,
-                   hostnames_to_reboot, ost_cluster_name, ost_dc_name,
-                   deploy_hosted_engine):
+def test_add_hosts(
+    engine_api,
+    root_password,
+    hostnames_to_add,
+    hostnames_to_reboot,
+    ost_cluster_name,
+    ost_dc_name,
+    deploy_hosted_engine,
+):
     engine = engine_api.system_service()
 
     def _add_host(hostname):
@@ -384,8 +396,7 @@ def test_verify_add_hosts(hosts_service, ost_dc_name):
         return up_host is not None
 
     assertions.assert_true_within(
-        find_up_host,
-        timeout=constants.ADD_HOST_TIMEOUT
+        find_up_host, timeout=constants.ADD_HOST_TIMEOUT
     )
 
     host_utils.wait_for_flapping_host(hosts_service, ost_dc_name, up_host.id)
@@ -395,7 +406,7 @@ def test_verify_add_hosts(hosts_service, ost_dc_name):
 def test_verify_add_all_hosts(hosts_service, ost_dc_name):
     assertions.assert_true_within(
         lambda: host_utils.all_hosts_up(hosts_service, ost_dc_name),
-        timeout=constants.ADD_HOST_TIMEOUT
+        timeout=constants.ADD_HOST_TIMEOUT,
     )
 
     host_utils.wait_for_flapping_host(hosts_service, ost_dc_name)
@@ -412,17 +423,17 @@ def test_complete_hosts_setup(ansible_hosts):
         ('root', 'root'),
         ('vds', 'vds'),
         ('virt', 'virt'),
-        ('schema_inconsistency', 'schema.inconsistency')
+        ('schema_inconsistency', 'schema.inconsistency'),
     )
 
     for name, qualified_name in loggers:
         ansible_hosts.shell(
-            'vdsm-client Host setLogLevel level=DEBUG name={}'.format(qualified_name)
+            'vdsm-client Host setLogLevel level=DEBUG name={}'.format(
+                qualified_name
+            )
         )
         sed_expr = '/logger_{}/,/level=/s/level=INFO/level=DEBUG/'.format(name)
-        ansible_hosts.shell(
-            'sed -i {} /etc/vdsm/logger.conf'.format(sed_expr)
-        )
+        ansible_hosts.shell('sed -i {} /etc/vdsm/logger.conf'.format(sed_expr))
 
 
 @pytest.fixture(scope="session")
@@ -441,89 +452,139 @@ def sd_iscsi_host_lun_uuids(sd_iscsi_ansible_host):
 
 
 @pytest.fixture
-def sd_iscsi_host_luns(sd_iscsi_host_lun_uuids, sd_iscsi_host_ips,
-                       sd_iscsi_port, sd_iscsi_target):
-    return lun.create_lun_sdk_entries(sd_iscsi_host_lun_uuids,
-                                      sd_iscsi_host_ips, sd_iscsi_port,
-                                      sd_iscsi_target)
+def sd_iscsi_host_luns(
+    sd_iscsi_host_lun_uuids, sd_iscsi_host_ips, sd_iscsi_port, sd_iscsi_target
+):
+    return lun.create_lun_sdk_entries(
+        sd_iscsi_host_lun_uuids,
+        sd_iscsi_host_ips,
+        sd_iscsi_port,
+        sd_iscsi_target,
+    )
 
 
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'iscsi', reason='not using iscsi')
-def test_add_iscsi_master_storage_domain(engine_api, hosts_service,
-                                         sd_iscsi_host_luns, ost_dc_name):
-    add_iscsi_storage_domain(engine_api, hosts_service, sd_iscsi_host_luns,
-                             ost_dc_name)
+def test_add_iscsi_master_storage_domain(
+    engine_api, hosts_service, sd_iscsi_host_luns, ost_dc_name
+):
+    add_iscsi_storage_domain(
+        engine_api, hosts_service, sd_iscsi_host_luns, ost_dc_name
+    )
 
 
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
-def test_add_nfs_master_storage_domain(engine_api, hosts_service,
-                                       sd_nfs_host_storage_ip, ost_dc_name):
-    add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_ip,
-                           ost_dc_name)
+def test_add_nfs_master_storage_domain(
+    engine_api, hosts_service, sd_nfs_host_storage_ip, ost_dc_name
+):
+    add_nfs_storage_domain(
+        engine_api, hosts_service, sd_nfs_host_storage_ip, ost_dc_name
+    )
 
 
-def add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name):
+def add_nfs_storage_domain(
+    engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name
+):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
-    nfs.add_domain(engine_api, SD_NFS_NAME, random_host,
-                   sd_nfs_host_storage_ip, SD_NFS_PATH, dc_name,
-                   nfs_version='v4_2')
+    nfs.add_domain(
+        engine_api,
+        SD_NFS_NAME,
+        random_host,
+        sd_nfs_host_storage_ip,
+        SD_NFS_PATH,
+        dc_name,
+        nfs_version='v4_2',
+    )
 
 
 # TODO: add this over the storage network and with IPv6
-def add_second_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name):
+def add_second_nfs_storage_domain(
+    engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name
+):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
-    nfs.add_domain(engine_api, SD_SECOND_NFS_NAME, random_host,
-                   sd_nfs_host_storage_ip, SD_SECOND_NFS_PATH, dc_name)
+    nfs.add_domain(
+        engine_api,
+        SD_SECOND_NFS_NAME,
+        random_host,
+        sd_nfs_host_storage_ip,
+        SD_SECOND_NFS_PATH,
+        dc_name,
+    )
 
 
 @order_by(_TEST_LIST)
-def test_add_secondary_storage_domains(engine_api, hosts_service,
-                                       sd_nfs_host_storage_ip,
-                                       sd_iscsi_host_luns, ost_dc_name):
+def test_add_secondary_storage_domains(
+    engine_api,
+    hosts_service,
+    sd_nfs_host_storage_ip,
+    sd_iscsi_host_luns,
+    ost_dc_name,
+):
     if MASTER_SD_TYPE == 'iscsi':
         vt = utils.VectorThread(
             [
-                functools.partial(add_nfs_storage_domain, engine_api,
-                                  hosts_service, sd_nfs_host_storage_ip,
-                                  ost_dc_name),
-# 12/07/2017 commenting out iso domain creation until we know why it causing random failures
-# Bug-Url: http://bugzilla.redhat.com/1463263
-#                functools.partial(add_iso_storage_domain, engine_api,
-#                                  hosts_service, sd_nfs_host_storage_ip,
-#                                  ost_dc_name),
-                functools.partial(add_templates_storage_domain, engine_api,
-                                  hosts_service, sd_nfs_host_storage_ip,
-                                  ost_dc_name),
-                functools.partial(add_second_nfs_storage_domain, engine_api,
-                                  hosts_service, sd_nfs_host_storage_ip,
-                                  ost_dc_name),
-
+                functools.partial(
+                    add_nfs_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_nfs_host_storage_ip,
+                    ost_dc_name,
+                ),
+                # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
+                # Bug-Url: http://bugzilla.redhat.com/1463263
+                #                functools.partial(add_iso_storage_domain, engine_api,
+                #                                  hosts_service, sd_nfs_host_storage_ip,
+                #                                  ost_dc_name),
+                functools.partial(
+                    add_templates_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_nfs_host_storage_ip,
+                    ost_dc_name,
+                ),
+                functools.partial(
+                    add_second_nfs_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_nfs_host_storage_ip,
+                    ost_dc_name,
+                ),
             ],
         )
     else:
         vt = utils.VectorThread(
             [
-                functools.partial(add_iscsi_storage_domain, engine_api,
-                                  hosts_service, sd_iscsi_host_luns,
-                                  ost_dc_name),
-# 12/07/2017 commenting out iso domain creation until we know why it causing random failures
-#Bug-Url: http://bugzilla.redhat.com/1463263
-#                functools.partial(add_iso_storage_domain, engine_api,
-#                                  hosts_service, sd_nfs_host_storage_ip,
-#                                  ost_dc_name),
-                functools.partial(add_templates_storage_domain, engine_api,
-                                  hosts_service, sd_nfs_host_storage_ip,
-                                  ost_dc_name),
-                functools.partial(add_second_nfs_storage_domain, engine_api,
-                                  hosts_service, sd_nfs_host_storage_ip,
-                                  ost_dc_name),
-
+                functools.partial(
+                    add_iscsi_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_iscsi_host_luns,
+                    ost_dc_name,
+                ),
+                # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
+                # Bug-Url: http://bugzilla.redhat.com/1463263
+                #                functools.partial(add_iso_storage_domain, engine_api,
+                #                                  hosts_service, sd_nfs_host_storage_ip,
+                #                                  ost_dc_name),
+                functools.partial(
+                    add_templates_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_nfs_host_storage_ip,
+                    ost_dc_name,
+                ),
+                functools.partial(
+                    add_second_nfs_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_nfs_host_storage_ip,
+                    ost_dc_name,
+                ),
             ],
         )
     vt.start_all()
@@ -531,41 +592,55 @@ def test_add_secondary_storage_domains(engine_api, hosts_service,
 
 
 @order_by(_TEST_LIST)
-def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api,
-                                           sd_iscsi_host_luns):
+def test_resize_and_refresh_storage_domain(
+    sd_iscsi_ansible_host, engine_api, sd_iscsi_host_luns
+):
     sd_iscsi_ansible_host.shell(
         'lvresize --size +3000M /dev/mapper/vg1_storage-lun0_bdev'
     )
 
     engine = engine_api.system_service()
-    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_ISCSI_NAME)
+    storage_domain_service = test_utils.get_storage_domain_service(
+        engine, SD_ISCSI_NAME
+    )
 
-    with engine_utils.wait_for_event(engine, 1022): # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
+    with engine_utils.wait_for_event(
+        engine, 1022
+    ):  # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
         storage_domain_service.refresh_luns(
-            async_=False,
-            logical_units=sd_iscsi_host_luns
+            async_=False, logical_units=sd_iscsi_host_luns
         )
 
 
 @order_by(_TEST_LIST)
 def test_add_glance_images(
-        engine_api, cirros_image,
-        cirros_image_glance_template_name,
-        cirros_image_glance_disk_name,
-        ost_cluster_name,
+    engine_api,
+    cirros_image,
+    cirros_image_glance_template_name,
+    cirros_image_glance_disk_name,
+    ost_cluster_name,
 ):
     system_service = engine_api.system_service()
     non_template_import = functools.partial(
-        glance.import_image, system_service,
-        cirros_image, cirros_image_glance_template_name,
-        cirros_image_glance_disk_name, MASTER_SD_TYPE,
-        ost_cluster_name, SD_GLANCE_NAME
+        glance.import_image,
+        system_service,
+        cirros_image,
+        cirros_image_glance_template_name,
+        cirros_image_glance_disk_name,
+        MASTER_SD_TYPE,
+        ost_cluster_name,
+        SD_GLANCE_NAME,
     )
     template_import = functools.partial(
-        glance.import_image, system_service,
-        cirros_image, cirros_image_glance_template_name,
-        cirros_image_glance_template_name, MASTER_SD_TYPE, ost_cluster_name,
-        SD_GLANCE_NAME, as_template=True
+        glance.import_image,
+        system_service,
+        cirros_image,
+        cirros_image_glance_template_name,
+        cirros_image_glance_template_name,
+        MASTER_SD_TYPE,
+        ost_cluster_name,
+        SD_GLANCE_NAME,
+        as_template=True,
     )
     vt = utils.VectorThread(
         [
@@ -588,37 +663,57 @@ def add_iscsi_storage_domain(engine_api, hosts_service, luns, dc_name):
             name=dc_name,
         ),
         host=host_utils.random_up_host(hosts_service, dc_name),
-        storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
+        storage_format=(
+            sdk4.types.StorageFormat.V4
+            if v4_domain
+            else sdk4.types.StorageFormat.V3
+        ),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
             override_luns=True,
-            volume_group=sdk4.types.VolumeGroup(
-                logical_units=luns
-            ),
+            volume_group=sdk4.types.VolumeGroup(logical_units=luns),
         ),
     )
 
     domain.add(engine_api, p, dc_name)
 
 
-def add_iso_storage_domain(engine_api, hosts_service, sd_host_storage_ip,
-                           dc_name):
+def add_iso_storage_domain(
+    engine_api, hosts_service, sd_host_storage_ip, dc_name
+):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
-    nfs.add_domain(engine_api, SD_ISO_NAME, random_host, sd_host_storage_ip,
-                   SD_ISO_PATH, dc_name, sd_format='v1', sd_type='iso',
-                   nfs_version='v3')
+    nfs.add_domain(
+        engine_api,
+        SD_ISO_NAME,
+        random_host,
+        sd_host_storage_ip,
+        SD_ISO_PATH,
+        dc_name,
+        sd_format='v1',
+        sd_type='iso',
+        nfs_version='v3',
+    )
 
 
-def add_templates_storage_domain(engine_api, hosts_service, sd_host_storage_ip,
-                                 dc_name):
+def add_templates_storage_domain(
+    engine_api, hosts_service, sd_host_storage_ip, dc_name
+):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
 
-    nfs.add_domain(engine_api, SD_TEMPLATES_NAME, random_host,
-                   sd_host_storage_ip, SD_TEMPLATES_PATH, dc_name,
-                   sd_format='v1', sd_type='export', nfs_version='v4_1')
+    nfs.add_domain(
+        engine_api,
+        SD_TEMPLATES_NAME,
+        random_host,
+        sd_host_storage_ip,
+        SD_TEMPLATES_PATH,
+        dc_name,
+        sd_format='v1',
+        sd_type='export',
+        nfs_version='v4_1',
+    )
 
 
 @order_by(_TEST_LIST)
@@ -629,8 +724,9 @@ def test_list_glance_images(engine_api):
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
-        openstack_glance = glance.add_domain(system_service, SD_GLANCE_NAME,
-                                             GLANCE_SERVER_URL)
+        openstack_glance = glance.add_domain(
+            system_service, SD_GLANCE_NAME, GLANCE_SERVER_URL
+        )
         if not openstack_glance:
             raise RuntimeError('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
@@ -681,10 +777,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
     quotas_service = dc_service.quotas_service()
     quotas = quotas_service.list()
 
-    quota = next(
-        (q for q in quotas if q.name == DC_QUOTA_NAME ),
-        None
-    )
+    quota = next((q for q in quotas if q.name == DC_QUOTA_NAME), None)
     if quota is None:
         quota = quotas_service.add(
             quota=types.Quota(
@@ -693,7 +786,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
                 cluster_hard_limit_pct=20,
                 cluster_soft_limit_pct=80,
                 storage_hard_limit_pct=20,
-                storage_soft_limit_pct=80
+                storage_soft_limit_pct=80,
             )
         )
     quota_service = quotas_service.quota_service(quota.id)
@@ -701,10 +794,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
     # Find the quota limit for the storage domain that we are interested on:
     limits_service = quota_service.quota_storage_limits_service()
     limits = limits_service.list()
-    limit = next(
-        (l for l in limits if l.id == sd.id),
-        None
-    )
+    limit = next((l for l in limits if l.id == sd.id), None)
 
     # If that limit exists we will delete it:
     if limit is not None:
@@ -718,6 +808,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
         )
     )
 
+
 @order_by(_TEST_LIST)
 def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
@@ -725,18 +816,13 @@ def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     quotas = quotas_service.list()
-    quota = next(
-        (q for q in quotas if q.name == DC_QUOTA_NAME),
-        None
-    )
+    quota = next((q for q in quotas if q.name == DC_QUOTA_NAME), None)
     quota_service = quotas_service.quota_service(quota.id)
     quota_cluster_limits_service = quota_service.quota_cluster_limits_service()
     assert quota_cluster_limits_service.add(
-        types.QuotaClusterLimit(
-            vcpu_limit=20,
-            memory_limit=10000.0
-        )
+        types.QuotaClusterLimit(vcpu_limit=20, memory_limit=10000.0)
     )
+
 
 @order_by(_TEST_LIST)
 def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
@@ -746,13 +832,14 @@ def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
         VM_NETWORK,
         ost_dc_name,
         description='VM Network (originally on VLAN {})'.format(
-            VM_NETWORK_VLAN_ID),
+            VM_NETWORK_VLAN_ID
+        ),
         vlan=sdk4.types.Vlan(
             id=VM_NETWORK_VLAN_ID,
         ),
     )
 
-    with engine_utils.wait_for_event(engine, 942): # NETWORK_ADD_NETWORK event
+    with engine_utils.wait_for_event(engine, 942):  # NETWORK_ADD_NETWORK event
         assert engine.networks_service().add(network)
 
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
@@ -774,7 +861,7 @@ def test_add_non_vm_network(engine_api, ost_dc_name, ost_cluster_name):
         mtu=9000,
     )
 
-    with engine_utils.wait_for_event(engine, 942): # NETWORK_ADD_NETWORK event
+    with engine_utils.wait_for_event(engine, 942):  # NETWORK_ADD_NETWORK event
         assert engine.networks_service().add(network)
 
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
@@ -785,7 +872,9 @@ def test_add_non_vm_network(engine_api, ost_dc_name, ost_cluster_name):
 def test_add_role(engine_api):
     engine = engine_api.system_service()
     roles_service = engine.roles_service()
-    with engine_utils.wait_for_event(engine, 864): # USER_ADD_ROLE_WITH_ACTION_GROUP event
+    with engine_utils.wait_for_event(
+        engine, 864
+    ):  # USER_ADD_ROLE_WITH_ACTION_GROUP event
         assert roles_service.add(
             sdk4.types.Role(
                 name='MyRole',
@@ -851,7 +940,9 @@ def test_add_cpu_profile(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
     cpu_profiles_service = engine.cpu_profiles_service()
     cluster_service = test_utils.get_cluster_service(engine, ost_cluster_name)
-    with engine_utils.wait_for_event(engine, 10130): # USER_ADDED_CPU_PROFILE event
+    with engine_utils.wait_for_event(
+        engine, 10130
+    ):  # USER_ADDED_CPU_PROFILE event
         assert cpu_profiles_service.add(
             sdk4.types.CpuProfile(
                 name='my_cpu_profile',
@@ -867,7 +958,7 @@ def test_add_qos(engine_api, ost_dc_name):
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, ost_dc_name)
     qoss = dc_service.qoss_service()
-    with engine_utils.wait_for_event(engine, 10110): # USER_ADDED_QOS event
+    with engine_utils.wait_for_event(engine, 10110):  # USER_ADDED_QOS event
         assert qoss.add(
             sdk4.types.Qos(
                 name='my_cpu_qos',
@@ -875,7 +966,7 @@ def test_add_qos(engine_api, ost_dc_name):
                 cpu_limit=99,
             ),
         )
-    with engine_utils.wait_for_event(engine, 10110): # USER_ADDED_QOS event
+    with engine_utils.wait_for_event(engine, 10110):  # USER_ADDED_QOS event
         assert qoss.add(
             sdk4.types.Qos(
                 name='my_storage_qos',
@@ -894,7 +985,9 @@ def test_add_disk_profile(engine_api, ost_dc_name):
     attached_sds_service = dc_service.storage_domains_service()
     attached_sd = attached_sds_service.list()[0]
 
-    with engine_utils.wait_for_event(engine, 10120): # USER_ADDED_DISK_PROFILE event
+    with engine_utils.wait_for_event(
+        engine, 10120
+    ):  # USER_ADDED_DISK_PROFILE event
         assert disk_profiles_service.add(
             sdk4.types.DiskProfile(
                 name='my_disk_profile',
@@ -916,35 +1009,51 @@ def test_get_version(engine_api):
 
 @order_by(_TEST_LIST)
 def test_get_cluster_enabled_features(engine_api, ost_cluster_name):
-    cluster_service = test_utils.get_cluster_service(engine_api.system_service(), ost_cluster_name)
+    cluster_service = test_utils.get_cluster_service(
+        engine_api.system_service(), ost_cluster_name
+    )
     enabled_features_service = cluster_service.enabled_features_service()
-    features = sorted(enabled_features_service.list(), key=lambda feature: feature.name)
-    #TODO: Fix the below - why is features null?
+    features = sorted(
+        enabled_features_service.list(), key=lambda feature: feature.name
+    )
+    # TODO: Fix the below - why is features null?
     pytest.skip('skipping - features is []')
     feature_list = ''
     for feature in features:
         if feature.name == 'XYZ':
             return True
         else:
-            feature_list += (feature.name + '; ')
-    raise RuntimeError('Feature XYZ is not in cluster enabled features: {0}'.format(feature_list))
+            feature_list += feature.name + '; '
+    raise RuntimeError(
+        'Feature XYZ is not in cluster enabled features: {0}'.format(
+            feature_list
+        )
+    )
 
 
 @order_by(_TEST_LIST)
 def test_get_cluster_levels(engine_api):
-    cluster_levels_service = engine_api.system_service().cluster_levels_service()
-    cluster_levels = sorted(cluster_levels_service.list(), key=lambda level:level.id)
+    cluster_levels_service = (
+        engine_api.system_service().cluster_levels_service()
+    )
+    cluster_levels = sorted(
+        cluster_levels_service.list(), key=lambda level: level.id
+    )
     assert cluster_levels
     levels = ''
     for level in cluster_levels:
         if level.id == '4.2':
-            cluster_level_service = cluster_levels_service.level_service(level.id)
+            cluster_level_service = cluster_levels_service.level_service(
+                level.id
+            )
             cl42 = cluster_level_service.get()
-            #TODO: complete testing for features in 4.2 level.
+            # TODO: complete testing for features in 4.2 level.
             return True
         else:
-            levels += (level.id + '; ')
-    raise RuntimeError('Could not find 4.2 in cluster_levels: {0}'.format(levels))
+            levels += level.id + '; '
+    raise RuntimeError(
+        'Could not find 4.2 in cluster_levels: {0}'.format(levels)
+    )
 
 
 @order_by(_TEST_LIST)
@@ -959,33 +1068,44 @@ def test_get_domains(engine_api):
 
 @order_by(_TEST_LIST)
 def test_get_host_devices(hosts_service, ost_dc_name):
-    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    host_service = host_utils.random_up_host_service(
+        hosts_service, ost_dc_name
+    )
     for i in range(10):
         devices_service = host_service.devices_service()
-        devices = sorted(devices_service.list(), key=lambda device: device.name)
+        devices = sorted(
+            devices_service.list(), key=lambda device: device.name
+        )
         device_list = ''
         for device in devices:
-            if device.name == 'block_vda_1': # first virtio-blk disk
+            if device.name == 'block_vda_1':  # first virtio-blk disk
                 return True
             else:
-                device_list += (device.name + '; ')
+                device_list += device.name + '; '
         time.sleep(1)
-    raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
+    raise RuntimeError(
+        'Could not find block_vda_1 device in host devices: {}'.format(
+            device_list
+        )
+    )
 
 
 @order_by(_TEST_LIST)
 def test_get_host_hook(hosts_service, ost_dc_name, ansible_hosts, root_dir):
     # add hook to host
     hook_full_path = os.path.join(
-            root_dir,
-            'common/test-scenarios-files/vds_hooks/add_mdevs.py')
+        root_dir, 'common/test-scenarios-files/vds_hooks/add_mdevs.py'
+    )
     ansible_hosts.copy(
-            src=hook_full_path,
-            dest='/usr/libexec/vdsm/hooks/after_hostdev_list_by_caps',
-            mode='preserve')
+        src=hook_full_path,
+        dest='/usr/libexec/vdsm/hooks/after_hostdev_list_by_caps',
+        mode='preserve',
+    )
 
     # refresh host capabilities
-    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    host_service = host_utils.random_up_host_service(
+        hosts_service, ost_dc_name
+    )
     host_service.refresh()
 
     # get and assert the hooks
@@ -998,7 +1118,9 @@ def test_get_host_hook(hosts_service, ost_dc_name, ansible_hosts, root_dir):
 
 @order_by(_TEST_LIST)
 def test_get_host_stats(hosts_service, ost_dc_name):
-    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    host_service = host_utils.random_up_host_service(
+        hosts_service, ost_dc_name
+    )
     stats_service = host_service.statistics_service()
     stats = sorted(stats_service.list(), key=lambda stat: stat.name)
     stats_list = ''
@@ -1006,13 +1128,15 @@ def test_get_host_stats(hosts_service, ost_dc_name):
         if stat.name == 'boot.time':
             return True
         else:
-            stats_list += (stat.name + '; ')
+            stats_list += stat.name + '; '
     raise RuntimeError('boot.time stat not in stats: {0}'.format(stats_list))
 
 
 @order_by(_TEST_LIST)
 def test_get_host_numa_nodes(hosts_service, ost_dc_name):
-    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    host_service = host_utils.random_up_host_service(
+        hosts_service, ost_dc_name
+    )
     numa_nodes_service = host_service.numa_nodes_service()
     nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
@@ -1023,12 +1147,15 @@ def test_get_host_numa_nodes(hosts_service, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_check_update_host(engine_api, hosts_service, ost_dc_name,
-                           is_node_suite):
+def test_check_update_host(
+    engine_api, hosts_service, ost_dc_name, is_node_suite
+):
     if is_node_suite:
         pytest.skip('Skip test_check_update_host on node suites - done later')
     engine = engine_api.system_service()
-    host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    host_service = host_utils.random_up_host_service(
+        hosts_service, ost_dc_name
+    )
     events_service = engine.events_service()
     with engine_utils.wait_for_event(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
@@ -1068,22 +1195,28 @@ def test_add_scheduling_policy(engine_api):
 
 @order_by(_TEST_LIST)
 def test_get_system_options(engine_api):
-    #TODO: get some option
+    # TODO: get some option
     options_service = engine_api.system_service().options_service()
 
 
 @order_by(_TEST_LIST)
 def test_get_operating_systems(engine_api):
-    operating_systems_service = engine_api.system_service().operating_systems_service()
-    os_list = sorted(operating_systems_service.list(), key=lambda os:os.name)
+    operating_systems_service = (
+        engine_api.system_service().operating_systems_service()
+    )
+    os_list = sorted(operating_systems_service.list(), key=lambda os: os.name)
     assert os_list
     os_string = ''
     for os in os_list:
         if os.name == 'rhel_7x64':
             return True
         else:
-            os_string += (os.name + '; ')
-    raise RuntimeError('Could not find rhel_7x64 in operating systems list: {0}'.format(os_string))
+            os_string += os.name + '; '
+    raise RuntimeError(
+        'Could not find rhel_7x64 in operating systems list: {0}'.format(
+            os_string
+        )
+    )
 
 
 @order_by(_TEST_LIST)
@@ -1091,8 +1224,9 @@ def test_add_fence_agent(hosts_service, ost_dc_name):
     # TODO: This just adds a fence agent to host, does not enable it.
     # Of course, we need to find a fence agents that can work on
     # VMs via the host libvirt, etc...
-    host_service = host_utils.random_up_host_service(hosts_service,
-                                                     ost_dc_name)
+    host_service = host_utils.random_up_host_service(
+        hosts_service, ost_dc_name
+    )
 
     fence_agents_service = host_service.fence_agents_service()
     pytest.skip('Enabling this may affect tests. Needs further tests')
@@ -1129,7 +1263,9 @@ def test_add_tag(engine_api):
 def test_add_mac_pool(engine_api):
     engine = engine_api.system_service()
     pools_service = engine.mac_pools_service()
-    with engine_utils.wait_for_event(engine, 10700): # MAC_POOL_ADD_SUCCESS event
+    with engine_utils.wait_for_event(
+        engine, 10700
+    ):  # MAC_POOL_ADD_SUCCESS event
         pool = pools_service.add(
             sdk4.types.MacPool(
                 name='mymacpool',
@@ -1164,7 +1300,9 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
         # TODO:
         # - Perhaps change the condition to make it more relevant
         # - Fix :-)
-        pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
+        pytest.skip(
+            ' [2020-12-14] Do not test ovirt-engine-notifier on HE suites'
+        )
     ansible_engine.shell('grep USER_VDC_LOGIN /var/log/messages')
     ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
     ansible_engine.systemd(name='snmptrapd', state='stopped')
@@ -1172,9 +1310,9 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
 
 @order_by(_TEST_LIST)
 def test_verify_glance_import(
-        engine_api,
-        cirros_image_glance_template_name,
-        cirros_image_glance_disk_name,
+    engine_api,
+    cirros_image_glance_template_name,
+    cirros_image_glance_disk_name,
 ):
     # If we go with the engine backup before the glance template
     # creation is complete, we'll fail the creation of 'vm1' later,
@@ -1182,39 +1320,45 @@ def test_verify_glance_import(
     templates_service = engine_api.system_service().templates_service()
 
     assertions.assert_true_within_long(
-        lambda: cirros_image_glance_template_name in [
-            t.name for t in templates_service.list()
-        ]
+        lambda: cirros_image_glance_template_name
+        in [t.name for t in templates_service.list()]
     )
 
     for disk_name in (
-            cirros_image_glance_disk_name,
-            cirros_image_glance_template_name,
+        cirros_image_glance_disk_name,
+        cirros_image_glance_template_name,
     ):
         disks_service = engine_api.system_service().disks_service()
         assertions.assert_true_within_long(
-            lambda: disks_service.list(search='name={}'.format(disk_name))[0].status == types.DiskStatus.OK
+            lambda: disks_service.list(search='name={}'.format(disk_name))[
+                0
+            ].status
+            == types.DiskStatus.OK
         )
 
 
 @order_by(_TEST_LIST)
-def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_suite):
+def test_verify_engine_backup(
+    ansible_engine, engine_api, ost_dc_name, is_node_suite
+):
     if ost_dc_name != engine_object_names.TEST_DC_NAME or is_node_suite:
         # TODO: If/when we decide to test this in HE, we should:
         # 1. Make sure things are generally stable (this applies also to non-HE)
         # 2. Enter global maintenance
         # 3. Do the below (backup, cleanup, restore, setup)
         # 4. Exit global maintenance
-        pytest.skip(' [2020-12-14] Do not test engine-backup on hosted-engine suites')
+        pytest.skip(
+            ' [2020-12-14] Do not test engine-backup on hosted-engine suites'
+        )
     ansible_engine.file(
-        path='/var/log/ost-engine-backup',
-        state='directory',
-        mode='0755'
+        path='/var/log/ost-engine-backup', state='directory', mode='0755'
     )
 
     engine = engine_api.system_service()
 
-    with engine_utils.wait_for_event(engine, [9024, 9025]): #backup started event, completed
+    with engine_utils.wait_for_event(
+        engine, [9024, 9025]
+    ):  # backup started event, completed
         ansible_engine.shell(
             'engine-backup '
             '--mode=backup '
@@ -1253,7 +1397,9 @@ def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_s
 @order_by(_TEST_LIST)
 def test_add_vnic_passthrough_profile(engine_api):
     engine = engine_api.system_service()
-    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
+    vnic_service = test_utils.get_vnic_profiles_service(
+        engine, MANAGEMENT_NETWORK
+    )
 
     with engine_utils.wait_for_event(engine, 1122):
         vnic_profile = vnic_service.add(
@@ -1261,25 +1407,41 @@ def test_add_vnic_passthrough_profile(engine_api):
                 name=PASSTHROUGH_VNIC_PROFILE,
                 pass_through=sdk4.types.VnicPassThrough(
                     mode=sdk4.types.VnicPassThroughMode.ENABLED
-                )
+                ),
             )
         )
-        assert vnic_profile.pass_through.mode == sdk4.types.VnicPassThroughMode.ENABLED
+        assert (
+            vnic_profile.pass_through.mode
+            == sdk4.types.VnicPassThroughMode.ENABLED
+        )
 
 
 @order_by(_TEST_LIST)
 def test_remove_vnic_passthrough_profile(engine_api):
     engine = engine_api.system_service()
-    vnic_service = test_utils.get_vnic_profiles_service(engine, MANAGEMENT_NETWORK)
+    vnic_service = test_utils.get_vnic_profiles_service(
+        engine, MANAGEMENT_NETWORK
+    )
 
-    vnic_profile = next(vnic_profile for vnic_profile in vnic_service.list()
-                        if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
-                        )
+    vnic_profile = next(
+        vnic_profile
+        for vnic_profile in vnic_service.list()
+        if vnic_profile.name == PASSTHROUGH_VNIC_PROFILE
+    )
 
     with engine_utils.wait_for_event(engine, 1126):
         vnic_service.profile_service(vnic_profile.id).remove()
-        assert next((vp for vp in vnic_service.list()
-                     if vp.name == PASSTHROUGH_VNIC_PROFILE), None) is None
+        assert (
+            next(
+                (
+                    vp
+                    for vp in vnic_service.list()
+                    if vp.name == PASSTHROUGH_VNIC_PROFILE
+                ),
+                None,
+            )
+            is None
+        )
 
 
 @order_by(_TEST_LIST)
@@ -1314,9 +1476,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
         memory_policy=sdk4.types.MemoryPolicy(
             ballooning=True,
         ),
-        console=sdk4.types.Console(
-            enabled=True
-        ),
+        console=sdk4.types.Console(enabled=True),
     )
 
     vm_params.name = BACKUP_VM_NAME
@@ -1337,8 +1497,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
 
     for vm_service in [backup_vm_service, vm0_vm_service]:
         assertions.assert_true_within_short(
-            lambda:
-            vm_service.get().status == sdk4.types.VmStatus.DOWN
+            lambda: vm_service.get().status == sdk4.types.VmStatus.DOWN
         )
 
 
@@ -1346,7 +1505,9 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
 def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
     hosts_service = engine.hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(ost_dc_name))
+    hosts = hosts_service.list(
+        search='datacenter={} AND status=up'.format(ost_dc_name)
+    )
 
     vms_service = engine.vms_service()
     vms_service.add(
@@ -1354,12 +1515,12 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
             name=VM2_NAME,
             description='Mostly complete High-Performance VM configuration',
             cluster=sdk4.types.Cluster(
-            name=ost_cluster_name,
+                name=ost_cluster_name,
             ),
             template=sdk4.types.Template(
                 name=TEMPLATE_BLANK,
             ),
-            custom_emulated_machine = 'pc-q35-rhel8.0.0',
+            custom_emulated_machine='pc-q35-rhel8.0.0',
             cpu=sdk4.types.Cpu(
                 topology=sdk4.types.CpuTopology(
                     cores=1,
@@ -1415,9 +1576,11 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
                 hosts=hosts,
             ),
             numa_tune_mode=sdk4.types.NumaTuneMode.INTERLEAVE,
-            type=(sdk4.types.VmType.HIGH_PERFORMANCE
-                  if versioning.cluster_version_ok(4, 2) else
-                  sdk4.types.VmType.SERVER),
+            type=(
+                sdk4.types.VmType.HIGH_PERFORMANCE
+                if versioning.cluster_version_ok(4, 2)
+                else sdk4.types.VmType.SERVER
+            ),
             custom_properties=[
                 sdk4.types.CustomProperty(
                     name='viodiskcache',
@@ -1428,8 +1591,7 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
     )
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
     assertions.assert_true_within_long(
-        lambda:
-        vm2_service.get().status == sdk4.types.VmStatus.DOWN
+        lambda: vm2_service.get().status == sdk4.types.VmStatus.DOWN
     )
 
 
@@ -1440,7 +1602,9 @@ def test_configure_high_perf_vm2(engine_api):
     vm2_graphics_consoles_service = vm2_service.graphics_consoles_service()
     vm2_graphics_consoles = vm2_graphics_consoles_service.list()
     for graphics_console in vm2_graphics_consoles:
-        console_service = vm2_graphics_consoles_service.console_service(graphics_console.id)
+        console_service = vm2_graphics_consoles_service.console_service(
+            graphics_console.id
+        )
         console_service.remove()
 
     vm2_numanodes_service = vm2_service.numa_nodes_service()
@@ -1453,7 +1617,7 @@ def test_configure_high_perf_vm2(engine_api):
             node=sdk4.types.VirtualNumaNode(
                 index=i,
                 name='{0} vnuma node {1}'.format(VM2_NAME, i),
-                memory= total_memory // total_vcpus,
+                memory=total_memory // total_vcpus,
                 cpu=sdk4.types.Cpu(
                     cores=[
                         sdk4.types.Core(
@@ -1477,7 +1641,9 @@ def test_configure_high_perf_vm2(engine_api):
 def test_add_vm2_lease(engine_api):
     engine = engine_api.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
+    sd = engine.storage_domains_service().list(
+        search='name={}'.format(SD_SECOND_NFS_NAME)
+    )[0]
 
     vm2_service.update(
         vm=sdk4.types.Vm(
@@ -1485,15 +1651,12 @@ def test_add_vm2_lease(engine_api):
                 enabled=True,
             ),
             lease=sdk4.types.StorageDomainLease(
-                storage_domain=sdk4.types.StorageDomain(
-                    id=sd.id
-                )
-            )
+                storage_domain=sdk4.types.StorageDomain(id=sd.id)
+            ),
         )
     )
     assertions.assert_true_within_short(
-        lambda:
-        vm2_service.get().lease.storage_domain.id == sd.id
+        lambda: vm2_service.get().lease.storage_domain.id == sd.id
     )
 
 
@@ -1505,10 +1668,11 @@ def test_add_nic(engine_api):
     profiles_service = engine_api.system_service().vnic_profiles_service()
     profile_id = next(
         (
-            profile.id for profile in profiles_service.list()
+            profile.id
+            for profile in profiles_service.list()
             if profile.name == MANAGEMENT_NETWORK
         ),
-        None
+        None,
     )
 
     # Empty profile id would cause fail in later tests (e.g. add_filter):
@@ -1529,9 +1693,7 @@ def test_add_nic(engine_api):
         types.Nic(
             name=NIC_NAME,
             interface=types.NicInterface.VIRTIO,
-            vnic_profile=types.VnicProfile(
-                id=profile_id
-            ),
+            vnic_profile=types.VnicProfile(id=profile_id),
         ),
     )
 
@@ -1542,9 +1704,7 @@ def test_add_nic(engine_api):
             name=NIC_NAME,
             interface=types.NicInterface.E1000,
             mac=types.Mac(address=UNICAST_MAC_OUTSIDE_POOL),
-            vnic_profile=types.VnicProfile(
-                id=profile_id
-            ),
+            vnic_profile=types.VnicProfile(id=profile_id),
         ),
     )
 
@@ -1559,8 +1719,7 @@ def test_add_graphics_console(engine_api):
         console = consoles_service.console_service('766e63')
         console.remove()
         assertions.assert_true_within_short(
-            lambda:
-            len(consoles_service.list()) == 1
+            lambda: len(consoles_service.list()) == 1
         )
 
     # and add it back
@@ -1570,8 +1729,7 @@ def test_add_graphics_console(engine_api):
         )
     )
     assertions.assert_true_within_short(
-        lambda:
-        len(consoles_service.list()) == 2
+        lambda: len(consoles_service.list()) == 2
     )
 
 
@@ -1583,7 +1741,8 @@ def test_add_filter(engine_api):
     network = engine_api.follow_link(nic.vnic_profile).network
     network_filters_service = engine.network_filters_service()
     network_filter = next(
-        network_filter for network_filter in network_filters_service.list()
+        network_filter
+        for network_filter in network_filters_service.list()
         if network_filter.name == NETWORK_FILTER_NAME
     )
     vnic_profiles_service = engine.vnic_profiles_service()
@@ -1592,7 +1751,7 @@ def test_add_filter(engine_api):
         sdk4.types.VnicProfile(
             name='{}_profile'.format(network_filter.name),
             network=network,
-            network_filter=network_filter
+            network_filter=network_filter,
         )
     )
     nic.vnic_profile = vnic_profile
@@ -1602,14 +1761,14 @@ def test_add_filter(engine_api):
 @order_by(_TEST_LIST)
 def test_add_filter_parameter(engine_api, management_gw_ip):
     engine = engine_api.system_service()
-    network_filter_parameters_service = test_utils.get_network_fiter_parameters_service(
-        engine, VM0_NAME)
+    network_filter_parameters_service = (
+        test_utils.get_network_fiter_parameters_service(engine, VM0_NAME)
+    )
 
     with engine_utils.wait_for_event(engine, 10912):
         assert network_filter_parameters_service.add(
             sdk4.types.NetworkFilterParameter(
-                name='GW_IP',
-                value=management_gw_ip
+                name='GW_IP', value=management_gw_ip
             )
         )
 
@@ -1620,16 +1779,14 @@ def test_add_serial_console_vm2(engine_api):
     # Find the virtual machine. Note the use of the `all_content` parameter, it is
     # required in order to obtain additional information that isn't retrieved by
     # default, like the configuration of the serial console.
-    vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
+    vm = engine.vms_service().list(
+        search='name={}'.format(VM2_NAME), all_content=True
+    )[0]
     if not vm.console.enabled:
         vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-        with engine_utils.wait_for_event(engine, 35): # USER_UPDATE_VM event
+        with engine_utils.wait_for_event(engine, 35):  # USER_UPDATE_VM event
             vm_service.update(
-                sdk4.types.Vm(
-                    console=sdk4.types.Console(
-                        enabled=True
-                    )
-                )
+                sdk4.types.Vm(console=sdk4.types.Console(enabled=True))
             )
 
 
@@ -1662,7 +1819,7 @@ def test_add_instance_type(engine_api):
 @order_by(_TEST_LIST)
 def test_add_event(engine_api, ost_cluster_name):
     events_service = engine_api.system_service().events_service()
-    assert events_service.add( # Add a new event to the system
+    assert events_service.add(  # Add a new event to the system
         types.Event(
             description='ovirt-system-tests description',
             custom_id=int('01234567890'),
@@ -1670,22 +1827,31 @@ def test_add_event(engine_api, ost_cluster_name):
             origin='ovirt-system-tests',
             cluster=types.Cluster(
                 name=ost_cluster_name,
-            )
+            ),
         ),
     )
 
 
 @pytest.fixture
 def sd_iscsi_host_direct_lun_uuids(sd_iscsi_ansible_host):
-    return lun.get_uuids(sd_iscsi_ansible_host)[SD_ISCSI_NR_LUNS + 1:SD_ISCSI_NR_LUNS + 2]
+    return lun.get_uuids(sd_iscsi_ansible_host)[
+        SD_ISCSI_NR_LUNS + 1 : SD_ISCSI_NR_LUNS + 2
+    ]
 
 
 @pytest.fixture
-def sd_iscsi_host_direct_luns(sd_iscsi_host_direct_lun_uuids, sd_iscsi_host_ips,
-                              sd_iscsi_port, sd_iscsi_target):
-    return lun.create_lun_sdk_entries(sd_iscsi_host_direct_lun_uuids,
-                                      sd_iscsi_host_ips, sd_iscsi_port,
-                                      sd_iscsi_target)
+def sd_iscsi_host_direct_luns(
+    sd_iscsi_host_direct_lun_uuids,
+    sd_iscsi_host_ips,
+    sd_iscsi_port,
+    sd_iscsi_target,
+):
+    return lun.create_lun_sdk_entries(
+        sd_iscsi_host_direct_lun_uuids,
+        sd_iscsi_host_ips,
+        sd_iscsi_port,
+        sd_iscsi_target,
+    )
 
 
 @order_by(_TEST_LIST)
@@ -1700,46 +1866,61 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
     )
 
     engine = engine_api.system_service()
-    disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
+    disk_attachments_service = test_utils.get_disk_attachments_service(
+        engine, VM0_NAME
+    )
     with engine_utils.wait_for_event(engine, 97):
-        disk_attachments_service.add(sdk4.types.DiskAttachment(
-            disk=dlun_params,
-            interface=sdk4.types.DiskInterface.VIRTIO_SCSI))
+        disk_attachments_service.add(
+            sdk4.types.DiskAttachment(
+                disk=dlun_params,
+                interface=sdk4.types.DiskInterface.VIRTIO_SCSI,
+            )
+        )
 
         disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
-        attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
-        assert attachment_service.get() is not None, \
-            'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
+        attachment_service = disk_attachments_service.attachment_service(
+            disk_service.get().id
+        )
+        assert (
+            attachment_service.get() is not None
+        ), 'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
 
 
 @order_by(_TEST_LIST)
-def test_add_nonadmin_user(engine_api, ansible_engine, nonadmin_username,
-                           nonadmin_password):
-    ansible_engine.shell(
-        f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
+def test_add_nonadmin_user(
+    engine_api, ansible_engine, nonadmin_username, nonadmin_password
+):
+    ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
     ansible_engine.shell(
         f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
             --password-valid-to='2125-08-15 10:30:00Z' \
-            --password=pass:{nonadmin_password}")
+            --password=pass:{nonadmin_password}"
+    )
     domain = types.Domain(name='internal-authz')
     users_service = engine_api.system_service().users_service()
-    with engine_utils.wait_for_event(engine_api.system_service(), 149): # USER_ADD(149)
+    with engine_utils.wait_for_event(
+        engine_api.system_service(), 149
+    ):  # USER_ADD(149)
         users_service.add(
-            types.User(user_name=f'{nonadmin_username}@internal-authz',
-                       domain=domain),
+            types.User(
+                user_name=f'{nonadmin_username}@internal-authz', domain=domain
+            ),
         )
 
 
 @order_by(_TEST_LIST)
-def test_add_vm_permissions_to_user(engine_api, ansible_engine,
-                                    nonadmin_username):
+def test_add_vm_permissions_to_user(
+    engine_api, ansible_engine, nonadmin_username
+):
     user_id = ansible_engine.shell(
         f"ovirt-aaa-jdbc-tool user show {nonadmin_username} --attribute=id"
     )['stdout_lines'][0]
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=vm0')[0]
     permissions_service = vms_service.vm_service(vm.id).permissions_service()
-    with engine_utils.wait_for_event(engine_api.system_service(), 850): # PERMISSION_ADD(850)
+    with engine_utils.wait_for_event(
+        engine_api.system_service(), 850
+    ):  # PERMISSION_ADD(850)
         permissions_service.add(
             types.Permission(
                 user=types.User(

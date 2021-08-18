@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,8 +24,9 @@ import os
 from ost_utils.ansible.collection import engine_setup
 
 
-def test_initialize_engine(engine_ip, ansible_engine,
-                           engine_answer_file_path, ssh_key_file):
+def test_initialize_engine(
+    engine_ip, ansible_engine, engine_answer_file_path, ssh_key_file
+):
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
         ansible_engine.shell(
             'sed -i '
@@ -42,23 +43,11 @@ def test_initialize_engine(engine_ip, ansible_engine,
         ssh_key_path=ssh_key_file,
         ovirt_engine_setup_offline='true',
         ovirt_engine_setup_engine_configs=[
-            {
-                'key':'VdsLocalDisksLowFreeSpace',
-                'value': '400'
-            },
-            {
-                'key':'OvfUpdateIntervalInMinutes',
-                'value': '10'
-            },
-            {
-                'key':'ServerRebootTimeout',
-                'value': '120'
-            },
-            {
-                'key':'ClientModeVncDefault',
-                'value': 'NoVnc'
-            },
-        ]
+            {'key': 'VdsLocalDisksLowFreeSpace', 'value': '400'},
+            {'key': 'OvfUpdateIntervalInMinutes', 'value': '10'},
+            {'key': 'ServerRebootTimeout', 'value': '120'},
+            {'key': 'ClientModeVncDefault', 'value': 'NoVnc'},
+        ],
     )
     ansible_engine.shell('ss -anp')
 

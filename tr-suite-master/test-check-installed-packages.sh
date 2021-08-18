@@ -71,9 +71,18 @@ if [[ ${terraform_installed} -eq 0 ]]; then
     dnf install -y dnf-plugins-core
     dnf config-manager --add-repo ${terraform_repo}
     dnf install -y terraform
+    # currently there is a problem in terraform package signing that makes it fail installation.
+    # the following is a workaround that installs terraform RPM ignoring
+    # errors
     if [[ $? -ne 0 ]]; then
-        echo "ERROR: Failed to install terraform package."
-        exit 1
+        echo "ERROR: Failed to install terraform package using dnf, trying installing the rpm ignoring checksum errors."
+        dnf download terraform
+        rpm=$(find . -name "*terraform*.rpm" -print)
+        rpm --nodigest --nofiledigest -iv ${rpm}
+        if [[ $? -ne 0 ]]; then
+            echo "ERROR: Failed to install terraform package."
+            exit 1
+        fi
     fi
 fi
 

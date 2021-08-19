@@ -26,6 +26,7 @@ import pytest
 from ost_utils import coverage
 from ost_utils import utils
 from ost_utils import shell
+from ost_utils.ansible import AnsibleExecutionError
 
 
 @pytest.fixture(scope="session")
@@ -101,6 +102,39 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
     calls = [
         functools.partial(collect, hostname, artifact_list, artifacts_dir)
         for hostname, artifact_list in artifacts.items()
+    ]
+    utils.invoke_different_funcs_in_parallel(*calls)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def generate_sar_stat_plots(
+    collect_artifacts, all_hostnames, ansible_by_hostname, artifacts_dir
+):
+    def generate(hostname):
+        ansible_handle = ansible_by_hostname(hostname)
+        try:
+            # DEV and EDEV statistics are excluded, since they contain
+            # the iface names - semicolons in ';vdsmdummy;' iface name cause
+            # sadf to fail.
+            # TODO: change the name of the iface in question
+            ansible_handle.shell(
+                'sadf -g -- -bBdFHqSuvwWy -I SUM -I ALL -m ALL -n NFS,NFSD,'
+                'SOCK,IP,EIP,ICMP,EICMP,TCP,ETCP,UDP,SOCK6,IP6,EIP6,ICMP6,'
+                'EICMP6,UDP6 -r ALL -u ALL -P ALL > /tmp/sarstat.svg'
+            )
+        except AnsibleExecutionError:
+            # HE does not have sarstat installed.
+            pass
+        else:
+            ansible_handle.fetch(
+                src='/tmp/sarstat.svg',
+                dest=f'{artifacts_dir}/{hostname}.sarstat.svg',
+                flat=True,
+            )
+
+    yield
+    calls = [
+        functools.partial(generate, hostname) for hostname in all_hostnames
     ]
     utils.invoke_different_funcs_in_parallel(*calls)
 

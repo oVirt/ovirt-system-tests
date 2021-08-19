@@ -275,8 +275,10 @@ class Vnic(SDKSubEntity):
         self.hotplug()
 
     def hot_replace_profile(self, profile):
+        time.sleep(5)
         self.hotunplug()
         self.vnic_profile = profile
+        time.sleep(5)
         self.hotplug()
 
     @contextlib.contextmanager
@@ -286,9 +288,6 @@ class Vnic(SDKSubEntity):
         try:
             yield
         finally:
-            # ensure that the guest OS has enough time to initialize the vNIC,
-            # before the request to hot-unplug is sent
-            time.sleep(2)
             self.hot_replace_profile(original_profile)
 
     def _get_parent_service(self, vm):

@@ -400,10 +400,9 @@ class VmVncConsole(VmGraphicsConsole):
 
 class VmSerialConsole(object):
 
-    def __init__(self, private_key_path, vmconsole_proxy_ip, vm, user, passwd):
+    def __init__(self, private_key_path, vmconsole_proxy_ip, user, passwd):
         self._private_key_path = private_key_path
         self._proxy_ip = vmconsole_proxy_ip
-        self._vm = vm
         self._user = user
         self._passwd = passwd
         self._reader = None
@@ -414,12 +413,12 @@ class VmSerialConsole(object):
         return '$ '
 
     @contextmanager
-    def connect(self):
+    def connect(self, vm=None):
         time.sleep(15)
         try:
             master, slave = pty.openpty()
             LOGGER.debug('vmconsole opened pty')
-            self._reader = subprocess.Popen([
+            args = [
                 'ssh',
                 '-t',
                 '-o', 'StrictHostKeyChecking=no',
@@ -427,14 +426,17 @@ class VmSerialConsole(object):
                 '-p', '2222',
                 f'ovirt-vmconsole@{self._proxy_ip}',
                 'connect',
-                f'--vm-id={self._vm.id}'
-            ],
+            ]
+            if vm:
+                args.append(f'--vm-id={vm.id}')
+            self._reader = subprocess.Popen(
+                args,
                 stdin=slave,
                 stdout=subprocess.PIPE,
                 universal_newlines=True,
                 bufsize=0
             )
-            LOGGER.debug('vmconsole opened reader')
+            LOGGER.debug(f'vmconsole opened reader with args {args}')
             self._writer = os.fdopen(master, 'w')
             LOGGER.debug('vmconsole opened writer')
             yield
@@ -513,7 +515,7 @@ class VmSerialConsole(object):
 
 class CirrosSerialConsole(VmSerialConsole):
 
-    def __init__(self, private_key_path, vmconsole_proxy_ip, vm, ):
+    def __init__(self, private_key_path, vmconsole_proxy_ip):
         super(CirrosSerialConsole, self).__init__(
-            private_key_path, vmconsole_proxy_ip, vm, 'cirros', 'gocubsgo'
+            private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo'
         )

@@ -117,20 +117,8 @@ def host_1_with_mig_net(migration_network, host_1_up):
     host_1_up.remove_networks((migration_network,))
 
 
-@pytest.fixture
-def serial_console(engine_facts, vmconsole_rsa,
-                   engine_admin, running_cirros_vm):
-    with engine_admin.toggle_public_key(vmconsole_rsa.public_key_content):
-        serial = virtlib.CirrosSerialConsole(
-            vmconsole_rsa.private_key_path,
-            engine_facts.default_ip(),
-            running_cirros_vm
-        )
-        yield serial
-
-
-def test_serial_vmconsole(serial_console):
-    with serial_console.connect():
+def test_serial_vmconsole(serial_console, running_cirros_vm):
+    with serial_console.connect(running_cirros_vm):
         with serial_console.login():
             if suite.af().is6:
                 ip_a = serial_console.add_static_ip(CIRROS_IPV6, CIRROS_NIC)

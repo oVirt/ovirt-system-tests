@@ -28,6 +28,7 @@ from fixtures import providers
 
 from ovirtlib import storagelib
 from ovirtlib import templatelib
+from ovirtlib import virtlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
 from ost_utils import shell
@@ -70,3 +71,13 @@ def vmconsole_rsa():
         LOGGER.debug(f'read vmconsole public key {public_key_content}')
     return Rsa(public_key_content=public_key_content,
                private_key_path=f'{private_key_path}')
+
+
+@pytest.fixture(scope='function')
+def serial_console(engine_facts, engine_admin, vmconsole_rsa):
+    with engine_admin.toggle_public_key(vmconsole_rsa.public_key_content):
+        serial = virtlib.CirrosSerialConsole(
+            vmconsole_rsa.private_key_path,
+            engine_facts.default_ip(),
+        )
+        yield serial

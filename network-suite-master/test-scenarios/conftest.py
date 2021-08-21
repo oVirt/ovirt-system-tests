@@ -55,6 +55,7 @@ from fixtures.providers import ovirt_image_repo
 
 from fixtures.virt import cirros_template
 from fixtures.virt import vmconsole_rsa
+from fixtures.virt import serial_console
 
 from fixtures.data_center import data_centers_service
 from fixtures.data_center import default_data_center

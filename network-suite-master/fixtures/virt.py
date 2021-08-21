@@ -73,7 +73,7 @@ def vmconsole_rsa():
                private_key_path=f'{private_key_path}')
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def serial_console(engine_facts, engine_admin, vmconsole_rsa):
     with engine_admin.toggle_public_key(vmconsole_rsa.public_key_content):
         serial = virtlib.CirrosSerialConsole(

@@ -413,7 +413,7 @@ class VmSerialConsole(object):
         return '$ '
 
     @contextmanager
-    def connect(self, vm=None):
+    def connect(self, vm_id=None):
         time.sleep(15)
         try:
             master, slave = pty.openpty()
@@ -427,8 +427,8 @@ class VmSerialConsole(object):
                 f'ovirt-vmconsole@{self._proxy_ip}',
                 'connect',
             ]
-            if vm:
-                args.append(f'--vm-id={vm.id}')
+            if vm_id:
+                args.append(f'--vm-id={vm_id}')
             self._reader = subprocess.Popen(
                 args,
                 stdin=slave,
@@ -500,13 +500,25 @@ class VmSerialConsole(object):
         self._writer.write(entry)
         self._writer.flush()
 
-    def add_static_ip(self, ip, iface):
+    def add_static_ip(self, vm_id, ip, iface):
+        with self.connect(vm_id):
+            with self.login():
+                ip_addr_show = self._add_static_ip(ip, iface)
+        return ip_addr_show
+
+    def _add_static_ip(self, ip, iface):
         self.write(f'sudo ip addr add {ip} dev {iface}\n')
         self.read_until_bash_prompt()
         self.write(f'ip addr show {iface}\n')
         return self.read_until_bash_prompt()
 
-    def get_dhcp_ip(self, iface):
+    def get_dhcp_ip(self, vm_id, iface):
+        with self.connect(vm_id):
+            with self.login():
+                ip_addr_show = self._get_dhcp_ip(iface)
+        return ip_addr_show
+
+    def _get_dhcp_ip(self, iface):
         self.write(f'sudo /sbin/cirros-dhcpc up {iface}\n')
         self.read_until_bash_prompt()
         self.write(f'ip addr show {iface}\n')

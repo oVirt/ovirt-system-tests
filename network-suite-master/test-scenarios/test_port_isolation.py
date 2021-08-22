@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
+from collections import namedtuple
 import pytest
 
 from fixtures.host import ETH1
@@ -31,8 +32,6 @@ from testlib import suite
 
 VM0_NAME = 'test_port_isolation_vm_0'
 VM1_NAME = 'test_port_isolation_vm_1'
-VNIC0_NAME = 'eth0'
-PORT_ISOLATED_VNIC = 'eth1'
 PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
@@ -41,24 +40,27 @@ EXTERNAL_IP = {
     'inet': '8.8.8.8',
     'inet6': '2001:4860:4860::8888'
 }
+Iface = namedtuple('Iface', ['name'])
+IFACE_0 = Iface('eth0')
+IFACE_ISOLATED = Iface('eth1')
 
 
 @pytest.mark.xfail(suite.af().is6,
-                   reason='CI does not provide external ipv6 connectivity')
-def test_ping_to_external_port_succeeds(vm_nodes, isolated_vnics_up_with_ip):
+                   reason='CI lab does not provide external ipv6 connectivity')
+def test_ping_to_external_port_succeeds(vm_nodes, isolated_ifaces_up_with_ip):
     for vm_node in vm_nodes:
-        vm_node.ping(EXTERNAL_IP[suite.af().family], PORT_ISOLATED_VNIC)
+        vm_node.ping(EXTERNAL_IP[suite.af().family], IFACE_ISOLATED.name)
 
 
-def test_ping_to_isolated_port_fails(vm_nodes, isolated_vnics_up_with_ip):
+def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[0].ping(isolated_vnics_up_with_ip[1], PORT_ISOLATED_VNIC)
+        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1], IFACE_ISOLATED.name)
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[1].ping(isolated_vnics_up_with_ip[0], PORT_ISOLATED_VNIC)
+        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0], IFACE_ISOLATED.name)
 
 
 @pytest.fixture(scope='module')
-def vms_ovirtmgmt_ip(host_1_up, vms_up_on_same_host):
+def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1):
     vms_ovirtmgmt_ip = []
     host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
     for name in [VM0_NAME, VM1_NAME]:
@@ -76,21 +78,21 @@ def vm_nodes(vms_ovirtmgmt_ip):
 
 
 @pytest.fixture(scope='module')
-def isolated_vnics_up_with_ip(vm_nodes):
+def isolated_ifaces_up_with_ip(vm_nodes):
     ips = []
     for vm_node in vm_nodes:
-        vm_node.assign_ip_with_dhcp_client(PORT_ISOLATED_VNIC)
-        ip = vm_node.get_global_ip(PORT_ISOLATED_VNIC, suite.af().version)
+        vm_node.assign_ip_with_dhcp_client(IFACE_ISOLATED.name)
+        ip = vm_node.get_global_ip(IFACE_ISOLATED.name, suite.af().version)
         ips.append(ip)
     return ips
 
 
 @pytest.fixture(scope='module')
-def vms_up_on_same_host(system, default_cluster, cirros_template,
-                        port_isolation_network, ovirtmgmt_vnic_profile):
+def vms_up_on_host_1(system, default_cluster, cirros_template,
+                     port_isolation_network, ovirtmgmt_vnic_profile):
     """
-    Since the isolated_network is set up only on one host,
-    both virtual machines will be on the same host.
+    Since the isolated_network is set up only on host_1,
+    both virtual machines will be on it.
     """
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
         vms = [(vm_0, VM0_NAME),
@@ -104,12 +106,12 @@ def vms_up_on_same_host(system, default_cluster, cirros_template,
             )
             vm_vnic0 = netlib.Vnic(vm)
             vm_vnic0.create(
-                name=VNIC0_NAME,
+                name=IFACE_0.name,
                 vnic_profile=ovirtmgmt_vnic_profile,
             )
             vm_vnic1 = netlib.Vnic(vm)
             vm_vnic1.create(
-                name=PORT_ISOLATED_VNIC,
+                name=IFACE_ISOLATED.name,
                 vnic_profile=port_isolation_network.vnic_profile(),
             )
             vm.wait_for_down_status()
@@ -118,7 +120,7 @@ def vms_up_on_same_host(system, default_cluster, cirros_template,
         vm_0.wait_for_up_status()
         vm_1.wait_for_up_status()
         joblib.AllJobs(system).wait_for_done()
-        yield
+        yield vm_0, vm_1
 
 
 @pytest.fixture(scope='module')
@@ -132,7 +134,3 @@ def port_isolation_network(default_data_center, default_cluster, host_1_up):
         )
         with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
             yield network
-
-
-class PingSucceededException(Exception):
-    pass

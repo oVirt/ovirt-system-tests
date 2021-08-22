@@ -149,14 +149,20 @@ class Node(object):
                               f'{target}')
         self.exec_command(cmd)
 
-    def ping(self, target_ip, iface_name):
+    def ping(self, target_ip, iface_name=None):
         """
         Ping an ip address via the specified interface
         :param target_ip: str
         :param iface_name: str
         """
         version = ipaddress.ip_address(target_ip).version
-        self.exec_command(f'ping -{version} -c 1 -I {iface_name} {target_ip}')
+        options = [
+            f'-{version}',
+            '-c 1',
+        ]
+        if iface_name:
+            options.append(f'-I {iface_name}')
+        self.exec_command(f'ping {" ".join(options)} {target_ip}')
 
     def get_global_ip(self, iface_name, ip_version):
         """

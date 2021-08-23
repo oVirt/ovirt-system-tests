@@ -8,7 +8,7 @@
   </metadata>
   <name>@VM_FULLNAME@</name>
   <memory unit='MiB'>@MEMSIZE@</memory>
-  <vcpu placement='static'>2</vcpu>
+  <vcpu placement='static'>@VCPU_NUM@</vcpu>
   <iothreads>1</iothreads>
   <os>
     <type arch='x86_64' machine='q35'>hvm</type>
@@ -21,10 +21,10 @@
     <pae/>
   </features>
   <cpu mode='host-passthrough' check='none' migratable='on'>
-    <topology sockets='2' dies='1' cores='1' threads='1'/>
+    <topology sockets='@VCPU_NUM@' dies='1' cores='1' threads='1'/>
     <numa>
-      <cell id='0' cpus='0' memory='@MEMSIZE_NUMA@' unit='MiB'/>
-      <cell id='1' cpus='1' memory='@MEMSIZE_NUMA@' unit='MiB'/>
+      <cell id='0' cpus='@CELL_0_VCPUS@' memory='@MEMSIZE_NUMA@' unit='MiB'/>
+      <cell id='1' cpus='@CELL_1_VCPUS@' memory='@MEMSIZE_NUMA@' unit='MiB'/>
     </numa>
   </cpu>
   <clock offset='utc'>

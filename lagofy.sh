@@ -98,6 +98,9 @@ ost_init() {
       s|@DEPLOY_SCRIPTS@|${DEPLOY_SCRIPTS}|g;
       s|@MEMSIZE@|${MEMSIZE}|g;
       s|@MEMSIZE_NUMA@|$((MEMSIZE/2))|g;
+      s|@VCPU_NUM@|${VCPU_NUM}|g;
+      s|@CELL_0_VCPUS@|${CELL_0_VCPUS}|g;
+      s|@CELL_1_VCPUS@|${CELL_1_VCPUS}|g;
       s|@SERIALLOG@|${SERIALLOG}|g;
       s|@OST_ROOTDISK@|${OST_ROOTDISK}|g;
       s|@DISKS@|${DISKS}|g;
@@ -233,6 +236,11 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
     # create the VM
     VM_FULLNAME="${UUID}-ost-${SUITE}-${VM_NAME}"
     MEMSIZE=$(jqr ".vms[\"${VM_NAME}\"].memory")
+    # default to 2 vCPUs and distribute them between NUMA cells
+    VCPU_NUM=$(jqr ".vms[\"${VM_NAME}\"].vcpu_num // 2")
+    CELL_0_VCPUS="0-$((${VCPU_NUM}/2 - 1))"
+    CELL_1_VCPUS="$((${VCPU_NUM}/2))-$((${VCPU_NUM} - 1))"
+
     SERIALLOG="$PREFIX/logs/$VM_NAME"
     echo
     _render ${vm_template} | virsh create /dev/stdin

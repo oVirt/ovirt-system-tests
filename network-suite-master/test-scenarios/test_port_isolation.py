@@ -52,13 +52,6 @@ def test_ping_to_external_port_succeeds(vm_nodes, isolated_ifaces_up_with_ip):
         vm_node.ping(EXTERNAL_IP[suite.af().family], IFACE_ISOLATED.name)
 
 
-def test_ping_from_external_port_succeeds(engine_facts,
-                                          isolated_ifaces_up_with_ip):
-    engine = sshlib.Node(engine_facts.default_ip())
-    for ip in isolated_ifaces_up_with_ip:
-        engine.ping(ip)
-
-
 def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
         vm_nodes[0].ping(isolated_ifaces_up_with_ip[1], IFACE_ISOLATED.name)

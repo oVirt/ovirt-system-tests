@@ -40,6 +40,9 @@ from ost_utils import engine_object_names
 from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils import host_utils
+from ost_utils.ansible import AnsibleExecutionError
+from ost_utils.ansible.collection import CollectionMapper
+from ost_utils.ansible.collection import image_template
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.network import storage_network_name
@@ -47,7 +50,6 @@ from ost_utils.pytest.fixtures.virt import *
 from ost_utils import network_utils
 from ost_utils.selenium.grid.common import http_proxy_disabled
 from ost_utils.storage_utils import domain
-from ost_utils.storage_utils import glance
 from ost_utils.storage_utils import lun
 from ost_utils.storage_utils import nfs
 from ost_utils import shell
@@ -87,9 +89,6 @@ SD_ISO_PATH = '/exports/nfs/iso'
 SD_TEMPLATES_NAME = 'templates'
 SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
-SD_GLANCE_NAME = 'ovirt-image-repository'
-# intentionaly use URL ending with / to test backward compatibility of <4.4 glance implementation and ability to handle // in final URL
-GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
 VM_NETWORK = u'VM Network with a very long name and עברית'
@@ -107,6 +106,9 @@ BACKUP_VM_NAME = 'backup_vm'
 # the default MAC pool has addresses like 00:1a:4a:16:01:51
 UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
+# cirros image is baked into engine and HE ost images, can be found in
+# the ost-images project: mk/engine-installed.mk and mk/he-installed.mk
+CIRROS_IMAGE_PATH = '/var/tmp/cirros.img'
 
 _TEST_LIST = [
     "test_verify_engine_certs",
@@ -123,14 +125,12 @@ _TEST_LIST = [
     "test_add_affinity_group",
     "test_add_qos",
     "test_add_bookmark",
-    "test_list_glance_images",
     "test_add_dc_quota",
     "test_update_default_dc",
     "test_update_default_cluster",
     "test_add_mac_pool",
     "test_remove_default_dc",
     "test_remove_default_cluster",
-    "test_add_quota_storage_limits",
     "test_add_quota_cluster_limits",
     "test_set_dc_quota_audit",
     "test_add_role",
@@ -141,6 +141,7 @@ _TEST_LIST = [
     "test_verify_add_hosts",
     "test_add_nfs_master_storage_domain",
     "test_add_iscsi_master_storage_domain",
+    "test_add_quota_storage_limits",
     "test_add_blank_vms",
     "test_add_direct_lun_vm0",
     "test_add_blank_high_perf_vm2",
@@ -162,6 +163,8 @@ _TEST_LIST = [
     "test_add_instance_type",
     "test_add_event",
     "test_verify_add_all_hosts",
+    "test_upload_cirros_image",
+    "test_create_cirros_template",
     "test_complete_hosts_setup",
     "test_get_host_devices",
     "test_get_host_hook",
@@ -171,7 +174,7 @@ _TEST_LIST = [
     "test_add_vm2_lease",
     "test_add_non_vm_network",
     "test_add_vm_network",
-    "test_verify_glance_import",
+    "test_verify_uploaded_image_and_template",
     "test_verify_engine_backup",
     "test_add_nonadmin_user",
     "test_add_vm_permissions_to_user",
@@ -612,46 +615,6 @@ def test_resize_and_refresh_storage_domain(
         )
 
 
-@order_by(_TEST_LIST)
-def test_add_glance_images(
-    engine_api,
-    cirros_image,
-    cirros_image_glance_template_name,
-    cirros_image_glance_disk_name,
-    ost_cluster_name,
-):
-    system_service = engine_api.system_service()
-    non_template_import = functools.partial(
-        glance.import_image,
-        system_service,
-        cirros_image,
-        cirros_image_glance_template_name,
-        cirros_image_glance_disk_name,
-        MASTER_SD_TYPE,
-        ost_cluster_name,
-        SD_GLANCE_NAME,
-    )
-    template_import = functools.partial(
-        glance.import_image,
-        system_service,
-        cirros_image,
-        cirros_image_glance_template_name,
-        cirros_image_glance_template_name,
-        MASTER_SD_TYPE,
-        ost_cluster_name,
-        SD_GLANCE_NAME,
-        as_template=True,
-    )
-    vt = utils.VectorThread(
-        [
-            non_template_import,
-            template_import,
-        ],
-    )
-    vt.start_all()
-    vt.join_all()
-
-
 def add_iscsi_storage_domain(engine_api, hosts_service, luns, dc_name):
     v4_domain = versioning.cluster_version_ok(4, 1)
     p = sdk4.types.StorageDomain(
@@ -714,38 +677,6 @@ def add_templates_storage_domain(
         sd_type='export',
         nfs_version='v4_1',
     )
-
-
-@order_by(_TEST_LIST)
-def test_list_glance_images(engine_api):
-    search_query = 'name={}'.format(SD_GLANCE_NAME)
-    system_service = engine_api.system_service()
-    storage_domains_service = system_service.storage_domains_service()
-    glance_domain_list = storage_domains_service.list(search=search_query)
-
-    if not glance_domain_list:
-        openstack_glance = glance.add_domain(
-            system_service, SD_GLANCE_NAME, GLANCE_SERVER_URL
-        )
-        if not openstack_glance:
-            raise RuntimeError('GLANCE storage domain is not available.')
-        glance_domain_list = storage_domains_service.list(search=search_query)
-
-    if not glance.check_connectivity(system_service, SD_GLANCE_NAME):
-        raise RuntimeError('GLANCE connectivity test failed')
-
-    glance_domain = glance_domain_list.pop()
-    glance_domain_service = storage_domains_service.storage_domain_service(
-        glance_domain.id
-    )
-
-    try:
-        with engine_utils.wait_for_event(system_service, 998):
-            all_images = glance_domain_service.images_service().list()
-        if not len(all_images):
-            raise RuntimeError('No GLANCE images available')
-    except sdk4.Error:
-        raise RuntimeError('GLANCE is not available: client request error')
 
 
 @order_by(_TEST_LIST)
@@ -1305,35 +1236,6 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
     ansible_engine.shell('grep USER_VDC_LOGIN /var/log/messages')
     ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
     ansible_engine.systemd(name='snmptrapd', state='stopped')
-
-
-@order_by(_TEST_LIST)
-def test_verify_glance_import(
-    engine_api,
-    cirros_image_glance_template_name,
-    cirros_image_glance_disk_name,
-):
-    # If we go with the engine backup before the glance template
-    # creation is complete, we'll fail the creation of 'vm1' later,
-    # which is based on that template.
-    templates_service = engine_api.system_service().templates_service()
-
-    assertions.assert_true_within_long(
-        lambda: cirros_image_glance_template_name
-        in [t.name for t in templates_service.list()]
-    )
-
-    for disk_name in (
-        cirros_image_glance_disk_name,
-        cirros_image_glance_template_name,
-    ):
-        disks_service = engine_api.system_service().disks_service()
-        assertions.assert_true_within_long(
-            lambda: disks_service.list(search='name={}'.format(disk_name))[
-                0
-            ].status
-            == types.DiskStatus.OK
-        )
 
 
 @order_by(_TEST_LIST)
@@ -1929,4 +1831,113 @@ def test_add_vm_permissions_to_user(
                     name='UserRole',
                 ),
             ),
+        )
+
+
+@order_by(_TEST_LIST)
+def test_upload_cirros_image(
+    working_dir,
+    artifacts_dir,
+    ansible_execution_environment,
+    engine_ip,
+    engine_full_username,
+    engine_password,
+    cirros_image_disk_name,
+    ansible_inventory,
+    engine_hostname,
+    ssh_key_file,
+):
+    collection = CollectionMapper(
+        working_dir,
+        artifacts_dir,
+        ansible_execution_environment,
+        ansible_host=engine_hostname,
+        ansible_inventory=ansible_inventory,
+        ssh_key_path=ssh_key_file,
+    )
+
+    ovirt_auth = collection.ovirt_auth(
+        hostname=engine_ip,
+        username=engine_full_username,
+        password=engine_password,
+    )["ansible_facts"]["ovirt_auth"]
+
+    collection.ovirt_disk(
+        auth=ovirt_auth,
+        name=cirros_image_disk_name,
+        upload_image_path=CIRROS_IMAGE_PATH,
+        storage_domain=SD_NFS_NAME,
+        format='cow',
+        sparse='true',
+        wait='true',
+    )
+
+
+@order_by(_TEST_LIST)
+def test_create_cirros_template(
+    working_dir,
+    artifacts_dir,
+    ansible_execution_environment,
+    engine_fqdn,
+    engine_full_username,
+    engine_password,
+    ost_cluster_name,
+    cirros_image_template_name,
+    ansible_inventory,
+    engine_hostname,
+    ssh_key_file,
+):
+    # TODO: sometime after the image transfer is complete,
+    # not all locks are released - BZ 1923178
+    def create_cirros_template():
+        try:
+            image_template(
+                working_dir,
+                artifacts_dir,
+                ansible_execution_environment,
+                ansible_inventory,
+                ssh_key_file,
+                engine_hostname,
+                engine_fqdn=engine_fqdn,
+                engine_user=engine_full_username,
+                engine_password=engine_password,
+                engine_cafile='/etc/pki/ovirt-engine/ca.pem',
+                qcow_url=f"file://{CIRROS_IMAGE_PATH}",
+                template_cluster=ost_cluster_name,
+                template_name=cirros_image_template_name,
+                template_memory='1GiB',
+                template_cpu='1',
+                template_disk_size='1GiB',
+                template_disk_storage=SD_NFS_NAME,
+                template_seal=False,
+            )
+            return True
+        except shell.ShellError as e:
+            if 'Disk is locked' in e.out:
+                return False
+            raise e
+
+    assertions.assert_true_within_long(create_cirros_template)
+
+
+@order_by(_TEST_LIST)
+def test_verify_uploaded_image_and_template(
+    engine_api,
+    cirros_image_template_name,
+    cirros_image_disk_name,
+    disks_service,
+    templates_service,
+):
+    assertions.assert_true_within_short(
+        lambda: cirros_image_template_name
+        in [t.name for t in templates_service.list()]
+    )
+
+    for disk_name in (
+        cirros_image_disk_name,
+        cirros_image_template_name,
+    ):
+        assertions.assert_true_within_short(
+            lambda: disks_service.list(search=f'name={disk_name}')[0].status
+            == types.DiskStatus.OK
         )

@@ -150,11 +150,44 @@ def engine_setup(
     )
 
 
+def image_template(
+    working_dir,
+    artifacts_dir,
+    execution_environment_tag,
+    ansible_inventory,
+    ssh_key_path,
+    engine_hostname,
+    **kwargs,
+):
+    playbook_yaml = _get_role_playbook(
+        'image_template', engine_hostname, **kwargs
+    )
+    _run_playbook(
+        playbook_yaml,
+        working_dir,
+        artifacts_dir,
+        execution_environment_tag,
+        ansible_inventory,
+        ssh_key_path,
+    )
+
+
 class CollectionMapper:
-    def __init__(self, working_dir, artifacts_dir, execution_environment_tag):
+    def __init__(
+        self,
+        working_dir,
+        artifacts_dir,
+        execution_environment_tag,
+        ansible_host='localhost',
+        ansible_inventory=None,
+        ssh_key_path=None,
+    ):
         self.working_dir = working_dir
         self.artifacts_dir = artifacts_dir
         self.execution_environment_tag = execution_environment_tag
+        self.ansible_host = ansible_host
+        self.ansible_inventory = ansible_inventory
+        self.ssh_key_path = ssh_key_path
 
     def __getattr__(self, name):
         self.name = name
@@ -162,7 +195,7 @@ class CollectionMapper:
 
     def __call__(self, **kwargs):
         playbook = f'''
-        - hosts: localhost
+        - hosts: {self.ansible_host}
           tasks:
             - ovirt.ovirt.{self.name}:
         '''
@@ -174,6 +207,8 @@ class CollectionMapper:
             self.working_dir,
             self.artifacts_dir,
             self.execution_environment_tag,
+            self.ansible_inventory,
+            self.ssh_key_path,
         )
 
         return self._collect_module_data()

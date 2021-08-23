@@ -241,19 +241,19 @@ def _disk_attachment(**params):
 
 
 @order_by(_TEST_LIST)
-def test_add_disks(engine_api, cirros_image_glance_disk_name):
+def test_add_disks(engine_api, cirros_image_disk_name):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    glance_disk = test_utils.get_disk_service(
+    cirros_disk = test_utils.get_disk_service(
         engine,
-        cirros_image_glance_disk_name,
+        cirros_image_disk_name,
     )
-    assert vm_service and glance_disk
+    assert vm_service and cirros_disk
 
     disks_params = {
-        (VM0_NAME, cirros_image_glance_disk_name): {
+        (VM0_NAME, cirros_image_disk_name): {
             'storage_domains': [types.StorageDomain(name=SD_ISCSI_NAME)],
-            'id': glance_disk.get().id,
+            'id': cirros_disk.get().id,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,
                 'active': True,
@@ -336,12 +336,12 @@ def test_add_disks(engine_api, cirros_image_glance_disk_name):
 
 
 @order_by(_TEST_LIST)
-def test_copy_template_disk(system_service, cirros_image_glance_disk_name):
-    glance_disk = test_utils.get_disk_service(
-        system_service, cirros_image_glance_disk_name
+def test_copy_template_disk(system_service, cirros_image_disk_name):
+    cirros_disk = test_utils.get_disk_service(
+        system_service, cirros_image_disk_name
     )
 
-    glance_disk.copy(storage_domain=types.StorageDomain(name=SD_ISCSI_NAME))
+    cirros_disk.copy(storage_domain=types.StorageDomain(name=SD_ISCSI_NAME))
 
 
 @order_by(_TEST_LIST)
@@ -496,22 +496,22 @@ def test_clone_powered_off_vm(system_service, vms_service, ost_cluster_name):
 
 @order_by(_TEST_LIST)
 def test_verify_template_disk_copied_and_removed(
-    system_service, cirros_image_glance_disk_name
+    system_service, cirros_image_disk_name
 ):
     iscsi_sd_service = test_utils.get_storage_domain_service(
         system_service, SD_ISCSI_NAME
     )
-    glance_sd_disk_service = (
+    cirros_sd_disk_service = (
         test_utils.get_storage_domain_disk_service_by_name(
-            iscsi_sd_service, cirros_image_glance_disk_name
+            iscsi_sd_service, cirros_image_disk_name
         )
     )
     assertions.assert_true_within_short(
-        lambda: glance_sd_disk_service.get().status == types.DiskStatus.OK
+        lambda: cirros_sd_disk_service.get().status == types.DiskStatus.OK
     )
 
-    disk_id = glance_sd_disk_service.get().id
-    glance_sd_disk_service.remove()
+    disk_id = cirros_sd_disk_service.get().id
+    cirros_sd_disk_service.remove()
     assertions.assert_true_within_short(
         lambda: disk_id
         not in [disk.id for disk in iscsi_sd_service.disks_service().list()]
@@ -659,8 +659,6 @@ def snapshot_cold_merge(engine_api):
     vm1_snapshots_service = test_utils.get_vm_snapshots_service(
         engine, VM1_NAME
     )
-    if vm1_snapshots_service is None:
-        pytest.skip('Glance is not available')
 
     disk = engine.disks_service().list(
         search='name={} and vm_names={}'.format(DISK1_NAME, VM1_NAME)
@@ -938,19 +936,17 @@ def test_verify_vm2_exported(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_verify_template_exported(
-    engine_api, cirros_image_glance_template_name
-):
+def test_verify_template_exported(engine_api, cirros_image_template_name):
     engine = engine_api.system_service()
     correlation_id = "test_validate_ova_export_temp"
     template_service = test_utils.get_template_service(
-        engine, cirros_image_glance_template_name
+        engine, cirros_image_template_name
     )
     if template_service is None:
         pytest.skip(
             '{0}: template {1} is missing'.format(
                 test_verify_template_exported.__name__,
-                cirros_image_glance_template_name,
+                cirros_image_template_name,
             )
         )
     assertions.assert_true_within_long(
@@ -1048,19 +1044,19 @@ def test_verify_template_import(engine_api):
 
 @order_by(_TEST_LIST)
 def test_add_vm1_from_template(
-    engine_api, cirros_image_glance_template_name, ost_cluster_name
+    engine_api, cirros_image_template_name, ost_cluster_name
 ):
     engine = engine_api.system_service()
     templates_service = engine.templates_service()
-    glance_template = templates_service.list(
-        search='name=%s' % cirros_image_glance_template_name
+    cirros_template = templates_service.list(
+        search='name=%s' % cirros_image_template_name
     )[0]
-    if glance_template is None:
+    if cirros_template is None:
         pytest.skip(
             '%s: template %s not available.'
             % (
                 test_add_vm1_from_template.__name__,
-                cirros_image_glance_template_name,
+                cirros_image_template_name,
             )
         )
 
@@ -1071,13 +1067,13 @@ def test_add_vm1_from_template(
     vms_service.add(
         types.Vm(
             name=VM1_NAME,
-            description='CirrOS imported from Glance as Template',
+            description='CirrOS imported as Template',
             memory=vm_memory,
             cluster=types.Cluster(
                 name=ost_cluster_name,
             ),
             template=types.Template(
-                name=cirros_image_glance_template_name,
+                name=cirros_image_template_name,
             ),
             use_latest_template_version=True,
             stateless=True,
@@ -1284,17 +1280,17 @@ def test_vdsm_recovery(
 
 
 @order_by(_TEST_LIST)
-def test_template_export(engine_api, cirros_image_glance_template_name):
+def test_template_export(engine_api, cirros_image_template_name):
     engine = engine_api.system_service()
 
     template_service = test_utils.get_template_service(
-        engine, cirros_image_glance_template_name
+        engine, cirros_image_template_name
     )
     if template_service is None:
         pytest.skip(
             '{0}: template {1} is missing'.format(
                 test_template_export.__name__,
-                cirros_image_glance_template_name,
+                cirros_image_template_name,
             )
         )
     host = test_utils.get_first_active_host_by_name(engine)
@@ -1311,16 +1307,14 @@ def test_template_export(engine_api, cirros_image_glance_template_name):
 
 
 @order_by(_TEST_LIST)
-def test_add_vm_pool(
-    engine_api, cirros_image_glance_template_name, ost_cluster_name
-):
+def test_add_vm_pool(engine_api, cirros_image_template_name, ost_cluster_name):
     engine = engine_api.system_service()
     pools_service = engine.vm_pools_service()
     pool_cluster = engine.clusters_service().list(
         search='name={}'.format(ost_cluster_name)
     )[0]
     pool_template = engine.templates_service().list(
-        search='name={}'.format(cirros_image_glance_template_name)
+        search='name={}'.format(cirros_image_template_name)
     )[0]
     with engine_utils.wait_for_event(engine, 302):
         pools_service.add(
@@ -1339,23 +1333,21 @@ def test_add_vm_pool(
 
 
 @order_by(_TEST_LIST)
-def test_update_template_version(
-    engine_api, cirros_image_glance_template_name
-):
+def test_update_template_version(engine_api, cirros_image_template_name):
     engine = engine_api.system_service()
     stateless_vm = engine.vms_service().list(
         search='name={}'.format(VM1_NAME)
     )[0]
     templates_service = engine.templates_service()
     template = templates_service.list(
-        search='name={}'.format(cirros_image_glance_template_name)
+        search='name={}'.format(cirros_image_template_name)
     )[0]
 
     assert stateless_vm.memory != template.memory
 
     templates_service.add(
         template=types.Template(
-            name=cirros_image_glance_template_name,
+            name=cirros_image_template_name,
             vm=stateless_vm,
             version=types.TemplateVersion(
                 base_template=template, version_number=2
@@ -1419,16 +1411,16 @@ def test_remove_vm_pool(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_template_update(engine_api, cirros_image_glance_template_name):
+def test_template_update(engine_api, cirros_image_template_name):
     template_guest = test_utils.get_template_service(
-        engine_api.system_service(), cirros_image_glance_template_name
+        engine_api.system_service(), cirros_image_template_name
     )
 
     if template_guest is None:
         pytest.skip(
             '{0}: template {1} is missing'.format(
                 test_template_update.__name__,
-                cirros_image_glance_template_name,
+                cirros_image_template_name,
             )
         )
     new_comment = "comment by ovirt-system-tests"

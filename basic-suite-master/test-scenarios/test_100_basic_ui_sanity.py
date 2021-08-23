@@ -43,7 +43,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
-from ost_utils.pytest.fixtures.virt import cirros_image_glance_template_name
+from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 from ost_utils.selenium.navigation.driver import *
 from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
 from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
@@ -365,13 +365,13 @@ def test_hosts(ovirt_driver, ansible_host0_facts):
     assert host_list_view.is_host_console_button_enabled() is True
 
 
-def test_templates(ovirt_driver, cirros_image_glance_template_name):
+def test_templates(ovirt_driver, cirros_image_template_name):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     template_list_view = webadmin_menu.open_template_list_view()
 
     templates = template_list_view.get_entities()
     assert 'Blank' in templates
-    assert cirros_image_glance_template_name in templates
+    assert cirros_image_template_name in templates
     assert template_list_view.is_new_vm_button_enabled() is False
     assert template_list_view.is_import_button_enabled() is True
     assert template_list_view.is_edit_button_enabled() is False
@@ -385,7 +385,7 @@ def test_templates(ovirt_driver, cirros_image_glance_template_name):
     assert template_list_view.is_remove_button_enabled() is False
     assert template_list_view.is_export_button_enabled() is False
 
-    template_list_view.select_entity(cirros_image_glance_template_name)
+    template_list_view.select_entity(cirros_image_template_name)
     assert template_list_view.is_new_vm_button_enabled() is True
     assert template_list_view.is_import_button_enabled() is True
     assert template_list_view.is_edit_button_enabled() is True

@@ -52,6 +52,11 @@ def storage_domains_service(system_service):
 
 
 @pytest.fixture(scope="session")
+def templates_service(system_service):
+    return system_service.templates_service()
+
+
+@pytest.fixture(scope="session")
 def vms_service(system_service):
     return system_service.vms_service()
 

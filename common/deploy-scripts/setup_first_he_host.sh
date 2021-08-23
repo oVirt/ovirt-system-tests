@@ -34,11 +34,24 @@ EOF
 
 }
 
+copy_cirros_image() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/copy_cirros_image.yml
+---
+- name: Copy cirros image to HE VM
+  copy:
+    src: /var/tmp/cirros.img
+    dest: /var/tmp/cirros.img
+EOF
+
+}
+
 add_he_to_hosts() {
     echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 }
 
 copy_ssh_key
+
+copy_cirros_image
 
 add_he_to_hosts
 

@@ -11,3 +11,4 @@
         security_group: Default
         protocol: icmp
         remote_ip_prefix: "{{ source_ip }}"
+        ethertype: "{{ ether_type }}"

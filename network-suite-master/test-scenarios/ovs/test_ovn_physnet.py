@@ -35,9 +35,7 @@ from testlib import shade_hack
 from testlib import suite
 
 
-IP_ICMP_HEADER_SIZE = 28
-MTU = 1000
-MAX_ICMP_DATA_SIZE = MTU - IP_ICMP_HEADER_SIZE
+MTU = 1500
 VNIC0_NAME = 'vnic0'
 VNIC_INTERNAL = 'vnic-internal'
 VM0_NAME = 'test_ovn_physnet_vm_0'
@@ -95,11 +93,15 @@ def vnic_attached_to_ovn_network(system, vm_in_ovs_cluster_down,
 
 
 @pytest.fixture(scope='module')
-def vm_in_ovn_network_up(system, vm_in_ovs_cluster_down,
-                         vnic_attached_to_ovn_network):
+def vm_in_ovn_network_up(system, vm_in_ovs_cluster_down, serial_console,
+                         vnic_attached_to_ovn_network, target):
     vm_in_ovs_cluster_down.run_once(cloud_init_hostname=VM0_NAME)
     vm_in_ovs_cluster_down.wait_for_up_status()
     joblib.AllJobs(system).wait_for_done()
+    if suite.af().is6:
+        serial_console.add_static_ip(
+            vm_in_ovs_cluster_down.id, f'{target}/64', 'eth0'
+        )
     yield vm_in_ovs_cluster_down
 
 
@@ -116,6 +118,18 @@ def host_not_in_ovs_cluster(host_in_ovs_cluster, host_0, host_1):
                 if candidate.id != host_in_ovs_cluster.id)
 
 
+@pytest.fixture(scope='module')
+def target(host_in_ovs_cluster):
+    if suite.af().is6:
+        return (
+            f'fd8f:1391:3a82:'
+            f'{host_in_ovs_cluster.address.split(":")[3]}'
+            f'::cafe:cafe'
+        )
+    else:
+        return VM0_NAME
+
+
 def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
                                               ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(vm_in_ovs_cluster_down)
@@ -126,20 +140,26 @@ def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
 @suite.xfail_suite_43('BZ 1817589')
 def test_connect_vm_to_external_physnet(system, ovs_cluster,
                                         ssh_host_not_in_ovs_cluster,
-                                        vm_in_ovn_network_up):
+                                        vm_in_ovn_network_up, target):
     syncutil.sync(exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
-                  exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
+                  exec_func_args=(target, _max_icmp_data_size()),
                   success_criteria=lambda success: success)
 
 
 @suite.xfail_suite_43('BZ 1817589')
 def test_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
-                      ovn_physnet_small_mtu, vm_in_ovn_network_up):
+                      ovn_physnet_small_mtu, vm_in_ovn_network_up, target):
     syncutil.sync(exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
-                  exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
+                  exec_func_args=(target, _max_icmp_data_size()),
                   success_criteria=lambda success: success)
-    ssh_host_not_in_ovs_cluster.assert_no_ping(VM0_NAME,
-                                               MAX_ICMP_DATA_SIZE + 1)
+
+
+@suite.xfail_suite_43('BZ 1817589')
+def test_over_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
+                           ovn_physnet_small_mtu, vm_in_ovn_network_up,
+                           target):
+    ssh_host_not_in_ovs_cluster.assert_no_ping(target,
+                                               _max_icmp_data_size() + 1)
 
 
 @suite.skip_suites_below('4.3')
@@ -150,20 +170,21 @@ def test_security_groups_allow_icmp(system, ovs_cluster,
                                     default_ovn_provider_client,
                                     ovn_physnet_small_mtu,
                                     vm_in_ovn_network_up,
-                                    vnic_attached_to_ovn_network):
+                                    vnic_attached_to_ovn_network,
+                                    target):
     syncutil.sync(exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
-                  exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
+                  exec_func_args=(target, _max_icmp_data_size()),
                   success_criteria=lambda success: success)
 
     with _enable_port_security(vnic_attached_to_ovn_network,
                                default_ovn_provider_client):
-        ssh_host_not_in_ovs_cluster.assert_no_ping(VM0_NAME,
-                                                   MAX_ICMP_DATA_SIZE)
+        ssh_host_not_in_ovs_cluster.assert_no_ping(target,
+                                                   _max_icmp_data_size())
 
         with _allow_icmp_from_host(host_not_in_ovs_cluster):
             syncutil.sync(
                 exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
-                exec_func_args=(VM0_NAME, MAX_ICMP_DATA_SIZE),
+                exec_func_args=(target, _max_icmp_data_size()),
                 success_criteria=lambda success: success)
 
 
@@ -224,7 +245,8 @@ def _provision_icmp_rule(source_ip, action):
         playbook_path,
         extra_vars={
             'source_ip': source_ip,
-            'cloud_name': 'ovirt'
+            'cloud_name': 'ovirt',
+            'ether_type': f'IPv{suite.af().version}'
         }
     )
     playbook.run()
@@ -257,3 +279,12 @@ def _build_update_physnet_port_security_payload(physical_network_name,
             'provider:network_type': 'flat'
         }
     }
+
+
+def _max_icmp_data_size():
+    icmp_header_size = 8
+    ip_header_size = {
+        'inet': 20,
+        'inet6': 40
+    }
+    return MTU - icmp_header_size - ip_header_size[suite.af().family]

@@ -26,8 +26,9 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(ansible_engine, engine_ip, engine_answer_file_path,
-                           root_dir, ssh_key_file):
+def test_initialize_engine(
+    ansible_engine, engine_ip, engine_answer_file_path, root_dir, ssh_key_file
+):
     engine_setup(
         ansible_engine,
         engine_ip,

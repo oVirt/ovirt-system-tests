@@ -34,6 +34,7 @@ from ost_utils.pytest.fixtures.backend import host1_hostname
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
 
 from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
+from ost_utils.pytest.fixtures.defaults import hostnames_to_add
 
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts

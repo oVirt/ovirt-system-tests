@@ -19,11 +19,10 @@
 #
 
 from ost_utils.ansible.collection import CollectionMapper, infra
-from ost_utils.pytest.fixtures.defaults import hostnames_to_add  # noqa: F401
 from ost_utils.storage_utils import lun
 
 
-def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # noqa: F811, E501
+def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):
     infra(
         ansible_engine=ansible_engine,
         engine_fqdn="localhost",
@@ -70,8 +69,9 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # n
                         "myname": 'myvalue',
                     },
                     "order": 0,
-                }
-            } for host in hostnames_to_add
+                },
+            }
+            for host in hostnames_to_add
         ],
         storages={
             "nfs": {
@@ -80,28 +80,28 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # n
                 "nfs": {
                     "address": engine_storage_ips[0],
                     "path": "/exports/nfs/share1",
-                }
+                },
             },
             "second-nfs": {
                 "state": "present",
                 "nfs": {
                     "address": engine_storage_ips[0],
                     "path": "/exports/nfs/share2",
-                }
+                },
             },
             "templates": {
                 "domain_function": "export",
                 "nfs": {
                     "address": engine_storage_ips[0],
                     "path": "/exports/nfs/exported",
-                }
+                },
             },
             "iso": {
                 "domain_function": "iso",
                 "nfs": {
                     "address": engine_storage_ips[0],
                     "path": "/exports/nfs/iso",
-                }
+                },
             },
             "iscsi": {
                 "iscsi": {
@@ -112,7 +112,7 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # n
                     "password": "password",
                     "lun_id": lun.get_uuids(ansible_engine)[:2],
                 }
-            }
+            },
         },
         logical_networks=[
             {
@@ -129,7 +129,7 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # n
                         "display": False,
                         "gluster": False,
                     }
-                ]
+                ],
             }
         ],
         mac_pools=[
@@ -139,7 +139,7 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # n
                     "02:00:00:00:00:00,02:00:00:01:00:00",
                 ],
             }
-        ]
+        ],
     )
 
     collection = CollectionMapper(ansible_engine)
@@ -151,21 +151,15 @@ def test_ansible_run(ansible_engine, hostnames_to_add, engine_storage_ips):  # n
         insecure="true",
     )['ansible_facts']['ovirt_auth']
 
-    collection.ovirt_host_info(
-        auth=ovirt_auth,
-        pattern="name=*"
-    )
+    collection.ovirt_host_info(auth=ovirt_auth, pattern="name=*")
 
     collection.ovirt_vm(
         auth=ovirt_auth,
         name="rhel",
         cluster="test-cluster",
         memory="1GiB",
-        cloud_init={
-            "user_name": 'root',
-            'root_password': 'super_password'
-        },
-        cloud_init_persist="true"
+        cloud_init={"user_name": 'root', 'root_password': 'super_password'},
+        cloud_init_persist="true",
     )
 
     # Revoke the SSO token

@@ -18,8 +18,6 @@
 # Refer to the README and COPYING files for full details of the license
 #
 
-import os
-
 from ost_utils.ansible.collection import engine_setup
 
 
@@ -28,16 +26,12 @@ def test_check_ansible_connectivity(ansible_engine, ansible_hosts):
     ansible_hosts.ping()
 
 
-def test_initialize_engine(ansible_engine, engine_ip, root_dir, ssh_key_file):
+def test_initialize_engine(ansible_engine, engine_ip, engine_answer_file_path,
+                           root_dir, ssh_key_file):
     engine_setup(
         ansible_engine,
         engine_ip,
-        answer_file_path=os.path.join(
-            root_dir,
-            'common',
-            'answer-files',
-            'engine-answer-file.conf'
-        ),
+        answer_file_path=engine_answer_file_path,
         ssh_key_path=ssh_key_file,
         ovirt_engine_setup_offline='true',
     )

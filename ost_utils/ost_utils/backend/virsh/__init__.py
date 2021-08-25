@@ -56,11 +56,10 @@ class VirshBackend(base.BaseBackend):
             for nic_name, nic_info in vm_info.nics.items():
                 network_name = nic_info.network_info.name
                 ip_list = networks.setdefault(network_name, [])
-                # TODO: prefer ipv6 over ipv4 once it works
-                if nic_info.ip4_dhcp_entry is not None:
-                    ip_list.append(nic_info.ip4_dhcp_entry.ip)
-                elif nic_info.ip6_dhcp_entry is not None:
+                if nic_info.ip6_dhcp_entry is not None:
                     ip_list.append(nic_info.ip6_dhcp_entry.ip)
+                elif nic_info.ip4_dhcp_entry is not None:
+                    ip_list.append(nic_info.ip4_dhcp_entry.ip)
 
         return mapping
 

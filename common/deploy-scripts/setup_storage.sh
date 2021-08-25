@@ -75,7 +75,7 @@ setup_iscsi() {
     else
         NIC=eth1
     fi
-    IP=$(/sbin/ip -o addr show dev $NIC scope global | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
+    IP=$(/sbin/ip -o addr show dev $NIC scope global | tac | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
 
     pvcreate --zero n /dev/${ISCSI_DEV}
     vgcreate --zero n vg1_storage /dev/${ISCSI_DEV}

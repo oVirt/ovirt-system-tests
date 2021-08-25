@@ -47,9 +47,11 @@ def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
 def _pod(hub_port, podman_cmd):
     network_backend = os.getenv('PODMAN_NETWORK_BACKEND')
     if network_backend is None:
-        network_backend_options = []
+        network_backend_options = ["--network=slirp4netns:enable_ipv6=true"]
     else:
-        network_backend_options = [f"--network={network_backend}"]
+        network_backend_options = [
+            f"--network={network_backend}:enable_ipv6=true"
+        ]
     name = shell(
         [
             podman_cmd,

@@ -109,7 +109,14 @@ def _hub(image, hub_port, pod_name, podman_cmd):
 # (we're using debug images which run VNC server) to some unique
 # values.
 @contextlib.contextmanager
-def _nodes(images, hub_port, pod_name, engine_dns_entry, podman_cmd):
+def _nodes(
+    images,
+    hub_port,
+    pod_name,
+    engine_dns_entry,
+    podman_cmd,
+    ui_artifacts_dir,
+):
     nodes_dict = {}
 
     for image in images:
@@ -142,14 +149,23 @@ def _nodes(images, hub_port, pod_name, engine_dns_entry, podman_cmd):
     try:
         yield nodes_dict
     finally:
+        log_dir_path = os.path.join(ui_artifacts_dir, 'selenium_grid_nodes')
+        os.makedirs(log_dir_path, exist_ok=True)
         for node_dict in nodes_dict.values():
+            save_node_logs(log_dir_path, node_dict, podman_cmd)
             shell([podman_cmd, "rm", "-f", node_dict['name']])
 
 
+def save_node_logs(dir_path, node_dict, podman_cmd):
+    file_path = os.path.join(dir_path, node_dict['name'] + '.log')
+    with open(file_path, "w", encoding='UTF8') as node_log_file:
+        node_log_file.write(shell([podman_cmd, "logs", node_dict['name']]))
+
+
 @contextlib.contextmanager
-def _video_recorders(pod_name, podman_cmd, nodes_dict, videos_artifacts_dir):
+def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
     videos = []
-    if videos_artifacts_dir is not None:
+    if ui_artifacts_dir is not None:
         for image, values in nodes_dict.items():
             video = shell(
                 [
@@ -157,7 +173,7 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, videos_artifacts_dir):
                     "run",
                     "-d",
                     "-v",
-                    f"{videos_artifacts_dir}:/videos:Z",
+                    f"{ui_artifacts_dir}:/videos:Z",
                     "-e",
                     f"DISPLAY_CONTAINER_NAME={' '}",
                     "-e",
@@ -188,7 +204,7 @@ def _grid(
     hub_image,
     hub_port,
     podman_cmd,
-    videos_artifacts_dir,
+    ui_artifacts_dir,
 ):
     if node_images is None:
         node_images = [CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE]
@@ -204,12 +220,13 @@ def _grid(
                     pod_name,
                     engine_dns_entry,
                     podman_cmd,
+                    ui_artifacts_dir,
                 ) as nodes_dict:
                     node_names = [
                         node_dict['name'] for node_dict in nodes_dict.values()
                     ]
                     with _video_recorders(
-                        pod_name, podman_cmd, nodes_dict, videos_artifacts_dir
+                        pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
                     ) as videos_names:
                         url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
                         try:
@@ -234,7 +251,7 @@ def grid(
     hub_image=HUB_CONTAINER_IMAGE,
     retries=GRID_STARTUP_RETRIES,
     podman_cmd="podman",
-    videos_artifacts_dir=None,
+    ui_artifacts_dir=None,
 ):
     for attempt in range(retries):
         hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT + 100)
@@ -249,7 +266,7 @@ def grid(
                 hub_image,
                 hub_port,
                 podman_cmd,
-                videos_artifacts_dir,
+                ui_artifacts_dir,
             ) as url:
                 LOGGER.debug(f"Grid is up: {url}")
                 yield url

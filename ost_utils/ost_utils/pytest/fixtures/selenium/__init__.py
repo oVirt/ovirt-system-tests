@@ -67,12 +67,12 @@ def hub_url(engine_fqdn, engine_ip, selenium_artifacts_dir):
     else:
         backend = _grid_backend()
         if backend == "podman" or backend == "podman-remote":
-            videos_artifacts_dir = selenium_artifacts_dir
+            ui_artifacts_dir = selenium_artifacts_dir
             with podman.grid(
                 engine_fqdn,
                 engine_ip,
                 podman_cmd=backend,
-                videos_artifacts_dir=videos_artifacts_dir,
+                ui_artifacts_dir=ui_artifacts_dir,
             ) as hub_url:
                 yield hub_url
         elif backend == "docker":

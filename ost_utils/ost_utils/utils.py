@@ -36,7 +36,7 @@ def _ret_via_queue(func, queue):
         LOGGER.debug(
             'Error while running thread %s',
             threading.current_thread().name,
-            exc_info=True
+            exc_info=True,
         )
         queue.put({'exception': sys.exc_info()})
 

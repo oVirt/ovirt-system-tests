@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ class memoized:
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
     '''
+
     def __init__(self, func):
         self.func = func
         self.cache = {}

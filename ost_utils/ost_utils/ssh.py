@@ -55,10 +55,7 @@ def ssh(
         channel.send(data)
     channel.shutdown_write()
     return_code, out, err = drain_ssh_channel(
-        channel, **(show_output and {} or {
-            'stdout': None,
-            'stderr': None
-        })
+        channel, **(show_output and {} or {'stdout': None, 'stderr': None})
     )
     channel.close()
     transport.close()
@@ -210,7 +207,9 @@ def get_ssh_client(
 
     start_time = time.time()
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy(), )
+    client.set_missing_host_key_policy(
+        paramiko.AutoAddPolicy(),
+    )
     while ssh_tries > 0:
         try:
             client.connect(
@@ -245,8 +244,8 @@ def get_ssh_client(
     else:
         end_time = time.time()
         raise OSTSSHTimeoutException(
-            'Timed out (in %d s) trying to ssh to %s' %
-            (end_time - start_time, host_name)
+            'Timed out (in %d s) trying to ssh to %s'
+            % (end_time - start_time, host_name)
         )
     return client
 

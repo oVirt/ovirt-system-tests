@@ -38,8 +38,9 @@ def get_nics_service(engine, vm_name):
 def get_network_fiter_parameters_service(engine, vm_name):
     nics_service = get_nics_service(engine, vm_name)
     nic = nics_service.list()[0]
-    return nics_service.nic_service(id=nic.id)\
-        .network_filter_parameters_service()
+    return nics_service.nic_service(
+        id=nic.id
+    ).network_filter_parameters_service()
 
 
 @memoized
@@ -104,8 +105,10 @@ def get_storage_domain_vm_service_by_query(sd_service, vm_name, query=None):
     vms_service = sd_service.vms_service()
     # StorageDomainVmsService.list has no 'search' parameter and ignores
     # query={'name': 'spam'} so we have to do the filtering ourselves
-    vm = next((vm for vm in vms_service.list(query=query)
-               if vm.name == vm_name), None)
+    vm = next(
+        (vm for vm in vms_service.list(query=query) if vm.name == vm_name),
+        None,
+    )
     if vm is None:
         return None
     else:
@@ -116,8 +119,9 @@ def get_storage_domain_disk_service_by_name(sd_service, disk_name):
     disks_service = sd_service.disks_service()
     # StorageDomainDisksService.list has no 'search' parameter and ignores
     # query={'name': 'spam'} so we have to do the filtering ourselves
-    disk = next((disk for disk in disks_service.list()
-                 if disk.name == disk_name), None)
+    disk = next(
+        (disk for disk in disks_service.list() if disk.name == disk_name), None
+    )
     if disk is None:
         return None
     else:
@@ -153,9 +157,14 @@ def get_vm_snapshots_service(engine, vm_name):
 
 def get_snapshot(engine, vm_name, description):
     snapshots_service = get_vm_snapshots_service(engine, vm_name)
-    return next((snap for snap in snapshots_service.list()
-                 if snap.description == description),
-                None)
+    return next(
+        (
+            snap
+            for snap in snapshots_service.list()
+            if snap.description == description
+        ),
+        None,
+    )
 
 
 def quote_search_string(s):
@@ -166,7 +175,8 @@ def quote_search_string(s):
     # are able to be passed with enclosing quotation marks.
     if '"' in s:
         raise ValueError(
-            'Quotation marks currently can not be appear in search phrases')
+            'Quotation marks currently can not be appear in search phrases'
+        )
     return '"' + s + '"'
 
 
@@ -188,12 +198,7 @@ def all_jobs_finished(engine, correlation_id):
 
 
 def assert_finished_within(
-    func,
-    engine,
-    timeout,
-    allowed_exceptions=None,
-    *args,
-    **kwargs
+    func, engine, timeout, allowed_exceptions=None, *args, **kwargs
 ):
 
     if 'query' in kwargs:
@@ -206,13 +211,12 @@ def assert_finished_within(
 
     assertions.assert_true_within(
         lambda: all_jobs_finished(engine, kwargs['query']['correlation_id']),
-        timeout
+        timeout,
     )
 
 
 assert_finished_within_long = functools.partial(
-    assert_finished_within,
-    timeout=assertions.LONG_TIMEOUT
+    assert_finished_within, timeout=assertions.LONG_TIMEOUT
 )
 
 
@@ -226,13 +230,18 @@ def get_attached_storage_domain(data_center, name, service=False):
     # AttachedStorageDomainsService.list doesn't have the 'search' parameter
     # (StorageDomainsService.list does but this helper is overloaded)
     sd = next(sd for sd in storage_domains_service.list() if sd.name == name)
-    return storage_domains_service.storage_domain_service(
-        sd.id) if service else sd
+    return (
+        storage_domains_service.storage_domain_service(sd.id)
+        if service
+        else sd
+    )
 
 
-def get_attached_storage_domain_disk_service(attached_storage, name,
-                                             query=None):
+def get_attached_storage_domain_disk_service(
+    attached_storage, name, query=None
+):
     disks_service = attached_storage.disks_service()
-    disk = next(disk for disk in disks_service.list(query=query)
-                if disk.name == name)
+    disk = next(
+        disk for disk in disks_service.list(query=query) if disk.name == name
+    )
     return disks_service.disk_service(disk.id)

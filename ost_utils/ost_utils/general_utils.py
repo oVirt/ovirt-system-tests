@@ -1,5 +1,5 @@
 #
-# Copyright 2014 Red Hat, Inc.
+# Copyright 2014-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,8 +25,12 @@ logger = logging.getLogger(__name__)
 
 
 def exponential_retrier(
-        attempts=5, base_coefficient=10, max_iteration_sleeptime=300,
-        base=2, sleep_at_first_attempt=False):
+    attempts=5,
+    base_coefficient=10,
+    max_iteration_sleeptime=300,
+    base=2,
+    sleep_at_first_attempt=False,
+):
 
     """
     A generator function that sleeps between retries. Each iteration we sleep
@@ -52,17 +56,20 @@ def exponential_retrier(
         attempt_num += 1
     for attempt_num in range(attempt_num, attempts):
         actual_sleeptime = min(
-            base_coefficient * base ** attempt_num,
-            max_iteration_sleeptime)
+            base_coefficient * base ** attempt_num, max_iteration_sleeptime
+        )
         logger.debug(
-            "attempt {}/{}, {} seconds sleeping".
-            format(attempt_num + 1, attempts, actual_sleeptime))
+            "attempt {}/{}, {} seconds sleeping".format(
+                attempt_num + 1, attempts, actual_sleeptime
+            )
+        )
         time.sleep(actual_sleeptime)
         yield actual_sleeptime
 
 
 def linear_retrier(
-        attempts=5, iteration_sleeptime=10, sleep_at_first_attempt=False):
+    attempts=5, iteration_sleeptime=10, sleep_at_first_attempt=False
+):
 
     """
     A generator function that sleeps between retries
@@ -76,9 +83,12 @@ def linear_retrier(
             defaults to False
     """
     return exponential_retrier(
-        attempts, iteration_sleeptime,
-        max_iteration_sleeptime=iteration_sleeptime, base=1,
-        sleep_at_first_attempt=False)
+        attempts,
+        iteration_sleeptime,
+        max_iteration_sleeptime=iteration_sleeptime,
+        base=1,
+        sleep_at_first_attempt=False,
+    )
 
 
 def main():
@@ -87,7 +97,8 @@ def main():
         logger.debug(sleep_time)
     logger.debug("exponential")
     for sleep_time in exponential_retrier(
-            attempts=5, base_coefficient=1, max_iteration_sleeptime=200):
+        attempts=5, base_coefficient=1, max_iteration_sleeptime=200
+    ):
         logger.debug(sleep_time)
 
 

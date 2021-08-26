@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ import subprocess
 
 
 class ShellError(Exception):
-
     def __init__(self, code, out, err):
         self.code = code
         self.out = out
@@ -35,10 +34,9 @@ class ShellError(Exception):
 
 
 def shell(args, bytes_output=False, **kwargs):
-    process = subprocess.Popen(args,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               **kwargs)
+    process = subprocess.Popen(
+        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+    )
     out, err = process.communicate()
 
     if not bytes_output:

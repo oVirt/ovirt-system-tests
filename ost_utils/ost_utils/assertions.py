@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,8 +29,12 @@ LONG_TIMEOUT = 10 * 60
 
 
 def assert_equals_within(
-    func, value, timeout, allowed_exceptions=None, initial_wait=10,
-    error_message=None
+    func,
+    value,
+    timeout,
+    allowed_exceptions=None,
+    initial_wait=10,
+    error_message=None,
 ):
     allowed_exceptions = allowed_exceptions or []
     res = '<no-result-obtained>'
@@ -61,17 +65,20 @@ def assert_equals_within(
     # unbound throughout the function, resulting in an UnboundLocalError.
     except UnboundLocalError:
         raise AssertionError(
-            '%s failed to evaluate after %s seconds' %
-            (func.__name__, timeout)
+            '%s failed to evaluate after %s seconds' % (func.__name__, timeout)
         )
 
 
-def assert_equals_within_short(func, value, allowed_exceptions=None,
-                               error_message=None):
+def assert_equals_within_short(
+    func, value, allowed_exceptions=None, error_message=None
+):
     allowed_exceptions = allowed_exceptions or []
     assert_equals_within(
-        func, value, SHORT_TIMEOUT, allowed_exceptions=allowed_exceptions,
-        error_message=error_message
+        func,
+        value,
+        SHORT_TIMEOUT,
+        allowed_exceptions=allowed_exceptions,
+        error_message=error_message,
     )
 
 
@@ -86,10 +93,12 @@ def assert_true_within(func, timeout, allowed_exceptions=None):
     assert_equals_within(func, True, timeout, allowed_exceptions)
 
 
-def assert_true_within_short(func, allowed_exceptions=None,
-                             error_message=None):
-    assert_equals_within_short(func, True, allowed_exceptions,
-                               error_message=error_message)
+def assert_true_within_short(
+    func, allowed_exceptions=None, error_message=None
+):
+    assert_equals_within_short(
+        func, True, allowed_exceptions, error_message=error_message
+    )
 
 
 def assert_true_within_long(func, allowed_exceptions=None):

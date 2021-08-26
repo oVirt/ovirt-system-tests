@@ -39,9 +39,10 @@ def wait_for_event(engine, event_id, timeout=assertions.LONG_TIMEOUT):
             event_id = [event_id]
         for e_id in event_id:
             assertions.assert_true_within(
-               lambda:
-               any(e.code == e_id for e in events.list(from_=last_event)),
-               timeout
+                lambda: any(
+                    e.code == e_id for e in events.list(from_=last_event)
+                ),
+                timeout,
             )
 
 

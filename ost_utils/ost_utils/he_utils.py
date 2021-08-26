@@ -30,8 +30,9 @@ def he_status(ansible_host):
 
     def get_value():
         nonlocal ret
-        ansible_res = ansible_host.shell(
-            'hosted-engine --vm-status --json')['stdout']
+        ansible_res = ansible_host.shell('hosted-engine --vm-status --json')[
+            'stdout'
+        ]
         try:
             status = json.loads(ansible_res)
         except ValueError:
@@ -62,7 +63,7 @@ def he_status(ansible_host):
 
     assertions.assert_true_within_short(
         lambda: bool(get_value()),
-        allowed_exceptions=[RuntimeError, AnsibleExecutionError]
+        allowed_exceptions=[RuntimeError, AnsibleExecutionError],
     )
     return ret
 
@@ -85,9 +86,11 @@ def host_names_not_running_he_vm(ansible_host):
     The host needs to be part of the cluster already.
     """
     status = he_status(ansible_host)
-    names = [host_data['hostname']
-             for host_data in status['hosts'].values()
-             if host_data['engine-status']['vm'] != 'up']
+    names = [
+        host_data['hostname']
+        for host_data in status['hosts'].values()
+        if host_data['engine-status']['vm'] != 'up'
+    ]
     if not names:
         raise RuntimeError('There is no host without Hosted Engine up')
     return names
@@ -110,6 +113,7 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
     True - set maintenance mode to global
     False - set maintenance mode to none
     """
+
     def _set_and_test_global_maintenance_mode():
         logging.debug('_set_and_test_global_maintenance_mode: Start')
         ansible_host.shell(
@@ -127,8 +131,7 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
 def _get_hosts_states(ansible_host):
     status = he_status(ansible_host)
     return set(
-        host_data['extra']['state']
-        for host_data in status['hosts'].values()
+        host_data['extra']['state'] for host_data in status['hosts'].values()
     )
 
 

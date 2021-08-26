@@ -44,8 +44,9 @@ output=/dev/shm
 def setup_log_collector(
     ansible_engine, engine_password, engine_fqdn, engine_full_username
 ):
-    local_tmp = ansible_engine.tempfile(
-        path='/dev/shm', state='directory')['path']
+    local_tmp = ansible_engine.tempfile(path='/dev/shm', state='directory')[
+        'path'
+    ]
     ansible_engine.copy(
         dest='/root/ovirt-log-collector.conf',
         content=LOG_COLLECTOR.format(
@@ -59,28 +60,27 @@ def setup_log_collector(
 
 def configure_metrics(suite_dir, ansible_engine, ansible_hosts):
     """
-     configure the setup for metrics collection. Essentially collectd and
-     fluentd on each host and the engine. The engine will be also the central
-     fluentd and will write to file, instead of ElasticSearch, and that will be
-     an exported artifact of the suite.
+    configure the setup for metrics collection. Essentially collectd and
+    fluentd on each host and the engine. The engine will be also the central
+    fluentd and will write to file, instead of ElasticSearch, and that will be
+    an exported artifact of the suite.
     """
 
     # Use ovirt-engine-metrics to configure collectd + fluentd
     configyml = os.path.join(
         suite_dir,
-        '../common/test-scenarios-files/metrics_bootstrap/config.yml'
+        '../common/test-scenarios-files/metrics_bootstrap/config.yml',
     )
     ansible_engine.copy(src=configyml, dest='/etc/ovirt-engine-metrics/')
 
     ansible_engine.shell(
-      '/usr/share/ovirt-engine-metrics/configure_ovirt_machines_for_metrics.sh'
+        '/usr/share/ovirt-engine-metrics/configure_ovirt_machines_for_metrics.sh'
     )
 
     # Configure the engine-vm as the fluentd aggregator
     if 'OST_FLUENTD_AGGREGATOR' in os.environ:
         metrics_bootstrap = os.path.join(
-            suite_dir,
-            '../common/test-scenarios-files/metrics_bootstrap'
+            suite_dir, '../common/test-scenarios-files/metrics_bootstrap'
         )
         ansible_engine.copy(src=metrics_bootstrap, dest='/root/')
 
@@ -118,8 +118,9 @@ def test_metrics_and_log_collector(
 ):
     vt = utils.VectorThread(
         [
-            functools.partial(configure_metrics, suite_dir, ansible_engine,
-                              ansible_hosts),
+            functools.partial(
+                configure_metrics, suite_dir, ansible_engine, ansible_hosts
+            ),
             functools.partial(run_log_collector, ansible_engine),
         ],
     )

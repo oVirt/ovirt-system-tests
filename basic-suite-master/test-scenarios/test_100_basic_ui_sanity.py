@@ -115,6 +115,9 @@ def firefox_capabilities():
     capabilities['acceptInsecureCerts'] = True
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1538486
     capabilities['moz:useNonSpecCompliantPointerOrigin'] = True
+    options = webdriver.FirefoxOptions()
+    options.set_preference('devtools.console.stdout.content', True)
+    capabilities.update(options.to_capabilities())
     return capabilities
 
 

@@ -1,11 +1,5 @@
 #!/bin/bash -xe
 
-# TODO ugly hack until vdsm works on RHEL 8.5
-if [[ $(uname -r | cut -d- -f2 | cut -d. -f1) -ge 337 ]]; then
-sed -i "285c\                        'version': mi['version']," /usr/lib/python3.6/site-packages/vdsm/osinfo.py
-sed -i "286c\                        'release': mi['release']," /usr/lib/python3.6/site-packages/vdsm/osinfo.py
-fi
-
 # Only on ovirt-node
 if [[ $(which nodectl) ]]; then
     nodectl check

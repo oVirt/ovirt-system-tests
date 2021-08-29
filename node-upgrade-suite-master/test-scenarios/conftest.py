@@ -46,8 +46,8 @@ def sd_iscsi_host_ips(engine_storage_ips):  # pylint: disable=function-redefined
 
 
 @pytest.fixture(scope="session")
-def sd_nfs_host_storage_ip(engine_storage_ips):  # pylint: disable=function-redefined
-    return engine_storage_ips[0]
+def sd_nfs_host_storage_name(engine_hostname):  # pylint: disable=function-redefined
+    return engine_hostname
 
 
 @pytest.fixture(scope="session")

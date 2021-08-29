@@ -83,10 +83,10 @@ def sd_iscsi_host_ips(
 
 
 @pytest.fixture(scope="session")
-def sd_nfs_host_storage_ip(
-    engine_storage_ips,
+def sd_nfs_host_storage_name(
+    engine_hostname,
 ):  # pylint: disable=function-redefined
-    return network_utils.ip_to_url(engine_storage_ips[0])
+    return engine_hostname
 
 
 @pytest.fixture(scope="session")

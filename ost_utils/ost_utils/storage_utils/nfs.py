@@ -27,7 +27,7 @@ def add_domain(
     engine_api,
     sd_nfs_name,
     sd_nfs_host,
-    sd_nfs_host_storage_ip,
+    sd_nfs_host_storage_name,
     mount_path,
     dc_name,
     sd_format='v4',
@@ -59,7 +59,7 @@ def add_domain(
         host=sd_nfs_host,
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.NFS,
-            address=sd_nfs_host_storage_ip,
+            address=sd_nfs_host_storage_name,
             path=mount_path,
             nfs_version=nfs_vers,
         ),

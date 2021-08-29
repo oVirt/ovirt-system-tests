@@ -476,15 +476,15 @@ def test_add_iscsi_master_storage_domain(
 @order_by(_TEST_LIST)
 @pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
 def test_add_nfs_master_storage_domain(
-    engine_api, hosts_service, sd_nfs_host_storage_ip, ost_dc_name
+    engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name
 ):
     add_nfs_storage_domain(
-        engine_api, hosts_service, sd_nfs_host_storage_ip, ost_dc_name
+        engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name
     )
 
 
 def add_nfs_storage_domain(
-    engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name
+    engine_api, hosts_service, sd_nfs_host_storage_name, dc_name
 ):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
@@ -493,7 +493,7 @@ def add_nfs_storage_domain(
         engine_api,
         SD_NFS_NAME,
         random_host,
-        sd_nfs_host_storage_ip,
+        sd_nfs_host_storage_name,
         SD_NFS_PATH,
         dc_name,
         nfs_version='v4_2',
@@ -502,7 +502,7 @@ def add_nfs_storage_domain(
 
 # TODO: add this over the storage network and with IPv6
 def add_second_nfs_storage_domain(
-    engine_api, hosts_service, sd_nfs_host_storage_ip, dc_name
+    engine_api, hosts_service, sd_nfs_host_storage_name, dc_name
 ):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
     LOGGER.debug('random host: {}'.format(random_host.name))
@@ -511,7 +511,7 @@ def add_second_nfs_storage_domain(
         engine_api,
         SD_SECOND_NFS_NAME,
         random_host,
-        sd_nfs_host_storage_ip,
+        sd_nfs_host_storage_name,
         SD_SECOND_NFS_PATH,
         dc_name,
     )
@@ -521,7 +521,7 @@ def add_second_nfs_storage_domain(
 def test_add_secondary_storage_domains(
     engine_api,
     hosts_service,
-    sd_nfs_host_storage_ip,
+    sd_nfs_host_storage_name,
     sd_iscsi_host_luns,
     ost_dc_name,
 ):
@@ -532,26 +532,26 @@ def test_add_secondary_storage_domains(
                     add_nfs_storage_domain,
                     engine_api,
                     hosts_service,
-                    sd_nfs_host_storage_ip,
+                    sd_nfs_host_storage_name,
                     ost_dc_name,
                 ),
                 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
                 # Bug-Url: http://bugzilla.redhat.com/1463263
                 #                functools.partial(add_iso_storage_domain, engine_api,
-                #                                  hosts_service, sd_nfs_host_storage_ip,
+                #                                  hosts_service, sd_nfs_host_storage_name,
                 #                                  ost_dc_name),
                 functools.partial(
                     add_templates_storage_domain,
                     engine_api,
                     hosts_service,
-                    sd_nfs_host_storage_ip,
+                    sd_nfs_host_storage_name,
                     ost_dc_name,
                 ),
                 functools.partial(
                     add_second_nfs_storage_domain,
                     engine_api,
                     hosts_service,
-                    sd_nfs_host_storage_ip,
+                    sd_nfs_host_storage_name,
                     ost_dc_name,
                 ),
             ],
@@ -569,20 +569,20 @@ def test_add_secondary_storage_domains(
                 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures
                 # Bug-Url: http://bugzilla.redhat.com/1463263
                 #                functools.partial(add_iso_storage_domain, engine_api,
-                #                                  hosts_service, sd_nfs_host_storage_ip,
+                #                                  hosts_service, sd_nfs_host_storage_name,
                 #                                  ost_dc_name),
                 functools.partial(
                     add_templates_storage_domain,
                     engine_api,
                     hosts_service,
-                    sd_nfs_host_storage_ip,
+                    sd_nfs_host_storage_name,
                     ost_dc_name,
                 ),
                 functools.partial(
                     add_second_nfs_storage_domain,
                     engine_api,
                     hosts_service,
-                    sd_nfs_host_storage_ip,
+                    sd_nfs_host_storage_name,
                     ost_dc_name,
                 ),
             ],

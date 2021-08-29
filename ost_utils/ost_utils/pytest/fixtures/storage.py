@@ -42,8 +42,8 @@ def sd_iscsi_host_ips():
 
 
 @pytest.fixture(scope="session")
-def sd_nfs_host_storage_ip():
-    return 'Please override sd_nfs_host_storage_ip'
+def sd_nfs_host_storage_name():
+    return 'Please override sd_nfs_host_storage_name'
 
 
 @pytest.fixture(scope="session")

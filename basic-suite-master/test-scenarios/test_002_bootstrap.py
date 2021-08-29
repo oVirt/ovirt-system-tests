@@ -1141,7 +1141,6 @@ def test_get_host_numa_nodes(hosts_service, ost_dc_name):
     nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
     # TODO: Do a better check on the result nodes struct.
     # The below is too simplistic.
-    pytest.skip(' [2018-02-08] test itself identified as possibly faulty')
     assert nodes[0].index == 0
     assert len(nodes) > 1
 

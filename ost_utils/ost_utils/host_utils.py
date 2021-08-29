@@ -160,11 +160,17 @@ def _detect_problematic_hosts(hosts_service, dc_name):
         types.HostStatus.NON_RESPONSIVE,
         types.HostStatus.UP,
     }
-    problematic_hosts = [
-        host
-        for host in _all_hosts(hosts_service, dc_name)
-        if host.status not in expected_statuses
-    ]
+    statuses = {
+        h.name: h.status
+        for h in _all_hosts(hosts_service, dc_name)
+    }
+    LOGGER.debug(f'_detect_problematic_hosts: {statuses}')
+    problematic_hosts = {
+        hname: status
+        for hname, status in statuses.items()
+        if status not in expected_statuses
+    }
     if len(problematic_hosts):
-        statuses = {h: h.status for h in problematic_hosts}
-        raise RuntimeError(f'Some hosts failed installation: {statuses}')
+        raise RuntimeError(
+            f'Some hosts failed installation: {problematic_hosts}'
+        )

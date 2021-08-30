@@ -60,8 +60,9 @@ from ost_utils.shell import shell
 LOGGER = logging.getLogger(__name__)
 
 BROWSER_PLATFORM = 'LINUX'
-WINDOW_WIDTH = 1680
-WINDOW_HEIGHT = 1050
+# width and height of selenium containers
+WINDOW_WIDTH = 1360
+WINDOW_HEIGHT = 1020
 
 
 def test_secure_connection_should_fail_without_root_ca(

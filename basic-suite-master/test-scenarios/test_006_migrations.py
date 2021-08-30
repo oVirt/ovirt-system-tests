@@ -24,7 +24,14 @@ import ipaddress
 import json
 import logging
 
-from ovirtsdk4.types import Host, NetworkUsage, VmStatus, Cluster, MigrationOptions, MigrationPolicy
+from ovirtsdk4.types import (
+    Host,
+    NetworkUsage,
+    VmStatus,
+    Cluster,
+    MigrationOptions,
+    MigrationPolicy,
+)
 
 import pytest
 from ost_utils import assertions
@@ -51,7 +58,7 @@ MIGRATION_NETWORK_IPv6_MASK = '64'
 VM0_NAME = 'vm0'
 
 # Migration policy UUIDs are hard-coded
-MIGRATION_POLICY_POSTCOPY='a7aeedb2-8d66-4e51-bb22-32595027ce71'
+MIGRATION_POLICY_POSTCOPY = 'a7aeedb2-8d66-4e51-bb22-32595027ce71'
 
 
 @pytest.fixture(scope="session")
@@ -68,11 +75,16 @@ def all_hosts_hostnames(system_service):
 @pytest.fixture(scope="module")
 def prepare_migration_vlan(system_service):
     assert network_utils.set_network_usages_in_cluster(
-        system_service, MIGRATION_NETWORK, CLUSTER_NAME, [NetworkUsage.MIGRATION])
+        system_service,
+        MIGRATION_NETWORK,
+        CLUSTER_NAME,
+        [NetworkUsage.MIGRATION],
+    )
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
     assert network_utils.set_network_mtu(
-        system_service, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
+        system_service, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU
+    )
 
 
 def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
@@ -82,8 +94,7 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
 
     def _current_running_host():
         host_id = vm_service.get().host.id
-        host = hosts_service.list(
-            search='id={}'.format(host_id))[0]
+        host = hosts_service.list(search='id={}'.format(host_id))[0]
         return host.name
 
     src_host = _current_running_host()
@@ -93,9 +104,7 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
     LOGGER.debug('destination host: {}'.format(dst_host))
 
     test_utils.assert_finished_within_long(
-        vm_service.migrate,
-        system_service,
-        host=Host(name=dst_host)
+        vm_service.migrate, system_service, host=Host(name=dst_host)
     )
 
     # Verify that VDSM cleaned the vm in the source host
@@ -118,24 +127,27 @@ def prepare_migration_attachments_ipv4(system_service):
     hosts_service = system_service.hosts_service()
 
     for index, host in enumerate(
-            test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME),
-            start=1):
+        test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME), start=1
+    ):
         host_service = hosts_service.host_service(id=host.id)
 
         ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
 
         ip_configuration = network_utils.create_static_ip_configuration(
-            ipv4_addr=ip_address,
-            ipv4_mask=MIGRATION_NETWORK_IPv4_MASK)
+            ipv4_addr=ip_address, ipv4_mask=MIGRATION_NETWORK_IPv4_MASK
+        )
 
         network_utils.attach_network_to_host(
-            host_service, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
+            host_service, NIC_NAME, MIGRATION_NETWORK, ip_configuration
+        )
 
-        actual_address = next(nic for nic in host_service.nics_service().list()
-                              if nic.name == VLAN200_IF_NAME).ip.address
-        assert (
-            ipaddress.ip_address(actual_address) ==
-            ipaddress.ip_address(ip_address)
+        actual_address = next(
+            nic
+            for nic in host_service.nics_service().list()
+            if nic.name == VLAN200_IF_NAME
+        ).ip.address
+        assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(
+            ip_address
         )
 
 
@@ -143,48 +155,59 @@ def prepare_migration_attachments_ipv6(system_service):
     hosts_service = system_service.hosts_service()
 
     for index, host in enumerate(
-            test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME),
-            start=1):
+        test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME), start=1
+    ):
         host_service = hosts_service.host_service(id=host.id)
 
         ip_address = MIGRATION_NETWORK_IPv6_ADDR.format(index)
 
         ip_configuration = network_utils.create_static_ip_configuration(
-            ipv6_addr=ip_address,
-            ipv6_mask=MIGRATION_NETWORK_IPv6_MASK)
+            ipv6_addr=ip_address, ipv6_mask=MIGRATION_NETWORK_IPv6_MASK
+        )
 
         network_utils.modify_ip_config(
-            system_service, host_service, MIGRATION_NETWORK, ip_configuration)
+            system_service, host_service, MIGRATION_NETWORK, ip_configuration
+        )
 
-        actual_address = next(nic for nic in host_service.nics_service().list()
-                              if nic.name == VLAN200_IF_NAME).ipv6.address
-        assert (
-            ipaddress.ip_address(actual_address) ==
-            ipaddress.ip_address(ip_address)
+        actual_address = next(
+            nic
+            for nic in host_service.nics_service().list()
+            if nic.name == VLAN200_IF_NAME
+        ).ipv6.address
+        assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(
+            ip_address
         )
 
 
 def set_postcopy_migration_policy(system_service):
-    cluster_service = test_utils.get_cluster_service(system_service, CLUSTER_NAME)
+    cluster_service = test_utils.get_cluster_service(
+        system_service, CLUSTER_NAME
+    )
     cluster_service.update(
         cluster=Cluster(
             migration=MigrationOptions(
-                policy=MigrationPolicy(
-                    id=MIGRATION_POLICY_POSTCOPY
-                )
+                policy=MigrationPolicy(id=MIGRATION_POLICY_POSTCOPY)
             )
         )
     )
 
 
-def test_ipv4_migration(all_hosts_hostnames, ansible_by_hostname, system_service,
-                        prepare_migration_vlan):
+def test_ipv4_migration(
+    all_hosts_hostnames,
+    ansible_by_hostname,
+    system_service,
+    prepare_migration_vlan,
+):
     prepare_migration_attachments_ipv4(system_service)
     migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service)
 
 
-def test_ipv6_migration(all_hosts_hostnames, ansible_by_hostname, system_service,
-                        prepare_migration_vlan):
+def test_ipv6_migration(
+    all_hosts_hostnames,
+    ansible_by_hostname,
+    system_service,
+    prepare_migration_vlan,
+):
     prepare_migration_attachments_ipv6(system_service)
     set_postcopy_migration_policy(system_service)
     migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service)

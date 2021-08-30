@@ -50,7 +50,9 @@ from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
 from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
 from ost_utils.selenium.page_objects.VmPortal import VmPortal
-from ost_utils.selenium.page_objects.GrafanaLoginScreen import GrafanaLoginScreen
+from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
+    GrafanaLoginScreen,
+)
 from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.selenium.grid import CHROME_VERSION
 from ost_utils.selenium.grid import FIREFOX_VERSION
@@ -69,26 +71,37 @@ def test_secure_connection_should_fail_without_root_ca(
     engine_fqdn, engine_ip_url, engine_webadmin_url
 ):
     with pytest.raises(ShellError) as e:
-        shell([
-            "curl", "-sS",
-            "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip_url),
-            engine_webadmin_url
-        ])
+        shell(
+            [
+                "curl",
+                "-sS",
+                "--resolve",
+                "{}:443:{}".format(engine_fqdn, engine_ip_url),
+                engine_webadmin_url,
+            ]
+        )
 
     # message is different in el7 and el8 curl versions
-    assert "self signed certificate in certificate chain" in e.value.err or \
-        "not trusted by the user" in e.value.err
+    assert (
+        "self signed certificate in certificate chain" in e.value.err
+        or "not trusted by the user" in e.value.err
+    )
 
 
 def test_secure_connection_should_succeed_with_root_ca(
     engine_fqdn, engine_ip_url, engine_cert, engine_webadmin_url
 ):
-    shell([
-        "curl", "-sS",
-        "--resolve", "{}:443:{}".format(engine_fqdn, engine_ip_url),
-        "--cacert", engine_cert,
-        engine_webadmin_url
-    ])
+    shell(
+        [
+            "curl",
+            "-sS",
+            "--resolve",
+            "{}:443:{}".format(engine_fqdn, engine_ip_url),
+            "--cacert",
+            engine_cert,
+            engine_webadmin_url,
+        ]
+    )
 
 
 def test_add_grafana_user(grafana_admin_api, engine_email):
@@ -98,10 +111,12 @@ def test_add_grafana_user(grafana_admin_api, engine_email):
         "email":"{}",
         "login":"ost",
         "password":"ost12345"
-    }}'''.format(engine_email)
+    }}'''.format(
+        engine_email
+    )
     headers = {"Content-Type": 'application/json'}
 
-    response = requests.post(url, data=data,headers=headers)
+    response = requests.post(url, data=data, headers=headers)
 
     LOGGER.debug(response.text)
 
@@ -127,22 +142,16 @@ def chrome_capabilities():
     capabilities['platform'] = BROWSER_PLATFORM
     capabilities['version'] = CHROME_VERSION
     capabilities['acceptInsecureCerts'] = True
-    capabilities['goog:loggingPrefs'] = {'browser':'ALL'}
+    capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
     return capabilities
 
 
 @pytest.fixture(
     scope="session",
     params=[
-        pytest.param(
-            chrome_capabilities(),
-            id="chrome"
-        ),
-        pytest.param(
-            firefox_capabilities(),
-            id="firefox"
-        ),
-    ]
+        pytest.param(chrome_capabilities(), id="chrome"),
+        pytest.param(firefox_capabilities(), id="firefox"),
+    ],
 )
 def capabilities(request):
     return request.param
@@ -156,8 +165,7 @@ def browser_name(capabilities):
 @pytest.fixture(scope="session")
 def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
     driver = webdriver.Remote(
-        command_executor=hub_url,
-        desired_capabilities=capabilities
+        command_executor=hub_url, desired_capabilities=capabilities
     )
 
     ovirt_driver = Driver(driver)
@@ -180,7 +188,6 @@ def selenium_artifacts_dir(artifacts_dir):
 
 @pytest.fixture(scope="session")
 def selenium_artifact_filename(browser_name):
-
     def _selenium_artifact_filename(description, extension):
         date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         return "{}_{}_{}.{}".format(date, browser_name, description, extension)
@@ -189,41 +196,48 @@ def selenium_artifact_filename(browser_name):
 
 
 @pytest.fixture(scope="session")
-def selenium_artifact_full_path(selenium_artifacts_dir, selenium_artifact_filename):
-
+def selenium_artifact_full_path(
+    selenium_artifacts_dir, selenium_artifact_filename
+):
     def _selenium_artifact_full_path(description, extension):
         return os.path.join(
-                selenium_artifacts_dir,
-                selenium_artifact_filename(description, extension))
+            selenium_artifacts_dir,
+            selenium_artifact_filename(description, extension),
+        )
 
     return _selenium_artifact_full_path
 
 
 @pytest.fixture(scope="session")
 def save_screenshot(ovirt_driver, selenium_artifact_full_path):
-
     def save(description):
-        ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'))
+        ovirt_driver.save_screenshot(
+            selenium_artifact_full_path(description, 'png')
+        )
 
     return save
 
 
 @pytest.fixture(scope="session")
 def save_page_source(ovirt_driver, selenium_artifact_full_path):
-
     def save(description):
-        ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'))
+        ovirt_driver.save_page_source(
+            selenium_artifact_full_path(description, 'html')
+        )
 
     return save
+
 
 @pytest.fixture(scope="session")
 def save_console_log(ovirt_driver, selenium_artifact_full_path):
-
     def save(description):
-        if (ovirt_driver.driver.capabilities['browserName'] == 'chrome'):
-            ovirt_driver.save_console_log(selenium_artifact_full_path(description, 'txt'))
+        if ovirt_driver.driver.capabilities['browserName'] == 'chrome':
+            ovirt_driver.save_console_log(
+                selenium_artifact_full_path(description, 'txt')
+            )
 
     return save
+
 
 @pytest.fixture(scope="function", autouse=True)
 def after_test(request, save_screenshot, save_page_source, save_console_log):
@@ -246,14 +260,17 @@ def user_login(ovirt_driver):
         login_screen.set_user_name(username)
         login_screen.set_user_password(password)
         login_screen.login()
+
     return login
 
 
-def test_non_admin_login_to_webadmin(ovirt_driver,
-                                     nonadmin_username,
-                                     nonadmin_password,
-                                     engine_webadmin_url,
-                                     user_login):
+def test_non_admin_login_to_webadmin(
+    ovirt_driver,
+    nonadmin_username,
+    nonadmin_password,
+    engine_webadmin_url,
+    user_login,
+):
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
     welcome_screen.open_administration_portal()
@@ -265,8 +282,14 @@ def test_non_admin_login_to_webadmin(ovirt_driver,
     welcome_screen.logout()
     assert welcome_screen.is_user_logged_out()
 
-def test_login(ovirt_driver, save_screenshot,
-        engine_username, engine_password, engine_cert):
+
+def test_login(
+    ovirt_driver,
+    save_screenshot,
+    engine_username,
+    engine_password,
+    engine_cert,
+):
 
     save_screenshot('welcome-screen')
 
@@ -364,6 +387,7 @@ def test_pools(ovirt_driver):
     assert pool_list_view.is_edit_button_enabled() is False
     assert pool_list_view.is_remove_button_enabled() is False
 
+
 @pytest.fixture
 def setup_virtual_machines(engine_api):
     vm_service = test_utils.get_vm_service(engine_api.system_service(), 'vm0')
@@ -374,8 +398,9 @@ def setup_virtual_machines(engine_api):
         )
 
 
-def test_virtual_machines(ovirt_driver, setup_virtual_machines,
-        save_screenshot):
+def test_virtual_machines(
+    ovirt_driver, setup_virtual_machines, save_screenshot
+):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     vm_list_view = webadmin_menu.open_vm_list_view()
 
@@ -450,6 +475,7 @@ def test_virtual_machines(ovirt_driver, setup_virtual_machines,
     save_screenshot('vms-console')
 
     novnc_console.close()
+
 
 def test_storage_domains(ovirt_driver):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
@@ -535,8 +561,13 @@ def test_logout(ovirt_driver, engine_webadmin_url):
     assert welcome_screen.is_user_logged_out()
 
 
-def test_userportal(ovirt_driver, nonadmin_username, nonadmin_password,
-                    user_login, engine_webadmin_url):
+def test_userportal(
+    ovirt_driver,
+    nonadmin_username,
+    nonadmin_password,
+    user_login,
+    engine_webadmin_url,
+):
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
     welcome_screen.open_user_portal()
@@ -547,10 +578,7 @@ def test_userportal(ovirt_driver, nonadmin_username, nonadmin_password,
     vm_portal.wait_for_displayed()
 
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
-    assertions.assert_true_within_short(
-        lambda:
-        vm_portal.get_vm_count() is 1
-    )
+    assertions.assert_true_within_short(lambda: vm_portal.get_vm_count() is 1)
     vm0_status = vm_portal.get_vm_status('vm0')
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
     vm_portal.logout()
@@ -563,8 +591,14 @@ def test_userportal(ovirt_driver, nonadmin_username, nonadmin_password,
     assert welcome_screen.is_user_logged_out()
 
 
-def test_grafana(ovirt_driver, save_screenshot, engine_username,
-                 engine_password, engine_webadmin_url, user_login):
+def test_grafana(
+    ovirt_driver,
+    save_screenshot,
+    engine_username,
+    engine_password,
+    engine_webadmin_url,
+    user_login,
+):
 
     ovirt_driver.driver.get(engine_webadmin_url)
 
@@ -582,11 +616,15 @@ def test_grafana(ovirt_driver, save_screenshot, engine_username,
     grafana.wait_for_displayed()
     save_screenshot('grafana')
 
-    grafana.open_dashboard('oVirt Executive Dashboards', 'Data Center Dashboard')
+    grafana.open_dashboard(
+        'oVirt Executive Dashboards', 'Data Center Dashboard'
+    )
     assert not grafana.is_error_visible()
     save_screenshot('grafana-dashboard-1')
 
-    grafana.open_dashboard('oVirt Inventory Dashboards', 'Hosts Inventory Dashboard')
+    grafana.open_dashboard(
+        'oVirt Inventory Dashboards', 'Hosts Inventory Dashboard'
+    )
     assert not grafana.is_error_visible()
 
     save_screenshot('grafana-dashboard-2')

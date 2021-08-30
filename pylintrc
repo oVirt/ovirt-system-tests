@@ -1,8 +1,7 @@
 [MESSAGES CONTROL]
 
 # TODO: Reformat code so that most of these can be removed eventually
-disable=superfluous-parens,
-        too-many-statements,
+disable=too-many-statements,
         comparison-with-callable,
         lost-exception,
         keyword-arg-before-vararg,

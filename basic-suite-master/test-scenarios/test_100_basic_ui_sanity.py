@@ -67,6 +67,22 @@ WINDOW_WIDTH = 1360
 WINDOW_HEIGHT = 1020
 
 
+@pytest.fixture(scope="module", autouse=True)
+def disable_noisy_logging():
+    selenium_logger = logging.getLogger('selenium')
+    selenium_logger_level = selenium_logger.getEffectiveLevel()
+    selenium_logger.setLevel(logging.WARNING)
+
+    urllib3_logger = logging.getLogger('urllib3')
+    urllib3_logger_level = urllib3_logger.getEffectiveLevel()
+    urllib3_logger.setLevel(logging.WARNING)
+
+    yield
+
+    selenium_logger.setLevel(selenium_logger_level)
+    urllib3_logger.setLevel(urllib3_logger_level)
+
+
 def test_secure_connection_should_fail_without_root_ca(
     engine_fqdn, engine_ip_url, engine_webadmin_url
 ):

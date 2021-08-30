@@ -176,7 +176,7 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
     echo $SUBNET
     net_map[$NET_TYPE]="$SUBNET"
     _generate_network "$host_nics"
-    _render ${net_template} | virsh net-create /dev/stdin
+    _render ${net_template} | virsh net-create /dev/stdin || { echo "Network creation failed"; return 1; }
   done
   [[ -z "$management_net" ]] && { echo "no management network defined"; return 1; }
 
@@ -243,7 +243,7 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
 
     SERIALLOG="$PREFIX/logs/$VM_NAME"
     echo
-    _render ${vm_template} | virsh create /dev/stdin
+    _render ${vm_template} | virsh create /dev/stdin || { echo "VM creation failed"; return 1; }
 
     # generate ansible inventory line per host:
     # <VM name> ansible_host=<IP> ansible_ssh_private_key_file=<key_file>

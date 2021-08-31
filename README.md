@@ -75,13 +75,13 @@ Now, log in to the web-UI at:
 If you're running OST on a remote machine, you can tunnel a local
 port directly to the destination machine - from your local machine:
 ```
-    $ ssh -L 8443:192.168.200.2:443 USER@HOST_RUNNING_OST
+    $ sudo ssh -L 443:192.168.200.2:443 USER@HOST_RUNNING_OST
             ----  =================      ~~~~~~~~~~~~~~~~
             (*)   (**)                       (***)
 
     (*)   - The port on the local machine that the tunnel will be available at.
     (**)  - The machine IP, visible from the *host running OST* . This is were the traffic is tunneled to.
-            Usually 192.168.200.2 is the address of ovirt-engine
+            Usually 192.168.200.2 is the address of ovirt-engine, but you can check that with ./ost.sh status
     (***) - The host running OST which can reach the VMs network and will tunnel the connection.
 ```
 

@@ -78,6 +78,9 @@ def expand_jenkins_repos(custom_repos):
             new_url = f'{url}/artifact/{relative_path}'
             repo_list.add(new_url)
 
+        if len(repo_list) == 0:
+            raise RuntimeError(f"Couldn't find any repos at {repo_url}")
+
         expanded_repos.update(repo_list)
 
     return list(r for r in expanded_repos if 'ppc64le' not in r)

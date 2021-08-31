@@ -160,10 +160,7 @@ def _detect_problematic_hosts(hosts_service, dc_name):
         types.HostStatus.NON_RESPONSIVE,
         types.HostStatus.UP,
     }
-    statuses = {
-        h.name: h.status
-        for h in _all_hosts(hosts_service, dc_name)
-    }
+    statuses = {h.name: h.status for h in _all_hosts(hosts_service, dc_name)}
     LOGGER.debug(f'_detect_problematic_hosts: {statuses}')
     problematic_hosts = {
         hname: status

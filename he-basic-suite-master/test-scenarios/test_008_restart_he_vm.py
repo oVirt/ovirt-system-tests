@@ -1,5 +1,5 @@
 #
-# Copyright 2016-2020 Red Hat, Inc.
+# Copyright 2016-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -73,16 +73,21 @@ def _shutdown_he_vm(ansible_host):
 
 def _restart_services(ansible_host):
     logging.info('Stopping services...')
-    ansible_host.shell('systemctl stop vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent')
+    ansible_host.shell(
+        'systemctl stop vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent'
+    )
 
     logging.info('Starting services...')
-    ansible_host.shell('systemctl start vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent')
+    ansible_host.shell(
+        'systemctl start vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent'
+    )
 
     logging.info('Waiting for agent to be ready...')
     assertions.assert_true_within_long(
         lambda: _ha_agent_is_ready(ansible_host)
     )
     logging.info('Agent is ready.')
+
 
 def _ha_agent_is_ready(ansible_host):
     try:

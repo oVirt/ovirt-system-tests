@@ -61,23 +61,21 @@ def test_he_deploy(
     # not very nice. Better than duplicating whole file or symlinking though...
     if 'ssg' in suite:
         answer_file_src = os.path.join(
-            root_dir,
-            'common/answer-files/he-node-ng-ssg-suite-master.conf.in'
+            root_dir, 'common/answer-files/he-node-ng-ssg-suite-master.conf.in'
         )
     else:
         answer_file_src = os.path.join(
             root_dir,
-            'common/answer-files/hosted-engine-deploy-answers-file.conf.in'
+            'common/answer-files/hosted-engine-deploy-answers-file.conf.in',
         )
 
     ansible_host0.copy(
         src=answer_file_src,
-        dest='/root/hosted-engine-deploy-answers-file.conf.in'
+        dest='/root/hosted-engine-deploy-answers-file.conf.in',
     )
 
     setup_file_src = os.path.join(
-        root_dir,
-        'common/deploy-scripts/setup_first_he_host.sh'
+        root_dir, 'common/deploy-scripts/setup_first_he_host.sh'
     )
     ansible_host0.copy(src=setup_file_src, dest='/root/', mode='preserve')
 

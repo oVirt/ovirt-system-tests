@@ -20,6 +20,7 @@
 
 from contextlib import contextmanager
 import os
+import time
 
 import pytest
 
@@ -178,6 +179,7 @@ def test_security_groups_allow_icmp(system, ovs_cluster,
 
     with _enable_port_security(vnic_attached_to_ovn_network,
                                default_ovn_provider_client):
+        time.sleep(10)
         ssh_host_not_in_ovs_cluster.assert_no_ping(target,
                                                    _max_icmp_data_size())
 

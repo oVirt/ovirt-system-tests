@@ -108,7 +108,7 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
 
 @pytest.fixture(scope="session", autouse=True)
 def generate_sar_stat_plots(
-    collect_artifacts, all_hostnames, ansible_by_hostname, artifacts_dir
+    collect_artifacts, ansible_all, ansible_by_hostname, artifacts_dir
 ):
     def generate(hostname):
         ansible_handle = ansible_by_hostname(hostname)
@@ -123,7 +123,7 @@ def generate_sar_stat_plots(
                 'EICMP6,UDP6 -r ALL -u ALL -P ALL > /tmp/sarstat.svg'
             )
         except AnsibleExecutionError:
-            # HE does not have sarstat installed.
+            # sar error should not fail the run
             pass
         else:
             ansible_handle.fetch(
@@ -134,7 +134,8 @@ def generate_sar_stat_plots(
 
     yield
     calls = [
-        functools.partial(generate, hostname) for hostname in all_hostnames
+        functools.partial(generate, res['stdout'])
+        for res in ansible_all.shell("hostname").values()
     ]
     utils.invoke_different_funcs_in_parallel(*calls)
 

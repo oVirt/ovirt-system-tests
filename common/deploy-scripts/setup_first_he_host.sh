@@ -34,11 +34,23 @@ EOF
 
 }
 
+setup_sarstat() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/setup_sarstat.yml
+---
+- name: Install sysstat
+  yum:
+    name: sysstat
+    state: present
+EOF
+}
+
 add_he_to_hosts() {
     echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 }
 
 copy_ssh_key
+
+setup_sarstat
 
 add_he_to_hosts
 

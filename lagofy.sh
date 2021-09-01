@@ -335,7 +335,7 @@ _ost_run_tc () {
 
     local res=0
     local testcase=${@/#/$PWD/}
-    local junitxml_file="$PREFIX/${TC:-$SUITE}.junit.xml"
+    local junitxml_file="${OST_REPO_ROOT}/exported-artifacts/junit.xml"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
     PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" python3 -u -B -m pytest \
         -s \

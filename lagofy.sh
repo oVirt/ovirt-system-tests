@@ -1,13 +1,20 @@
 #!/bin/bash
 
 _deployment_exists() {
-  [[ -s "$PREFIX/uuid" ]] || { echo "no deployment"; return 1; }
+  [[ -d "$PREFIX" ]] || { echo "no deployment"; return 1; }
   return 0
 }
 
+_get_uuid() {
+  for i in $(virsh net-list --name | grep ^ost); do
+    [[ "$PREFIX" = "$(virsh net-dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:3:8}; return 0; }
+  done
+  return 1
+}
+
 ost_status() {
-  _deployment_exists || return 1
-  local uuid=$(cat $PREFIX/uuid)
+  _deployment_exists
+  _get_uuid || { echo "no resources running"; return 1; }
 
   declare -A nets
   for i in $(virsh net-list --name | grep ^ost${uuid}); do
@@ -22,7 +29,7 @@ ost_status() {
    echo "  $vm"
     vm_nets=$(virsh domiflist $vm_full | grep network | tr -s " " | cut -d " " -f 4)
     echo "   state: $(virsh domstate $vm_full 2>&1)"
-    echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>&1)"
+    echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>/dev/null || echo unknown)"
     echo -n "   NICs: "
     net_comma=""
     local idx=0
@@ -36,12 +43,12 @@ ost_status() {
 }
 
 ost_destroy() {
-  _deployment_exists || return 1
-  local uuid=$(cat $PREFIX/uuid)
-  [[ -n "$uuid" ]] || { echo "no UUID"; return 1; }
-  virsh net-list --name | grep ^ost${uuid} | xargs -rn1 virsh net-destroy
-  virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
-  rm -rf "$PREFIX"
+  _get_uuid
+  if [[ -n "$uuid" ]]; then
+    virsh net-list --name | grep ^ost${uuid} | xargs -rn1 virsh net-destroy
+    virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
+  fi
+  _deployment_exists && rm -rf "$PREFIX" && echo "removed $PREFIX"
   unset OST_INITIALIZED
 }
 
@@ -143,14 +150,15 @@ OST_IMAGES_DISTRO="${2:-el8stream}"
 echo "Suite: $SUITE, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
 . common/helpers/ost-images.sh
 
-[[ -e "$PREFIX" ]] && { echo "deployment already exists"; return 1; }
+[[ -e "$PREFIX" ]] && { echo "deployment already exists"; ost_status; return 1; }
+_get_uuid && { echo "no deployment dir but there is a running environment"; ost_status; return 1; }
 
 mkdir "$PREFIX"
 mkdir "$PREFIX/logs"
 mkdir "$PREFIX/images"
 chcon -t svirt_image_t "$PREFIX/images"
 
-# generate global 8 char UUID and persist
+# generate 8 char UUID common to all resources
 # VMs with name <uuid>-ost-<suite>-<vmname>
 UUID=$(uuidgen | cut -c -8)
 echo $UUID > "$PREFIX/uuid"
@@ -269,15 +277,14 @@ ost_shell() {
       [ -n "${ssh}" ] || { echo "$1 not running"; return 1; }
       eval ${ssh}
   else
-      local uuid=$(cat $PREFIX/uuid)
+      _get_uuid
       echo -e "ost_shell <host> [command ...]\n"
       virsh list --name | sed -n "/^${uuid}-ost/ s/${uuid}-//p"
   fi
 }
 
 ost_console() {
-  _deployment_exists || return 1
-  local uuid=$(cat $PREFIX/uuid)
+  _get_uuid || return 1
   if [[ -n "$1" ]]; then
     virsh console "${uuid}-$1" --devname console1
   else

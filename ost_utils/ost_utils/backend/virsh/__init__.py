@@ -19,7 +19,6 @@
 #
 
 import ipaddress
-import os
 import xml.etree.ElementTree as ET
 
 from collections import namedtuple
@@ -44,16 +43,13 @@ VMInfo = namedtuple("VMInfo", "name libvirt_name nics deploy_scripts")
 
 
 class VirshBackend(base.BaseBackend):
-    def __init__(self, prefix_path):
-        self._prefix_path = prefix_path
+    def __init__(self, deployment_path):
+        self._deployment_path = deployment_path
         self._ansible_inventory_str = None
 
-        with open(os.path.join(self._prefix_path, "uuid")) as uuid_file:
-            self._uuid = uuid_file.read().strip()
-
-        self._networks = self._get_networks(self._uuid)
+        self._networks = self._get_networks(self._deployment_path)
         networks = {n.libvirt_name: n for n in self._networks.values()}
-        self._vms = self._get_vms(self._uuid, networks)
+        self._vms = self._get_vms(self._deployment_path, networks)
 
     def iface_mapping(self):
         mapping = {}
@@ -85,7 +81,7 @@ class VirshBackend(base.BaseBackend):
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
             contents = shell(
-                ["cat", "hosts"], bytes_output=True, cwd=self._prefix_path
+                ["cat", "hosts"], bytes_output=True, cwd=self._deployment_path
             )
             self._ansible_inventory_str = contents
         return self._ansible_inventory_str
@@ -111,11 +107,11 @@ class VirshBackend(base.BaseBackend):
         return dhcp_entries
 
     @staticmethod
-    def _get_networks(uuid):
+    def _get_networks(deployment_path):
         libvirt_net_names = [
             name
             for name in shell("virsh net-list --name".split()).splitlines()
-            if uuid in name
+            if name.startswith("ost")
         ]
 
         networks = {}
@@ -125,11 +121,17 @@ class VirshBackend(base.BaseBackend):
             xml = ET.fromstring(xml_str)
 
             try:
-                ost_net_name = xml.find("./metadata[@comment]").get("comment")
-            except AttributeError:
-                ost_net_name = xml.find(
-                    "./metadata/{OST metadata}ost/ost-network-type[@comment]"
+                vm_working_dir = xml.find(
+                    "./metadata/{OST metadata}ost/ost-working-dir[@comment]"
                 ).get("comment")
+            except AttributeError:
+                continue
+            if vm_working_dir != deployment_path:
+                continue
+
+            ost_net_name = xml.find(
+                "./metadata/{OST metadata}ost/ost-network-type[@comment]"
+            ).get("comment")
 
             ip4_gw = None
             ip4_prefix = None
@@ -212,11 +214,11 @@ class VirshBackend(base.BaseBackend):
         return nics
 
     @staticmethod
-    def _get_vms(uuid, networks):
+    def _get_vms(deployment_path, networks):
         vm_names = [
             name
             for name in shell("virsh list --name".split()).splitlines()
-            if uuid in name
+            if name[8:13] == "-ost-"
         ]
 
         vms = {}
@@ -224,7 +226,17 @@ class VirshBackend(base.BaseBackend):
         for libvirt_name in vm_names:
             xml_str = shell(f"virsh dumpxml {libvirt_name}".split()).strip()
             xml = ET.fromstring(xml_str)
-            name = libvirt_name.replace(f"{uuid}-", "", 1)
+
+            try:
+                vm_working_dir = xml.find(
+                    "./metadata/{OST metadata}ost/ost-working-dir[@comment]"
+                ).get("comment")
+            except AttributeError:
+                continue
+            if vm_working_dir != deployment_path:
+                continue
+
+            name = libvirt_name[9:]
             deploy_scripts = [
                 node.get("name")
                 for node in xml.findall(

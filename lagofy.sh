@@ -11,7 +11,7 @@ ost_status() {
 
   declare -A nets
   for i in $(virsh net-list --name | grep ^ost${uuid}); do
-    nets[$i]=$(virsh net-dumpxml $i | grep "metadata comment" | cut -d \" -f 2)
+    nets[$i]=$(virsh net-dumpxml $i | egrep "(metadata|ost-network-type) comment" | cut -d \" -f 2)
   done
 
   echo "Networks:"

@@ -124,7 +124,12 @@ class VirshBackend(base.BaseBackend):
             xml_str = shell(f"virsh net-dumpxml {name}".split()).strip()
             xml = ET.fromstring(xml_str)
 
-            ost_net_name = xml.find("./metadata[@comment]").get("comment")
+            try:
+                ost_net_name = xml.find("./metadata[@comment]").get("comment")
+            except AttributeError:
+                ost_net_name = xml.find(
+                    "./metadata/{OST metadata}ost/ost-network-type[@comment]"
+                ).get("comment")
 
             ip4_gw = None
             ip4_prefix = None

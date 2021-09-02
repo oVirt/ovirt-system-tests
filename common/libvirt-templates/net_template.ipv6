@@ -1,5 +1,9 @@
 <network>
-  <metadata comment="@NET_TYPE@"/>
+  <metadata>
+    <ost:ost xmlns:ost="OST metadata">
+      <ost-network-type comment="@NET_TYPE@"/>
+    </ost:ost>
+  </metadata>
   <name>@NET_NAME@</name>
   <forward mode='nat'>
     <nat ipv6='yes'>

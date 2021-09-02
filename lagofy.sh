@@ -18,7 +18,7 @@ ost_status() {
 
   declare -A nets
   for i in $(virsh net-list --name | grep ^ost${uuid}); do
-    nets[$i]=$(virsh net-dumpxml $i | egrep "(metadata|ost-network-type) comment" | cut -d \" -f 2)
+    nets[$i]=$(virsh net-dumpxml $i | grep "ost-network-type comment" | cut -d \" -f 2)
   done
 
   echo "Networks:"
@@ -161,7 +161,6 @@ chcon -t svirt_image_t "$PREFIX/images"
 # generate 8 char UUID common to all resources
 # VMs with name <uuid>-ost-<suite>-<vmname>
 UUID=$(uuidgen | cut -c -8)
-echo $UUID > "$PREFIX/uuid"
 
 ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
 [[ -f "$ost_conf" ]] || { echo "no ost.conf in $SUITE"; return 1; }

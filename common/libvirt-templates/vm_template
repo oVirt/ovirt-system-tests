@@ -1,6 +1,7 @@
 <domain type='kvm'>
    <metadata>
     <ost:ost xmlns:ost="OST metadata">
+      <ost-working-dir comment="@PREFIX@"/>
       <ost-deploy-scripts>
         @DEPLOY_SCRIPTS@
       </ost-deploy-scripts>

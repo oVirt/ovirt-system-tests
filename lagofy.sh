@@ -94,6 +94,7 @@ ost_init() {
   _render() {
     sed "
       s|@UUID@|${UUID}|g;
+      s|@PREFIX@|${PREFIX}|g;
       s|@VM_FULLNAME@|${VM_FULLNAME}|g;
       s|@DEPLOY_SCRIPTS@|${DEPLOY_SCRIPTS}|g;
       s|@MEMSIZE@|${MEMSIZE}|g;

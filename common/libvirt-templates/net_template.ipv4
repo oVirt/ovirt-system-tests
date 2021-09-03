@@ -2,6 +2,7 @@
   <metadata>
     <ost:ost xmlns:ost="OST metadata">
       <ost-network-type comment="@NET_TYPE@"/>
+      <ost-working-dir comment="@PREFIX@"/>
     </ost:ost>
   </metadata>
   <name>@NET_NAME@</name>

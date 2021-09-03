@@ -1,7 +1,0 @@
-ci-tools,http://resources.ovirt.org/repos/ci-tools/el8
-tested-ovirt44,https://buildlogs.centos.org/centos/8/virt/x86_64/ovirt-44/
-sbonazzo-el8-collection,https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-$basearch/
-ost-stuff,https://download.copr.fedorainfracloud.org/results/tinez/ost-stuff/epel-8-$basearch/
-## epel - from python3-koji
-epel,http://mirrors.mit.edu/epel/8/Everything/x86_64/
-ost-images,http://nike15.rhev.lab.eng.brq.redhat.com/

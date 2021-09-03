@@ -1,2 +1,0 @@
-- name: 'PODMAN_NETWORK_BACKEND'
-  value: 'slirp4netns'

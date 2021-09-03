@@ -1,3 +1,0 @@
-/var/lib/lago
-/dev/shm
-/var/run/docker.sock:/var/run/docker.sock

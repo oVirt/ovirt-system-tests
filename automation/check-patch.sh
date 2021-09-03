@@ -42,26 +42,6 @@ collect_all_logs() {
         mv "$ARTIFACTS_DIR".tar.gz "$ARTIFACTS_DIR"
 }
 
-run_create_docs() {
-    local docs_dir_name="docs-out"
-
-    echo "Creating Docs"
-
-    [[ -d "$ARTIFACTS_DIR" ]] || mkdir "$ARTIFACTS_DIR"
-    source "${0%/*}/create-docs.sh"
-    create_docs.create_docs "${ARTIFACTS_DIR}/${docs_dir_name}"
-    # Generate html report
-    cat > "${ARTIFACTS_DIR}/index.html" <<EOF
-    <html>
-    <head>
-        <li>
-            <a href="${docs_dir_name}/index.html">Docs Page</a>
-        </li>
-    </head>
-    </html>
-EOF
-}
-
 on_exit() {
     collect_all_logs
 }
@@ -100,4 +80,3 @@ do
 
     collect_suite_logs "$suite"
 done
-run_create_docs

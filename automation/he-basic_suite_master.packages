@@ -1,1 +1,10 @@
-check-patch.packages
+ansible
+jq
+mercurial
+openssl
+ost-images-rhel8-he-installed
+ost-images-rhel8-host-installed
+podman
+python3-ansible-runner
+python3-ovirt-engine-sdk4
+python3-pip

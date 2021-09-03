@@ -1,5 +1,0 @@
-kvm-common-el7,http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
-lago,http://resources.ovirt.org/repos/lago/stable/0.0/rpm/$distro
-ovirt-master-tested,http://resources.ovirt.org/repos/ovirt/tested/master/rpm/$distro
-ci-tools,http://resources.ovirt.org/repos/ci-tools/$distro
-tested-ovirt44,https://buildlogs.centos.org/centos/7/virt/x86_64/ovirt-4.4/

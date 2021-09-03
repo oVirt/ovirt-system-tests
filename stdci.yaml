@@ -5,11 +5,6 @@ stage:
       substage:
         - basic_suite_master:
             distributions:
-              - el8:
-                  runtime-requirements:
-                    jenkins_master: upstream
-                    hostdistro: same
-                    support-nesting-level: 2
               - rhel8:
                   runtime-requirements:
                     jenkins_master: psi
@@ -17,18 +12,13 @@ stage:
                     hostdistro: same
         - he-basic_suite_master:
             distributions:
-              - el8:
+              - rhel8:
                   runtime-requirements:
-                    jenkins_master: upstream
-                    hostdistro: same
+                    jenkins_master: psi
                     support-nesting-level: 2
+                    hostdistro: same
         - network_suite_master:
             distributions:
-              - el8:
-                  runtime-requirements:
-                    jenkins_master: upstream
-                    hostdistro: same
-                    support-nesting-level: 2
               - rhel8:
                   runtime-requirements:
                     jenkins_master: psi
@@ -36,65 +26,35 @@ stage:
                     hostdistro: same
         - ansible_suite_master:
             distributions:
-             - el8:
-                 runtime-requirements:
-                   hostdistro: same
-                   support-nesting-level: 2
+              - rhel8:
+                  runtime-requirements:
+                    jenkins_master: psi
+                    support-nesting-level: 2
+                    hostdistro: same
         - tr_suite_master:
             distributions:
-              - el8:
+              - rhel8:
                   runtime-requirements:
-                    jenkins_master: upstream
-                    hostdistro: same
+                    jenkins_master: psi
                     support-nesting-level: 2
-        - node-upgrade_suite_master:
-            distributions:
-              - el8:
-                  runtime-requirements:
-                    jenkins_master: upstream
                     hostdistro: same
-                    support-nesting-level: 2
-        - test-ost-container:
-            runif:
-              filechanged: ['automation/test-ost-container*', 'run-ost-container.sh']
         - ost_core_change:
             distributions:
-             - el8:
+             - rhel8:
                  runtime-requirements:
-                   jenkins_master: upstream
+                   jenkins_master: psi
                    hostdistro: same
                    support-nesting-level: 2
             runif:
               # Any change that is not part of a suite
-              filechanged: ['run_suite.sh', 'automation/suite.sh']
+              filechanged: ['lagofy.sh', 'ost.sh', 'automation/suite.sh']
             script:
               fromfile: 'automation/basic_suite_master.sh'
-        - build_ovirtlib:
-            distributions:
-             - el8:
-                 runtime-requirements:
-                   jenkins_master: upstream
-                   hostdistro: same
-                   support-nesting-level: 2
-            runif:
-              filechanged:
-                - 'automation/build-artifacts*'
-                - 'network-suite-master/ovirtlib*'
-            script:
-              fromfile: 'automation/build-artifacts.sh'
       runif:
         filechanged:
           - '{{ substage|replace("_", "[_-]") }}*'
           - 'automation/{{ substage|replace("_", "[_-]") }}*'
       script:
         fromfile: 'automation/{{ substage }}.sh'
-  - build-artifacts:
-      distributions:
-          - el8
-      script:
-        fromfile: 'automation/build-artifacts.sh'
-runtime-requirements:
-  support-nesting-level: 2
-  isolation_level: container
 release-branches:
   master: ovirt-master

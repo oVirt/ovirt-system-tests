@@ -1,5 +1,0 @@
-/var/run/libvirt
-/var/run/podman
-/var/lib/libvirt/boot
-/var/lib/lago
-/dev/shm

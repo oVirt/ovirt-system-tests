@@ -1,4 +1,0 @@
-hostCount: 2
-system_requirements:
-  disk_space_gb: 15
-root_disk_path: "$LAGO_INITFILE_PATH/images/ovirt-ngn.qcow2"

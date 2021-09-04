@@ -131,6 +131,7 @@ def target(host_in_ovs_cluster):
         return VM0_NAME
 
 
+@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
                                               ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(vm_in_ovs_cluster_down)
@@ -138,6 +139,7 @@ def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down,
         vnic.create(name=VNIC_INTERNAL, vnic_profile=ovirtmgmt_vnic_profile)
 
 
+@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 @suite.xfail_suite_43('BZ 1817589')
 def test_connect_vm_to_external_physnet(system, ovs_cluster,
                                         ssh_host_not_in_ovs_cluster,
@@ -147,6 +149,7 @@ def test_connect_vm_to_external_physnet(system, ovs_cluster,
                   success_criteria=lambda success: success)
 
 
+@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 @suite.xfail_suite_43('BZ 1817589')
 def test_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
                       ovn_physnet_small_mtu, vm_in_ovn_network_up, target):
@@ -155,6 +158,7 @@ def test_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
                   success_criteria=lambda success: success)
 
 
+@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 @suite.xfail_suite_43('BZ 1817589')
 def test_over_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
                            ovn_physnet_small_mtu, vm_in_ovn_network_up,
@@ -163,6 +167,7 @@ def test_over_max_mtu_size(system, ovs_cluster, ssh_host_not_in_ovs_cluster,
                                                _max_icmp_data_size() + 1)
 
 
+@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 @suite.skip_suites_below('4.3')
 @suite.xfail_suite_43('BZ 1817589')
 def test_security_groups_allow_icmp(system, ovs_cluster,

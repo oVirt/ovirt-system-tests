@@ -42,14 +42,18 @@ def host1_facts(ansible_host1_facts):
 
 @pytest.fixture(scope="session", autouse=True)
 def ansible_clean_private_dirs():
-    yield
-    private_dir.PrivateDir.cleanup()
+    try:
+        yield
+    finally:
+        private_dir.PrivateDir.cleanup()
 
 
 @pytest.fixture(scope="session", autouse=True)
 def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
-    yield
-    ansible.LogsCollector.save(artifacts_dir)
+    try:
+        yield
+    finally:
+        ansible.LogsCollector.save(artifacts_dir)
 
 
 def _machine_facts(facts_dict):

@@ -25,6 +25,7 @@ import ovirtsdk4
 import pytest
 
 from testlib import address_family
+from ost_utils.memoized import memoized
 
 SUITE = os.environ['SUITE']
 SUITE_VERSION = SUITE.split('-')[-1]
@@ -39,6 +40,7 @@ def playbook_dir():
     return os.path.join(suite_dir(), 'ansible')
 
 
+@memoized
 def af():
     """
     The address family to use for all connections in the session.

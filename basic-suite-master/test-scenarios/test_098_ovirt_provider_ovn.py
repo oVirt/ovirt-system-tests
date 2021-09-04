@@ -404,6 +404,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 @versioning.require_version(4, 2)
 def test_use_ovn_provider(engine_api, engine_ip_url):
+    pytest.skip('broken by OVN upgrade')
     engine = engine_api.system_service()
     provider_id = network_utils.get_default_ovn_provider_id(engine)
 

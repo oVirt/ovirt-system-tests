@@ -143,14 +143,16 @@ class Network(SDKSubEntity):
         return self.system.networks_service.network_service(self.id)
 
     def __repr__(self):
-        return (
-            f'<Network| '
-            f'name:{self.name}, '
-            f'qos:{self.get_sdk_type().qos}, '
-            f'mtu:{self.get_sdk_type().mtu}, '
-            f'vlan:{self.get_sdk_type().vlan}, '
-            f'dc:{self._parent_sdk_entity}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'qos:{self.get_sdk_type().qos}, '
+                f'mtu:{self.get_sdk_type().mtu}, '
+                f'vlan:{self.get_sdk_type().vlan}, '
+                f'dc:{self._parent_sdk_entity}, '
+                f'id:{self.id}>'
+            )
         )
 
     @staticmethod
@@ -320,15 +322,17 @@ class Vnic(SDKSubEntity):
         self.service.update(sdk_nic)
 
     def __repr__(self):
-        return (
-            f'<Vnic| '
-            f'name:{self.name}, '
-            f'linked:{self.linked}, '
-            f'synced:{self.get_sdk_type().synced}, '
-            f'plugged:{self.get_sdk_type().plugged}, '
-            f'mac:{self.mac_address}, '
-            f'vm:{self._parent_sdk_entity}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'linked:{self.linked}, '
+                f'synced:{self.get_sdk_type().synced}, '
+                f'plugged:{self.get_sdk_type().plugged}, '
+                f'mac:{self.mac_address}, '
+                f'vm:{self._parent_sdk_entity}, '
+                f'id:{self.id}>'
+            )
         )
 
 

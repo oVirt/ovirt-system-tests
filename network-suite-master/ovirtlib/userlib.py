@@ -68,9 +68,11 @@ class User(SDKRootEntity):
         return system.users_service
 
     def __repr__(self):
-        return (
-            f'<User| '
-            f'name:{self.name}, '
-            f'has_keys:{bool(self.list_keys())}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'has_keys:{bool(self.list_keys())}, '
+                f'id:{self.id}>'
+            )
         )

@@ -102,6 +102,15 @@ class SDKEntity(metaclass=abc.ABCMeta):
             raise EntityAlreadyInitialized
         self._service = service
 
+    def _execute_without_raising(self, func):
+        try:
+            return func()
+        except Exception as e:
+            return (
+                f'<{self.__class__.__name__}, '
+                f'{func.__name__} failed with: {str(e)}>'
+            )
+
 
 class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):
     def __init__(self, parent_sdk_system):

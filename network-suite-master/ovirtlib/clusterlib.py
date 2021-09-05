@@ -194,12 +194,14 @@ class Cluster(SDKRootEntity):
             yield cluster
 
     def __repr__(self):
-        return (
-            f'<Cluster| '
-            f'name:{self.name}, '
-            f'switch:{self.network_switch_type}, '
-            f'host ids:{self.host_ids()}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'switch:{self.network_switch_type}, '
+                f'host ids:{self.host_ids()}, '
+                f'id:{self.id}>'
+            )
         )
 
 

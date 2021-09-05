@@ -240,7 +240,7 @@ class Node(object):
 
     def __repr__(self):
         return (
-            f'<Node| '
+            f'<{self.__class__.__name__}| '
             f'address:{self._address}, '
             f'username:{self._username},'
             f'password:{self._password}>'

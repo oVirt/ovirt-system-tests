@@ -284,14 +284,16 @@ class Vm(SDKRootEntity):
             yield vm
 
     def __repr__(self):
-        return (
-            f'<Vm| '
-            f'name:{self.name}, '
-            f'status:{self.status}, '
-            f'host:{self.host.name}, '
-            f'cluster:{self.cluster.name}, '
-            f'dc:{self._get_data_center().name}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'status:{self.status}, '
+                f'host:{self.host.name}, '
+                f'cluster:{self.cluster.name}, '
+                f'dc:{self._get_data_center().name}, '
+                f'id:{self.id}>'
+            )
         )
 
 

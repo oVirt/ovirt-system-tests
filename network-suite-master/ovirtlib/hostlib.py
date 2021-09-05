@@ -576,14 +576,16 @@ class Host(SDKRootEntity):
         return nics
 
     def __repr__(self):
-        return (
-            f'<Host| '
-            f'name:{self.name}, '
-            f'address:{self.address}, '
-            f'status:{self.status}, '
-            f'is_spm:{self.is_spm}, '
-            f'cluster:{self.get_cluster().name}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'address:{self.address}, '
+                f'status:{self.status}, '
+                f'is_spm:{self.is_spm}, '
+                f'cluster:{self.get_cluster().name}, '
+                f'id:{self.id}>'
+            )
         )
 
 

@@ -122,11 +122,13 @@ class DataCenter(SDKRootEntity):
             yield dc
 
     def __repr__(self):
-        return (
-            f'<Datacenter| '
-            f'name:{self.name} '
-            f'status:{self.status}, '
-            f'id:{self.id}>'
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name} '
+                f'status:{self.status}, '
+                f'id:{self.id}>'
+            )
         )
 
 

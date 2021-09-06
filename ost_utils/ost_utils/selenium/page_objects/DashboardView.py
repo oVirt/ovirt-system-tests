@@ -1,9 +1,8 @@
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
-from .WithNotifications import WithNotifications
 
 
-class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
+class DashboardView(Displayable, WithBreadcrumbs):
 
     DASHBOARD_IFRAME_SELECTOR = (
         '//iframe[@src="plugin/ui-extensions/dashboard.html"]'

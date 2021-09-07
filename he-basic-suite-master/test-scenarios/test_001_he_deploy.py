@@ -89,23 +89,5 @@ def test_he_deploy(
     ansible_storage.shell('fstrim -va')
 
 
-def test_config_he_sar_interval(root_dir, ansible_engine):
-    ansible_engine.file(
-        path='/etc/systemd/system/sysstat-collect.timer.d',
-        state='directory',
-    )
-    sar_stat_src_dir = os.path.join(root_dir, 'common/sar_stat')
-    ansible_engine.copy(
-        src=os.path.join(sar_stat_src_dir, 'override.conf'),
-        dest='/etc/systemd/system/sysstat-collect.timer.d',
-    )
-    ansible_engine.systemd(
-        daemon_reload='yes',
-        name='sysstat-collect.timer',
-        state='started',
-        enabled='yes',
-    )
-
-
 def test_add_engine_to_artifacts(artifacts, he_host_name, artifact_list):
     artifacts[he_host_name] = artifact_list

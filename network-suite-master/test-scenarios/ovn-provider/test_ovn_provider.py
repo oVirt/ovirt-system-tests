@@ -56,12 +56,10 @@ class OvnNetwork(object):
         return self._subnet
 
 
-@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 def test_ovn_provider_create_scenario(openstack_client_config):
     _test_ovn_provider('create_scenario.yml')
 
 
-@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 def test_validate_ovn_provider_connectivity(default_ovn_provider_client,
                                             host_0, host_1, ovn_networks):
     net10, net11, net14 = ovn_networks
@@ -134,7 +132,6 @@ def _static_routes_request_data(router_name, nexthop, net10_subnet1,
     }}
 
 
-@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 def test_ovn_provider_cleanup_scenario(openstack_client_config):
     _test_ovn_provider('cleanup_scenario.yml')
 

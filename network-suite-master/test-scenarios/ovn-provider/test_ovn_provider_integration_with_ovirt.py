@@ -61,7 +61,6 @@ def running_vm_0(ovirt_external_network, system, default_cluster,
         yield vm_0
 
 
-@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 def test_connect_vm_to_external_network(running_vm_0,
                                         default_ovn_provider_client):
     vm0_vnic_0 = running_vm_0.get_vnic(VNIC0_NAME)
@@ -74,7 +73,6 @@ def test_connect_vm_to_external_network(running_vm_0,
     assert vm0_vnic_0.mac_address == ovn_port.mac_address
 
 
-@suite.xfail_suite_master('ovn 2.15 upgrade not complete')
 @suite.skip_suites_below('4.3')
 def test_modify_vnic_sec_groups_on_ext_networks(running_vm_0, system,
                                                 ovirt_external_network,

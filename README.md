@@ -104,7 +104,7 @@ without import errors you should also have ovirtdsk4 and ansible-runner installe
 
 Running linting tests:
 ```
-tox -e flake8,pylint,black
+tox -e flake8,pylint,black,broken-symlinks
 ```
 
 or `ost_linters` lagofy function.

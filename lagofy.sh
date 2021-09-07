@@ -331,7 +331,7 @@ ost_check_dependencies() {
 
 ost_linters() {
     echo "Running linters..."
-    python3 -m tox -q -e flake8,pylint,black
+    python3 -m tox -q -e flake8,pylint,black,broken-symlinks
 }
 
 # $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py

@@ -158,6 +158,7 @@ def _detect_problematic_hosts(hosts_service, dc_name):
         types.HostStatus.INITIALIZING,
         types.HostStatus.REBOOT,
         types.HostStatus.NON_RESPONSIVE,
+        types.HostStatus.CONNECTING,
         types.HostStatus.UP,
     }
     statuses = {h.name: h.status for h in _all_hosts(hosts_service, dc_name)}

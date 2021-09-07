@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Red Hat, Inc.
+# Copyright 2020-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,8 +50,10 @@ def af():
     try:
         version = os.environ['IP_VERSION']
         if version not in ['4', '6']:
-            LOGGER.warning(f'suite invoked with unsupported version '
-                           f'"{version}". using version {default_ip_version}')
+            LOGGER.warning(
+                f'suite invoked with unsupported version '
+                f'"{version}". using version {default_ip_version}'
+            )
             version = default_ip_version
     except KeyError:
         version = default_ip_version
@@ -60,19 +62,17 @@ def af():
 
 def xfail_suite_master(reason, raises=None):
     return pytest.mark.xfail(
-            condition=SUITE.endswith('master'),
-            reason=reason,
-            raises=raises,
-            run=False
-            )
+        condition=SUITE.endswith('master'),
+        reason=reason,
+        raises=raises,
+        run=False,
+    )
 
 
 def xfail_suite_43(reason):
     return pytest.mark.xfail(
-            condition=SUITE.endswith('4.3'),
-            reason=reason,
-            run=False
-            )
+        condition=SUITE.endswith('4.3'), reason=reason, run=False
+    )
 
 
 def skip_suites_below(version):

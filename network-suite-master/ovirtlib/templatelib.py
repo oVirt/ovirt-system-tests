@@ -44,14 +44,17 @@ def wait_for_template_ok_status(system, template_name):
     syncutil.sync(
         exec_func=_get_template,
         exec_func_args=(system.templates_service, template_name),
-        success_criteria=_check_template
+        success_criteria=_check_template,
     )
 
 
 def _get_template(templates_service, template_name):
     try:
-        return next(template for template in templates_service.list()
-                    if template.name == template_name)
+        return next(
+            template
+            for template in templates_service.list()
+            if template.name == template_name
+        )
     except StopIteration:
         return None
 

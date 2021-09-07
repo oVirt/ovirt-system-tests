@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2020 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ from ovirtlib.sdkentity import SDKRootEntity
 
 
 class DataCenter(SDKRootEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -50,7 +49,8 @@ class DataCenter(SDKRootEntity):
         syncutil.sync(
             exec_func=self.deactivate_storage_domain,
             exec_func_args=(sd,),
-            error_criteria=error.sd_deactivation_error_not_due_to_busy)
+            error_criteria=error.sd_deactivation_error_not_due_to_busy,
+        )
 
     def list_qos(self):
         qos_entities = []
@@ -73,8 +73,9 @@ class DataCenter(SDKRootEntity):
         self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.ACTIVE)
 
     def wait_for_sd_maintenance_status(self, sd):
-        self._wait_for_sd_status(sd,
-                                 storagelib.StorageDomainStatus.MAINTENANCE)
+        self._wait_for_sd_status(
+            sd, storagelib.StorageDomainStatus.MAINTENANCE
+        )
 
     def create(self, dc_name):
         sdk_type = types.DataCenter(name=dc_name)
@@ -90,18 +91,22 @@ class DataCenter(SDKRootEntity):
 
     def _wait_for_sd_status(self, sd, status):
         sd_service = self._sd_service(sd)
-        syncutil.sync(exec_func=lambda: sd_service.get().status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s == status)
+        syncutil.sync(
+            exec_func=lambda: sd_service.get().status,
+            exec_func_args=(),
+            success_criteria=lambda s: s == status,
+        )
 
     def _sd_service(self, sd):
         return self._service.storage_domains_service().service(sd.id)
 
     def _wait_for_status(self, status):
-        syncutil.sync(exec_func=lambda: self.status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s == status,
-                      timeout=60 * 5)
+        syncutil.sync(
+            exec_func=lambda: self.status,
+            exec_func_args=(),
+            success_criteria=lambda s: s == status,
+            timeout=60 * 5,
+        )
 
     @staticmethod
     def iterate(system, search=None):

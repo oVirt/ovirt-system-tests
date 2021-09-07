@@ -1,4 +1,4 @@
-# Copyright 2019-2020 Red Hat, Inc.
+# Copyright 2019-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,9 +26,7 @@ class IpVersion(object):
 
 
 class IpAssignment(object):
-
-    def __init__(self, version, addr, mask, gateway=None,
-                 boot_protocol=None):
+    def __init__(self, version, addr, mask, gateway=None, boot_protocol=None):
         self._ip = types.Ip(addr, gateway, mask, version)
         self._boot_protocol = boot_protocol
 
@@ -54,7 +52,6 @@ class IpAssignment(object):
 
 
 class StaticIpv4Assignment(IpAssignment):
-
     def __init__(self, addr, mask, gateway=None, version=IpVersion.V4):
         super(StaticIpv4Assignment, self).__init__(
             version, addr, mask, gateway, types.BootProtocol.STATIC
@@ -62,7 +59,6 @@ class StaticIpv4Assignment(IpAssignment):
 
 
 class StaticIpv6Assignment(IpAssignment):
-
     def __init__(self, addr, prefix, gateway=None, version=IpVersion.V6):
         super(StaticIpv6Assignment, self).__init__(
             version, addr, prefix, gateway, types.BootProtocol.STATIC
@@ -77,16 +73,13 @@ IPV4_DHCP = IpAssignment(
 IPV6_POLY_DHCP_AUTOCONF = IpAssignment(
     IpVersion.V6, None, None, None, types.BootProtocol.POLY_DHCP_AUTOCONF
 )
-DYNAMIC_IP_ASSIGN = {
-    'inet': IPV4_DHCP,
-    'inet6': IPV6_POLY_DHCP_AUTOCONF
-}
+DYNAMIC_IP_ASSIGN = {'inet': IPV4_DHCP, 'inet6': IPV6_POLY_DHCP_AUTOCONF}
 
 
 class NetworkAttachmentData(object):
-
-    def __init__(self, network, nic_name, ip_assignments=(), id=None,
-                 in_sync=True):
+    def __init__(
+        self, network, nic_name, ip_assignments=(), id=None, in_sync=True
+    ):
         self._network = network
         self._nic_name = nic_name
         self._ip_assignments = ip_assignments
@@ -114,8 +107,14 @@ class NetworkAttachmentData(object):
         return self._in_sync
 
     def get_gw6(self):
-        return next((a.gateway for a in self._ip_assignments
-                     if a.version == types.IpVersion.V6), None)
+        return next(
+            (
+                a.gateway
+                for a in self._ip_assignments
+                if a.version == types.IpVersion.V6
+            ),
+            None,
+        )
 
     def to_network_attachment(self):
         """
@@ -124,7 +123,7 @@ class NetworkAttachmentData(object):
         """
         attachment = types.NetworkAttachment(
             network=self.network.get_sdk_type(),
-            host_nic=types.HostNic(name=self.nic_name)
+            host_nic=types.HostNic(name=self.nic_name),
         )
         attachment.ip_address_assignments = self._to_ip_address_assignments(
             self.ip_assignments
@@ -154,8 +153,8 @@ class NetworkAttachmentData(object):
                 address=ip_assignment.address,
                 netmask=ip_assignment.netmask,
                 gateway=ip_assignment.gateway,
-                version=ip_assignment.version
-            )
+                version=ip_assignment.version,
+            ),
         )
         return ip_address_assignment
 
@@ -174,8 +173,7 @@ class NetworkAttachmentData(object):
         """
         return [
             self._to_ip_assignment(ip_address_assignment)
-            for ip_address_assignment
-            in ip_address_assignments
+            for ip_address_assignment in ip_address_assignments
         ]
 
     def _to_ip_assignment(self, ip_address_assignment):
@@ -188,7 +186,7 @@ class NetworkAttachmentData(object):
             ip_address_assignment.ip.address,
             ip_address_assignment.ip.netmask,
             ip_address_assignment.ip.gateway,
-            ip_address_assignment.assignment_method
+            ip_address_assignment.assignment_method,
         )
 
     @staticmethod
@@ -204,7 +202,6 @@ class NetworkAttachmentData(object):
 
 
 class BondingData(object):
-
     def __init__(self, name, slave_names, options={}):
         self._name = name
         self._options = options
@@ -218,8 +215,9 @@ class BondingData(object):
         return types.HostNic(
             name=self._name,
             bonding=types.Bonding(
-                options=self._sdk_options(),
-                slaves=self._sdk_slaves()))
+                options=self._sdk_options(), slaves=self._sdk_slaves()
+            ),
+        )
 
     def _sdk_slaves(self):
         return [types.HostNic(name=name) for name in self._slave_names]
@@ -242,4 +240,5 @@ class BondingData(object):
 class ActiveSlaveBonding(BondingData):
     def __init__(self, name, slave_names):
         super(ActiveSlaveBonding, self).__init__(
-            name, slave_names, {'mode': '1'})
+            name, slave_names, {'mode': '1'}
+        )

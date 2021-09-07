@@ -67,7 +67,6 @@ class SnapshotNotInPreviewError(Exception):
 
 
 class Vm(SDKRootEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -89,20 +88,27 @@ class Vm(SDKRootEntity):
         vm_definition = self._cloud_init_vm_definition(cloud_init_hostname)
         self._service.start(
             use_cloud_init=self._uses_cloud_init(vm_definition),
-            vm=vm_definition
+            vm=vm_definition,
         )
 
     def _cloud_init_vm_definition(self, cloud_init_hostname):
         if cloud_init_hostname:
-            return types.Vm(initialization=types.Initialization(
-                    cloud_init=types.CloudInit(host=types.Host(
-                        address=cloud_init_hostname))))
+            return types.Vm(
+                initialization=types.Initialization(
+                    cloud_init=types.CloudInit(
+                        host=types.Host(address=cloud_init_hostname)
+                    )
+                )
+            )
         else:
             return None
 
     def _uses_cloud_init(self, vm_definition):
-        return (vm_definition and vm_definition.initialization and
-                vm_definition.initialization.cloud_init is not None)
+        return (
+            vm_definition
+            and vm_definition.initialization
+            and vm_definition.initialization.cloud_init is not None
+        )
 
     def stop(self):
         VM_IS_NOT_RUNNING = 'VM is not running'
@@ -125,8 +131,11 @@ class Vm(SDKRootEntity):
 
     def create_snapshot(self, snapshot_desc=None):
         snapshot = VmSnapshot(self)
-        snapshot.create('snapshot_of_{}'.format(self.name)
-                        if snapshot_desc is None else snapshot_desc)
+        snapshot.create(
+            'snapshot_of_{}'.format(self.name)
+            if snapshot_desc is None
+            else snapshot_desc
+        )
         snapshot.wait_for_ready_status()
         return snapshot
 
@@ -138,9 +147,9 @@ class Vm(SDKRootEntity):
 
     def create_vnic(self, vnic_name, vnic_profile, mac_addr=None):
         vnic = netlib.Vnic(self)
-        vnic.create(name=vnic_name,
-                    vnic_profile=vnic_profile,
-                    mac_addr=mac_addr)
+        vnic.create(
+            name=vnic_name, vnic_profile=vnic_profile, mac_addr=mac_addr
+        )
         return vnic
 
     def get_vnic(self, vnic_name):
@@ -154,13 +163,18 @@ class Vm(SDKRootEntity):
             vnic.import_by_id(nic_service.id)
             yield vnic
 
-    def attach_disk(self, disk, interface=types.DiskInterface.VIRTIO,
-                    bootable=True, active=True):
+    def attach_disk(
+        self,
+        disk,
+        interface=types.DiskInterface.VIRTIO,
+        bootable=True,
+        active=True,
+    ):
         params = types.DiskAttachment(
             disk=disk.get_sdk_type(),
             interface=interface,
             bootable=bootable,
-            active=active
+            active=active,
         )
         disk_attachments_service = self._service.disk_attachments_service()
         disk_attachment = disk_attachments_service.add(params)
@@ -233,21 +247,24 @@ class Vm(SDKRootEntity):
         return system.vms_service
 
     def _wait_for_status(self, statuses):
-        syncutil.sync(exec_func=lambda: self.status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s in statuses)
+        syncutil.sync(
+            exec_func=lambda: self.status,
+            exec_func_args=(),
+            success_criteria=lambda s: s in statuses,
+        )
 
     def _sync_disk_attachment(self, disk_attachment_id):
         syncutil.sync(
             exec_func=self._is_disk_attachment_active,
             exec_func_args=(disk_attachment_id,),
-            success_criteria=lambda s: s
+            success_criteria=lambda s: s,
         )
 
     def _is_disk_attachment_active(self, disk_attachment_id):
         disk_attachments_service = self._service.disk_attachments_service()
         disk_attachment_service = disk_attachments_service.attachment_service(
-            disk_attachment_id)
+            disk_attachment_id
+        )
         return disk_attachment_service.get().active
 
     def _get_data_center(self):
@@ -279,14 +296,12 @@ class Vm(SDKRootEntity):
 
 
 class VmSnapshot(SDKSubEntity):
-
     def _get_parent_service(self, vm):
         return vm.service.snapshots_service()
 
     def create(self, description, persist_memorystate=False):
         sdk_type = types.Snapshot(
-            persist_memorystate=persist_memorystate,
-            description=description
+            persist_memorystate=persist_memorystate, description=description
         )
         self._create_sdk_entity(sdk_type)
 
@@ -317,21 +332,22 @@ class VmSnapshot(SDKSubEntity):
         syncutil.sync(
             exec_func=lambda: self.get_sdk_type().snapshot_status,
             exec_func_args=(),
-            success_criteria=lambda status: status == SnapshotStatus.READY
+            success_criteria=lambda status: status == SnapshotStatus.READY,
         )
 
     def wait_for_preview_status(self):
         syncutil.sync(
             exec_func=lambda: self.get_sdk_type().snapshot_status,
             exec_func_args=(),
-            success_criteria=lambda status: status == SnapshotStatus.IN_PREVIEW
+            success_criteria=lambda status: status
+            == SnapshotStatus.IN_PREVIEW,
         )
 
     def wait_for_snapshot_removal(self, snapshot_id):
         syncutil.sync(
             exec_func=self._is_snapshot_present,
             exec_func_args=(),
-            success_criteria=lambda present: not present
+            success_criteria=lambda present: not present,
         )
 
     def _is_snapshot_present(self):
@@ -343,7 +359,6 @@ class VmSnapshot(SDKSubEntity):
 
 
 class VmGraphicsConsole(SDKSubEntity):
-
     def __init__(self, vm):
         super(VmGraphicsConsole, self).__init__(vm)
         self._config = None
@@ -369,8 +384,11 @@ class VmGraphicsConsole(SDKSubEntity):
         self._config = parser['virt-viewer']
 
     def _get_console_id(self, protocol):
-        return next(gcs.id for gcs in self._parent_service.list()
-                    if gcs.protocol == protocol)
+        return next(
+            gcs.id
+            for gcs in self._parent_service.list()
+            if gcs.protocol == protocol
+        )
 
     def _get_remote_viewer_file_parser(self):
         viewer_file = self._get_remote_viewer_file()
@@ -387,19 +405,16 @@ class VmGraphicsConsole(SDKSubEntity):
 
 
 class VmSpiceConsole(VmGraphicsConsole):
-
     def import_config(self):
         self._import_config(types.GraphicsType.SPICE)
 
 
 class VmVncConsole(VmGraphicsConsole):
-
     def import_config(self):
         self._import_config(types.GraphicsType.VNC)
 
 
 class VmSerialConsole(object):
-
     def __init__(self, private_key_path, vmconsole_proxy_ip, user, passwd):
         self._private_key_path = private_key_path
         self._proxy_ip = vmconsole_proxy_ip
@@ -421,9 +436,12 @@ class VmSerialConsole(object):
             args = [
                 'ssh',
                 '-t',
-                '-o', 'StrictHostKeyChecking=no',
-                '-i', f'{self._private_key_path}',
-                '-p', '2222',
+                '-o',
+                'StrictHostKeyChecking=no',
+                '-i',
+                f'{self._private_key_path}',
+                '-p',
+                '2222',
                 f'ovirt-vmconsole@{self._proxy_ip}',
                 'connect',
             ]
@@ -434,7 +452,7 @@ class VmSerialConsole(object):
                 stdin=slave,
                 stdout=subprocess.PIPE,
                 universal_newlines=True,
-                bufsize=0
+                bufsize=0,
             )
             LOGGER.debug(f'vmconsole opened reader with args {args}')
             self._writer = os.fdopen(master, 'w')
@@ -526,7 +544,6 @@ class VmSerialConsole(object):
 
 
 class CirrosSerialConsole(VmSerialConsole):
-
     def __init__(self, private_key_path, vmconsole_proxy_ip):
         super(CirrosSerialConsole, self).__init__(
             private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo'

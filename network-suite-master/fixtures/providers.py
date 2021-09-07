@@ -47,25 +47,29 @@ def ovirt_image_repo(system):
     if openstack_image_providers.is_provider_available(OVIRT_IMAGE_REPO_NAME):
         openstack_image_providers.import_by_name(OVIRT_IMAGE_REPO_NAME)
     else:
-        openstack_image_providers.create(name=OVIRT_IMAGE_REPO_NAME,
-                                         url=OVIRT_IMAGE_REPO_URL,
-                                         requires_authentication=False)
+        openstack_image_providers.create(
+            name=OVIRT_IMAGE_REPO_NAME,
+            url=OVIRT_IMAGE_REPO_URL,
+            requires_authentication=False,
+        )
         openstack_image_providers.wait_until_available()
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(engine_facts, engine_password,
-                            ovirt_provider_ovn_with_ip_fqdn):
+def openstack_client_config(
+    engine_facts, engine_password, ovirt_provider_ovn_with_ip_fqdn
+):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
                     'auth_url': OPENSTACK_AUTH_URL.format(
-                        engine_facts.default_ip(urlize=True)),
+                        engine_facts.default_ip(urlize=True)
+                    ),
                     'username': OPENSTACK_USERNAME,
-                    'password': engine_password
+                    'password': engine_password,
                 },
-                'verify': False
+                'verify': False,
             }
         }
     }
@@ -120,12 +124,14 @@ def ovn_network(default_ovn_provider, default_ovn_provider_client):
 
 
 @pytest.fixture(scope='session')
-def ovirt_external_network(default_ovn_provider, default_data_center,
-                           ovn_network):
+def ovirt_external_network(
+    default_ovn_provider, default_data_center, ovn_network
+):
     openstack_network = OpenStackNetwork(default_ovn_provider)
     openstack_network.import_by_id(str(ovn_network.id))
     ovirt_network = openstack_network.create_external_network(
-        default_data_center)
+        default_data_center
+    )
     try:
         yield ovirt_network
     finally:

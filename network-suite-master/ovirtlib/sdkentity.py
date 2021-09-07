@@ -35,7 +35,6 @@ class EntityCreationError(Exception):
 
 
 class SDKEntity(metaclass=abc.ABCMeta):
-
     def __init__(self):
         self._service = None
         self._parent_service = None
@@ -63,8 +62,11 @@ class SDKEntity(metaclass=abc.ABCMeta):
         raise NotImplementedError('not implemented yet')
 
     def import_by_name(self, name):
-        entities = (entity for entity in self._parent_service.list()
-                    if entity.name == name)
+        entities = (
+            entity
+            for entity in self._parent_service.list()
+            if entity.name == name
+        )
         try:
             entity_id = next(entities).id
         except StopIteration:
@@ -102,7 +104,6 @@ class SDKEntity(metaclass=abc.ABCMeta):
 
 
 class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):
-
     def __init__(self, parent_sdk_system):
         super(SDKRootEntity, self).__init__()
         self._parent_sdk_system = parent_sdk_system
@@ -118,7 +119,6 @@ class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):
 
 
 class SDKSubEntity(SDKEntity, metaclass=abc.ABCMeta):
-
     def __init__(self, parent_sdk_entity):
         super(SDKSubEntity, self).__init__()
         self._parent_sdk_system = parent_sdk_entity.system

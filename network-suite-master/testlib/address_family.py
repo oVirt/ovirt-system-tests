@@ -23,6 +23,7 @@ class AF(object):
     """
     Address family class
     """
+
     def __init__(self, version):
         self._version = version
 

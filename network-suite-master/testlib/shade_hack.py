@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +28,11 @@
 # For each use please file a shade bug to extend shade functionality.
 # current bugs: BZ 1590248
 
+
 def hack_os_put_request(cloud, path, data):
 
     return cloud.network.put(
-        path, json=data,
-        error_message='Error in PUT request: {path}'.format(path=path))
+        path,
+        json=data,
+        error_message='Error in PUT request: {path}'.format(path=path),
+    )

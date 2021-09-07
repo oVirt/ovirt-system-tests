@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2018 Red Hat, Inc.
+# Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,9 +70,9 @@ class NfsVersion(object):
 
 
 class HostStorageData(object):
-
-    def __init__(self, storage_type, address, path, nfs_version=None,
-                 logical_units=()):
+    def __init__(
+        self, storage_type, address, path, nfs_version=None, logical_units=()
+    ):
         """
         :param storage_type: string indicates the storage type.
         :param address: string indicates the NFS storage address.
@@ -116,7 +116,6 @@ class StorageDomainStatus(object):
 
 
 class StorageDomain(SDKRootEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -145,8 +144,9 @@ class StorageDomain(SDKRootEntity):
                 path=host_storage_data.path,
                 nfs_version=host_storage_data.nfs_version,
                 logical_units=self._get_sdk_type_logical_units(
-                    host_storage_data.logical_units)
-            )
+                    host_storage_data.logical_units
+                ),
+            ),
         )
         self._create_sdk_entity(sdk_type)
 
@@ -157,15 +157,18 @@ class StorageDomain(SDKRootEntity):
         syncutil.sync(
             exec_func=self.destroy,
             exec_func_args=(),
-            error_criteria=error.sd_destroy_error_not_due_to_busy)
+            error_criteria=error.sd_destroy_error_not_due_to_busy,
+        )
 
     def _get_parent_service(self, system):
         return system.storage_domains_service
 
     def _wait_for_status(self, status):
-        syncutil.sync(exec_func=lambda: self.status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s == status)
+        syncutil.sync(
+            exec_func=lambda: self.status,
+            exec_func_args=(),
+            success_criteria=lambda s: s == status,
+        )
 
     def import_image(self, cluster, repo, image_name, template_name=None):
         """
@@ -177,18 +180,20 @@ class StorageDomain(SDKRootEntity):
         images_service = repo.service.images_service()
         images = images_service.list()
         try:
-            image = next(image for image in images
-                         if image.name == image_name)
+            image = next(image for image in images if image.name == image_name)
         except StopIteration:
             raise ImageNotFoundError
         image_service = images_service.service(image.id)
 
         image_service.import_(
             import_as_template=template_name is not None,
-            template=(types.Template(name=template_name)
-                      if template_name is not None else None),
+            template=(
+                types.Template(name=template_name)
+                if template_name is not None
+                else None
+            ),
             cluster=cluster.get_sdk_type(),
-            storage_domain=self.get_sdk_type()
+            storage_domain=self.get_sdk_type(),
         )
 
     def create_disk(self, name):
@@ -203,7 +208,7 @@ class StorageDomain(SDKRootEntity):
                 id=lundata.id,
                 address=lundata.address,
                 port=lundata.port,
-                target=lundata.target
+                target=lundata.target,
             )
             for lundata in logical_units
         ]
@@ -218,21 +223,26 @@ class StorageDomain(SDKRootEntity):
 
 
 class Disk(SDKRootEntity):
-
     @property
     def status(self):
         return self.get_sdk_type().status
 
-    def create(self, disk_name, sd_name, provisioned_size=2 * GiB,
-               disk_format=DiskFormat.COW, status=None,
-               sparse=True):
+    def create(
+        self,
+        disk_name,
+        sd_name,
+        provisioned_size=2 * GiB,
+        disk_format=DiskFormat.COW,
+        status=None,
+        sparse=True,
+    ):
         sdk_type = types.Disk(
             name=disk_name,
             provisioned_size=provisioned_size,
             format=disk_format,
             storage_domains=[types.StorageDomain(name=sd_name)],
             status=status,
-            sparse=sparse
+            sparse=sparse,
         )
         self._create_sdk_entity(sdk_type)
 
@@ -240,13 +250,14 @@ class Disk(SDKRootEntity):
         return system.disks_service
 
     def wait_for_up_status(self):
-        syncutil.sync(exec_func=lambda: self.status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s == types.DiskStatus.OK)
+        syncutil.sync(
+            exec_func=lambda: self.status,
+            exec_func_args=(),
+            success_criteria=lambda s: s == types.DiskStatus.OK,
+        )
 
 
 class LogicalUnit(object):
-
     def __init__(self, id, address, port, target):
         self._id = id
         self._address = address
@@ -277,7 +288,8 @@ def storage_domain(system, name, domain_type, host, host_storage_data):
         name=name,
         domain_type=domain_type,
         host=host,
-        host_storage_data=host_storage_data)
+        host_storage_data=host_storage_data,
+    )
     try:
         sd.wait_for_unattached_status()
         yield sd

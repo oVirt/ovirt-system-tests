@@ -29,7 +29,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class User(SDKRootEntity):
-
     def __init__(self, parent_sdk_system):
         super(User, self).__init__(parent_sdk_system)
         self._user = None
@@ -46,9 +45,7 @@ class User(SDKRootEntity):
 
     def add_public_key(self, ssh_public_key):
         return self.service.ssh_public_keys_service().add(
-            key=types.SshPublicKey(
-                content=ssh_public_key
-            )
+            key=types.SshPublicKey(content=ssh_public_key)
         )
 
     def remove_public_key(self, id):

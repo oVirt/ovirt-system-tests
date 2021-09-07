@@ -44,10 +44,17 @@ def engine_admin(system):
 
 
 @pytest.fixture(scope='session')
-def api(ovirt_engine_service_up, engine_facts, engine_full_username,
-        engine_password):
-    return _create_engine_connection(engine_facts.default_ip(urlize=True),
-                                     engine_full_username, engine_password)
+def api(
+    ovirt_engine_service_up,
+    engine_facts,
+    engine_full_username,
+    engine_password,
+):
+    return _create_engine_connection(
+        engine_facts.default_ip(urlize=True),
+        engine_full_username,
+        engine_password,
+    )
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -66,14 +73,19 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_service_up(ovirt_engine_setup, engine_facts,
-                            engine_full_username, engine_password):
-    syncutil.sync(exec_func=_create_engine_connection,
-                  exec_func_args=(engine_facts.default_ip(urlize=True),
-                                  engine_full_username,
-                                  engine_password),
-                  success_criteria=lambda api: isinstance(api, Connection),
-                  timeout=10*60)
+def ovirt_engine_service_up(
+    ovirt_engine_setup, engine_facts, engine_full_username, engine_password
+):
+    syncutil.sync(
+        exec_func=_create_engine_connection,
+        exec_func_args=(
+            engine_facts.default_ip(urlize=True),
+            engine_full_username,
+            engine_password,
+        ),
+        success_criteria=lambda api: isinstance(api, Connection),
+        timeout=10 * 60,
+    )
     yield
 
 
@@ -100,10 +112,10 @@ def _exec_engine_config(engine_facts, key, value):
     node = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
     result = node.exec_command(' '.join(command))
 
-    assert result.code == 0, (
-        'setting {0}:{1} via engine-config failed with {2}'.format(
-            key, value, result.code
-        )
+    assert (
+        result.code == 0
+    ), 'setting {0}:{1} via engine-config failed with {2}'.format(
+        key, value, result.code
     )
 
 
@@ -112,11 +124,17 @@ def test_invocation_logger(system, request, host_0_up, host_1_up):
     delim = '**************************************'
     events = eventlib.EngineEvents(system)
     test_invoke = f'{delim} OST - invoked: ' + str(request.node.nodeid)
-    events.add(description=test_invoke,
-               comment='delimiter for test function invocation in engine log')
+    events.add(
+        description=test_invoke,
+        comment='delimiter for test function invocation in engine log',
+    )
     sshlib.Node(host_0_up.address, host_0_up.root_password).exec_command(
-        f'vdsm-client Host echo message="{test_invoke}"')
+        f'vdsm-client Host echo message="{test_invoke}"'
+    )
     sshlib.Node(host_1_up.address, host_1_up.root_password).exec_command(
-        f'vdsm-client Host echo message="{test_invoke}"')
-    events.add(description=f'OST - jobs: on test invocation: '
-                           f'{joblib.AllJobs(system).describe_ill_fated()}')
+        f'vdsm-client Host echo message="{test_invoke}"'
+    )
+    events.add(
+        description=f'OST - jobs: on test invocation: '
+        f'{joblib.AllJobs(system).describe_ill_fated()}'
+    )

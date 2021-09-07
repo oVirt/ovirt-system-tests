@@ -30,23 +30,25 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 
 @pytest.fixture(scope='session')
-def default_storage_domain(system, engine_facts, host_0_up,
-                           default_data_center):
+def default_storage_domain(
+    system, engine_facts, host_0_up, default_data_center
+):
     host_0_up.workaround_bz_1779280()
     storage_domain = storagelib.StorageDomain(system)
     try:
         storage_domain.import_by_name(DEFAULT_DOMAIN_NAME)
     except EntityNotFoundError:
-        storage_domain.create(name=DEFAULT_DOMAIN_NAME,
-                              domain_type=storagelib.StorageDomainType.DATA,
-                              host=host_0_up,
-                              host_storage_data=storagelib.HostStorageData(
-                                  storage_type=storagelib.StorageType.NFS,
-                                  address=engine_facts.default_ip(urlize=True),
-                                  path=DEFAULT_DOMAIN_PATH,
-                                  nfs_version=storagelib.NfsVersion.V4_2
-                                  )
-                              )
+        storage_domain.create(
+            name=DEFAULT_DOMAIN_NAME,
+            domain_type=storagelib.StorageDomainType.DATA,
+            host=host_0_up,
+            host_storage_data=storagelib.HostStorageData(
+                storage_type=storagelib.StorageType.NFS,
+                address=engine_facts.default_ip(urlize=True),
+                path=DEFAULT_DOMAIN_PATH,
+                nfs_version=storagelib.NfsVersion.V4_2,
+            ),
+        )
         storage_domain.wait_for_unattached_status()
         default_data_center.attach_storage_domain(storage_domain)
     default_data_center.wait_for_sd_active_status(storage_domain)

@@ -59,21 +59,22 @@ class VnicInterfaceType(object):
 
 
 class Network(SDKSubEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
 
-    def create(self,
-               name,
-               vlan=None,
-               usages=(NetworkUsage.VM,),
-               qos=None,
-               auto_generate_profile=True,
-               external_provider=None,
-               external_provider_physical_network=None,
-               mtu=None,
-               port_isolation=None):
+    def create(
+        self,
+        name,
+        vlan=None,
+        usages=(NetworkUsage.VM,),
+        qos=None,
+        auto_generate_profile=True,
+        external_provider=None,
+        external_provider_physical_network=None,
+        mtu=None,
+        port_isolation=None,
+    ):
         """
         :type name: string
         :type vlan: integer
@@ -93,18 +94,20 @@ class Network(SDKSubEntity):
             qos=qos_type,
             profile_required=auto_generate_profile,
             mtu=mtu,
-            port_isolation=port_isolation
+            port_isolation=port_isolation,
         )
         if vlan is not None:
             sdk_type.vlan = types.Vlan(id=vlan)
         if external_provider is not None:
             sdk_type.external_provider = types.OpenStackNetworkProvider(
-                id=external_provider.id)
+                id=external_provider.id
+            )
         if external_provider_physical_network is not None:
             if external_provider is None:
                 raise ExternalProviderRequired
             sdk_type.external_provider_physical_network = types.Network(
-                id=external_provider_physical_network.id)
+                id=external_provider_physical_network.id
+            )
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, dc):
@@ -114,7 +117,8 @@ class Network(SDKSubEntity):
         return self._system_network_service().network_labels_service().list()
 
     def vnic_profiles(self):
-        profiles = self._system_network_service().vnic_profiles_service().list(
+        profiles = (
+            self._system_network_service().vnic_profiles_service().list()
         )
         vnic_profiles = []
         for profile in profiles:
@@ -129,8 +133,11 @@ class Network(SDKSubEntity):
         profile is assumed, which is the network name
         """
         profile_name = self.name if name is None else name
-        return next(vnic_profile for vnic_profile in self.vnic_profiles() if
-                    vnic_profile.name == profile_name)
+        return next(
+            vnic_profile
+            for vnic_profile in self.vnic_profiles()
+            if vnic_profile.name == profile_name
+        )
 
     def _system_network_service(self):
         return self.system.networks_service.network_service(self.id)
@@ -156,7 +163,6 @@ class Network(SDKSubEntity):
 
 
 class VnicProfile(SDKRootEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -164,9 +170,7 @@ class VnicProfile(SDKRootEntity):
     def create(self, name, network, qos=None):
         qos_type = None if qos is None else qos.get_sdk_type()
         sdk_type = types.VnicProfile(
-            name=name,
-            network=network.get_sdk_type(),
-            qos=qos_type
+            name=name, network=network.get_sdk_type(), qos=qos_type
         )
         self._create_sdk_entity(sdk_type)
 
@@ -199,20 +203,19 @@ class VnicProfile(SDKRootEntity):
     def custom_properties(self):
         sdk_custom_properties = self.service.get().custom_properties or []
 
-        return [
-            CustomProperty(p.name, p.value) for p in sdk_custom_properties]
+        return [CustomProperty(p.name, p.value) for p in sdk_custom_properties]
 
     @custom_properties.setter
     def custom_properties(self, properties):
         service = self.service.get()
         service.custom_properties = [
             types.CustomProperty(name=p.name, value=p.value)
-            for p in properties]
+            for p in properties
+        ]
         self.service.update(service)
 
 
 class Vnic(SDKSubEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -237,8 +240,13 @@ class Vnic(SDKSubEntity):
         sdk_type.mac.address = address
         self._service.update(sdk_type)
 
-    def create(self, name, vnic_profile,
-               interface=VnicInterfaceType.VIRTIO, mac_addr=None):
+    def create(
+        self,
+        name,
+        vnic_profile,
+        interface=VnicInterfaceType.VIRTIO,
+        mac_addr=None,
+    ):
         """
         :type name: string
         :type vnic_profile: netlib.VnicProfile
@@ -249,7 +257,7 @@ class Vnic(SDKSubEntity):
         sdk_type = types.Nic(
             name=name,
             interface=interface,
-            vnic_profile=vnic_profile.get_sdk_type()
+            vnic_profile=vnic_profile.get_sdk_type(),
         )
         if mac_addr is not None:
             sdk_type.mac = types.Mac(address=mac_addr)
@@ -325,7 +333,6 @@ class Vnic(SDKSubEntity):
 
 
 class NetworkFilter(SDKRootEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
@@ -345,23 +352,24 @@ class NetworkFilter(SDKRootEntity):
 
 
 class QoS(SDKSubEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
 
-    def create(self,
-               name,
-               qos_type,
-               inbound_average=None,
-               inbound_peak=None,
-               inbound_burst=None,
-               outbound_average=None,
-               outbound_peak=None,
-               outbound_burst=None,
-               outbound_average_upperlimit=None,
-               outbound_average_realtime=None,
-               outbound_average_linkshare=None):
+    def create(
+        self,
+        name,
+        qos_type,
+        inbound_average=None,
+        inbound_peak=None,
+        inbound_burst=None,
+        outbound_average=None,
+        outbound_peak=None,
+        outbound_burst=None,
+        outbound_average_upperlimit=None,
+        outbound_average_realtime=None,
+        outbound_average_linkshare=None,
+    ):
         self._create_sdk_entity(
             types.Qos(
                 name=name,
@@ -374,7 +382,7 @@ class QoS(SDKSubEntity):
                 outbound_burst=outbound_burst,
                 outbound_average_upperlimit=outbound_average_upperlimit,
                 outbound_average_realtime=outbound_average_realtime,
-                outbound_average_linkshare=outbound_average_linkshare
+                outbound_average_linkshare=outbound_average_linkshare,
             )
         )
         self.get_sdk_type().id = self.id

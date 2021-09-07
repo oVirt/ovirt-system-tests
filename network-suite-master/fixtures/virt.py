@@ -38,9 +38,14 @@ Rsa = namedtuple('Rsa', ['public_key_content', 'private_key_path'])
 
 
 @pytest.fixture(scope='session')
-def cirros_template(system, ovirt_image_repo, default_cluster,
-                    default_storage_domain, cirros_image,
-                    transformed_cirros_image):
+def cirros_template(
+    system,
+    ovirt_image_repo,
+    default_cluster,
+    default_storage_domain,
+    cirros_image,
+    transformed_cirros_image,
+):
     cirros_template = transformed_cirros_image
     try:
         templatelib.get_template(system, cirros_template)
@@ -49,8 +54,10 @@ def cirros_template(system, ovirt_image_repo, default_cluster,
         ovirt_image_sd.import_by_name(providers.OVIRT_IMAGE_REPO_NAME)
 
         default_storage_domain.import_image(
-            default_cluster, ovirt_image_sd, cirros_image,
-            template_name=cirros_template
+            default_cluster,
+            ovirt_image_sd,
+            cirros_image,
+            template_name=cirros_template,
         )
         templatelib.wait_for_template_ok_status(system, cirros_template)
 
@@ -63,14 +70,16 @@ def vmconsole_rsa():
     with contextlib.suppress(FileNotFoundError):
         os.remove(f'{private_key_path}')
         os.remove(f'{private_key_path}.pub')
-    shell.shell([
-        'ssh-keygen', '-t', 'rsa', '-f', f'{private_key_path}', '-N', ''
-    ])
+    shell.shell(
+        ['ssh-keygen', '-t', 'rsa', '-f', f'{private_key_path}', '-N', '']
+    )
     with open(f'{private_key_path}.pub') as f:
         public_key_content = f.read()
         LOGGER.debug(f'read vmconsole public key {public_key_content}')
-    return Rsa(public_key_content=public_key_content,
-               private_key_path=f'{private_key_path}')
+    return Rsa(
+        public_key_content=public_key_content,
+        private_key_path=f'{private_key_path}',
+    )
 
 
 @pytest.fixture(scope='session')

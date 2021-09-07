@@ -1,4 +1,3 @@
-
 # Copyright 2017-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -70,18 +69,21 @@ def retry_below_version(version):
         @functools.wraps(func)
         def func_with_retry(self, *args, **kwargs):
             exec_func = MethodType(func, self)
-            return syncutil.sync(exec_func=exec_func,
-                                 exec_func_args=(args if args else kwargs),
-                                 error_criteria=error.is_not_http_conflict,
-                                 timeout=SETUP_NETWORKS_TIMEOUT)
+            return syncutil.sync(
+                exec_func=exec_func,
+                exec_func_args=(args if args else kwargs),
+                error_criteria=error.is_not_http_conflict,
+                timeout=SETUP_NETWORKS_TIMEOUT,
+            )
+
         if suite.is_suite_below(version):
             return func_with_retry
         return func
+
     return decorate_if_required
 
 
 class Host(SDKRootEntity):
-
     def __init__(self, parent_sdk_system):
         super(Host, self).__init__(parent_sdk_system)
         self._root_password = None
@@ -145,7 +147,7 @@ class Host(SDKRootEntity):
             address=address,
             root_password=root_password,
             override_iptables=True,
-            cluster=cluster.get_sdk_type()
+            cluster=cluster.get_sdk_type(),
         )
         self._create_sdk_entity(sdk_type)
         self._root_password = root_password
@@ -154,9 +156,13 @@ class Host(SDKRootEntity):
         return syncutil.sync(
             exec_func=super(Host, self).update,
             exec_func_args=kwargs,
-            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
-                'Cannot edit Host. Related operation is currently in progress'
-            ]),
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(
+                e,
+                [
+                    'Cannot edit Host. Related operation is currently in '
+                    'progress'
+                ],
+            ),
             sdk_entity=self,
         )
 
@@ -165,11 +171,15 @@ class Host(SDKRootEntity):
             exec_func=self.service.force_select_spm,
             exec_func_args=(),
             success_criteria=lambda r: self.is_spm,
-            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
-                'Cannot force select SPM. The Storage Pool has running tasks',
-                'Cannot force select SPM. Unknown Data Center status',
-                'is already SPM or contending',
-            ])
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(
+                e,
+                [
+                    'Cannot force select SPM. The Storage Pool has running '
+                    'tasks',
+                    'Cannot force select SPM. Unknown Data Center status',
+                    'is already SPM or contending',
+                ],
+            ),
         )
 
     def hand_over_spm(self, candidate_spm):
@@ -182,10 +192,13 @@ class Host(SDKRootEntity):
             exec_func=self._service.activate,
             exec_func_args=(),
             success_criteria=lambda s: self.is_up,
-            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
-                'Related operation is currently in progress',
-                'Cannot activate Host. Host in Up status',
-            ]),
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(
+                e,
+                [
+                    'Related operation is currently in progress',
+                    'Cannot activate Host. Host in Up status',
+                ],
+            ),
             delay_start=30,
             retry_interval=30,
             timeout=3 * 60,
@@ -199,11 +212,14 @@ class Host(SDKRootEntity):
             exec_func_args=(),
             timeout=3 * 60,
             success_criteria=lambda s: self.is_in_maintenance,
-            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(e, [
-                'Host has asynchronous running tasks',
-                'Host is contending',
-                'Host is already in Maintenance mode',
-            ]),
+            error_criteria=lambda e: error.is_not_ovirt_or_unlisted(
+                e,
+                [
+                    'Host has asynchronous running tasks',
+                    'Host is contending',
+                    'Host is already in Maintenance mode',
+                ],
+            ),
             sdk_entity=self,
         )
         joblib.AllJobs(self.system).wait_for_done()
@@ -228,8 +244,8 @@ class Host(SDKRootEntity):
             exec_func=self.update,
             exec_func_args={'cluster': cluster.get_sdk_type()},
             success_criteria=lambda sdk_type: (
-                    hasattr(sdk_type, 'cluster')
-                    and sdk_type.cluster.id == cluster.id
+                hasattr(sdk_type, 'cluster')
+                and sdk_type.cluster.id == cluster.id
             ),
             sdk_entity=self,
         )
@@ -253,7 +269,7 @@ class Host(SDKRootEntity):
         attachments_data=(),
         remove_other_networks=True,
         sync_networks=False,
-        bonding_data=()
+        bonding_data=(),
     ):
         """
         By default sets a desired network configuration state on the host
@@ -278,8 +294,8 @@ class Host(SDKRootEntity):
         removed_net_attachments = (
             self._get_complementary_net_attachments(
                 self._get_net_ids_for_attachment_data(
-                    list(attachments_data) +
-                    [self.get_mgmt_net_attachment_data()]
+                    list(attachments_data)
+                    + [self.get_mgmt_net_attachment_data()]
                 )
             )
             if remove_other_networks
@@ -290,9 +306,7 @@ class Host(SDKRootEntity):
             modified_net_attachments if sync_networks else None
         )
 
-        modified_bonds = [
-            bond_data.to_bond() for bond_data in bonding_data
-        ]
+        modified_bonds = [bond_data.to_bond() for bond_data in bonding_data]
 
         return self.service.setup_networks(
             modified_bonds=modified_bonds,
@@ -303,14 +317,15 @@ class Host(SDKRootEntity):
         )
 
     def remove_networks(self, removed_networks):
-        removed_network_ids = netlib.Network.get_networks_ids(
-            removed_networks)
+        removed_network_ids = netlib.Network.get_networks_ids(removed_networks)
         removed_attachments = self._get_existing_attachments_for_network_ids(
-            removed_network_ids)
+            removed_network_ids
+        )
         return self._remove_setup_networks(removed_attachments)
 
-    def remove_attachments(self, removed_attachments_data=(),
-                           removed_bonding_data=()):
+    def remove_attachments(
+        self, removed_attachments_data=(), removed_bonding_data=()
+    ):
         """
         :param removed_attachments_data: []netattachlib.NetworkAttachmentData
         :param removed_bonding_data: []netattachlib.BondingData
@@ -318,7 +333,8 @@ class Host(SDKRootEntity):
         removed_bond_names = BondingData.get_bonds_names(removed_bonding_data)
         removed_bonds = self._get_nics_by_name(removed_bond_names)
         net_attachments = NetworkAttachmentData.to_network_attachments(
-            removed_attachments_data)
+            removed_attachments_data
+        )
         return self._remove_setup_networks(net_attachments, removed_bonds)
 
     @retry_below_version('4.4')
@@ -330,7 +346,7 @@ class Host(SDKRootEntity):
         return self.service.setup_networks(
             removed_network_attachments=net_attachments,
             removed_bonds=removed_bonds,
-            check_connectivity=True
+            check_connectivity=True,
         )
 
     def networks_in_sync(self, networks=None):
@@ -346,13 +362,17 @@ class Host(SDKRootEntity):
             attachments = self._get_existing_attachments()
         else:
             network_ids = {net.id for net in networks}
-            attachments = [att for att in self._get_existing_attachments()
-                           if att.network.id in network_ids]
+            attachments = [
+                att
+                for att in self._get_existing_attachments()
+                if att.network.id in network_ids
+            ]
         return attachments
 
     def _get_existing_attachments_for_network_ids(self, network_ids):
         return [
-            attachment for attachment in self._get_existing_attachments()
+            attachment
+            for attachment in self._get_existing_attachments()
             if attachment.network.id in network_ids
         ]
 
@@ -363,8 +383,11 @@ class Host(SDKRootEntity):
     @retry_below_version('4.4')
     def clean_networks(self):
         mgmt_net_id = self._get_mgmt_net_attachment().network.id
-        removed_attachments = [att for att in self._get_existing_attachments()
-                               if att.network.id != mgmt_net_id]
+        removed_attachments = [
+            att
+            for att in self._get_existing_attachments()
+            if att.network.id != mgmt_net_id
+        ]
         self.service.setup_networks(
             removed_network_attachments=removed_attachments
         )
@@ -385,43 +408,55 @@ class Host(SDKRootEntity):
             exec_func=lambda: self.status,
             exec_func_args=(),
             success_criteria=self._host_up_status_success_criteria,
-            timeout=timeout
+            timeout=timeout,
         )
 
     def wait_for_non_operational_status(self):
         NONOP = HostStatus.NON_OPERATIONAL
-        syncutil.sync(exec_func=lambda: self.status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s == NONOP)
+        syncutil.sync(
+            exec_func=lambda: self.status,
+            exec_func_args=(),
+            success_criteria=lambda s: s == NONOP,
+        )
 
     def wait_for_maintenance_status(self):
-        syncutil.sync(exec_func=lambda: self.status,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s == HostStatus.MAINTENANCE)
+        syncutil.sync(
+            exec_func=lambda: self.status,
+            exec_func_args=(),
+            success_criteria=lambda s: s == HostStatus.MAINTENANCE,
+        )
 
     def wait_for_networks_in_sync(self, networks=None):
-        syncutil.sync(exec_func=self.networks_in_sync,
-                      exec_func_args=(networks,),
-                      success_criteria=lambda s: s)
+        syncutil.sync(
+            exec_func=self.networks_in_sync,
+            exec_func_args=(networks,),
+            success_criteria=lambda s: s,
+        )
 
     def wait_for_networks_out_of_sync(self, networks=None):
-        syncutil.sync(exec_func=self.networks_out_of_sync,
-                      exec_func_args=(networks,),
-                      success_criteria=lambda s: s)
+        syncutil.sync(
+            exec_func=self.networks_out_of_sync,
+            exec_func_args=(networks,),
+            success_criteria=lambda s: s,
+        )
 
     def wait_for_spm_status(self):
-        syncutil.sync(exec_func=lambda: self.is_spm,
-                      exec_func_args=(),
-                      success_criteria=lambda spm: spm)
+        syncutil.sync(
+            exec_func=lambda: self.is_spm,
+            exec_func_args=(),
+            success_criteria=lambda spm: spm,
+        )
 
     def workaround_bz_1779280(self):
-        results = syncutil.re_run(exec_func=self.wait_for_up_status,
-                                  exec_func_args=(),
-                                  count=6,
-                                  interval=10)
+        results = syncutil.re_run(
+            exec_func=self.wait_for_up_status,
+            exec_func_args=(),
+            count=6,
+            interval=10,
+        )
         eventlib.EngineEvents(self.system).add(
             description=f'OST - retry wait for host up after install '
-                        f'{self.name}: {[str(r) for r in results]}'
+            f'{self.name}: {[str(r) for r in results]}'
         )
         return results
 
@@ -431,8 +466,10 @@ class Host(SDKRootEntity):
     def _host_up_status_success_criteria(self, host_status):
         if host_status == HostStatus.UP:
             return True
-        if host_status in (HostStatus.NON_OPERATIONAL,
-                           HostStatus.INSTALL_FAILED):
+        if host_status in (
+            HostStatus.NON_OPERATIONAL,
+            HostStatus.INSTALL_FAILED,
+        ):
             raise HostStatusError('{} is {}'.format(self.name, host_status))
         return False
 
@@ -448,7 +485,8 @@ class Host(SDKRootEntity):
 
     def get_mgmt_net_attachment_data(self):
         return self._get_attachment_data_for_networks(
-            (self.get_mgmt_network(),))[0]
+            (self.get_mgmt_network(),)
+        )[0]
 
     def get_mgmt_network(self):
         mgmt_net_id = self._get_mgmt_cluster_network().id
@@ -462,15 +500,20 @@ class Host(SDKRootEntity):
                 self._get_network_by_id(attachment.network.id),
                 self._get_nic_name(attachment.host_nic.id),
                 id=attachment.id,
-                in_sync=attachment.in_sync
+                in_sync=attachment.in_sync,
             )
             datum.set_ip_assignments(attachment)
             network_attachments_data.append(datum)
         return network_attachments_data
 
     def _get_nic_name(self, nic_id):
-        return (self.system.hosts_service.host_service(self.id)
-                .nics_service().nic_service(nic_id).get().name)
+        return (
+            self.system.hosts_service.host_service(self.id)
+            .nics_service()
+            .nic_service(nic_id)
+            .get()
+            .name
+        )
 
     def _get_nics_by_name(self, nic_names):
         """
@@ -478,7 +521,8 @@ class Host(SDKRootEntity):
         :return: []types.HostNic
         """
         return [
-            host_nic for host_nic in self._service.nics_service().list()
+            host_nic
+            for host_nic in self._service.nics_service().list()
             if host_nic.name in nic_names
         ]
 
@@ -493,8 +537,11 @@ class Host(SDKRootEntity):
 
     def _get_mgmt_net_attachment(self):
         mgmt_cluster_network = self._get_mgmt_cluster_network()
-        return next(att for att in self._get_existing_attachments()
-                    if att.network.id == mgmt_cluster_network.id)
+        return next(
+            att
+            for att in self._get_existing_attachments()
+            if att.network.id == mgmt_cluster_network.id
+        )
 
     def _get_mgmt_cluster_network(self):
         return self.get_cluster().mgmt_network()
@@ -508,8 +555,10 @@ class Host(SDKRootEntity):
     def compare_nics_except_mgmt(self, other, comparator):
         self_nics = self._get_sorted_nics_without_mgmt()
         other_nics = other._get_sorted_nics_without_mgmt()
-        return all(comparator(nic0, nic1)
-                   for (nic0, nic1) in zip(self_nics, other_nics))
+        return all(
+            comparator(nic0, nic1)
+            for (nic0, nic1) in zip(self_nics, other_nics)
+        )
 
     def _get_sorted_nics_without_mgmt(self):
         mgmt_net_id = self.get_mgmt_network().id
@@ -539,13 +588,18 @@ class Host(SDKRootEntity):
 
 
 @contextlib.contextmanager
-def setup_networks(host, attach_data=(), remove_other_networks=True,
-                   sync_networks=False, bonding_data=()):
+def setup_networks(
+    host,
+    attach_data=(),
+    remove_other_networks=True,
+    sync_networks=False,
+    bonding_data=(),
+):
     host.setup_networks(
         attachments_data=attach_data,
         remove_other_networks=remove_other_networks,
         sync_networks=sync_networks,
-        bonding_data=bonding_data
+        bonding_data=bonding_data,
     )
     try:
         yield
@@ -554,7 +608,6 @@ def setup_networks(host, attach_data=(), remove_other_networks=True,
 
 
 class HostNic(SDKSubEntity):
-
     def create(self):
         pass
 
@@ -609,14 +662,15 @@ class HostNic(SDKSubEntity):
         return network.id if network else None
 
     def wait_for_up_status(self, timeout=HOST_TIMEOUT_SHORT):
-        syncutil.sync(exec_func=self.is_up,
-                      exec_func_args=(),
-                      success_criteria=lambda s: s,
-                      timeout=timeout)
+        syncutil.sync(
+            exec_func=self.is_up,
+            exec_func_args=(),
+            success_criteria=lambda s: s,
+            timeout=timeout,
+        )
 
 
 class Bond(HostNic):
-
     @property
     def active_slave(self):
         active_slave = self._updated_bonding().active_slave
@@ -626,8 +680,10 @@ class Bond(HostNic):
     def inactive_slaves(self):
         bonding = self._updated_bonding()
         inactive_slaves = [
-            inactive for inactive in bonding.slaves
-            if inactive.id != bonding.active_slave.id]
+            inactive
+            for inactive in bonding.slaves
+            if inactive.id != bonding.active_slave.id
+        ]
         return [self._to_nic(nic) for nic in inactive_slaves]
 
     def _to_nic(self, sdk_nic):

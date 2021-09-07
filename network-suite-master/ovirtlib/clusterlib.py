@@ -43,7 +43,7 @@ class MacPoolContainsDuplicatesError(Exception):
     pass
 
 
-class SwitchType():
+class SwitchType:
     LEGACY = types.SwitchType.LEGACY
     OVS = types.SwitchType.OVS
 
@@ -76,7 +76,6 @@ def mac_pool(system, cluster, name, ranges, allow_duplicates=False):
 
 
 class MacPool(SDKRootEntity):
-
     def create(self, name, ranges, allow_duplicates=False):
         """
         :param name: string
@@ -85,7 +84,7 @@ class MacPool(SDKRootEntity):
         sdk_type = types.MacPool(
             name=name,
             ranges=[types.Range(from_=r.start, to=r.end) for r in ranges],
-            allow_duplicates=allow_duplicates
+            allow_duplicates=allow_duplicates,
         )
         self._create_sdk_entity(sdk_type)
 
@@ -105,15 +104,13 @@ class MacPool(SDKRootEntity):
 
 
 class Cluster(SDKRootEntity):
-
     @property
     def name(self):
         return self.get_sdk_type().name
 
     def create(self, data_center, cluster_name):
         sdk_type = types.Cluster(
-            name=cluster_name,
-            data_center=data_center.get_sdk_type()
+            name=cluster_name, data_center=data_center.get_sdk_type()
         )
         self._create_sdk_entity(sdk_type)
 
@@ -151,8 +148,11 @@ class Cluster(SDKRootEntity):
         return not self.host_ids()
 
     def mgmt_network(self):
-        return next(network for network in self.networks() if
-                    types.NetworkUsage.MANAGEMENT in network.usages)
+        return next(
+            network
+            for network in self.networks()
+            if types.NetworkUsage.MANAGEMENT in network.usages
+        )
 
     @property
     def network_switch_type(self):
@@ -174,7 +174,7 @@ class Cluster(SDKRootEntity):
         syncutil.sync(
             exec_func=self.is_empty,
             exec_func_args=(),
-            success_criteria=lambda empty: empty
+            success_criteria=lambda empty: empty,
         )
         self._report_is_empty('after')
 
@@ -204,7 +204,6 @@ class Cluster(SDKRootEntity):
 
 
 class ClusterNetwork(SDKSubEntity):
-
     def create(self):
         pass
 
@@ -238,9 +237,11 @@ def network_assignment(cluster, network, required=False):
 
 
 @contextlib.contextmanager
-def new_assigned_network(name, data_center, cluster, vlan=None,
-                         port_isolation=None):
+def new_assigned_network(
+    name, data_center, cluster, vlan=None, port_isolation=None
+):
     with netlib.new_network(
-            name, data_center, vlan, port_isolation) as network:
+        name, data_center, vlan, port_isolation
+    ) as network:
         with network_assignment(cluster, network):
             yield network

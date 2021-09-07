@@ -60,7 +60,6 @@ def _machine_facts(facts_dict):
 
 
 class MachineFacts(object):
-
     def __init__(self, ansible_facts_dict, ssh_password='123456'):
         self._facts = ansible_facts_dict
         self._ssh_password = ssh_password
@@ -87,7 +86,6 @@ class MachineFacts(object):
 
 
 class MachineFacts4(MachineFacts):
-
     def __init__(self, ansible_facts_dict, ssh_password='123456'):
         super(MachineFacts4, self).__init__(ansible_facts_dict, ssh_password)
 
@@ -96,7 +94,6 @@ class MachineFacts4(MachineFacts):
 
 
 class MachineFacts6(MachineFacts):
-
     def __init__(self, ansible_facts_dict, ssh_password='123456'):
         super(MachineFacts6, self).__init__(ansible_facts_dict, ssh_password)
 
@@ -105,7 +102,7 @@ class MachineFacts6(MachineFacts):
 
     def _get_ip_for_iface(self, iface_name):
         return next(
-            ipv6['address'] for ipv6
-            in self._facts[f'ansible_{iface_name}']['ipv6']
+            ipv6['address']
+            for ipv6 in self._facts[f'ansible_{iface_name}']['ipv6']
             if ipv6['scope'] == 'global'
         )

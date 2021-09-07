@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,10 +51,13 @@ class Playbook(object):
         runner = ansible_runner.run(
             playbook=self._playbook,
             extravars=self._extra_vars,
-            inventory='localhost ansible_connection=local')
+            inventory='localhost ansible_connection=local',
+        )
         if runner.status != 'successful':
-            LOGGER.error(f'failed running playbook {self._playbook} '
-                         f'with status {runner.status}.\n'
-                         f'stdout: {runner.stdout.read()}')
+            LOGGER.error(
+                f'failed running playbook {self._playbook} '
+                f'with status {runner.status}.\n'
+                f'stdout: {runner.stdout.read()}'
+            )
             raise AnsibleExecutionFailure
         return runner.stats

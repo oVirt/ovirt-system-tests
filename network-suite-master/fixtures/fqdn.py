@@ -29,8 +29,9 @@ class EngineNotResorvableError(Exception):
 
 
 @pytest.fixture(scope='session')
-def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts,
-                                    engine_answer_file_path):
+def ovirt_provider_ovn_with_ip_fqdn(
+    ovirt_engine_service_up, engine_facts, engine_answer_file_path
+):
     provider_ip = f'provider-host={engine_facts.default_ip(urlize=True)}'
     provider_fqdn = f'provider-host={_fetch_fqdn(engine_answer_file_path)}'
     engine = sshlib.Node(engine_facts.default_ip())
@@ -105,10 +106,12 @@ def _enable_dynamic_ipv6(ssh_node, nic_name):
     :raise: timeout exception if global ipv6 address not found on NIC
     """
     _assign_ipv6(ssh_node, nic_name)
-    return syncutil.sync(exec_func=_get_ipv6,
-                         exec_func_args=(ssh_node, nic_name),
-                         success_criteria=lambda ipv6: ipv6 != '',
-                         timeout=10)
+    return syncutil.sync(
+        exec_func=_get_ipv6,
+        exec_func_args=(ssh_node, nic_name),
+        success_criteria=lambda ipv6: ipv6 != '',
+        timeout=10,
+    )
 
 
 def _assign_ipv6(ssh_node, nic_name):
@@ -126,12 +129,16 @@ def _assign_ipv6(ssh_node, nic_name):
     )
 
     if res.code:
-        raise Exception('nmcli con modify failed: exit code %s, error "%s"'
-                        % (res.code, res.err))
+        raise Exception(
+            'nmcli con modify failed: exit code %s, error "%s"'
+            % (res.code, res.err)
+        )
     res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'up', nic_name]))
     if res.code:
-        raise Exception('nmcli con up failed: exit code %s, error "%s"'
-                        % (res.code, res.err))
+        raise Exception(
+            'nmcli con up failed: exit code %s, error "%s"'
+            % (res.code, res.err)
+        )
 
 
 def _get_ipv6(ssh_node, nic_name):
@@ -142,4 +149,4 @@ def _get_ipv6(ssh_node, nic_name):
     """
     INET6 = 'inet6 '
     res = ssh_node.exec_command(['ip -o -6 a show', nic_name, 'scope global'])
-    return res.out[res.out.find(INET6) + len(INET6):res.out.find('/')]
+    return res.out[res.out.find(INET6) + len(INET6) : res.out.find('/')]

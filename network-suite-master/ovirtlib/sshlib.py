@@ -86,18 +86,22 @@ class Node(object):
             self._close()
 
     def _connect(self):
-        self._client.connect(self._address, username=self._username,
-                             password=self._password)
+        self._client.connect(
+            self._address, username=self._username, password=self._password
+        )
 
     def _close(self):
         self._client.close()
 
     def set_mtu(self, iface_name, mtu_value):
-        self.exec_command('ip link set {iface} mtu {mtu}'
-                          .format(iface=iface_name, mtu=mtu_value))
+        self.exec_command(
+            'ip link set {iface} mtu {mtu}'.format(
+                iface=iface_name, mtu=mtu_value
+            )
+        )
 
     def change_active_slave(self, bond_name, slave_name):
-        """"
+        """ "
         :param bond_name: str
         :param slave_name: str
         """
@@ -124,7 +128,7 @@ class Node(object):
         command = 'ip -o -f ' + family + ' r show default'
         res = self.exec_command(command)
         if res is not None:
-            res = res[(res.find('via ') + len('via ')):res.find(' dev')]
+            res = res[(res.find('via ') + len('via ')) : res.find(' dev')]
         return res
 
     def assert_no_ping_from_netns(self, target, from_netns):
@@ -145,8 +149,9 @@ class Node(object):
         """
         netns_prefix = f'ip netns exec {from_netns} ' if from_netns else ''
         version = ipaddress.ip_address(target).version
-        cmd = netns_prefix + (f'ping -{version} -c 1 -M do -s {data_size} '
-                              f'{target}')
+        cmd = netns_prefix + (
+            f'ping -{version} -c 1 -M do -s {data_size} ' f'{target}'
+        )
         self.exec_command(cmd)
 
     def assert_no_ping(self, target, data_size=56, pmtudisc='do'):
@@ -197,8 +202,10 @@ class Node(object):
         :param str ip_version: '4' or '6'
         :return: ipv4 or global ipv6 address as string
         """
-        cmd = (f"ip -{ip_version} -o addr show {iface_name}"
-               f" |awk '{{print $4}}' |cut -d '/' -f 1")
+        cmd = (
+            f"ip -{ip_version} -o addr show {iface_name}"
+            f" |awk '{{print $4}}' |cut -d '/' -f 1"
+        )
         if ip_version == '6':
             cmd += ' |grep -v fe80'
         return self.exec_command(cmd).decode('utf-8').strip()
@@ -213,7 +220,7 @@ class Node(object):
             exec_func=self._lookup_ip_address_with_dns_query,
             exec_func_args=(hostname, ip_version),
             success_criteria=lambda ip: ip != '',
-            timeout=TIMEOUT
+            timeout=TIMEOUT,
         )
 
     def _lookup_ip_address_with_dns_query(self, hostname, ip_version):

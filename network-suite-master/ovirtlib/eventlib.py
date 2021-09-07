@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Red Hat, Inc.
+# Copyright 2019-2021 Red Hat, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ from ovirtlib.sdkentity import SDKRootEntity
 
 
 class EngineEvents(SDKRootEntity):
-
     def _get_parent_service(self, sdk_system):
         return sdk_system.events_service
 
@@ -33,12 +32,14 @@ class EngineEvents(SDKRootEntity):
         raise NotImplementedError('oVirt cannot create Engine Events')
 
     def add(self, description, comment='', origin='OST-network-suite'):
-        self._parent_service.add(ovirtsdk4.types.Event(
-            comment=comment,
-            custom_id=random.randrange(1, 2**31),
-            description=description,
-            origin=origin,
-            severity=ovirtsdk4.types.LogSeverity(
-                ovirtsdk4.types.LogSeverity.NORMAL
+        self._parent_service.add(
+            ovirtsdk4.types.Event(
+                comment=comment,
+                custom_id=random.randrange(1, 2 ** 31),
+                description=description,
+                origin=origin,
+                severity=ovirtsdk4.types.LogSeverity(
+                    ovirtsdk4.types.LogSeverity.NORMAL
+                ),
             )
-        ))
+        )

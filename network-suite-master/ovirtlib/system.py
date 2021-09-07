@@ -20,7 +20,6 @@ from ovirtsdk4 import Connection
 
 
 class SDKSystemRoot(object):
-
     def __init__(self):
         self._system_service = None
 
@@ -89,9 +88,13 @@ class SDKSystemRoot(object):
         return self._system_service.users_service()
 
     def connect(self, url, username, password, ca_file=None, insecure=True):
-        conn = Connection(url=url, username=username,
-                          password=password, insecure=insecure,
-                          ca_file=ca_file)
+        conn = Connection(
+            url=url,
+            username=username,
+            password=password,
+            insecure=insecure,
+            ca_file=ca_file,
+        )
         self._system_service = conn.system_service()
 
     def import_conn(self, conn):

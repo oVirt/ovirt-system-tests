@@ -30,7 +30,6 @@ DELIM = '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
 
 class Timeout(Exception):
-
     @property
     def last_result(self):
         return self.args[0]
@@ -39,15 +38,16 @@ class Timeout(Exception):
         return "Last evaluated result: {}".format(self.args[0])
 
 
-def sync(exec_func,
-         exec_func_args,
-         success_criteria=lambda result: True,
-         error_criteria=lambda error: True,
-         delay_start=DEFAULT_DELAY_START,
-         retry_interval=DEFAULT_INTERVAL,
-         timeout=DEFAULT_TIMEOUT,
-         sdk_entity=None,
-         ):
+def sync(
+    exec_func,
+    exec_func_args,
+    success_criteria=lambda result: True,
+    error_criteria=lambda error: True,
+    delay_start=DEFAULT_DELAY_START,
+    retry_interval=DEFAULT_INTERVAL,
+    timeout=DEFAULT_TIMEOUT,
+    sdk_entity=None,
+):
     """Sync an operation until it either:
 
     - succeeds (according to the success_criteria specified)

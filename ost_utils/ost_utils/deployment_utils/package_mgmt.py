@@ -7,7 +7,6 @@
 import logging
 import os.path
 import re
-import tempfile
 
 import requests
 
@@ -85,24 +84,25 @@ def disable_all_repos(ansible_vm):
 
 
 def add_dummy_repo(ansible_vm):
-    # force location to /var/tmp/ to survive VM restart
-    with tempfile.NamedTemporaryFile(dir='/var/tmp') as repo_dir:
-        repodata_path = os.path.join(repo_dir.name, 'repodata')
-        ansible_vm.file(
-            path=repodata_path, mode='0777', state='directory', recurse=True
-        )
-        ansible_vm.copy(
-            content=DUMMY_PRIMARY_XML,
-            dest=os.path.join(repodata_path, 'primary.xml'),
-        )
-        ansible_vm.copy(
-            content=DUMMY_REPOMD_XML,
-            dest=os.path.join(repodata_path, 'repomd.xml'),
-        )
-        ansible_vm.copy(
-            content=DUMMY_REPO_FILE.format(repo_dir.name),
-            dest='/etc/yum.repos.d/dummy.repo',
-        )
+    # use "non-standard" /etc path to keep things together,
+    # we copy the contents to HE VM later
+    repo_dir = '/etc/yum.repos.d/ost-dummy-repo'
+    repodata_path = f'{repo_dir}/repodata'
+    ansible_vm.file(
+        path=repodata_path, mode='0777', state='directory', recurse=True
+    )
+    ansible_vm.copy(
+        content=DUMMY_PRIMARY_XML,
+        dest=os.path.join(repodata_path, 'primary.xml'),
+    )
+    ansible_vm.copy(
+        content=DUMMY_REPOMD_XML,
+        dest=os.path.join(repodata_path, 'repomd.xml'),
+    )
+    ansible_vm.copy(
+        content=DUMMY_REPO_FILE.format(repo_dir),
+        dest='/etc/yum.repos.d/dummy.repo',
+    )
 
 
 def check_installed_packages(ansible_vms):

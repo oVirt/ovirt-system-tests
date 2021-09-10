@@ -34,6 +34,27 @@ EOF
 
 }
 
+# Use repositories from the host-0 so that we can actually update HE to the same custom repos
+dnf_update() {
+        cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/replace_repos.yml
+---
+- name: Remove all repositories
+  file:
+    path: /etc/yum.repos.d
+    state: absent
+- name: Copy host-0 repositories
+  copy:
+    src: /etc/yum.repos.d
+    dest: /etc
+- name: DNF update the system
+  dnf:
+    name:  "*"
+    state: latest
+    exclude: ovirt-release-master
+EOF
+
+}
+
 copy_cirros_image() {
     cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/copy_cirros_image.yml
 ---
@@ -50,6 +71,8 @@ add_he_to_hosts() {
 }
 
 copy_ssh_key
+
+dnf_update
 
 copy_cirros_image
 

@@ -40,6 +40,7 @@ class VmListView(EntityListView):
 
     def poweroff(self):
         LOGGER.debug('Power off selected vm')
+        self.close_notification_safely()
         self.click_menu_dropdown_button(
             'ActionPanelView_Shutdown', 'Power Off'
         )
@@ -48,12 +49,14 @@ class VmListView(EntityListView):
         # TODO this was using wait_and_close_success_notification_safely but
         # it didn't work reliably. ust waiting on shutdown button disable is
         # good enough since it means the VM is down
+        self.close_notification_safely()
         self.ovirt_driver.wait_while(
             'Shutdown button is still enabled', self.is_shutdown_button_enabled
         )
 
     def run_once(self):
         LOGGER.debug('Open run once dialog')
+        self.close_notification_safely()
         self.click_menu_dropdown_button('ActionPanelView_Run', 'Run Once')
 
         run_once_dialog = RunOnceDialog(self.ovirt_driver)

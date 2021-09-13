@@ -3,11 +3,12 @@ import time
 
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
+from .WithNotifications import WithNotifications
 
 LOGGER = logging.getLogger(__name__)
 
 
-class EntityListView(Displayable, WithBreadcrumbs):
+class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
     def __init__(
         self,
         ovirt_driver,

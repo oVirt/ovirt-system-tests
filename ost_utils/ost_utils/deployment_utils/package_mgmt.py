@@ -32,6 +32,7 @@ REPO_NAME = 'extra-src-'
 DUMMY_REPO_FILE = '''"
 [dummy]
 name=dummy
+gpgcheck=0
 baseurl={}
 "'''.replace(
     '\n', '\\n'

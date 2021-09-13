@@ -25,13 +25,16 @@ class WithNotifications(WithOvirtDriver):
         xpath = '//a[@class="notif_dismissButton"]'
         if self._is_notification_displayed():
             LOGGER.debug('Notification is present')
-            self.ovirt_driver.xpath_click(xpath)
-            self.ovirt_driver.wait_while(
-                'Notification is not closed',
-                self.ovirt_driver.is_xpath_displayed,
-                xpath,
-            )
-            LOGGER.debug('Notification was closed')
+            try:
+                self.ovirt_driver.xpath_click(xpath)
+                self.ovirt_driver.wait_while(
+                    'Notification is not closed',
+                    self.ovirt_driver.is_xpath_displayed,
+                    xpath,
+                )
+                LOGGER.debug('Notification was closed')
+            except Exception:
+                LOGGER.debug('Notification closing failed', exc_info=1)
 
     def wait_and_close_success_notification_safely(self):
         isError = False

@@ -34,15 +34,25 @@ def _run_playbook(
     ansible_inventory=None,
     ssh_key_path=None,
 ):
+    ansible_logs_path = os.path.join(artifacts_dir, 'ansible_logs')
+
     # Move of the run artifacts to the working_dir because
     # ansible-navigator logs each run artifacts to /tmp/
-    ansible_artifacts_tmp_dir = os.path.join(working_dir, 'ansible-artifacts')
-    os.makedirs(ansible_artifacts_tmp_dir, exist_ok=True)
+    ansible_artifacts_tmp_dir = os.path.join(
+        ansible_logs_path, 'ansible-artifacts'
+    )
 
+    os.makedirs(ansible_artifacts_tmp_dir, exist_ok=True)
     # Create playbook file from passed yaml
     playbook_path = os.path.join(working_dir, 'playbook.yml')
     with open(playbook_path, "w") as file:
         yaml.dump(playbook_yaml, file)
+
+    os.makedirs(ansible_logs_path, exist_ok=True)
+
+    ansible_navigator_log_path = os.path.join(
+        ansible_logs_path, 'ansible-navigator.log'
+    )
 
     playbook_log_path = os.path.join(working_dir, 'playbook-artifacts.json')
 
@@ -64,6 +74,10 @@ def _run_playbook(
         f'{ssh_key_path}:{ssh_key_path}',
         '--pull-policy',
         'never',
+        '--log-file',
+        ansible_navigator_log_path,
+        '--log-level',
+        'debug',
         '--display-color',
         'false',
     ]
@@ -73,9 +87,6 @@ def _run_playbook(
         cmd.append(ansible_inventory.dir)
 
     stdout = shell(cmd)
-
-    ansible_logs_path = os.path.join(artifacts_dir, 'ansible_logs')
-    os.makedirs(ansible_logs_path, exist_ok=True)
 
     log_path = os.path.join(ansible_logs_path, 'ansible-collection-stdout.log')
     if stdout:

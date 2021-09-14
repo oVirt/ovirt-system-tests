@@ -55,13 +55,25 @@ EOF
 
 }
 
-copy_cirros_image() {
-    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/copy_cirros_image.yml
+copy_dependencies() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/copy_dependencies.yml
 ---
 - name: Copy cirros image to HE VM
   copy:
     src: /var/tmp/cirros.img
     dest: /var/tmp/cirros.img
+- name: Copy sysstat rpm package to HE VM
+  copy:
+    src: "{{ item }}"
+    dest: /var/tmp/sysstat.rpm
+  with_fileglob:
+    - "/var/tmp/sysstat-*"
+- name: Copy sysstat dependencies to HE VM
+  copy:
+    src: "{{ item }}"
+    dest: /var/tmp/lm_sensors.rpm
+  with_fileglob:
+    - "/var/tmp/lm_sensors-*"
 EOF
 
 }
@@ -74,7 +86,7 @@ copy_ssh_key
 
 dnf_update
 
-copy_cirros_image
+copy_dependencies
 
 add_he_to_hosts
 

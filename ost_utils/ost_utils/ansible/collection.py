@@ -42,6 +42,14 @@ def _run_playbook(
 
     playbook_log_path = os.path.join(working_dir, 'playbook-artifacts.json')
 
+    network_backend = os.getenv('PODMAN_NETWORK_BACKEND')
+    if network_backend is None:
+        network_backend_options = "--network=slirp4netns:enable_ipv6=true"
+    else:
+        network_backend_options = (
+            f"--network={network_backend}:enable_ipv6=true"
+        )
+
     # Running the playbook inside a container
     cmd = [
         'ansible-navigator',
@@ -66,6 +74,7 @@ def _run_playbook(
         'debug',
         '--display-color',
         'false',
+        f'--container-options={network_backend_options}',
     ]
 
     if ansible_inventory:

@@ -294,8 +294,9 @@ ost_console() {
 
 # check dependencies
 ost_check_dependencies() {
-    python3 -m pip install --user -q tox
-    python3 -m tox -r -e deps >/dev/null || { echo "tox dependencies failed. try \"tox -e deps\"."; return 3; }
+    mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
+    { python3 -m pip install --user tox &&
+    python3 -m tox -r -e deps; } > "${OST_REPO_ROOT}/exported-artifacts/tox-deps.log" || { echo "tox dependencies failed. see tox-deps.log"; return 3; }
     sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | egrep -q 'accept_ra ?= ?2' || {
         echo 'Missing accept_ra on at least one interface. "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4

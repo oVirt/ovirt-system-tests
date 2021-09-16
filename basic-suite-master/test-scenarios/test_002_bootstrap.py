@@ -1833,30 +1833,46 @@ def test_upload_cirros_image(
     engine_hostname,
     ssh_key_file,
 ):
-    collection = CollectionMapper(
-        working_dir,
-        artifacts_dir,
-        ansible_execution_environment,
-        ansible_host=engine_hostname,
-        ansible_inventory=ansible_inventory,
-        ssh_key_path=ssh_key_file,
-    )
+    def upload_cirros_disk():
+        try:
+            collection = CollectionMapper(
+                working_dir,
+                artifacts_dir,
+                ansible_execution_environment,
+                ansible_host=engine_hostname,
+                ansible_inventory=ansible_inventory,
+                ssh_key_path=ssh_key_file,
+            )
 
-    ovirt_auth = collection.ovirt_auth(
-        hostname=engine_ip,
-        username=engine_full_username,
-        password=engine_password,
-    )["ansible_facts"]["ovirt_auth"]
+            ovirt_auth = collection.ovirt_auth(
+                hostname=engine_ip,
+                username=engine_full_username,
+                password=engine_password,
+            )["ansible_facts"]["ovirt_auth"]
 
-    collection.ovirt_disk(
-        auth=ovirt_auth,
-        name=cirros_image_disk_name,
-        upload_image_path=CIRROS_IMAGE_PATH,
-        storage_domain=SD_NFS_NAME,
-        format='cow',
-        sparse='true',
-        wait='true',
-    )
+            collection.ovirt_disk(
+                auth=ovirt_auth,
+                name=cirros_image_disk_name,
+                upload_image_path=CIRROS_IMAGE_PATH,
+                storage_domain=SD_NFS_NAME,
+                format='cow',
+                sparse='true',
+                wait='true',
+            )
+            return True
+        except shell.ShellError as e:
+            if (
+                'Timeout exceed while waiting on result state of the entity'
+                in e.out
+            ):
+                return False
+            raise e
+        except TypeError:
+            # The container stopped in middle of run and
+            # ovirt_auth did not return any value
+            return False
+
+    assertions.assert_true_within_long(upload_cirros_disk)
 
 
 @order_by(_TEST_LIST)
@@ -1899,7 +1915,11 @@ def test_create_cirros_template(
             )
             return True
         except shell.ShellError as e:
-            if 'Disk is locked' in e.out:
+            if (
+                'Disk is locked' in e.out
+                or 'Timeout exceed while waiting on result state of the entity'
+                in e.out
+            ):
                 return False
             raise e
 

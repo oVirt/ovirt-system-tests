@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+#
+# Copyright oVirt Authors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
 
 import hooking
 

@@ -1,3 +1,7 @@
+#
+# Copyright oVirt Authors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
 import logging
 
 from selenium.webdriver.common.action_chains import ActionChains

@@ -61,7 +61,7 @@
     "nics": {
       "host-1": { "template": "common/libvirt-templates/nic_template" }
     },
-    "root_disk_var": "OST_IMAGES_HOST_INSTALLED",
+    "root_disk_var": "OST_IMAGES_NODE",
     "disks": {}
   }
 }

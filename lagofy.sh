@@ -49,7 +49,7 @@ ost_destroy() {
     virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
   fi
   _deployment_exists && rm -rf "$PREFIX" && echo "removed $PREFIX"
-  unset OST_INITIALIZED
+  unset OST_INITIALIZED $(env | grep ^OST_IMAGES_ | cut -d= -f1)
 }
 
 # ost_init [-4|-6] [suite] [distro]

@@ -20,8 +20,9 @@ class ActiveSlaveNotChangedError(Exception):
 
 
 @suite.skip_suites_below('4.4')
-def test_bond_active_slave(system, default_data_center, default_cluster,
-                           host_0_up):
+def test_bond_active_slave(
+    system, default_data_center, default_cluster, host_0_up
+):
     bond_data = netattachlib.ActiveSlaveBonding(
         BOND_NAME, slave_names=(ETH2, ETH3)
     )
@@ -38,9 +39,9 @@ def test_bond_active_slave(system, default_data_center, default_cluster,
             syncutil.sync(
                 exec_func=lambda: bond.active_slave,
                 exec_func_args=(),
-                success_criteria=lambda active_slave:
-                    active_slave.id != initial_active_slave.id,
-                timeout=10
+                success_criteria=lambda active_slave: active_slave.id
+                != initial_active_slave.id,
+                timeout=10,
             )
         except syncutil.Timeout:
             raise ActiveSlaveNotChangedError(

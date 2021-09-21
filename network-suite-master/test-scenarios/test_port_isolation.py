@@ -23,17 +23,15 @@ PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
 PING_FAILED = '100% packet loss'
-EXTERNAL_IP = {
-    'inet': '8.8.8.8',
-    'inet6': '2001:4860:4860::8888'
-}
+EXTERNAL_IP = {'inet': '8.8.8.8', 'inet6': '2001:4860:4860::8888'}
 Iface = namedtuple('Iface', ['name', 'ipv6'])
 IFACE_0 = Iface('eth0', 'fd8f:1391:3a82:200::cafe:e0')
 IFACE_ISOLATED = Iface('eth1', 'fd8f:1391:3a82:201::cafe:e1')
 
 
-@pytest.mark.xfail(suite.af().is6,
-                   reason='CI lab does not provide external ipv6 connectivity')
+@pytest.mark.xfail(
+    suite.af().is6, reason='CI lab does not provide external ipv6 connectivity'
+)
 def test_ping_to_external_port_succeeds(vm_nodes, isolated_ifaces_up_with_ip):
     for vm_node in vm_nodes:
         vm_node.ping(EXTERNAL_IP[suite.af().family], IFACE_ISOLATED.name)
@@ -55,16 +53,19 @@ def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1, serial_console):
             serial_console.add_static_ip(vm.id, f'{ip}/64', IFACE_0.name)
         else:
             host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
-            ip = host_node.lookup_ip_address_with_dns_query(vm.name,
-                                                            suite.af().version)
+            ip = host_node.lookup_ip_address_with_dns_query(
+                vm.name, suite.af().version
+            )
         vms_ovirtmgmt_ip.append(ip)
     return vms_ovirtmgmt_ip
 
 
 @pytest.fixture(scope='module')
 def vm_nodes(vms_ovirtmgmt_ip):
-    return (sshlib.CirrosNode(vms_ovirtmgmt_ip[0], VM_PASSWORD, VM_USERNAME),
-            sshlib.CirrosNode(vms_ovirtmgmt_ip[1], VM_PASSWORD, VM_USERNAME))
+    return (
+        sshlib.CirrosNode(vms_ovirtmgmt_ip[0], VM_PASSWORD, VM_USERNAME),
+        sshlib.CirrosNode(vms_ovirtmgmt_ip[1], VM_PASSWORD, VM_USERNAME),
+    )
 
 
 @pytest.fixture(scope='module')
@@ -94,21 +95,22 @@ def isolated_ifaces_up_with_ipv4(vm_nodes):
 
 
 @pytest.fixture(scope='module')
-def vms_up_on_host_1(system, default_cluster, cirros_template,
-                     port_isolation_network, ovirtmgmt_vnic_profile):
+def vms_up_on_host_1(
+    system,
+    default_cluster,
+    cirros_template,
+    port_isolation_network,
+    ovirtmgmt_vnic_profile,
+):
     """
     Since the isolated_network is set up only on host_1,
     both virtual machines will be on it.
     """
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vms = [(vm_0, VM0_NAME),
-               (vm_1, VM1_NAME)
-               ]
+        vms = [(vm_0, VM0_NAME), (vm_1, VM1_NAME)]
         for vm, name in vms:
             vm.create(
-                vm_name=name,
-                cluster=default_cluster,
-                template=cirros_template
+                vm_name=name, cluster=default_cluster, template=cirros_template
             )
             vm_vnic0 = netlib.Vnic(vm)
             vm_vnic0.create(
@@ -132,8 +134,10 @@ def vms_up_on_host_1(system, default_cluster, cirros_template,
 @pytest.fixture(scope='module')
 def port_isolation_network(default_data_center, default_cluster, host_1_up):
     with clusterlib.new_assigned_network(
-        PORT_ISOLATION_NET, default_data_center, default_cluster,
-        port_isolation=True
+        PORT_ISOLATION_NET,
+        default_data_center,
+        default_cluster,
+        port_isolation=True,
     ) as network:
         attach_data = netattachlib.NetworkAttachmentData(
             network, ETH1, (netattachlib.DYNAMIC_IP_ASSIGN[suite.af().family],)

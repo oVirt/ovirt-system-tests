@@ -16,4 +16,5 @@ def test_empty_string_on_ovirtmgmt_labels(ovirtmgmt_network):
     """
     network_labels = ovirtmgmt_network.labels()
     assert network_labels == [
-        label for label in network_labels if label.id != '']
+        label for label in network_labels if label.id != ''
+    ]

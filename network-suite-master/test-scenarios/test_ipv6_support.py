@@ -21,10 +21,15 @@ from testlib import suite
 
 @suite.skip_suites_below('4.3')
 @suite.xfail_suite_master('TODO')
-def test_non_mgmt_display_network_over_ipv6(system, default_data_center,
-                                            default_cluster, host_0_up,
-                                            host0_eth1_ipv6, host0_eth2_ipv6,
-                                            engine_storage_ipv6):
+def test_non_mgmt_display_network_over_ipv6(
+    system,
+    default_data_center,
+    default_cluster,
+    host_0_up,
+    host0_eth1_ipv6,
+    host0_eth2_ipv6,
+    engine_storage_ipv6,
+):
     """
     This test verifies that:
      * it is possible to create a display role over an ipv6 only network
@@ -48,9 +53,15 @@ def test_non_mgmt_display_network_over_ipv6(system, default_data_center,
                 host_0_up.wait_for_networks_in_sync()
                 VM0 = 'vm_non_mgmt_display_net_over_ipv6'
                 DSK = 'disk_non_mgmt_display_net_over_ipv6'
-                with vm_powering_up(system, default_data_center,
-                                    default_cluster, host_0_up,
-                                    engine_storage_ipv6, VM0, DSK) as vm:
+                with vm_powering_up(
+                    system,
+                    default_data_center,
+                    default_cluster,
+                    host_0_up,
+                    engine_storage_ipv6,
+                    VM0,
+                    DSK,
+                ) as vm:
                     _try_spice_console_connect(vm)
 
 
@@ -65,9 +76,14 @@ def _try_spice_console_connect(vm):
 
 
 @suite.xfail_suite_master('iSCSI not yet working on RHEL8')
-def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
-                                               default_cluster, host_0_up,
-                                               engine_storage_ipv6, lun_id):
+def test_run_vm_over_ipv6_iscsi_storage_domain(
+    system,
+    default_data_center,
+    default_cluster,
+    host_0_up,
+    engine_storage_ipv6,
+    lun_id,
+):
     """
     This test verifies that:
         * it is possible to create an iSCSI storage domain over an ipv6 network
@@ -75,19 +91,25 @@ def test_run_vm_over_ipv6_iscsi_storage_domain(system, default_data_center,
     """
     VM0 = 'vm_over_iscsi_ipv6_storage_domain'
     DSK = 'disk_over_iscsi_ipv6_storage_domain'
-    with ipv6_iscsi_storage_domain(system, host_0_up, engine_storage_ipv6,
-                                   lun_id) as sd:
-        with datacenterlib.attached_storage_domain(default_data_center,
-                                                   sd) as sd_attached:
+    with ipv6_iscsi_storage_domain(
+        system, host_0_up, engine_storage_ipv6, lun_id
+    ) as sd:
+        with datacenterlib.attached_storage_domain(
+            default_data_center, sd
+        ) as sd_attached:
             with vm_down(system, default_cluster, sd_attached, VM0, DSK) as vm:
                 vm.run()
                 vm.wait_for_powering_up_status()
 
 
 @suite.xfail_suite_master('depends on https://gerrit.ovirt.org/#/c/103385/')
-def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
-                                             default_cluster, host_0_up,
-                                             engine_storage_ipv6):
+def test_run_vm_over_ipv6_nfs_storage_domain(
+    system,
+    default_data_center,
+    default_cluster,
+    host_0_up,
+    engine_storage_ipv6,
+):
     """
     This test verifies that:
         * it is possible to create an NFS storage domain over an ipv6 network
@@ -96,8 +118,9 @@ def test_run_vm_over_ipv6_nfs_storage_domain(system, default_data_center,
     VM0 = 'vm_over_nfs_ipv6_storage_domain'
     DSK = 'disk_over_nfs_ipv6_storage_domain'
     with ipv6_nfs_storage_domain(system, host_0_up, engine_storage_ipv6) as sd:
-        with datacenterlib.attached_storage_domain(default_data_center,
-                                                   sd) as sd_attached:
+        with datacenterlib.attached_storage_domain(
+            default_data_center, sd
+        ) as sd_attached:
             with vm_down(system, default_cluster, sd_attached, VM0, DSK) as vm:
                 vm.run()
                 vm.wait_for_powering_up_status()
@@ -113,11 +136,16 @@ def ipv6_nfs_storage_domain(system, host, engine_storage_ipv6):
         storage_type=storagelib.StorageType.NFS,
         address='[' + engine_storage_ipv6 + ']',
         path=DEFAULT_DOMAIN_PATH,
-        nfs_version=storagelib.NfsVersion.V4_2
+        nfs_version=storagelib.NfsVersion.V4_2,
     )
 
-    with storage_domain(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
-                        host, host_storage_data) as sd:
+    with storage_domain(
+        system,
+        DOMAIN_NAME,
+        storagelib.StorageDomainType.DATA,
+        host,
+        host_storage_data,
+    ) as sd:
         yield sd
 
 
@@ -139,19 +167,27 @@ def ipv6_iscsi_storage_domain(system, host, engine_storage_ipv6, lun_id):
         storage_type=storagelib.StorageType.ISCSI,
         address=None,
         path=None,
-        logical_units=(lun,))
+        logical_units=(lun,),
+    )
 
-    with storage_domain(system, DOMAIN_NAME, storagelib.StorageDomainType.DATA,
-                        host, host_storage_data) as sd:
+    with storage_domain(
+        system,
+        DOMAIN_NAME,
+        storagelib.StorageDomainType.DATA,
+        host,
+        host_storage_data,
+    ) as sd:
         yield sd
 
 
 @contextlib.contextmanager
 def vm_down(system, default_cluster, storage_domain, vm_name, disk_name):
     with virtlib.vm_pool(system, size=1) as (vm,):
-        vm.create(vm_name=vm_name,
-                  cluster=default_cluster,
-                  template=templatelib.TEMPLATE_BLANK)
+        vm.create(
+            vm_name=vm_name,
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
         disk = storage_domain.create_disk(disk_name)
         disk_att_id = vm.attach_disk(disk=disk)
         vm.wait_for_disk_up_status(disk, disk_att_id)
@@ -160,13 +196,22 @@ def vm_down(system, default_cluster, storage_domain, vm_name, disk_name):
 
 
 @contextlib.contextmanager
-def vm_powering_up(system, default_data_center, default_cluster,
-                   host, engine_storage_ipv6, vm_name, disk_name):
+def vm_powering_up(
+    system,
+    default_data_center,
+    default_cluster,
+    host,
+    engine_storage_ipv6,
+    vm_name,
+    disk_name,
+):
     with ipv6_nfs_storage_domain(system, host, engine_storage_ipv6) as sd:
-        with datacenterlib.attached_storage_domain(default_data_center,
-                                                   sd) as sd_attached:
-            with vm_down(system, default_cluster, sd_attached, vm_name,
-                         disk_name) as vm:
+        with datacenterlib.attached_storage_domain(
+            default_data_center, sd
+        ) as sd_attached:
+            with vm_down(
+                system, default_cluster, sd_attached, vm_name, disk_name
+            ) as vm:
                 vm.run()
                 vm.wait_for_powering_up_status()
                 yield vm

@@ -41,12 +41,14 @@ def display_network_vnic_profile(system, display_network):
 @pytest.fixture(scope='module')
 def display_network_attached_to_host_0(host_0_up, display_network):
     ip_assign = {
-        'inet': netattachlib.StaticIpv4Assignment('192.0.3.1',
-                                                  '255.255.255.0'),
-        'inet6': netattachlib.StaticIpv6Assignment('fd8f:192:0:3::1', '64')
+        'inet': netattachlib.StaticIpv4Assignment(
+            '192.0.3.1', '255.255.255.0'
+        ),
+        'inet6': netattachlib.StaticIpv6Assignment('fd8f:192:0:3::1', '64'),
     }
     disp_att_data = netattachlib.NetworkAttachmentData(
-        display_network, ETH1, (ip_assign[suite.af().family],))
+        display_network, ETH1, (ip_assign[suite.af().family],)
+    )
     host_0_up.setup_networks([disp_att_data])
     yield host_0_up
     host_0_up.remove_networks([display_network])
@@ -54,15 +56,20 @@ def display_network_attached_to_host_0(host_0_up, display_network):
 
 @pytest.fixture(scope='module')
 def vm_0_with_display_network_and_disk(
-        system, default_cluster, default_storage_domain,
-        display_network_vnic_profile):
+    system,
+    default_cluster,
+    default_storage_domain,
+    display_network_vnic_profile,
+):
     VM_0 = 'test_unrestricted_display_network_name_vm_0'
     VNIC_1 = 'vnic1'
 
     with virtlib.vm_pool(system, size=1) as (vm_0,):
-        vm_0.create(vm_name=VM_0,
-                    cluster=default_cluster,
-                    template=templatelib.TEMPLATE_BLANK)
+        vm_0.create(
+            vm_name=VM_0,
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
         disk_0 = default_storage_domain.create_disk('disk0')
         vm_0.attach_disk(disk=disk_0)
         vm_0.wait_for_down_status()
@@ -73,7 +80,8 @@ def vm_0_with_display_network_and_disk(
 
 @pytest.mark.usefixtures('host_1_up', 'display_network_attached_to_host_0')
 def test_run_vm_with_unrestricted_display_network_name(
-        system, vm_0_with_display_network_and_disk):
+    system, vm_0_with_display_network_and_disk
+):
     vm_0_with_display_network_and_disk.run()
     vm_0_with_display_network_and_disk.wait_for_up_status()
     joblib.AllJobs(system).wait_for_done()

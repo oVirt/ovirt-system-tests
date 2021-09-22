@@ -30,9 +30,6 @@ OVN_PROVIDER_NETWORKS_URL = 'https://{hostname}:9696/v2.0/networks/'
 OVN_PROVIDER_PORTS_URL = 'https://{hostname}:9696/v2.0/ports/'
 OVN_PROVIDER_SUBNETS_URL = 'https://{hostname}:9696/v2.0/subnets/'
 
-OVIRT_USER = 'admin@internal'
-OVIRT_PASSWORD = '123'
-
 NETWORK_1 = 'network_1'
 PORT_1 = 'port_1'
 SUBNET_1 = 'subnet_1'
@@ -66,13 +63,13 @@ ALREADY_IMPORTED = (
 )
 
 
-def _request_auth_token(engine_name):
+def _request_auth_token(engine_name, engine_full_username, engine_password):
     auth_request_data = {
         'auth': {
             'tenantName': 'ovirt-provider-ovn',
             'passwordCredentials': {
-                'username': OVIRT_USER,
-                'password': OVIRT_PASSWORD,
+                'username': engine_full_username,
+                'password': engine_password,
             },
         }
     }
@@ -84,8 +81,10 @@ def _request_auth_token(engine_name):
     return response.json()
 
 
-def _get_auth_token(engine_name):
-    response_json = _request_auth_token(engine_name)
+def _get_auth_token(engine_name, engine_full_username, engine_password):
+    response_json = _request_auth_token(
+        engine_name, engine_full_username, engine_password
+    )
     token_id = response_json['access']['token']['id']
     return token_id
 
@@ -389,11 +388,15 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 
 @versioning.require_version(4, 2)
-def test_use_ovn_provider(engine_api, engine_ip_url):
+def test_use_ovn_provider(
+    engine_api, engine_ip_url, engine_full_username, engine_password
+):
     engine = engine_api.system_service()
     provider_id = network_utils.get_default_ovn_provider_id(engine)
 
-    token_id = _get_auth_token(engine_ip_url)
+    token_id = _get_auth_token(
+        engine_ip_url, engine_full_username, engine_password
+    )
 
     _validate_db_empty(token_id, engine_ip_url)
 

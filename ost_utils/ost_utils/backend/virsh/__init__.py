@@ -108,7 +108,7 @@ class VirshBackend(base.BaseBackend):
 
             try:
                 vm_working_dir = xml.find(
-                    "./metadata/{OST metadata}ost/ost-working-dir[@comment]"
+                    "./metadata/{OST:metadata}ost/ost-working-dir[@comment]"
                 ).get("comment")
             except AttributeError:
                 continue
@@ -116,7 +116,7 @@ class VirshBackend(base.BaseBackend):
                 continue
 
             ost_net_name = xml.find(
-                "./metadata/{OST metadata}ost/ost-network-type[@comment]"
+                "./metadata/{OST:metadata}ost/ost-network-type[@comment]"
             ).get("comment")
 
             ip4_gw = None
@@ -215,7 +215,7 @@ class VirshBackend(base.BaseBackend):
 
             try:
                 vm_working_dir = xml.find(
-                    "./metadata/{OST metadata}ost/ost-working-dir[@comment]"
+                    "./metadata/{OST:metadata}ost/ost-working-dir[@comment]"
                 ).get("comment")
             except AttributeError:
                 continue
@@ -226,7 +226,7 @@ class VirshBackend(base.BaseBackend):
             deploy_scripts = [
                 node.get("name")
                 for node in xml.findall(
-                    "./metadata/{OST metadata}ost/ost-deploy-scripts/"
+                    "./metadata/{OST:metadata}ost/ost-deploy-scripts/"
                     "script[@name]"
                 )
             ]

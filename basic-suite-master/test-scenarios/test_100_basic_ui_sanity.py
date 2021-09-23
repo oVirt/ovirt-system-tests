@@ -27,7 +27,6 @@ from ost_utils import test_utils
 from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
-from ost_utils.pytest.fixtures.grafana import *
 from ost_utils.pytest.fixtures.selenium import hub_url
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 from ost_utils.selenium.navigation.driver import *
@@ -106,8 +105,10 @@ def test_secure_connection_should_succeed_with_root_ca(
     )
 
 
-def test_add_grafana_user(grafana_admin_api, engine_email):
-    url = grafana_admin_api + '/admin/users'
+def test_add_grafana_user(
+    engine_username, engine_password, engine_ip_url, engine_email
+):
+    url = f"http://{engine_username}:{engine_password}@{engine_ip_url}/ovirt-engine-grafana/api/admin/users"
     data = '''{{
         "name":"ost",
         "email":"{}",

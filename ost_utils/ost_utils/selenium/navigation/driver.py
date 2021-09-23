@@ -36,17 +36,23 @@ class Driver:
         self.driver.save_screenshot(path)
 
     def save_page_source(self, path):
-        with open(path, "w") as text_file:
+        with open(path, "w", encoding='utf-8') as text_file:
             text_file.write(self.driver.page_source.encode('utf-8').decode())
 
-    def save_console_log(self, path):
-        with open(path, "w") as text_file:
-            logs = self.driver.get_log('browser')
+    def save_log(self, path, type):
+        with open(path, "w", encoding='utf-8') as text_file:
+            logs = self.driver.get_log(type)
             if logs:
                 for entry in logs:
                     text_file.write(f'{entry}\n\n')
             else:
-                text_file.write('No console log entries found')
+                text_file.write('No log entries found')
+
+    def save_console_log(self, path):
+        self.save_log(path, 'browser')
+
+    def save_performance_log(self, path):
+        self.save_log(path, 'performance')
 
     def is_id_present(self, idx):
         return self.is_xpath_present(f'//*[@id="{idx}"]')

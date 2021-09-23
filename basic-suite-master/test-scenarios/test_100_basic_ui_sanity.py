@@ -145,7 +145,16 @@ def chrome_capabilities():
     capabilities['platform'] = BROWSER_PLATFORM
     capabilities['version'] = CHROME_VERSION
     capabilities['acceptInsecureCerts'] = True
-    capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
+    capabilities['goog:loggingPrefs'] = {
+        'browser': 'ALL',
+        'performance': 'ALL',
+    }
+    options = webdriver.ChromeOptions()
+    # note: response body is not logged
+    options.add_experimental_option(
+        'perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True}
+    )
+    capabilities.update(options.to_capabilities())
     return capabilities
 
 
@@ -232,27 +241,30 @@ def save_page_source(ovirt_driver, selenium_artifact_full_path):
 
 
 @pytest.fixture(scope="session")
-def save_console_log(ovirt_driver, selenium_artifact_full_path):
+def save_logs_from_browser(ovirt_driver, selenium_artifact_full_path):
     def save(description):
         if ovirt_driver.driver.capabilities['browserName'] == 'chrome':
             ovirt_driver.save_console_log(
                 selenium_artifact_full_path(description, 'txt')
+            )
+            ovirt_driver.save_performance_log(
+                selenium_artifact_full_path(description, 'perf.txt')
             )
 
     return save
 
 
 @pytest.fixture(scope="function", autouse=True)
-def after_test(request, save_screenshot, save_page_source, save_console_log):
+def after_test(
+    request, save_screenshot, save_page_source, save_logs_from_browser
+):
     yield
-    test_name = request.node.originalname
+    status = "failed" if request.session.testsfailed else "success"
+    file_name = f'{request.node.originalname}_{status}'
+    save_screenshot(file_name)
     if request.session.testsfailed:
-        failed_file_name = test_name + "_failed"
-        save_screenshot(failed_file_name)
-        save_page_source(failed_file_name)
-        save_console_log(failed_file_name)
-    else:
-        save_screenshot(test_name + "_success")
+        save_logs_from_browser(file_name)
+        save_page_source(file_name)
 
 
 @pytest.fixture(scope="session")

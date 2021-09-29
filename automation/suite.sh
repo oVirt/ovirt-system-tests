@@ -29,7 +29,7 @@ mkdir -p exported-artifacts
     cp ${OST_IMAGES_SSH_KEY}* /tmp &&
     OST_IMAGES_SSH_KEY=/tmp/$(basename $OST_IMAGES_SSH_KEY) &&
     chmod 600 ${OST_IMAGES_SSH_KEY}* &&
-    ost_init $SUITE &&
+    ost_init $SUITE $OST_IMAGES_DISTRO &&
     ost_run_tests;
 } 2>&1 | tee exported-artifacts/ost_run_tests.log
 exit ${PIPESTATUS[0]}

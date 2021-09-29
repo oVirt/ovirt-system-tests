@@ -74,7 +74,8 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
         # this in its own fixture, including making the effort to schedule
         # it right before current, would needlessly complicate the code.
         ansible_handle.shell(
-            'journalctl -a --no-pager > /var/log/journalctl.log'
+            'journalctl -a --no-pager -o short-iso-precise > '
+            '/var/log/journalctl.log'
         )
         ansible_handle.archive(
             path=artifacts_list_string, dest=remote_archive_path

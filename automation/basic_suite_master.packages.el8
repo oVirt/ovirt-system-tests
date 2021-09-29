@@ -1,0 +1,12 @@
+ansible
+jq
+mercurial
+openssl
+ost-images-el8stream-engine-installed
+ost-images-el8stream-host-installed
+ost-images-node-base
+podman
+python3-ansible-runner
+python3-pip
+python39
+python39-devel

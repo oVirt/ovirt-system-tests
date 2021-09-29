@@ -20,6 +20,9 @@ echo "Running suite: $SUITE"
 # TODO because the hosts are not set up with setup_for_ost.sh, and it only works because stdci runs this as root
 semanage permissive -a virtlogd_t
 # $distro is passed from stdci, not a good idea to depend on it, but there's currently no other way how to choose which ost-image to use
+if [[ "$distro" == "el8" ]]; then
+    distro="el8stream"
+fi
 echo "Distro: ${distro:=el8stream}"
 mkdir -p exported-artifacts
 {

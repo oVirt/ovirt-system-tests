@@ -271,10 +271,10 @@ class Vnic(SDKSubEntity):
         self.hotplug()
 
     def hot_replace_profile(self, profile):
-        time.sleep(5)
+        time.sleep(15)
         self.hotunplug()
         self.vnic_profile = profile
-        time.sleep(5)
+        time.sleep(15)
         self.hotplug()
 
     @contextlib.contextmanager

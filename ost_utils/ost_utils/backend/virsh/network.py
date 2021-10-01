@@ -48,19 +48,9 @@ def add_name(
             '--live',
         )
 
-    if ipv4_address is not None:
-        run_net_update_add(
-            'ip-dhcp-host',
-            (
-                "<host "
-                f"mac='{mac_address}' "
-                f"name='{host_name}' "
-                f"ip='{ipv4_address}' "
-                "/>"
-            ),
-            '--live',
-        )
-        run_net_update_add_dns(host_name, ipv4_address)
+    # The order is important, libvirt has a bug that fails to add a second
+    # entry for same hostname. So this way we just add IPv6 address in
+    # dual stack, and IPv4 fails until the bug is fixed.
     if ipv6_address is not None:
         run_net_update_add(
             'ip-dhcp-host',
@@ -76,3 +66,16 @@ def add_name(
             '1',
         )
         run_net_update_add_dns(host_name, ipv6_address)
+    if ipv4_address is not None:
+        run_net_update_add(
+            'ip-dhcp-host',
+            (
+                "<host "
+                f"mac='{mac_address}' "
+                f"name='{host_name}' "
+                f"ip='{ipv4_address}' "
+                "/>"
+            ),
+            '--live',
+        )
+        run_net_update_add_dns(host_name, ipv4_address)

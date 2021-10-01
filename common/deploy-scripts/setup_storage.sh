@@ -50,24 +50,6 @@ set_selinux_on_nfs() {
     restorecon -Rv /exports/nfs
 }
 
-install_deps() {
-    systemctl disable --now kdump.service
-    required_pkgs=(
-    "nfs-utils"
-    "rpcbind"
-    "lvm2"
-    "targetcli"
-    "sg3_utils"
-    "iscsi-initiator-utils"
-    "policycoreutils-python-utils"
-    )
-    rpm -q "${required_pkgs[@]}" >/dev/null || {
-        echo "one of the required packages is missing: ${required_pkgs[@]}"
-        exit 10
-    }
-}
-
-
 setup_iscsi() {
     # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master).
     if [[ $(hostname) == *"-storage"* ]]; then
@@ -160,13 +142,6 @@ setup_services() {
     systemctl start nfs-idmapd.service
 }
 
-install_deps_389ds() {
-    if  ! rpm -q 389-ds-base 389-ds-base-legacy-tools > /dev/null; then
-        echo "one of 389-ds-base or 389-ds-base-legacy-tools packages is missing"
-        exit 20
-    fi
-}
-
 setup_389ds() {
     DOMAIN=$(dnsdomainname)
     PASSWORD=12345678
@@ -248,7 +223,6 @@ EOC
 
 main() {
     # Prepare storage
-    install_deps
     setup_services
     setup_main_nfs
     setup_export
@@ -258,9 +232,6 @@ main() {
     activate_nfs
     setup_lvm_filter
     setup_iscsi
-
-    # Prepare 389ds
-    install_deps_389ds
     setup_389ds
 
     # From time to time we see problems with systemd-cgroups-agent

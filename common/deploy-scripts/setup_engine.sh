@@ -1,29 +1,7 @@
 #!/bin/bash -xe
 
-# if you want to add anything here, please try to preinstall it first
-required_pkgs=(
-    "net-snmp"
-    "ovirt-engine"
-    "ovirt-log-collector"
-    "ovirt-engine-extension-aaa-ldap-setup"
-    "otopi-debug-plugins"
-    "cronie"
-    "nfs-utils"
-    "rpcbind"
-    "lvm2"
-    "targetcli"
-    "sg3_utils"
-    "iscsi-initiator-utils"
-    "policycoreutils-python-utils"
-)
-
 systemctl enable firewalld
 systemctl start firewalld
-
-if  ! rpm -q "${required_pkgs[@]}" >/dev/null; then
-    echo "one of the required packages is missing: ${required_pkgs[@]}"
-    exit 10
-fi
 
 systemctl enable crond
 systemctl start crond

@@ -1,0 +1,6 @@
+[Add libvirt management permissions to {{ ansible_facts['user_id'] }} user]
+Identity=unix-user:{{ ansible_facts['user_id'] }}
+Action=org.libvirt.unix.manage
+ResultAny=yes
+ResultInactive=yes
+ResultActive=yes

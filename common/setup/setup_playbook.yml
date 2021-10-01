@@ -30,16 +30,9 @@
 
     - name: set accept_ra on ipv6
       lineinfile:
-        path: /etc/sysctl.d/90-lago-ipv6-ra.conf
+        path: /etc/sysctl.d/90-ost-ipv6-ra.conf
         create: yes
         line: net.ipv6.conf.all.accept_ra=2
-      become: true
-
-    - name: set up lago copr repo
-      command:
-        cmd: dnf -y copr enable tinez/ost-stuff
-        creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:tinez:ost-stuff.repo
-        warn: false
       become: true
 
     - name: set up ost-images repo
@@ -74,8 +67,9 @@
           dnf:
             name:
               - git
-              - lago
+              - libvirt
               - openssl
+              - qemu-kvm
               - podman
               - python3-ansible-runner
               - python3-ovirt-engine-sdk4
@@ -113,7 +107,6 @@
       user:
         name: "{{ ansible_facts['user_id'] }}"
         groups:
-          - lago
           - qemu
       become: true
 
@@ -122,6 +115,21 @@
         name: qemu
         groups:
           - "{{ ansible_facts['user_id'] }}"
+      become: true
+
+    - name: allow user to manage libvirt
+      template:
+        dest: /etc/polkit-1/localauthority/50-local.d/ost-libvirt.pkla
+        group: root
+        mode: '0644'
+        owner: root
+        src: ost-libvirt.pkla.in
+      become: true
+
+    - name: restart polkit
+      systemd:
+        name: polkit
+        state: restarted
       become: true
 
     - name: set user home directory permissions

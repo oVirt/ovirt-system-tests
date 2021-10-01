@@ -9,16 +9,12 @@ import os
 
 import pytest
 
-from ost_utils.backend import lago
 from ost_utils.backend import virsh
 
 
 @pytest.fixture(scope="session")
 def backend():
-    if "OST_INITIALIZED" in os.environ:
-        return virsh.VirshBackend(os.environ["PREFIX"])
-    else:
-        return lago.LagoBackend(os.environ["PREFIX"])
+    return virsh.VirshBackend(os.environ["PREFIX"])
 
 
 @pytest.fixture(scope="session")

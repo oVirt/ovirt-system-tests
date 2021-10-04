@@ -67,6 +67,7 @@ def ansible_he(
     ansible_inventory,
     backend,
     he_mac_address,
+    he_ip_address,
     he_ipv4_address,
     he_ipv6_address,
     he_host_name,
@@ -85,7 +86,7 @@ def ansible_he(
         (
             '[default]\n'
             f'{he_host_name} '
-            f'ansible_host={he_ipv4_address} '
+            f'ansible_host={he_ip_address} '
             f'ansible_ssh_private_key_file={ssh_key_file}\n'
         ).encode(),
     )

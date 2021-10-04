@@ -71,8 +71,6 @@
               - openssl
               - qemu-kvm
               - podman
-              - python3-paramiko
-              - python3-requests
             state: latest
           become: true
 
@@ -82,6 +80,7 @@
               - autoconf
               - automake
               - createrepo
+              - jq
               - libcurl-devel
               - libxml2-devel
               - gcc

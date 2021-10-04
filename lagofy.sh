@@ -322,10 +322,6 @@ ost_check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    rpm --quiet -q python3-paramiko ansible python3-ansible-runner openssl || {
-        echo Missing mandatory rpm
-        return 9
-    }
     podman info |grep -A5 '^  search' | grep -q 'docker.io' || {
         sed -i "/^registries.*registry.access.redhat.com/ c registries = ['registry.access.redhat.com', 'registry.redhat.io', 'docker.io', 'quay.io']" /etc/containers/registries.conf
     }

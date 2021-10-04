@@ -4,7 +4,6 @@
 
   vars:
     default_ost_images_repo_url: 'https://templates.ovirt.org/yum/'
-    default_ovirt_repo_url: 'https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm'
     default_ost_images_rpms:
       - ost-images-el8stream-engine-installed
       - ost-images-el8stream-host-installed
@@ -41,12 +40,6 @@
         description: ost-images
         baseurl: "{{ ost_images_repo_url | default(default_ost_images_repo_url) }}"
         gpgcheck: no
-      become: true
-
-    - name: install ovirt-release-master
-      dnf:
-        name: "{{ ovirt_repo_url | default(default_ovirt_repo_url) }}"
-        disable_gpg_check: yes
       become: true
 
     - name: install packages and cleanup epel if necessary

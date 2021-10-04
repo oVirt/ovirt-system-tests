@@ -71,7 +71,6 @@
               - openssl
               - qemu-kvm
               - podman
-              - python3-ansible-runner
               - python3-paramiko
               - python3-requests
             state: latest

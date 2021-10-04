@@ -3,6 +3,7 @@
 ovirt-engine-sdk-python>=4.4.15
 # TODO: use a stable version once '--container-options' is there
 git+https://github.com/ansible/ansible-navigator.git@88bb7c148b23c82c53d1caa6c1e392d0d99eb018
+ansible-runner
 pytest==6.2.2
 # basic suite deps
 requests

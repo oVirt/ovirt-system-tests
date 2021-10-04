@@ -1825,7 +1825,7 @@ def test_upload_cirros_image(
     working_dir,
     artifacts_dir,
     ansible_execution_environment,
-    engine_ip,
+    engine_fqdn,
     engine_full_username,
     engine_password,
     cirros_image_disk_name,
@@ -1845,7 +1845,7 @@ def test_upload_cirros_image(
             )
 
             ovirt_auth = collection.ovirt_auth(
-                hostname=engine_ip,
+                hostname=engine_fqdn,
                 username=engine_full_username,
                 password=engine_password,
             )["ansible_facts"]["ovirt_auth"]

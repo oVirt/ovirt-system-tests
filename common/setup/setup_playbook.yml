@@ -72,7 +72,6 @@
               - qemu-kvm
               - podman
               - python3-ansible-runner
-              - python3-ovirt-engine-sdk4
               - python3-paramiko
               - python3-requests
             state: latest
@@ -84,7 +83,12 @@
               - autoconf
               - automake
               - createrepo
+              - libcurl-devel
+              - libxml2-devel
+              - gcc
               - make
+              - openssl-devel
+              - python3-devel
               - rpm-build
               - virt-install
             state: latest

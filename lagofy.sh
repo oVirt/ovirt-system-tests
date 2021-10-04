@@ -322,7 +322,7 @@ ost_check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    rpm --quiet -q python3-ovirt-engine-sdk4 python3-paramiko ansible python3-ansible-runner openssl || {
+    rpm --quiet -q python3-paramiko ansible python3-ansible-runner openssl || {
         echo Missing mandatory rpm
         return 9
     }

@@ -12,7 +12,8 @@ def test_ansible_run(
     ansible_inventory,
     ansible_engine,
     hostnames_to_add,
-    engine_ip,
+    engine_ip_url,
+    engine_fqdn,
     engine_storage_ips,
     engine_full_username,
     engine_password,
@@ -25,7 +26,7 @@ def test_ansible_run(
         ansible_inventory,
         artifacts_dir,
         execution_environment_tag=ansible_execution_environment,
-        engine_fqdn=engine_ip,
+        engine_fqdn=engine_ip_url,
         engine_user=engine_full_username,
         engine_password=engine_password,
         engine_cafile="/etc/pki/ovirt-engine/ca.pem",
@@ -79,28 +80,28 @@ def test_ansible_run(
                 "master": "true",
                 "state": "present",
                 "nfs": {
-                    "address": engine_storage_ips[0],
+                    "address": engine_fqdn,
                     "path": "/exports/nfs/share1",
                 },
             },
             "second-nfs": {
                 "state": "present",
                 "nfs": {
-                    "address": engine_storage_ips[0],
+                    "address": engine_fqdn,
                     "path": "/exports/nfs/share2",
                 },
             },
             "templates": {
                 "domain_function": "export",
                 "nfs": {
-                    "address": engine_storage_ips[0],
+                    "address": engine_fqdn,
                     "path": "/exports/nfs/exported",
                 },
             },
             "iso": {
                 "domain_function": "iso",
                 "nfs": {
-                    "address": engine_storage_ips[0],
+                    "address": engine_fqdn,
                     "path": "/exports/nfs/iso",
                 },
             },
@@ -150,7 +151,7 @@ def test_ansible_run(
     )
 
     ovirt_auth = collection.ovirt_auth(
-        hostname=engine_ip,
+        hostname=engine_ip_url,
         username=engine_full_username,
         password=engine_password,
         insecure="true",

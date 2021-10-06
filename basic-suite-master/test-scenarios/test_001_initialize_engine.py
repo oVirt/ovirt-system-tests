@@ -46,7 +46,6 @@ def test_initialize_engine(
             {'key': 'VdsLocalDisksLowFreeSpace', 'value': '400'},
             {'key': 'OvfUpdateIntervalInMinutes', 'value': '10'},
             {'key': 'ServerRebootTimeout', 'value': '120'},
-            {'key': 'ClientModeVncDefault', 'value': 'NoVnc'},
         ],
     )
     ansible_engine.shell('ss -anp')

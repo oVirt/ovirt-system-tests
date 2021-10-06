@@ -135,6 +135,11 @@ def firefox_capabilities():
     capabilities['moz:useNonSpecCompliantPointerOrigin'] = True
     options = webdriver.FirefoxOptions()
     options.set_preference('devtools.console.stdout.content', True)
+    options.set_preference("browser.download.folderList", 2)
+    options.set_preference("browser.download.dir", "/export")
+    options.set_preference(
+        "browser.helperApps.neverAsk.saveToDisk", "application/x-virt-viewer"
+    )
     capabilities.update(options.to_capabilities())
     return capabilities
 
@@ -150,6 +155,8 @@ def chrome_capabilities():
         'performance': 'ALL',
     }
     options = webdriver.ChromeOptions()
+    prefs = {'download.default_directory': '/export'}
+    options.add_experimental_option('prefs', prefs)
     # note: response body is not logged
     options.add_experimental_option(
         'perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True}
@@ -194,7 +201,8 @@ def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
 def selenium_artifacts_dir(artifacts_dir):
     dc_version = os.environ.get('OST_DC_VERSION', '')
     path = os.path.join(artifacts_dir, 'ui_tests_artifacts%s/' % dc_version)
-    os.makedirs(path, exist_ok=True)
+    os.umask(0)
+    os.makedirs(path, mode=0o777, exist_ok=True)
     return path
 
 
@@ -414,7 +422,11 @@ def setup_virtual_machines(engine_api):
 
 
 def test_virtual_machines(
-    ovirt_driver, setup_virtual_machines, save_screenshot
+    ovirt_driver,
+    setup_virtual_machines,
+    save_screenshot,
+    selenium_artifacts_dir,
+    selenium_artifact_full_path,
 ):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     vm_list_view = webadmin_menu.open_vm_list_view()
@@ -477,19 +489,19 @@ def test_virtual_machines(
 
     vm_vgpu_dialog.cancel()
 
-    # TODO uncomment once VNC console works
-    pytest.skip("VNC console fails to open on FIPS hosts")
+    vm_list_view.click_console()
 
-    novnc_console = vm_list_view.open_console()
-    novnc_console.wait_for_loaded()
-    novnc_console.wait_for_connected()
+    console_file_full_path = os.path.join(selenium_artifacts_dir, 'console.vv')
+    ovirt_driver.wait_until(
+        'The console.vv file has not been downloaded',
+        lambda: os.path.exists(console_file_full_path),
+    )
 
-    assert novnc_console.is_connected() is True
-    assert novnc_console.is_vnc_screen_displayed() is True
+    assert os.path.getsize(console_file_full_path) > 1000
 
-    save_screenshot('vms-console')
-
-    novnc_console.close()
+    os.rename(
+        console_file_full_path, selenium_artifact_full_path('console', 'vv')
+    )
 
 
 def test_storage_domains(ovirt_driver):

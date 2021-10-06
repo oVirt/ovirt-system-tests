@@ -116,6 +116,8 @@ def _nodes(
                 "-d",
                 "-v",
                 "/dev/shm:/dev/shm",
+                "-v",
+                f"{ui_artifacts_dir}:/export:Z",
                 "--add-host={}".format(engine_dns_entry),
                 "-e",
                 "HUB_HOST={}".format(HUB_IP),

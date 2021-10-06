@@ -67,15 +67,11 @@ class VmListView(EntityListView):
         run_once_dialog.wait_for_displayed()
         return run_once_dialog
 
-    def open_console(self):
-        LOGGER.debug('Open console')
+    def click_console(self):
+        LOGGER.debug('Click console')
         self.click_menu_dropdown_top_button(
             'ActionPanelView_ConsoleConnectCommand'
         )
-
-        novnc_console = NoVncConsole(self.ovirt_driver)
-        novnc_console.wait_for_displayed()
-        return novnc_console
 
 
 class RunOnceDialog(Displayable):
@@ -114,57 +110,4 @@ class RunOnceDialog(Displayable):
             'Run button is still enabled',
             self.ovirt_driver.is_button_enabled,
             "Run",
-        )
-
-
-class NoVncConsole(Displayable):
-    def __init__(self, ovirt_driver):
-        super(NoVncConsole, self).__init__(ovirt_driver)
-
-    def is_displayed(self):
-        if len(self.ovirt_driver.driver.window_handles) < 2:
-            return False
-
-        if (
-            self.ovirt_driver.driver.current_window_handle
-            is not self.ovirt_driver.driver.window_handles[1]
-        ):
-            self.ovirt_driver.driver.switch_to.window(
-                self.ovirt_driver.driver.window_handles[1]
-            )
-        return self.ovirt_driver.is_xpath_displayed('//div[@id="status"]')
-
-    def get_displayable_name(self):
-        return 'Run once dialog'
-
-    def wait_for_loaded(self):
-        LOGGER.debug('Wait for VNC console to be loaded')
-        self.ovirt_driver.wait_long_while(
-            'VNC console is still loading',
-            self.ovirt_driver.is_xpath_displayed,
-            '//div[@id="status" and text() = "Loading"]',
-        )
-
-    def wait_for_connected(self):
-        LOGGER.debug('Wait for VNC console to be connected')
-        self.ovirt_driver.wait_long_while(
-            'VNC console is still connecting',
-            self.ovirt_driver.is_xpath_displayed,
-            '//div[@id="status" and text() = "Connecting"]',
-        )
-
-    def is_connected(self):
-        return self.ovirt_driver.is_xpath_displayed(
-            '//div[@id="status" and contains(text(), "Connected")]'
-        )
-
-    def is_vnc_screen_displayed(self):
-        return self.ovirt_driver.is_xpath_displayed(
-            '//div[@id="screen"]//canvas'
-        )
-
-    def close(self):
-        self.ovirt_driver.driver.close()
-        self.ovirt_driver.driver.switch_to.window(
-            self.ovirt_driver.driver.window_handles[0]
         )

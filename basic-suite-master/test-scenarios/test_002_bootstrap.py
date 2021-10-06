@@ -1228,15 +1228,6 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
 def test_verify_engine_backup(
     ansible_engine, engine_api, ost_dc_name, is_node_suite
 ):
-    if ost_dc_name != engine_object_names.TEST_DC_NAME or is_node_suite:
-        # TODO: If/when we decide to test this in HE, we should:
-        # 1. Make sure things are generally stable (this applies also to non-HE)
-        # 2. Enter global maintenance
-        # 3. Do the below (backup, cleanup, restore, setup)
-        # 4. Exit global maintenance
-        pytest.skip(
-            ' [2020-12-14] Do not test engine-backup on hosted-engine suites'
-        )
     ansible_engine.file(
         path='/var/log/ost-engine-backup', state='directory', mode='0755'
     )
@@ -1259,6 +1250,17 @@ def test_verify_engine_backup(
         '--file=/var/log/ost-engine-backup/backup.tgz '
         '--log=/var/log/ost-engine-backup/verify-log.txt'
     )
+
+    if ost_dc_name != engine_object_names.TEST_DC_NAME or is_node_suite:
+        # TODO: If/when we decide to test this in HE, we should:
+        # 1. Make sure things are generally stable (this applies also to non-HE)
+        # 2. Enter global maintenance
+        # 3. Do the below (backup, cleanup, restore, setup)
+        # 4. Exit global maintenance
+        LOGGER.debug(
+            '[2020-12-14] Not testing engine-backup --mode=restore on hosted-engine'
+        )
+        return True
 
     ansible_engine.shell(
         'engine-cleanup '

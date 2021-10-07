@@ -12,6 +12,7 @@ import pytest
 
 from ost_utils.ansible import facts
 from ost_utils.backend.virsh import network
+from ost_utils.storage_utils import lun
 
 
 @pytest.fixture(scope="session")
@@ -124,6 +125,44 @@ def he_ip_address(he_ipv4_address, he_ipv6_address):
 
 
 @pytest.fixture(scope="session")
+def he_iscsi_sd_ip(sd_iscsi_host_ips):
+    # TODO: Make this more accurate, check network
+    return sd_iscsi_host_ips[0]
+
+
+@pytest.fixture(scope="session")
+def he_lun_id(ansible_storage):
+    return lun.get_he_uuids(ansible_storage)[0]
+
+
+@pytest.fixture(scope="session")
+def he_engine_answer_file_storage_snippet(
+    storage_hostname,
+    he_iscsi_sd_ip,
+    he_lun_id,
+    ost_he_storage_domain_type,
+):
+    if ost_he_storage_domain_type == 'nfs':
+        return (
+            'OVEHOSTED_STORAGE/domainType=str:nfs3\n'
+            'OVEHOSTED_STORAGE/storageDomainConnection=str:'
+            f'{storage_hostname}:/exports/nfs_he\n'
+        )
+    elif ost_he_storage_domain_type == 'iscsi':
+        return (
+            'OVEHOSTED_STORAGE/domainType=str:iscsi\n'
+            'OVEHOSTED_STORAGE/iSCSIPortalIPAddress=str:'
+            f'{he_iscsi_sd_ip}\n'
+            'OVEHOSTED_STORAGE/LunID=str:'
+            f'{he_lun_id}\n'
+        )
+    else:
+        raise RuntimeError(
+            f'Unknown ost_he_storage_domain_type {ost_he_storage_domain_type}'
+        )
+
+
+@pytest.fixture(scope="session")
 def he_engine_answer_file_contents(
     he_host_name,
     he_domain_name,
@@ -136,6 +175,7 @@ def he_engine_answer_file_contents(
     he_ip_prefix,
     engine_password,
     root_password,
+    he_engine_answer_file_storage_snippet,
 ):
     return (
         '[environment:init]\n'
@@ -153,10 +193,7 @@ def he_engine_answer_file_contents(
         f'OVEHOSTED_ENGINE/appHostName=str:{host0_hostname}.'
         f'{he_domain_name}\n'
         'OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter\n'
-        'OVEHOSTED_STORAGE/domainType=str:nfs3\n'
         'OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage\n'
-        f'OVEHOSTED_STORAGE/storageDomainConnection=str:'
-        f'{storage_hostname}:/exports/nfs_he\n'
         'OVEHOSTED_VM/vmMemSizeMB=int:3171\n'
         'OVEHOSTED_CORE/memCheckRequirements=bool:False\n'
         f'OVEHOSTED_VM/vmMACAddr=str:{he_mac_address}\n'
@@ -172,6 +209,7 @@ def he_engine_answer_file_contents(
         'OVEHOSTED_VM/rootSshAccess=str:yes\n'
         'OVEHOSTED_VM/rootSshPubkey=str:\n'
         'OVEHOSTED_VDSM/cpu=str:model_SandyBridge\n'
+        f'{he_engine_answer_file_storage_snippet}'
     )
 
 

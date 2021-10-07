@@ -44,3 +44,8 @@ def ansible_execution_environment():
 @pytest.fixture(scope="session")
 def ost_images_distro():
     return os.environ.get('OST_IMAGES_DISTRO')
+
+
+@pytest.fixture(scope="session")
+def ost_he_storage_domain_type():
+    return os.environ.get('OST_HE_STORAGE_DOMAIN_TYPE', 'nfs')

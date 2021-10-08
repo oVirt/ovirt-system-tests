@@ -60,11 +60,16 @@
             state: present
           dnf:
             name:
+              - gcc
               - git
+              - libcurl-devel
               - libvirt
+              - libxml2-devel
               - openssl
-              - qemu-kvm
+              - openssl-devel
               - podman
+              - python3-devel
+              - qemu-kvm
             state: latest
           become: true
 
@@ -75,12 +80,7 @@
               - automake
               - createrepo
               - jq
-              - libcurl-devel
-              - libxml2-devel
-              - gcc
               - make
-              - openssl-devel
-              - python3-devel
               - rpm-build
               - virt-install
             state: latest

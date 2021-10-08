@@ -32,3 +32,10 @@ def working_dir():
 @pytest.fixture(scope='session')
 def ssh_key_file():
     return os.environ.get('OST_IMAGES_SSH_KEY')
+
+
+@pytest.fixture(scope="session")
+def ansible_execution_environment():
+    return os.environ.get(
+        'OST_ANSIBLE_EEI', 'quay.io/ovirt/el8stream-ansible-executor:latest'
+    )

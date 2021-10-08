@@ -7,11 +7,11 @@
 from ost_utils.shell import shell
 
 
-def test_pull_ee_image():
+def test_pull_ee_image(ansible_execution_environment):
     shell(
         [
             'podman',
             'pull',
-            'quay.io/ovirt/el8stream-ansible-executor:latest',
+            ansible_execution_environment,
         ]
     )

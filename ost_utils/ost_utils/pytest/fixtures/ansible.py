@@ -117,8 +117,3 @@ def ansible_inventory(backend, working_dir):
     inv = inventory.Inventory(working_dir)
     inv.add('backend', backend.ansible_inventory_str())
     return inv
-
-
-@pytest.fixture(scope="session")
-def ansible_execution_environment():
-    return "el8stream-ansible-executor"

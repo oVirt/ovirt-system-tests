@@ -16,7 +16,6 @@ from ost_utils.pytest.fixtures.ansible import ansible_clean_private_dirs
 from ost_utils.pytest.fixtures.ansible import ansible_collect_logs
 from ost_utils.pytest.fixtures.ansible import ansible_engine
 from ost_utils.pytest.fixtures.ansible import ansible_engine_facts
-from ost_utils.pytest.fixtures.ansible import ansible_execution_environment
 from ost_utils.pytest.fixtures.ansible import ansible_host0
 from ost_utils.pytest.fixtures.ansible import ansible_host1
 from ost_utils.pytest.fixtures.ansible import ansible_hosts
@@ -46,6 +45,7 @@ from ost_utils.pytest.fixtures.deployment import set_sar_interval
 
 from ost_utils.pytest.fixtures.engine import *
 
+from ost_utils.pytest.fixtures.env import ansible_execution_environment
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file
 from ost_utils.pytest.fixtures.env import suite_dir

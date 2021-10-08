@@ -1,3 +1,0 @@
-paramiko
-PyYAML
-requests

@@ -296,9 +296,10 @@ ost_console() {
 
 # check dependencies
 ost_check_dependencies() {
+    ${PYTHON} -V 2>/dev/null | grep -q ^Python || { echo "$PYTHON is not installed"; return 2; }
     mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
-    { python3 -m pip install --user tox &&
-    python3 -m tox -r -e deps; } > "${OST_REPO_ROOT}/exported-artifacts/tox-deps.log" || { echo "tox dependencies failed. see tox-deps.log"; return 3; }
+    { ${PYTHON} -m pip install --user tox &&
+    ${PYTHON} -m tox -r -e deps; } > "${OST_REPO_ROOT}/exported-artifacts/tox-deps.log" || { echo "tox dependencies failed. see tox-deps.log"; return 3; }
     sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | egrep -q 'accept_ra ?= ?2' || {
         echo 'Missing accept_ra on at least one interface. "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
@@ -330,7 +331,7 @@ ost_check_dependencies() {
 
 ost_linters() {
     echo "Running linters..."
-    python3 -m tox -q -e flake8,pylint,black,broken-symlinks,copyright-notices
+    ${PYTHON} -m tox -q -e flake8,pylint,black,broken-symlinks,copyright-notices
 }
 
 # $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py
@@ -343,7 +344,7 @@ _ost_run_tc () {
     local testcase=${@/#/$PWD/}
     local junitxml_file="${OST_REPO_ROOT}/exported-artifacts/junit.xml"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" python3 -u -B -m pytest \
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m pytest \
         -s \
         -v \
         -x \
@@ -369,7 +370,7 @@ ost_run_tc() {
 
 # $1=tc file, $2=test name
 ost_run_after() {
-    { PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" python3 << EOT
+    { PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} << EOT
 exec(open('$1').read())
 since=_TEST_LIST.index('$2')
 print('%s' % '\n'.join(_TEST_LIST[since+1:]))
@@ -401,4 +402,5 @@ export ANSIBLE_NOCOLOR="1"
 export ANSIBLE_HOST_KEY_CHECKING="False"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="/tmp"
 export LIBVIRT_DEFAULT_URI="qemu:///system"
+PYTHON=python3.9
 PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}"

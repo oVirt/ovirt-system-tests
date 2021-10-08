@@ -68,7 +68,8 @@
               - openssl
               - openssl-devel
               - podman
-              - python3-devel
+              - python39
+              - python39-devel
               - qemu-kvm
             state: latest
           become: true

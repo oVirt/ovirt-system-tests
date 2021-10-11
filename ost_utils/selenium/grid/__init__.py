@@ -4,11 +4,15 @@
 #
 #
 
-CHROME_CONTAINER_IMAGE = 'quay.io/ovirt/node-chrome-debug:3.141.59-20210830'
-FIREFOX_CONTAINER_IMAGE = 'quay.io/ovirt/node-firefox-debug:3.141.59-20210830'
-HUB_CONTAINER_IMAGE = 'quay.io/ovirt/hub:3.141.59-20210830'
-FFMPEG_CONTAINER_IMAGE = 'quay.io/ovirt/video:ffmpeg-4.3.1-20210618'
+CHROME_CONTAINER_IMAGE = 'quay.io/ovirt/node-chrome-debug:4.0.0'
+FIREFOX_CONTAINER_IMAGE = 'quay.io/ovirt/node-firefox-debug:4.0.0'
+HUB_CONTAINER_IMAGE = 'quay.io/ovirt/hub:4.0.0'
+FFMPEG_CONTAINER_IMAGE = 'quay.io/ovirt/video:ffmpeg-4.3.1-20211025'
 
-# selenium grid update 20210830 uses these versions:
-CHROME_VERSION = '92.0.4515.159'
-FIREFOX_VERSION = '91.0.2'
+# selenium grid 4.0.0 uses these versions:
+CHROME_VERSION = '94.0.4606.81'
+FIREFOX_VERSION = '93.0'
+
+BROWSER_PLATFORM = 'LINUX'
+SCREEN_WIDTH = 1600
+SCREEN_HEIGHT = 900

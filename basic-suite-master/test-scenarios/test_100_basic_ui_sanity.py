@@ -41,15 +41,13 @@ from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
 from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.selenium.grid import CHROME_VERSION
 from ost_utils.selenium.grid import FIREFOX_VERSION
+from ost_utils.selenium.grid import BROWSER_PLATFORM
+from ost_utils.selenium.grid import SCREEN_WIDTH
+from ost_utils.selenium.grid import SCREEN_HEIGHT
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 
 LOGGER = logging.getLogger(__name__)
-
-BROWSER_PLATFORM = 'LINUX'
-# width and height of selenium containers
-WINDOW_WIDTH = 1360
-WINDOW_HEIGHT = 1020
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -188,7 +186,7 @@ def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
     )
 
     ovirt_driver = Driver(driver)
-    driver.set_window_size(WINDOW_WIDTH, WINDOW_HEIGHT)
+    driver.set_window_size(SCREEN_WIDTH, SCREEN_HEIGHT)
     driver.get(engine_webadmin_url)
 
     try:

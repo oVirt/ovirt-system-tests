@@ -16,16 +16,19 @@ from ost_utils.selenium.grid import CHROME_CONTAINER_IMAGE
 from ost_utils.selenium.grid import FIREFOX_CONTAINER_IMAGE
 from ost_utils.selenium.grid import FFMPEG_CONTAINER_IMAGE
 from ost_utils.selenium.grid import HUB_CONTAINER_IMAGE
+from ost_utils.selenium.grid import SCREEN_WIDTH
+from ost_utils.selenium.grid import SCREEN_HEIGHT
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
 
 
 HUB_IP = "127.0.0.1"
 HUB_PORT = 4444
-LOGGER = logging.getLogger(__name__)
 NODE_PORT_GEN = iter(range(5600, 5700))
 NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
 GRID_STARTUP_WAIT_RETRIES = 300
+
+LOGGER = logging.getLogger(__name__)
 
 
 class SeleniumGridError(Exception):
@@ -44,9 +47,11 @@ def grid(
 ):
     for attempt in range(retries):
         hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT + 100)
+
         LOGGER.debug(
             f"Attempt no {attempt} to run the grid on {hub_port} port"
         )
+
         try:
             with _grid(
                 engine_fqdn,
@@ -84,7 +89,7 @@ def _grid(
             engine_dns_entry = f"{engine_fqdn}:{engine_ip}"
             with _nodes(
                 node_images,
-                hub_port,
+                hub_name,
                 pod_name,
                 engine_dns_entry,
                 podman_cmd,
@@ -96,7 +101,7 @@ def _grid(
                 with _video_recorders(
                     pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
                 ) as videos_names:
-                    url = f"http://{HUB_IP}:{hub_port}/wd/hub"
+                    url = f"http://{HUB_IP}:{hub_port}"
                     try:
                         grid_health_check(url, len(node_images))
                         yield url
@@ -109,28 +114,6 @@ def _grid(
                             videos_names,
                         )
                         raise
-
-
-@contextlib.contextmanager
-def _hub(image, hub_port, pod_name, podman_cmd):
-    name = shell(
-        [
-            podman_cmd,
-            "run",
-            "-d",
-            "-e",
-            f"SE_OPTS=-port {hub_port}",
-            "-v",
-            "/dev/shm:/dev/shm",
-            "--pod",
-            pod_name,
-            image,
-        ]
-    ).strip()
-    try:
-        yield name
-    finally:
-        shell([podman_cmd, "rm", "-f", name])
 
 
 @contextlib.contextmanager
@@ -149,13 +132,34 @@ def _pod(hub_port, podman_cmd):
             "create",
             *network_backend_options,
             "-p",
-            f"{hub_port}:{hub_port}",
+            f'{hub_port}:4444',
         ]
     ).strip()
     try:
         yield name
     finally:
         shell([podman_cmd, "pod", "rm", "-f", name])
+
+
+@contextlib.contextmanager
+def _hub(image, hub_port, pod_name, podman_cmd):
+    hub_name = f"selenium-hub-{hub_port}"
+    shell(
+        [
+            podman_cmd,
+            "run",
+            "-d",
+            "--name",
+            hub_name,
+            "--pod",
+            pod_name,
+            image,
+        ]
+    ).strip()
+    try:
+        yield hub_name
+    finally:
+        shell([podman_cmd, "rm", "-f", hub_name])
 
 
 # When running multiple containers in a pod, they compete over
@@ -167,7 +171,7 @@ def _pod(hub_port, podman_cmd):
 @contextlib.contextmanager
 def _nodes(
     images,
-    hub_port,
+    hub_name,
     pod_name,
     engine_dns_entry,
     podman_cmd,
@@ -188,15 +192,25 @@ def _nodes(
                 f"{ui_artifacts_dir}:/export:Z",
                 f"--add-host={engine_dns_entry}",
                 "-e",
-                f"HUB_HOST={HUB_IP}",
+                f"SE_EVENT_BUS_HOST={hub_name}",
                 "-e",
-                f"HUB_PORT={hub_port}",
+                "SE_EVENT_BUS_PUBLISH_PORT=4442",
                 "-e",
-                f"SE_OPTS=-port {next(NODE_PORT_GEN)}",
+                "SE_EVENT_BUS_SUBSCRIBE_PORT=4443",
+                "-e",
+                f"SE_OPTS=--port {next(NODE_PORT_GEN)}",
+                "-e",
+                f"DISPLAY_NUM={display}",
                 "-e",
                 f"DISPLAY=:{display}",
                 "-e",
+                f"VNC_PORT={next(NODE_PORT_GEN)}",
+                "-e",
                 "VNC_NO_PASSWORD=1",
+                "-e",
+                f"SCREEN_WIDTH={SCREEN_WIDTH}",
+                "-e",
+                f"SCREEN_HEIGHT={SCREEN_HEIGHT}",
                 "--pod",
                 pod_name,
                 image,
@@ -233,6 +247,8 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
                     "-e",
                     f"FILE_NAME=video-{image.split('/')[-1].split('-')[1]}"
                     f".mp4",
+                    "-e",
+                    f"VIDEO_SIZE={SCREEN_WIDTH}x{SCREEN_HEIGHT}",
                     "--pod",
                     pod_name,
                     FFMPEG_CONTAINER_IMAGE,
@@ -253,8 +269,13 @@ def grid_health_check(hub_url, expected_node_count=None):
 
     for i in range(GRID_STARTUP_WAIT_RETRIES):
         try:
-            out = shell(["curl", "-sSL", status_url])
-            if json.loads(out)["value"]["ready"] is True:
+            status_json = shell(["curl", "-sSL", status_url])
+            status_dict = json.loads(status_json)
+            if (
+                status_dict["value"]["ready"] is True
+                and len(status_dict["value"]["nodes"]) == expected_node_count
+                and _all_nodes_up(status_dict["value"]["nodes"])
+            ):
                 break
         except ShellError:
             pass
@@ -262,20 +283,12 @@ def grid_health_check(hub_url, expected_node_count=None):
     else:
         raise SeleniumGridError("Selenium grid didn't start up properly")
 
-    if expected_node_count is not None:
-        api_url = "/".join(hub_url.split("/")[:-2] + ["grid/api/hub"])
 
-        for i in range(GRID_STARTUP_WAIT_RETRIES):
-            try:
-                out = shell(["curl", "-sSL", api_url])
-                node_count = json.loads(out)["slotCounts"]["total"]
-                if node_count == expected_node_count:
-                    break
-            except ShellError:
-                pass
-            time.sleep(0.1)
-        else:
-            raise SeleniumGridError("Not enough nodes in selenium grid")
+def _all_nodes_up(nodes_dict):
+    for node in nodes_dict:
+        if node["availability"] != "UP":
+            return False
+    return True
 
 
 def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):

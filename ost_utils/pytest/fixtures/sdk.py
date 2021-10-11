@@ -56,3 +56,19 @@ def get_vm_service_for_vm(vms_service):
         return vms_service.vm_service(vms[0].id)
 
     return service_for
+
+
+@pytest.fixture(scope="session")
+def users_service(system_service):
+    return system_service.users_service()
+
+
+@pytest.fixture(scope="session")
+def get_user_service_for_user(users_service):
+    def service_for(username):
+        users = users_service.list(search=f'name={username}')
+        if len(users) != 1:
+            raise RuntimeError("Could not find user: {}".format(username))
+        return users_service.user_service(users[0].id)
+
+    return service_for

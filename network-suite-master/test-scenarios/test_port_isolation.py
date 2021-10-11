@@ -45,12 +45,14 @@ def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
 
 
 @pytest.fixture(scope='module')
-def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1, serial_console):
+def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1, cirros_serial_console):
     vms_ovirtmgmt_ip = []
     for vm in vms_up_on_host_1:
         if suite.af().is6:
             ip = IFACE_0.ipv6
-            serial_console.add_static_ip(vm.id, f'{ip}/64', IFACE_0.name)
+            cirros_serial_console.add_static_ip(
+                vm.id, f'{ip}/64', IFACE_0.name
+            )
         else:
             host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
             ip = host_node.lookup_ip_address_with_dns_query(
@@ -69,18 +71,24 @@ def vm_nodes(vms_ovirtmgmt_ip):
 
 
 @pytest.fixture(scope='module')
-def isolated_ifaces_up_with_ip(vm_nodes, vms_up_on_host_1, serial_console):
+def isolated_ifaces_up_with_ip(
+    vm_nodes, vms_up_on_host_1, cirros_serial_console
+):
     if suite.af().is6:
-        return isolated_ifaces_up_with_ipv6(vms_up_on_host_1, serial_console)
+        return isolated_ifaces_up_with_ipv6(
+            vms_up_on_host_1, cirros_serial_console
+        )
     else:
         return isolated_ifaces_up_with_ipv4(vm_nodes)
 
 
-def isolated_ifaces_up_with_ipv6(vms_up_on_host_1, serial_console):
+def isolated_ifaces_up_with_ipv6(vms_up_on_host_1, cirros_serial_console):
     ips = []
     for vm in vms_up_on_host_1:
         ip = IFACE_ISOLATED.ipv6
-        serial_console.add_static_ip(vm.id, f'{ip}/64', IFACE_ISOLATED.name)
+        cirros_serial_console.add_static_ip(
+            vm.id, f'{ip}/64', IFACE_ISOLATED.name
+        )
         ips.append(ip)
     return ips
 

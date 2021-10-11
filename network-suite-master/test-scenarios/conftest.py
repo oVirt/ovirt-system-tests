@@ -21,7 +21,7 @@ from fixtures.host import host_0_up
 from fixtures.host import host_1_up
 from fixtures.host import install_hosts_to_save_time
 
-from fixtures.engine import engine_admin
+from fixtures.engine import admin_user
 from fixtures.engine import engine_full_username
 from fixtures.engine import engine_password
 from fixtures.engine import ovirt_engine_setup
@@ -40,8 +40,6 @@ from fixtures.storage import lun_id
 from fixtures.providers import ovirt_image_repo
 
 from fixtures.virt import cirros_template
-from fixtures.virt import vmconsole_rsa
-from fixtures.virt import serial_console
 
 from fixtures.data_center import data_centers_service
 from fixtures.data_center import default_data_center
@@ -76,12 +74,25 @@ from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts
 from ost_utils.pytest.fixtures.deployment import set_sar_interval
+from ost_utils.pytest.fixtures.engine import engine_api
+from ost_utils.pytest.fixtures.engine import engine_api_url
+from ost_utils.pytest.fixtures.engine import engine_admin_service
 from ost_utils.pytest.fixtures.engine import engine_answer_file_contents
 from ost_utils.pytest.fixtures.engine import engine_answer_file_path
 from ost_utils.pytest.fixtures.engine import engine_fqdn
+from ost_utils.pytest.fixtures.engine import engine_ip
+from ost_utils.pytest.fixtures.engine import engine_ip_url
+from ost_utils.pytest.fixtures.engine import engine_ips_for_network
+from ost_utils.pytest.fixtures.engine import engine_username
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.env import working_dir
+from ost_utils.pytest.fixtures.network import management_network_name
+from ost_utils.pytest.fixtures.sdk import get_user_service_for_user
+from ost_utils.pytest.fixtures.sdk import system_service
+from ost_utils.pytest.fixtures.sdk import users_service
 from ost_utils.pytest.fixtures.virt import cirros_image
+from ost_utils.pytest.fixtures.virt import cirros_serial_console
+from ost_utils.pytest.fixtures.virt import rsa_pair
 from ost_utils.pytest.fixtures.virt import transformed_cirros_image

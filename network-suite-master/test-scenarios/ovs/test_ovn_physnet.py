@@ -102,7 +102,7 @@ def vnic_attached_to_ovn_network(
 def vm_in_ovn_network_up(
     system,
     vm_in_ovs_cluster_down,
-    serial_console,
+    cirros_serial_console,
     vnic_attached_to_ovn_network,
     target,
 ):
@@ -110,7 +110,7 @@ def vm_in_ovn_network_up(
     vm_in_ovs_cluster_down.wait_for_up_status()
     joblib.AllJobs(system).wait_for_done()
     if suite.af().is6:
-        serial_console.add_static_ip(
+        cirros_serial_console.add_static_ip(
             vm_in_ovs_cluster_down.id, f'{target}/64', 'eth0'
         )
     yield vm_in_ovs_cluster_down

@@ -69,6 +69,12 @@ def engine_full_username():
 
 
 @pytest.fixture(scope="session")
+def engine_admin_service(get_user_service_for_user, engine_username):
+    admin = get_user_service_for_user(engine_username)
+    return admin
+
+
+@pytest.fixture(scope="session")
 def engine_email():
     return "root@localhost"
 

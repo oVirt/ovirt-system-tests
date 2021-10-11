@@ -23,7 +23,7 @@ def engine_password():
 
 
 @pytest.fixture(scope="session")
-def engine_admin(system):
+def admin_user(system):
     admin = userlib.User(system)
     admin.import_by_name('admin')
     return admin

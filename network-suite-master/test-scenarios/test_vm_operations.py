@@ -116,14 +116,14 @@ def host_1_with_mig_net(migration_network, host_1_up):
     host_1_up.remove_networks((migration_network,))
 
 
-def test_serial_vmconsole(serial_console, running_cirros_vm):
+def test_serial_vmconsole(cirros_serial_console, running_cirros_vm):
     if suite.af().is6:
-        ip_a = serial_console.add_static_ip(
+        ip_a = cirros_serial_console.add_static_ip(
             running_cirros_vm.id, CIRROS_IPV6, CIRROS_NIC
         )
         assert CIRROS_IPV6 in ip_a
     else:
-        ip_a = serial_console.get_dhcp_ip(running_cirros_vm.id, CIRROS_NIC)
+        ip_a = cirros_serial_console.get_ip(running_cirros_vm.id, CIRROS_NIC)
         assert 'inet' in ip_a
 
 

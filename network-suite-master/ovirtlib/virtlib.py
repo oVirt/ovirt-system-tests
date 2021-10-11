@@ -5,11 +5,6 @@
 #
 import configparser
 import http
-import logging
-import os
-import pty
-import subprocess
-import time
 
 from contextlib import contextmanager
 
@@ -24,8 +19,6 @@ from ovirtlib import syncutil
 from ovirtlib.sdkentity import EntityNotFoundError
 from ovirtlib.sdkentity import SDKRootEntity
 from ovirtlib.sdkentity import SDKSubEntity
-
-LOGGER = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -402,139 +395,3 @@ class VmSpiceConsole(VmGraphicsConsole):
 class VmVncConsole(VmGraphicsConsole):
     def import_config(self):
         self._import_config(types.GraphicsType.VNC)
-
-
-class VmSerialConsole(object):
-    def __init__(self, private_key_path, vmconsole_proxy_ip, user, passwd):
-        self._private_key_path = private_key_path
-        self._proxy_ip = vmconsole_proxy_ip
-        self._user = user
-        self._passwd = passwd
-        self._reader = None
-        self._writer = None
-
-    @property
-    def bash_prompt(self):
-        return '$ '
-
-    @contextmanager
-    def connect(self, vm_id=None):
-        time.sleep(15)
-        try:
-            master, slave = pty.openpty()
-            LOGGER.debug('vmconsole opened pty')
-            args = [
-                'ssh',
-                '-t',
-                '-o',
-                'StrictHostKeyChecking=no',
-                '-i',
-                f'{self._private_key_path}',
-                '-p',
-                '2222',
-                f'ovirt-vmconsole@{self._proxy_ip}',
-                'connect',
-            ]
-            if vm_id:
-                args.append(f'--vm-id={vm_id}')
-            self._reader = subprocess.Popen(
-                args,
-                stdin=slave,
-                stdout=subprocess.PIPE,
-                universal_newlines=True,
-                bufsize=0,
-            )
-            LOGGER.debug(f'vmconsole opened reader with args {args}')
-            self._writer = os.fdopen(master, 'w')
-            LOGGER.debug('vmconsole opened writer')
-            yield
-        finally:
-            self.disconnect()
-
-    def disconnect(self):
-        LOGGER.debug('vmconsole disconnecting...')
-        self._reader.terminate()
-        self._writer.close()
-        LOGGER.debug('vmconsole disconnected')
-
-    def pre_login(self):
-        # a single `write('\n')` might be enough but it might prove flaky
-        for i in range(15):
-            LOGGER.debug(f'vmconsole pre login {i}')
-            self.write('\n')
-            ch = self.read()
-            if ch == '\n' or len(ch.strip()) != 0:
-                break
-            time.sleep(2)
-
-    @contextmanager
-    def login(self):
-        try:
-            time.sleep(15)
-            self.pre_login()
-            self.read_until_prompt('login: ')
-            self.write(f'{self._user}\n')
-            self.read_until_prompt('Password: ')
-            self.write(f'{self._passwd}\n')
-            self.read_until_bash_prompt()
-            yield
-        finally:
-            self.logout()
-
-    def logout(self):
-        LOGGER.debug('vmconsole logging out')
-        self.write('exit\n')
-        self.read_until_prompt('\n\n\n')
-
-    def read_until_bash_prompt(self):
-        LOGGER.debug('vmconsolereading until bash prompt')
-        return self.read_until_prompt(self.bash_prompt)
-
-    def read_until_prompt(self, prompt):
-        LOGGER.debug(f'vmconsole reading until {prompt}...')
-        time.sleep(2)
-        recv = ''
-        while not recv.endswith(prompt):
-            recv = ''.join([recv, (self.read())])
-        LOGGER.debug(recv)
-        return recv
-
-    def read(self):
-        return self._reader.stdout.read(1)
-
-    def write(self, entry):
-        time.sleep(2)
-        LOGGER.debug(f'vmconsole writing [{entry}]')
-        self._writer.write(entry)
-        self._writer.flush()
-
-    def add_static_ip(self, vm_id, ip, iface):
-        with self.connect(vm_id):
-            with self.login():
-                ip_addr_show = self._add_static_ip(ip, iface)
-        return ip_addr_show
-
-    def _add_static_ip(self, ip, iface):
-        self.write(f'sudo ip addr add {ip} dev {iface}\n')
-        self.read_until_bash_prompt()
-        self.write(f'ip addr show {iface}\n')
-        return self.read_until_bash_prompt()
-
-    def get_dhcp_ip(self, vm_id, iface):
-        with self.connect(vm_id):
-            with self.login():
-                ip_addr_show = self._get_dhcp_ip(iface)
-        return ip_addr_show
-
-    def _get_dhcp_ip(self, iface):
-        self.write(f'sudo /sbin/cirros-dhcpc up {iface}\n')
-        self.read_until_bash_prompt()
-        self.write(f'ip addr show {iface}\n')
-        return self.read_until_bash_prompt()
-
-
-class CirrosSerialConsole(VmSerialConsole):
-    def __init__(self, private_key_path, vmconsole_proxy_ip):
-        super(CirrosSerialConsole, self).__init__(
-            private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo'
-        )

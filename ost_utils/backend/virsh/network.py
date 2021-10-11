@@ -51,6 +51,7 @@ def add_name(
     # The order is important, libvirt has a bug that fails to add a second
     # entry for same hostname. So this way we just add IPv6 address in
     # dual stack, and IPv4 fails until the bug is fixed.
+    # # TODO Fixed in libvirt 7.6 - https://bit.ly/3lAi30J
     if ipv6_address is not None:
         run_net_update_add(
             'ip-dhcp-host',

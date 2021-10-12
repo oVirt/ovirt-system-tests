@@ -70,6 +70,7 @@ def deploy(
     request,
     run_scripts,
     set_sar_interval,
+    ost_images_distro,
 ):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
@@ -90,7 +91,9 @@ def deploy(
     # add custom repos
     custom_repos = request.config.getoption('--custom-repo')
     if custom_repos is not None:
-        custom_repos = package_mgmt.expand_jenkins_repos(custom_repos)
+        custom_repos = package_mgmt.expand_jenkins_repos(
+            custom_repos, ost_images_distro
+        )
         package_mgmt.add_custom_repos(ansible_vms_to_deploy, custom_repos)
         ansible_vms_to_deploy.shell(
             'dnf upgrade --nogpgcheck -y -x ovirt-release-master'

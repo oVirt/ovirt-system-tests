@@ -43,7 +43,7 @@ OVIRT_PACKAGES_PATTERNS = (
 )
 
 
-def expand_jenkins_repos(custom_repos):
+def expand_jenkins_repos(custom_repos, ost_images_distro):
     expanded_repos = set()
     for repo_url in custom_repos:
         if requests.get(repo_url + '/repodata/repomd.xml').ok:
@@ -69,7 +69,9 @@ def expand_jenkins_repos(custom_repos):
         if len(repo_list) == 0:
             raise RuntimeError(f"Couldn't find any repos at {repo_url}")
 
-        expanded_repos.update(repo_list)
+        expanded_repos.update(
+            repo for repo in repo_list if ost_images_distro in repo
+        )
 
     return list(r for r in expanded_repos if 'ppc64le' not in r)
 

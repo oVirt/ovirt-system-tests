@@ -50,7 +50,9 @@ dnf_update() {
 - name: Configure DNF to use the proxy
   lineinfile:
     path: /etc/dnf/dnf.conf
-    line: "proxy=socks5://localhost:1234"
+    line: |
+      proxy=socks5://localhost:1234
+      ip_resolve=4
 - name: Remove all repositories
   file:
     path: /etc/yum.repos.d

@@ -497,17 +497,15 @@ def test_virtual_machines(
         lambda: os.path.exists(console_file_full_path),
     )
 
-    # Firefox creates the console.vv file when the download starts and creates
-    # a .part file as a temp file. We need to wait until it is gone before
-    # checking the console.vv size. This is not needed for Chrome since it
-    # creates the console.vv file after the whole download to a temp file
-    # .crdownload finishes
-    ovirt_driver.wait_while(
-        'The console.vv download has not finished in time',
-        lambda: os.path.exists(console_file_full_path + '.part'),
+    ovirt_driver.wait_until(
+        'The console.vv file is too small',
+        lambda: os.path.getsize(console_file_full_path) > 1000,
     )
 
-    assert os.path.getsize(console_file_full_path) > 1000
+    with open(console_file_full_path) as f:
+        console_file_text = f.read()
+        assert '[virt-viewer]' in console_file_text
+        assert '[ovirt]' in console_file_text
 
     os.rename(
         console_file_full_path, selenium_artifact_full_path('console', 'vv')

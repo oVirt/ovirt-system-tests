@@ -79,6 +79,7 @@ from ost_utils.pytest.fixtures.deployment import set_sar_interval
 from ost_utils.pytest.fixtures.engine import engine_answer_file_contents
 from ost_utils.pytest.fixtures.engine import engine_answer_file_path
 from ost_utils.pytest.fixtures.engine import engine_fqdn
+from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.env import working_dir

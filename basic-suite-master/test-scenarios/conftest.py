@@ -46,6 +46,7 @@ from ost_utils.pytest.fixtures.deployment import set_sar_interval
 from ost_utils.pytest.fixtures.engine import *
 
 from ost_utils.pytest.fixtures.env import ansible_execution_environment
+from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file
 from ost_utils.pytest.fixtures.env import suite_dir

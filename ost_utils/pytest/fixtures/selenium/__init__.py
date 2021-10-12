@@ -9,7 +9,6 @@ import os
 import pytest
 
 import ost_utils.os_utils as os_utils
-import ost_utils.selenium.grid.docker as docker
 import ost_utils.selenium.grid.podman as podman
 
 
@@ -21,13 +20,9 @@ def _has_podman_remote():
     return os.system("podman-remote --version &> /dev/null") == 0
 
 
-def _has_docker():
-    return os.system("docker -v &> /dev/null") == 0
-
-
 def _grid_backend():
     env_backend = os.environ.get("OST_CONTAINER_BACKEND", None)
-    if env_backend in ("docker", "podman", "podman-remote"):
+    if env_backend in ("podman", "podman-remote"):
         return env_backend
 
     if os_utils.inside_mock() and _has_podman_remote():
@@ -35,9 +30,6 @@ def _grid_backend():
 
     if _has_podman():
         return "podman"
-
-    if _has_docker():
-        return "docker"
 
 
 def _env_hub_url():
@@ -60,9 +52,6 @@ def hub_url(engine_fqdn, engine_ip, selenium_artifacts_dir):
                 podman_cmd=backend,
                 ui_artifacts_dir=ui_artifacts_dir,
             ) as hub_url:
-                yield hub_url
-        elif backend == "docker":
-            with docker.grid(engine_fqdn, engine_ip) as hub_url:
                 yield hub_url
         else:
             raise RuntimeError(

@@ -5,8 +5,10 @@
 #
 
 import contextlib
+import json
 import logging
 import os
+import time
 
 import ost_utils.network_utils as network_utils
 
@@ -14,7 +16,6 @@ from ost_utils.selenium.grid import CHROME_CONTAINER_IMAGE
 from ost_utils.selenium.grid import FIREFOX_CONTAINER_IMAGE
 from ost_utils.selenium.grid import FFMPEG_CONTAINER_IMAGE
 from ost_utils.selenium.grid import HUB_CONTAINER_IMAGE
-from ost_utils.selenium.grid import common
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
 
@@ -25,6 +26,12 @@ HUB_PORT = 4444
 LOGGER = logging.getLogger(__name__)
 NODE_PORT_GEN = iter(range(5600, 5700))
 NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
+GRID_STARTUP_WAIT_RETRIES = 300
+GRID_URL_TEMPLATE = "http://{}:{}/wd/hub"
+
+
+class SeleniumGridError(Exception):
+    pass
 
 
 def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
@@ -217,11 +224,11 @@ def _grid(
                 with _video_recorders(
                     pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
                 ) as videos_names:
-                    url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
+                    url = GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
                     try:
-                        common.grid_health_check(url, len(node_images))
+                        grid_health_check(url, len(node_images))
                         yield url
-                    except common.SeleniumGridError:
+                    except SeleniumGridError:
                         _log_issues(
                             pod_name,
                             hub_name,
@@ -259,10 +266,40 @@ def grid(
             ) as url:
                 LOGGER.debug(f"Grid is up: {url}")
                 yield url
-        except (common.SeleniumGridError, ShellError):
+        except (SeleniumGridError, ShellError):
             if attempt < retries - 1:
                 LOGGER.warning("Grid startup failed, retrying...")
             else:
                 raise
         else:
             break
+
+
+def grid_health_check(hub_url, expected_node_count=None):
+    status_url = hub_url + "/status"
+
+    for i in range(GRID_STARTUP_WAIT_RETRIES):
+        try:
+            out = shell(["curl", "-sSL", status_url])
+            if json.loads(out)["value"]["ready"] is True:
+                break
+        except ShellError:
+            pass
+        time.sleep(0.1)
+    else:
+        raise SeleniumGridError("Selenium grid didn't start up properly")
+
+    if expected_node_count is not None:
+        api_url = "/".join(hub_url.split("/")[:-2] + ["grid/api/hub"])
+
+        for i in range(GRID_STARTUP_WAIT_RETRIES):
+            try:
+                out = shell(["curl", "-sSL", api_url])
+                node_count = json.loads(out)["slotCounts"]["total"]
+                if node_count == expected_node_count:
+                    break
+            except ShellError:
+                pass
+            time.sleep(0.1)
+        else:
+            raise SeleniumGridError("Not enough nodes in selenium grid")

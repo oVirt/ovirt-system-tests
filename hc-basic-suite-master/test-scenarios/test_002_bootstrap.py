@@ -28,7 +28,6 @@ from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import root_password
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.pytest.fixtures.virt import *
-from ost_utils.selenium.grid.common import http_proxy_disabled
 from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
 from ost_utils.storage_utils import lun
@@ -216,7 +215,7 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
     #engine_fqdn = "ost-hc-basic-suite-master-engine"
     url = 'http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format={}'
 
-    with http_proxy_disabled(), tempfile.NamedTemporaryFile() as tmp:
+    with tempfile.NamedTemporaryFile() as tmp:
         engine_download(url.format(engine_fqdn, key_format), tmp.name)
         try:
             verification_fn(tmp.name)
@@ -232,8 +231,7 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
 def test_engine_health_status(scheme, engine_fqdn, engine_download):
     url = '{}://{}/ovirt-engine/services/health'.format(scheme, engine_fqdn)
 
-    with http_proxy_disabled():
-        assert engine_download(url) == b"DB Up!Welcome to Health Status!"
+    assert engine_download(url) == b"DB Up!Welcome to Health Status!"
 
 
 @order_by(_TEST_LIST)

@@ -201,36 +201,35 @@ def _grid(
 
     engine_dns_entry = "{}:{}".format(engine_fqdn, engine_ip)
 
-    with common.http_proxy_disabled():
-        with _pod(hub_port, podman_cmd) as pod_name:
-            with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
-                with _nodes(
-                    node_images,
-                    hub_port,
-                    pod_name,
-                    engine_dns_entry,
-                    podman_cmd,
-                    ui_artifacts_dir,
-                ) as nodes_dict:
-                    node_names = [
-                        node_dict['name'] for node_dict in nodes_dict.values()
-                    ]
-                    with _video_recorders(
-                        pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
-                    ) as videos_names:
-                        url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
-                        try:
-                            common.grid_health_check(url, len(node_images))
-                            yield url
-                        except common.SeleniumGridError:
-                            _log_issues(
-                                pod_name,
-                                hub_name,
-                                node_names,
-                                podman_cmd,
-                                videos_names,
-                            )
-                            raise
+    with _pod(hub_port, podman_cmd) as pod_name:
+        with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
+            with _nodes(
+                node_images,
+                hub_port,
+                pod_name,
+                engine_dns_entry,
+                podman_cmd,
+                ui_artifacts_dir,
+            ) as nodes_dict:
+                node_names = [
+                    node_dict['name'] for node_dict in nodes_dict.values()
+                ]
+                with _video_recorders(
+                    pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
+                ) as videos_names:
+                    url = common.GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
+                    try:
+                        common.grid_health_check(url, len(node_images))
+                        yield url
+                    except common.SeleniumGridError:
+                        _log_issues(
+                            pod_name,
+                            hub_name,
+                            node_names,
+                            podman_cmd,
+                            videos_names,
+                        )
+                        raise
 
 
 @contextlib.contextmanager

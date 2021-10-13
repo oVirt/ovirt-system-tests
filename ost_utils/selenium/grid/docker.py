@@ -126,20 +126,19 @@ def grid(
 
     engine_dns_entry = "{}:{}".format(engine_fqdn, engine_ip)
 
-    with common.http_proxy_disabled():
-        with _network(network_name):
-            with _hub(hub_image, hub_port, network_name) as (hub_name, hub_ip):
-                with _nodes(
-                    node_images,
-                    hub_ip,
-                    hub_port,
-                    network_name,
-                    engine_dns_entry,
-                ) as node_names:
-                    url = common.GRID_URL_TEMPLATE.format(hub_ip, hub_port)
-                    try:
-                        common.grid_health_check(url, len(node_images))
-                    except RuntimeError:
-                        _log_issues(hub_name, node_names)
-                        raise
-                    yield url
+    with _network(network_name):
+        with _hub(hub_image, hub_port, network_name) as (hub_name, hub_ip):
+            with _nodes(
+                node_images,
+                hub_ip,
+                hub_port,
+                network_name,
+                engine_dns_entry,
+            ) as node_names:
+                url = common.GRID_URL_TEMPLATE.format(hub_ip, hub_port)
+                try:
+                    common.grid_health_check(url, len(node_images))
+                except RuntimeError:
+                    _log_issues(hub_name, node_names)
+                    raise
+                yield url

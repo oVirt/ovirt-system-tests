@@ -4,9 +4,7 @@
 #
 #
 
-import contextlib
 import json
-import os
 import time
 
 from ost_utils.shell import shell
@@ -49,16 +47,3 @@ def grid_health_check(hub_url, expected_node_count=None):
             time.sleep(0.1)
         else:
             raise SeleniumGridError("Not enough nodes in selenium grid")
-
-
-@contextlib.contextmanager
-def http_proxy_disabled():
-    # proxy is used in CI -- turn off proxy for webdriver
-    # TODO is there a better way, perhaps via webdriver api?
-    old_proxy = os.environ.get("http_proxy", None)
-    os.environ["http_proxy"] = ""
-    try:
-        yield
-    finally:
-        if old_proxy is not None:
-            os.environ["http_proxy"] = old_proxy

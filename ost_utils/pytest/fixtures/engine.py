@@ -19,7 +19,6 @@ from ost_utils.shell import ShellError
 from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.network import management_network_name
 from ost_utils.pytest.fixtures.network import storage_network_name
-from ost_utils.selenium.grid.common import http_proxy_disabled
 
 
 @pytest.fixture(scope="session")
@@ -113,26 +112,25 @@ def engine_api(engine_full_username, engine_password, engine_api_url):
 
 @pytest.fixture(scope="session")
 def engine_cert(engine_fqdn, engine_ip_url):
-    with http_proxy_disabled():
-        with tempfile.NamedTemporaryFile(
-            prefix="engine-cert", suffix=".pem"
-        ) as cert_file:
-            shell(
-                [
-                    "curl",
-                    "-fsS",
-                    "-m",
-                    "10",
-                    "--resolve",
-                    "{}:80:{}".format(engine_fqdn, engine_ip_url),
-                    "-o",
-                    cert_file.name,
-                    "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(
-                        engine_fqdn
-                    ),
-                ]
-            )
-            yield cert_file.name
+    with tempfile.NamedTemporaryFile(
+        prefix="engine-cert", suffix=".pem"
+    ) as cert_file:
+        shell(
+            [
+                "curl",
+                "-fsS",
+                "-m",
+                "10",
+                "--resolve",
+                "{}:80:{}".format(engine_fqdn, engine_ip_url),
+                "-o",
+                cert_file.name,
+                "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(
+                    engine_fqdn
+                ),
+            ]
+        )
+        yield cert_file.name
 
 
 @pytest.fixture(scope="session")
@@ -178,9 +176,8 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
         )
 
         def engine_is_alive():
-            with http_proxy_disabled():
-                engine_download(health_url)
-                return True
+            engine_download(health_url)
+            return True
 
         assertions.assert_true_within_short(
             engine_is_alive, allowed_exceptions=[ShellError]

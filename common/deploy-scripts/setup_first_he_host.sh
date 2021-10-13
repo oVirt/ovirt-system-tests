@@ -65,7 +65,9 @@ dnf_update() {
   dnf:
     name:  "*"
     state: latest
-    exclude: ovirt-release-master
+    exclude:
+      - ovirt-release-master
+      - ovirt-release-master-tested
 EOF
 
 }

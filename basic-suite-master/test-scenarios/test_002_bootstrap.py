@@ -134,7 +134,6 @@ _TEST_LIST = [
     "test_configure_high_perf_vm2",
     "test_add_disk_profile",
     "test_get_cluster_enabled_features",
-    "test_get_host_numa_nodes",
     "test_add_glance_images",
     "test_add_fence_agent",
     "test_verify_notifier",
@@ -152,6 +151,7 @@ _TEST_LIST = [
     "test_upload_cirros_image",
     "test_create_cirros_template",
     "test_complete_hosts_setup",
+    "test_get_host_numa_nodes",
     "test_get_host_devices",
     "test_get_host_hook",
     "test_get_host_stats",
@@ -1054,12 +1054,18 @@ def test_get_host_numa_nodes(hosts_service, ost_dc_name):
     host_service = host_utils.random_up_host_service(
         hosts_service, ost_dc_name
     )
-    numa_nodes_service = host_service.numa_nodes_service()
-    nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
-    # TODO: Do a better check on the result nodes struct.
-    # The below is too simplistic.
-    assert nodes[0].index == 0
-    assert len(nodes) > 1
+
+    def _check_numa_nodes():
+        numa_nodes_service = host_service.numa_nodes_service()
+        nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
+        # TODO: Do a better check on the result nodes struct.
+        # The below is too simplistic.
+        return len(nodes) > 1 and nodes[0].index == 0
+
+    # We update NUMA data only once the host is Up, there's no Host status
+    # reflecting this, IOW right after the host goes up there's no NUMA
+    # reported
+    assertions.assert_true_within_short(_check_numa_nodes)
 
 
 @order_by(_TEST_LIST)

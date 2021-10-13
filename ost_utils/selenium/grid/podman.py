@@ -20,34 +20,117 @@ from ost_utils.shell import shell
 from ost_utils.shell import ShellError
 
 
-GRID_STARTUP_RETRIES = 3
 HUB_IP = "127.0.0.1"
 HUB_PORT = 4444
 LOGGER = logging.getLogger(__name__)
 NODE_PORT_GEN = iter(range(5600, 5700))
 NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
 GRID_STARTUP_WAIT_RETRIES = 300
-GRID_URL_TEMPLATE = "http://{}:{}/wd/hub"
 
 
 class SeleniumGridError(Exception):
     pass
 
 
-def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
-    LOGGER.error(
-        "Pod inspection: \n%s"
-        % shell([podman_cmd, "pod", "inspect", pod_name])
-    )
-    LOGGER.error("Hub logs: \n%s" % shell([podman_cmd, "logs", hub_name]))
-    for name in node_names:
-        LOGGER.error(
-            "Node %s logs: \n%s" % (name, shell([podman_cmd, "logs", name]))
+@contextlib.contextmanager
+def grid(
+    engine_fqdn,
+    engine_ip,
+    node_images=[CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE],
+    hub_image=HUB_CONTAINER_IMAGE,
+    retries=3,
+    podman_cmd="podman",
+    ui_artifacts_dir=None,
+):
+    for attempt in range(retries):
+        hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT + 100)
+        LOGGER.debug(
+            f"Attempt no {attempt} to run the grid on {hub_port} port"
         )
-    for video in videos_names:
-        LOGGER.error(
-            "Video %s logs: \n%s" % (video, shell([podman_cmd, "logs", video]))
-        )
+        try:
+            with _grid(
+                engine_fqdn,
+                engine_ip,
+                node_images,
+                hub_image,
+                hub_port,
+                podman_cmd,
+                ui_artifacts_dir,
+            ) as url:
+                LOGGER.debug(f"Grid is up: {url}")
+                yield url
+        except (SeleniumGridError, ShellError):
+            if attempt < retries - 1:
+                LOGGER.warning("Grid startup failed, retrying...")
+            else:
+                raise
+        else:
+            break
+
+
+@contextlib.contextmanager
+def _grid(
+    engine_fqdn,
+    engine_ip,
+    node_images,
+    hub_image,
+    hub_port,
+    podman_cmd,
+    ui_artifacts_dir,
+):
+
+    with _pod(hub_port, podman_cmd) as pod_name:
+        with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
+            engine_dns_entry = f"{engine_fqdn}:{engine_ip}"
+            with _nodes(
+                node_images,
+                hub_port,
+                pod_name,
+                engine_dns_entry,
+                podman_cmd,
+                ui_artifacts_dir,
+            ) as nodes_dict:
+                node_names = [
+                    node_dict['name'] for node_dict in nodes_dict.values()
+                ]
+                with _video_recorders(
+                    pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
+                ) as videos_names:
+                    url = f"http://{HUB_IP}:{hub_port}/wd/hub"
+                    try:
+                        grid_health_check(url, len(node_images))
+                        yield url
+                    except SeleniumGridError:
+                        _log_issues(
+                            pod_name,
+                            hub_name,
+                            node_names,
+                            podman_cmd,
+                            videos_names,
+                        )
+                        raise
+
+
+@contextlib.contextmanager
+def _hub(image, hub_port, pod_name, podman_cmd):
+    name = shell(
+        [
+            podman_cmd,
+            "run",
+            "-d",
+            "-e",
+            f"SE_OPTS=-port {hub_port}",
+            "-v",
+            "/dev/shm:/dev/shm",
+            "--pod",
+            pod_name,
+            image,
+        ]
+    ).strip()
+    try:
+        yield name
+    finally:
+        shell([podman_cmd, "rm", "-f", name])
 
 
 @contextlib.contextmanager
@@ -73,28 +156,6 @@ def _pod(hub_port, podman_cmd):
         yield name
     finally:
         shell([podman_cmd, "pod", "rm", "-f", name])
-
-
-@contextlib.contextmanager
-def _hub(image, hub_port, pod_name, podman_cmd):
-    name = shell(
-        [
-            podman_cmd,
-            "run",
-            "-d",
-            "-e",
-            "SE_OPTS=-port {}".format(hub_port),
-            "-v",
-            "/dev/shm:/dev/shm",
-            "--pod",
-            pod_name,
-            image,
-        ]
-    ).strip()
-    try:
-        yield name
-    finally:
-        shell([podman_cmd, "rm", "-f", name])
 
 
 # When running multiple containers in a pod, they compete over
@@ -125,15 +186,15 @@ def _nodes(
                 "/dev/shm:/dev/shm",
                 "-v",
                 f"{ui_artifacts_dir}:/export:Z",
-                "--add-host={}".format(engine_dns_entry),
+                f"--add-host={engine_dns_entry}",
                 "-e",
-                "HUB_HOST={}".format(HUB_IP),
+                f"HUB_HOST={HUB_IP}",
                 "-e",
-                "HUB_PORT={}".format(hub_port),
+                f"HUB_PORT={hub_port}",
                 "-e",
-                "SE_OPTS=-port {}".format(next(NODE_PORT_GEN)),
+                f"SE_OPTS=-port {next(NODE_PORT_GEN)}",
                 "-e",
-                "DISPLAY=:{}".format(display),
+                f"DISPLAY=:{display}",
                 "-e",
                 "VNC_NO_PASSWORD=1",
                 "--pod",
@@ -151,12 +212,6 @@ def _nodes(
         for node_dict in nodes_dict.values():
             save_node_logs(log_dir_path, node_dict, podman_cmd)
             shell([podman_cmd, "rm", "-f", node_dict['name']])
-
-
-def save_node_logs(dir_path, node_dict, podman_cmd):
-    file_path = os.path.join(dir_path, node_dict['name'] + '.log')
-    with open(file_path, "w", encoding='UTF8') as node_log_file:
-        node_log_file.write(shell([podman_cmd, "logs", node_dict['name']]))
 
 
 @contextlib.contextmanager
@@ -193,88 +248,6 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
             shell([podman_cmd, "rm", "-f", video])
 
 
-@contextlib.contextmanager
-def _grid(
-    engine_fqdn,
-    engine_ip,
-    node_images,
-    hub_image,
-    hub_port,
-    podman_cmd,
-    ui_artifacts_dir,
-):
-    if node_images is None:
-        node_images = [CHROME_CONTAINER_IMAGE, FIREFOX_CONTAINER_IMAGE]
-
-    engine_dns_entry = "{}:{}".format(engine_fqdn, engine_ip)
-
-    with _pod(hub_port, podman_cmd) as pod_name:
-        with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
-            with _nodes(
-                node_images,
-                hub_port,
-                pod_name,
-                engine_dns_entry,
-                podman_cmd,
-                ui_artifacts_dir,
-            ) as nodes_dict:
-                node_names = [
-                    node_dict['name'] for node_dict in nodes_dict.values()
-                ]
-                with _video_recorders(
-                    pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
-                ) as videos_names:
-                    url = GRID_URL_TEMPLATE.format(HUB_IP, hub_port)
-                    try:
-                        grid_health_check(url, len(node_images))
-                        yield url
-                    except SeleniumGridError:
-                        _log_issues(
-                            pod_name,
-                            hub_name,
-                            node_names,
-                            podman_cmd,
-                            videos_names,
-                        )
-                        raise
-
-
-@contextlib.contextmanager
-def grid(
-    engine_fqdn,
-    engine_ip,
-    node_images=None,
-    hub_image=HUB_CONTAINER_IMAGE,
-    retries=GRID_STARTUP_RETRIES,
-    podman_cmd="podman",
-    ui_artifacts_dir=None,
-):
-    for attempt in range(retries):
-        hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT + 100)
-        LOGGER.debug(
-            f"Attempt no {attempt} to run the grid on {hub_port} port"
-        )
-        try:
-            with _grid(
-                engine_fqdn,
-                engine_ip,
-                node_images,
-                hub_image,
-                hub_port,
-                podman_cmd,
-                ui_artifacts_dir,
-            ) as url:
-                LOGGER.debug(f"Grid is up: {url}")
-                yield url
-        except (SeleniumGridError, ShellError):
-            if attempt < retries - 1:
-                LOGGER.warning("Grid startup failed, retrying...")
-            else:
-                raise
-        else:
-            break
-
-
 def grid_health_check(hub_url, expected_node_count=None):
     status_url = hub_url + "/status"
 
@@ -303,3 +276,25 @@ def grid_health_check(hub_url, expected_node_count=None):
             time.sleep(0.1)
         else:
             raise SeleniumGridError("Not enough nodes in selenium grid")
+
+
+def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
+    LOGGER.error(
+        "Pod inspection: \n%s"
+        % shell([podman_cmd, "pod", "inspect", pod_name])
+    )
+    LOGGER.error("Hub logs: \n%s" % shell([podman_cmd, "logs", hub_name]))
+    for name in node_names:
+        LOGGER.error(
+            "Node %s logs: \n%s" % (name, shell([podman_cmd, "logs", name]))
+        )
+    for video in videos_names:
+        LOGGER.error(
+            "Video %s logs: \n%s" % (video, shell([podman_cmd, "logs", video]))
+        )
+
+
+def save_node_logs(dir_path, node_dict, podman_cmd):
+    file_path = os.path.join(dir_path, node_dict['name'] + '.log')
+    with open(file_path, "w", encoding='UTF8') as node_log_file:
+        node_log_file.write(shell([podman_cmd, "logs", node_dict['name']]))

@@ -237,7 +237,7 @@ main() {
     # From time to time we see problems with systemd-cgroups-agent
     # crashing with SIGABRT and systemd-coredump hanging indefinitely
     # eating 100% cpu while trying to generate a coredump from that crash
-    pkill systemd-coredump || true
+    pkill -ef systemd-coredump || true
 
     fstrim -va
 }

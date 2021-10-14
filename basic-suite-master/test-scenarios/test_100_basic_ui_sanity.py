@@ -652,13 +652,13 @@ def test_grafana(
     save_screenshot('grafana')
 
     grafana.open_dashboard(
-        'oVirt Executive Dashboards', 'Data Center Dashboard'
+        'oVirt Executive Dashboards', '02 Data Center Dashboard'
     )
     assert not grafana.is_error_visible()
     save_screenshot('grafana-dashboard-1')
 
     grafana.open_dashboard(
-        'oVirt Inventory Dashboards', 'Hosts Inventory Dashboard'
+        'oVirt Inventory Dashboards', '02 Hosts Inventory Dashboard'
     )
     assert not grafana.is_error_visible()
 

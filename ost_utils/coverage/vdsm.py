@@ -104,8 +104,11 @@ def _copy_coverage_data_to_first_host(host0, hosts):
 def _generate_coverage_report_on_host(host):
     logging.debug('Generating coverage report on one of the hosts...')
     host.shell(f'coverage-3 combine -a --rcfile={COVERAGE_RC}')
+    # Using the "--ignore-errors" flag because we generate the coverage report
+    # on host-0 but do not have 'vdsm-gluster' installed there.
     host.shell(
-        f'coverage-3 html --directory={COVERAGE_HTML} --rcfile={COVERAGE_RC}'
+        f'coverage-3 html --ignore-errors --directory={COVERAGE_HTML} '
+        f'--rcfile={COVERAGE_RC}'
     )
 
 

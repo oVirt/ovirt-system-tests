@@ -91,6 +91,10 @@ copy_dependencies() {
     dest: /var/tmp/lm_sensors.rpm
   with_fileglob:
     - "/var/tmp/lm_sensors-*"
+- name: Copy imageio-client to HE VM
+  copy:
+    src: /usr/lib64/python3.6/site-packages/ovirt_imageio
+    dest: /usr/lib64/python3.6/site-packages/ovirt_imageio
 EOF
 
 }

@@ -73,8 +73,8 @@ def hostnames_to_add(ansible_host0, hosts_hostnames):  # pylint: disable=functio
 
 
 @pytest.fixture(scope="session")
-def hostnames_to_reboot(hostnames_to_add):  # pylint: disable=function-redefined
-    return hostnames_to_add
+def hostnames_to_reboot():  # pylint: disable=function-redefined
+    return []
 
 
 @pytest.fixture(scope="session")

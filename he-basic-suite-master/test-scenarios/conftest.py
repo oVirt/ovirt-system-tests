@@ -86,10 +86,8 @@ def hostnames_to_add(
 
 
 @pytest.fixture(scope="session")
-def hostnames_to_reboot(
-    hostnames_to_add,
-):  # pylint: disable=function-redefined
-    return hostnames_to_add
+def hostnames_to_reboot():  # pylint: disable=function-redefined
+    return []
 
 
 @pytest.fixture(scope="session")

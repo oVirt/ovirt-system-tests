@@ -102,6 +102,14 @@ class BaseBackend(abc.ABC):
 
         """
 
+    @abc.abstractmethod
+    def libvirt_net_name(self, ost_net_name):
+        """Function that finds the libvirt network name corresponding to the
+         specified ost network name
+        :param ost_net_name: String
+        :return: String
+        """
+
     # DEPRECATED
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]
@@ -143,7 +151,3 @@ class BaseBackend(abc.ABC):
     @memoized.memoized
     def bonding_network_name(self):
         return next(nn for nn in self.network_names() if "bonding" in nn)
-
-    @abc.abstractmethod
-    def libvirt_net_name(self, net_name):
-        pass

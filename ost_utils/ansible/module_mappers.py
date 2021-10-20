@@ -45,6 +45,8 @@ def _find_result(ansible_events):
     results = {}
 
     for event in reversed(events):
+        uuid = event.get('uuid', 'missing uuid')
+        LOGGER.debug(f'_find_result: event uuid: {uuid}')
         event_data = event.get('event_data', None)
         if event_data is not None:
             res = event_data.get('res', None)

@@ -24,6 +24,11 @@ stage:
                     hostdistro: same
         - network_suite_master:
             distributions:
+              - el8:
+                  runtime-requirements:
+                    jenkins_master: psi
+                    support-nesting-level: 2
+                    hostdistro: same
               - rhel8:
                   runtime-requirements:
                     jenkins_master: psi

@@ -21,7 +21,7 @@
     "nics": {
       "storage": { "template": "common/libvirt-templates/nic_template" }
     },
-    "root_disk_var": "OST_IMAGES_UPGRADE",
+    "root_disk_var": "OST_IMAGES_BASE",
     "disks": {
       "sda": {
         "comment": "Main NFS device",

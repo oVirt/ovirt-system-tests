@@ -169,11 +169,9 @@ class Vm(SDKRootEntity):
     def remove(self):
         self.stop()
         self.wait_for_down_status()
-        try:
-            self._avoid_unknown_dc_status_bz_1532578()
-            super(Vm, self).remove()
-        except self._unspecific_sdk_error_bz_1533016():
-            self._retry_removal_due_to_locked_status_bz_1530315()
+        joblib.AllJobs(self.system).wait_for_done()
+        self._avoid_unknown_dc_status_bz_1532578()
+        self._retry_removal_due_to_locked_status_bz_1530315()
 
     def _avoid_unknown_dc_status_bz_1532578(self):
         self._get_data_center().wait_for_up_status()
@@ -182,12 +180,16 @@ class Vm(SDKRootEntity):
         return ovirtsdk4.Error
 
     def _retry_removal_due_to_locked_status_bz_1530315(self):
-        time.sleep(30)
-        try:
-            self._avoid_unknown_dc_status_bz_1532578()
-            super(Vm, self).remove()
-        except ovirtsdk4.NotFoundError:
-            pass
+        syncutil.sync(
+            exec_func=super(Vm, self).remove,
+            exec_func_args=(),
+            success_criteria=lambda s: isinstance(s, ovirtsdk4.NotFoundError),
+            error_criteria=lambda e: not isinstance(
+                e, self._unspecific_sdk_error_bz_1533016()
+            ),
+            delay_start=20,
+            retry_interval=10,
+        )
 
     def wait_for_disk_up_status(self, disk, disk_attachment_id):
         disk.wait_for_up_status()

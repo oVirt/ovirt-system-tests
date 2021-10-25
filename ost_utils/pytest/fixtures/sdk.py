@@ -59,6 +59,17 @@ def get_vm_service_for_vm(vms_service):
 
 
 @pytest.fixture(scope="session")
+def get_template_service_for_template(templates_service):
+    def service_for(template_name):
+        templates = templates_service.list(search='name={}'.format(template_name))
+        if len(templates) != 1:
+            raise RuntimeError("Could not find template: {}".format(template_name))
+        return templates_service.template_service(templates[0].id)
+
+    return service_for
+
+
+@pytest.fixture(scope="session")
 def users_service(system_service):
     return system_service.users_service()
 
@@ -70,5 +81,19 @@ def get_user_service_for_user(users_service):
         if len(users) != 1:
             raise RuntimeError("Could not find user: {}".format(username))
         return users_service.user_service(users[0].id)
+
+    return service_for
+
+
+@pytest.fixture(scope="session")
+def get_disk_services_for_vm_or_template(disks_service):
+    def service_for(vm_or_template_service):
+        disk_attachments_service = vm_or_template_service.disk_attachments_service()
+
+        disks_service_list = []
+        for disk_attachment in disk_attachments_service.list():
+            disk_service = disks_service.disk_service(disk_attachment.disk.id)
+            disks_service_list.append(disk_service)
+        return disks_service_list
 
     return service_for

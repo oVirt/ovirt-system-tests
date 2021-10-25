@@ -196,11 +196,11 @@ def _verify_vm_state(engine, vm_name, state):
     return vm_service
 
 
-def _verify_vm_disks_state(engine, vm_name, state):
-    disks_service = engine.disks_service()
-    vm_disk_attachments_service = test_utils.get_disk_attachments_service(engine, vm_name)
-    for disk_attachment in vm_disk_attachments_service.list():
-        disk_service = disks_service.disk_service(disk_attachment.disk.id)
+def _verify_vm_disks_state(vm_name, state, get_disk_services_for_vm_or_template, get_vm_service_for_vm):
+    vm_service = get_vm_service_for_vm(vm_name)
+    disks_service = get_disk_services_for_vm_or_template(vm_service)
+
+    for disk_service in disks_service:
         assert assert_utils.equals_within_short(lambda: disk_service.get().status, state)
 
 
@@ -502,13 +502,15 @@ def test_verify_transient_folder(assert_vm_is_alive, engine_api, get_ansible_hos
 
 
 @order_by(_TEST_LIST)
-def test_verify_and_remove_cloned_vm(system_service):
+def test_verify_and_remove_cloned_vm(system_service, get_disk_services_for_vm_or_template, get_vm_service_for_vm):
     correlation_id = 'clone_powered_off_vm'
 
     assert assert_utils.true_within_short(lambda: test_utils.all_jobs_finished(system_service, correlation_id))
 
     cloned_vm_service = _verify_vm_state(system_service, CLONED_VM_NAME, types.VmStatus.DOWN)
-    _verify_vm_disks_state(system_service, CLONED_VM_NAME, types.DiskStatus.OK)
+    _verify_vm_disks_state(
+        CLONED_VM_NAME, types.DiskStatus.OK, get_disk_services_for_vm_or_template, get_vm_service_for_vm
+    )
 
     vm_to_clone_snapshots_service = test_utils.get_vm_snapshots_service(system_service, VM_TO_CLONE_NAME)
     assert assert_utils.equals_within_short(lambda: len(vm_to_clone_snapshots_service.list()), 1)
@@ -901,10 +903,15 @@ def test_add_vm1_from_template(engine_api, cirros_image_template_name, ost_clust
 
 
 @order_by(_TEST_LIST)
-def test_verify_add_vm1_from_template(engine_api):
+def test_verify_add_vm1_from_template(engine_api, get_disk_services_for_vm_or_template, get_vm_service_for_vm):
     engine = engine_api.system_service()
     _verify_vm_state(engine, VM1_NAME, types.VmStatus.DOWN)
-    _verify_vm_disks_state(engine, VM1_NAME, types.DiskStatus.OK)
+    _verify_vm_disks_state(
+        VM1_NAME,
+        types.DiskStatus.OK,
+        get_disk_services_for_vm_or_template,
+        get_vm_service_for_vm,
+    )
 
 
 @order_by(_TEST_LIST)
@@ -1117,10 +1124,12 @@ def test_add_vm_pool(engine_api, cirros_image_template_name, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_ovf_import(engine_api):
+def test_verify_ovf_import(engine_api, get_disk_services_for_vm_or_template, get_vm_service_for_vm):
     engine = engine_api.system_service()
     _verify_vm_state(engine, OVF_VM_NAME, types.VmStatus.DOWN)
-    _verify_vm_disks_state(engine, OVF_VM_NAME, types.DiskStatus.OK)
+    _verify_vm_disks_state(
+        OVF_VM_NAME, types.DiskStatus.OK, get_disk_services_for_vm_or_template, get_vm_service_for_vm
+    )
 
 
 @order_by(_TEST_LIST)
@@ -1148,7 +1157,13 @@ def test_update_template_version(engine_api, cirros_image_template_name, cirros_
 
 
 @order_by(_TEST_LIST)
-def test_verify_update_template_version(engine_api, cirros_image_template_name, cirros_image_template_version_name):
+def test_verify_update_template_version(
+    engine_api,
+    cirros_image_template_name,
+    cirros_image_template_version_name,
+    get_disk_services_for_vm_or_template,
+    get_vm_service_for_vm,
+):
     engine = engine_api.system_service()
     templates_service = engine.templates_service()
     template_version = templates_service.list(
@@ -1161,7 +1176,7 @@ def test_verify_update_template_version(engine_api, cirros_image_template_name, 
     vm_service = test_utils.get_vm_service(engine, vm_name)
     assert assert_utils.equals_within_long(lambda: vm_service.get().template.id, template_version.id)
     _verify_vm_state(engine, vm_name, types.VmStatus.DOWN)
-    _verify_vm_disks_state(engine, vm_name, types.DiskStatus.OK)
+    _verify_vm_disks_state(vm_name, types.DiskStatus.OK, get_disk_services_for_vm_or_template, get_vm_service_for_vm)
 
 
 @order_by(_TEST_LIST)

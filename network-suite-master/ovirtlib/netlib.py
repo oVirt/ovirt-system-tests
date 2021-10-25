@@ -316,7 +316,6 @@ class Vnic(SDKSubEntity):
                 f'synced:{self.get_sdk_type().synced}, '
                 f'plugged:{self.get_sdk_type().plugged}, '
                 f'mac:{self.mac_address}, '
-                f'vm:{self._parent_sdk_entity}, '
                 f'id:{self.id}>'
             )
         )

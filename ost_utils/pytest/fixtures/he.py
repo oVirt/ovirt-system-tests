@@ -100,8 +100,10 @@ def ansible_he_facts(ansible_he):
 
 
 @pytest.fixture(scope="session")
-def he_ip_prefix(he_ipv6_address):
-    return 64 if he_ipv6_address else 24
+def he_ip_prefix(backend, he_ipv6_address):
+    if he_ipv6_address:
+        return backend.get_ip_prefix_for_management_network(6)
+    return backend.get_ip_prefix_for_management_network(4)
 
 
 @pytest.fixture(scope="session")

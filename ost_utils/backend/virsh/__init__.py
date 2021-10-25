@@ -133,3 +133,10 @@ class VirshBackend(base.BaseBackend):
             vms[name] = VMInfo(name, libvirt_name, nics, deploy_scripts)
 
         return vms
+
+    def get_ip_prefix_for_management_network(self, ip_version):
+        mgmt_net_name = self.management_network_name()
+        mgmt_network = self._networks.get_network_for_ost_name(mgmt_net_name)
+        if ip_version == 6:
+            return mgmt_network.ip6_prefix
+        return mgmt_network.ip4_prefix

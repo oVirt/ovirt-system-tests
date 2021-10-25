@@ -110,6 +110,14 @@ class BaseBackend(abc.ABC):
         :return: String
         """
 
+    @abc.abstractmethod
+    def get_ip_prefix_for_management_network(self, ip_version):
+        """Function that finds prefix of management network corresponding to
+        the specified ip version
+        :param ip_version: Int
+        :return: Int
+        """
+
     # DEPRECATED
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]

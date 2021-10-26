@@ -258,3 +258,113 @@ class VirshNetwork:
 
     def get_dhcp6_entries_for_mac(self, mac):
         return self._host_dhcps6.get_host_dhcp_by_mac_suffix(mac)
+
+
+class VMNics:
+    def __init__(self, domain_xml, networks):
+        self._nics = {}
+        self._load(domain_xml, networks)
+
+    def __repr__(self):
+        return f"< {self.__class__.__name__} | nics: {self._nics} >"
+
+    def _load(self, domain_xml, networks):
+        for nic_xml in domain_xml.findall(
+            "./devices/interface[@type='network']"
+        ):
+            nic = Nic()
+            nic.parse(nic_xml, networks)
+            self._nics[nic.name] = nic
+
+    def get_ips_for_all_networks(self):
+        networks = {}
+        for nic in self._nics.values():
+            network_name = nic.get_ost_net_name()
+            ip_list = networks.setdefault(network_name, [])
+            if nic.has_ipv6():
+                ip_list.append(nic.ipv6)
+            if nic.has_ipv4():
+                ip_list.append(nic.ipv4)
+        return networks
+
+    def get_nics_for_all_networks(self):
+        networks = {}
+        for nic in self._nics.values():
+            network_name = nic.get_ost_net_name()
+            networks.setdefault(network_name, []).append(nic.name)
+        return networks
+
+
+class Nic:
+    """
+    Example of an ost nic xml that this class processes:
+
+    <interface type='network'>
+      <mac address='54:52:c0:a8:ca:03'/>
+      <source network='ost97bc2e95-202'
+      portid='3d7ef117-7898-4c95-b52b-bec5c3aaec59' bridge='ost97bc2e95-202'/>
+      <target dev='vnet22'/>
+      <model type='virtio'/>
+      <driver name='vhost' queues='2'/>
+      <alias name='net0'/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00'
+      function='0x0'/>
+    </interface>
+    """
+
+    def __init__(self):
+        self._name = None
+        self._mac = None
+        self._network = None
+        self._host_dhcp4 = None
+        self._host_dhcp6 = None
+
+    def __repr__(self):
+        return (
+            f"< {self.__class__.__name__} | "
+            f"name: {self._name}, "
+            f"mac: {self._mac}, "
+            f"network: {self._network}, "
+            f"host_dhcp4: {self._host_dhcp4}, "
+            f"host_dhcp6: {self._host_dhcp6} >"
+        )
+
+    def parse(self, xml_nic, networks):
+        libvirt_name = xml_nic.find("./alias[@name]").get("name")
+        # FIXME: The logic below is wrong - there's nothing tying
+        # up the libvirt alias with the nic name visible on the vm side.
+        # It just so happens it works for our use cases. In the long term
+        # we need to refactor backend interface not to rely on nic names.
+        self._name = libvirt_name.replace("net", "eth")
+        self._mac = xml_nic.find("./mac[@address]").get("address")
+        libvirt_network = xml_nic.find("./source[@network]").get("network")
+        self._network = networks.get_network_for_libvirt_name(libvirt_network)
+        (
+            self._host_dhcp4,
+            self._host_dhcp6,
+        ) = networks.find_host_dhcp_for_mac(self._mac)
+
+    def get_ost_net_name(self):
+        return self._network.ost_name
+
+    def has_ipv4(self):
+        return self._host_dhcp4 is not None
+
+    def has_ipv6(self):
+        return self._host_dhcp6 is not None
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def network(self):
+        return self._network
+
+    @property
+    def ipv4(self):
+        return self._host_dhcp4.ip if self.has_ipv4() else None
+
+    @property
+    def ipv6(self):
+        return self._host_dhcp6.ip if self.has_ipv6() else None

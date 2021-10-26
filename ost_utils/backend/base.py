@@ -122,6 +122,9 @@ class BaseBackend(abc.ABC):
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]
 
+    def ips_for(self, hostname, network_name):
+        return self.ip_mapping()[hostname][network_name]
+
     @memoized.memoized
     def hostnames(self):
         return set(self.ip_mapping().keys())

@@ -11,11 +11,7 @@ from ost_utils.backend import base
 from ost_utils.shell import shell
 
 from ost_utils.backend.virsh.networking import VirshNetworks
-
-NICInfo = namedtuple(
-    "NICInfo",
-    "name libvirt_name mac network_info " "ip4_dhcp_entry ip6_dhcp_entry",
-)
+from ost_utils.backend.virsh.networking import VMNics
 
 VMInfo = namedtuple("VMInfo", "name libvirt_name nics deploy_scripts")
 
@@ -29,30 +25,16 @@ class VirshBackend(base.BaseBackend):
         self._vms = self._get_vms(self._deployment_path)
 
     def iface_mapping(self):
-        mapping = {}
-
-        for vm_name, vm_info in self._vms.items():
-            networks = mapping.setdefault(vm_name, {})
-            for nic_name, nic_info in vm_info.nics.items():
-                network_name = nic_info.network_info.ost_name
-                networks.setdefault(network_name, []).append(nic_name)
-
-        return mapping
+        return {
+            vm_info.name: vm_info.nics.get_nics_for_all_networks()
+            for vm_info in self._vms.values()
+        }
 
     def ip_mapping(self):
-        mapping = {}
-
-        for vm_name, vm_info in self._vms.items():
-            networks = mapping.setdefault(vm_name, {})
-            for nic_name, nic_info in vm_info.nics.items():
-                network_name = nic_info.network_info.ost_name
-                ip_list = networks.setdefault(network_name, [])
-                if nic_info.ip6_dhcp_entry is not None:
-                    ip_list.append(nic_info.ip6_dhcp_entry.ip)
-                if nic_info.ip4_dhcp_entry is not None:
-                    ip_list.append(nic_info.ip4_dhcp_entry.ip)
-
-        return mapping
+        return {
+            vm_info.name: vm_info.nics.get_ips_for_all_networks()
+            for vm_info in self._vms.values()
+        }
 
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
@@ -69,35 +51,6 @@ class VirshBackend(base.BaseBackend):
         return self._networks.get_network_for_ost_name(
             ost_net_name
         ).libvirt_name
-
-    def _get_nics(self, domain_xml):
-        nics = {}
-        for nic in domain_xml.findall("./devices/interface[@type='network']"):
-            libvirt_name = nic.find("./alias[@name]").get("name")
-            # FIXME: The logic below is wrong - there's nothing tying
-            # up the libvirt alias with the nic name visible on the vm side.
-            # It just so happens it works for our use cases. In the long term
-            # we need to refactor backend interface not to rely on nic names.
-            name = libvirt_name.replace("net", "eth")
-            mac = nic.find("./mac[@address]").get("address")
-            libvirt_network = nic.find("./source[@network]").get("network")
-            network_info = self._networks.get_network_for_libvirt_name(
-                libvirt_network
-            )
-            (
-                ip4_dhcp_entry,
-                ip6_dhcp_entry,
-            ) = self._networks.find_host_dhcp_for_mac(mac)
-            nics[name] = NICInfo(
-                name,
-                libvirt_name,
-                mac,
-                network_info,
-                ip4_dhcp_entry,
-                ip6_dhcp_entry,
-            )
-
-        return nics
 
     def _get_vms(self, deployment_path):
         vm_names = [
@@ -129,7 +82,7 @@ class VirshBackend(base.BaseBackend):
                     "script[@name]"
                 )
             ]
-            nics = self._get_nics(xml)
+            nics = VMNics(xml, self._networks)
             vms[name] = VMInfo(name, libvirt_name, nics, deploy_scripts)
 
         return vms

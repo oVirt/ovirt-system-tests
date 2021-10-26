@@ -39,8 +39,7 @@ def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
 def get_ips(backend, ansible_facts, network_name):
     hostname = ansible_facts.get("ansible_hostname")
 
-    # TODO: return non-stringified ip addresses
-    return [str(ip) for ip in backend.ip_mapping()[hostname][network_name]]
+    return [str(ip) for ip in backend.ips_for(hostname, network_name)]
 
 
 def ip_to_url(ip):

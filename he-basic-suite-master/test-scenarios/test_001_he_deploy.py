@@ -35,6 +35,26 @@ def test_run_dig_loop(
     )
 
 
+def test_lower_ha_agent_vdsm_connection_timeout(
+    ansible_host0,
+    ansible_vms_to_deploy,
+):
+    conspath = ansible_host0.shell(
+        "python3 -c "
+        "'from ovirt_hosted_engine_ha.env import constants; "
+        "print(constants.__file__)'"
+    )['stdout_lines'][0]
+    ansible_vms_to_deploy.lineinfile(
+        path=conspath,
+        create=True,
+        regexp='^VDSCLI_SSL_TIMEOUT',
+        # Defaults to 900 seconds, too much for OST
+        # Need to pass quoted, as we do not quote later, and otherwise
+        # ansible gets it as "extra params".
+        line='"VDSCLI_SSL_TIMEOUT = 120"',
+    )
+
+
 def test_he_deploy(
     root_dir,
     suite,

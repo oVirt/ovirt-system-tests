@@ -387,6 +387,12 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
     nic_service.remove()
 
 
+def test_provider_configured(hosts_service, ost_dc_name):
+    hosts = hosts_service.list(search='datacenter={}'.format(ost_dc_name))
+    for host in hosts:
+        assert host.ovn_configured
+
+
 @versioning.require_version(4, 2)
 def test_use_ovn_provider(
     engine_api, engine_ip_url, engine_full_username, engine_password

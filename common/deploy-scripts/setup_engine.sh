@@ -27,6 +27,7 @@ SNMP_COMMUNITY=public
 SNMP_OID=1.3.6.1.4.1.2312.13.1.1
 FILTER="include:*(snmp:) \${FILTER}"
 EOF
+chown ovirt:ovirt /etc/ovirt-engine/notifier/notifier.conf.d/20-snmp.conf
 
 echo "[snmp] logOption f /var/log/snmptrapd.log" >> /etc/snmp/snmptrapd.conf
 echo "disableAuthorization yes" >> /etc/snmp/snmptrapd.conf

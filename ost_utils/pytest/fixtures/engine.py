@@ -258,6 +258,7 @@ def engine_answer_file_contents(
         f'OVESETUP_OVN/ovirtProviderOvnUser=str:{engine_full_username}\n'
         f'OVESETUP_OVN/ovirtProviderOvnPassword=str:{engine_password}\n'
         'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n'
+        'QUESTION/1/ovirt-cinderlib-enable=str:yes\n'
     )
 
 

@@ -52,6 +52,7 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
 
     command = [
         'engine-setup',
+        '--offline',
         '--config-append={}'.format(ANSWER_FILE_TMP),
         '--accept-defaults',
     ]

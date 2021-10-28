@@ -8,6 +8,7 @@ import logging
 
 import ansible_runner
 
+from ost_utils.debuginfo_utils import obj_info
 from ost_utils.ansible import private_dir as pd
 
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class ConfigBuilder:
             quiet=True,
         )
         config.prepare()
-        LOGGER.debug(f'ConfigBuilder prepare: {config}')
+        LOGGER.debug(f'ConfigBuilder prepare: {obj_info(config)}')
         return config
 
     def __str__(self):

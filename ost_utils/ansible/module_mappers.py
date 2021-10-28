@@ -9,6 +9,7 @@ import logging
 import ansible_runner
 
 from ost_utils.ansible import config_builder as cb
+from ost_utils.debuginfo_utils import obj_info
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,12 +27,15 @@ def _run_ansible_runner(config_builder):
     runner = ansible_runner.Runner(config=config_builder.prepare())
     LOGGER.debug(f'_run_ansible_runner: before run: {runner}')
     runner.run()
-    LOGGER.debug(f'_run_ansible_runner: after run: {runner}')
+    LOGGER.debug(f'_run_ansible_runner: after run: {obj_info(runner)}')
+
+    # Always collect results, so that we log them
+    results = _find_result(runner.events)
 
     if runner.status != 'successful':
         raise AnsibleExecutionError(rc=runner.rc, stdout=runner.stdout.read())
 
-    return _find_result(runner.events)
+    return results
 
 
 def _find_result(ansible_events):
@@ -45,8 +49,7 @@ def _find_result(ansible_events):
     results = {}
 
     for event in reversed(events):
-        uuid = event.get('uuid', 'missing uuid')
-        LOGGER.debug(f'_find_result: event uuid: {uuid}')
+        LOGGER.debug(f'_find_result: {obj_info(event)}')
         event_data = event.get('event_data', None)
         if event_data is not None:
             res = event_data.get('res', None)

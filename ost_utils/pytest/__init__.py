@@ -4,7 +4,12 @@
 #
 #
 
+import logging
+
 import pytest
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def pytest_addoption(parser):
@@ -39,6 +44,12 @@ def pytest_collection_modifyitems(session, config, items):
         if module_uses_item_ordering(module_items):
             module_items = sorted(module_items, key=get_item_ordering)
         items.extend(module_items)
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_fixture_setup(fixturedef, request):
+    LOGGER.debug(f'Creating fixture: {fixturedef}')
+    yield
 
 
 def order_by(test_list):

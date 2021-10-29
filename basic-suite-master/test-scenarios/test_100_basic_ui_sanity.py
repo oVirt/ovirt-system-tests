@@ -227,6 +227,11 @@ def selenium_artifact_full_path(
 
 
 @pytest.fixture(scope="session")
+def console_file_full_path(selenium_artifacts_dir):
+    return os.path.join(selenium_artifacts_dir, 'console.vv')
+
+
+@pytest.fixture(scope="session")
 def save_screenshot(ovirt_driver, selenium_artifact_full_path):
     def save(description):
         ovirt_driver.save_screenshot(
@@ -419,12 +424,30 @@ def setup_virtual_machines(engine_api):
         )
 
 
+@pytest.fixture
+def console_file_helper(console_file_full_path, selenium_artifact_full_path):
+    try:
+        os.remove(console_file_full_path)
+    except FileNotFoundError:
+        pass
+
+    yield
+
+    try:
+        os.rename(
+            console_file_full_path,
+            selenium_artifact_full_path('console', 'vv'),
+        )
+    except FileNotFoundError:
+        pass
+
+
 def test_virtual_machines(
     ovirt_driver,
     setup_virtual_machines,
     save_screenshot,
-    selenium_artifacts_dir,
-    selenium_artifact_full_path,
+    console_file_full_path,
+    console_file_helper,
 ):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     vm_list_view = webadmin_menu.open_vm_list_view()
@@ -487,27 +510,12 @@ def test_virtual_machines(
 
     vm_vgpu_dialog.cancel()
 
-    vm_list_view.click_console()
-
-    console_file_full_path = os.path.join(selenium_artifacts_dir, 'console.vv')
-    ovirt_driver.wait_until(
-        'The console.vv file has not been downloaded',
-        lambda: os.path.exists(console_file_full_path),
-    )
-
-    ovirt_driver.wait_until(
-        'The console.vv file is too small',
-        lambda: os.path.getsize(console_file_full_path) > 1000,
-    )
+    vm_list_view.download_console_file(console_file_full_path)
 
     with open(console_file_full_path) as f:
         console_file_text = f.read()
         assert '[virt-viewer]' in console_file_text
         assert '[ovirt]' in console_file_text
-
-    os.rename(
-        console_file_full_path, selenium_artifact_full_path('console', 'vv')
-    )
 
 
 def test_storage_domains(ovirt_driver):

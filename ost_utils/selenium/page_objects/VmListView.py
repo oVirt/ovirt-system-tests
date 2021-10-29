@@ -73,6 +73,22 @@ class VmListView(EntityListView):
             'ActionPanelView_ConsoleConnectCommand'
         )
 
+    def download_console_file(self, console_file_full_path):
+        LOGGER.debug(f'Download console.vv file as {console_file_full_path}')
+        self.click_console()
+        self.ovirt_driver.wait_until(
+            'The console.vv file has not been downloaded',
+            self._console_file_downloaded,
+            console_file_full_path,
+        )
+
+    def _console_file_downloaded(self, console_file_full_path):
+        try:
+            with open(console_file_full_path) as console_file:
+                return '-----END CERTIFICATE-----' in console_file.read()
+        except FileNotFoundError:
+            return False
+
 
 class RunOnceDialog(Displayable):
     def __init__(self, ovirt_driver):

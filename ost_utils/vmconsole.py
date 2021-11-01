@@ -5,6 +5,7 @@
 #
 
 import contextlib
+import ipaddress
 import logging
 import os
 import pty
@@ -40,9 +41,16 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
     @contextlib.contextmanager
     def connect(self, vm_id):
-        with self._connect(vm_id):
+        if not self._connected:
+            with self._connect(vm_id):
+                if not self._logged_in:
+                    with self._login():
+                        yield self
+        elif not self._logged_in:
             with self._login():
                 yield self
+        else:
+            yield self
 
     @contextlib.contextmanager
     def _connect(self, vm_id):
@@ -93,7 +101,8 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             self._read_until_prompt('login: ')
             self._write(f'{self._user}\n')
             self._read_until_prompt('Password: ')
-            self._shell(f'{self._passwd}')
+            self._write(f'{self._passwd}\n')
+            self._read_until_bash_prompt()
             self._logged_in = True
             yield
         finally:
@@ -116,19 +125,28 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         self._logged_in = False
 
     def add_static_ip(self, vm_id, ip, iface):
+        ips = self.shell(
+            vm_id, (Shell.ip_address_add(ip, iface), Shell.get_ips(iface))
+        )
+        ip_version = ipaddress.ip_address(ip).version
+        return Shell.next_ip(ips.splitlines(), ip_version)
+
+    def get_ip(self, vm_id, iface, ip_version):
+        ips = self.get_ips(vm_id, iface)
+        return Shell.next_ip(ips, ip_version)
+
+    def get_ips(self, vm_id, iface):
+        return self.shell(vm_id, (Shell.get_ips(iface),)).splitlines()
+
+    def shell(self, vm_id, commands):
         with self.connect(vm_id):
-            self.shell(f'sudo ip addr add {ip} dev {iface}')
-            ip_addr_show = self.shell(f'ip addr show {iface}')
-        return ip_addr_show
-
-    def shell(self, cmd):
-        if not self._connected or not self._logged_in:
-            raise RuntimeError('vmconsole not connected or not logged in')
-        return self._shell(cmd)
-
-    def _shell(self, cmd):
-        self._write(f'{cmd}\n')
-        return self._read_until_bash_prompt()
+            for cmd in commands:
+                entry = f'{cmd}\n'
+                self._write(entry)
+                res = self._read_until_bash_prompt()
+                res = res.replace(entry, '').rsplit(self._prompt)[0]
+                LOGGER.debug(f'vmconsole: shell {cmd} returned: {res}')
+        return res
 
     def _read_until_bash_prompt(self):
         return self._read_until_prompt(self._prompt)
@@ -139,7 +157,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         recv = ''
         while not recv.endswith(prompt):
             recv = ''.join([recv, (self._read())])
-        LOGGER.debug(recv)
+        LOGGER.debug(f'vmconsole: read until prompt returned: {recv}')
         return recv
 
     def _read(self):
@@ -158,8 +176,41 @@ class CirrosSerialConsole(VmSerialConsole):
             private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo'
         )
 
-    def get_ip(self, vm_id, iface):
-        with self.connect(vm_id):
-            self.shell(f'sudo /sbin/cirros-dhcpc up {iface}')
-            ip_addr_show = self.shell(f'ip addr show {iface}')
-        return ip_addr_show
+    def assign_ip4_if_missing(self, vm_id, iface):
+        ip = self.get_ip(vm_id, iface, 4)
+        return ip if ip else self.assign_ip4(vm_id, iface)
+
+    def assign_ip4(self, vm_id, iface):
+        ips = self.shell(
+            vm_id, (Shell.cirros_assign_dhcp_ip(iface), Shell.get_ips(iface))
+        )
+        return Shell.next_ip(ips.splitlines(), 4)
+
+
+class Shell(object):
+    @classmethod
+    def get_ips(cls, iface):
+        return (
+            f"ip addr show {iface} | "
+            f"awk '/inet/ {{print $2}}' | "
+            f"awk -F/ '{{print $1}}'"
+        )
+
+    @classmethod
+    def ip_address_add(cls, ip, iface):
+        return f'sudo ip addr add {ip} dev {iface}'
+
+    @classmethod
+    def cirros_assign_dhcp_ip(cls, iface):
+        return f'sudo /sbin/cirros-dhcpc up {iface}'
+
+    @classmethod
+    def next_ip(cls, ips, ip_version):
+        return next(
+            (
+                ip
+                for ip in ips
+                if ipaddress.ip_address(ip).version == int(ip_version)
+            ),
+            None,
+        )

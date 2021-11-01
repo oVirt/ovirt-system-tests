@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
+import ipaddress
 import pytest
 
 from fixtures.host import ETH1
@@ -118,13 +119,13 @@ def host_1_with_mig_net(migration_network, host_1_up):
 
 def test_serial_vmconsole(cirros_serial_console, running_cirros_vm):
     if suite.af().is6:
-        ip_a = cirros_serial_console.add_static_ip(
+        ip = cirros_serial_console.add_static_ip(
             running_cirros_vm.id, CIRROS_IPV6, CIRROS_NIC
         )
-        assert CIRROS_IPV6 in ip_a
+        assert ip == CIRROS_IPV6
     else:
-        ip_a = cirros_serial_console.get_ip(running_cirros_vm.id, CIRROS_NIC)
-        assert 'inet' in ip_a
+        ip = cirros_serial_console.assign_ip4(running_cirros_vm.id, CIRROS_NIC)
+        assert ipaddress.ip_address(ip).version == 4
 
 
 def test_live_vm_migration_using_dedicated_network(

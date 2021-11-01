@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from collections import namedtuple
+import logging
 import pytest
 
 from fixtures.host import ETH1
@@ -27,6 +28,7 @@ EXTERNAL_IP = {'inet': '8.8.8.8', 'inet6': '2001:4860:4860::8888'}
 Iface = namedtuple('Iface', ['name', 'ipv6'])
 IFACE_0 = Iface('eth0', 'fd8f:1391:3a82:200::cafe:e0')
 IFACE_ISOLATED = Iface('eth1', 'fd8f:1391:3a82:201::cafe:e1')
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.mark.xfail(
@@ -45,59 +47,39 @@ def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
 
 
 @pytest.fixture(scope='module')
-def vms_ovirtmgmt_ip(host_1_up, vms_up_on_host_1, cirros_serial_console):
-    vms_ovirtmgmt_ip = []
-    for vm in vms_up_on_host_1:
-        if suite.af().is6:
-            ip = IFACE_0.ipv6
-            cirros_serial_console.add_static_ip(
-                vm.id, f'{ip}/64', IFACE_0.name
-            )
-        else:
-            host_node = sshlib.Node(host_1_up.address, host_1_up.root_password)
-            ip = host_node.lookup_ip_address_with_dns_query(
-                vm.name, suite.af().version
-            )
-        vms_ovirtmgmt_ip.append(ip)
-    return vms_ovirtmgmt_ip
-
-
-@pytest.fixture(scope='module')
-def vm_nodes(vms_ovirtmgmt_ip):
+def vm_nodes(mgmt_ifaces_up_with_ip):
     return (
-        sshlib.CirrosNode(vms_ovirtmgmt_ip[0], VM_PASSWORD, VM_USERNAME),
-        sshlib.CirrosNode(vms_ovirtmgmt_ip[1], VM_PASSWORD, VM_USERNAME),
+        sshlib.CirrosNode(mgmt_ifaces_up_with_ip[0], VM_PASSWORD, VM_USERNAME),
+        sshlib.CirrosNode(mgmt_ifaces_up_with_ip[1], VM_PASSWORD, VM_USERNAME),
     )
 
 
 @pytest.fixture(scope='module')
-def isolated_ifaces_up_with_ip(
-    vm_nodes, vms_up_on_host_1, cirros_serial_console
-):
-    if suite.af().is6:
-        return isolated_ifaces_up_with_ipv6(
-            vms_up_on_host_1, cirros_serial_console
-        )
-    else:
-        return isolated_ifaces_up_with_ipv4(vm_nodes)
+def mgmt_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
+    return _assign_ips_on_vms_ifaces(
+        vms_up_on_host_1, cirros_serial_console, IFACE_0
+    )
 
 
-def isolated_ifaces_up_with_ipv6(vms_up_on_host_1, cirros_serial_console):
-    ips = []
+@pytest.fixture(scope='module')
+def isolated_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
+    ips = _assign_ips_on_vms_ifaces(
+        vms_up_on_host_1, cirros_serial_console, IFACE_ISOLATED
+    )
     for vm in vms_up_on_host_1:
-        ip = IFACE_ISOLATED.ipv6
-        cirros_serial_console.add_static_ip(
-            vm.id, f'{ip}/64', IFACE_ISOLATED.name
-        )
-        ips.append(ip)
+        ip_a = cirros_serial_console.shell(vm.id, ('ip addr',))
+        LOGGER.debug(f'after applying ips: vm={vm.name} has ip_a={ip_a}')
     return ips
 
 
-def isolated_ifaces_up_with_ipv4(vm_nodes):
+def _assign_ips_on_vms_ifaces(vms, serial_console, iface):
     ips = []
-    for vm_node in vm_nodes:
-        vm_node.assign_ip_with_dhcp_client(IFACE_ISOLATED.name)
-        ip = vm_node.get_global_ip(IFACE_ISOLATED.name, suite.af().version)
+    for vm in vms:
+        if suite.af().is6:
+            ip = iface.ipv6
+            serial_console.add_static_ip(vm.id, f'{ip}/64', iface.name)
+        else:
+            ip = serial_console.assign_ip4_if_missing(vm.id, iface.name)
         ips.append(ip)
     return ips
 
@@ -109,14 +91,15 @@ def vms_up_on_host_1(
     cirros_template,
     port_isolation_network,
     ovirtmgmt_vnic_profile,
+    cirros_serial_console,
 ):
     """
     Since the isolated_network is set up only on host_1,
     both virtual machines will be on it.
     """
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vms = [(vm_0, VM0_NAME), (vm_1, VM1_NAME)]
-        for vm, name in vms:
+        vm_name_tuples = [(vm_0, VM0_NAME), (vm_1, VM1_NAME)]
+        for vm, name in vm_name_tuples:
             vm.create(
                 vm_name=name, cluster=default_cluster, template=cirros_template
             )
@@ -136,6 +119,9 @@ def vms_up_on_host_1(
         vm_0.wait_for_up_status()
         vm_1.wait_for_up_status()
         joblib.AllJobs(system).wait_for_done()
+        for vm, name in vm_name_tuples:
+            ip_a = cirros_serial_console.shell(vm.id, ('ip addr',))
+            LOGGER.debug(f'before applying ips: vm={name} has ip_a={ip_a}')
         yield vm_0, vm_1
 
 

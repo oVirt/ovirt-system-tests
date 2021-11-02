@@ -35,6 +35,13 @@
         line: net.ipv6.conf.all.accept_ra=2
       become: true
 
+    - name: increase per-user FD limit
+      lineinfile:
+        path: /etc/security/limits.d/ost.conf
+        create: yes
+        line: "*    soft    nofile    65535"
+      become: true
+
     - name: set up ost-images repo
       yum_repository:
         name: ost-images

@@ -10,22 +10,22 @@ import logging
 import os
 import time
 
+from dataclasses import dataclass
+from typing import Optional
 import ost_utils.network_utils as network_utils
-
 from ost_utils.selenium.grid import CHROME_CONTAINER_IMAGE
-from ost_utils.selenium.grid import FIREFOX_CONTAINER_IMAGE
 from ost_utils.selenium.grid import FFMPEG_CONTAINER_IMAGE
+from ost_utils.selenium.grid import FIREFOX_CONTAINER_IMAGE
 from ost_utils.selenium.grid import HUB_CONTAINER_IMAGE
-from ost_utils.selenium.grid import SCREEN_WIDTH
 from ost_utils.selenium.grid import SCREEN_HEIGHT
-from ost_utils.shell import shell
+from ost_utils.selenium.grid import SCREEN_WIDTH
 from ost_utils.shell import ShellError
-
+from ost_utils.shell import shell
 
 HUB_IP = "127.0.0.1"
 HUB_PORT = 4444
-NODE_PORT_GEN = iter(range(5600, 5700))
-NODE_DISPLAY_ADDR_GEN = iter(range(100, 200))
+VNC_PORT = 5900
+NO_VNC_PORT = 7900
 GRID_STARTUP_WAIT_RETRIES = 300
 
 LOGGER = logging.getLogger(__name__)
@@ -33,6 +33,17 @@ LOGGER = logging.getLogger(__name__)
 
 class SeleniumGridError(Exception):
     pass
+
+
+@dataclass
+class NodeInfo:
+
+    display: int
+    vnc: int
+    vnc_published: int
+    no_vnc: int
+    no_vnc_published: int
+    name: Optional[str] = None
 
 
 @contextlib.contextmanager
@@ -47,16 +58,15 @@ def grid(
 ):
     for attempt in range(retries):
         hub_port = network_utils.find_free_port(HUB_PORT, HUB_PORT + 100)
+        nodes_dict = _create_nodes_dict(node_images)
 
-        LOGGER.debug(
-            f"Attempt no {attempt} to run the grid on {hub_port} port"
-        )
+        _log_start_attempt(attempt, hub_port, nodes_dict)
 
         try:
             with _grid(
                 engine_fqdn,
                 engine_ip,
-                node_images,
+                nodes_dict,
                 hub_image,
                 hub_port,
                 podman_cmd,
@@ -77,41 +87,38 @@ def grid(
 def _grid(
     engine_fqdn,
     engine_ip,
-    node_images,
+    nodes_dict,
     hub_image,
     hub_port,
     podman_cmd,
     ui_artifacts_dir,
 ):
 
-    with _pod(hub_port, podman_cmd) as pod_name:
+    with _pod(nodes_dict, hub_port, podman_cmd) as pod_name:
         with _hub(
             hub_image, hub_port, pod_name, podman_cmd, ui_artifacts_dir
         ) as hub_name:
             engine_dns_entry = f"{engine_fqdn}:{engine_ip}"
             with _nodes(
-                node_images,
+                nodes_dict,
                 hub_name,
                 pod_name,
                 engine_dns_entry,
                 podman_cmd,
                 ui_artifacts_dir,
-            ) as nodes_dict:
-                node_names = [
-                    node_dict['name'] for node_dict in nodes_dict.values()
-                ]
+            ):
                 with _video_recorders(
                     pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
                 ) as videos_names:
                     url = f"http://{HUB_IP}:{hub_port}"
                     try:
-                        grid_health_check(url, len(node_images))
+                        grid_health_check(url, len(nodes_dict))
                         yield url
                     except SeleniumGridError:
                         _log_issues(
                             pod_name,
                             hub_name,
-                            node_names,
+                            nodes_dict,
                             podman_cmd,
                             videos_names,
                         )
@@ -119,7 +126,7 @@ def _grid(
 
 
 @contextlib.contextmanager
-def _pod(hub_port, podman_cmd):
+def _pod(nodes_dict, hub_port, podman_cmd):
     network_backend = os.getenv('PODMAN_NETWORK_BACKEND')
     if network_backend is None:
         network_backend_options = ["--network=slirp4netns:enable_ipv6=true"]
@@ -127,16 +134,17 @@ def _pod(hub_port, podman_cmd):
         network_backend_options = [
             f"--network={network_backend}:enable_ipv6=true"
         ]
-    name = shell(
-        [
-            podman_cmd,
-            "pod",
-            "create",
-            *network_backend_options,
-            "-p",
-            f'{hub_port}:4444',
-        ]
-    ).strip()
+    command = [
+        podman_cmd,
+        "pod",
+        "create",
+        *network_backend_options,
+        "-p",
+        f'{hub_port}:{HUB_PORT}',
+    ]
+    command += _create_node_port_mappings(nodes_dict)
+
+    name = shell(command).strip()
     try:
         yield name
     finally:
@@ -173,17 +181,16 @@ def _hub(image, hub_port, pod_name, podman_cmd, ui_artifacts_dir):
 # values.
 @contextlib.contextmanager
 def _nodes(
-    images,
+    nodes_dict,
     hub_name,
     pod_name,
     engine_dns_entry,
     podman_cmd,
     ui_artifacts_dir,
 ):
-    nodes_dict = {}
 
-    for image in images:
-        display = next(NODE_DISPLAY_ADDR_GEN)
+    node_selenium_port_gen = iter(range(5600, 5700))
+    for image, node_info in nodes_dict.items():
         name = shell(
             [
                 podman_cmd,
@@ -201,13 +208,15 @@ def _nodes(
                 "-e",
                 "SE_EVENT_BUS_SUBSCRIBE_PORT=4443",
                 "-e",
-                f"SE_OPTS=--port {next(NODE_PORT_GEN)}",
+                f"SE_OPTS=--port {next(node_selenium_port_gen)}",
                 "-e",
-                f"DISPLAY_NUM={display}",
+                f"DISPLAY_NUM={node_info.display}",
                 "-e",
-                f"DISPLAY=:{display}",
+                f"DISPLAY=:{node_info.display}",
                 "-e",
-                f"VNC_PORT={next(NODE_PORT_GEN)}",
+                f"VNC_PORT={node_info.vnc}",
+                "-e",
+                f"NO_VNC_PORT={node_info.no_vnc}",
                 "-e",
                 "VNC_NO_PASSWORD=1",
                 "-e",
@@ -219,23 +228,24 @@ def _nodes(
                 image,
             ]
         ).strip()
-        nodes_dict.update({image: {'name': name, 'display': display}})
+
+        nodes_dict[image].name = name
 
     try:
-        yield nodes_dict
+        yield
     finally:
         for node_dict in nodes_dict.values():
             save_container_logs(
-                ui_artifacts_dir, node_dict['name'], podman_cmd, "worker_"
+                ui_artifacts_dir, node_dict.name, podman_cmd, "worker_"
             )
-            shell([podman_cmd, "rm", "-f", node_dict['name']])
+            shell([podman_cmd, "rm", "-f", node_dict.name])
 
 
 @contextlib.contextmanager
 def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
     videos = []
     if ui_artifacts_dir is not None:
-        for image, values in nodes_dict.items():
+        for image, node_info in nodes_dict.items():
             video = shell(
                 [
                     podman_cmd,
@@ -246,10 +256,9 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
                     "-e",
                     f"DISPLAY_CONTAINER_NAME={' '}",
                     "-e",
-                    f"DISPLAY={values['display']}",
+                    f"DISPLAY={node_info.display}",
                     "-e",
-                    f"FILE_NAME=video-{image.split('/')[-1].split('-')[1]}"
-                    f".mp4",
+                    f"FILE_NAME=video-{_parse_browser(image)}.mp4",
                     "-e",
                     f"VIDEO_SIZE={SCREEN_WIDTH}x{SCREEN_HEIGHT}",
                     "--pod",
@@ -266,6 +275,55 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
             shell([podman_cmd, "stop", video])
             save_container_logs(ui_artifacts_dir, video, podman_cmd, "video_")
             shell([podman_cmd, "rm", "-f", video])
+
+
+def _create_nodes_dict(node_images):
+    node_display_addr_gen = iter(range(100, 200))
+    node_vnc_port_gen = iter(range(VNC_PORT, VNC_PORT + 100))
+    node_no_vnc_port_gen = iter(range(NO_VNC_PORT, NO_VNC_PORT + 100))
+
+    nodes_dict = {}
+    vnc_range_start = VNC_PORT
+    no_vnc_range_start = NO_VNC_PORT
+
+    for image in node_images:
+        display = next(node_display_addr_gen)
+
+        vnc = next(node_vnc_port_gen)
+        vnc_published = network_utils.find_free_port(
+            vnc_range_start, VNC_PORT + 100
+        )
+
+        no_vnc = next(node_no_vnc_port_gen)
+        no_vnc_published = network_utils.find_free_port(
+            no_vnc_range_start, NO_VNC_PORT + 100
+        )
+
+        nodes_dict[image] = NodeInfo(
+            display=display,
+            vnc=vnc,
+            vnc_published=vnc_published,
+            no_vnc=no_vnc,
+            no_vnc_published=no_vnc_published,
+        )
+
+        vnc_range_start = vnc_published + 1
+        no_vnc_range_start = no_vnc_published + 1
+
+    return nodes_dict
+
+
+def _create_node_port_mappings(nodes_dict):
+    mapping = []
+    for node_info in nodes_dict.values():
+        node_mapping = []
+        node_mapping.append("-p")
+        node_mapping.append(f"{node_info.vnc_published}:{node_info.vnc}")
+        node_mapping.append("-p")
+        node_mapping.append(f"{node_info.no_vnc_published}:{node_info.no_vnc}")
+        mapping.extend(node_mapping)
+
+    return mapping
 
 
 def grid_health_check(hub_url, expected_node_count=None):
@@ -295,12 +353,27 @@ def _all_nodes_up(nodes_dict):
     return True
 
 
-def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
+def _parse_browser(image):
+    return image.split('/')[-1].split('-')[1]
+
+
+def _log_start_attempt(attempt, hub_port, nodes_dict):
+    LOGGER.debug(f"Attempt no {attempt} to run the grid on {hub_port} port")
+
+    for image, node_info in nodes_dict.items():
+        LOGGER.debug(
+            f"Image for browser {_parse_browser(image)} "
+            f"with config {node_info}"
+        )
+
+
+def _log_issues(pod_name, hub_name, nodes_dict, podman_cmd, videos_names):
     LOGGER.error(
         "Pod inspection: \n%s"
         % shell([podman_cmd, "pod", "inspect", pod_name])
     )
     LOGGER.error("Hub logs: \n%s" % shell([podman_cmd, "logs", hub_name]))
+    node_names = [node_info.name for node_info in nodes_dict.values()]
     for name in node_names:
         LOGGER.error(
             "Node %s logs: \n%s" % (name, shell([podman_cmd, "logs", name]))

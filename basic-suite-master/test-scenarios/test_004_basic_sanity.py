@@ -21,7 +21,7 @@ import ovirtsdk4.types as types
 import pytest
 
 from ost_utils import ansible
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import constants
 from ost_utils import engine_utils
 from ost_utils import host_utils
@@ -178,7 +178,7 @@ def vm_ssh(get_vm_ip, vm_user, vm_password):
 
 @order_by(_TEST_LIST)
 def test_verify_add_all_hosts(hosts_service, ost_dc_name):
-    assertions.assert_true_within(
+    assert assert_utils.true_within(
         lambda: host_utils.all_hosts_up(hosts_service, ost_dc_name),
         timeout=constants.ADD_HOST_TIMEOUT,
     )
@@ -186,8 +186,8 @@ def test_verify_add_all_hosts(hosts_service, ost_dc_name):
 
 def _verify_vm_state(engine, vm_name, state):
     vm_service = test_utils.get_vm_service(engine, vm_name)
-    assertions.assert_true_within_long(
-        lambda: vm_service.get().status == state
+    assert assert_utils.equals_within_long(
+        lambda: vm_service.get().status, state
     )
     return vm_service
 
@@ -199,8 +199,8 @@ def _verify_vm_disks_state(engine, vm_name, state):
     )
     for disk_attachment in vm_disk_attachments_service.list():
         disk_service = disks_service.disk_service(disk_attachment.disk.id)
-        assertions.assert_true_within_short(
-            lambda: disk_service.get().status == state
+        assert assert_utils.equals_within_short(
+            lambda: disk_service.get().status, state
         )
 
 
@@ -211,7 +211,7 @@ def assert_vm_is_alive(ansible_host0, vm_ssh):
             ansible_host0.shell('ping -4 -c 1 -W 60 {}'.format(vm_name))
             return True
 
-        assertions.assert_true_within_long(
+        assert assert_utils.true_within_long(
             _ping, allowed_exceptions=[ansible.AnsibleExecutionError]
         )
 
@@ -311,7 +311,7 @@ def test_add_disks(engine_api, cirros_image_disk_name):
         test_utils.get_disk_service(engine, disk_name)
         for _, disk_name in disks_params
     )
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: all(
             disk_service.get().status == types.DiskStatus.OK
             for disk_service in disk_services
@@ -344,8 +344,8 @@ def test_add_floating_disk(engine_api, disks_service):
 
     engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, FLOATING_DISK_NAME)
-    assertions.assert_true_within_short(
-        lambda: disk_service.get().status == types.DiskStatus.OK
+    assert assert_utils.equals_within_short(
+        lambda: disk_service.get().status, types.DiskStatus.OK
     )
 
 
@@ -373,11 +373,11 @@ def test_extend_disk1(engine_api):
         )
 
         disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
-        assertions.assert_true_within_short(
-            lambda: disk_service.get().status == types.DiskStatus.OK
+        assert assert_utils.equals_within_short(
+            lambda: disk_service.get().status, types.DiskStatus.OK
         )
-        assertions.assert_true_within_short(
-            lambda: disk_service.get().provisioned_size == 2 * GB
+        assert assert_utils.equals_within_short(
+            lambda: disk_service.get().provisioned_size, 2 * GB
         )
 
 
@@ -425,12 +425,12 @@ def test_add_snapshot_for_backup(engine_api):
             backup_snapshot_params, query={'correlation_id': correlation_id}
         )
 
-        assertions.assert_true_within_long(
+        assert assert_utils.true_within_long(
             lambda: test_utils.all_jobs_finished(engine, correlation_id)
         )
-        assertions.assert_true_within_long(
-            lambda: vm2_snapshots_service.list()[-1].snapshot_status
-            == types.SnapshotStatus.OK,
+        assert assert_utils.equals_within_long(
+            lambda: vm2_snapshots_service.list()[-1].snapshot_status,
+            types.SnapshotStatus.OK,
         )
 
 
@@ -469,8 +469,8 @@ def test_clone_powered_off_vm(system_service, vms_service, ost_cluster_name):
             active=True,
         )
     )
-    assertions.assert_true_within_short(
-        lambda: floating_disk_service.get().status == types.DiskStatus.OK
+    assert assert_utils.equals_within_short(
+        lambda: floating_disk_service.get().status, types.DiskStatus.OK
     )
 
     correlation_id = 'clone_powered_off_vm'
@@ -492,13 +492,13 @@ def test_verify_template_disk_copied_and_removed(
             iscsi_sd_service, cirros_image_disk_name
         )
     )
-    assertions.assert_true_within_short(
-        lambda: cirros_sd_disk_service.get().status == types.DiskStatus.OK
+    assert assert_utils.equals_within_short(
+        lambda: cirros_sd_disk_service.get().status, types.DiskStatus.OK
     )
 
     disk_id = cirros_sd_disk_service.get().id
     cirros_sd_disk_service.remove()
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: disk_id
         not in [disk.id for disk in iscsi_sd_service.disks_service().list()]
     )
@@ -572,7 +572,7 @@ def test_verify_transient_folder(
 def test_verify_and_remove_cloned_vm(system_service):
     correlation_id = 'clone_powered_off_vm'
 
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: test_utils.all_jobs_finished(system_service, correlation_id)
     )
 
@@ -584,8 +584,8 @@ def test_verify_and_remove_cloned_vm(system_service):
     vm_to_clone_snapshots_service = test_utils.get_vm_snapshots_service(
         system_service, VM_TO_CLONE_NAME
     )
-    assertions.assert_true_within_short(
-        lambda: len(vm_to_clone_snapshots_service.list()) == 1
+    assert assert_utils.equals_within_short(
+        lambda: len(vm_to_clone_snapshots_service.list()), 1
     )
 
     num_of_vms = len(system_service.vms_service().list())
@@ -614,8 +614,8 @@ def test_remove_backup_vm_and_backup_snapshot(engine_api):
         # VM_DOWN(61) event
         # USER_STOP_VM(33) event
         backup_vm_service.stop()
-        assertions.assert_true_within_long(
-            lambda: backup_vm_service.get().status == types.VmStatus.DOWN
+        assert assert_utils.equals_within_long(
+            lambda: backup_vm_service.get().status, types.VmStatus.DOWN
         )
     # remove backup_vm
     num_of_vms = len(engine.vms_service().list())
@@ -635,8 +635,8 @@ def test_verify_backup_snapshot_removed(engine_api):
         engine, VM2_NAME
     )
 
-    assertions.assert_true_within_long(
-        lambda: len(vm2_snapshots_service.list()) == 1
+    assert assert_utils.equals_within_long(
+        lambda: len(vm2_snapshots_service.list()), 1
     )
 
 
@@ -661,12 +661,12 @@ def snapshot_cold_merge(engine_api):
         dead_snap1_params, query={'correlation_id': correlation_id}
     )
 
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
-    assertions.assert_true_within_long(
-        lambda: vm1_snapshots_service.list()[-1].snapshot_status
-        == types.SnapshotStatus.OK
+    assert assert_utils.equals_within_long(
+        lambda: vm1_snapshots_service.list()[-1].snapshot_status,
+        types.SnapshotStatus.OK,
     )
 
     dead_snap2_params = types.Snapshot(
@@ -680,23 +680,23 @@ def snapshot_cold_merge(engine_api):
         dead_snap2_params, query={'correlation_id': correlation_id_snap2}
     )
 
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id_snap2)
     )
-    assertions.assert_true_within_long(
-        lambda: vm1_snapshots_service.list()[-1].snapshot_status
-        == types.SnapshotStatus.OK
+    assert assert_utils.equals_within_long(
+        lambda: vm1_snapshots_service.list()[-1].snapshot_status,
+        types.SnapshotStatus.OK,
     )
 
     snapshot = vm1_snapshots_service.list()[-2]
     vm1_snapshots_service.snapshot_service(snapshot.id).remove()
 
-    assertions.assert_true_within_long(
-        lambda: len(vm1_snapshots_service.list()) == 2
+    assert assert_utils.equals_within_long(
+        lambda: len(vm1_snapshots_service.list()), 2
     )
-    assertions.assert_true_within_long(
-        lambda: vm1_snapshots_service.list()[-1].snapshot_status
-        == types.SnapshotStatus.OK
+    assert assert_utils.equals_within_long(
+        lambda: vm1_snapshots_service.list()[-1].snapshot_status,
+        types.SnapshotStatus.OK,
     )
 
 
@@ -734,7 +734,7 @@ def test_make_snapshot_with_memory(engine_api):
 def test_preview_snapshot_with_memory(engine_api):
     engine = engine_api.system_service()
     correlation_id = "make_preview_snapshot_with_memory"
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -818,11 +818,11 @@ def test_vmconsole(engine_api, engine_ip, working_dir):
 def test_check_snapshot_with_memory(engine_api):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
-    assertions.assert_true_within_long(
+    assert assert_utils.equals_within_long(
         lambda: test_utils.get_snapshot(
             engine, VM0_NAME, SNAPSHOT_DESC_MEM
-        ).snapshot_status
-        == types.SnapshotStatus.IN_PREVIEW
+        ).snapshot_status,
+        types.SnapshotStatus.IN_PREVIEW,
     )
     vm_service.start()
     _verify_vm_state(engine, VM0_NAME, types.VmStatus.UP)
@@ -843,14 +843,14 @@ def cold_storage_migration(engine_api):
                 async_=False, storage_domain=types.StorageDomain(name=domain)
             )
 
-            assertions.assert_true_within_long(
+            assert assert_utils.equals_within_long(
                 lambda: engine_api.follow_link(
                     disk_service.get().storage_domains[0]
-                ).name
-                == domain
+                ).name,
+                domain,
             )
-            assertions.assert_true_within_long(
-                lambda: disk_service.get().status == types.DiskStatus.OK
+            assert assert_utils.equals_within_long(
+                lambda: disk_service.get().status, types.DiskStatus.OK
             )
 
 
@@ -866,28 +866,28 @@ def test_live_storage_migration(engine_api):
         query={'correlation_id': correlation_id},
     )
 
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
 
     # Assert that the disk is on the correct storage domain,
     # its status is OK and the snapshot created for the migration
     # has been merged
-    assertions.assert_true_within_long(
+    assert assert_utils.equals_within_long(
         lambda: engine_api.follow_link(
             disk_service.get().storage_domains[0]
-        ).name
-        == SD_ISCSI_NAME
+        ).name,
+        SD_ISCSI_NAME,
     )
 
     vm0_snapshots_service = test_utils.get_vm_snapshots_service(
         engine, VM0_NAME
     )
-    assertions.assert_true_within_long(
-        lambda: len(vm0_snapshots_service.list()) == 1
+    assert assert_utils.equals_within_long(
+        lambda: len(vm0_snapshots_service.list()), 1
     )
-    assertions.assert_true_within_long(
-        lambda: disk_service.get().status == types.DiskStatus.OK
+    assert assert_utils.equals_within_long(
+        lambda: disk_service.get().status, types.DiskStatus.OK
     )
 
 
@@ -914,8 +914,8 @@ def test_verify_vm2_exported(engine_api):
     vm1_snapshots_service = test_utils.get_vm_snapshots_service(
         engine, VM2_NAME
     )
-    assertions.assert_true_within_long(
-        lambda: len(vm1_snapshots_service.list()) == 1,
+    assert assert_utils.equals_within_long(
+        lambda: len(vm1_snapshots_service.list()), 1
     )
     # ...and it should still be running
     _verify_vm_state(engine_api.system_service(), VM2_NAME, types.VmStatus.UP)
@@ -935,7 +935,7 @@ def test_verify_template_exported(engine_api, cirros_image_template_name):
                 cirros_image_template_name,
             )
         )
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
 
@@ -976,10 +976,10 @@ def test_verify_vm_import(engine_api):
     engine = engine_api.system_service()
     correlation_id = "test_validate_ova_import_vm"
 
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: test_utils.get_vm_service(engine, IMPORTED_VM_NAME) is not None
     )
 
@@ -1019,10 +1019,10 @@ def test_verify_template_import(engine_api):
     engine = engine_api.system_service()
     correlation_id = "test_validate_ova_import_temp"
 
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: test_utils.get_template_service(engine, IMPORTED_TEMP_NAME)
         is not None
     )
@@ -1183,8 +1183,8 @@ def test_ha_recovery(engine_api, get_ansible_host_for_vm):
         LOGGER.debug(f'test_ha_recovery: kill_res={kill_res}')
 
     vm_service = test_utils.get_vm_service(engine, VM2_NAME)
-    assertions.assert_true_within_long(
-        lambda: vm_service.get().status == types.VmStatus.UP
+    assert assert_utils.equals_within_long(
+        lambda: vm_service.get().status, types.VmStatus.UP
     )
     with engine_utils.wait_for_event(engine, 33):  # USER_STOP_VM event
         vm_service.stop()
@@ -1216,11 +1216,11 @@ def test_offline_snapshot_restore(engine_api):
         vm_service.preview_snapshot(
             snapshot=snapshot, async_=False, restore_memory=False
         )
-    assertions.assert_true_within_short(
+    assert assert_utils.equals_within_short(
         lambda: test_utils.get_snapshot(
             engine, VM2_NAME, SNAPSHOT_DESC_OFF
-        ).snapshot_status
-        == types.SnapshotStatus.IN_PREVIEW
+        ).snapshot_status,
+        types.SnapshotStatus.IN_PREVIEW,
     )
     vm_service.start()
 
@@ -1249,19 +1249,19 @@ def test_vdsm_recovery(
     ansible_host = ansible_by_hostname(host_name)
 
     ansible_host.systemd(name='vdsmd', state='stopped')
-    assertions.assert_true_within_short(
-        lambda: vm_service.get().status == types.VmStatus.UNKNOWN
+    assert assert_utils.equals_within_short(
+        lambda: vm_service.get().status, types.VmStatus.UNKNOWN
     )
 
     ansible_host.systemd(name='vdsmd', state='started')
-    assertions.assert_true_within_short(
-        lambda: host_service.get().status == types.HostStatus.UP
+    assert assert_utils.equals_within_short(
+        lambda: host_service.get().status, types.HostStatus.UP
     )
 
     host_utils.wait_for_flapping_host(hosts_service, ost_dc_name, host_id)
 
-    assertions.assert_true_within_short(
-        lambda: vm_service.get().status == types.VmStatus.UP
+    assert assert_utils.equals_within_short(
+        lambda: vm_service.get().status, types.VmStatus.UP
     )
 
 
@@ -1312,8 +1312,9 @@ def test_add_vm_pool(engine_api, cirros_image_template_name, ost_cluster_name):
             )
         )
     vm_service = test_utils.get_vm_service(engine, VMPOOL_NAME + '-1')
-    assertions.assert_true_within_short(
-        lambda: vm_service.get().status == types.VmStatus.DOWN,
+    assert assert_utils.equals_within_short(
+        lambda: vm_service.get().status,
+        types.VmStatus.DOWN,
         allowed_exceptions=[IndexError],
     )
 
@@ -1341,8 +1342,8 @@ def test_update_template_version(engine_api, cirros_image_template_name):
         )
     )
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
-    assertions.assert_true_within_long(
-        lambda: pool_service.get().vm.memory == stateless_vm.memory
+    assert assert_utils.equals_within_long(
+        lambda: pool_service.get().vm.memory, stateless_vm.memory
     )
 
 
@@ -1356,7 +1357,7 @@ def test_update_vm_pool(engine_api):
         query={'correlation_id': correlation_id},
     )
     assert pool_service.get().max_user_vms == 2
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
 
@@ -1375,7 +1376,7 @@ def test_remove_vm2_lease(engine_api):
             lease=types.StorageDomainLease(storage_domain=None),
         )
     )
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: vm2_service.get().lease is None
     )
 
@@ -1391,7 +1392,7 @@ def test_remove_vm_pool(engine_api):
         pool_service.remove(query={'correlation_id': correlation_id})
         vm_pools_service = engine_api.system_service().vm_pools_service()
         assert len(vm_pools_service.list()) == 0
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: test_utils.all_jobs_finished(engine, correlation_id)
     )
 
@@ -1411,8 +1412,8 @@ def test_template_update(engine_api, cirros_image_template_name):
         )
     new_comment = "comment by ovirt-system-tests"
     template_guest.update(template=types.Template(comment=new_comment))
-    assertions.assert_true_within_short(
-        lambda: template_guest.get().status == types.TemplateStatus.OK
+    assert assert_utils.equals_within_short(
+        lambda: template_guest.get().status, types.TemplateStatus.OK
     )
     assert template_guest.get().comment == new_comment
 
@@ -1536,8 +1537,8 @@ def test_next_run_unplug_cpu(engine_api):
 
     with engine_utils.wait_for_event(engine, 157):  # USER_REBOOT_VM(157)
         vm_service.reboot()
-        assertions.assert_true_within_long(
-            lambda: vm_service.get().status == types.VmStatus.UP
+        assert assert_utils.equals_within_long(
+            lambda: vm_service.get().status, types.VmStatus.UP
         )
     assert vm_service.get().cpu.topology.sockets == 1
 
@@ -1587,11 +1588,11 @@ def test_hotplug_disk(assert_vm_is_alive, engine_api):
         disk_attachment.id
     )
 
-    assertions.assert_true_within_short(
-        lambda: attachment_service.get().active == True
+    assert assert_utils.true_within_short(
+        lambda: attachment_service.get().active
     )
-    assertions.assert_true_within_short(
-        lambda: disk_service.get().status == types.DiskStatus.OK
+    assert assert_utils.equals_within_short(
+        lambda: disk_service.get().status, types.DiskStatus.OK
     )
     assert_vm_is_alive(VM0_NAME)
 
@@ -1614,16 +1615,16 @@ def test_hotunplug_disk(engine_api):
             types.DiskAttachment(active=False),
             query={'correlation_id': correlation_id},
         )
-        assertions.assert_true_within_long(
+        assert assert_utils.true_within_long(
             lambda: test_utils.all_jobs_finished(engine, correlation_id)
         )
 
-        assertions.assert_true_within_short(
-            lambda: disk_service.get().status == types.DiskStatus.OK
+        assert assert_utils.equals_within_short(
+            lambda: disk_service.get().status, types.DiskStatus.OK
         )
 
-        assertions.assert_true_within_short(
-            lambda: disk_attachment.get().active == False
+        assert assert_utils.equals_within_short(
+            lambda: disk_attachment.get().active, False
         )
 
 
@@ -1639,8 +1640,8 @@ def test_suspend_resume_vm0(assert_vm_is_alive, engine_api, vm_ssh):
         engine_api.system_service(), VM0_NAME
     )
     vm_service.suspend()
-    assertions.assert_true_within_long(
-        lambda: vm_service.get().status == types.VmStatus.SUSPENDED
+    assert assert_utils.equals_within_long(
+        lambda: vm_service.get().status, types.VmStatus.SUSPENDED
     )
 
     vm_service.start()
@@ -1664,16 +1665,16 @@ def test_reconstruct_master_domain(engine_api, ost_dc_name):
         master_sd.id
     )
     attached_sd_service.deactivate()
-    assertions.assert_true_within_long(
-        lambda: attached_sd_service.get().status
-        == types.StorageDomainStatus.MAINTENANCE
+    assert assert_utils.equals_within_long(
+        lambda: attached_sd_service.get().status,
+        types.StorageDomainStatus.MAINTENANCE,
     )
     new_master_sd = next(sd for sd in attached_sds_service.list() if sd.master)
     assert new_master_sd.id != master_sd.id
     attached_sd_service.activate()
-    assertions.assert_true_within_long(
-        lambda: attached_sd_service.get().status
-        == types.StorageDomainStatus.ACTIVE
+    assert assert_utils.equals_within_long(
+        lambda: attached_sd_service.get().status,
+        types.StorageDomainStatus.ACTIVE,
     )
 
 

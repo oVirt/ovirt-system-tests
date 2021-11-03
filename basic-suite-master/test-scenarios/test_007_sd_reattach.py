@@ -7,7 +7,7 @@ from __future__ import absolute_import
 
 import ovirtsdk4
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import engine_utils
 from ost_utils import test_utils
 from ost_utils.constants import FLOATING_DISK_NAME
@@ -69,18 +69,18 @@ def test_deactivate_storage_domain(engine_api):
             ovirtsdk4.types.JobStatus.STARTED in deactivation_job_statuses
         )
 
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         _deactivate_with_running_ovf_update_task
     )
 
     # Wait for the storage deactivation to be finished.
-    assertions.assert_true_within_short(_is_deactivation_job_finished)
+    assert assert_utils.true_within_short(_is_deactivation_job_finished)
 
-    assertions.assert_true_within_short(
+    assert assert_utils.equals_within_short(
         lambda: test_utils.get_attached_storage_domain(
             dc, SD_SECOND_NFS_NAME
-        ).status
-        == ovirtsdk4.types.StorageDomainStatus.MAINTENANCE
+        ).status,
+        ovirtsdk4.types.StorageDomainStatus.MAINTENANCE,
     )
 
 
@@ -93,7 +93,7 @@ def test_detach_storage_domain(engine_api):
         dc, SD_SECOND_NFS_NAME, service=True
     ).remove()
 
-    assertions.assert_equals_within_short(
+    assert assert_utils.equals_within_short(
         lambda: test_utils.get_attached_storage_domain(
             engine, SD_SECOND_NFS_NAME
         ).status,
@@ -110,7 +110,7 @@ def test_reattach_storage_domain(engine_api):
 
     dc.storage_domains_service().add(sd)
 
-    assertions.assert_equals_within_short(
+    assert assert_utils.equals_within_short(
         lambda: test_utils.get_attached_storage_domain(
             dc, SD_SECOND_NFS_NAME
         ).status,

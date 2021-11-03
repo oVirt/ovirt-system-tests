@@ -20,7 +20,7 @@ from ovirtsdk4.types import (
 )
 
 import pytest
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import network_utils
 from ost_utils import test_utils
 
@@ -100,10 +100,10 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
         vms = json.loads(out)
         return vm_id not in [vm["vmId"] for vm in vms]
 
-    assertions.assert_true_within_short(vm_is_not_on_host)
+    assert assert_utils.true_within_short(vm_is_not_on_host)
 
-    assertions.assert_true_within_short(
-        lambda: vm_service.get().status == VmStatus.UP
+    assert assert_utils.equals_within_short(
+        lambda: vm_service.get().status, VmStatus.UP
     )
 
     assert _current_running_host() == dst_host

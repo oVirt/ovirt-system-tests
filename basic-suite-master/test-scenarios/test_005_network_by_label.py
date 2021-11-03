@@ -8,7 +8,7 @@ import functools
 
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import utils
@@ -114,9 +114,8 @@ def test_assign_labeled_network(
         system_service, ost_cluster_name
     ):
         host_service = hosts_service.host_service(id=host.id)
-        assertions.assert_true_within_short(
-            functools.partial(
-                _host_is_attached_to_network,
+        assert assert_utils.true_within_short(
+            lambda: _host_is_attached_to_network(
                 system_service,
                 host_service,
                 LABELED_NET_NAME,

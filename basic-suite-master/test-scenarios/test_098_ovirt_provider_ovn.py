@@ -15,7 +15,7 @@ import requests
 
 from ovirtsdk4 import types
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import versioning
@@ -267,7 +267,7 @@ def _validate_vnic_profile(api, vnic_profile_name):
         )
 
     profiles_service = api.system_service().vnic_profiles_service()
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: _get_vnic_profile(profiles_service, vnic_profile_name)
         is not None
     )
@@ -381,8 +381,8 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
     nic_service = nics_service.nic_service(nic.id)
     nic_service.deactivate()
-    assertions.assert_true_within_short(
-        lambda: nic_service.get().plugged == False
+    assert assert_utils.equals_within_short(
+        lambda: nic_service.get().plugged, False
     )
     nic_service.remove()
 

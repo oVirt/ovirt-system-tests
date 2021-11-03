@@ -22,7 +22,7 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import test_utils
 from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
@@ -414,8 +414,8 @@ def setup_virtual_machines(engine_api):
     vm_service = test_utils.get_vm_service(engine_api.system_service(), 'vm0')
     if vm_service.get().status == types.VmStatus.DOWN:
         vm_service.start()
-        assertions.assert_true_within_long(
-            lambda: vm_service.get().status == types.VmStatus.POWERING_UP
+        assert assert_utils.equals_within_long(
+            lambda: vm_service.get().status, types.VmStatus.POWERING_UP
         )
 
 
@@ -611,7 +611,7 @@ def test_userportal(
     vm_portal.wait_for_displayed()
 
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
-    assertions.assert_true_within_short(lambda: vm_portal.get_vm_count() is 1)
+    assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
     vm0_status = vm_portal.get_vm_status('vm0')
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
     vm_portal.logout()

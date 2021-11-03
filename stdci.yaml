@@ -46,13 +46,6 @@ stage:
                     jenkins_master: psi
                     support-nesting-level: 2
                     hostdistro: same
-        - tr_suite_master:
-            distributions:
-              - rhel8:
-                  runtime-requirements:
-                    jenkins_master: psi
-                    support-nesting-level: 2
-                    hostdistro: same
         - ost_core_change:
             distributions:
              - rhel8:

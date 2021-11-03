@@ -147,6 +147,7 @@ _TEST_LIST = [
     "test_add_instance_type",
     "test_add_event",
     "test_verify_add_all_hosts",
+    "test_generate_openscap_report",
     "test_upload_cirros_image",
     "test_create_cirros_template",
     "test_complete_hosts_setup",
@@ -1922,3 +1923,39 @@ def test_verify_uploaded_image_and_template(
             lambda: disks_service.list(search=f'name={disk_name}')[0].status,
             types.DiskStatus.OK,
         )
+
+
+@order_by(_TEST_LIST)
+def test_generate_openscap_report(
+    ansible_by_hostname,
+    hosts_hostnames,
+    engine_fqdn,
+    artifacts_dir,
+    ost_images_distro,
+):
+    # FIXME Use better way to detect which distro we are running on
+    if ost_images_distro != 'rhel8':
+        pytest.skip('The report is generated only on RHEL images')
+
+    all_without_storage = hosts_hostnames
+    all_without_storage.append(engine_fqdn)
+    ansible_handle = ansible_by_hostname(all_without_storage)
+    try:
+        ansible_handle.shell(
+            'oscap '
+            'xccdf '
+            'eval '
+            '--profile xccdf_org.ssgproject.content_profile_stig '
+            '--report report.html '
+            '--oval-results '
+            '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'
+        )
+    except AnsibleExecutionError as err:
+        if err.rc == 2:
+            LOGGER.warning('DISA STIG report has some failures')
+        else:
+            raise
+
+    report_dir = os.path.join(artifacts_dir, 'openscap_reports')
+    os.makedirs(report_dir, exist_ok=True)
+    ansible_handle.fetch(src='report.html', dest=report_dir)

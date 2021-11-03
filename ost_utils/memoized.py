@@ -4,8 +4,9 @@
 #
 #
 
-import collections
 import functools
+
+from collections import abc
 
 
 # Taken from https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
@@ -20,7 +21,7 @@ class memoized:
         self.cache = {}
 
     def __call__(self, *args):
-        if not isinstance(args, collections.Hashable):
+        if not isinstance(args, abc.Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func(*args)

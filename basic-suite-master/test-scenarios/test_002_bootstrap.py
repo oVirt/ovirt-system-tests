@@ -1879,41 +1879,26 @@ def test_create_cirros_template(
     engine_hostname,
     ssh_key_file,
 ):
-    # TODO: sometime after the image transfer is complete,
-    # not all locks are released - BZ 1923178
-    def create_cirros_template():
-        try:
-            image_template(
-                working_dir,
-                artifacts_dir,
-                ansible_execution_environment,
-                ansible_inventory,
-                ssh_key_file,
-                engine_hostname,
-                engine_fqdn=engine_fqdn,
-                engine_user=engine_full_username,
-                engine_password=engine_password,
-                engine_cafile='/etc/pki/ovirt-engine/ca.pem',
-                qcow_url=f"file://{CIRROS_IMAGE_PATH}",
-                template_cluster=ost_cluster_name,
-                template_name=cirros_image_template_name,
-                template_memory='1GiB',
-                template_cpu='1',
-                template_disk_size='1GiB',
-                template_disk_storage=SD_NFS_NAME,
-                template_seal=False,
-            )
-            return True
-        except shell.ShellError as e:
-            if (
-                'Disk is locked' in e.out
-                or 'Timeout exceed while waiting on result state of the entity'
-                in e.out
-            ):
-                return False
-            raise e
-
-    assertions.assert_true_within_long(create_cirros_template)
+    image_template(
+        working_dir,
+        artifacts_dir,
+        ansible_execution_environment,
+        ansible_inventory,
+        ssh_key_file,
+        engine_hostname,
+        engine_fqdn=engine_fqdn,
+        engine_user=engine_full_username,
+        engine_password=engine_password,
+        engine_cafile='/etc/pki/ovirt-engine/ca.pem',
+        qcow_url=f"file://{CIRROS_IMAGE_PATH}",
+        template_cluster=ost_cluster_name,
+        template_name=cirros_image_template_name,
+        template_memory='1GiB',
+        template_cpu='1',
+        template_disk_size='1GiB',
+        template_disk_storage=SD_NFS_NAME,
+        template_seal=False,
+    )
 
 
 @order_by(_TEST_LIST)

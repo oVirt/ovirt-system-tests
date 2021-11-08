@@ -65,6 +65,7 @@
             name:
               - ansible
             state: present
+          become: true
 
         - name: install required packages for OST
           dnf:

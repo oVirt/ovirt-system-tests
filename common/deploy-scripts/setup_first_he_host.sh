@@ -1,4 +1,8 @@
 #!/bin/bash -x
+
+# FIXME Workaround for https://bugzilla.redhat.com/2020620
+umask 022
+
 HOSTEDENGINE="$1"
 shift
 HE_MAC_ADDRESS="$1"

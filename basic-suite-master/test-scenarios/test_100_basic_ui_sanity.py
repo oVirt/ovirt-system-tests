@@ -80,10 +80,10 @@ def test_secure_connection_should_fail_without_root_ca(
             ]
         )
 
-    # message is different in el7 and el8 curl versions
+    # message is different in el8 and el9 curl versions
     assert (
         "self signed certificate in certificate chain" in e.value.err
-        or "not trusted by the user" in e.value.err
+        or "self-signed certificate in certificate chain" in e.value.err
     )
 
 

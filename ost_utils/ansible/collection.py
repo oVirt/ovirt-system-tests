@@ -40,7 +40,9 @@ def _run_playbook(
         ansible_logs_path, 'ansible-navigator.log'
     )
 
-    playbook_log_path = os.path.join(working_dir, 'playbook-artifacts.json')
+    playbook_log_path = os.path.join(
+        ansible_logs_path, 'playbook-artifacts.json'
+    )
 
     network_backend = os.getenv('PODMAN_NETWORK_BACKEND')
     if network_backend is None:
@@ -221,7 +223,7 @@ class CollectionMapper:
 
     def _collect_module_data(self):
         playbook_log_path = os.path.join(
-            self.working_dir, 'playbook-artifacts.json'
+            self.artifacts_dir, 'ansible_logs', 'playbook-artifacts.json'
         )
         with open(playbook_log_path) as file:
             data = json.load(file)

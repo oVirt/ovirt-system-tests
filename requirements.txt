@@ -7,7 +7,7 @@ pytest==6.2.2
 requests
 selenium
 # network suite deps
-openstacksdk==0.36.4
+openstacksdk
 # ost_utils
 paramiko
 PyYAML

@@ -1,6 +1,10 @@
 # PIP requirements for OST
 ovirt-engine-sdk-python>=4.5.0
-ansible-navigator==1.1.0
+# A temporary workaround to run navigator with 'subprocess' runner mode, until
+# as the default 'pexpect' is unreliable
+# TODO: Revert once it's fixed:
+# https://github.com/ansible/ansible-navigator/issues/606
+git+git://github.com/didib/ansible-navigator@671bd6c9#egg=ansible-navigator
 ansible-runner
 pytest==6.2.2
 # basic suite deps

@@ -86,6 +86,7 @@ from ost_utils.pytest.fixtures.engine import engine_ips_for_network
 from ost_utils.pytest.fixtures.engine import engine_username
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
+from ost_utils.pytest.fixtures.env import ssh_key_file
 from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.env import working_dir
 from ost_utils.pytest.fixtures.network import management_network_name

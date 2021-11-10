@@ -51,6 +51,7 @@ ost_destroy() {
         virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
     ) 9>/tmp/ost.lock
   fi
+  [[ -s "$PREFIX/sshd_pid" ]] && { echo "killing IPv6 sshd proxy"; kill $(cat "$PREFIX/sshd_pid"); }
   _deployment_exists && rm -rf "$PREFIX" && echo "removed $PREFIX"
   unset OST_INITIALIZED $(env | grep ^OST_IMAGES_ | cut -d= -f1)
 }
@@ -268,8 +269,14 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
   # final ansible hosts file
   echo -e $ansible_hosts > $PREFIX/hosts
 
+  # start IPv6 SOCKS proxy for DNF in IPv6-only networks
+  [[ -n "$ipv6_only" ]] && {
+    echo "Starting sshd on ${ssh_addr:=fd8f:1391:3a82:${net_map[$management_net]}::1}"
+    sleep 5
+    /usr/sbin/sshd -f ${OST_REPO_ROOT}/common/helpers/sshd_config -o PidFile=${PREFIX}/sshd_pid -o AuthorizedKeysFile=${OST_IMAGES_SSH_KEY}.pub -o HostKey=${OST_IMAGES_SSH_KEY} -o AllowUsers=$(id -un) -o ListenAddress=${ssh_addr}
+  }
 
-) 9>/tmp/ost.lock || return 1
+true ) 9>/tmp/ost.lock || return 1
 }
 
 # TODO this can use DNS instead

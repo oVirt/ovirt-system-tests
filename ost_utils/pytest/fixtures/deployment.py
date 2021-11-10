@@ -6,6 +6,8 @@
 
 import datetime
 import functools
+import getpass
+import ipaddress
 import logging
 import os
 import pprint
@@ -61,16 +63,48 @@ def set_sar_interval(ansible_all, root_dir):
     return do_set_sar_interval
 
 
+def start_sshd_proxy(vms, host, root_dir, ssh_key_file):
+    vms.copy(
+        src=ssh_key_file,
+        dest='/root/.ssh/id_rsa',
+        mode='0600',
+    )
+    vms.copy(
+        src=os.path.join(root_dir, 'common/helpers/sshd_proxy.service'),
+        dest='/etc/systemd/system/sshd_proxy.service',
+    )
+    user = getpass.getuser()
+    vms.copy(
+        dest='/usr/local/sbin/sshd_proxy.sh',
+        content=f'"#!/bin/bash\\nssh -D 1234 -p2222 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /root/.ssh/id_rsa {user}@{host}"',
+        mode='0655',
+    )
+    vms.systemd(
+        daemon_reload='yes',
+        name='sshd_proxy.service',
+        state='started',
+        enabled='yes',
+    )
+    vms.lineinfile(
+        path='/etc/dnf/dnf.conf',
+        line='"proxy=socks5://localhost:1234\\nip_resolve=4"',
+    )
+
+
 @pytest.fixture(scope="session", autouse=True)
 def deploy(
     ansible_vms_to_deploy,
     ansible_hosts,
     deploy_scripts,
+    root_dir,
     working_dir,
     request,
     run_scripts,
     set_sar_interval,
     ost_images_distro,
+    ssh_key_file,
+    backend,
+    management_network_name,
 ):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
@@ -81,6 +115,23 @@ def deploy(
 
     # set static hostname to match the one assigned by DNS
     ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
+
+    # start IPv6 proxy for dnf so we can update packages
+    if not any(
+        ipaddress.ip_address(ip).version == 4
+        for ip in list(backend.ip_mapping().values())[0][
+            management_network_name
+        ]
+    ):
+        LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
+        # can't use a fixture since VMs may not be up yet
+        ip = list(backend.ip_mapping().values())[0][management_network_name][0]
+        start_sshd_proxy(
+            ansible_vms_to_deploy,
+            ipaddress.ip_interface(f"{ip}/64").network[1],
+            root_dir,
+            ssh_key_file,
+        )
 
     # disable all repos
     package_mgmt.disable_all_repos(ansible_vms_to_deploy)

@@ -1,0 +1,10 @@
+[Unit]
+Description=socks proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/sbin/sshd_proxy.sh
+
+[Install]
+WantedBy=multi-user.target

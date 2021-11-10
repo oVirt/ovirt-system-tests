@@ -30,6 +30,8 @@ EOF
 
 # Use repositories from the host-0 so that we can actually update HE to the same custom repos
 dnf_update() {
+    FWD_PARAM="-D 1234" # when host-0 can access IPv4
+    ip -4 -o addr show dev eth0 scope global | grep -q eth0 || FWD_PARAM="-L1234:localhost:1234" # when we need to tunnel further to the SOCKS proxy on OST executor
     cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/replace_repos.yml
 ---
 - name: Create systemd service for IPv6 to IPv4 proxy
@@ -42,7 +44,7 @@ dnf_update() {
       After=network-online.target
       Wants=network-online.target
       [Service]
-      ExecStart=sshpass -p $(grep adminPassword hosted-engine-deploy-answers-file.conf  | cut -d: -f2) ssh -D 1234 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $(hostname -f)
+      ExecStart=sshpass -p $(grep adminPassword hosted-engine-deploy-answers-file.conf  | cut -d: -f2) ssh ${FWD_PARAM} -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $(hostname -f)
       [Install]
       WantedBy=multi-user.target
 - name: Start IPv6 to IPv4 proxy

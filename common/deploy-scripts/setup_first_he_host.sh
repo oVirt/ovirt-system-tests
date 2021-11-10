@@ -107,14 +107,10 @@ add_he_to_hosts() {
     echo "${HEADDR} ${HOSTEDENGINE}.${DOMAIN} ${HOSTEDENGINE}" >> /etc/hosts
 }
 
-# workaround for NM dropping IPv6 routes and prioritize IPv6 resolving in java and imageio since IPv4 routes are missing in dual and ipv6-only modes
+# prioritize IPv6 resolving in java and imageio since IPv4 routes are missing in dual and ipv6-only modes
 fix_ipv6() {
-    VIRBR0_SUBNET="--ansible-extra-vars=he_ipv6_subnet_prefix='fd00:1234:5678:900'"
     cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/fix_routes.yml
 ---
-- name: Fix IPv6 routes
-  shell: |
-    sed -i "17i\- name: Fix IPv6 routes\n  shell: ip -6 r add fd00:1234:5678:900::/64 dev virbr0 || true\n" /usr/share/ovirt-engine/ansible-runner-service-project/project/roles/ovirt-host-deploy-vdsm/tasks/restart_services.yml
 - name: Resolve IPv6 in engine
   lineinfile:
     path: /etc/ovirt-engine/engine.conf.d/99-ipv6-pref.conf
@@ -141,12 +137,9 @@ add_he_to_hosts
 
 ip -6 -o addr show dev eth0 scope global | grep -q eth0 && fix_ipv6
 
-# https://gerrit.ovirt.org/c/ovirt-hosted-engine-setup/+/116925
-sed -i "141c\        for amatch in (addressmatchs6list + addressmatchs4list):" /usr/share/ovirt-hosted-engine-setup//plugins/gr-he-common/vm/cloud_init.py
-
 fstrim -va
 rm -rf /var/cache/yum/*
-hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf ${VIRBR0_SUBNET}
+hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."

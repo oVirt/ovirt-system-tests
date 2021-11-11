@@ -58,7 +58,7 @@ class VirshBackend(base.BaseBackend):
                 ip_list = networks.setdefault(network_name, [])
                 if nic_info.ip6_dhcp_entry is not None:
                     ip_list.append(nic_info.ip6_dhcp_entry.ip)
-                elif nic_info.ip4_dhcp_entry is not None:
+                if nic_info.ip4_dhcp_entry is not None:
                     ip_list.append(nic_info.ip4_dhcp_entry.ip)
 
         return mapping

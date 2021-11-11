@@ -69,7 +69,7 @@ Now, log in to the web-UI at:
 
 * URL: `https://engine/ovirt-engine/webadmin/`
 * Username: `admin`
-* Password: `123`
+* Password: `123456`
 * Profile: `internal`
 
 If you're running OST on a remote machine, you can tunnel a local

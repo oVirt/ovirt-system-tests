@@ -85,6 +85,40 @@ port directly to the destination machine - from your local machine:
     (***) - The host running OST which can reach the VMs network and will tunnel the connection.
 ```
 
+### Running specific tests
+
+It's often useful to run just a single test, usually after running a suite, to test something using the existing machines. Following is an example showing how to run the he-basic-suite, and after it's finished, run again one of the tests.
+
+First, run the suite:
+```
+./ost.sh run he-basic-suite-master el8stream
+```
+
+Now, you might change the code, e.g. to run a test with some change in it, or a new test you are developing. Then, run it:
+```
+. lagofy.sh
+ost_init he-basic-suite-master
+ost_run_tc he-basic-suite-master/test-scenarios/test_030_ovirt_auth.py
+```
+
+The first argument to `ost_run_tc` is the test to run - a module, or a method/class inside one, e.g.:
+```
+ost_run_tc basic-suite-master/test-scenarios/test_004_basic_sanity.py::test_vdsm_recovery
+```
+
+An optional second argument is passed as `-k` to pytest, for selecting tests based on pattern, e.g. this will run `test_010_local_maintenance_cli.py` and `test_012_local_maintenance_sdk.py`:
+```
+ost_run_tc he-basic-suite-master/test-scenarios local_maintenance
+```
+and this will run `test_add_hosts` and `test_verify_add_hosts`:
+```
+ost_run_tc basic-suite-master/test-scenarios/test_002_bootstrap.py add_hosts
+```
+
+See the [pytest documentation](https://docs.pytest.org/en/stable/usage.html#specifying-tests-selecting-tests) for details.
+
+Please note, that these are ran in a separate pytest session, and that several of our tests depend on previous ones to pass, and/or on a specific state of the test VMs.
+
 # Development
 
 Make sure your machine is set up with `setup_for_ost.sh`

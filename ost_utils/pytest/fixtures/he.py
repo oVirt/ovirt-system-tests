@@ -125,12 +125,6 @@ def he_ip_address(he_ipv4_address, he_ipv6_address):
 
 
 @pytest.fixture(scope="session")
-def he_iscsi_sd_ip(sd_iscsi_host_ips):
-    # TODO: Make this more accurate, check network
-    return sd_iscsi_host_ips[0]
-
-
-@pytest.fixture(scope="session")
 def he_lun_id(ansible_storage):
     return lun.get_he_uuids(ansible_storage)[0]
 
@@ -138,7 +132,7 @@ def he_lun_id(ansible_storage):
 @pytest.fixture(scope="session")
 def he_engine_answer_file_storage_snippet(
     storage_hostname,
-    he_iscsi_sd_ip,
+    sd_iscsi_host_ip,
     he_lun_id,
     ost_he_storage_domain_type,
 ):
@@ -152,7 +146,7 @@ def he_engine_answer_file_storage_snippet(
         return (
             'OVEHOSTED_STORAGE/domainType=str:iscsi\n'
             'OVEHOSTED_STORAGE/iSCSIPortalIPAddress=str:'
-            f'{he_iscsi_sd_ip}\n'
+            f'{sd_iscsi_host_ip}\n'
             'OVEHOSTED_STORAGE/LunID=str:'
             f'{he_lun_id}\n'
         )

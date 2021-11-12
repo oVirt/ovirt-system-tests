@@ -19,19 +19,18 @@ def get_he_uuids(ansible_vm):
     return [u.decode('utf-8') for u in base64.b64decode(encoded).splitlines()]
 
 
-def create_lun_sdk_entries(uuids, ips, port, target):
+def create_lun_sdk_entries(uuids, ip, port, target):
     luns = []
 
     for uuid in uuids:
-        for ip in ips:
-            lun = types.LogicalUnit(
-                id=uuid,
-                address=ip,
-                port=port,
-                target=target,
-                username='username',
-                password='password',
-            )
-            luns.append(lun)
+        lun = types.LogicalUnit(
+            id=uuid,
+            address=ip,
+            port=port,
+            target=target,
+            username='username',
+            password='password',
+        )
+        luns.append(lun)
 
     return luns

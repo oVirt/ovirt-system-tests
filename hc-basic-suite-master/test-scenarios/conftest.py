@@ -37,8 +37,8 @@ def ansible_vms_to_deploy(hosts_hostnames, ansible_by_hostname):  # pylint: disa
 # network for storage traffic. Override the relevant fixtures.
 
 @pytest.fixture(scope="session")
-def sd_iscsi_host_ips(storage_management_ips):  # pylint: disable=function-redefined
-    return storage_management_ips
+def sd_iscsi_host_ip(storage_management_ips):  # pylint: disable=function-redefined
+    return storage_management_ips[0]
 
 
 @pytest.fixture(scope="session")

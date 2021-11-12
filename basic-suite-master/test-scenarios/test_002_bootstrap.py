@@ -441,11 +441,11 @@ def sd_iscsi_host_lun_uuids(sd_iscsi_ansible_host):
 
 @pytest.fixture
 def sd_iscsi_host_luns(
-    sd_iscsi_host_lun_uuids, sd_iscsi_host_ips, sd_iscsi_port, sd_iscsi_target
+    sd_iscsi_host_lun_uuids, sd_iscsi_host_ip, sd_iscsi_port, sd_iscsi_target
 ):
     return lun.create_lun_sdk_entries(
         sd_iscsi_host_lun_uuids,
-        sd_iscsi_host_ips,
+        sd_iscsi_host_ip,
         sd_iscsi_port,
         sd_iscsi_target,
     )
@@ -1736,13 +1736,13 @@ def sd_iscsi_host_direct_lun_uuids(sd_iscsi_ansible_host):
 @pytest.fixture
 def sd_iscsi_host_direct_luns(
     sd_iscsi_host_direct_lun_uuids,
-    sd_iscsi_host_ips,
+    sd_iscsi_host_ip,
     sd_iscsi_port,
     sd_iscsi_target,
 ):
     return lun.create_lun_sdk_entries(
         sd_iscsi_host_direct_lun_uuids,
-        sd_iscsi_host_ips,
+        sd_iscsi_host_ip,
         sd_iscsi_port,
         sd_iscsi_target,
     )

@@ -42,10 +42,10 @@ def ansible_vms_to_deploy(
 
 
 @pytest.fixture(scope="session")
-def sd_iscsi_host_ips(
+def sd_iscsi_host_ip(
     storage_management_ips,
 ):  # pylint: disable=function-redefined
-    return storage_management_ips
+    return storage_management_ips[0]
 
 
 @pytest.fixture(scope="session")

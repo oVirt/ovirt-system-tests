@@ -23,8 +23,9 @@ def storage_management_ips(storage_ips_for_network, management_network_name):
 
 
 @pytest.fixture(scope="session")
-def sd_iscsi_host_ips():
-    return 'Please override sd_iscsi_host_ips'
+def sd_iscsi_host_ip():
+    # return only one IP since we want to connect to just one endpoint
+    return 'Please override sd_iscsi_host_ip'
 
 
 @pytest.fixture(scope="session")

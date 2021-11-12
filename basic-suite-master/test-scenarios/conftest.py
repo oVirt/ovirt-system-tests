@@ -64,10 +64,10 @@ from ost_utils.pytest.running_time import *
 
 
 @pytest.fixture(scope="session")
-def sd_iscsi_host_ips(
+def sd_iscsi_host_ip(
     engine_storage_ips,
 ):  # pylint: disable=function-redefined
-    return engine_storage_ips
+    return engine_storage_ips[0]
 
 
 @pytest.fixture(scope="session")

@@ -36,7 +36,9 @@ def he_status(ansible_host):
         result['hosts'] = {}
         for i, data in status.items():
             if i.isdigit():
-                hostname = data['hostname']
+                # We use short hostnames, while HE may return FQDN.
+                # That happens in IPv6-only networks. So let's trim.
+                hostname = data['hostname'].split('.')[0]
                 result['hosts'][hostname] = data
                 result['hosts'][hostname]['extra'] = dict(
                     item.split('=')
@@ -62,7 +64,9 @@ def host_name_running_he_vm(ansible_host):
     status = he_status(ansible_host)
     for host_data in status['hosts'].values():
         if host_data['engine-status']['vm'] == 'up':
-            return host_data['hostname']
+            # We use short hostnames, while HE may return FQDN.
+            # Trim the domain part.
+            return host_data['hostname'].split('.')[0]
     raise RuntimeError('Hosted Engine is not up on any host')
 
 
@@ -72,8 +76,10 @@ def host_names_not_running_he_vm(ansible_host):
     The host needs to be part of the cluster already.
     """
     status = he_status(ansible_host)
+    # We use short hostnames, while HE may return FQDN.
+    # Trim the domain part.
     names = [
-        host_data['hostname']
+        host_data['hostname'].split('.')[0]
         for host_data in status['hosts'].values()
         if host_data['engine-status']['vm'] != 'up'
     ]

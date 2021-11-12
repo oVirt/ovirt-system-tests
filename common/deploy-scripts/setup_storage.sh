@@ -145,7 +145,7 @@ setup_services() {
 setup_389ds() {
     DOMAIN=$(dnsdomainname)
     PASSWORD=12345678
-    HOSTNAME=$(sed -E "s/(.${DOMAIN})?$/.${DOMAIN}/" <<<$(hostname))
+    HOSTNAME=$(hostname -f) # need to use FQDN since in IPv6-only hostname contains domain name as well, but in dual it does not. 389ds expects FQDN.
     cat >> answer_file.inf <<EOC
 [General]
 FullMachineName= @HOSTNAME@

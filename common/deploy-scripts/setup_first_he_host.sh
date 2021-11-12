@@ -11,7 +11,6 @@ HEADDR="$1"
 shift
 
 DOMAIN=$(dnsdomainname)
-MYHOSTNAME="$(hostname | sed s/_/-/g)"
 HE_SETUP_HOOKS_DIR="/usr/share/ansible/collections/ansible_collections/ovirt/ovirt/roles/hosted_engine_setup/hooks"
 
 # This is needed in case we're using prebuilt ost-images.
@@ -160,7 +159,7 @@ rm -rf /var/cache/yum/*
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
-    echo "hosted-engine deploy on ${MYHOSTNAME} failed with status ${RET_CODE}."
+    echo "hosted-engine deploy on ${HOSTNAME} failed with status ${RET_CODE}."
     exit ${RET_CODE}
 fi
 rm -rf /var/cache/yum/*

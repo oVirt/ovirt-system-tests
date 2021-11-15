@@ -45,8 +45,11 @@ ost_status() {
 ost_destroy() {
   _get_uuid
   if [[ -n "$uuid" ]]; then
-    virsh net-list --name | grep ^ost${uuid} | xargs -rn1 virsh net-destroy
-    virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
+    (
+        flock -w 120 9
+        virsh net-list --name | grep ^ost${uuid} | xargs -rn1 virsh net-destroy
+        virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
+    ) 9>/tmp/ost.lock
   fi
   _deployment_exists && rm -rf "$PREFIX" && echo "removed $PREFIX"
   unset OST_INITIALIZED $(env | grep ^OST_IMAGES_ | cut -d= -f1)
@@ -168,6 +171,7 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
 [[ -f "$ost_conf" ]] || { echo "no ost.conf in $SUITE"; return 1; }
 
 # run the whole creation in subshell with a lock so that we do not explode on concurrent network allocation
+[ -f /tmp/ost.lock ] || ( umask 0002; sg qemu "touch /tmp/ost.lock"; )
 (
   flock -w 120 9
   cd "${OST_REPO_ROOT}"

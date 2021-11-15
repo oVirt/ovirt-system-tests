@@ -66,6 +66,21 @@ def disable_noisy_logging():
     urllib3_logger.setLevel(urllib3_logger_level)
 
 
+@pytest.fixture(scope="module", autouse=True)
+def disable_notifications_for_admin_user(engine_admin_service):
+    targetName = "webAdmin.showNotifications"
+    existingProps = [
+        option
+        for option in engine_admin_service.options_service().list()
+        if option.name == targetName
+    ]
+    if not existingProps:
+        option = types.UserOption(
+            name=targetName, content="false", user=engine_admin_service.get()
+        )
+        assert engine_admin_service.options_service().add(option, wait=True)
+
+
 def test_secure_connection_should_fail_without_root_ca(
     engine_fqdn, engine_ip_url, engine_webadmin_url
 ):

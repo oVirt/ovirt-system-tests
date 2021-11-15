@@ -85,7 +85,9 @@ def _grid(
 ):
 
     with _pod(hub_port, podman_cmd) as pod_name:
-        with _hub(hub_image, hub_port, pod_name, podman_cmd) as hub_name:
+        with _hub(
+            hub_image, hub_port, pod_name, podman_cmd, ui_artifacts_dir
+        ) as hub_name:
             engine_dns_entry = f"{engine_fqdn}:{engine_ip}"
             with _nodes(
                 node_images,
@@ -142,7 +144,7 @@ def _pod(hub_port, podman_cmd):
 
 
 @contextlib.contextmanager
-def _hub(image, hub_port, pod_name, podman_cmd):
+def _hub(image, hub_port, pod_name, podman_cmd, ui_artifacts_dir):
     hub_name = f"selenium-hub-{hub_port}"
     shell(
         [
@@ -159,6 +161,7 @@ def _hub(image, hub_port, pod_name, podman_cmd):
     try:
         yield hub_name
     finally:
+        save_container_logs(ui_artifacts_dir, hub_name, podman_cmd)
         shell([podman_cmd, "rm", "-f", hub_name])
 
 
@@ -221,10 +224,10 @@ def _nodes(
     try:
         yield nodes_dict
     finally:
-        log_dir_path = os.path.join(ui_artifacts_dir, 'selenium_grid_nodes')
-        os.makedirs(log_dir_path, exist_ok=True)
         for node_dict in nodes_dict.values():
-            save_node_logs(log_dir_path, node_dict, podman_cmd)
+            save_container_logs(
+                ui_artifacts_dir, node_dict['name'], podman_cmd, "worker_"
+            )
             shell([podman_cmd, "rm", "-f", node_dict['name']])
 
 
@@ -261,6 +264,7 @@ def _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir):
     finally:
         for video in videos:
             shell([podman_cmd, "stop", video])
+            save_container_logs(ui_artifacts_dir, video, podman_cmd, "video_")
             shell([podman_cmd, "rm", "-f", video])
 
 
@@ -307,7 +311,13 @@ def _log_issues(pod_name, hub_name, node_names, podman_cmd, videos_names):
         )
 
 
-def save_node_logs(dir_path, node_dict, podman_cmd):
-    file_path = os.path.join(dir_path, node_dict['name'] + '.log')
-    with open(file_path, "w", encoding='UTF8') as node_log_file:
-        node_log_file.write(shell([podman_cmd, "logs", node_dict['name']]))
+def save_container_logs(
+    ui_artifacts_dir, container_name, podman_cmd, name_prefix=""
+):
+    log_dir_path = os.path.join(ui_artifacts_dir, 'selenium_grid_nodes')
+    os.makedirs(log_dir_path, exist_ok=True)
+    file_path = os.path.join(
+        log_dir_path, name_prefix + container_name + '.log'
+    )
+    with open(file_path, "w", encoding='UTF8') as log_file:
+        log_file.write(shell([podman_cmd, "logs", container_name]))

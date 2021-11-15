@@ -6,7 +6,6 @@ This repository is hosted on [gerrit.ovirt.org:ovirt-system-tests](https://gerri
 and a **backup** of it is hosted on [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests)
 
 # System requirements
-====================
 
 #### Operating System
 Currently OST can run on RHEL or CentOS Stream at least roughly matching the version used by oVirt or RHV.

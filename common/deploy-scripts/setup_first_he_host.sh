@@ -149,6 +149,10 @@ workaround_qemu_610
 
 ip -6 -o addr show dev eth0 scope global | grep -q eth0 && fix_ipv6
 
+# need to block updating appliance. excludepkgs doesn't help since HE code does "dnf install ovirt-engine-appliance"
+# and if the package is excluded it fails, we need to convince DNF that current version is good enough.
+dnf config-manager --setopt=best=False --save
+
 fstrim -va
 rm -rf /var/cache/yum/*
 hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf

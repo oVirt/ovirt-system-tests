@@ -48,7 +48,10 @@ if [[ ${EUID} -eq 0 ]]; then
     exit 1
 fi
 
+source /etc/os-release
+
 ANSIBLE_INSTALLED=$(which ansible-playbook &> /dev/null && echo 1 || echo 0)
+ANSIBLE_PACKAGE=$(if [[ $VERSION == 9* ]]; then echo "ansible-core"; else echo "ansible"; fi)
 ANSIBLE_REPO_RPM_URL=${ANSIBLE_REPO_RPM_URL:-"https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"}
 ANSIBLE_REPO_RPM_NAME=${ANSIBLE_REPO_RPM_NAME:-"epel-release-8"}
 
@@ -78,11 +81,22 @@ fi
 
 if [[ ${ANSIBLE_INSTALLED} -eq 0 ]]; then
     echo "This script needs ansible to work properly, will install it now..."
-    sudo dnf install -y ansible
+    sudo dnf install -y "${ANSIBLE_PACKAGE}"
     if [[ ${?} -ne 0 ]]; then
+        if [[ $VERSION == 9* ]]; then
+            echo "Ansible-core installation failed";
+            exit 1;
+        fi
         REMOVE_ANSIBLE_REPO_RPM=1
-        sudo dnf -y install "${ANSIBLE_REPO_RPM_URL}" && sudo dnf install -y ansible
+        sudo dnf -y install "${ANSIBLE_REPO_RPM_URL}" && sudo dnf install -y "${ANSIBLE_PACKAGE}"
     fi
+fi
+
+echo "This script needs some ansible collections to work properly, will install them now..."
+ansible-galaxy collection install ansible.posix community.general
+if [[ ${?} -ne 0 ]]; then
+    echo "Ansible collection installation failed"
+    exit 1
 fi
 
 echo "Running the setup playbook..."

@@ -50,6 +50,15 @@
         gpgcheck: no
       become: true
 
+    - name: setup distro-related vars
+      set_fact:
+        el9: "{{ ansible_facts['distribution_major_version']|int == 9 }}"
+
+    - name: setup package names based on distro-related
+      set_fact:
+        python_pkg: "{{ 'python3' if el9 else 'python39' }}"
+        ansible_pkg: "{{ 'ansible-core' if el9 else 'ansible' }}"
+
     - name: install packages and cleanup epel if necessary
 
       block:
@@ -57,13 +66,14 @@
           dnf:
             name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
             disable_gpg_check: yes
+          when: not el9
           become: true
           register: epel
 
         - name: make sure any version of ansible is available
           dnf:
             name:
-              - ansible
+              - "{{ ansible_pkg }}"
             state: present
           become: true
 
@@ -78,8 +88,8 @@
               - openssl
               - openssl-devel
               - podman
-              - python39
-              - python39-devel
+              - "{{ python_pkg }}"
+              - "{{ python_pkg }}-devel"
               - qemu-kvm
             state: latest
           become: true
@@ -119,6 +129,7 @@
         name: "{{ ansible_facts['user_id'] }}"
         groups:
           - qemu
+        append: yes
       become: true
 
     - name: add qemu to the user group
@@ -126,6 +137,7 @@
         name: qemu
         groups:
           - "{{ ansible_facts['user_id'] }}"
+        append: yes
       become: true
 
     - name: allow user to manage libvirt
@@ -150,13 +162,13 @@
       become: true
 
     - name: allow virtlogd to write console logs
-      selinux_permissive:
+      community.general.selinux_permissive:
         name: virtlogd_t
         permissive: true
       become: true
 
-    - name: allow port 2222 for socks proxy
-      firewalld :
+    - name: allow port 2222 for IPv6 socks proxy
+      ansible.posix.firewalld:
         zone: libvirt
         port: 2222/tcp
         permanent: yes

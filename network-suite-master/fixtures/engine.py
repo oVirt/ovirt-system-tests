@@ -57,6 +57,14 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
         '--accept-defaults',
     ]
     engine.exec_command(' '.join(command))
+    # Work around https://gitlab.com/qemu-project/qemu/-/issues/641.
+    # TODO: Remove when fixed.
+    engine.exec_command(
+        '/usr/share/ovirt-engine/dbscripts/engine-psql.sh '
+        '-c '
+        "\"select fn_db_update_config_value"
+        "('NumOfPciExpressPorts','12','general');\""
+    )
 
 
 @pytest.fixture(scope='session', autouse=True)

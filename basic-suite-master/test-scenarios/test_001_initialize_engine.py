@@ -48,6 +48,14 @@ def test_initialize_engine(
             {'key': 'ServerRebootTimeout', 'value': '120'},
         ],
     )
+    # Work around https://gitlab.com/qemu-project/qemu/-/issues/641.
+    # TODO: Remove when fixed.
+    ansible_engine.shell(
+        '/usr/share/ovirt-engine/dbscripts/engine-psql.sh '
+        '-c '
+        "\"select fn_db_update_config_value"
+        "('NumOfPciExpressPorts','12','general');\""
+    )
     ansible_engine.shell('ss -anp')
 
     ansible_engine.systemd(name='ovirt-engine-notifier', state='started')

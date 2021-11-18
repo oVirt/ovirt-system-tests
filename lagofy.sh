@@ -131,7 +131,7 @@ ost_init() {
 
   # support readable comments in json
   jqr() {
-    grep -v ^# ${ost_conf} | jq -r "$@"
+    grep -v '^#' ${ost_conf} | jq -r "$@"
   }
 
 declare -A net_map=()

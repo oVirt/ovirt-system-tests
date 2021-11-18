@@ -27,6 +27,7 @@ from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.artifacts import artifact_list
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 from ost_utils.pytest.fixtures.artifacts import collect_vdsm_coverage_artifacts
+from ost_utils.pytest.fixtures.artifacts import dump_dhcp_leases
 from ost_utils.pytest.fixtures.artifacts import generate_sar_stat_plots
 
 from ost_utils.pytest.fixtures.backend import all_hostnames

@@ -141,3 +141,15 @@ def collect_vdsm_coverage_artifacts(
         output_path = os.path.join(artifacts_dir, "coverage/")
         os.makedirs(output_path, exist_ok=True)
         coverage.vdsm.collect(ansible_host0, ansible_hosts, output_path)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def dump_dhcp_leases(artifacts_dir, backend, management_network_name):
+    yield
+    shell.shell(
+        [
+            'bash',
+            '-c',
+            f'virsh net-dhcp-leases {backend.libvirt_net_name(management_network_name)} > {artifacts_dir}/libvirt-leases',
+        ]
+    )

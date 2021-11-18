@@ -18,15 +18,16 @@ ost_status() {
 
   declare -A nets
   for i in $(virsh net-list --name | grep ^ost${uuid}); do
-    nets[$i]=$(virsh net-dumpxml $i | grep "ost-network-type comment" | cut -d \" -f 2)
+    nets[$i]=$(virsh net-dumpxml $i | if [[ "$1" = "--dump" ]]; then tee -a ${OST_REPO_ROOT}/exported-artifacts/libvirt-nets; else cat; fi | grep "ost-network-type comment" | cut -d \" -f 2)
   done
 
   echo "Networks:"
   for net in ${!nets[@]}; do echo "  ${nets[$net]}: ${net}"; done
   echo "VMs:"
   for vm_full in $(virsh list --name | grep ^${uuid}); do
-   local vm=$(cut -d - -f 2- <<< $vm_full)
-   echo "  $vm"
+    local vm=$(cut -d - -f 2- <<< $vm_full)
+    echo "  $vm"
+    [[ "$1" = "--dump" ]] && virsh dumpxml $vm_full >> ${OST_REPO_ROOT}/exported-artifacts/libvirt-vms
     vm_nets=$(virsh domiflist $vm_full | grep network | tr -s " " | cut -d " " -f 4)
     echo "   state: $(virsh domstate $vm_full 2>&1)"
     echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>/dev/null || echo unknown)"
@@ -191,7 +192,7 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
     echo $SUBNET
     net_map[$NET_TYPE]="$SUBNET"
     _generate_network "$host_nics"
-    _render ${net_template} | virsh net-create /dev/stdin || { echo "Network creation failed"; return 1; }
+    _render ${net_template} | virsh net-create /dev/stdin || { echo "Network creation failed:"; _render ${net_template}; return 1; }
   done
   [[ -z "$management_net" ]] && { echo "no management network defined"; return 1; }
 
@@ -258,7 +259,7 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
 
     SERIALLOG="$PREFIX/logs/$VM_NAME"
     echo
-    _render ${vm_template} | virsh create /dev/stdin || { echo "VM creation failed"; return 1; }
+    _render ${vm_template} | virsh create /dev/stdin || { echo "VM creation failed:"; _render ${vm_template}; return 1; }
 
     # generate ansible inventory line per host:
     # <VM name> ansible_host=<IP> ansible_ssh_private_key_file=<key_file>
@@ -277,6 +278,7 @@ ost_conf="$OST_REPO_ROOT/$SUITE/ost.json"
   }
 
 true ) 9>/tmp/ost.lock || return 1
+  ost_status --dump
 }
 
 # TODO this can use DNS instead

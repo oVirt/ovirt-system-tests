@@ -59,6 +59,10 @@ class MachineFacts(object):
         return self._facts['ansible_hostname']
 
     @property
+    def fqdn(self):
+        return self._facts['ansible_fqdn']
+
+    @property
     def ssh_password(self):
         return self._ssh_password
 

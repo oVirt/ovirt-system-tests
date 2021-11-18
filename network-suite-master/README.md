@@ -72,8 +72,7 @@ They can be bypassed by commenting out their imports in the file
 Only below imports should remain uncommented:
 ```
 from ost_utils.pytest.fixtures.virt import artifacts_dir
-from ost_utils.pytest.fixtures.virt import cirros_image
-from ost_utils.pytest.fixtures.virt import transformed_cirros_image
+from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 ```
 
 #### F. Supply suite name environment variable

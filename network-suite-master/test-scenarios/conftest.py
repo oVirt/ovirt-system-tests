@@ -85,6 +85,7 @@ from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.engine import engine_ip_url
 from ost_utils.pytest.fixtures.engine import engine_ips_for_network
 from ost_utils.pytest.fixtures.engine import engine_username
+from ost_utils.pytest.fixtures.env import ansible_execution_environment
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file
@@ -94,7 +95,6 @@ from ost_utils.pytest.fixtures.network import management_network_name
 from ost_utils.pytest.fixtures.sdk import get_user_service_for_user
 from ost_utils.pytest.fixtures.sdk import system_service
 from ost_utils.pytest.fixtures.sdk import users_service
-from ost_utils.pytest.fixtures.virt import cirros_image
+from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 from ost_utils.pytest.fixtures.virt import cirros_serial_console
 from ost_utils.pytest.fixtures.virt import rsa_pair
-from ost_utils.pytest.fixtures.virt import transformed_cirros_image

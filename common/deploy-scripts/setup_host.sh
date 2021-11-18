@@ -1,5 +1,20 @@
 #!/bin/bash -xe
 
+coredump_kill() {
+    # From time to time we see problems with systemd-cgroups-agent
+    # crashing with SIGABRT and systemd-coredump hanging indefinitely
+    # eating 100% cpu while trying to generate a coredump from that crash
+    cat > /etc/systemd/system/coredump-kill.service <<EOF
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "pkill -e systemd-coredump || true"
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl enable --now coredump-kill
+}
+
 # Only on ovirt-node
 if [[ $(which nodectl) ]]; then
     nodectl check
@@ -53,3 +68,5 @@ EOF
     chown qemu:qemu /etc/sasl2/vnc_passwd.db
     sed -i "s/^#vnc_sasl =.*/vnc_sasl = 1/" /etc/libvirt/qemu.conf
 fi
+
+coredump_kill

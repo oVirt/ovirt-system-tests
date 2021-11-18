@@ -221,6 +221,21 @@ devices {
 EOC
 }
 
+coredump_kill() {
+    # From time to time we see problems with systemd-cgroups-agent
+    # crashing with SIGABRT and systemd-coredump hanging indefinitely
+    # eating 100% cpu while trying to generate a coredump from that crash
+    cat > /etc/systemd/system/coredump-kill.service <<EOF
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "pkill -e systemd-coredump || true"
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl enable --now coredump-kill
+}
+
 main() {
     # Prepare storage
     setup_services
@@ -233,11 +248,7 @@ main() {
     setup_lvm_filter
     setup_iscsi
     setup_389ds
-
-    # From time to time we see problems with systemd-cgroups-agent
-    # crashing with SIGABRT and systemd-coredump hanging indefinitely
-    # eating 100% cpu while trying to generate a coredump from that crash
-    pkill -ef systemd-coredump || true
+    coredump_kill
 
     fstrim -va
 }

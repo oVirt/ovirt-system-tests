@@ -300,7 +300,7 @@ ost_shell() {
 ost_console() {
     _get_uuid || return 1
     if [[ -n "$1" ]]; then
-        virsh console "${uuid}-$1" --devname console1
+        virsh console "${uuid}-$1" --devname serial0
     else
         echo -e "ost_console <host>\n"
         virsh list --name | sed -n "/^${uuid}-ost/ s/${uuid}-//p"

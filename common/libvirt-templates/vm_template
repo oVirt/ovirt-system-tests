@@ -46,12 +46,10 @@
     </disk>
     @DISKS@
     <controller type='usb' model='none'/>
-    <serial type='file' append='on'>
+    <serial type='pty'>
       <source path='@SERIALLOG@'/>
+      <log file='@SERIALLOG@' append='on'/>
     </serial>
-    <console type='pty'>
-      <target type='virtio'/>
-    </console>
     @NICS@
     <channel type='unix'>
         <source mode='bind'/>

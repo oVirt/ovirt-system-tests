@@ -156,6 +156,8 @@ ost_init() {
 
     # TODO we do not have functional RHVH builds so on RHEL8-based runs we run HOST_INSTALLED on both hosts
     [[ "$OST_IMAGES_DISTRO" == "rhel8" ]] && OST_IMAGES_NODE="$OST_IMAGES_HOST_INSTALLED"
+    # TODO: Revert back once node works on el8stream
+    OST_IMAGES_NODE="$OST_IMAGES_HOST_INSTALLED"
 
     [[ -e "$PREFIX" ]] && { echo "deployment already exists"; ost_status; return 1; }
     _get_uuid && { echo "no deployment dir but there is a running environment"; ost_status; return 1; }

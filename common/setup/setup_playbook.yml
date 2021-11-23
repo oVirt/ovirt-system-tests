@@ -130,7 +130,7 @@
 
     - name: allow user to manage libvirt
       template:
-        dest: /etc/polkit-1/localauthority/50-local.d/ost-libvirt.pkla
+        dest: /etc/polkit-1/localauthority/50-local.d/ost-libvirt-{{ ansible_facts['user_id'] }}.pkla
         group: root
         mode: '0644'
         owner: root

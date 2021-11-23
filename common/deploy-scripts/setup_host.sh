@@ -4,10 +4,11 @@ coredump_kill() {
     # From time to time we see problems with systemd-cgroups-agent
     # crashing with SIGABRT and systemd-coredump hanging indefinitely
     # eating 100% cpu while trying to generate a coredump from that crash
+    # The process name is trimmed to "systemd-coredum"
     cat > /etc/systemd/system/coredump-kill.service <<EOF
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c "pkill -e systemd-coredump || true"
+ExecStart=/bin/sh -c "pkill -e systemd-coredum || true"
 RemainAfterExit=yes
 [Install]
 WantedBy=multi-user.target

@@ -77,6 +77,7 @@ def _run_playbook(
         '--display-color',
         'false',
         f'--container-options={network_backend_options}',
+        '--container-options=--log-level=debug',
     ]
 
     if ansible_inventory:
@@ -204,11 +205,19 @@ class CollectionMapper:
     def __call__(self, **kwargs):
         playbook = f'''
         - hosts: {self.ansible_host}
+          gather_facts: no
           tasks:
+            - name: ansible executor NICes
+              shell: ip a
+              delegate_to: localhost
+            - name: ansible executor route list
+              shell: routel
+              delegate_to: localhost
+            - setup:
             - ovirt.ovirt.{self.name}:
         '''
         playbook_yaml = yaml.safe_load(playbook)
-        playbook_yaml[0]['tasks'][0][f'ovirt.ovirt.{self.name}'] = kwargs
+        playbook_yaml[0]['tasks'][-1][f'ovirt.ovirt.{self.name}'] = kwargs
 
         _run_playbook(
             playbook_yaml,

@@ -7,7 +7,7 @@
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 
 
 def add_domain(system_service, sd_name, url):
@@ -38,7 +38,7 @@ def add_domain(system_service, sd_name, url):
             else:
                 return False
 
-        assertions.assert_true_within_short(
+        assert assert_utils.true_within_short(
             func=get, allowed_exceptions=[sdk4.NotFoundError]
         )
     except (AssertionError, sdk4.NotFoundError):

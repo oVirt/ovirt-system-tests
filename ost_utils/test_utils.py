@@ -4,13 +4,9 @@
 #
 #
 
-import functools
-import uuid
-
 import ovirtsdk4
 import ovirtsdk4.types as types
 
-from ost_utils import assertions
 from ost_utils.memoized import memoized
 
 
@@ -181,29 +177,6 @@ def all_jobs_finished(engine, correlation_id):
     except ovirtsdk4.Error:
         jobs = engine.jobs_service().list()
     return all(job.status != types.JobStatus.STARTED for job in jobs)
-
-
-def assert_finished_within(
-    func, engine, timeout, allowed_exceptions=None, *args, **kwargs
-):
-
-    if 'query' in kwargs:
-        if 'correlation_id' not in kwargs['query']:
-            kwargs['query']['correlation_id'] = uuid.uuid4()
-    else:
-        kwargs['query'] = {'correlation_id': uuid.uuid4()}
-
-    func(*args, **kwargs)
-
-    assertions.assert_true_within(
-        lambda: all_jobs_finished(engine, kwargs['query']['correlation_id']),
-        timeout,
-    )
-
-
-assert_finished_within_long = functools.partial(
-    assert_finished_within, timeout=assertions.LONG_TIMEOUT
-)
 
 
 def get_first_active_host_by_name(engine):

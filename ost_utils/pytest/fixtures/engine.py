@@ -12,7 +12,7 @@ import time
 import ovirtsdk4 as sdk4
 import pytest
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import network_utils
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
@@ -185,7 +185,7 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
             engine_download(health_url)
             return True
 
-        assertions.assert_true_within_short(
+        assert assert_utils.true_within_short(
             engine_is_alive, allowed_exceptions=[ShellError]
         )
 

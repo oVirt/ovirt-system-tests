@@ -7,7 +7,7 @@
 import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 
 
 def perform_vm_backup(
@@ -26,8 +26,9 @@ def perform_vm_backup(
     )
 
     backup_service = vm_backup_service.backup_service(backup.id)
-    assertions.assert_true_within_long(
-        lambda: backup_service.get().phase == types.BackupPhase.READY,
+    assert assert_utils.equals_within_long(
+        lambda: backup_service.get().phase,
+        types.BackupPhase.READY,
         allowed_exceptions=[sdk4.NotFoundError],
     )
 
@@ -36,12 +37,12 @@ def perform_vm_backup(
 
     backup_service.finalize()
 
-    assertions.assert_true_within_long(
-        lambda: backup_service.get().phase == types.BackupPhase.SUCCEEDED
+    assert assert_utils.equals_within_long(
+        lambda: backup_service.get().phase, types.BackupPhase.SUCCEEDED
     )
-    assertions.assert_true_within_long(
-        lambda: disks_service.disk_service(disk.id).get().status
-        == types.DiskStatus.OK
+    assert assert_utils.equals_within_long(
+        lambda: disks_service.disk_service(disk.id).get().status,
+        types.DiskStatus.OK,
     )
 
     return created_checkpoint_id
@@ -80,6 +81,6 @@ def remove_vm_root_checkpoint(checkpoints_service):
     )
     checkpoint_service.remove()
 
-    assertions.assert_true_within_short(
-        lambda: len(checkpoints_service.list()) == len(vm_checkpoints) - 1
+    assert assert_utils.equals_within_short(
+        lambda: len(checkpoints_service.list()), len(vm_checkpoints) - 1
     )

@@ -6,11 +6,11 @@
 
 import contextlib
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 
 
 @contextlib.contextmanager
-def wait_for_event(engine, event_id, timeout=assertions.LONG_TIMEOUT):
+def wait_for_event(engine, event_id, timeout=assert_utils.LONG_TIMEOUT):
     '''
     event_id could either be an int - a single
     event ID or a list - multiple event IDs
@@ -24,7 +24,7 @@ def wait_for_event(engine, event_id, timeout=assertions.LONG_TIMEOUT):
         if isinstance(event_id, int):
             event_id = [event_id]
         for e_id in event_id:
-            assertions.assert_true_within(
+            assert assert_utils.true_within(
                 lambda: any(
                     e.code == e_id for e in events.list(from_=last_event)
                 ),

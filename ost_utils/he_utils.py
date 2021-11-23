@@ -7,7 +7,7 @@
 import json
 import logging
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils.ansible import AnsibleExecutionError
 
 
@@ -49,7 +49,7 @@ def he_status(ansible_host):
         logging.debug(f'he_status: {ret}')
         return ret
 
-    assertions.assert_true_within_short(
+    assert assert_utils.true_within_short(
         lambda: bool(get_value()),
         allowed_exceptions=[RuntimeError, AnsibleExecutionError],
     )
@@ -117,7 +117,9 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
         return is_global_maintenance_mode(ansible_host) == mode
 
     logging.info(f'set_and_test_global_maintenance_mode: Start, mode={mode}')
-    assertions.assert_true_within_short(_set_and_test_global_maintenance_mode)
+    assert assert_utils.true_within_short(
+        _set_and_test_global_maintenance_mode
+    )
 
 
 def _get_hosts_states(ansible_host):
@@ -160,6 +162,6 @@ def engine_vm_is_down(ansible_host):
 
 
 def wait_until_engine_vm_is_not_migrating(ansible_host):
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: not engine_vm_is_migrating(ansible_host)
     )

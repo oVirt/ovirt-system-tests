@@ -11,7 +11,7 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.support.ui import WebDriverWait
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -118,12 +118,12 @@ class Driver:
 
     def wait_until(self, message, condition_method, *args):
         self._wait_until(
-            message, assertions.SHORT_TIMEOUT, condition_method, *args
+            message, assert_utils.SHORT_TIMEOUT, condition_method, *args
         )
 
     def wait_long_until(self, message, condition_method, *args):
         self._wait_until(
-            message, assertions.LONG_TIMEOUT, condition_method, *args
+            message, assert_utils.LONG_TIMEOUT, condition_method, *args
         )
 
     def _wait_until(self, message, timeout, condition_method, *args):
@@ -133,12 +133,12 @@ class Driver:
 
     def wait_while(self, message, condition_method, *args):
         self._wait_while(
-            message, assertions.SHORT_TIMEOUT, condition_method, *args
+            message, assert_utils.SHORT_TIMEOUT, condition_method, *args
         )
 
     def wait_long_while(self, message, condition_method, *args):
         self._wait_while(
-            message, assertions.LONG_TIMEOUT, condition_method, *args
+            message, assert_utils.LONG_TIMEOUT, condition_method, *args
         )
 
     def _wait_while(self, message, timeout, condition_method, *args):
@@ -148,7 +148,7 @@ class Driver:
 
     def retry_if_stale(self, method_to_retry, *args):
         condition = StaleExceptionOccurredCondition(method_to_retry, *args)
-        WebDriverWait(self.driver, assertions.LONG_TIMEOUT).until_not(
+        WebDriverWait(self.driver, assert_utils.LONG_TIMEOUT).until_not(
             condition, 'StaleElementReferenceException occurred'
         )
         if condition.error is not None:

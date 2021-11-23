@@ -6,7 +6,7 @@
 
 import ovirtsdk4 as sdk4
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import engine_utils
 
 
@@ -19,9 +19,9 @@ def add(api, domain, dc_name):
         sd = sds_service.add(domain)
 
         sd_service = sds_service.storage_domain_service(sd.id)
-        assertions.assert_true_within_long(
-            lambda: sd_service.get().status
-            == sdk4.types.StorageDomainStatus.UNATTACHED
+        assert assert_utils.equals_within_long(
+            lambda: sd_service.get().status,
+            sdk4.types.StorageDomainStatus.UNATTACHED,
         )
 
     data_centers = system_service.data_centers_service()
@@ -40,7 +40,7 @@ def add(api, domain, dc_name):
         attached_sd_service = attached_sds_service.storage_domain_service(
             sd.id
         )
-        assertions.assert_true_within_long(
-            lambda: attached_sd_service.get().status
-            == sdk4.types.StorageDomainStatus.ACTIVE
+        assert assert_utils.equals_within_long(
+            lambda: attached_sd_service.get().status,
+            sdk4.types.StorageDomainStatus.ACTIVE,
         )

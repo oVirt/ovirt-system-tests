@@ -9,6 +9,7 @@ from __future__ import print_function
 import ipaddress
 import json
 import logging
+import uuid
 
 from ovirtsdk4.types import (
     Host,
@@ -89,8 +90,12 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
     LOGGER.debug('source host: {}'.format(src_host))
     LOGGER.debug('destination host: {}'.format(dst_host))
 
-    test_utils.assert_finished_within_long(
-        vm_service.migrate, system_service, host=Host(name=dst_host)
+    correlation_id = uuid.uuid4()
+    vm_service.migrate(
+        host=Host(name=dst_host), query={'correlation_id': correlation_id}
+    )
+    assert assert_utils.true_within_long(
+        lambda: test_utils.all_jobs_finished(system_service, correlation_id)
     )
 
     # Verify that VDSM cleaned the vm in the source host

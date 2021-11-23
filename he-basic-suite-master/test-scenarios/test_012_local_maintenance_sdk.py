@@ -11,7 +11,7 @@ from ovirtsdk4 import types
 
 import pytest
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import he_utils
 
 VM_HE_NAME = 'HostedEngine'
@@ -67,7 +67,7 @@ def test_local_maintenance(
         return status == types.HostStatus.MAINTENANCE
 
     logging.info('Performing Deactivation...')
-    assertions.assert_true_within_long(do_verified_deactivation)
+    assert assert_utils.true_within_long(do_verified_deactivation)
 
     def do_verified_activation():
         logging.info(f'Trying to activate host {host_service.get().name}')
@@ -84,10 +84,10 @@ def test_local_maintenance(
         return status == types.HostStatus.UP
 
     logging.info('Performing Activation...')
-    assertions.assert_true_within_long(do_verified_activation)
+    assert assert_utils.true_within_long(do_verified_activation)
 
     logging.info('Verifying that all hosts have score higher than 0...')
-    assertions.assert_true_within_long(
+    assert assert_utils.true_within_long(
         lambda: host_service.get(all_content=True).hosted_engine.score > 0
     )
 

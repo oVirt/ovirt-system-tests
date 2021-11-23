@@ -19,7 +19,7 @@ import ovirtsdk4 as sdk4
 import ovirtsdk4.types as types
 import pytest
 
-from ost_utils import assertions
+from ost_utils import assert_utils
 from ost_utils import backend
 from ost_utils import engine_object_names
 from ost_utils import engine_utils
@@ -419,9 +419,8 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
     vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
 
     for vm_service in [backup_vm_service, vm0_vm_service]:
-        assertions.assert_true_within_short(
-            lambda:
-            vm_service.get().status == sdk4.types.VmStatus.DOWN
+        assert assert_utils.equals_within_short(
+            lambda: vm_service.get().status, sdk4.types.VmStatus.DOWN
         )
 
 

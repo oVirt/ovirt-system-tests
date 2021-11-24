@@ -65,6 +65,7 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
         "\"select fn_db_update_config_value"
         "('NumOfPciExpressPorts','12','general');\""
     )
+    engine.exec_command('systemctl restart ovirt-engine')
 
 
 @pytest.fixture(scope='session', autouse=True)

@@ -47,6 +47,9 @@ If you have any other questions, please join [oVirt Development forum / mailing 
 Make sure your machine is set up with `setup_for_ost.sh`
 You can use `ost.sh` for running the complete suite on a concrete ost-images distro
 E.g. `./ost.sh run basic-suite-master el8stream`
+You can use `--custom-repo` for verifying an oVirt patch
+E.g `./ost.sh run basic-suite-master el8stream --custom-repo=https://jenkins.ovirt.org/job/ovirt-dwh_standard-check-patch/****/`
+You can pass this option multiple times to test more than 1 build at once.
 
 The environment is left running after it finishes so that you can examine or further use the created environment.
 Do not forget to clean up with `./ost.sh destroy`

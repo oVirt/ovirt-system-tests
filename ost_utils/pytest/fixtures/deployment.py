@@ -147,7 +147,7 @@ def deploy(
         )
         package_mgmt.add_custom_repos(ansible_vms_to_deploy, custom_repos)
         ansible_vms_to_deploy.shell(
-            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update'
+            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
         )
         # check if packages from custom repos were used
         if not request.config.getoption('--skip-custom-repos-check'):

@@ -213,7 +213,7 @@ ost_init() {
                 echo -n "$NIC_NAME($net) "
                 SUBNET="${net_map[$net]}"
                 SUBNETHEX=$(printf %x $SUBNET)
-                IDXHEX=$(printf %x ${nicidx_map[$NIC_NAME]})
+                IDXHEX=$(printf %02d ${nicidx_map[$NIC_NAME]})
                 [[ "$net" ]] || { echo -e "\nNIC $NIC_NAME not found in list of networks ${eth_map[@]}"; return 1; }
                 [[ "$SUBNET" ]] || { echo -e "\nnetwork $net not found in defined networks ${net_map[@]}"; return 1; }
                 [[ "$IDXHEX" ]] || { echo -e "\nVM $VM_NAME not found in host ip mappings ${nicidx_map[@]}"; return 1; }

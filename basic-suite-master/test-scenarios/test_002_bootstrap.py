@@ -1945,6 +1945,7 @@ def test_generate_openscap_report(
             'oscap '
             'xccdf '
             'eval '
+            '--local-files /root '
             '--profile xccdf_org.ssgproject.content_profile_stig '
             '--report report.html '
             '--oval-results '

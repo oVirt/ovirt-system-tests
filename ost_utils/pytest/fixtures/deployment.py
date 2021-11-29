@@ -136,9 +136,6 @@ def deploy(
     # disable all repos
     package_mgmt.disable_all_repos(ansible_vms_to_deploy)
 
-    # dnf is grumpy when it has no repos to work with
-    package_mgmt.add_dummy_repo(ansible_vms_to_deploy)
-
     # add custom repos
     custom_repos = request.config.getoption('--custom-repo')
     if custom_repos is not None:

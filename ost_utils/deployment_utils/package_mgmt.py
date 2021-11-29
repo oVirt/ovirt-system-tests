@@ -5,7 +5,6 @@
 #
 
 import logging
-import os.path
 import re
 
 import requests
@@ -13,27 +12,6 @@ import requests
 
 LOGGER = logging.getLogger(__name__)
 REPO_NAME = 'extra-src-'
-
-DUMMY_REPO_FILE = '''"
-[dummy]
-name=dummy
-gpgcheck=0
-baseurl={}
-"'''.replace(
-    '\n', '\\n'
-)
-
-DUMMY_REPOMD_XML = '''"
-<repomd>
-    <data type=\\"primary\\">
-        <location href=\\"repodata/primary.xml\\"/>
-    </data>
-</repomd>
-"'''.replace(
-    '\n', '\\n'
-)
-
-DUMMY_PRIMARY_XML = '"<metadata packages="0"/>"'
 
 OVIRT_PACKAGES_PATTERNS = (
     re.compile('ovirt-ansible-collection-[0-9]'),
@@ -82,28 +60,11 @@ def add_custom_repos(ansible_vm, repo_urls):
 
 
 def disable_all_repos(ansible_vm):
-    ansible_vm.shell('dnf config-manager --disable \'*\' || :')
-
-
-def add_dummy_repo(ansible_vm):
-    # use "non-standard" /etc path to keep things together,
-    # we copy the contents to HE VM later
-    repo_dir = '/etc/yum.repos.d/ost-dummy-repo'
-    repodata_path = f'{repo_dir}/repodata'
-    ansible_vm.file(
-        path=repodata_path, mode='0777', state='directory', recurse=True
-    )
-    ansible_vm.copy(
-        content=DUMMY_PRIMARY_XML,
-        dest=os.path.join(repodata_path, 'primary.xml'),
-    )
-    ansible_vm.copy(
-        content=DUMMY_REPOMD_XML,
-        dest=os.path.join(repodata_path, 'repomd.xml'),
-    )
-    ansible_vm.copy(
-        content=DUMMY_REPO_FILE.format(repo_dir),
-        dest='/etc/yum.repos.d/dummy.repo',
+    # dnf is grumpy when it has no repos to work with, keep "dummy" enabled
+    ansible_vm.shell(
+        'dnf config-manager --disable \'*\';'
+        'dnf config-manager --enable dummy;'
+        ':'
     )
 
 

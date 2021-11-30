@@ -43,7 +43,7 @@ dnf_update() {
       After=network-online.target
       Wants=network-online.target
       [Service]
-      ExecStart=sshpass -p $(grep adminPassword hosted-engine-deploy-answers-file.conf  | cut -d: -f2) ssh ${FWD_PARAM} -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $(hostname -f)
+      ExecStart=sshpass -p 123456 ssh ${FWD_PARAM} -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $(hostname -f)
       [Install]
       WantedBy=multi-user.target
 - name: Start IPv6 to IPv4 proxy

@@ -5,6 +5,7 @@
 #
 
 import logging
+import os
 import re
 
 import requests
@@ -69,7 +70,15 @@ def disable_all_repos(ansible_vm):
 
 
 def check_installed_packages(ansible_vms):
-    used_repos = _used_custom_repo_names(ansible_vms)
+    used_repos = {
+        os.path.basename(file['path']).removesuffix('.repo')
+        for host in ansible_vms.find(
+            paths='/etc/yum.repos.d',
+            patterns=f'{REPO_NAME}.*',
+            use_regex=True,
+        ).values()
+        for file in host['files']
+    }
 
     if len(used_repos) == 0:
         return
@@ -118,19 +127,6 @@ def _add_custom_repo(ansible_vm, name, url):
         option="module_hotfixes",
         value=1,
     )
-
-
-def _used_custom_repo_names(ansible_vms):
-    repo_names = []
-
-    for repo_no in range(1, 100):
-        repo_name = f'{REPO_NAME}{repo_no}'
-        result = ansible_vms.shell(f'dnf repolist {repo_name}')
-        if all(len(res['stdout'].strip()) == 0 for res in result.values()):
-            break
-        repo_names.append(repo_name)
-
-    return repo_names
 
 
 def _are_any_packages_used(ansible_vms, repo_name):

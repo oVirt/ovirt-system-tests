@@ -14,11 +14,15 @@
 # For each use please file a shade bug to extend shade functionality.
 # current bugs: BZ 1590248
 
+import openstack.exceptions as os_ex
+
 
 def hack_os_put_request(cloud, path, data):
-
-    return cloud.network.put(
+    response = cloud.network.put(
         path,
         json=data,
+    )
+    os_ex.raise_from_response(
+        response,
         error_message='Error in PUT request: {path}'.format(path=path),
     )

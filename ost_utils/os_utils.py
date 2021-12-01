@@ -4,11 +4,10 @@
 #
 #
 
+from functools import cache
 import os
 
-from ost_utils.memoized import memoized
 
-
-@memoized
+@cache
 def inside_mock():
     return "MOCK_EXTERNAL_USER" in os.environ

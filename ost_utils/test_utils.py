@@ -4,13 +4,13 @@
 #
 #
 
+from functools import cache
+
 import ovirtsdk4
 import ovirtsdk4.types as types
 
-from ost_utils.memoized import memoized
 
-
-@memoized
+@cache
 def get_nics_service(engine, vm_name):
     vm_service = get_vm_service(engine, vm_name)
     nics_service = vm_service.nics_service()
@@ -25,7 +25,7 @@ def get_network_fiter_parameters_service(engine, vm_name):
     ).network_filter_parameters_service()
 
 
-@memoized
+@cache
 def get_vm_service(engine, vm_name):
     vms_service = engine.vms_service()
     vm = vms_service.list(search='name={}'.format(vm_name))[0]
@@ -34,14 +34,14 @@ def get_vm_service(engine, vm_name):
     return vms_service.vm_service(vm.id)
 
 
-@memoized
+@cache
 def get_disk_service(engine, disk_name):
     disks_service = engine.disks_service()
     disk = disks_service.list(search='name={}'.format(disk_name))[0]
     return disks_service.disk_service(disk.id)
 
 
-@memoized
+@cache
 def get_disk_attachments_service(engine, vm_name):
     vm_service = get_vm_service(engine, vm_name)
     if vm_service is None:
@@ -49,7 +49,7 @@ def get_disk_attachments_service(engine, vm_name):
     return vm_service.disk_attachments_service()
 
 
-@memoized
+@cache
 def get_template_service(engine, template_name):
     templates_service = engine.templates_service()
     template = templates_service.list(search=f'name={template_name}')[0]
@@ -58,14 +58,14 @@ def get_template_service(engine, template_name):
     return templates_service.template_service(template.id)
 
 
-@memoized
+@cache
 def get_pool_service(engine, pool_name):
     vm_pools_service = engine.vm_pools_service()
     pool = vm_pools_service.list(search='name={}'.format(pool_name))[0]
     return vm_pools_service.pool_service(pool.id)
 
 
-@memoized
+@cache
 def get_storage_domain_service(engine, sd_name):
     storage_domains_service = engine.storage_domains_service()
     sd = storage_domains_service.list(search='name={}'.format(sd_name))[0]
@@ -115,21 +115,21 @@ def hosts_in_cluster_v4(root, cluster_name):
     return sorted(hosts, key=lambda host: host.name)
 
 
-@memoized
+@cache
 def data_center_service(root, name):
     data_centers = root.data_centers_service()
     dc = data_centers.list(search='name={}'.format(name))[0]
     return data_centers.data_center_service(dc.id)
 
 
-@memoized
+@cache
 def get_cluster_service(engine, cluster_name):
     clusters_service = engine.clusters_service()
     cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
     return clusters_service.cluster_service(cluster.id)
 
 
-@memoized
+@cache
 def get_vm_snapshots_service(engine, vm_name):
     vm_service = get_vm_service(engine, vm_name)
     if vm_service is None:
@@ -162,7 +162,7 @@ def quote_search_string(s):
     return '"' + s + '"'
 
 
-@memoized
+@cache
 def get_vnic_profiles_service(engine, network_name):
     networks_service = engine.networks_service()
     net = networks_service.list(search='name={}'.format(network_name))[0]

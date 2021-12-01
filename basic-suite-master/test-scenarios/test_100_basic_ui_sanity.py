@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from datetime import datetime
-import functools
+from functools import cache
 import logging
 import os
 import shutil
@@ -137,7 +137,7 @@ def test_add_grafana_user(
     LOGGER.debug(response.text)
 
 
-@test_utils.memoized
+@cache
 def firefox_options():
     options = webdriver.FirefoxOptions()
     options.set_capability('platform', BROWSER_PLATFORM)
@@ -156,7 +156,7 @@ def firefox_options():
     return options
 
 
-@test_utils.memoized
+@cache
 def chrome_options():
     options = webdriver.ChromeOptions()
     options.set_capability('platform', BROWSER_PLATFORM)

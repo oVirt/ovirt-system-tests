@@ -5,8 +5,7 @@
 #
 
 import abc
-
-from ost_utils import memoized
+from functools import cache
 
 
 class BaseBackend(abc.ABC):
@@ -125,25 +124,25 @@ class BaseBackend(abc.ABC):
     def ips_for(self, hostname, network_name):
         return self.ip_mapping()[hostname][network_name]
 
-    @memoized.memoized
+    @cache
     def hostnames(self):
         return set(self.ip_mapping().keys())
 
-    @memoized.memoized
+    @cache
     def engine_hostname(self):
         return next(hn for hn in self.hostnames() if "engine" in hn)
 
-    @memoized.memoized
+    @cache
     def hosts_hostnames(self):
         # The output should always be sorted, so we can refer by indices
         return sorted(hn for hn in self.hostnames() if "host" in hn)
 
-    @memoized.memoized
+    @cache
     def storage_hostname(self):
         # Storage VM does not always exist - some suites do not define it
         return next((hn for hn in self.hostnames() if "storage" in hn), None)
 
-    @memoized.memoized
+    @cache
     def network_names(self):
         return {
             network_name
@@ -151,14 +150,14 @@ class BaseBackend(abc.ABC):
             for network_name in mapping.keys()
         }
 
-    @memoized.memoized
+    @cache
     def management_network_name(self):
         return next(nn for nn in self.network_names() if "management" in nn)
 
-    @memoized.memoized
+    @cache
     def storage_network_name(self):
         return next(nn for nn in self.network_names() if "storage" in nn)
 
-    @memoized.memoized
+    @cache
     def bonding_network_name(self):
         return next(nn for nn in self.network_names() if "bonding" in nn)

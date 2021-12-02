@@ -5,7 +5,6 @@
 #
 
 import os
-import re
 
 from ost_utils.memoized import memoized
 

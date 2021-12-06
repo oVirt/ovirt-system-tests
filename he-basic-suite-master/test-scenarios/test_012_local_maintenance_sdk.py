@@ -40,14 +40,22 @@ def test_local_maintenance(
     vm_service = get_vm_service_for_vm(VM_HE_NAME)
     he_host_id = vm_service.get().host.id
     host_service = hosts_service.host_service(id=he_host_id)
+    host_name = host_service.get().name
 
-    def do_verified_deactivation():
-        logging.debug(f'Trying to deactivate host {host_service.get().name}')
+    logging.info(f'Performing Deactivation on {host_name}...')
+
+    def _do_deactivate():
+        logging.debug(f'Trying to deactivate host {host_name}')
         try:
             host_service.deactivate()
         except ovirtsdk4.Error:
-            # Ignore. Just return the result and let the caller fail if needed
-            pass
+            return False
+        return True
+
+    assert assert_utils.true_within_short(_do_deactivate)
+
+    def _is_in_maintenance():
+        logging.debug(f'Checking if host {host_name} is in maintenance')
         status = host_service.get().status
         hosted_engine = host_service.get(all_content=True).hosted_engine
         logging.debug(f'status={status}')
@@ -66,16 +74,22 @@ def test_local_maintenance(
         # both. Also for do_verified_activation below.
         return status == types.HostStatus.MAINTENANCE
 
-    logging.info('Performing Deactivation...')
-    assert assert_utils.true_within_long(do_verified_deactivation)
+    assert assert_utils.true_within_long(_is_in_maintenance)
 
-    def do_verified_activation():
-        logging.info(f'Trying to activate host {host_service.get().name}')
+    logging.info('Performing Activation...')
+
+    def _do_activate():
+        logging.debug(f'Trying to activate host {host_name}')
         try:
             host_service.activate()
         except ovirtsdk4.Error:
-            # Ignore. Just return the result and let the caller fail if needed
-            pass
+            return False
+        return True
+
+    assert assert_utils.true_within_short(_do_activate)
+
+    def _is_active():
+        logging.info(f'Checking if host {host_name} is active')
         status = host_service.get().status
         hosted_engine = host_service.get(all_content=True).hosted_engine
         logging.debug(f'status={status}')
@@ -83,8 +97,7 @@ def test_local_maintenance(
         # TODO See comment above
         return status == types.HostStatus.UP
 
-    logging.info('Performing Activation...')
-    assert assert_utils.true_within_long(do_verified_activation)
+    assert assert_utils.true_within_long(_is_active)
 
     logging.info('Verifying that all hosts have score higher than 0...')
     assert assert_utils.true_within_long(

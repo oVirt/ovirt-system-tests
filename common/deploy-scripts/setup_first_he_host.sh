@@ -100,6 +100,10 @@ copy_dependencies() {
   copy:
     src: /root/security-data-oval-com.redhat.rhsa-RHEL8.xml
     dest: /root
+- name: Copy OpenSCAP profile name
+  copy:
+    src: /root/ost_images_openscap_profile
+    dest: /root
 - name: Copy imageio-client to HE VM
   copy:
     src: /usr/lib64/python3.6/site-packages/ovirt_imageio/client

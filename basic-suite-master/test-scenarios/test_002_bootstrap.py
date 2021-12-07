@@ -1935,28 +1935,33 @@ def test_generate_openscap_report(
 ):
     # FIXME Use better way to detect which distro we are running on
     if ost_images_distro != 'rhel8':
-        pytest.skip('The report is generated only on RHEL images')
+        pytest.skip('The report is generated only on RHEL images.')
 
     all_without_storage = hosts_hostnames
     all_without_storage.append(engine_fqdn)
     ansible_handle = ansible_by_hostname(all_without_storage)
     try:
         ansible_handle.shell(
+            '[[ -s /root/ost_images_openscap_profile ]] '
+            '&& '
             'oscap '
             'xccdf '
             'eval '
             '--local-files /root '
-            '--profile xccdf_org.ssgproject.content_profile_stig '
+            '--profile $(cat /root/ost_images_openscap_profile) '
             '--report report.html '
             '--oval-results '
-            '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml'
+            '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml '
+            '> /var/log/ost-oscap.log 2>&1'
         )
     except AnsibleExecutionError as err:
-        if err.rc == 2:
-            LOGGER.warning('DISA STIG report has some failures')
+        if "rc=2" in err.stdout:
+            LOGGER.warning('OpenSCAP report has some failures.')
         else:
             raise
 
     report_dir = os.path.join(artifacts_dir, 'openscap_reports')
     os.makedirs(report_dir, exist_ok=True)
-    ansible_handle.fetch(src='report.html', dest=report_dir)
+    ansible_handle.fetch(
+        src='report.html', dest=report_dir, fail_on_missing='no'
+    )

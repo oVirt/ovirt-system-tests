@@ -1248,12 +1248,13 @@ def test_vdsm_recovery(
     host_name = host_service.get().name
     ansible_host = ansible_by_hostname(host_name)
 
-    ansible_host.systemd(name='vdsmd', state='stopped')
+    # TODO masking - ugly workaround for https://bugzilla.redhat.com/2029030
+    ansible_host.systemd(name='vdsmd', state='stopped', masked='yes')
     assert assert_utils.equals_within_short(
         lambda: vm_service.get().status, types.VmStatus.UNKNOWN
     )
 
-    ansible_host.systemd(name='vdsmd', state='started')
+    ansible_host.systemd(name='vdsmd', state='started', masked='no')
     assert assert_utils.equals_within_short(
         lambda: host_service.get().status, types.HostStatus.UP
     )

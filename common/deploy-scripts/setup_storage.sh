@@ -17,6 +17,7 @@ setup_nfs() {
     local exportpath=$1
     mkdir -p ${exportpath}
     chmod a+rwx ${exportpath}
+    chmod +t ${exportpath}
     echo "${exportpath} *(rw,async,anonuid=36,anongid=36,all_squash)" >> /etc/exports
 }
 

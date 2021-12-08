@@ -1940,25 +1940,20 @@ def test_generate_openscap_report(
     all_without_storage = hosts_hostnames
     all_without_storage.append(engine_fqdn)
     ansible_handle = ansible_by_hostname(all_without_storage)
-    try:
-        ansible_handle.shell(
-            '[[ -s /root/ost_images_openscap_profile ]] '
-            '&& '
-            'oscap '
-            'xccdf '
-            'eval '
-            '--local-files /root '
-            '--profile $(cat /root/ost_images_openscap_profile) '
-            '--report report.html '
-            '--oval-results '
-            '/usr/share/xml/scap/ssg/content/ssg-rhel8-ds.xml '
-            '> /var/log/ost-oscap.log 2>&1'
-        )
-    except AnsibleExecutionError as err:
-        if "rc=2" in err.stdout:
-            LOGGER.warning('OpenSCAP report has some failures.')
-        else:
-            raise
+    ansible_handle.shell(
+        '[[ -s /root/ost_images_openscap_profile ]] '
+        '&& '
+        'oscap '
+        'xccdf '
+        'eval '
+        '--remediate '
+        '--local-files /root '
+        '--profile $(cat /root/ost_images_openscap_profile) '
+        '--report report.html '
+        '--oval-results '
+        '/root/ssg-rhel8-ds.xml '
+        '> /var/log/ost-oscap.log 2>&1'
+    )
 
     report_dir = os.path.join(artifacts_dir, 'openscap_reports')
     os.makedirs(report_dir, exist_ok=True)

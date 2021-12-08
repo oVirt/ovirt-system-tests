@@ -122,6 +122,7 @@ _TEST_LIST = [
     "test_remove_vm2_backup_checkpoints",
     "test_import_vm1",
     "test_ha_recovery",
+    "test_check_coredump_generated",
     "test_verify_suspend_resume_vm0",
     "test_verify_vm_import",
     "test_verify_template_exported",
@@ -966,26 +967,39 @@ def test_vm0_is_alive(assert_vm_is_alive):
     assert_vm_is_alive(VM0_NAME)
 
 
+@pytest.fixture(scope="module")
+def ansible_host_for_vm2(get_ansible_host_for_vm):
+    return get_ansible_host_for_vm(VM2_NAME)
+
+
+@pytest.fixture(scope="module")
+def qemu_pid_for_vm2(ansible_host_for_vm2):
+    pgrep_res = ansible_host_for_vm2.shell('pgrep -f qemu.*guest=vm2')
+    return int(pgrep_res['stdout'].strip())
+
+
 @order_by(_TEST_LIST)
-def test_ha_recovery(engine_api, get_ansible_host_for_vm):
+def test_ha_recovery(engine_api, qemu_pid_for_vm2, ansible_host_for_vm2):
     engine = engine_api.system_service()
     with engine_utils.wait_for_event(engine, [119, 9602, 506]):
         # VM_DOWN_ERROR event(119)
         # HA_VM_FAILED event event(9602)
         # VDS_INITIATED_RUN_VM event(506)
-        ansible_host = get_ansible_host_for_vm(VM2_NAME)
-        LOGGER.debug(f'test_ha_recovery: ansible_host={ansible_host}')
-        pgrep_res = ansible_host.shell('pgrep -f qemu.*guest=vm2')
-        LOGGER.debug(f'test_ha_recovery: pgrep_res={pgrep_res}')
-        pid = pgrep_res['stdout'].strip()
-        LOGGER.debug(f'test_ha_recovery: pid={pid}')
-        kill_res = ansible_host.shell('kill -KILL {}'.format(pid))
-        LOGGER.debug(f'test_ha_recovery: kill_res={kill_res}')
+        LOGGER.debug(f'test_ha_recovery: ansible_host={ansible_host_for_vm2}')
+        LOGGER.debug(f'test_ha_recovery: pid={qemu_pid_for_vm2}')
+        abrt_res = ansible_host_for_vm2.shell(f'/usr/bin/kill -s SIGABRT {qemu_pid_for_vm2}')
+        LOGGER.debug(f'SIGABRT_res={abrt_res}')
 
     vm_service = test_utils.get_vm_service(engine, VM2_NAME)
     assert assert_utils.equals_within_long(lambda: vm_service.get().status, types.VmStatus.UP)
     with engine_utils.wait_for_event(engine, 33):  # USER_STOP_VM event
         vm_service.stop()
+
+
+@order_by(_TEST_LIST)
+def test_check_coredump_generated(qemu_pid_for_vm2, ansible_host_for_vm2):
+    # this test depends on "test_ha_recovery" kill signal
+    ansible_host_for_vm2.shell(f'coredumpctl list {qemu_pid_for_vm2}')
 
 
 @order_by(_TEST_LIST)

@@ -9,6 +9,7 @@ from selenium.common.exceptions import (
     NoSuchElementException,
     StaleElementReferenceException,
 )
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from ost_utils import assert_utils
@@ -25,7 +26,7 @@ class Driver:
     def execute_in_frame(self, xpath, method, *args):
         result = None
         try:
-            frame = self.driver.find_element_by_xpath(xpath)
+            frame = self.driver.find_element(By.XPATH, xpath)
             self.driver.switch_to.frame(frame)
             result = method(*args)
         finally:
@@ -62,7 +63,8 @@ class Driver:
             self.retry_if_stale(
                 # better works for cases with multiple cases
                 # than //*[contains(@class, 'class_name')]
-                self.driver.find_element_by_class_name,
+                self.driver.find_element,
+                By.CLASS_NAME,
                 class_name,
             )
             return True
@@ -71,7 +73,7 @@ class Driver:
 
     def is_xpath_present(self, xpath):
         try:
-            self.retry_if_stale(self.driver.find_element_by_xpath, xpath)
+            self.retry_if_stale(self.driver.find_element, By.XPATH, xpath)
             return True
         except NoSuchElementException:
             return False
@@ -79,7 +81,7 @@ class Driver:
     def is_xpath_displayed(self, xpath):
         return self.retry_if_stale(
             lambda: self.is_xpath_present(xpath)
-            and self.driver.find_element_by_xpath(xpath).is_displayed()
+            and self.driver.find_element(By.XPATH, xpath).is_displayed()
         )
 
     def is_button_enabled(self, text):
@@ -87,12 +89,12 @@ class Driver:
 
     def is_xpath_enabled(self, xpath):
         return self.retry_if_stale(
-            lambda: self.driver.find_element_by_xpath(xpath).is_enabled()
+            lambda: self.driver.find_element(By.XPATH, xpath).is_enabled()
         )
 
     def xpath_click(self, xpath):
         return self.retry_if_stale(
-            lambda: self.driver.find_element_by_xpath(xpath).click()
+            lambda: self.driver.find_element(By.XPATH, xpath).click()
         )
 
     def id_wait_and_click(self, message, element_id, wait_long=False):

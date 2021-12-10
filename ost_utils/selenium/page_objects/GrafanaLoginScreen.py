@@ -4,6 +4,7 @@
 #
 import logging
 
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -17,8 +18,8 @@ class GrafanaLoginScreen(Displayable):
         super(GrafanaLoginScreen, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_xpath(
-            self.OAUTH_XPATH
+        return self.ovirt_driver.driver.find_element(
+            By.XPATH, self.OAUTH_XPATH
         ).is_displayed()
 
     def get_displayable_name(self):

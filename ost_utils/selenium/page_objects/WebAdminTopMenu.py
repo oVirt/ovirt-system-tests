@@ -4,6 +4,7 @@
 #
 import logging
 
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -14,8 +15,8 @@ class WebAdminTopMenu(Displayable):
         super(WebAdminTopMenu, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_tag_name(
-            'nav'
+        return self.ovirt_driver.driver.find_element(
+            By.TAG_NAME, 'nav'
         ).is_displayed()
 
     def get_displayable_name(self):

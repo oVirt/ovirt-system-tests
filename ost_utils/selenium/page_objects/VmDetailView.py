@@ -4,6 +4,7 @@
 #
 import logging
 
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 
@@ -29,8 +30,8 @@ class VmDetailView(Displayable, WithBreadcrumbs):
 
     def open_host_devices_tab(self):
         LOGGER.debug('Open host devices tab')
-        self.ovirt_driver.driver.find_element_by_link_text(
-            'Host Devices'
+        self.ovirt_driver.driver.find_element(
+            By.LINK_TEXT, 'Host Devices'
         ).click()
 
         vm_detail_host_devices_tab = VmDetailHostDevicesTab(self.ovirt_driver)
@@ -38,13 +39,13 @@ class VmDetailView(Displayable, WithBreadcrumbs):
         return vm_detail_host_devices_tab
 
     def get_name(self):
-        return self.ovirt_driver.driver.find_element_by_id(
-            'SubTabVirtualMachineGeneralView_form_col0_row0_value'
+        return self.ovirt_driver.driver.find_element(
+            By.ID, 'SubTabVirtualMachineGeneralView_form_col0_row0_value'
         ).text
 
     def get_status(self):
-        return self.ovirt_driver.driver.find_element_by_id(
-            'SubTabVirtualMachineGeneralView_form_col0_row2_value'
+        return self.ovirt_driver.driver.find_element(
+            By.ID, 'SubTabVirtualMachineGeneralView_form_col0_row2_value'
         ).text
 
     def wait_for_statuses(self, statuses):
@@ -60,8 +61,8 @@ class VmDetailHostDevicesTab(Displayable):
         super(VmDetailHostDevicesTab, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_xpath(
-            '//ul/li[@class="active"]/a[@href="#vms-host_devices"]'
+        return self.ovirt_driver.driver.find_element(
+            By.XPATH, '//ul/li[@class="active"]/a[@href="#vms-host_devices"]'
         ).is_displayed()
 
     def get_displayable_name(self):
@@ -69,8 +70,9 @@ class VmDetailHostDevicesTab(Displayable):
 
     def open_manage_vgpu_dialog(self):
         LOGGER.debug('Open vGPU dialog')
-        self.ovirt_driver.driver.find_element_by_xpath(
-            '//button[text()="Manage vGPU"]'
+        self.ovirt_driver.driver.find_element(
+            By.XPATH,
+            '//button[text()="Manage vGPU"]',
         ).click()
         vm_vgpu_dialog = VmVgpuDialog(self.ovirt_driver)
         vm_vgpu_dialog.wait_for_displayed()
@@ -82,11 +84,9 @@ class VmVgpuDialog(Displayable):
         super(VmVgpuDialog, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        dialog_displayed = (
-            self.ovirt_driver.driver.find_element_by_css_selector(
-                '.modal-dialog,.pf-c-modal-box'
-            ).is_displayed()
-        )
+        dialog_displayed = self.ovirt_driver.driver.find_element(
+            By.CSS_SELECTOR, '.modal-dialog,.pf-c-modal-box'
+        ).is_displayed()
         spinner_displayed = self.ovirt_driver.is_xpath_displayed(
             '//div[contains(@class, "spinner")]'
         )
@@ -96,23 +96,27 @@ class VmVgpuDialog(Displayable):
         return 'Manage vGPU dialog'
 
     def get_title(self):
-        return self.ovirt_driver.driver.find_element_by_css_selector(
-            'h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title'
+        return self.ovirt_driver.driver.find_element(
+            By.CSS_SELECTOR,
+            'h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title',
         ).text
 
     def get_row_data(self, row_index):
-        row_tds = self.ovirt_driver.driver.find_elements_by_xpath(
-            f'//table[contains(@class, "vgpu-table")]/tbody[{row_index}]/tr/td'
+        row_tds = self.ovirt_driver.driver.find_elements(
+            By.XPATH,
+            '//table[contains(@class, "vgpu-table")]/'
+            f'tbody[{row_index}]/tr/td',
         )
         return list(map(lambda td: td.text, row_tds))
 
     def cancel(self):
         LOGGER.debug('Cancel vGPU dialog')
-        self.ovirt_driver.driver.find_element_by_xpath(
+        self.ovirt_driver.driver.find_element(
+            By.XPATH,
             '//div[@class="modal-footer"]//button[. = "Cancel"]|'
             '//div[@class="pf-c-modal-box__footer"]'
             '//button[contains(@class,"pf-m-link")]|'
             '//footer[@class="pf-c-modal-box__footer"]'
-            '//button[contains(@class,"pf-m-link")]'
+            '//button[contains(@class,"pf-m-link")]',
         ).click()
         self.wait_for_not_displayed()

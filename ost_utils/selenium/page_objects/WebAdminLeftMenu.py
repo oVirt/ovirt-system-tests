@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 from .VmListView import VmListView
 from .TemplateListView import TemplateListView
@@ -106,8 +107,8 @@ class WebAdminLeftMenu(Displayable):
         self._open_menu('MenuView_storageTab', menu_name, menu_id)
 
     def _open_menu(self, menu_group, menu_name, menu_id):
-        menu_element = self.ovirt_driver.driver.find_element_by_id(menu_group)
-        submenu_element = self.ovirt_driver.driver.find_element_by_id(menu_id)
+        menu_element = self.ovirt_driver.driver.find_element(By.ID, menu_group)
+        submenu_element = self.ovirt_driver.driver.find_element(By.ID, menu_id)
         self.ovirt_driver.wait_until(
             f'sub menu "{menu_name}" is visible  in the left menu',
             self._submenu_is_displayed,

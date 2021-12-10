@@ -2,6 +2,7 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 
 
@@ -18,14 +19,14 @@ class VmPortal(Displayable):
         return 'VM Portal'
 
     def get_vm_status(self, vm_name):
-        return self.ovirt_driver.driver.find_element_by_id(
-            'vm-' + vm_name + '-status'
+        return self.ovirt_driver.driver.find_element(
+            By.ID, 'vm-' + vm_name + '-status'
         ).text.strip()
 
     def get_vm_count(self):
         return int(
-            self.ovirt_driver.driver.find_element_by_xpath(
-                "//div[@class='col-sm-12']/h5"
+            self.ovirt_driver.driver.find_element(
+                By.XPATH, "//div[@class='col-sm-12']/h5"
             )
             .text.strip()
             .split(' ')[0]

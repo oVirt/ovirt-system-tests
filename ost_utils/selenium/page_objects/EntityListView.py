@@ -5,6 +5,7 @@
 import logging
 import time
 
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 from .WithNotifications import WithNotifications
@@ -37,7 +38,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         entity_present = self.ovirt_driver.is_xpath_present(
             '//a[contains(@id, "'
             + self.entity_name_table_cell_id_selector
-            + '")]'
+            + '")]',
         )
         no_entity_present = self.ovirt_driver.is_xpath_present(
             '//*[text() = "No items to display"]'
@@ -118,10 +119,11 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         return entities
 
     def _get_entity_names_to_ids(self):
-        elements = self.ovirt_driver.driver.find_elements_by_xpath(
+        elements = self.ovirt_driver.driver.find_elements(
+            By.XPATH,
             '//a[contains(@id, "'
             + self.entity_name_table_cell_id_selector
-            + '")]'
+            + '")]',
         )
         names_to_ids = {}
         for element in elements:

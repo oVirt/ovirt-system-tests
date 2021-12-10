@@ -2,6 +2,7 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+from selenium.webdriver.common.by import By
 from .WithOvirtDriver import WithOvirtDriver
 
 
@@ -10,10 +11,8 @@ class WithBreadcrumbs(WithOvirtDriver):
         return self.ovirt_driver.retry_if_stale(self._get_breadcrumbs)
 
     def _get_breadcrumbs(self):
-        breadcrumbs_elements = (
-            self.ovirt_driver.driver.find_elements_by_css_selector(
-                'ol.breadcrumb > li'
-            )
+        breadcrumbs_elements = self.ovirt_driver.driver.find_elements(
+            By.CSS_SELECTOR, 'ol.breadcrumb > li'
         )
 
         breadcrumbs = []

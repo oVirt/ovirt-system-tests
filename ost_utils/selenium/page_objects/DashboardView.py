@@ -2,6 +2,7 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 from .WithNotifications import WithNotifications
@@ -52,15 +53,16 @@ class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
         )
 
     def _is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_xpath(
-            '//div[@id="global-dashboard"]'
+        return self.ovirt_driver.driver.find_element(
+            By.XPATH, '//div[@id="global-dashboard"]'
         ).is_displayed()
 
     def _get_aggregate_count(self, label):
         return int(
-            self.ovirt_driver.driver.find_element_by_xpath(
+            self.ovirt_driver.driver.find_element(
+                By.XPATH,
                 '//a[span/text() = "'
                 + label
-                + '"]/span[@class="aggregate-status-count"]'
+                + '"]/span[@class="aggregate-status-count"]',
             ).text
         )

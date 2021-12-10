@@ -4,6 +4,7 @@
 #
 import logging
 
+from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -14,8 +15,8 @@ class WelcomeScreen(Displayable):
         super(WelcomeScreen, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_class_name(
-            'welcome-section'
+        return self.ovirt_driver.driver.find_element(
+            By.CLASS_NAME, 'welcome-section'
         ).is_displayed()
 
     def get_displayable_name(self):
@@ -23,20 +24,20 @@ class WelcomeScreen(Displayable):
 
     def open_administration_portal(self):
         LOGGER.debug('Open Administration portal')
-        self.ovirt_driver.driver.find_element_by_id(
-            'WelcomePage_webadmin'
+        self.ovirt_driver.driver.find_element(
+            By.ID, 'WelcomePage_webadmin'
         ).click()
 
     def open_user_portal(self):
         LOGGER.debug('Open User portal')
-        self.ovirt_driver.driver.find_element_by_id(
-            'WelcomePage_userportal_webui'
+        self.ovirt_driver.driver.find_element(
+            By.ID, 'WelcomePage_userportal_webui'
         ).click()
 
     def open_monitoring_portal(self):
         LOGGER.debug('Open Monitoring portal')
-        self.ovirt_driver.driver.find_element_by_id(
-            'WelcomePage_monitoring_grafana'
+        self.ovirt_driver.driver.find_element(
+            By.ID, 'WelcomePage_monitoring_grafana'
         ).click()
 
     def logout(self):
@@ -49,8 +50,8 @@ class WelcomeScreen(Displayable):
 
     def is_user_logged_in(self, username):
         return (
-            self.ovirt_driver.driver.find_element_by_xpath(
-                '//*[@id="sso-dropdown-toggle"]'
+            self.ovirt_driver.driver.find_element(
+                By.XPATH, '//*[@id="sso-dropdown-toggle"]'
             )
             .text.strip()
             .split('@')[0]
@@ -59,18 +60,18 @@ class WelcomeScreen(Displayable):
 
     def is_user_logged_out(self):
         return (
-            self.ovirt_driver.driver.find_element_by_xpath(
-                '//button[@id="sso-dropdown-toggle"]/span'
+            self.ovirt_driver.driver.find_element(
+                By.XPATH, '//button[@id="sso-dropdown-toggle"]/span'
             ).text.strip()
             == 'Not logged in'
         )
 
     def is_error_message_displayed(self):
-        return self.ovirt_driver.driver.find_element_by_class_name(
-            'session-error'
+        return self.ovirt_driver.driver.find_element(
+            By.CLASS_NAME, 'session-error'
         ).is_displayed()
 
     def get_error_message(self):
-        return self.ovirt_driver.driver.find_element_by_class_name(
-            'pf-c-alert__title'
+        return self.ovirt_driver.driver.find_element(
+            By.CLASS_NAME, 'pf-c-alert__title'
         ).text.strip()

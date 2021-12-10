@@ -4,6 +4,7 @@
 #
 import logging
 
+from selenium.webdriver.common.by import By
 from .EntityListView import EntityListView
 
 LOGGER = logging.getLogger(__name__)
@@ -46,16 +47,16 @@ class DisksListView(EntityListView):
             self.ovirt_driver.is_xpath_present,
             '//*[@id="UploadImagePopupView_fileUpload"]',
         )
-        self.ovirt_driver.driver.find_element_by_id(
-            'UploadImagePopupView_fileUpload'
+        self.ovirt_driver.driver.find_element(
+            By.ID, 'UploadImagePopupView_fileUpload'
         ).send_keys(image_local_path)
         self.ovirt_driver.wait_until(
             'Upload image dialog is not displayed',
             self.ovirt_driver.is_xpath_displayed,
             '//*[@id="VmDiskPopupWidget_alias"]',
         )
-        self.ovirt_driver.driver.find_element_by_id(
-            'VmDiskPopupWidget_alias'
+        self.ovirt_driver.driver.find_element(
+            By.ID, 'VmDiskPopupWidget_alias'
         ).send_keys(image_name)
 
         self.ovirt_driver.id_wait_and_click(

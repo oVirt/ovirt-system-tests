@@ -138,66 +138,67 @@ def test_add_grafana_user(
 
 
 @test_utils.memoized
-def firefox_capabilities():
-    capabilities = DesiredCapabilities.FIREFOX.copy()
-    capabilities['platform'] = BROWSER_PLATFORM
-    capabilities['version'] = FIREFOX_VERSION
-    capabilities['browserName'] = 'firefox'
-    capabilities['acceptInsecureCerts'] = True
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1538486
-    capabilities['moz:useNonSpecCompliantPointerOrigin'] = True
+def firefox_options():
     options = webdriver.FirefoxOptions()
+    options.set_capability('platform', BROWSER_PLATFORM)
+    options.set_capability('version', FIREFOX_VERSION)
+    options.set_capability('browserName', 'firefox')
+    options.set_capability('acceptInsecureCerts', True)
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1538486
+    options.set_capability('moz:useNonSpecCompliantPointerOrigin', True)
+
     options.set_preference('devtools.console.stdout.content', True)
     options.set_preference("browser.download.folderList", 2)
     options.set_preference("browser.download.dir", "/export")
     options.set_preference(
         "browser.helperApps.neverAsk.saveToDisk", "application/x-virt-viewer"
     )
-    capabilities.update(options.to_capabilities())
-    return capabilities
+    return options
 
 
 @test_utils.memoized
-def chrome_capabilities():
-    capabilities = DesiredCapabilities.CHROME.copy()
-    capabilities['platform'] = BROWSER_PLATFORM
-    capabilities['version'] = CHROME_VERSION
-    capabilities['acceptInsecureCerts'] = True
-    capabilities['goog:loggingPrefs'] = {
-        'browser': 'ALL',
-        'performance': 'ALL',
-    }
+def chrome_options():
     options = webdriver.ChromeOptions()
+    options.set_capability('platform', BROWSER_PLATFORM)
+    options.set_capability('version', CHROME_VERSION)
+    options.set_capability('acceptInsecureCerts', True)
+    options.set_capability(
+        'goog:loggingPrefs',
+        {
+            'browser': 'ALL',
+            'performance': 'ALL',
+        },
+    )
+
     prefs = {'download.default_directory': '/export'}
     options.add_experimental_option('prefs', prefs)
     # note: response body is not logged
     options.add_experimental_option(
         'perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True}
     )
-    capabilities.update(options.to_capabilities())
-    return capabilities
+    return options
 
 
 @pytest.fixture(
     scope="session",
     params=[
-        pytest.param(chrome_capabilities(), id="chrome"),
-        pytest.param(firefox_capabilities(), id="firefox"),
+        pytest.param(chrome_options(), id="chrome"),
+        pytest.param(firefox_options(), id="firefox"),
     ],
 )
-def capabilities(request):
+def browser_options(request):
     return request.param
 
 
 @pytest.fixture(scope="session")
-def browser_name(capabilities):
-    return capabilities['browserName']
+def browser_name(browser_options):
+    return browser_options.to_capabilities()['browserName']
 
 
 @pytest.fixture(scope="session")
-def ovirt_driver(capabilities, hub_url, engine_webadmin_url):
+def ovirt_driver(browser_options, hub_url, engine_webadmin_url):
     driver = webdriver.Remote(
-        command_executor=hub_url, desired_capabilities=capabilities
+        command_executor=hub_url, options=browser_options
     )
 
     ovirt_driver = Driver(driver)

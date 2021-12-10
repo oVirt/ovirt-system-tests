@@ -96,14 +96,10 @@ copy_dependencies() {
     dest: /var/tmp/lm_sensors.rpm
   with_fileglob:
     - "/var/tmp/lm_sensors-*"
-- name: Copy RHEL8 STIG XML
+- name: TODO create empty OpenSCAP profile for now
   copy:
-    src: /root/security-data-oval-com.redhat.rhsa-RHEL8.xml
-    dest: /root
-- name: Copy OpenSCAP profile name
-  copy:
-    src: /root/ost_images_openscap_profile
-    dest: /root
+    content: ""
+    dest: /root/ost_images_openscap_profile
 - name: Copy imageio-client to HE VM
   copy:
     src: /usr/lib64/python3.6/site-packages/ovirt_imageio/client

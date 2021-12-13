@@ -144,12 +144,13 @@ def networks(system, default_data_center, default_cluster):
     )
 
     joblib.AllJobs(system).wait_for_done()
-    # fmt: off
-    with vm_net_ctx as vm_network, \
-            vm_vlan_10_net_ctx as vm_vlan_10_network, \
-            vm_vlan_20_net_ctx as vm_vlan_20_network, \
-            vm_vlan_30_net_ctx as vm_vlan_30_network, \
-            vm_vlan_30_net_1_ctx as vm_vlan_30_network_1:
+    with (
+        vm_net_ctx as vm_network,
+        vm_vlan_10_net_ctx as vm_vlan_10_network,
+        vm_vlan_20_net_ctx as vm_vlan_20_network,
+        vm_vlan_30_net_ctx as vm_vlan_30_network,
+        vm_vlan_30_net_1_ctx as vm_vlan_30_network_1,
+    ):
         yield {
             VM_NET_NAME: vm_network,
             VLAN_10_NET_NAME: vm_vlan_10_network,
@@ -157,7 +158,6 @@ def networks(system, default_data_center, default_cluster):
             VLAN_30_NET_NAME: vm_vlan_30_network,
             VLAN_30_NET_NAME_1: vm_vlan_30_network_1,
         }
-    # fmt: on
 
 
 class CopyHostComparator(object):

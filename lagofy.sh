@@ -262,8 +262,8 @@ ost_init() {
             _render ${vm_template} | virsh create /dev/stdin || { echo "VM creation failed:"; _render ${vm_template}; return 1; }
 
             # generate ansible inventory line per host:
-            # <VM name> ansible_host=<IP> ansible_ssh_private_key_file=<key_file>
-            ansible_hosts+="ost-${SUITE}-${VM_NAME} ansible_host=${ansible_ip} ansible_ssh_private_key_file=${OST_IMAGES_SSH_KEY}\n"
+            # <VM name> ansible_host=<IP> ansible_ssh_private_key_file=<key_file> ansible_ssh_extra_args=<disable updates of known_hosts file>
+            ansible_hosts+="ost-${SUITE}-${VM_NAME} ansible_host=${ansible_ip} ansible_ssh_private_key_file=${OST_IMAGES_SSH_KEY} ansible_ssh_extra_args='-o UserKnownHostsFile=/dev/null'\n"
 
         done
 

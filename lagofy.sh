@@ -30,7 +30,7 @@ ost_status() {
         [[ "$1" = "--dump" ]] && virsh dumpxml $vm_full >> ${OST_REPO_ROOT}/exported-artifacts/libvirt-vms
         vm_nets=$(virsh domiflist $vm_full | grep network | tr -s " " | cut -d " " -f 4)
         echo "   state: $(virsh domstate $vm_full 2>&1)"
-        echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh.*/\1/p; q }" $PREFIX/hosts 2>/dev/null || echo unknown)"
+        echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh_p.*/\1/p; q }" $PREFIX/hosts 2>/dev/null || echo unknown)"
         echo -n "   NICs: "
         net_comma=""
         local idx=0

@@ -34,7 +34,8 @@ mkdir -p /etc/libvirt
 # https://www.libvirt.org/kbase/debuglogs.html#targeted-logging-for-debugging-qemu-vms
 # NOTE: filter order matters, util must be last to avoid noisy object logs.
 echo 'log_filters="1:libvirt 1:qemu 1:conf 1:security 3:event 3:json 3:file 3:object 1:util"' >> /etc/libvirt/libvirtd.conf
-echo 'log_outputs="1:file:/var/log/libvirt.log"' >> /etc/libvirt/libvirtd.conf
+echo 'log_outputs="1:file:/var/log/libvirt/libvirt.log"' >> /etc/libvirt/libvirtd.conf
+sed -i 's/weekly/daily/' /etc/logrotate.d/libvirtd
 
 # Increase ISCSI timeouts and disable MD5 (FIPS), see setup_storage.sh
 rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils

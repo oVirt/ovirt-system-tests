@@ -139,10 +139,10 @@ def deploy(
     # add custom repos
     custom_repos = request.config.getoption('--custom-repo')
     if custom_repos is not None:
-        custom_repos = package_mgmt.expand_jenkins_repos(
-            custom_repos, ost_images_distro
+        repo_urls = package_mgmt.expand_repos(
+            custom_repos, working_dir, ost_images_distro
         )
-        package_mgmt.add_custom_repos(ansible_vms_to_deploy, custom_repos)
+        package_mgmt.add_custom_repos(ansible_vms_to_deploy, repo_urls)
         ansible_vms_to_deploy.shell(
             'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
         )

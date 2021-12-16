@@ -7,9 +7,11 @@
 import logging
 import os
 import re
+import zipfile
+
+from typing import Optional
 
 import requests
-
 
 LOGGER = logging.getLogger(__name__)
 REPO_NAME = 'extra-src-'
@@ -22,35 +24,235 @@ OVIRT_PACKAGES_PATTERNS = (
 )
 
 
-def expand_jenkins_repos(custom_repos, ost_images_distro):
-    expanded_repos = set()
+def expand_repos(custom_repos, working_dir, ost_images_distro):
+    repo_urls = []
     for repo_url in custom_repos:
-        if requests.get(repo_url + '/repodata/repomd.xml').ok:
-            expanded_repos.add(repo_url)
-            continue
+        if repo_url.startswith("https://github.com/oVirt"):
+            repo_urls.append(expand_github_repo(repo_url, working_dir))
+        else:
+            repo_urls.extend(expand_jenkins_repo(repo_url, ost_images_distro))
+    return repo_urls
 
-        lvl1_page = requests.get(repo_url + '/api/json?depth=3')
-        lvl1_page.raise_for_status()
-        lvl1_page = lvl1_page.json()
 
-        url = lvl1_page['url']
-        if url.endswith('/'):
-            url = url[:-1]
+def expand_github_repo(repo_url, working_dir):
+    """
+    This function converts custom repo links pointing to GitHub pull requests
+    into local directories containing the unpacked RPMs from the artifacts ZIP
+    on GitHub. This local directory is then later copied to each VM using the
+    _add_custom_repo function below.
 
-        repo_list = set()
-        for artifact in lvl1_page.get('artifacts', []):
-            if not artifact['relativePath'].endswith('rpm'):
-                continue
-            relative_path = artifact['relativePath'].split('/')[0]
-            new_url = f'{url}/artifact/{relative_path}'
-            repo_list.add(new_url)
+    This function supports several URL patterns:
 
-        if len(repo_list) == 0:
-            raise RuntimeError(f"Couldn't find any repos at {repo_url}")
+    https://github.com/oVirt/REPONAME/pull/PR_ID
+    https://github.com/oVirt/REPONAME/commit/COMMIT_HASH
+    https://github.com/oVirt/REPONAME/actions/runs/RUN_ID
 
-        expanded_repos.update(
-            repo for repo in repo_list if ost_images_distro in repo
+    All artifacts will be downloaded and RPMs will be converted to repositories
+    """
+    match = re.search(
+        r"^https://github.com/oVirt/"
+        "([^/]+)/(pull/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+))$",
+        repo_url,
+    )
+    if not match:
+        raise RuntimeError(f"Not a valid GitHub link {repo_url}")
+    repo, _, pr, commit, workflow_run = match.groups()
+    if not workflow_run:
+        if not commit:
+            commit = _github_resolve_pr_to_commit(repo, pr)
+        workflow_run = _github_resolve_commit_to_workflow_run(repo, commit)
+
+    artifacts: list[_GitHubArtifact] = _github_list_artifacts(
+        repo, workflow_run
+    )
+    for artifact in artifacts:
+        target_path = os.path.join(
+            working_dir, 'github_artifacts', f'{commit}-{artifact.name}'
         )
+        os.makedirs(target_path, exist_ok=True)
+        # Download the artifact
+        target_file = _github_download_artifact(artifact, target_path)
+        # Unpack the artifact
+        _github_unpack_artifact(target_file)
+        if _github_has_rpm(target_path):
+            # TODO check metada presence and change repo local path
+            # _github_generate_repomd(target_path)
+            # Add to repos list.
+            return target_path
+    raise RuntimeError(
+        f"GH pr/commit/run {repo_url} had no artifacts with RPM files."
+    )
+
+
+def _github_has_rpm(path: str) -> bool:
+    """
+    This function checks if the specified path contains any RPM files.
+    """
+    for root, subdirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".rpm"):
+                return True
+    return False
+
+
+class _GitHubArtifact:
+    """
+    This class contains the simplified data structure of an artifact in
+    a response from the GitHub API. It only exists for typing purposes.
+    """
+
+    id: int
+    name: str
+    archive_download_url: str
+    expired: bool
+
+    def __init__(self, data: dict):
+        self.id = int(data["id"])
+        self.name = data["name"]
+        self.archive_download_url = data["archive_download_url"]
+        self.expired = bool(data["expired"])
+
+
+class _GitHubArtifactResponse:
+    """
+    This class represents a simplified response with an artifact list from
+    the GitHub API. It only exists for typing purposes.
+    """
+
+    artifacts: list[_GitHubArtifact]
+
+    def __init__(self, data: dict):
+        self.artifacts = [
+            _GitHubArtifact(entry) for entry in data["artifacts"]
+        ]
+
+
+def _github_resolve_pr_to_commit(repo: str, pr: str) -> str:
+    """
+    This function uses the GitHub API to look up the last commit on a specific
+    PR and return the commit ID. This will then be used to look up the last
+    run on that commit.
+    """
+    pulls_response = _github_get(
+        f"https://api.github.com/repos/oVirt/{repo}/pulls/{pr}/commits"
+    )
+    pulls: list[dict] = pulls_response.json()
+    commit = pulls[-1]
+    return commit["sha"]
+
+
+def _github_resolve_commit_to_workflow_run(repo, commit) -> str:
+    """
+    This function uses the GitHub API to look up the last run for a commit.
+    This run ID can then be used to obtain the artifacts.
+    """
+
+    # This is currently the only way to match workflow runs to commits -
+    # listing all the workflow runs and filtering by commit sha. It's ugly
+    # and we're checking only the last 100 runs. If it turns out it's not
+    # enough we'll need to fetch multiple pages.
+    runs_response = _github_get(
+        f"https://api.github.com/repos/oVirt/{repo}/actions/runs",
+        {"per_page": 100},
+    )
+    for run in runs_response.json()["workflow_runs"]:
+        if run["head_sha"] == commit:
+            return run["id"]
+
+    raise RuntimeError(f"No workflow runs found for commit {commit}")
+
+
+def _github_get(url: str, params: Optional[dict] = None) -> requests.Response:
+    headers = {}
+    github_token = os.environ.get("GITHUB_TOKEN")
+    if github_token is None:
+        raise RuntimeError(
+            "GITHUB_TOKEN env variable is not defined - artifact retrieval "
+            "won't be possible"
+        )
+    headers["authorization"] = f"token {github_token}"
+    if params is None:
+        params = {}
+    response = requests.get(
+        url, headers=headers, allow_redirects=True, params=params
+    )
+    response.raise_for_status()
+    return response
+
+
+def _github_list_artifacts(
+    repo: str, workflow_run: str
+) -> list[_GitHubArtifact]:
+    """
+    This function lists all artifacts for a specific GitHub Actions run.
+    The returned list contains the GitHub API data struct
+    """
+    artifacts_response = _github_get(
+        f"https://api.github.com/repos/oVirt/{repo}/"
+        f"actions/runs/{workflow_run}/artifacts"
+    )
+    artifacts: _GitHubArtifactResponse
+    artifacts = _GitHubArtifactResponse(artifacts_response.json())
+    for artifact in artifacts.artifacts:
+        if artifact.expired:
+            raise RuntimeError(
+                f"Artifact {artifact.name} for run {workflow_run} in repo"
+                f" oVirt/{repo} has expired."
+            )
+    return artifacts.artifacts
+
+
+def _github_download_artifact(
+    artifact: _GitHubArtifact, target_dir: str
+) -> str:
+    """
+    This function downloads an artifact into the specified target directory
+    with its original name.
+    """
+    target_file_path = os.path.join(target_dir, artifact.name)
+    response = _github_get(artifact.archive_download_url)
+    with open(target_file_path, "wb") as target_file:
+        target_file.write(response.content)
+    return target_file_path
+
+
+def _github_unpack_artifact(path: str):
+    """
+    This function extracts a ZIP file specified in the path into its directory
+    and then removes the ZIP file.
+    """
+    with zipfile.ZipFile(path, 'r') as zip_handle:
+        zip_handle.extractall(os.path.dirname(path))
+    os.unlink(path)
+
+
+def expand_jenkins_repo(repo_url, ost_images_distro):
+    expanded_repos = set()
+    if requests.get(repo_url + '/repodata/repomd.xml').ok:
+        return [repo_url]
+
+    lvl1_page = requests.get(repo_url + '/api/json?depth=3')
+    lvl1_page.raise_for_status()
+    lvl1_page = lvl1_page.json()
+
+    url = lvl1_page['url']
+    if url.endswith('/'):
+        url = url[:-1]
+
+    repo_list = set()
+    for artifact in lvl1_page.get('artifacts', []):
+        if not artifact['relativePath'].endswith('rpm'):
+            continue
+        relative_path = artifact['relativePath'].split('/')[0]
+        new_url = f'{url}/artifact/{relative_path}'
+        repo_list.add(new_url)
+
+    if len(repo_list) == 0:
+        raise RuntimeError(f"Couldn't find any repos at {repo_url}")
+
+    expanded_repos.update(
+        repo for repo in repo_list if ost_images_distro in repo
+    )
 
     return list(r for r in expanded_repos if 'ppc64le' not in r)
 
@@ -113,6 +315,11 @@ def report_ovirt_packages_versions(ansible_vms):
 
 def _add_custom_repo(ansible_vm, name, url):
     LOGGER.info(f"Adding repository to VM: {name} -> {url}")
+    if url.startswith("/"):
+        ansible_vm.copy(
+            src=os.path.join(url, ''), dest=f"/etc/yum.repos.d/{name}"
+        )
+        url = f"/etc/yum.repos.d/{name}"
     ansible_vm.yum_repository(
         name=name,
         description=name,

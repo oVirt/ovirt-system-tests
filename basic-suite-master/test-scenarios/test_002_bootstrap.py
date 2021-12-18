@@ -1956,7 +1956,7 @@ def test_generate_openscap_report(
             '--oval-results '
             '/root/ssg-rhel8-ds.xml '
             '> /var/log/ost-oscap.log 2>&1; '
-            'fi'
+            'fi; :'
         )
     except AnsibleExecutionError:
         ansible_handle.fetch(

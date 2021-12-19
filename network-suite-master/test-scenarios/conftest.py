@@ -72,6 +72,7 @@ from ost_utils.pytest.fixtures.backend import host0_hostname
 from ost_utils.pytest.fixtures.backend import host1_hostname
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
 from ost_utils.pytest.fixtures.backend import management_network_supports_ipv4
+from ost_utils.pytest.fixtures.backend import tested_ip_version
 from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts
@@ -93,6 +94,8 @@ from ost_utils.pytest.fixtures.env import ssh_key_file
 from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.env import working_dir
 from ost_utils.pytest.fixtures.network import management_network_name
+from ost_utils.pytest.fixtures.network import management_subnet
+from ost_utils.pytest.fixtures.network import storage_subnet
 from ost_utils.pytest.fixtures.sdk import get_user_service_for_user
 from ost_utils.pytest.fixtures.sdk import system_service
 from ost_utils.pytest.fixtures.sdk import users_service

@@ -18,16 +18,25 @@ from ovirtlib import virtlib
 
 from testlib import suite
 
-VM0_NAME = 'test_port_isolation_vm_0'
-VM1_NAME = 'test_port_isolation_vm_1'
 PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
 PING_FAILED = '100% packet loss'
 EXTERNAL_IP = {'inet': '8.8.8.8', 'inet6': '2001:4860:4860::8888'}
 Iface = namedtuple('Iface', ['name', 'ipv6'])
-IFACE_0 = Iface('eth0', 'fd8f:1391:3a82:200::cafe:e0')
-IFACE_ISOLATED = Iface('eth1', 'fd8f:1391:3a82:201::cafe:e1')
+VMS = [
+    {
+        'name': 'test_port_isolation_vm_0',
+        'mgmt': Iface('eth0', 'fd8f:1391:3a82:202::cafe:00'),
+        'isolate': Iface('eth1', 'fd8f:1391:3a82:201::cafe:10'),
+    },
+    {
+        'name': 'test_port_isolation_vm_1',
+        'mgmt': Iface('eth0', 'fd8f:1391:3a82:202::cafe:01'),
+        'isolate': Iface('eth1', 'fd8f:1391:3a82:201::cafe:11'),
+    },
+]
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -35,15 +44,20 @@ LOGGER = logging.getLogger(__name__)
     suite.af().is6, reason='CI lab does not provide external ipv6 connectivity'
 )
 def test_ping_to_external_port_succeeds(vm_nodes, isolated_ifaces_up_with_ip):
-    for vm_node in vm_nodes:
-        vm_node.ping(EXTERNAL_IP[suite.af().family], IFACE_ISOLATED.name)
+    for i, vm_node in enumerate(vm_nodes):
+        vm_node.ping(EXTERNAL_IP[suite.af().family], VMS[i]['isolate'].name)
+
+
+def test_ping_to_mgmt_port_succeeds(vm_nodes, mgmt_ifaces_up_with_ip):
+    vm_nodes[0].ping(mgmt_ifaces_up_with_ip[1], VMS[0]['mgmt'].name)
+    vm_nodes[1].ping(mgmt_ifaces_up_with_ip[0], VMS[1]['mgmt'].name)
 
 
 def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1], IFACE_ISOLATED.name)
+        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1], VMS[0]['isolate'].name)
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0], IFACE_ISOLATED.name)
+        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0], VMS[1]['isolate'].name)
 
 
 @pytest.fixture(scope='module')
@@ -57,14 +71,14 @@ def vm_nodes(mgmt_ifaces_up_with_ip):
 @pytest.fixture(scope='module')
 def mgmt_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
     return _assign_ips_on_vms_ifaces(
-        vms_up_on_host_1, cirros_serial_console, IFACE_0
+        vms_up_on_host_1, cirros_serial_console, 'mgmt'
     )
 
 
 @pytest.fixture(scope='module')
 def isolated_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
     ips = _assign_ips_on_vms_ifaces(
-        vms_up_on_host_1, cirros_serial_console, IFACE_ISOLATED
+        vms_up_on_host_1, cirros_serial_console, 'isolate'
     )
     for vm in vms_up_on_host_1:
         ip_a = cirros_serial_console.shell(vm.id, ('ip addr',))
@@ -72,9 +86,10 @@ def isolated_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
     return ips
 
 
-def _assign_ips_on_vms_ifaces(vms, serial_console, iface):
+def _assign_ips_on_vms_ifaces(vms, serial_console, iface_usage):
     ips = []
-    for vm in vms:
+    for i, vm in enumerate(vms):
+        iface = VMS[i][iface_usage]
         if suite.af().is6:
             ip = iface.ipv6
             serial_console.add_static_ip(vm.id, f'{ip}/128', iface.name)
@@ -98,30 +113,30 @@ def vms_up_on_host_1(
     both virtual machines will be on it.
     """
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-        vm_name_tuples = [(vm_0, VM0_NAME), (vm_1, VM1_NAME)]
-        for vm, name in vm_name_tuples:
+        for i, vm in enumerate([vm_0, vm_1]):
             vm.create(
-                vm_name=name, cluster=default_cluster, template=cirros_template
+                vm_name=VMS[i]['name'],
+                cluster=default_cluster,
+                template=cirros_template,
             )
             vm_vnic0 = netlib.Vnic(vm)
             vm_vnic0.create(
-                name=IFACE_0.name,
-                vnic_profile=ovirtmgmt_vnic_profile,
+                name=VMS[i]['mgmt'].name, vnic_profile=ovirtmgmt_vnic_profile
             )
             vm_vnic1 = netlib.Vnic(vm)
             vm_vnic1.create(
-                name=IFACE_ISOLATED.name,
+                name=VMS[i]['isolate'].name,
                 vnic_profile=port_isolation_network.vnic_profile(),
             )
             vm.wait_for_down_status()
-            vm.run_once(cloud_init_hostname=name)
+            vm.run_once(cloud_init_hostname=VMS[i]['name'])
 
         vm_0.wait_for_up_status()
         vm_1.wait_for_up_status()
         joblib.AllJobs(system).wait_for_done()
-        for vm, name in vm_name_tuples:
+        for vm in (vm_0, vm_1):
             ip_a = cirros_serial_console.shell(vm.id, ('ip addr',))
-            LOGGER.debug(f'before applying ips: vm={name} has ip_a={ip_a}')
+            LOGGER.debug(f'before applying ips: vm={vm.name} has ip_a={ip_a}')
         yield vm_0, vm_1
 
 

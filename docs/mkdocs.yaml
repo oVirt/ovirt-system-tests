@@ -6,6 +6,6 @@ theme: readthedocs
 repo_url: https://gerrit.ovirt.org/ovirt-system-tests
 repo_name: Gerrit
 nav:
-  - Home: index.markdown
-  - README: '../README.md'
-  - FAQ: '../FAQ.md'
+  - Home: 'index.markdown'
+  - README: 'README.md'
+  - FAQ: 'FAQ.md'

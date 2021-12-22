@@ -77,7 +77,7 @@ def _assign_ips_on_vms_ifaces(vms, serial_console, iface):
     for vm in vms:
         if suite.af().is6:
             ip = iface.ipv6
-            serial_console.add_static_ip(vm.id, f'{ip}/64', iface.name)
+            serial_console.add_static_ip(vm.id, f'{ip}/128', iface.name)
         else:
             ip = serial_console.assign_ip4_if_missing(vm.id, iface.name)
         ips.append(ip)

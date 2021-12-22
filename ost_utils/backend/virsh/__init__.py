@@ -42,6 +42,15 @@ class VirshBackend(base.BaseBackend):
     def libvirt_net_name(self, ost_net_name):
         return self._networks.get_network_for_ost_name(ost_net_name).libvirt_name
 
+    def management_subnet(self, ip_version):
+        return self._networks.get_subnet_for_ost_name(self.management_network_name(), ip_version)
+
+    def bonding_subnet(self, ip_version):
+        return self._networks.get_subnet_for_ost_name(self.bonding_network_name(), ip_version)
+
+    def storage_subnet(self, ip_version):
+        return self._networks.get_subnet_for_ost_name(self.storage_network_name(), ip_version)
+
     def _get_vms(self, deployment_path):
         vm_names = [name for name in shell("virsh list --name".split()).splitlines() if name[8:13] == "-ost-"]
 

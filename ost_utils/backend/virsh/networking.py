@@ -97,6 +97,11 @@ class VirshNetworks:
     def get_network_for_libvirt_name(self, libvirt_name):
         return self._networks_by_libvirt_name[libvirt_name]
 
+    def get_subnet_for_ost_name(self, ost_net_name, ip_version):
+        if ip_version == 6:
+            return self._networks_by_ost_name[ost_net_name].ip6_subnet
+        return self._networks_by_ost_name[ost_net_name].ip4_subnet
+
     def find_host_dhcp_for_mac(self, mac):
         host_dhcp4 = self.find_host_dhcp4_for_mac(mac)
         host_dhcp6 = self.find_host_dhcp6_for_mac(mac)
@@ -187,9 +192,11 @@ class VirshNetwork:
             f"< {self.__class__.__name__} | "
             f"ip4_gw: {self._ip4_gw}, "
             f"ip4_prefix: {self._ip4_prefix}, "
+            f"ip4_subnet: {self.ip4_subnet}, "
             f"host_dhcps4: {self._host_dhcps4}, "
             f"ip6_gw: {self._ip6_gw}, "
             f"ip6_prefix: {self._ip6_prefix}, "
+            f"ip6_subnet: {self.ip6_subnet}, "
             f"host_dhcps6: {self._host_dhcps6}, "
             f"ost_name: {self._ost_name}, "
             f"libvirt_name: {self._libvirt_name}, "
@@ -232,6 +239,14 @@ class VirshNetwork:
     @property
     def ip6_prefix(self):
         return self._ip6_prefix
+
+    @property
+    def ip4_subnet(self):
+        return ipaddress.ip_network(f'{self._ip4_gw}/{self._ip4_prefix}', False)
+
+    @property
+    def ip6_subnet(self):
+        return ipaddress.ip_network(f'{self._ip6_gw}/{self._ip6_prefix}', False)
 
     @property
     def ost_name(self):

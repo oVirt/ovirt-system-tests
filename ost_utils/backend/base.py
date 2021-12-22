@@ -163,3 +163,24 @@ class BaseBackend(abc.ABC):
         return any(
             ip.version == ip_version for ip in list(self.ip_mapping().values())[0][self.management_network_name()]
         )
+
+    @abc.abstractmethod
+    def management_subnet(self, ip_version):
+        """
+        :param ip_version: 4 or 6
+        :return: ipaddress.ip_network with the subnet address of the network
+        """
+
+    @abc.abstractmethod
+    def bonding_subnet(self, ip_version):
+        """
+        :param ip_version: 4 or 6
+        :return: ipaddress.ip_network with the subnet address of the network
+        """
+
+    @abc.abstractmethod
+    def storage_subnet(self, ip_version):
+        """
+        :param ip_version: 4 or 6
+        :return: ipaddress.ip_network with the subnet address of the network
+        """

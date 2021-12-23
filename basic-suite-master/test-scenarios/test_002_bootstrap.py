@@ -20,7 +20,6 @@ import ovirtsdk4.types as types
 import pytest
 
 from ost_utils import assert_utils
-from ost_utils import backend
 from ost_utils import constants
 from ost_utils import engine_object_names
 from ost_utils import engine_utils
@@ -31,6 +30,7 @@ from ost_utils.ansible.collection import CollectionMapper
 from ost_utils.ansible.collection import image_template
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures import root_password
+from ost_utils.pytest.fixtures.backend import tested_ip_version
 from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.pytest.fixtures.virt import *
 from ost_utils import network_utils
@@ -81,7 +81,7 @@ VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
 MANAGEMENT_NETWORK = 'ovirtmgmt'
 PASSTHROUGH_VNIC_PROFILE = 'passthrough_vnic_profile'
-NETWORK_FILTER_NAME = 'clean-traffic'
+NETWORK_FILTER_NAME = {'ipv4': 'clean-traffic', 'ipv6': 'vdsm-no-mac-spoofing'}
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -1468,7 +1468,7 @@ def test_add_graphics_console(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_filter(engine_api):
+def test_add_filter(engine_api, tested_ip_version):
     engine = engine_api.system_service()
     nics_service = test_utils.get_nics_service(engine, VM0_NAME)
     nic = nics_service.list()[0]
@@ -1477,7 +1477,7 @@ def test_add_filter(engine_api):
     network_filter = next(
         network_filter
         for network_filter in network_filters_service.list()
-        if network_filter.name == NETWORK_FILTER_NAME
+        if network_filter.name == NETWORK_FILTER_NAME[f'ipv{tested_ip_version}']
     )
     vnic_profiles_service = engine.vnic_profiles_service()
 

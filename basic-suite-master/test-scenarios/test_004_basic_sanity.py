@@ -31,6 +31,7 @@ from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
 from ost_utils.pytest import order_by
+from ost_utils.pytest.fixtures.network import management_subnet
 from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.virt import *
 from ost_utils.pytest.fixtures.vm import *
@@ -476,6 +477,12 @@ def test_remove_vm2_backup_checkpoints(engine_api, get_vm_service_for_vm):
     vm2_checkpoints_service = vm2_service.checkpoints_service()
     for _ in vm2_checkpoints_service.list():
         backup.remove_vm_root_checkpoint(vm2_checkpoints_service)
+
+
+@pytest.fixture(scope="session")
+def vm0_fqdn_or_ip(tested_ip_version, management_subnet):
+    vm0_address = {'ipv4': VM0_NAME, 'ipv6': str(management_subnet[250])}
+    return vm0_address[f'ipv{tested_ip_version}']
 
 
 @order_by(_TEST_LIST)

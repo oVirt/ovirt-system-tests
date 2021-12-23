@@ -16,6 +16,7 @@ import subprocess
 from time import sleep
 import uuid
 
+import ovirtsdk4
 import ovirtsdk4.types as types
 
 import pytest
@@ -31,6 +32,7 @@ from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
 from ost_utils.pytest import order_by
+from ost_utils.pytest.fixtures.backend import tested_ip_version
 from ost_utils.pytest.fixtures.network import management_subnet
 from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.virt import *
@@ -203,10 +205,10 @@ def _verify_vm_disks_state(engine, vm_name, state):
 
 
 @pytest.fixture(scope="session")
-def assert_vm_is_alive(ansible_host0, vm_ssh):
+def assert_vm_is_alive(ansible_host0, vm_ssh, tested_ip_version):
     def is_alive(vm_name):
         def _ping():
-            ansible_host0.shell('ping -4 -c 1 -W 60 {}'.format(vm_name))
+            ansible_host0.shell(f'ping -{tested_ip_version} -c 1 -W 60 {vm_name}')
             return True
 
         assert assert_utils.true_within_long(_ping, allowed_exceptions=[ansible.AnsibleExecutionError])
@@ -486,7 +488,7 @@ def vm0_fqdn_or_ip(tested_ip_version, management_subnet):
 
 
 @order_by(_TEST_LIST)
-def test_verify_transient_folder(assert_vm_is_alive, engine_api, get_ansible_host_for_vm):
+def test_verify_transient_folder(assert_vm_is_alive, engine_api, get_ansible_host_for_vm, vm0_fqdn_or_ip):
     engine = engine_api.system_service()
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
     ansible_host = get_ansible_host_for_vm(BACKUP_VM_NAME)
@@ -496,7 +498,7 @@ def test_verify_transient_folder(assert_vm_is_alive, engine_api, get_ansible_hos
     assert len(all_volumes) == 1
 
     assert sd.id in all_volumes[0]
-    assert_vm_is_alive(VM0_NAME)
+    assert_vm_is_alive(vm0_fqdn_or_ip)
 
 
 @order_by(_TEST_LIST)
@@ -631,29 +633,10 @@ def test_preview_snapshot_with_memory(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_vmconsole(engine_api, engine_ip, working_dir):
+def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
     engine = engine_api.system_service()
-    users_service = engine.users_service()
-    user = users_service.list(search='name=admin')[0]
-    keys_service = users_service.user_service(user.id).ssh_public_keys_service()
     vms_service = engine.vms_service()
     vm0_id = vms_service.list(search=f'name={VM0_NAME}')[0].id
-
-    shell(
-        [
-            'ssh-keygen',
-            '-t',
-            'rsa',
-            '-f',
-            f'{working_dir}/vmconsole_rsa',
-            '-N',
-            '',
-        ]
-    )
-    with open(f'{working_dir}/vmconsole_rsa.pub') as f:
-        ssh_public_key = f.read()
-
-    keys_service.add(key=types.SshPublicKey(content=ssh_public_key))
 
     master, slave = pty.openpty()
     vmconsole_process = subprocess.Popen(
@@ -663,7 +646,7 @@ def test_vmconsole(engine_api, engine_ip, working_dir):
             '-o',
             'StrictHostKeyChecking=no',
             '-i',
-            f'{working_dir}/vmconsole_rsa',
+            f'{rsa_pair[1]}',
             '-p',
             '2222',
             f'ovirt-vmconsole@{engine_ip}',
@@ -932,7 +915,14 @@ def test_cold_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
 
 
 @order_by(_TEST_LIST)
-def test_run_vms(assert_vm_is_alive, engine_api, management_gw_ip):
+def test_run_vms(
+    assert_vm_is_alive,
+    engine_api,
+    management_gw_ip,
+    vm0_fqdn_or_ip,
+    tested_ip_version,
+    cirros_serial_console,
+):
     engine = engine_api.system_service()
 
     vm_params = types.Vm(initialization=types.Initialization(user_name=VM_USER_NAME, root_password=VM_PASSWORD))
@@ -956,7 +946,12 @@ def test_run_vms(assert_vm_is_alive, engine_api, management_gw_ip):
     for vm_name in [VM0_NAME, BACKUP_VM_NAME]:
         _verify_vm_state(engine, vm_name, types.VmStatus.UP)
 
-    assert_vm_is_alive(VM0_NAME)
+    if tested_ip_version == 6:
+        vms_service = engine_api.system_service().vms_service()
+        vm = vms_service.list(search='name={}'.format(VM0_NAME))[0]
+        cirros_serial_console.add_static_ip(vm.id, f'{vm0_fqdn_or_ip}/64', 'eth0')
+
+    assert_vm_is_alive(vm0_fqdn_or_ip)
 
 
 @order_by(_TEST_LIST)
@@ -972,8 +967,8 @@ def test_live_incremental_backup_vm2(engine_api, get_vm_service_for_vm):
 
 
 @order_by(_TEST_LIST)
-def test_vm0_is_alive(assert_vm_is_alive):
-    assert_vm_is_alive(VM0_NAME)
+def test_vm0_is_alive(assert_vm_is_alive, vm0_fqdn_or_ip):
+    assert_vm_is_alive(vm0_fqdn_or_ip)
 
 
 @pytest.fixture(scope="module")
@@ -1263,6 +1258,7 @@ def test_hotplug_memory(
     engine_api,
     get_vm_libvirt_memory_amount,
     hotplug_mem_amount,
+    vm0_fqdn_or_ip,
 ):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -1284,7 +1280,7 @@ def test_hotplug_memory(
         )
         assert vm_service.get().memory == new_memory
 
-    assert_vm_is_alive(VM0_NAME)
+    assert_vm_is_alive(vm0_fqdn_or_ip)
     assert get_vm_libvirt_memory_amount(VM0_NAME) // KB == new_memory // MB
 
 
@@ -1294,6 +1290,7 @@ def test_hotunplug_memory(
     engine_api,
     get_vm_libvirt_memory_amount,
     hotplug_mem_amount,
+    vm0_fqdn_or_ip,
 ):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -1309,14 +1306,14 @@ def test_hotunplug_memory(
         )
         assert vm_service.get().memory == new_memory
 
-    assert_vm_is_alive(VM0_NAME)
+    assert_vm_is_alive(vm0_fqdn_or_ip)
     # TODO regression on RHEL 8.6, qemu 6.2/libvirt 7.10
     # assert get_vm_libvirt_memory_amount(VM0_NAME) // KB == new_memory // MB
     pytest.skip("https://bugzilla.redhat.com/2035237")
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_cpu(engine_api, vm_ssh):
+def test_hotplug_cpu(engine_api, vm_ssh, vm0_fqdn_or_ip):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     new_cpu = vm_service.get().cpu
@@ -1324,7 +1321,7 @@ def test_hotplug_cpu(engine_api, vm_ssh):
     with engine_utils.wait_for_event(engine, 2033):  # HOT_SET_NUMBER_OF_CPUS(2,033)
         vm_service.update(vm=types.Vm(cpu=new_cpu))
         assert vm_service.get().cpu.topology.sockets == 2
-    ret = vm_ssh(VM0_NAME, 'lscpu')
+    ret = vm_ssh(vm0_fqdn_or_ip, 'lscpu')
     assert ret.code == 0
     match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out.decode('utf-8'))
     assert match.group('cpus') == '2'
@@ -1352,18 +1349,18 @@ def test_next_run_unplug_cpu(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_nic(assert_vm_is_alive, engine_api):
+def test_hotplug_nic(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip):
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
     nics_service = vms_service.vm_service(vm.id).nics_service()
     nics_service.add(
         types.Nic(name='eth1', interface=types.NicInterface.VIRTIO),
     )
-    assert_vm_is_alive(VM0_NAME)
+    assert_vm_is_alive(vm0_fqdn_or_ip)
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_disk(assert_vm_is_alive, engine_api):
+def test_hotplug_disk(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip):
     engine = engine_api.system_service()
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)
     disk_attachment = disk_attachments_service.add(
@@ -1394,7 +1391,7 @@ def test_hotplug_disk(assert_vm_is_alive, engine_api):
 
     assert assert_utils.true_within_short(lambda: attachment_service.get().active)
     assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
-    assert_vm_is_alive(VM0_NAME)
+    assert_vm_is_alive(vm0_fqdn_or_ip)
 
 
 @order_by(_TEST_LIST)
@@ -1422,12 +1419,12 @@ def test_hotunplug_disk(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_suspend_resume_vm0(assert_vm_is_alive, engine_api, vm_ssh):
+def test_suspend_resume_vm0(assert_vm_is_alive, engine_api, vm_ssh, vm0_fqdn_or_ip):
     # start a background job we are going to check if it's still running later
-    ret = vm_ssh(VM0_NAME, 'sleep 3600 &')
+    ret = vm_ssh(vm0_fqdn_or_ip, 'sleep 3600 &')
     assert ret.code == EX_OK
 
-    assert_vm_is_alive(VM0_NAME)
+    assert_vm_is_alive(vm0_fqdn_or_ip)
 
     vm_service = test_utils.get_vm_service(engine_api.system_service(), VM0_NAME)
     vm_service.suspend()
@@ -1437,9 +1434,9 @@ def test_suspend_resume_vm0(assert_vm_is_alive, engine_api, vm_ssh):
 
 
 @order_by(_TEST_LIST)
-def test_verify_suspend_resume_vm0(engine_api, vm_ssh):
+def test_verify_suspend_resume_vm0(engine_api, vm_ssh, vm0_fqdn_or_ip):
     _verify_vm_state(engine_api.system_service(), VM0_NAME, types.VmStatus.UP)
-    ret = vm_ssh(VM0_NAME, 'pidof sleep')
+    ret = vm_ssh(vm0_fqdn_or_ip, 'pidof sleep')
     assert ret.code == EX_OK
 
 

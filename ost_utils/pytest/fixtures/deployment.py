@@ -105,6 +105,7 @@ def deploy(
     ssh_key_file,
     backend,
     management_network_name,
+    management_network_supports_ipv4,
 ):
     if deployment_utils.is_deployed(working_dir):
         LOGGER.info("Environment already deployed")
@@ -117,9 +118,7 @@ def deploy(
     ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
 
     # start IPv6 proxy for dnf so we can update packages
-    if not any(
-        ipaddress.ip_address(ip).version == 4 for ip in list(backend.ip_mapping().values())[0][management_network_name]
-    ):
+    if not management_network_supports_ipv4:
         LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
         # can't use a fixture since VMs may not be up yet
         ip = list(backend.ip_mapping().values())[0][management_network_name][0]

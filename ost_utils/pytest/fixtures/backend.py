@@ -50,3 +50,13 @@ def host1_hostname(hosts_hostnames):
 @pytest.fixture(scope="session")
 def storage_hostname(backend):
     return backend.storage_hostname()
+
+
+@pytest.fixture(scope="session")
+def management_network_supports_ipv4(backend):
+    return backend.management_network_supports_version(4)
+
+
+@pytest.fixture(scope="session")
+def tested_ip_version(backend):
+    return 6 if backend.management_network_supports_version(6) else 4

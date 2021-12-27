@@ -157,3 +157,9 @@ class BaseBackend(abc.ABC):
     @cache
     def bonding_network_name(self):
         return next(nn for nn in self.network_names() if "bonding" in nn)
+
+    @cache
+    def management_network_supports_version(self, ip_version):
+        return any(
+            ip.version == ip_version for ip in list(self.ip_mapping().values())[0][self.management_network_name()]
+        )

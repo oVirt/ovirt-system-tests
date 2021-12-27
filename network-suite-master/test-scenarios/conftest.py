@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 
+from fixtures.ansible import af
 from fixtures.ansible import host0_facts
 from fixtures.ansible import host1_facts
 from fixtures.ansible import engine_facts

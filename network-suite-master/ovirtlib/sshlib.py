@@ -8,7 +8,6 @@ import paramiko
 import pytest
 
 from ovirtlib import syncutil
-from testlib import suite
 
 DEFAULT_USER = 'root'
 ROOT_PASSWORD = '123456'
@@ -129,23 +128,24 @@ class Node(object):
         cmd = netns_prefix + (f'ping -{version} -c 1 -M do -s {data_size} ' f'{target}')
         self.exec_command(cmd)
 
-    def assert_no_ping(self, target, data_size=56, pmtudisc='do'):
+    def assert_no_ping(self, target, ip_version, data_size=56, pmtudisc='do'):
         with pytest.raises(SshException, match=r'status code 1') as e:
-            self.ping(target, data_size=data_size, pmtudisc=pmtudisc)
+            self.ping(target, ip_version, data_size=data_size, pmtudisc=pmtudisc)
         if e:
             LOGGER.debug(f'sshlib.assert_no_ping raised {e.value.args[0]}')
 
-    def ping_successful(self, target, data_size=56, pmtudisc='do'):
+    def ping_successful(self, target, ip_version, data_size=56, pmtudisc='do'):
         try:
-            self.ping(target, data_size=data_size, pmtudisc=pmtudisc)
+            self.ping(target, ip_version, data_size=data_size, pmtudisc=pmtudisc)
             return True
         except SshException:
             return False
 
-    def ping(self, target, iface_name=None, data_size=56, pmtudisc=None):
+    def ping(self, target, ip_version, iface_name=None, data_size=56, pmtudisc=None):
         """
         Ping an ip address or hostname via the specified interface
         :param str target: ip or hostname
+        :param int ip_version: 4 or 6
         :param str iface_name: interface name to ping from
         :param int data_size: size of payload without headers
         :param str pmtudisc: fragmenting policy
@@ -155,7 +155,7 @@ class Node(object):
         except ValueError as e:
             if 'does not appear to be an IPv4 or IPv6 address' in str(e):
                 # assume target is a hostname
-                version = suite.af().version
+                version = ip_version
             else:
                 raise e
         options = [
@@ -178,7 +178,7 @@ class Node(object):
         :return: ipv4 or global ipv6 address as string
         """
         cmd = f"ip -{ip_version} -o addr show {iface_name}" f" |awk '{{print $4}}' |cut -d '/' -f 1"
-        if ip_version == '6':
+        if ip_version == 6:
             cmd += ' |grep -v fe80'
         return self.exec_command(cmd).decode('utf-8').strip()
 
@@ -186,6 +186,7 @@ class Node(object):
         """
         Wait for the ip address to update in the dns lookup
         :param hostname: str
+        :param ip_version: int 4 or 6
         :return: ipv4 address as a string
         """
         return syncutil.sync(
@@ -200,7 +201,7 @@ class Node(object):
         :param hostname: str
         :return: ipv4 address as a string
         """
-        record_type = 'AAAA' if ip_version == '6' else 'A'
+        record_type = 'AAAA' if ip_version == 6 else 'A'
         cmd = f'dig +short {hostname} {record_type}'
         return self.exec_command(cmd).decode('utf-8').strip()
 

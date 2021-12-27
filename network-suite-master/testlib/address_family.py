@@ -19,8 +19,11 @@ class AF(object):
 
     @property
     def is6(self):
-        return self._version == '6'
+        return self._version == 6
 
     @property
     def family(self):
-        return 'inet' if self._version == '4' else 'inet6'
+        return 'inet' if self._version == 4 else 'inet6'
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}| {self._version}>'

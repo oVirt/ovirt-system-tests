@@ -13,7 +13,6 @@ from ovirtlib import netattachlib
 from ovirtlib import netlib
 from ovirtlib import templatelib
 from ovirtlib import virtlib
-from testlib import suite
 
 
 @pytest.fixture(scope='module')
@@ -39,12 +38,12 @@ def display_network_vnic_profile(system, display_network):
 
 
 @pytest.fixture(scope='module')
-def display_network_attached_to_host_0(host_0_up, display_network):
+def display_network_attached_to_host_0(host_0_up, display_network, af):
     ip_assign = {
         'inet': netattachlib.StaticIpv4Assignment('192.0.3.1', '255.255.255.0'),
         'inet6': netattachlib.StaticIpv6Assignment('fd8f:192:0:3::1', '64'),
     }
-    disp_att_data = netattachlib.NetworkAttachmentData(display_network, ETH1, (ip_assign[suite.af().family],))
+    disp_att_data = netattachlib.NetworkAttachmentData(display_network, ETH1, (ip_assign[af.family],))
     host_0_up.setup_networks([disp_att_data])
     yield host_0_up
     host_0_up.remove_networks([display_network])

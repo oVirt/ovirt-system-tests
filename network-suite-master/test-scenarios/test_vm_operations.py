@@ -95,23 +95,23 @@ def running_blank_vm(system, default_cluster, default_storage_domain, ovirtmgmt_
 
 
 @pytest.fixture
-def host_0_with_mig_net(migration_network, host_0_up):
-    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_1[suite.af().family],))
+def host_0_with_mig_net(migration_network, host_0_up, af):
+    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_1[af.family],))
     host_0_up.setup_networks([mig_att_data])
     yield host_0_up
     host_0_up.remove_networks((migration_network,))
 
 
 @pytest.fixture
-def host_1_with_mig_net(migration_network, host_1_up):
-    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_2[suite.af().family],))
+def host_1_with_mig_net(migration_network, host_1_up, af):
+    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_2[af.family],))
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up
     host_1_up.remove_networks((migration_network,))
 
 
-def test_serial_vmconsole(cirros_serial_console, running_cirros_vm):
-    if suite.af().is6:
+def test_serial_vmconsole(cirros_serial_console, running_cirros_vm, af):
+    if af.is6:
         ip = cirros_serial_console.add_static_ip(running_cirros_vm.id, f'{IPV6}/{PREFIX}', CIRROS_NIC)
         assert ip == IPV6
     else:

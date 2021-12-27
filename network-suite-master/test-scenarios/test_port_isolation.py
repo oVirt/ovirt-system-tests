@@ -16,7 +16,6 @@ from ovirtlib import netlib
 from ovirtlib import sshlib
 from ovirtlib import virtlib
 
-from testlib import suite
 
 PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
@@ -29,22 +28,23 @@ VmConf = namedtuple('Vmconf', ['name', 'mgmt_iface', 'isolated_iface'])
 LOGGER = logging.getLogger(__name__)
 
 
-@pytest.mark.xfail(suite.af().is6, reason='CI lab does not provide external ipv6 connectivity')
-def test_ping_to_external_port_succeeds(vm_nodes, vms_conf, isolated_ifaces_up_with_ip):
+def test_ping_to_external_port_succeeds(vm_nodes, vms_conf, isolated_ifaces_up_with_ip, af, request):
+    if af.is6:
+        request.node.add_marker(pytest.mark.xfail(reason='CI lab does not provide external ipv6 connectivity'))
     for i, vm_node in enumerate(vm_nodes):
-        vm_node.ping(EXTERNAL_IP[suite.af().family], vms_conf[i].isolated_iface.name)
+        vm_node.ping(EXTERNAL_IP[af.family], af.version, vms_conf[i].isolated_iface.name)
 
 
-def test_ping_to_mgmt_port_succeeds(vm_nodes, vms_conf, mgmt_ifaces_up_with_ip):
-    vm_nodes[0].ping(mgmt_ifaces_up_with_ip[1], vms_conf[0].mgmt_iface.name)
-    vm_nodes[1].ping(mgmt_ifaces_up_with_ip[0], vms_conf[1].mgmt_iface.name)
+def test_ping_to_mgmt_port_succeeds(vm_nodes, vms_conf, mgmt_ifaces_up_with_ip, af):
+    vm_nodes[0].ping(mgmt_ifaces_up_with_ip[1], af.version, vms_conf[0].mgmt_iface.name)
+    vm_nodes[1].ping(mgmt_ifaces_up_with_ip[0], af.version, vms_conf[1].mgmt_iface.name)
 
 
-def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
+def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip, af):
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1])
+        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1], af.version)
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0])
+        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0], af.version)
 
 
 @pytest.fixture(scope='module')
@@ -72,24 +72,24 @@ def vm_nodes(mgmt_ifaces_up_with_ip):
 
 
 @pytest.fixture(scope='module')
-def mgmt_ifaces_up_with_ip(vms_up_on_host_1, vms_conf, cirros_serial_console):
+def mgmt_ifaces_up_with_ip(vms_up_on_host_1, vms_conf, cirros_serial_console, af):
     return _assign_ips_on_vms_ifaces(
-        vms_up_on_host_1, cirros_serial_console, (vms_conf[0].mgmt_iface, vms_conf[1].mgmt_iface)
+        vms_up_on_host_1, cirros_serial_console, (vms_conf[0].mgmt_iface, vms_conf[1].mgmt_iface), af
     )
 
 
 @pytest.fixture(scope='module')
-def isolated_ifaces_up_with_ip(vms_up_on_host_1, vms_conf, cirros_serial_console):
+def isolated_ifaces_up_with_ip(vms_up_on_host_1, vms_conf, cirros_serial_console, af):
     return _assign_ips_on_vms_ifaces(
-        vms_up_on_host_1, cirros_serial_console, (vms_conf[0].isolated_iface, vms_conf[1].isolated_iface)
+        vms_up_on_host_1, cirros_serial_console, (vms_conf[0].isolated_iface, vms_conf[1].isolated_iface), af
     )
 
 
-def _assign_ips_on_vms_ifaces(vms, serial_console, ifaces):
+def _assign_ips_on_vms_ifaces(vms, serial_console, ifaces, af):
     ips = []
     for i, vm in enumerate(vms):
         name = ifaces[i].name
-        if suite.af().is6:
+        if af.is6:
             ipv6 = ifaces[i].ipv6
             ip = serial_console.add_static_ip(vm.id, f'{ipv6}/128', name)
         else:
@@ -134,15 +134,13 @@ def vms_up_on_host_1(
 
 
 @pytest.fixture(scope='module')
-def port_isolation_network(default_data_center, default_cluster, host_1_up):
+def port_isolation_network(default_data_center, default_cluster, host_1_up, af):
     with clusterlib.new_assigned_network(
         PORT_ISOLATION_NET,
         default_data_center,
         default_cluster,
         port_isolation=True,
     ) as network:
-        attach_data = netattachlib.NetworkAttachmentData(
-            network, ETH1, (netattachlib.DYNAMIC_IP_ASSIGN[suite.af().family],)
-        )
+        attach_data = netattachlib.NetworkAttachmentData(network, ETH1, (netattachlib.DYNAMIC_IP_ASSIGN[af.family],))
         with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
             yield network

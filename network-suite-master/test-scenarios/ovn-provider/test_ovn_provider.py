@@ -41,15 +41,15 @@ class OvnNetwork(object):
         return self._subnet
 
 
-def test_ovn_provider_create_scenario(openstack_client_config):
+def test_ovn_provider_create_scenario(openstack_client_config, af):
     scenario = {
         'inet': 'create_scenario.yml',
         'inet6': 'create_scenario_ipv6.yml',
     }
-    _test_ovn_provider(scenario[suite.af().family])
+    _test_ovn_provider(scenario[af.family])
 
 
-def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks):
+def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks, af):
     net10, net11, net14 = ovn_networks
     ssh0 = sshlib.Node(host_0.address, host_0.root_password)
     ssh1 = sshlib.Node(host_1.address, host_1.root_password)
@@ -72,7 +72,7 @@ def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0,
         ),
     )
     with _create_namespaces(connections):
-        with _create_ovs_ports(connections):
+        with _create_ovs_ports(connections, af):
             ssh0.assert_ping_from_netns(net11.ip, net10.port.name)
             ssh1.assert_ping_from_netns(net10.ip, net11.port.name)
 
@@ -155,7 +155,7 @@ def _create_namespaces(connections):
 
 
 @contextmanager
-def _create_ovs_ports(connections):
+def _create_ovs_ports(connections, af):
     ports = list()
     try:
         for ssh_host, port, _ in connections:
@@ -163,7 +163,7 @@ def _create_ovs_ports(connections):
             ports.append((ssh_host, port.name))
         for ssh_host, port, subnet in connections:
             ssh_host.exec_command(
-                ' && '.join(_configure_ovs_port_command(port, subnet) + _bind_port_to_logical_network(port))
+                ' && '.join(_configure_ovs_port_command(port, subnet, af) + _bind_port_to_logical_network(port))
             )
         yield
     finally:
@@ -180,12 +180,12 @@ def _add_ovs_port_command(name):
     return commands
 
 
-def _configure_ovs_port_command(port, subnet):
+def _configure_ovs_port_command(port, subnet, af):
     name = port.name
     ip = port.fixed_ips[0]['ip_address']
     mac = port.mac_address
     gw = subnet.gateway_ip
-    prefix = '64' if suite.af().is6 else '24'
+    prefix = '64' if af.is6 else '24'
     commands = [
         'ip link set ' + name + ' netns ' + name,
         'ip netns exec ' + name + ' ip link set ' + name + ' address ' + mac,

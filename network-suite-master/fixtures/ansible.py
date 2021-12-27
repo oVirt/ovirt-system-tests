@@ -5,25 +5,30 @@
 
 import pytest
 
-from testlib import suite
+from testlib import address_family
 
 from ost_utils import ansible
 from ost_utils.ansible import private_dir
 
 
 @pytest.fixture(scope="session")
-def engine_facts(ansible_engine_facts):
-    return _machine_facts(ansible_engine_facts.get_all())
+def af(tested_ip_version):
+    return address_family.AF(tested_ip_version)
 
 
 @pytest.fixture(scope="session")
-def host0_facts(ansible_host0_facts):
-    return _machine_facts(ansible_host0_facts.get_all())
+def engine_facts(ansible_engine_facts, af):
+    return _machine_facts(ansible_engine_facts.get_all(), af)
 
 
 @pytest.fixture(scope="session")
-def host1_facts(ansible_host1_facts):
-    return _machine_facts(ansible_host1_facts.get_all())
+def host0_facts(ansible_host0_facts, af):
+    return _machine_facts(ansible_host0_facts.get_all(), af)
+
+
+@pytest.fixture(scope="session")
+def host1_facts(ansible_host1_facts, af):
+    return _machine_facts(ansible_host1_facts.get_all(), af)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -42,8 +47,8 @@ def ansible_collect_logs(artifacts_dir, ansible_clean_private_dirs):
         ansible.LogsCollector.save(artifacts_dir)
 
 
-def _machine_facts(facts_dict):
-    if suite.af().is6:
+def _machine_facts(facts_dict, af):
+    if af.is6:
         return MachineFacts6(facts_dict)
     else:
         return MachineFacts4(facts_dict)

@@ -25,7 +25,8 @@ NIC1_NAME = 'nic1'
 NIC2_NAME = 'nic2'
 SERIAL_NET = 'test_serial_vmconsole_net'
 CIRROS_NIC = 'eth1'
-CIRROS_IPV6 = 'fd8f:1391:3a82::cafe:cafe/64'
+IPV6 = 'fd8f:1391:3a82::cafe:cafe'
+PREFIX = '64'
 STATIC_ASSIGN_1 = {
     'inet': netattachlib.StaticIpv4Assignment('192.0.3.1', '255.255.255.0'),
     'inet6': netattachlib.StaticIpv6Assignment('fd8f:192:0:3::1', '64'),
@@ -120,9 +121,9 @@ def host_1_with_mig_net(migration_network, host_1_up):
 def test_serial_vmconsole(cirros_serial_console, running_cirros_vm):
     if suite.af().is6:
         ip = cirros_serial_console.add_static_ip(
-            running_cirros_vm.id, CIRROS_IPV6, CIRROS_NIC
+            running_cirros_vm.id, f'{IPV6}/{PREFIX}', CIRROS_NIC
         )
-        assert ip == CIRROS_IPV6
+        assert ip == IPV6
     else:
         ip = cirros_serial_console.assign_ip4(running_cirros_vm.id, CIRROS_NIC)
         assert ipaddress.ip_address(ip).version == 4

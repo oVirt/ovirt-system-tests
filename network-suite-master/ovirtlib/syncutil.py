@@ -129,7 +129,7 @@ def re_run(exec_func, exec_func_args, count, interval):
 
 
 def _parse_args(exec_func_args):
-    if isinstance(exec_func_args, collections.Mapping):
+    if isinstance(exec_func_args, collections.abc.Mapping):
         kwargs = exec_func_args
         args = ()
     else:

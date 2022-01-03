@@ -8,6 +8,7 @@ import pytest
 from ovirtlib import clusterlib
 from ovirtlib import joblib
 from ovirtlib import netlib
+from ovirtlib import syncutil
 from ovirtlib import templatelib
 from ovirtlib import virtlib
 from ovirtlib.sdkentity import EntityCreationError
@@ -198,7 +199,11 @@ def test_add_overlapping_mac_pool_other_cluster(
 
 
 def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
-    system, default_cluster, ovirtmgmt_vnic_profile, cirros_template
+    system,
+    default_cluster,
+    ovirtmgmt_vnic_profile,
+    cirros_template,
+    cirros_serial_console,
 ):
 
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
@@ -217,6 +222,7 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
         joblib.AllJobs(system).wait_for_done()
         snapshot = vm_0.create_snapshot(SNAPSHOT_DESC)
         joblib.AllJobs(system).wait_for_done()
+        _wait_for_running_vm(cirros_serial_console, vm_0.id)
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
         vm_1.create(
@@ -236,7 +242,11 @@ def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
 
 
 def test_move_stateless_vm_mac_to_new_vm_fails(
-    system, default_cluster, ovirtmgmt_vnic_profile, cirros_template
+    system,
+    default_cluster,
+    ovirtmgmt_vnic_profile,
+    cirros_template,
+    cirros_serial_console,
 ):
 
     with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
@@ -255,6 +265,7 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
         vm_0.run()
         vm_0.wait_for_up_status()
         joblib.AllJobs(system).wait_for_done()
+        _wait_for_running_vm(cirros_serial_console, vm_0.id)
         vnic_0.hot_replace_mac_addr(MAC_ADDR_2)
 
         vm_1.create(
@@ -268,7 +279,11 @@ def test_move_stateless_vm_mac_to_new_vm_fails(
 
 
 def test_move_mac_to_new_vm(
-    system, default_cluster, ovirtmgmt_vnic_profile, cirros_template
+    system,
+    default_cluster,
+    ovirtmgmt_vnic_profile,
+    cirros_template,
+    cirros_serial_console,
 ):
     mac_addr_1 = '00:1a:4a:16:01:81'
     mac_addr_2 = '00:1a:4a:16:01:82'
@@ -287,6 +302,7 @@ def test_move_mac_to_new_vm(
         vm_0.run()
         vm_0.wait_for_up_status()
         joblib.AllJobs(system).wait_for_done()
+        _wait_for_running_vm(cirros_serial_console, vm_0.id)
         vnic_0.hot_replace_mac_addr(mac_addr_2)
 
         vm_1.create(
@@ -374,6 +390,15 @@ def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
             )
             vm_1.wait_for_down_status()
             vm_1.create_vnic(NET_NAME, net.vnic_profile())
+
+
+def _wait_for_running_vm(serial_vmconsole, vm_id):
+    syncutil.sync(
+        exec_func=serial_vmconsole.can_log_in,
+        exec_func_args=(vm_id,),
+        success_criteria=lambda logged_in: logged_in,
+        retry_interval=20,
+    )
 
 
 @pytest.fixture(scope='function')

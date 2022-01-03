@@ -148,6 +148,15 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 LOGGER.debug(f'vmconsole: shell {cmd} returned: {res}')
         return res
 
+    def can_log_in(self, vm_id):
+        with self.connect(vm_id) as console:
+            logged_in = console.logged_in
+        return logged_in
+
+    @property
+    def logged_in(self):
+        return self._logged_in
+
     def _read_until_bash_prompt(self):
         return self._read_until_prompt(self._prompt)
 

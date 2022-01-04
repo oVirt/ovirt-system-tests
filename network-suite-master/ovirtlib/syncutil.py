@@ -4,6 +4,7 @@
 #
 #
 import collections
+import logging
 import os
 import time
 
@@ -71,17 +72,22 @@ def sync(
     end_time = _monothonic_time() + timeout
 
     args, kwargs = _parse_args(exec_func_args)
-
+    logger = SyncLogger(exec_func, args, kwargs)
+    logger.log_start()
     try:
         time.sleep(delay_start)
         _audit(exec_func, sdk_entity, 0)
         result = exec_func(*args, **kwargs)
+        logger.log_iteration(0, result)
     except Exception as e:
+        logger.log_iteration(0, e)
         if error_criteria(e):
+            logger.log_end()
             raise
         result = e
     else:
         if success_criteria(result):
+            logger.log_end()
             return result
 
     i = 0
@@ -91,16 +97,22 @@ def sync(
         try:
             _audit(exec_func, sdk_entity, i)
             result = exec_func(*args, **kwargs)
+            logger.log_iteration(i, result)
         except Exception as e:
+            logger.log_iteration(i, e)
             if success_criteria(e):
+                logger.log_end()
                 return e
             if error_criteria(e):
+                logger.log_end()
                 raise
             result = e
         else:
             if success_criteria(result):
+                logger.log_end()
                 return result
 
+    logger.log_end()
     raise Timeout(result)
 
 
@@ -140,3 +152,25 @@ def _parse_args(exec_func_args):
 
 def _monothonic_time():
     return os.times()[4]
+
+
+class SyncLogger:
+    def __init__(self, exec_func, args, kwargs):
+        self._func = exec_func
+        self._args = args
+        self._kwargs = kwargs
+        self._logger = logging.getLogger(__name__)
+
+    def log_start(self):
+        self._debug('start')
+
+    def log_end(self):
+        self._debug('end')
+
+    def log_iteration(self, iteration, output):
+        self._debug(f'iteration {iteration} output: {output}')
+
+    def _debug(self, phase):
+        self._logger.debug(
+            f'sync {phase} for: {self._func}, {self._args}, {self._kwargs}'
+        )

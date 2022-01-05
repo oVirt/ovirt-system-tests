@@ -55,9 +55,9 @@ def test_ping_to_mgmt_port_succeeds(vm_nodes, mgmt_ifaces_up_with_ip):
 
 def test_ping_to_isolated_port_fails(vm_nodes, isolated_ifaces_up_with_ip):
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1], VMS[0]['isolate'].name)
+        vm_nodes[0].ping(isolated_ifaces_up_with_ip[1])
     with pytest.raises(sshlib.SshException, match=PING_FAILED):
-        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0], VMS[1]['isolate'].name)
+        vm_nodes[1].ping(isolated_ifaces_up_with_ip[0])
 
 
 @pytest.fixture(scope='module')

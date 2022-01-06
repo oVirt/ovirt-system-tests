@@ -330,7 +330,7 @@ ost_check_dependencies() {
         echo "Add your group to qemu's group: \"usermod -a -G qemu $(id -ng)\""
         return 7
     }
-    namei -vm $PWD | tail -n+2 | cut -b10 | grep -qv x && {
+    namei -vm $PWD | tail -n+2 | cut -b10 | grep -qv '[xt]' && {
         echo "directory is not accessible to all users"
         namei -vm `pwd`
         return 8

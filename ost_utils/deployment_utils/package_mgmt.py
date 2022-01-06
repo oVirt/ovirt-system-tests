@@ -27,7 +27,7 @@ OVIRT_PACKAGES_PATTERNS = (
 def expand_repos(custom_repos, working_dir, ost_images_distro):
     repo_urls = []
     for repo_url in custom_repos:
-        if repo_url.startswith("https://github.com/oVirt"):
+        if re.match(r"https://(www\.|api\.)?github.com/(repos/)?oVirt", repo_url):
             repo_urls.append(expand_github_repo(repo_url, working_dir))
         else:
             repo_urls.extend(expand_jenkins_repo(repo_url, ost_images_distro))
@@ -46,16 +46,18 @@ def expand_github_repo(repo_url, working_dir):
     https://github.com/oVirt/REPONAME/pull/PR_ID
     https://github.com/oVirt/REPONAME/commit/COMMIT_HASH
     https://github.com/oVirt/REPONAME/actions/runs/RUN_ID
+    https://api.github.com/oVirt/repos/REPONAME/actions/runs/RUN_ID/artifacts
 
     All artifacts will be downloaded and RPMs will be converted to repositories
     """
     match = re.search(
-        r"^https://github.com/oVirt/" "([^/]+)/(pull/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+))$",
+        r"^https://(www\.|api\.)?github.com/(repos/)?oVirt/([^/]+)/"
+        r"(pull/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+)(/artifacts)?)$",
         repo_url,
     )
     if not match:
         raise RuntimeError(f"Not a valid GitHub link {repo_url}")
-    repo, _, pr, commit, workflow_run = match.groups()
+    _, _, repo, _, pr, commit, workflow_run, _ = match.groups()
     if not workflow_run:
         if not commit:
             commit = _github_resolve_pr_to_commit(repo, pr)

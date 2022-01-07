@@ -1307,9 +1307,7 @@ def test_hotunplug_memory(
         assert vm_service.get().memory == new_memory
 
     assert_vm_is_alive(vm0_fqdn_or_ip)
-    # TODO regression on RHEL 8.6, qemu 6.2/libvirt 7.10
-    # assert get_vm_libvirt_memory_amount(VM0_NAME) // KB == new_memory // MB
-    pytest.skip("https://bugzilla.redhat.com/2035237")
+    assert get_vm_libvirt_memory_amount(VM0_NAME) // KB == new_memory // MB
 
 
 @order_by(_TEST_LIST)
@@ -1396,9 +1394,6 @@ def test_hotplug_disk(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip):
 
 @order_by(_TEST_LIST)
 def test_hotunplug_disk(engine_api):
-    # TODO regression on RHEL 8.6, qemu 6.2/libvirt 7.10
-    pytest.skip("https://bugzilla.redhat.com/2035237")
-
     engine = engine_api.system_service()
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_attachments_service = test_utils.get_disk_attachments_service(engine, VM0_NAME)

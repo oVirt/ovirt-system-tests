@@ -18,9 +18,7 @@ def true_within_short(func, allowed_exceptions=None, error_message=None):
     return equals_within_short(func, True, allowed_exceptions, error_message)
 
 
-def equals_within_short(
-    func, expected_value, allowed_exceptions=None, error_message=None
-):
+def equals_within_short(func, expected_value, allowed_exceptions=None, error_message=None):
     return EqualsWithin(
         func,
         expected_value,
@@ -34,9 +32,7 @@ def true_within_long(func, allowed_exceptions=None, error_message=None):
     return equals_within_long(func, True, allowed_exceptions, error_message)
 
 
-def equals_within_long(
-    func, expected_value, allowed_exceptions=None, error_message=None
-):
+def equals_within_long(func, expected_value, allowed_exceptions=None, error_message=None):
     return EqualsWithin(
         func,
         expected_value,
@@ -68,10 +64,7 @@ class EqualsWithin:
     ):
         self.expected_value = expected_value
         self.error_message = error_message
-        self.success_message = (
-            f'{func.__name__}() -> {self.expected_value} == '
-            f'{self.expected_value}'
-        )
+        self.success_message = f'{func.__name__}() -> {self.expected_value} == ' f'{self.expected_value}'
 
         self.returned_value = '<no-result-obtained>'
         allowed_exceptions = allowed_exceptions or []
@@ -86,17 +79,14 @@ class EqualsWithin:
                         time.sleep(sleep_interval)
                         continue
 
-                    LOGGER.exception(
-                        'Unexpected exception in %s', func.__name__
-                    )
+                    LOGGER.exception('Unexpected exception in %s', func.__name__)
                     raise
 
                 time.sleep(sleep_interval)
 
         if self.error_message is None:
             self.error_message = (
-                f'{func.__name__}() -> {self.returned_value} != '
-                f'{self.expected_value} after {timeout} seconds'
+                f'{func.__name__}() -> {self.returned_value} != ' f'{self.expected_value} after {timeout} seconds'
             )
 
     def __bool__(self):

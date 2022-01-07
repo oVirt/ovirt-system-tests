@@ -41,21 +41,13 @@ def exponential_retrier(
         yield 0
         attempt_num += 1
     for attempt_num in range(attempt_num, attempts):
-        actual_sleeptime = min(
-            base_coefficient * base ** attempt_num, max_iteration_sleeptime
-        )
-        logger.debug(
-            "attempt {}/{}, {} seconds sleeping".format(
-                attempt_num + 1, attempts, actual_sleeptime
-            )
-        )
+        actual_sleeptime = min(base_coefficient * base ** attempt_num, max_iteration_sleeptime)
+        logger.debug("attempt {}/{}, {} seconds sleeping".format(attempt_num + 1, attempts, actual_sleeptime))
         time.sleep(actual_sleeptime)
         yield actual_sleeptime
 
 
-def linear_retrier(
-    attempts=5, iteration_sleeptime=10, sleep_at_first_attempt=False
-):
+def linear_retrier(attempts=5, iteration_sleeptime=10, sleep_at_first_attempt=False):
 
     """
     A generator function that sleeps between retries
@@ -82,9 +74,7 @@ def main():
     for sleep_time in linear_retrier(attempts=5, iteration_sleeptime=1):
         logger.debug(sleep_time)
     logger.debug("exponential")
-    for sleep_time in exponential_retrier(
-        attempts=5, base_coefficient=1, max_iteration_sleeptime=200
-    ):
+    for sleep_time in exponential_retrier(attempts=5, base_coefficient=1, max_iteration_sleeptime=200):
         logger.debug(sleep_time)
 
 

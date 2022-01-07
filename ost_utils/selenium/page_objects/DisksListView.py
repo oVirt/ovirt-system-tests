@@ -47,21 +47,15 @@ class DisksListView(EntityListView):
             self.ovirt_driver.is_xpath_present,
             '//*[@id="UploadImagePopupView_fileUpload"]',
         )
-        self.ovirt_driver.driver.find_element(
-            By.ID, 'UploadImagePopupView_fileUpload'
-        ).send_keys(image_local_path)
+        self.ovirt_driver.driver.find_element(By.ID, 'UploadImagePopupView_fileUpload').send_keys(image_local_path)
         self.ovirt_driver.wait_until(
             'Upload image dialog is not displayed',
             self.ovirt_driver.is_xpath_displayed,
             '//*[@id="VmDiskPopupWidget_alias"]',
         )
-        self.ovirt_driver.driver.find_element(
-            By.ID, 'VmDiskPopupWidget_alias'
-        ).send_keys(image_name)
+        self.ovirt_driver.driver.find_element(By.ID, 'VmDiskPopupWidget_alias').send_keys(image_name)
 
-        self.ovirt_driver.id_wait_and_click(
-            'OK button is not displayed and enabled', 'UploadImagePopupView_Ok'
-        )
+        self.ovirt_driver.id_wait_and_click('OK button is not displayed and enabled', 'UploadImagePopupView_Ok')
         self.ovirt_driver.wait_long_until(
             'Waiting for disk to appear in disk list',
             lambda: image_name in self.get_entities(),

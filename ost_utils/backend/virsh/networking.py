@@ -15,9 +15,7 @@ class HostDhcps:
         self._parse(ip_node)
 
     def __repr__(self):
-        return (
-            f"< {self.__class__.__name__} | host_dhcps: {self._host_dhcps} >"
-        )
+        return f"< {self.__class__.__name__} | host_dhcps: {self._host_dhcps} >"
 
     def _parse(self, ip_node):
         for host_dhcp in ip_node.findall("./dhcp/host"):
@@ -89,9 +87,7 @@ class VirshNetworks:
 
     def _get_libvirt_names_for_ost_nets_on_machine(self):
         libvirt_net_names = [
-            name
-            for name in shell("virsh net-list --name".split()).splitlines()
-            if name.startswith("ost")
+            name for name in shell("virsh net-list --name".split()).splitlines() if name.startswith("ost")
         ]
         return libvirt_net_names
 
@@ -210,9 +206,7 @@ class VirshNetwork:
             else:
                 self._ip4_gw = ipaddress.ip_address(ip_node.get("address"))
                 netmask = ip_node.get("netmask")
-                self._ip4_prefix = ipaddress.IPv4Network(
-                    f"0.0.0.0/{netmask}"
-                ).prefixlen
+                self._ip4_prefix = ipaddress.IPv4Network(f"0.0.0.0/{netmask}").prefixlen
                 self._host_dhcps4 = HostDhcps(ip_node)
 
     def is_network_from_current_run(self, deployment_path):
@@ -222,19 +216,13 @@ class VirshNetwork:
             return False
 
     def _find_ost_name(self):
-        self._ost_name = self._xml.find(
-            "./metadata/{OST:metadata}ost/ost-network-type[@comment]"
-        ).get("comment")
+        self._ost_name = self._xml.find("./metadata/{OST:metadata}ost/ost-network-type[@comment]").get("comment")
 
     def _find_working_dir(self):
-        return self._xml.find(
-            "./metadata/{OST:metadata}ost/ost-working-dir[@comment]"
-        ).get("comment")
+        return self._xml.find("./metadata/{OST:metadata}ost/ost-working-dir[@comment]").get("comment")
 
     def load_xml(self):
-        xml_str = shell(
-            f"virsh net-dumpxml {self._libvirt_name}".split()
-        ).strip()
+        xml_str = shell(f"virsh net-dumpxml {self._libvirt_name}".split()).strip()
         self._xml = ET.fromstring(xml_str)
 
     @property
@@ -269,9 +257,7 @@ class VMNics:
         return f"< {self.__class__.__name__} | nics: {self._nics} >"
 
     def _load(self, domain_xml, networks):
-        for nic_xml in domain_xml.findall(
-            "./devices/interface[@type='network']"
-        ):
+        for nic_xml in domain_xml.findall("./devices/interface[@type='network']"):
             nic = Nic()
             nic.parse(nic_xml, networks)
             self._nics[nic.name] = nic

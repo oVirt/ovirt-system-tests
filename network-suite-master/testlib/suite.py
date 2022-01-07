@@ -37,8 +37,7 @@ def af():
         version = os.environ['IP_VERSION']
         if version not in ['4', '6']:
             LOGGER.warning(
-                f'suite invoked with unsupported version '
-                f'"{version}". using version {default_ip_version}'
+                f'suite invoked with unsupported version ' f'"{version}". using version {default_ip_version}'
             )
             version = default_ip_version
     except KeyError:
@@ -56,16 +55,12 @@ def xfail_suite_master(reason, raises=None):
 
 
 def xfail_suite_43(reason):
-    return pytest.mark.xfail(
-        condition=SUITE.endswith('4.3'), reason=reason, run=False
-    )
+    return pytest.mark.xfail(condition=SUITE.endswith('4.3'), reason=reason, run=False)
 
 
 def skip_suites_below(version):
     skip = is_suite_below(version)
-    return pytest.mark.skipif(
-        skip, reason=_skip_reason(skip, 'suite version {}'.format(version))
-    )
+    return pytest.mark.skipif(skip, reason=_skip_reason(skip, 'suite version {}'.format(version)))
 
 
 def is_suite_below(version):
@@ -74,9 +69,7 @@ def is_suite_below(version):
 
 def skip_sdk_below(version):
     skip = _is_sdk_below(version)
-    return pytest.mark.skipif(
-        skip, reason=_skip_reason(skip, 'SDK version {}'.format(version))
-    )
+    return pytest.mark.skipif(skip, reason=_skip_reason(skip, 'SDK version {}'.format(version)))
 
 
 def _is_sdk_below(version):

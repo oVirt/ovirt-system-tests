@@ -38,18 +38,16 @@ def _mac_value(mac):
 def test_deactivate_storage_domain(engine_api):
     # TODO: this also seems to leave running tasks behind which break the deactivation.
     # TODO: it should be tested in multiple runs or properly waited for.
-    VnicSetup.vnic_setup().init(
-        engine_api.system_service(), VM2_NAME, DC_NAME, CLUSTER_NAME
-    )
+    VnicSetup.vnic_setup().init(engine_api.system_service(), VM2_NAME, DC_NAME, CLUSTER_NAME)
     engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine_api.system_service(), DC_NAME)
     correlation_id = 'deactivate_storage_domain'
 
     def _deactivate_with_running_ovf_update_task():
         try:
-            test_utils.get_attached_storage_domain(
-                dc, SD_SECOND_NFS_NAME, service=True
-            ).deactivate(query={'correlation_id': correlation_id})
+            test_utils.get_attached_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).deactivate(
+                query={'correlation_id': correlation_id}
+            )
             return True
         except ovirtsdk4.Error as err:
             # The storage domain's deactivation may fail if it has running tasks.
@@ -60,26 +58,18 @@ def test_deactivate_storage_domain(engine_api):
             return False
 
     def _is_deactivation_job_finished():
-        deactivation_job_statuses = engine_utils.get_jobs_statuses(
-            engine, correlation_id
-        )
-        return (
-            ovirtsdk4.types.JobStatus.FINISHED in deactivation_job_statuses
-        ) and not (
+        deactivation_job_statuses = engine_utils.get_jobs_statuses(engine, correlation_id)
+        return (ovirtsdk4.types.JobStatus.FINISHED in deactivation_job_statuses) and not (
             ovirtsdk4.types.JobStatus.STARTED in deactivation_job_statuses
         )
 
-    assert assert_utils.true_within_short(
-        _deactivate_with_running_ovf_update_task
-    )
+    assert assert_utils.true_within_short(_deactivate_with_running_ovf_update_task)
 
     # Wait for the storage deactivation to be finished.
     assert assert_utils.true_within_short(_is_deactivation_job_finished)
 
     assert assert_utils.equals_within_short(
-        lambda: test_utils.get_attached_storage_domain(
-            dc, SD_SECOND_NFS_NAME
-        ).status,
+        lambda: test_utils.get_attached_storage_domain(dc, SD_SECOND_NFS_NAME).status,
         ovirtsdk4.types.StorageDomainStatus.MAINTENANCE,
     )
 
@@ -89,14 +79,10 @@ def test_detach_storage_domain(engine_api):
     engine = engine_api.system_service()
     dc = test_utils.data_center_service(engine, DC_NAME)
 
-    test_utils.get_attached_storage_domain(
-        dc, SD_SECOND_NFS_NAME, service=True
-    ).remove()
+    test_utils.get_attached_storage_domain(dc, SD_SECOND_NFS_NAME, service=True).remove()
 
     assert assert_utils.equals_within_short(
-        lambda: test_utils.get_attached_storage_domain(
-            engine, SD_SECOND_NFS_NAME
-        ).status,
+        lambda: test_utils.get_attached_storage_domain(engine, SD_SECOND_NFS_NAME).status,
         ovirtsdk4.types.StorageDomainStatus.UNATTACHED,
     )
 
@@ -111,9 +97,7 @@ def test_reattach_storage_domain(engine_api):
     dc.storage_domains_service().add(sd)
 
     assert assert_utils.equals_within_short(
-        lambda: test_utils.get_attached_storage_domain(
-            dc, SD_SECOND_NFS_NAME
-        ).status,
+        lambda: test_utils.get_attached_storage_domain(dc, SD_SECOND_NFS_NAME).status,
         ovirtsdk4.types.StorageDomainStatus.ACTIVE,
     )
 
@@ -121,12 +105,8 @@ def test_reattach_storage_domain(engine_api):
 @order_by(_TEST_LIST)
 def test_import_lost_vm(engine_api):
     engine = engine_api.system_service()
-    sd = test_utils.get_attached_storage_domain(
-        engine, SD_SECOND_NFS_NAME, service=True
-    )
-    lost_vm = test_utils.get_storage_domain_vm_service_by_query(
-        sd, VM2_NAME, query={'unregistered': True}
-    )
+    sd = test_utils.get_attached_storage_domain(engine, SD_SECOND_NFS_NAME, service=True)
+    lost_vm = test_utils.get_storage_domain_vm_service_by_query(sd, VM2_NAME, query={'unregistered': True})
 
     rg = VnicSetup.vnic_setup().registration_configuration
     lost_vm.register(
@@ -154,18 +134,12 @@ def test_import_floating_disk(engine_api):
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, DC_NAME)
     attached_sds_service = dc_service.storage_domains_service()
-    sd_service = test_utils.get_attached_storage_domain(
-        engine, SD_SECOND_NFS_NAME, service=False
-    )
-    attached_domain = attached_sds_service.storage_domain_service(
-        sd_service.id
-    )
+    sd_service = test_utils.get_attached_storage_domain(engine, SD_SECOND_NFS_NAME, service=False)
+    attached_domain = attached_sds_service.storage_domain_service(sd_service.id)
 
     disk = test_utils.get_attached_storage_domain_disk_service(
         attached_domain, FLOATING_DISK_NAME, query={'unregistered': True}
     )
     disk.register()
-    registered_disk = test_utils.get_attached_storage_domain_disk_service(
-        attached_domain, FLOATING_DISK_NAME
-    )
+    registered_disk = test_utils.get_attached_storage_domain_disk_service(attached_domain, FLOATING_DISK_NAME)
     assert registered_disk.get().name == FLOATING_DISK_NAME

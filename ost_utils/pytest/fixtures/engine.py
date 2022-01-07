@@ -23,9 +23,7 @@ from ost_utils.pytest.fixtures.network import storage_network_name
 
 @pytest.fixture(scope="session")
 def engine_ips_for_network(ansible_engine_facts, backend):
-    return functools.partial(
-        network_utils.get_ips, backend, ansible_engine_facts
-    )
+    return functools.partial(network_utils.get_ips, backend, ansible_engine_facts)
 
 
 @pytest.fixture(scope="session")
@@ -118,9 +116,7 @@ def engine_api(engine_full_username, engine_password, engine_api_url):
 
 @pytest.fixture(scope="session")
 def engine_cert(engine_fqdn, engine_ip_url):
-    with tempfile.NamedTemporaryFile(
-        prefix="engine-cert", suffix=".pem"
-    ) as cert_file:
+    with tempfile.NamedTemporaryFile(prefix="engine-cert", suffix=".pem") as cert_file:
         shell(
             [
                 "curl",
@@ -177,25 +173,19 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
         ansible_engine.systemd(name='ovirt-engine', state='stopped')
         ansible_engine.systemd(name='ovirt-engine', state='started')
 
-        health_url = 'http://{}/ovirt-engine/services/health'.format(
-            engine_fqdn
-        )
+        health_url = 'http://{}/ovirt-engine/services/health'.format(engine_fqdn)
 
         def engine_is_alive():
             engine_download(health_url)
             return True
 
-        assert assert_utils.true_within_short(
-            engine_is_alive, allowed_exceptions=[ShellError]
-        )
+        assert assert_utils.true_within_short(engine_is_alive, allowed_exceptions=[ShellError])
 
     return restart
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents(
-    engine_password, engine_fqdn, engine_full_username
-):
+def engine_answer_file_contents(engine_password, engine_fqdn, engine_full_username):
     return (
         '# action=setup\n'
         '[environment:default]\n'

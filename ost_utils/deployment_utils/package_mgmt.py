@@ -50,8 +50,7 @@ def expand_github_repo(repo_url, working_dir):
     All artifacts will be downloaded and RPMs will be converted to repositories
     """
     match = re.search(
-        r"^https://github.com/oVirt/"
-        "([^/]+)/(pull/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+))$",
+        r"^https://github.com/oVirt/" "([^/]+)/(pull/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+))$",
         repo_url,
     )
     if not match:
@@ -62,13 +61,9 @@ def expand_github_repo(repo_url, working_dir):
             commit = _github_resolve_pr_to_commit(repo, pr)
         workflow_run = _github_resolve_commit_to_workflow_run(repo, commit)
 
-    artifacts: list[_GitHubArtifact] = _github_list_artifacts(
-        repo, workflow_run
-    )
+    artifacts: list[_GitHubArtifact] = _github_list_artifacts(repo, workflow_run)
     for artifact in artifacts:
-        target_path = os.path.join(
-            working_dir, 'github_artifacts', f'{commit}-{artifact.name}'
-        )
+        target_path = os.path.join(working_dir, 'github_artifacts', f'{commit}-{artifact.name}')
         os.makedirs(target_path, exist_ok=True)
         # Download the artifact
         target_file = _github_download_artifact(artifact, target_path)
@@ -79,9 +74,7 @@ def expand_github_repo(repo_url, working_dir):
             # _github_generate_repomd(target_path)
             # Add to repos list.
             return target_path
-    raise RuntimeError(
-        f"GH pr/commit/run {repo_url} had no artifacts with RPM files."
-    )
+    raise RuntimeError(f"GH pr/commit/run {repo_url} had no artifacts with RPM files.")
 
 
 def _github_has_rpm(path: str) -> bool:
@@ -122,9 +115,7 @@ class _GitHubArtifactResponse:
     artifacts: list[_GitHubArtifact]
 
     def __init__(self, data: dict):
-        self.artifacts = [
-            _GitHubArtifact(entry) for entry in data["artifacts"]
-        ]
+        self.artifacts = [_GitHubArtifact(entry) for entry in data["artifacts"]]
 
 
 def _github_resolve_pr_to_commit(repo: str, pr: str) -> str:
@@ -133,9 +124,7 @@ def _github_resolve_pr_to_commit(repo: str, pr: str) -> str:
     PR and return the commit ID. This will then be used to look up the last
     run on that commit.
     """
-    pulls_response = _github_get(
-        f"https://api.github.com/repos/oVirt/{repo}/pulls/{pr}/commits"
-    )
+    pulls_response = _github_get(f"https://api.github.com/repos/oVirt/{repo}/pulls/{pr}/commits")
     pulls: list[dict] = pulls_response.json()
     commit = pulls[-1]
     return commit["sha"]
@@ -166,45 +155,34 @@ def _github_get(url: str, params: Optional[dict] = None) -> requests.Response:
     headers = {}
     github_token = os.environ.get("GITHUB_TOKEN")
     if github_token is None:
-        raise RuntimeError(
-            "GITHUB_TOKEN env variable is not defined - artifact retrieval "
-            "won't be possible"
-        )
+        raise RuntimeError("GITHUB_TOKEN env variable is not defined - artifact retrieval " "won't be possible")
     headers["authorization"] = f"token {github_token}"
     if params is None:
         params = {}
-    response = requests.get(
-        url, headers=headers, allow_redirects=True, params=params
-    )
+    response = requests.get(url, headers=headers, allow_redirects=True, params=params)
     response.raise_for_status()
     return response
 
 
-def _github_list_artifacts(
-    repo: str, workflow_run: str
-) -> list[_GitHubArtifact]:
+def _github_list_artifacts(repo: str, workflow_run: str) -> list[_GitHubArtifact]:
     """
     This function lists all artifacts for a specific GitHub Actions run.
     The returned list contains the GitHub API data struct
     """
     artifacts_response = _github_get(
-        f"https://api.github.com/repos/oVirt/{repo}/"
-        f"actions/runs/{workflow_run}/artifacts"
+        f"https://api.github.com/repos/oVirt/{repo}/" f"actions/runs/{workflow_run}/artifacts"
     )
     artifacts: _GitHubArtifactResponse
     artifacts = _GitHubArtifactResponse(artifacts_response.json())
     for artifact in artifacts.artifacts:
         if artifact.expired:
             raise RuntimeError(
-                f"Artifact {artifact.name} for run {workflow_run} in repo"
-                f" oVirt/{repo} has expired."
+                f"Artifact {artifact.name} for run {workflow_run} in repo" f" oVirt/{repo} has expired."
             )
     return artifacts.artifacts
 
 
-def _github_download_artifact(
-    artifact: _GitHubArtifact, target_dir: str
-) -> str:
+def _github_download_artifact(artifact: _GitHubArtifact, target_dir: str) -> str:
     """
     This function downloads an artifact into the specified target directory
     with its original name.
@@ -250,9 +228,7 @@ def expand_jenkins_repo(repo_url, ost_images_distro):
     if len(repo_list) == 0:
         raise RuntimeError(f"Couldn't find any repos at {repo_url}")
 
-    expanded_repos.update(
-        repo for repo in repo_list if ost_images_distro in repo
-    )
+    expanded_repos.update(repo for repo in repo_list if ost_images_distro in repo)
 
     return list(r for r in expanded_repos if 'ppc64le' not in r)
 
@@ -264,11 +240,7 @@ def add_custom_repos(ansible_vm, repo_urls):
 
 def disable_all_repos(ansible_vm):
     # dnf is grumpy when it has no repos to work with, keep "dummy" enabled
-    ansible_vm.shell(
-        'dnf config-manager --disable \'*\';'
-        'dnf config-manager --enable dummy;'
-        ':'
-    )
+    ansible_vm.shell('dnf config-manager --disable \'*\';' 'dnf config-manager --enable dummy;' ':')
 
 
 def check_installed_packages(ansible_vms):
@@ -316,9 +288,7 @@ def report_ovirt_packages_versions(ansible_vms):
 def _add_custom_repo(ansible_vm, name, url):
     LOGGER.info(f"Adding repository to VM: {name} -> {url}")
     if url.startswith("/"):
-        ansible_vm.copy(
-            src=os.path.join(url, ''), dest=f"/etc/yum.repos.d/{name}"
-        )
+        ansible_vm.copy(src=os.path.join(url, ''), dest=f"/etc/yum.repos.d/{name}")
         url = f"/etc/yum.repos.d/{name}"
     ansible_vm.yum_repository(
         name=name,
@@ -338,11 +308,7 @@ def _add_custom_repo(ansible_vm, name, url):
 
 def _are_any_packages_used(ansible_vms, repo_name):
     results = ansible_vms.shell(f'dnf repo-pkgs {repo_name} list installed')
-    filtered_results = [
-        line
-        for res in results.values()
-        for line in _filter_results(res['stdout'].splitlines())
-    ]
+    filtered_results = [line for res in results.values() for line in _filter_results(res['stdout'].splitlines())]
 
     LOGGER.debug(f'Packages used: {filtered_results}')
 

@@ -16,9 +16,7 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 
 @pytest.fixture(scope='session')
-def default_storage_domain(
-    system, engine_facts, host_0_up, default_data_center
-):
+def default_storage_domain(system, engine_facts, host_0_up, default_data_center):
     host_0_up.workaround_bz_1779280()
     storage_domain = storagelib.StorageDomain(system)
     try:

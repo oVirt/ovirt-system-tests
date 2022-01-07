@@ -56,9 +56,7 @@ class NfsVersion(object):
 
 
 class HostStorageData(object):
-    def __init__(
-        self, storage_type, address, path, nfs_version=None, logical_units=()
-    ):
+    def __init__(self, storage_type, address, path, nfs_version=None, logical_units=()):
         """
         :param storage_type: string indicates the storage type.
         :param address: string indicates the NFS storage address.
@@ -129,9 +127,7 @@ class StorageDomain(SDKRootEntity):
                 address=host_storage_data.address,
                 path=host_storage_data.path,
                 nfs_version=host_storage_data.nfs_version,
-                logical_units=self._get_sdk_type_logical_units(
-                    host_storage_data.logical_units
-                ),
+                logical_units=self._get_sdk_type_logical_units(host_storage_data.logical_units),
             ),
         )
         self._create_sdk_entity(sdk_type)
@@ -173,11 +169,7 @@ class StorageDomain(SDKRootEntity):
 
         image_service.import_(
             import_as_template=template_name is not None,
-            template=(
-                types.Template(name=template_name)
-                if template_name is not None
-                else None
-            ),
+            template=(types.Template(name=template_name) if template_name is not None else None),
             cluster=cluster.get_sdk_type(),
             storage_domain=self.get_sdk_type(),
         )
@@ -201,12 +193,7 @@ class StorageDomain(SDKRootEntity):
 
     def __repr__(self):
         return self._execute_without_raising(
-            lambda: (
-                f'<{self.__class__.__name__}| '
-                f'name:{self.name}, '
-                f'status:{self.status}, '
-                f'id:{self.id}>'
-            )
+            lambda: (f'<{self.__class__.__name__}| ' f'name:{self.name}, ' f'status:{self.status}, ' f'id:{self.id}>')
         )
 
 

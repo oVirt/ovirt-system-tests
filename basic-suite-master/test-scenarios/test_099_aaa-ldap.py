@@ -36,9 +36,7 @@ def test_add_ldap_provider(
     machine_389ds_fqdn,
     engine_restart,
 ):
-    answer_file_src = os.path.join(
-        root_dir, 'common/answer-files/aaa-ldap-answer-file.conf'
-    )
+    answer_file_src = os.path.join(root_dir, 'common/answer-files/aaa-ldap-answer-file.conf')
 
     with open(answer_file_src, 'r') as f:
         content = f.read()
@@ -48,9 +46,7 @@ def test_add_ldap_provider(
         temp.write(content)
         temp.flush()
         os.fsync(temp.fileno())
-        ansible_engine.copy(
-            src=temp.name, dest='/root/aaa-ldap-answer-file.conf'
-        )
+        ansible_engine.copy(src=temp.name, dest='/root/aaa-ldap-answer-file.conf')
 
     ansible_machine_389ds.systemd(name='dirsrv@lago', state='started')
 

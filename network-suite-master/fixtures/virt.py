@@ -55,7 +55,5 @@ def cirros_template(
             template_seal=False,
             template_nics=[],
         )
-        templatelib.wait_for_template_ok_status(
-            system, cirros_image_template_name
-        )
+        templatelib.wait_for_template_ok_status(system, cirros_image_template_name)
     return cirros_image_template_name

@@ -69,9 +69,7 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_service_up(
-    ovirt_engine_setup, engine_facts, engine_full_username, engine_password
-):
+def ovirt_engine_service_up(ovirt_engine_setup, engine_facts, engine_full_username, engine_password):
     syncutil.sync(
         exec_func=_create_engine_connection,
         exec_func_args=(
@@ -108,11 +106,7 @@ def _exec_engine_config(engine_facts, key, value):
     node = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
     result = node.exec_command(' '.join(command))
 
-    assert (
-        result.code == 0
-    ), 'setting {0}:{1} via engine-config failed with {2}'.format(
-        key, value, result.code
-    )
+    assert result.code == 0, 'setting {0}:{1} via engine-config failed with {2}'.format(key, value, result.code)
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -130,7 +124,4 @@ def test_invocation_logger(system, request, host_0_up, host_1_up):
     sshlib.Node(host_1_up.address, host_1_up.root_password).exec_command(
         f'vdsm-client Host echo message="{test_invoke}"'
     )
-    events.add(
-        description=f'OST - jobs: on test invocation: '
-        f'{joblib.AllJobs(system).describe_ill_fated()}'
-    )
+    events.add(description=f'OST - jobs: on test invocation: ' f'{joblib.AllJobs(system).describe_ill_fated()}')

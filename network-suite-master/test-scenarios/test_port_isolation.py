@@ -40,9 +40,7 @@ VMS = [
 LOGGER = logging.getLogger(__name__)
 
 
-@pytest.mark.xfail(
-    suite.af().is6, reason='CI lab does not provide external ipv6 connectivity'
-)
+@pytest.mark.xfail(suite.af().is6, reason='CI lab does not provide external ipv6 connectivity')
 def test_ping_to_external_port_succeeds(vm_nodes, isolated_ifaces_up_with_ip):
     for i, vm_node in enumerate(vm_nodes):
         vm_node.ping(EXTERNAL_IP[suite.af().family], VMS[i]['isolate'].name)
@@ -70,16 +68,12 @@ def vm_nodes(mgmt_ifaces_up_with_ip):
 
 @pytest.fixture(scope='module')
 def mgmt_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
-    return _assign_ips_on_vms_ifaces(
-        vms_up_on_host_1, cirros_serial_console, 'mgmt'
-    )
+    return _assign_ips_on_vms_ifaces(vms_up_on_host_1, cirros_serial_console, 'mgmt')
 
 
 @pytest.fixture(scope='module')
 def isolated_ifaces_up_with_ip(vms_up_on_host_1, cirros_serial_console):
-    ips = _assign_ips_on_vms_ifaces(
-        vms_up_on_host_1, cirros_serial_console, 'isolate'
-    )
+    ips = _assign_ips_on_vms_ifaces(vms_up_on_host_1, cirros_serial_console, 'isolate')
     for vm in vms_up_on_host_1:
         ip_a = cirros_serial_console.shell(vm.id, ('ip addr',))
         LOGGER.debug(f'after applying ips: vm={vm.name} has ip_a={ip_a}')
@@ -120,9 +114,7 @@ def vms_up_on_host_1(
                 template=cirros_template,
             )
             vm_vnic0 = netlib.Vnic(vm)
-            vm_vnic0.create(
-                name=VMS[i]['mgmt'].name, vnic_profile=ovirtmgmt_vnic_profile
-            )
+            vm_vnic0.create(name=VMS[i]['mgmt'].name, vnic_profile=ovirtmgmt_vnic_profile)
             vm_vnic1 = netlib.Vnic(vm)
             vm_vnic1.create(
                 name=VMS[i]['isolate'].name,

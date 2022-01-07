@@ -49,9 +49,7 @@ def test_ovn_provider_create_scenario(openstack_client_config):
     _test_ovn_provider(scenario[suite.af().family])
 
 
-def test_validate_ovn_provider_connectivity(
-    default_ovn_provider_client, host_0, host_1, ovn_networks
-):
+def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks):
     net10, net11, net14 = ovn_networks
     ssh0 = sshlib.Node(host_0.address, host_0.root_password)
     ssh1 = sshlib.Node(host_1.address, host_1.root_password)
@@ -81,9 +79,7 @@ def test_validate_ovn_provider_connectivity(
             ssh0.assert_no_ping_from_netns(net14.ip, net10.port.name)
             ssh1.assert_no_ping_from_netns(net10.ip, net14.port.name)
 
-            _update_routes(
-                default_ovn_provider_client, net10.subnet, net11.subnet
-            )
+            _update_routes(default_ovn_provider_client, net10.subnet, net11.subnet)
 
             ssh1.assert_ping_from_netns(net10.ip, net14.port.name)
             ssh0.assert_ping_from_netns(net14.ip, net10.port.name)
@@ -106,27 +102,19 @@ def _update_routes(default_ovn_provider_client, net10_subnet1, net11_subnet1):
     router0 = default_ovn_provider_client.get_router(ROUTER0_NAME)
     router1 = default_ovn_provider_client.get_router(ROUTER1_NAME)
 
-    router0_external_ip = router0.external_gateway_info['external_fixed_ips'][
-        0
-    ]['ip_address']
+    router0_external_ip = router0.external_gateway_info['external_fixed_ips'][0]['ip_address']
 
     router1_path = '/routers/{router_id}'.format(router_id=router1.id)
-    routes_put_data = _static_routes_request_data(
-        router1.name, router0_external_ip, net10_subnet1, net11_subnet1
-    )
+    routes_put_data = _static_routes_request_data(router1.name, router0_external_ip, net10_subnet1, net11_subnet1)
 
-    shade_hack.hack_os_put_request(
-        default_ovn_provider_client, router1_path, routes_put_data
-    )
+    shade_hack.hack_os_put_request(default_ovn_provider_client, router1_path, routes_put_data)
 
 
 def _define_static_route(nexthop, subnet):
     return {'nexthop': nexthop, 'destination': subnet.cidr}
 
 
-def _static_routes_request_data(
-    router_name, nexthop, net10_subnet1, net11_subnet1
-):
+def _static_routes_request_data(router_name, nexthop, net10_subnet1, net11_subnet1):
     return {
         'router': {
             'name': router_name,
@@ -158,9 +146,7 @@ def _create_namespaces(connections):
     namespaces = list()
     try:
         for ssh_host, port, _ in connections:
-            ssh_host.exec_command(
-                ' && '.join(_add_namespace_command(port.name))
-            )
+            ssh_host.exec_command(' && '.join(_add_namespace_command(port.name)))
             namespaces.append((ssh_host, port.name))
         yield
     finally:
@@ -173,16 +159,11 @@ def _create_ovs_ports(connections):
     ports = list()
     try:
         for ssh_host, port, _ in connections:
-            ssh_host.exec_command(
-                ' && '.join(_add_ovs_port_command(port.name))
-            )
+            ssh_host.exec_command(' && '.join(_add_ovs_port_command(port.name)))
             ports.append((ssh_host, port.name))
         for ssh_host, port, subnet in connections:
             ssh_host.exec_command(
-                ' && '.join(
-                    _configure_ovs_port_command(port, subnet)
-                    + _bind_port_to_logical_network(port)
-                )
+                ' && '.join(_configure_ovs_port_command(port, subnet) + _bind_port_to_logical_network(port))
             )
         yield
     finally:
@@ -195,13 +176,7 @@ def _add_namespace_command(name):
 
 
 def _add_ovs_port_command(name):
-    commands = [
-        'ovs-vsctl add-port br-int '
-        + name
-        + ' -- set interface '
-        + name
-        + ' type=internal'
-    ]
+    commands = ['ovs-vsctl add-port br-int ' + name + ' -- set interface ' + name + ' type=internal']
     return commands
 
 
@@ -222,12 +197,7 @@ def _configure_ovs_port_command(port, subnet):
 
 
 def _bind_port_to_logical_network(port):
-    return [
-        'ovs-vsctl set Interface '
-        + port.name
-        + ' external_ids:iface-id='
-        + port.id
-    ]
+    return ['ovs-vsctl set Interface ' + port.name + ' external_ids:iface-id=' + port.id]
 
 
 def _delete_namespace_command(name):

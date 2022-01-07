@@ -109,11 +109,7 @@ def _all_hosts(hosts_service, dc_name):
 
 
 def _up_hosts(hosts_service, dc_name):
-    return [
-        host
-        for host in _all_hosts(hosts_service, dc_name)
-        if host.status == types.HostStatus.UP
-    ]
+    return [host for host in _all_hosts(hosts_service, dc_name) if host.status == types.HostStatus.UP]
 
 
 def _poke_nonop_hosts(hosts_service, dc_name):
@@ -121,9 +117,7 @@ def _poke_nonop_hosts(hosts_service, dc_name):
     # it then goes NonOperational with 5min autorecovery, let's poke it
     poked = False
     nonop_hosts = [
-        host
-        for host in _all_hosts(hosts_service, dc_name)
-        if host.status == types.HostStatus.NON_OPERATIONAL
+        host for host in _all_hosts(hosts_service, dc_name) if host.status == types.HostStatus.NON_OPERATIONAL
     ]
 
     for host in nonop_hosts:
@@ -150,12 +144,6 @@ def _detect_problematic_hosts(hosts_service, dc_name):
     }
     statuses = {h.name: h.status for h in _all_hosts(hosts_service, dc_name)}
     LOGGER.debug(f'_detect_problematic_hosts: {statuses}')
-    problematic_hosts = {
-        hname: status
-        for hname, status in statuses.items()
-        if status not in expected_statuses
-    }
+    problematic_hosts = {hname: status for hname, status in statuses.items() if status not in expected_statuses}
     if len(problematic_hosts):
-        raise RuntimeError(
-            f'Some hosts failed installation: {problematic_hosts}'
-        )
+        raise RuntimeError(f'Some hosts failed installation: {problematic_hosts}')

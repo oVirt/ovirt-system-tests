@@ -31,9 +31,7 @@ def _hosted_engine_info(hosted_engine):
     return {p: getattr(hosted_engine, p) for p in props}
 
 
-def test_local_maintenance(
-    hosts_service, get_vm_service_for_vm, ansible_host0
-):
+def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
     logging.info('Waiting For System Stability...')
     he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
 
@@ -100,9 +98,7 @@ def test_local_maintenance(
     assert assert_utils.true_within_long(_is_active)
 
     logging.info('Verifying that all hosts have score higher than 0...')
-    assert assert_utils.true_within_long(
-        lambda: host_service.get(all_content=True).hosted_engine.score > 0
-    )
+    assert assert_utils.true_within_long(lambda: host_service.get(all_content=True).hosted_engine.score > 0)
 
     logging.info('Validating Migration...')
     prev_host_id = he_host_id

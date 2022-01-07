@@ -118,10 +118,7 @@ def deploy(
 
     # start IPv6 proxy for dnf so we can update packages
     if not any(
-        ipaddress.ip_address(ip).version == 4
-        for ip in list(backend.ip_mapping().values())[0][
-            management_network_name
-        ]
+        ipaddress.ip_address(ip).version == 4 for ip in list(backend.ip_mapping().values())[0][management_network_name]
     ):
         LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
         # can't use a fixture since VMs may not be up yet
@@ -139,9 +136,7 @@ def deploy(
     # add custom repos
     custom_repos = request.config.getoption('--custom-repo')
     if custom_repos is not None:
-        repo_urls = package_mgmt.expand_repos(
-            custom_repos, working_dir, ost_images_distro
-        )
+        repo_urls = package_mgmt.expand_repos(custom_repos, working_dir, ost_images_distro)
         package_mgmt.add_custom_repos(ansible_vms_to_deploy, repo_urls)
         ansible_vms_to_deploy.shell(
             'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
@@ -154,10 +149,7 @@ def deploy(
     package_mgmt.report_ovirt_packages_versions(ansible_vms_to_deploy)
 
     # run deployment scripts
-    runs = [
-        functools.partial(run_scripts, hostname, scripts)
-        for hostname, scripts in deploy_scripts.items()
-    ]
+    runs = [functools.partial(run_scripts, hostname, scripts) for hostname, scripts in deploy_scripts.items()]
     utils.invoke_different_funcs_in_parallel(*runs)
 
     # setup vdsm coverage on hosts if desired

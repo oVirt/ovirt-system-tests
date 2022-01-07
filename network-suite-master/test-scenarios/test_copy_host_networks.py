@@ -38,9 +38,7 @@ def test_copy_host_networks(configured_hosts):
     destination_host = configured_hosts[1]
 
     destination_host.copy_networks_from(source_host)
-    assert source_host.compare_nics_except_mgmt(
-        destination_host, CopyHostComparator.compare
-    )
+    assert source_host.compare_nics_except_mgmt(destination_host, CopyHostComparator.compare)
 
 
 @pytest.fixture(
@@ -90,9 +88,7 @@ def configured_hosts(request, host_config, host_0_up, host_1_up):
 def host_config(networks):
     return {
         'ovirtmgmt_only': Config((), ()),
-        'single_network': Config(
-            (AttachData(networks[VM_NET_NAME], ETH1),), ()
-        ),
+        'single_network': Config((AttachData(networks[VM_NET_NAME], ETH1),), ()),
         'vlan_and_nonvlan': Config(
             (
                 AttachData(networks[VLAN_10_NET_NAME], ETH1),
@@ -123,9 +119,7 @@ def host_config(networks):
 
 @pytest.fixture(scope='module')
 def networks(system, default_data_center, default_cluster):
-    vm_net_ctx = clusterlib.new_assigned_network(
-        VM_NET_NAME, default_data_center, default_cluster
-    )
+    vm_net_ctx = clusterlib.new_assigned_network(VM_NET_NAME, default_data_center, default_cluster)
 
     vm_vlan_10_net_ctx = clusterlib.new_assigned_network(
         VLAN_10_NET_NAME, default_data_center, default_cluster, vlan=10
@@ -168,21 +162,14 @@ class CopyHostComparator(object):
 
     @staticmethod
     def compare(nic0, nic1):
-        return (
-            CopyHostComparator._neither_has_network_attached(nic0, nic1)
-        ) or (
+        return (CopyHostComparator._neither_has_network_attached(nic0, nic1)) or (
             nic0.is_same_network_attachment(nic1)
-            and CopyHostComparator._network_attachment_correctly_copied(
-                nic0, nic1
-            )
+            and CopyHostComparator._network_attachment_correctly_copied(nic0, nic1)
         )
 
     @staticmethod
     def _neither_has_network_attached(nic0, nic1):
-        return (
-            not nic0.is_network_attached()
-            and nic1.is_same_network_attachment(nic0)
-        )
+        return not nic0.is_network_attached() and nic1.is_same_network_attachment(nic0)
 
     @staticmethod
     def _network_attachment_correctly_copied(nic0, nic1):
@@ -208,9 +195,7 @@ class CopyHostComparator(object):
 
     @staticmethod
     def _non_static_ipv6_copied(nic0, nic1):
-        return not nic0.is_static_ipv6() and nic0.ipv6_boot_protocol_equals(
-            nic1
-        )
+        return not nic0.is_static_ipv6() and nic0.ipv6_boot_protocol_equals(nic1)
 
     @staticmethod
     def _ipv6_static_protocol_disabled(nic0, nic1):

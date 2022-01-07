@@ -48,17 +48,11 @@ class SDKEntity(metaclass=abc.ABCMeta):
         raise NotImplementedError('not implemented yet')
 
     def import_by_name(self, name):
-        entities = (
-            entity
-            for entity in self._parent_service.list()
-            if entity.name == name
-        )
+        entities = (entity for entity in self._parent_service.list() if entity.name == name)
         try:
             entity_id = next(entities).id
         except StopIteration:
-            raise EntityNotFoundError(
-                'entity "{}" was not found.'.format(name)
-            )
+            raise EntityNotFoundError('entity "{}" was not found.'.format(name))
         service = self._parent_service.service(entity_id)
         self._set_service(service)
 
@@ -92,10 +86,7 @@ class SDKEntity(metaclass=abc.ABCMeta):
         try:
             return func()
         except Exception as e:
-            return (
-                f'<{self.__class__.__name__}, '
-                f'{func.__name__} failed with: {str(e)}>'
-            )
+            return f'<{self.__class__.__name__}, ' f'{func.__name__} failed with: {str(e)}>'
 
 
 class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):

@@ -73,19 +73,10 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
         # records we can. Does not make that much sense here, but doing
         # this in its own fixture, including making the effort to schedule
         # it right before current, would needlessly complicate the code.
-        ansible_handle.shell(
-            'journalctl -a --no-pager -o short-iso-precise > '
-            '/var/log/journalctl.log'
-        )
-        ansible_handle.archive(
-            path=artifacts_list_string, dest=remote_archive_path
-        )
-        ansible_handle.fetch(
-            src=remote_archive_path, dest=local_archive_path, flat='yes'
-        )
-        shell.shell(
-            ["tar", "-xf", local_archive_path, "-C", local_archive_dir]
-        )
+        ansible_handle.shell('journalctl -a --no-pager -o short-iso-precise > ' '/var/log/journalctl.log')
+        ansible_handle.archive(path=artifacts_list_string, dest=remote_archive_path)
+        ansible_handle.fetch(src=remote_archive_path, dest=local_archive_path, flat='yes')
+        shell.shell(["tar", "-xf", local_archive_path, "-C", local_archive_dir])
         shell.shell(["rm", local_archive_path])
 
     yield
@@ -97,9 +88,7 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def generate_sar_stat_plots(
-    collect_artifacts, ansible_all, ansible_by_hostname, artifacts_dir
-):
+def generate_sar_stat_plots(collect_artifacts, ansible_all, ansible_by_hostname, artifacts_dir):
     def generate(hostname):
         ansible_handle = ansible_by_hostname(hostname)
         try:
@@ -114,9 +103,7 @@ def generate_sar_stat_plots(
             )
         except AnsibleExecutionError as err:
             # sar error should not fail the run
-            LOGGER.error(
-                f"Failed generating sar report on '{hostname}': {err}"
-            )
+            LOGGER.error(f"Failed generating sar report on '{hostname}': {err}")
         else:
             ansible_handle.fetch(
                 src='/tmp/sarstat.svg',
@@ -125,17 +112,12 @@ def generate_sar_stat_plots(
             )
 
     yield
-    calls = [
-        functools.partial(generate, res['stdout'])
-        for res in ansible_all.shell("hostname").values()
-    ]
+    calls = [functools.partial(generate, res['stdout']) for res in ansible_all.shell("hostname").values()]
     utils.invoke_different_funcs_in_parallel(*calls)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def collect_vdsm_coverage_artifacts(
-    artifacts_dir, ansible_host0, ansible_hosts
-):
+def collect_vdsm_coverage_artifacts(artifacts_dir, ansible_host0, ansible_hosts):
     yield
     if os.environ.get("coverage", "false") == "true":
         output_path = os.path.join(artifacts_dir, "coverage/")

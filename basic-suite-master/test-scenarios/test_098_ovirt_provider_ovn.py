@@ -82,9 +82,7 @@ def _request_auth_token(engine_name, engine_full_username, engine_password):
 
 
 def _get_auth_token(engine_name, engine_full_username, engine_password):
-    response_json = _request_auth_token(
-        engine_name, engine_full_username, engine_password
-    )
+    response_json = _request_auth_token(engine_name, engine_full_username, engine_password)
     token_id = response_json['access']['token']['id']
     return token_id
 
@@ -258,19 +256,12 @@ def _validate_db_empty(token_id, engine_ip):
 def _validate_vnic_profile(api, vnic_profile_name):
     def _get_vnic_profile(profiles_service, vnic_profile_name):
         return next(
-            (
-                profile
-                for profile in profiles_service.list()
-                if profile.name == vnic_profile_name
-            ),
+            (profile for profile in profiles_service.list() if profile.name == vnic_profile_name),
             None,
         )
 
     profiles_service = api.system_service().vnic_profiles_service()
-    assert assert_utils.true_within_short(
-        lambda: _get_vnic_profile(profiles_service, vnic_profile_name)
-        is not None
-    )
+    assert assert_utils.true_within_short(lambda: _get_vnic_profile(profiles_service, vnic_profile_name) is not None)
 
 
 def _get_datacenter_id(api):
@@ -279,25 +270,17 @@ def _get_datacenter_id(api):
 
 @contextmanager
 def _disable_auto_sync(api, provider_id):
-    provider_service = (
-        api.system_service()
-        .openstack_network_providers_service()
-        .provider_service(provider_id)
-    )
+    provider_service = api.system_service().openstack_network_providers_service().provider_service(provider_id)
     original_auto_sync = provider_service.get().auto_sync
     provider_service.update(types.OpenStackNetworkProvider(auto_sync=False))
     try:
         yield
     finally:
         if original_auto_sync:
-            provider_service.update(
-                types.OpenStackNetworkProvider(auto_sync=original_auto_sync)
-            )
+            provider_service.update(types.OpenStackNetworkProvider(auto_sync=original_auto_sync))
 
 
-def _import_network_to_ovirt_if_missing(
-    api, provider_id, network_id, datacenter_id
-):
+def _import_network_to_ovirt_if_missing(api, provider_id, network_id, datacenter_id):
     network_service = (
         api.system_service()
         .openstack_network_providers_service()
@@ -319,18 +302,13 @@ def _import_network_to_ovirt_if_missing(
 
 def _get_ovirt_network(api, datacenter_id, network_name):
     networks_service = (
-        api.system_service()
-        .data_centers_service()
-        .data_center_service(datacenter_id)
-        .networks_service()
+        api.system_service().data_centers_service().data_center_service(datacenter_id).networks_service()
     )
     networks = networks_service.list()
     for network in networks:
         if network.name == NETWORKS[network_name]['name']:
             return network.id
-    raise Exception(
-        'External network %s not found' % NETWORKS[network_name]['name']
-    )
+    raise Exception('External network %s not found' % NETWORKS[network_name]['name'])
 
 
 def _remove_network_from_ovirt(api, datacenter_id, network_id):
@@ -345,9 +323,7 @@ def _remove_network_from_ovirt(api, datacenter_id, network_id):
 
 
 def _add_network_to_cluster(api, datacenter_id, ovirt_network_id):
-    cluster_service = test_utils.get_cluster_service(
-        api.system_service(), CLUSTER_NAME
-    )
+    cluster_service = test_utils.get_cluster_service(api.system_service(), CLUSTER_NAME)
 
     assert cluster_service.networks_service().add(
         network=types.Network(id=ovirt_network_id, required=False),
@@ -358,11 +334,7 @@ def _hotplug_network_to_vm(api, vm_name, network_name, iface_name):
     engine = api.system_service()
 
     profiles_service = engine.vnic_profiles_service()
-    profile = next(
-        profile
-        for profile in profiles_service.list()
-        if profile.name == network_name
-    )
+    profile = next(profile for profile in profiles_service.list() if profile.name == network_name)
 
     nics_service = test_utils.get_nics_service(engine, vm_name)
     nics_service.add(
@@ -381,9 +353,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
     nic_service = nics_service.nic_service(nic.id)
     nic_service.deactivate()
-    assert assert_utils.equals_within_short(
-        lambda: nic_service.get().plugged, False
-    )
+    assert assert_utils.equals_within_short(lambda: nic_service.get().plugged, False)
     nic_service.remove()
 
 
@@ -394,15 +364,11 @@ def test_provider_configured(hosts_service, ost_dc_name):
 
 
 @versioning.require_version(4, 2)
-def test_use_ovn_provider(
-    engine_api, engine_ip_url, engine_full_username, engine_password
-):
+def test_use_ovn_provider(engine_api, engine_ip_url, engine_full_username, engine_password):
     engine = engine_api.system_service()
     provider_id = network_utils.get_default_ovn_provider_id(engine)
 
-    token_id = _get_auth_token(
-        engine_ip_url, engine_full_username, engine_password
-    )
+    token_id = _get_auth_token(engine_ip_url, engine_full_username, engine_password)
 
     _validate_db_empty(token_id, engine_ip_url)
 
@@ -429,18 +395,12 @@ def test_use_ovn_provider(
 
         _validate_network(token_id, engine_ip_url, NETWORK_1, network1_id)
         _validate_port(token_id, engine_ip_url, PORT_1, port1_id, network1_id)
-        _validate_subnet(
-            token_id, engine_ip_url, SUBNET_1, subnet1_id, network1_id
-        )
+        _validate_subnet(token_id, engine_ip_url, SUBNET_1, subnet1_id, network1_id)
 
         datacenter_id = _get_datacenter_id(engine_api)
-        _import_network_to_ovirt_if_missing(
-            engine_api, provider_id, network1_id, datacenter_id
-        )
+        _import_network_to_ovirt_if_missing(engine_api, provider_id, network1_id, datacenter_id)
         _validate_vnic_profile(engine_api, NETWORK_1)
-        ovirt_network_id = _get_ovirt_network(
-            engine_api, datacenter_id, NETWORK_1
-        )
+        ovirt_network_id = _get_ovirt_network(engine_api, datacenter_id, NETWORK_1)
         _add_network_to_cluster(engine_api, datacenter_id, ovirt_network_id)
         _hotplug_network_to_vm(engine_api, VM0_NAME, NETWORK_1, IFACE_NAME)
         _remove_iface_from_vm(engine_api, VM0_NAME, IFACE_NAME)

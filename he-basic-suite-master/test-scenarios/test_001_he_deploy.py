@@ -40,9 +40,7 @@ def test_lower_ha_agent_vdsm_connection_timeout(
     ansible_vms_to_deploy,
 ):
     conspath = ansible_host0.shell(
-        "python3 -c "
-        "'from ovirt_hosted_engine_ha.env import constants; "
-        "print(constants.__file__)'"
+        "python3 -c " "'from ovirt_hosted_engine_ha.env import constants; " "print(constants.__file__)'"
     )['stdout_lines'][0]
     ansible_vms_to_deploy.lineinfile(
         path=conspath,
@@ -70,17 +68,10 @@ def test_he_deploy(
         dest='/root/hosted-engine-deploy-answers-file.conf',
     )
 
-    setup_file_src = os.path.join(
-        root_dir, 'common/deploy-scripts/setup_first_he_host.sh'
-    )
+    setup_file_src = os.path.join(root_dir, 'common/deploy-scripts/setup_first_he_host.sh')
     ansible_host0.copy(src=setup_file_src, dest='/root/', mode='preserve')
 
-    ansible_host0.shell(
-        '/root/setup_first_he_host.sh '
-        f'{he_host_name} '
-        f'{he_mac_address} '
-        f'{engine_ip}'
-    )
+    ansible_host0.shell('/root/setup_first_he_host.sh ' f'{he_host_name} ' f'{he_mac_address} ' f'{engine_ip}')
 
     ansible_storage.shell('fstrim -va')
 

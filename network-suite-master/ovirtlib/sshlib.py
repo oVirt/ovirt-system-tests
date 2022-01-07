@@ -73,30 +73,20 @@ class Node(object):
             self._close()
 
     def _connect(self):
-        self._client.connect(
-            self._address, username=self._username, password=self._password
-        )
+        self._client.connect(self._address, username=self._username, password=self._password)
 
     def _close(self):
         self._client.close()
 
     def set_mtu(self, iface_name, mtu_value):
-        self.exec_command(
-            'ip link set {iface} mtu {mtu}'.format(
-                iface=iface_name, mtu=mtu_value
-            )
-        )
+        self.exec_command('ip link set {iface} mtu {mtu}'.format(iface=iface_name, mtu=mtu_value))
 
     def change_active_slave(self, bond_name, slave_name):
         """ "
         :param bond_name: str
         :param slave_name: str
         """
-        self.exec_command(
-            'ip link set {bond} type bond active_slave {slave}'.format(
-                bond=bond_name, slave=slave_name
-            )
-        )
+        self.exec_command('ip link set {bond} type bond active_slave {slave}'.format(bond=bond_name, slave=slave_name))
 
     def assert_default_route(self, expected_v6_route_address):
         assert expected_v6_route_address == self.get_default_route_v6()
@@ -136,9 +126,7 @@ class Node(object):
         """
         netns_prefix = f'ip netns exec {from_netns} ' if from_netns else ''
         version = ipaddress.ip_address(target).version
-        cmd = netns_prefix + (
-            f'ping -{version} -c 1 -M do -s {data_size} ' f'{target}'
-        )
+        cmd = netns_prefix + (f'ping -{version} -c 1 -M do -s {data_size} ' f'{target}')
         self.exec_command(cmd)
 
     def assert_no_ping(self, target, data_size=56, pmtudisc='do'):
@@ -189,10 +177,7 @@ class Node(object):
         :param str ip_version: '4' or '6'
         :return: ipv4 or global ipv6 address as string
         """
-        cmd = (
-            f"ip -{ip_version} -o addr show {iface_name}"
-            f" |awk '{{print $4}}' |cut -d '/' -f 1"
-        )
+        cmd = f"ip -{ip_version} -o addr show {iface_name}" f" |awk '{{print $4}}' |cut -d '/' -f 1"
         if ip_version == '6':
             cmd += ' |grep -v fe80'
         return self.exec_command(cmd).decode('utf-8').strip()

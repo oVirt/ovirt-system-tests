@@ -30,9 +30,7 @@ class VmDetailView(Displayable, WithBreadcrumbs):
 
     def open_host_devices_tab(self):
         LOGGER.debug('Open host devices tab')
-        self.ovirt_driver.driver.find_element(
-            By.LINK_TEXT, 'Host Devices'
-        ).click()
+        self.ovirt_driver.driver.find_element(By.LINK_TEXT, 'Host Devices').click()
 
         vm_detail_host_devices_tab = VmDetailHostDevicesTab(self.ovirt_driver)
         vm_detail_host_devices_tab.wait_for_displayed()
@@ -87,9 +85,7 @@ class VmVgpuDialog(Displayable):
         dialog_displayed = self.ovirt_driver.driver.find_element(
             By.CSS_SELECTOR, '.modal-dialog,.pf-c-modal-box'
         ).is_displayed()
-        spinner_displayed = self.ovirt_driver.is_xpath_displayed(
-            '//div[contains(@class, "spinner")]'
-        )
+        spinner_displayed = self.ovirt_driver.is_xpath_displayed('//div[contains(@class, "spinner")]')
         return dialog_displayed and not spinner_displayed
 
     def get_displayable_name(self):
@@ -104,8 +100,7 @@ class VmVgpuDialog(Displayable):
     def get_row_data(self, row_index):
         row_tds = self.ovirt_driver.driver.find_elements(
             By.XPATH,
-            '//table[contains(@class, "vgpu-table")]/'
-            f'tbody[{row_index}]/tr/td',
+            '//table[contains(@class, "vgpu-table")]/' f'tbody[{row_index}]/tr/td',
         )
         return list(map(lambda td: td.text, row_tds))
 

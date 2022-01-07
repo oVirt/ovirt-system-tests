@@ -98,10 +98,7 @@ class ModuleArgsMapper:
                 " ".join("{}={}".format(k, v) for k, v in kwargs.items()),
             )
         ).strip()
-        LOGGER.debug(
-            'ModuleArgsMapper: __call__: '
-            f'module_args={self.config_builder.module_args}'
-        )
+        LOGGER.debug('ModuleArgsMapper: __call__: ' f'module_args={self.config_builder.module_args}')
         return _run_ansible_runner(self.config_builder)
 
     def __str__(self):
@@ -133,9 +130,4 @@ class ModuleMapper:
         return res
 
     def __str__(self):
-        return (
-            'ModuleMapper<'
-            f'inventory={self.inventory} '
-            f'host_pattern={self.host_pattern}'
-            '>'
-        )
+        return 'ModuleMapper<' f'inventory={self.inventory} ' f'host_pattern={self.host_pattern}' '>'

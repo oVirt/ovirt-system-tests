@@ -26,10 +26,7 @@ def obj_info(obj):
             # Private?
             not attr.startswith('_')
             # Do not run properties' code here
-            and not (
-                hasattr(type(obj), attr)
-                and isinstance(getattr(type(obj), attr), property)
-            )
+            and not (hasattr(type(obj), attr) and isinstance(getattr(type(obj), attr), property))
             and hasattr(obj, attr)
             # Let's agree that 'None' is not interesting
             and getattr(obj, attr) is not None

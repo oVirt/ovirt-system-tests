@@ -125,9 +125,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         self._logged_in = False
 
     def add_static_ip(self, vm_id, ip, iface):
-        ips = self.shell(
-            vm_id, (Shell.ip_address_add(ip, iface), Shell.get_ips(iface))
-        )
+        ips = self.shell(vm_id, (Shell.ip_address_add(ip, iface), Shell.get_ips(iface)))
         ip_version = ipaddress.ip_address(ip.split('/')[0]).version
         return Shell.next_ip(ips.splitlines(), ip_version)
 
@@ -181,29 +179,21 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
 class CirrosSerialConsole(VmSerialConsole):
     def __init__(self, private_key_path, vmconsole_proxy_ip):
-        super(CirrosSerialConsole, self).__init__(
-            private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo'
-        )
+        super(CirrosSerialConsole, self).__init__(private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo')
 
     def assign_ip4_if_missing(self, vm_id, iface):
         ip = self.get_ip(vm_id, iface, 4)
         return ip if ip else self.assign_ip4(vm_id, iface)
 
     def assign_ip4(self, vm_id, iface):
-        ips = self.shell(
-            vm_id, (Shell.cirros_assign_dhcp_ip(iface), Shell.get_ips(iface))
-        )
+        ips = self.shell(vm_id, (Shell.cirros_assign_dhcp_ip(iface), Shell.get_ips(iface)))
         return Shell.next_ip(ips.splitlines(), 4)
 
 
 class Shell(object):
     @classmethod
     def get_ips(cls, iface):
-        return (
-            f"ip addr show {iface} | "
-            f"awk '/inet/ {{print $2}}' | "
-            f"awk -F/ '{{print $1}}'"
-        )
+        return f"ip addr show {iface} | " f"awk '/inet/ {{print $2}}' | " f"awk -F/ '{{print $1}}'"
 
     @classmethod
     def ip_address_add(cls, ip, iface):
@@ -216,10 +206,6 @@ class Shell(object):
     @classmethod
     def next_ip(cls, ips, ip_version):
         return next(
-            (
-                ip
-                for ip in ips
-                if ipaddress.ip_address(ip).version == int(ip_version)
-            ),
+            (ip for ip in ips if ipaddress.ip_address(ip).version == int(ip_version)),
             None,
         )

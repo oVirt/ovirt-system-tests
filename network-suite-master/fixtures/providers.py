@@ -42,16 +42,12 @@ def ovirt_image_repo(system):
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(
-    engine_facts, engine_password, ovirt_provider_ovn_with_ip_fqdn
-):
+def openstack_client_config(engine_facts, engine_password, ovirt_provider_ovn_with_ip_fqdn):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
-                    'auth_url': OPENSTACK_AUTH_URL.format(
-                        engine_facts.default_ip(urlize=True)
-                    ),
+                    'auth_url': OPENSTACK_AUTH_URL.format(engine_facts.default_ip(urlize=True)),
                     'username': OPENSTACK_USERNAME,
                     'password': engine_password,
                 },
@@ -59,9 +55,7 @@ def openstack_client_config(
             }
         }
     }
-    os_client_config_file_path = os.path.join(
-        suite.suite_dir(), OPENSTACK_CLIENT_CONFIG_FILE
-    )
+    os_client_config_file_path = os.path.join(suite.suite_dir(), OPENSTACK_CLIENT_CONFIG_FILE)
     with open(os_client_config_file_path, 'w') as cloud_config_file:
         yaml.dump(cloud_config, cloud_config_file, default_flow_style=False)
 
@@ -110,14 +104,10 @@ def ovn_network(default_ovn_provider, default_ovn_provider_client):
 
 
 @pytest.fixture(scope='session')
-def ovirt_external_network(
-    default_ovn_provider, default_data_center, ovn_network
-):
+def ovirt_external_network(default_ovn_provider, default_data_center, ovn_network):
     openstack_network = OpenStackNetwork(default_ovn_provider)
     openstack_network.import_by_id(str(ovn_network.id))
-    ovirt_network = openstack_network.create_external_network(
-        default_data_center
-    )
+    ovirt_network = openstack_network.create_external_network(default_data_center)
     try:
         yield ovirt_network
     finally:

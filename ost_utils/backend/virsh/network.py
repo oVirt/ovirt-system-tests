@@ -55,13 +55,7 @@ def add_name(
     if ipv6_address is not None:
         run_net_update_add(
             'ip-dhcp-host',
-            (
-                "<host "
-                f"id='0:3:0:1:{mac_address}' "
-                f"name='{host_name}' "
-                f"ip='{ipv6_address}' "
-                "/>"
-            ),
+            ("<host " f"id='0:3:0:1:{mac_address}' " f"name='{host_name}' " f"ip='{ipv6_address}' " "/>"),
             '--live',
             '--parent-index',
             '1',
@@ -70,13 +64,7 @@ def add_name(
     if ipv4_address is not None:
         run_net_update_add(
             'ip-dhcp-host',
-            (
-                "<host "
-                f"mac='{mac_address}' "
-                f"name='{host_name}' "
-                f"ip='{ipv4_address}' "
-                "/>"
-            ),
+            ("<host " f"mac='{mac_address}' " f"name='{host_name}' " f"ip='{ipv4_address}' " "/>"),
             '--live',
         )
         run_net_update_add_dns(host_name, ipv4_address)

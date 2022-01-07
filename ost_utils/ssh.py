@@ -58,9 +58,7 @@ def ssh(
     if data is not None:
         channel.send(data)
     channel.shutdown_write()
-    return_code, out, err = drain_ssh_channel(
-        channel, **(show_output and {} or {'stdout': None, 'stderr': None})
-    )
+    return_code, out, err = drain_ssh_channel(channel, **(show_output and {} or {'stdout': None, 'stderr': None}))
     channel.close()
     transport.close()
     client.close()
@@ -247,10 +245,7 @@ def get_ssh_client(
         time.sleep(1)
     else:
         end_time = time.time()
-        raise OSTSSHTimeoutException(
-            'Timed out (in %d s) trying to ssh to %s'
-            % (end_time - start_time, host_name)
-        )
+        raise OSTSSHTimeoutException('Timed out (in %d s) trying to ssh to %s' % (end_time - start_time, host_name))
     return client
 
 

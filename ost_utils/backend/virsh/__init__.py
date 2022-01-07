@@ -25,22 +25,14 @@ class VirshBackend(base.BaseBackend):
         self._vms = self._get_vms(self._deployment_path)
 
     def iface_mapping(self):
-        return {
-            vm_info.name: vm_info.nics.get_nics_for_all_networks()
-            for vm_info in self._vms.values()
-        }
+        return {vm_info.name: vm_info.nics.get_nics_for_all_networks() for vm_info in self._vms.values()}
 
     def ip_mapping(self):
-        return {
-            vm_info.name: vm_info.nics.get_ips_for_all_networks()
-            for vm_info in self._vms.values()
-        }
+        return {vm_info.name: vm_info.nics.get_ips_for_all_networks() for vm_info in self._vms.values()}
 
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
-            contents = shell(
-                ["cat", "hosts"], bytes_output=True, cwd=self._deployment_path
-            )
+            contents = shell(["cat", "hosts"], bytes_output=True, cwd=self._deployment_path)
             self._ansible_inventory_str = contents
         return self._ansible_inventory_str
 
@@ -48,16 +40,10 @@ class VirshBackend(base.BaseBackend):
         return {vm.name: vm.deploy_scripts for vm in self._vms.values()}
 
     def libvirt_net_name(self, ost_net_name):
-        return self._networks.get_network_for_ost_name(
-            ost_net_name
-        ).libvirt_name
+        return self._networks.get_network_for_ost_name(ost_net_name).libvirt_name
 
     def _get_vms(self, deployment_path):
-        vm_names = [
-            name
-            for name in shell("virsh list --name".split()).splitlines()
-            if name[8:13] == "-ost-"
-        ]
+        vm_names = [name for name in shell("virsh list --name".split()).splitlines() if name[8:13] == "-ost-"]
 
         vms = {}
 
@@ -66,9 +52,7 @@ class VirshBackend(base.BaseBackend):
             xml = ET.fromstring(xml_str)
 
             try:
-                vm_working_dir = xml.find(
-                    "./metadata/{OST:metadata}ost/ost-working-dir[@comment]"
-                ).get("comment")
+                vm_working_dir = xml.find("./metadata/{OST:metadata}ost/ost-working-dir[@comment]").get("comment")
             except AttributeError:
                 continue
             if vm_working_dir != deployment_path:
@@ -77,10 +61,7 @@ class VirshBackend(base.BaseBackend):
             name = libvirt_name[9:]
             deploy_scripts = [
                 node.get("name")
-                for node in xml.findall(
-                    "./metadata/{OST:metadata}ost/ost-deploy-scripts/"
-                    "script[@name]"
-                )
+                for node in xml.findall("./metadata/{OST:metadata}ost/ost-deploy-scripts/" "script[@name]")
             ]
             nics = VMNics(xml, self._networks)
             vms[name] = VMInfo(name, libvirt_name, nics, deploy_scripts)

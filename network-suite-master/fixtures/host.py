@@ -38,9 +38,7 @@ def host_1_up(system, host_1):
 
 
 @pytest.fixture(scope='session')
-def host_in_ovs_cluster(
-    system, ovs_cluster, default_cluster, default_data_center
-):
+def host_in_ovs_cluster(system, ovs_cluster, default_cluster, default_data_center):
     host = _non_spm_host(system, default_cluster.host_ids())
     host.wait_for_up_status(timeout=hostlib.HOST_TIMEOUT_LONG)
     with host.toggle_cluster(ovs_cluster):

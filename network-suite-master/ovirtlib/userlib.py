@@ -30,9 +30,7 @@ class User(SDKRootEntity):
         return self.service.ssh_public_keys_service().list()
 
     def add_public_key(self, ssh_public_key):
-        return self.service.ssh_public_keys_service().add(
-            key=types.SshPublicKey(content=ssh_public_key)
-        )
+        return self.service.ssh_public_keys_service().add(key=types.SshPublicKey(content=ssh_public_key))
 
     def remove_public_key(self, id):
         return self.service.ssh_public_keys_service().key_service(id).remove()

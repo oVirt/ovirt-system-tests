@@ -24,9 +24,7 @@ def _run_playbook(
 
     # Move of the run artifacts to the working_dir because
     # ansible-navigator logs each run artifacts to /tmp/
-    ansible_artifacts_tmp_dir = os.path.join(
-        ansible_logs_path, 'ansible-artifacts'
-    )
+    ansible_artifacts_tmp_dir = os.path.join(ansible_logs_path, 'ansible-artifacts')
 
     os.makedirs(ansible_artifacts_tmp_dir, exist_ok=True)
     # Create playbook file from passed yaml
@@ -36,21 +34,15 @@ def _run_playbook(
 
     os.makedirs(ansible_logs_path, exist_ok=True)
 
-    ansible_navigator_log_path = os.path.join(
-        ansible_logs_path, 'ansible-navigator.log'
-    )
+    ansible_navigator_log_path = os.path.join(ansible_logs_path, 'ansible-navigator.log')
 
-    playbook_log_path = os.path.join(
-        ansible_logs_path, 'playbook-artifacts.json'
-    )
+    playbook_log_path = os.path.join(ansible_logs_path, 'playbook-artifacts.json')
 
     network_backend = os.getenv('PODMAN_NETWORK_BACKEND')
     if network_backend is None:
         network_backend_options = "--network=slirp4netns:enable_ipv6=true"
     else:
-        network_backend_options = (
-            f"--network={network_backend}:enable_ipv6=true"
-        )
+        network_backend_options = f"--network={network_backend}:enable_ipv6=true"
 
     # Running the playbook inside a container
     cmd = [
@@ -145,9 +137,7 @@ def engine_setup(
         mode='0644',
     )
 
-    playbook_yaml = _get_role_playbook(
-        'engine_setup', engine_hostname, **kwargs
-    )
+    playbook_yaml = _get_role_playbook('engine_setup', engine_hostname, **kwargs)
 
     _run_playbook(
         playbook_yaml,
@@ -168,9 +158,7 @@ def image_template(
     engine_hostname,
     **kwargs,
 ):
-    playbook_yaml = _get_role_playbook(
-        'image_template', engine_hostname, **kwargs
-    )
+    playbook_yaml = _get_role_playbook('image_template', engine_hostname, **kwargs)
     _run_playbook(
         playbook_yaml,
         working_dir,
@@ -231,16 +219,11 @@ class CollectionMapper:
         return self._collect_module_data()
 
     def _collect_module_data(self):
-        playbook_log_path = os.path.join(
-            self.artifacts_dir, 'ansible_logs', 'playbook-artifacts.json'
-        )
+        playbook_log_path = os.path.join(self.artifacts_dir, 'ansible_logs', 'playbook-artifacts.json')
         with open(playbook_log_path) as file:
             data = json.load(file)
             tasks = (data.get('plays')[0]).get('tasks')
             for task in tasks:
-                if (
-                    task.get('task') == f'ovirt.ovirt.{self.name}'
-                    and task.get('res', None) is not None
-                ):
+                if task.get('task') == f'ovirt.ovirt.{self.name}' and task.get('res', None) is not None:
                     return task.get('res')
         return None

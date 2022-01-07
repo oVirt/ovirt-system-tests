@@ -24,9 +24,7 @@ def pytest_collection_modifyitems(session, config, items):
     def get_item_ordering(item):
         mark = item.get_closest_marker('run')
         if not mark:
-            raise RuntimeError(
-                f"Some tests don't have ordering defined: {item}"
-            )
+            raise RuntimeError(f"Some tests don't have ordering defined: {item}")
         return mark.kwargs.get('order')
 
     def module_uses_item_ordering(module_items):

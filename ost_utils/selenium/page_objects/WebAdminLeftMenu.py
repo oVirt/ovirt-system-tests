@@ -24,9 +24,7 @@ class WebAdminLeftMenu(Displayable):
         super(WebAdminLeftMenu, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.is_class_name_present(
-            'nav-pf-vertical-collapsible-menus'
-        )
+        return self.ovirt_driver.is_class_name_present('nav-pf-vertical-collapsible-menus')
 
     def get_displayable_name(self):
         return 'WebAdmin left menu'
@@ -96,9 +94,7 @@ class WebAdminLeftMenu(Displayable):
         return disks_list_view
 
     def _open_dashboard_menu(self):
-        self.ovirt_driver.xpath_wait_and_click(
-            'Dashboard menu', '//a[@href="#dashboard-main"]'
-        )
+        self.ovirt_driver.xpath_wait_and_click('Dashboard menu', '//a[@href="#dashboard-main"]')
 
     def _open_compute_menu(self, menu_name, menu_id):
         self._open_menu('compute', menu_name, menu_id)
@@ -118,7 +114,5 @@ class WebAdminLeftMenu(Displayable):
         submenu_element.click()
 
     def _submenu_is_displayed(self, menu_element, submenu_element):
-        ActionChains(self.ovirt_driver.driver).move_to_element(
-            menu_element
-        ).perform()
+        ActionChains(self.ovirt_driver.driver).move_to_element(menu_element).perform()
         return submenu_element.is_displayed()

@@ -37,9 +37,7 @@ def perform_vm_backup(
 
     backup_service.finalize()
 
-    assert assert_utils.equals_within_long(
-        lambda: backup_service.get().phase, types.BackupPhase.SUCCEEDED
-    )
+    assert assert_utils.equals_within_long(lambda: backup_service.get().phase, types.BackupPhase.SUCCEEDED)
     assert assert_utils.equals_within_long(
         lambda: disks_service.disk_service(disk.id).get().status,
         types.DiskStatus.OK,
@@ -48,9 +46,7 @@ def perform_vm_backup(
     return created_checkpoint_id
 
 
-def perform_incremental_vm_backup(
-    engine_api, backups_service, disk_name, correlation_id
-):
+def perform_incremental_vm_backup(engine_api, backups_service, disk_name, correlation_id):
     engine = engine_api.system_service()
     disks_service = engine.disks_service()
     disk = disks_service.list(search='name={}'.format(disk_name))[0]
@@ -76,11 +72,7 @@ def perform_incremental_vm_backup(
 def remove_vm_root_checkpoint(checkpoints_service):
     vm_checkpoints = checkpoints_service.list()
     root_checkpoint = vm_checkpoints[0]
-    checkpoint_service = checkpoints_service.checkpoint_service(
-        id=root_checkpoint.id
-    )
+    checkpoint_service = checkpoints_service.checkpoint_service(id=root_checkpoint.id)
     checkpoint_service.remove()
 
-    assert assert_utils.equals_within_short(
-        lambda: len(checkpoints_service.list()), len(vm_checkpoints) - 1
-    )
+    assert assert_utils.equals_within_short(lambda: len(checkpoints_service.list()), len(vm_checkpoints) - 1)

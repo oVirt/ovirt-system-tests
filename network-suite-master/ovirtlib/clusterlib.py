@@ -95,9 +95,7 @@ class Cluster(SDKRootEntity):
         return self.get_sdk_type().name
 
     def create(self, data_center, cluster_name):
-        sdk_type = types.Cluster(
-            name=cluster_name, data_center=data_center.get_sdk_type()
-        )
+        sdk_type = types.Cluster(name=cluster_name, data_center=data_center.get_sdk_type())
         self._create_sdk_entity(sdk_type)
 
     @property
@@ -124,21 +122,13 @@ class Cluster(SDKRootEntity):
         return networks
 
     def host_ids(self):
-        return [
-            sdk_host.id
-            for sdk_host in self.system.hosts_service.list()
-            if sdk_host.cluster.id == self.id
-        ]
+        return [sdk_host.id for sdk_host in self.system.hosts_service.list() if sdk_host.cluster.id == self.id]
 
     def is_empty(self):
         return not self.host_ids()
 
     def mgmt_network(self):
-        return next(
-            network
-            for network in self.networks()
-            if types.NetworkUsage.MANAGEMENT in network.usages
-        )
+        return next(network for network in self.networks() if types.NetworkUsage.MANAGEMENT in network.usages)
 
     @property
     def network_switch_type(self):
@@ -165,9 +155,7 @@ class Cluster(SDKRootEntity):
         self._report_is_empty('after')
 
     def _report_is_empty(self, when):
-        eventlib.EngineEvents(self.system).add(
-            f'OST - {when} wait until empty: cluster empty({self.is_empty()})'
-        )
+        eventlib.EngineEvents(self.system).add(f'OST - {when} wait until empty: cluster empty({self.is_empty()})')
 
     def _get_parent_service(self, system):
         return system.clusters_service
@@ -225,11 +213,7 @@ def network_assignment(cluster, network, required=False):
 
 
 @contextlib.contextmanager
-def new_assigned_network(
-    name, data_center, cluster, vlan=None, port_isolation=None
-):
-    with netlib.new_network(
-        name, data_center, vlan, port_isolation
-    ) as network:
+def new_assigned_network(name, data_center, cluster, vlan=None, port_isolation=None):
+    with netlib.new_network(name, data_center, vlan, port_isolation) as network:
         with network_assignment(cluster, network):
             yield network

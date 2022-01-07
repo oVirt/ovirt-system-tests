@@ -10,9 +10,7 @@ from .WithNotifications import WithNotifications
 
 class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
 
-    DASHBOARD_IFRAME_SELECTOR = (
-        '//iframe[@src="plugin/ui-extensions/dashboard.html"]'
-    )
+    DASHBOARD_IFRAME_SELECTOR = '//iframe[@src="plugin/ui-extensions/dashboard.html"]'
 
     def __init__(self, ovirt_driver):
         super(DashboardView, self).__init__(ovirt_driver)
@@ -24,9 +22,7 @@ class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
         return 'Dashboard view'
 
     def data_centers_count(self):
-        return self._execute_in_frame(
-            self._get_aggregate_count, 'Data Centers'
-        )
+        return self._execute_in_frame(self._get_aggregate_count, 'Data Centers')
 
     def clusters_count(self):
         return self._execute_in_frame(self._get_aggregate_count, 'Clusters')
@@ -35,34 +31,24 @@ class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
         return self._execute_in_frame(self._get_aggregate_count, 'Hosts')
 
     def storage_domains_count(self):
-        return self._execute_in_frame(
-            self._get_aggregate_count, 'Data Storage Domains'
-        )
+        return self._execute_in_frame(self._get_aggregate_count, 'Data Storage Domains')
 
     def vm_count(self):
-        return self._execute_in_frame(
-            self._get_aggregate_count, 'Virtual Machines'
-        )
+        return self._execute_in_frame(self._get_aggregate_count, 'Virtual Machines')
 
     def events_count(self):
         return self._execute_in_frame(self._get_aggregate_count, 'Events')
 
     def _execute_in_frame(self, method, *args):
-        return self.ovirt_driver.execute_in_frame(
-            self.DASHBOARD_IFRAME_SELECTOR, method, *args
-        )
+        return self.ovirt_driver.execute_in_frame(self.DASHBOARD_IFRAME_SELECTOR, method, *args)
 
     def _is_displayed(self):
-        return self.ovirt_driver.driver.find_element(
-            By.XPATH, '//div[@id="global-dashboard"]'
-        ).is_displayed()
+        return self.ovirt_driver.driver.find_element(By.XPATH, '//div[@id="global-dashboard"]').is_displayed()
 
     def _get_aggregate_count(self, label):
         return int(
             self.ovirt_driver.driver.find_element(
                 By.XPATH,
-                '//a[span/text() = "'
-                + label
-                + '"]/span[@class="aggregate-status-count"]',
+                '//a[span/text() = "' + label + '"]/span[@class="aggregate-status-count"]',
             ).text
         )

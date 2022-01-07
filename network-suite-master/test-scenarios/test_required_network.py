@@ -48,9 +48,7 @@ def cluster_hosts_up(default_cluster, system):
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
         for i, host in enumerate(cluster_hosts_up):
-            req_att_data = netattachlib.NetworkAttachmentData(
-                req_net, ETH1, (netattachlib.NO_V4, netattachlib.NO_V6)
-            )
+            req_att_data = netattachlib.NetworkAttachmentData(req_net, ETH1, (netattachlib.NO_V4, netattachlib.NO_V6))
             host.setup_networks([req_att_data])
     except Exception as e:
         # if setup fails for some of the hosts roll it back before aborting
@@ -76,9 +74,7 @@ def optionally_non_spm_host(cluster_hosts_net_setup):
     return cluster_hosts_net_setup[0]
 
 
-def test_required_network_host_non_operational(
-    req_net, cluster_net, optionally_non_spm_host
-):
+def test_required_network_host_non_operational(req_net, cluster_net, optionally_non_spm_host):
     cluster_net.update(required=True)
     optionally_non_spm_host.remove_networks((req_net,))
     optionally_non_spm_host.wait_for_non_operational_status()

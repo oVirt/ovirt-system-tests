@@ -71,9 +71,7 @@ def ansible_by_hostname(ansible_inventory):
         # names should be either a string (and then we use it directly)
         # or a tuple/list (and then we concatenate to create a pattern)
         host_pattern = (
-            short_name(names)
-            if isinstance(names, str)
-            else seq_to_ansible_pattern(short_name(name) for name in names)
+            short_name(names) if isinstance(names, str) else seq_to_ansible_pattern(short_name(name) for name in names)
         )
         return module_mapper_for(host_pattern)
 

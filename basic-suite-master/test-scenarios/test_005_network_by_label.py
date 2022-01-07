@@ -22,18 +22,14 @@ LABELED_NET_VLAN_ID = 600
 
 def _host_is_attached_to_network(engine, host, network_name, dc_name):
     try:
-        network_utils.get_network_attachment(
-            engine, host, network_name, dc_name
-        )
+        network_utils.get_network_attachment(engine, host, network_name, dc_name)
     except StopIteration:  # there is no attachment of the network to the host
         return False
 
     return True
 
 
-def test_assign_hosts_network_label(
-    system_service, hosts_service, ost_cluster_name
-):
+def test_assign_hosts_network_label(system_service, hosts_service, ost_cluster_name):
     """
     Assigns NETWORK_LABEL to first network interface of every host in cluster
     """
@@ -78,16 +74,7 @@ def test_add_labeled_network(networks_service, ost_dc_name):
 
     # assign label to the network
     assert labels_service.add(NetworkLabel(id=NETWORK_LABEL))
-    assert (
-        len(
-            [
-                label
-                for label in labels_service.list()
-                if label.id == NETWORK_LABEL
-            ]
-        )
-        == 1
-    )
+    assert len([label for label in labels_service.list() if label.id == NETWORK_LABEL]) == 1
 
 
 def test_assign_labeled_network(
@@ -105,14 +92,10 @@ def test_assign_labeled_network(
     # the logical network will be automatically assigned to all host network
     # interfaces with that label asynchronously
 
-    cluster_service = test_utils.get_cluster_service(
-        system_service, ost_cluster_name
-    )
+    cluster_service = test_utils.get_cluster_service(system_service, ost_cluster_name)
     assert cluster_service.networks_service().add(labeled_net)
 
-    for host in test_utils.hosts_in_cluster_v4(
-        system_service, ost_cluster_name
-    ):
+    for host in test_utils.hosts_in_cluster_v4(system_service, ost_cluster_name):
         host_service = hosts_service.host_service(id=host.id)
         assert assert_utils.true_within_short(
             lambda: _host_is_attached_to_network(

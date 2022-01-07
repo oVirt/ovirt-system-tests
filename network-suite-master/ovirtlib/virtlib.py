@@ -74,20 +74,14 @@ class Vm(SDKRootEntity):
         if cloud_init_hostname:
             return types.Vm(
                 initialization=types.Initialization(
-                    cloud_init=types.CloudInit(
-                        host=types.Host(address=cloud_init_hostname)
-                    )
+                    cloud_init=types.CloudInit(host=types.Host(address=cloud_init_hostname))
                 )
             )
         else:
             return None
 
     def _uses_cloud_init(self, vm_definition):
-        return (
-            vm_definition
-            and vm_definition.initialization
-            and vm_definition.initialization.cloud_init is not None
-        )
+        return vm_definition and vm_definition.initialization and vm_definition.initialization.cloud_init is not None
 
     def stop(self):
         VM_IS_NOT_RUNNING = 'VM is not running'
@@ -110,11 +104,7 @@ class Vm(SDKRootEntity):
 
     def create_snapshot(self, snapshot_desc=None):
         snapshot = VmSnapshot(self)
-        snapshot.create(
-            'snapshot_of_{}'.format(self.name)
-            if snapshot_desc is None
-            else snapshot_desc
-        )
+        snapshot.create('snapshot_of_{}'.format(self.name) if snapshot_desc is None else snapshot_desc)
         snapshot.wait_for_ready_status()
         return snapshot
 
@@ -126,9 +116,7 @@ class Vm(SDKRootEntity):
 
     def create_vnic(self, vnic_name, vnic_profile, mac_addr=None):
         vnic = netlib.Vnic(self)
-        vnic.create(
-            name=vnic_name, vnic_profile=vnic_profile, mac_addr=mac_addr
-        )
+        vnic.create(name=vnic_name, vnic_profile=vnic_profile, mac_addr=mac_addr)
         return vnic
 
     def get_vnic(self, vnic_name):
@@ -177,9 +165,7 @@ class Vm(SDKRootEntity):
             exec_func=super(Vm, self).remove,
             exec_func_args=(),
             success_criteria=lambda s: isinstance(s, ovirtsdk4.NotFoundError),
-            error_criteria=lambda e: not isinstance(
-                e, self._unspecific_sdk_error_bz_1533016()
-            ),
+            error_criteria=lambda e: not isinstance(e, self._unspecific_sdk_error_bz_1533016()),
             delay_start=20,
             retry_interval=10,
         )
@@ -243,9 +229,7 @@ class Vm(SDKRootEntity):
 
     def _is_disk_attachment_active(self, disk_attachment_id):
         disk_attachments_service = self._service.disk_attachments_service()
-        disk_attachment_service = disk_attachments_service.attachment_service(
-            disk_attachment_id
-        )
+        disk_attachment_service = disk_attachments_service.attachment_service(disk_attachment_id)
         return disk_attachment_service.get().active
 
     def _get_data_center(self):
@@ -283,9 +267,7 @@ class VmSnapshot(SDKSubEntity):
         return vm.service.snapshots_service()
 
     def create(self, description, persist_memorystate=False):
-        sdk_type = types.Snapshot(
-            persist_memorystate=persist_memorystate, description=description
-        )
+        sdk_type = types.Snapshot(persist_memorystate=persist_memorystate, description=description)
         self._create_sdk_entity(sdk_type)
 
     def commit(self):
@@ -294,9 +276,7 @@ class VmSnapshot(SDKSubEntity):
         self._parent_sdk_entity.service.commit_snapshot()
 
     def preview(self):
-        self._parent_sdk_entity.service.preview_snapshot(
-            snapshot=self.get_sdk_type()
-        )
+        self._parent_sdk_entity.service.preview_snapshot(snapshot=self.get_sdk_type())
 
     def undo_preview(self):
         if self.get_sdk_type().snapshot_status != SnapshotStatus.IN_PREVIEW:
@@ -307,9 +287,7 @@ class VmSnapshot(SDKSubEntity):
         if self.get_sdk_type().snapshot_status == SnapshotStatus.IN_PREVIEW:
             self._parent_sdk_entity.service.commit_snapshot()
         else:
-            self._service.restore(
-                restore_memory=self.get_sdk_type().persist_memorystate
-            )
+            self._service.restore(restore_memory=self.get_sdk_type().persist_memorystate)
 
     def wait_for_ready_status(self):
         syncutil.sync(
@@ -322,8 +300,7 @@ class VmSnapshot(SDKSubEntity):
         syncutil.sync(
             exec_func=lambda: self.get_sdk_type().snapshot_status,
             exec_func_args=(),
-            success_criteria=lambda status: status
-            == SnapshotStatus.IN_PREVIEW,
+            success_criteria=lambda status: status == SnapshotStatus.IN_PREVIEW,
         )
 
     def wait_for_snapshot_removal(self, snapshot_id):
@@ -367,11 +344,7 @@ class VmGraphicsConsole(SDKSubEntity):
         self._config = parser['virt-viewer']
 
     def _get_console_id(self, protocol):
-        return next(
-            gcs.id
-            for gcs in self._parent_service.list()
-            if gcs.protocol == protocol
-        )
+        return next(gcs.id for gcs in self._parent_service.list() if gcs.protocol == protocol)
 
     def _get_remote_viewer_file_parser(self):
         viewer_file = self._get_remote_viewer_file()

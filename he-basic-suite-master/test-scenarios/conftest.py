@@ -76,13 +76,8 @@ def ost_cluster_name():  # pylint: disable=function-redefined
 
 
 @pytest.fixture(scope="session")
-def hostnames_to_add(
-    ansible_host0, hosts_hostnames
-):  # pylint: disable=function-redefined
-    return list(
-        set(hosts_hostnames)
-        - set([he_utils.host_name_running_he_vm(ansible_host0)])
-    )
+def hostnames_to_add(ansible_host0, hosts_hostnames):  # pylint: disable=function-redefined
+    return list(set(hosts_hostnames) - set([he_utils.host_name_running_he_vm(ansible_host0)]))
 
 
 @pytest.fixture(scope="session")
@@ -113,8 +108,6 @@ def engine_ips_for_network(engine_ip):  # pylint: disable=function-redefined
 
 
 @pytest.fixture(scope="session")
-def engine_ip(
-    he_ipv4_address, he_ipv6_address
-):  # pylint: disable=function-redefined
+def engine_ip(he_ipv4_address, he_ipv6_address):  # pylint: disable=function-redefined
     # Follow the DNS resolution preferring IPv6
     return he_ipv6_address or he_ipv4_address

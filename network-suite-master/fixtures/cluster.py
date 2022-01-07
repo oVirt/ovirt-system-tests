@@ -18,8 +18,6 @@ def default_cluster(system):
 @pytest.fixture(scope='session')
 def ovs_cluster(system, default_data_center):
     OVS_CLUSTER_NAME = 'ovs-cluster'
-    with clusterlib.cluster(
-        system, default_data_center, OVS_CLUSTER_NAME
-    ) as ovs_cluster:
+    with clusterlib.cluster(system, default_data_center, OVS_CLUSTER_NAME) as ovs_cluster:
         ovs_cluster.network_switch_type = clusterlib.SwitchType.OVS
         yield ovs_cluster

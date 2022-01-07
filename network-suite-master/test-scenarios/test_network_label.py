@@ -15,6 +15,4 @@ def test_empty_string_on_ovirtmgmt_labels(ovirtmgmt_network):
     leads to problems since it is not a correct form of label.
     """
     network_labels = ovirtmgmt_network.labels()
-    assert network_labels == [
-        label for label in network_labels if label.id != ''
-    ]
+    assert network_labels == [label for label in network_labels if label.id != '']

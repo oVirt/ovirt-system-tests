@@ -54,6 +54,4 @@ def hub_url(engine_fqdn, engine_ip, selenium_artifacts_dir):
             ) as hub_url:
                 yield hub_url
         else:
-            raise RuntimeError(
-                "No container backend available to set up the grid"
-            )
+            raise RuntimeError("No container backend available to set up the grid")

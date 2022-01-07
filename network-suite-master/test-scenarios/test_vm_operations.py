@@ -58,9 +58,7 @@ def running_cirros_vm(
     host_1_up,
     cirros_template,
 ):
-    with clusterlib.new_assigned_network(
-        SERIAL_NET, default_data_center, default_cluster
-    ) as net:
+    with clusterlib.new_assigned_network(SERIAL_NET, default_data_center, default_cluster) as net:
         attach_data = netattachlib.NetworkAttachmentData(net, ETH1)
         with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
             with virtlib.vm_pool(system, size=1) as (vm,):
@@ -79,9 +77,7 @@ def running_cirros_vm(
 
 
 @pytest.fixture(scope='module')
-def running_blank_vm(
-    system, default_cluster, default_storage_domain, ovirtmgmt_vnic_profile
-):
+def running_blank_vm(system, default_cluster, default_storage_domain, ovirtmgmt_vnic_profile):
     disk = default_storage_domain.create_disk('disk0')
     with virtlib.vm_pool(system, size=1) as (vm,):
         vm.create(
@@ -100,9 +96,7 @@ def running_blank_vm(
 
 @pytest.fixture
 def host_0_with_mig_net(migration_network, host_0_up):
-    mig_att_data = netattachlib.NetworkAttachmentData(
-        migration_network, ETH1, (STATIC_ASSIGN_1[suite.af().family],)
-    )
+    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_1[suite.af().family],))
     host_0_up.setup_networks([mig_att_data])
     yield host_0_up
     host_0_up.remove_networks((migration_network,))
@@ -110,9 +104,7 @@ def host_0_with_mig_net(migration_network, host_0_up):
 
 @pytest.fixture
 def host_1_with_mig_net(migration_network, host_1_up):
-    mig_att_data = netattachlib.NetworkAttachmentData(
-        migration_network, ETH1, (STATIC_ASSIGN_2[suite.af().family],)
-    )
+    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_2[suite.af().family],))
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up
     host_1_up.remove_networks((migration_network,))
@@ -120,23 +112,15 @@ def host_1_with_mig_net(migration_network, host_1_up):
 
 def test_serial_vmconsole(cirros_serial_console, running_cirros_vm):
     if suite.af().is6:
-        ip = cirros_serial_console.add_static_ip(
-            running_cirros_vm.id, f'{IPV6}/{PREFIX}', CIRROS_NIC
-        )
+        ip = cirros_serial_console.add_static_ip(running_cirros_vm.id, f'{IPV6}/{PREFIX}', CIRROS_NIC)
         assert ip == IPV6
     else:
         ip = cirros_serial_console.assign_ip4(running_cirros_vm.id, CIRROS_NIC)
         assert ipaddress.ip_address(ip).version == 4
 
 
-def test_live_vm_migration_using_dedicated_network(
-    running_blank_vm, host_0_with_mig_net, host_1_with_mig_net
-):
-    dst_host = (
-        host_0_with_mig_net
-        if running_blank_vm.host.id == host_1_with_mig_net.id
-        else host_1_with_mig_net
-    )
+def test_live_vm_migration_using_dedicated_network(running_blank_vm, host_0_with_mig_net, host_1_with_mig_net):
+    dst_host = host_0_with_mig_net if running_blank_vm.host.id == host_1_with_mig_net.id else host_1_with_mig_net
 
     running_blank_vm.migrate(dst_host.name)
     running_blank_vm.wait_for_up_status()
@@ -162,40 +146,23 @@ def test_iterators(running_blank_vm, system):
     vm_names = (vm.name for vm in virtlib.Vm.iterate(system))
     assert running_blank_vm.name in vm_names
 
-    cluster_names = (
-        cluster.name for cluster in clusterlib.Cluster.iterate(system)
-    )
+    cluster_names = (cluster.name for cluster in clusterlib.Cluster.iterate(system))
     assert running_blank_vm.cluster.name in cluster_names
 
     vnic_names = (vnic.name for vnic in running_blank_vm.vnics())
     assert NIC1_NAME in vnic_names
 
-    vnic_profile_names = (
-        profile.name for profile in netlib.VnicProfile.iterate(system)
-    )
-    assert (
-        next(running_blank_vm.vnics()).vnic_profile.name in vnic_profile_names
-    )
+    vnic_profile_names = (profile.name for profile in netlib.VnicProfile.iterate(system))
+    assert next(running_blank_vm.vnics()).vnic_profile.name in vnic_profile_names
 
     dc_names = (dc.name for dc in datacenterlib.DataCenter.iterate(system))
     assert running_blank_vm.cluster.get_data_center().name in dc_names
 
-    assert (
-        len(
-            list(
-                datacenterlib.DataCenter.iterate(
-                    system, search='name = missing'
-                )
-            )
-        )
-        == 0
-    )
+    assert len(list(datacenterlib.DataCenter.iterate(system, search='name = missing'))) == 0
 
 
 def test_assign_network_filter(running_blank_vm, system, ovirtmgmt_network):
-    with netlib.create_vnic_profile(
-        system, 'temporary', ovirtmgmt_network
-    ) as profile:
+    with netlib.create_vnic_profile(system, 'temporary', ovirtmgmt_network) as profile:
         network_filter = netlib.NetworkFilter(system)
         network_filter.import_by_name('allow-dhcp')
         profile.filter = network_filter

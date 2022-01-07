@@ -16,9 +16,7 @@ class Displayable(WithOvirtDriver):
 
     def wait_for_displayed(self):
         self.ovirt_driver.wait_until(
-            'Wait until '
-            + self.get_displayable_name()
-            + ' is displayed failed',
+            'Wait until ' + self.get_displayable_name() + ' is displayed failed',
             self.is_displayed,
         )
 

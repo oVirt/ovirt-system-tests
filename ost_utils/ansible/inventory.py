@@ -20,10 +20,7 @@ class Inventory(object):
 
     def add(self, name, contents):
         if name in self.files:
-            raise RuntimeError(
-                'ansible inventory: '
-                f'Trying to overwrite an existing key {name}'
-            )
+            raise RuntimeError('ansible inventory: ' f'Trying to overwrite an existing key {name}')
         inv_file_name = f'{os.path.join(self.dir, name)}.yml'
         with open(inv_file_name, 'wb') as inv_file:
             inv_file.write(contents)

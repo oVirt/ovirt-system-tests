@@ -48,12 +48,8 @@ class VnicSetup(object):
 
     def init(self, engine, vm_name, dc_name, cluster_name):
         self._engine = engine
-        self._networks = nu.add_networks(
-            engine, dc_name, cluster_name, NETS.values()
-        )
-        nu.assign_networks_to_cluster(
-            engine, cluster_name, self._networks, False
-        )
+        self._networks = nu.add_networks(engine, dc_name, cluster_name, NETS.values())
+        nu.assign_networks_to_cluster(engine, cluster_name, self._networks, False)
         self._profiles = nu.get_profiles_for(engine, self._networks)
         nu.create_nics_on_vm(engine, vm_name, self._profiles)
         self.create_registration_configuration()
@@ -63,41 +59,25 @@ class VnicSetup(object):
         nu.remove_networks(self.engine, self._networks, FILTERS['networks'])
 
     def _create_mappings(self):
-        target_same_as_source = self._create_mapping(
-            NETS['target_same_as_source'], NETS['target_same_as_source']
-        )
+        target_same_as_source = self._create_mapping(NETS['target_same_as_source'], NETS['target_same_as_source'])
 
-        ovirtmgmt_target = self._create_mapping(
-            NETS['to_ovirtmgmt'], 'ovirtmgmt'
-        )
+        ovirtmgmt_target = self._create_mapping(NETS['to_ovirtmgmt'], 'ovirtmgmt')
 
         other_target = self._create_mapping(NETS['n4'], NETS['n5'])
 
         no_profile_target = self._create_mapping(NETS['to_no_profile'], '')
 
-        source_not_exists = self._create_mapping(
-            OVF['not_on_engine'], OVF['not_on_engine']
-        )
+        source_not_exists = self._create_mapping(OVF['not_on_engine'], OVF['not_on_engine'])
 
-        source_deleted_profile_with_target = self._create_mapping(
-            NETS['deleted_profile_with_target'], 'ovirtmgmt'
-        )
+        source_deleted_profile_with_target = self._create_mapping(NETS['deleted_profile_with_target'], 'ovirtmgmt')
 
-        source_deleted_network_with_target = self._create_mapping(
-            NETS['deleted_network_with_target'], 'ovirtmgmt'
-        )
+        source_deleted_network_with_target = self._create_mapping(NETS['deleted_network_with_target'], 'ovirtmgmt')
 
-        source_deleted_target_profile_empty_string = self._create_mapping(
-            NETS['deleted_profile_to_no_profile'], ''
-        )
+        source_deleted_target_profile_empty_string = self._create_mapping(NETS['deleted_profile_to_no_profile'], '')
 
-        source_deleted_target_network_empty_string = self._create_mapping(
-            NETS['deleted_network_to_no_profile'], ''
-        )
+        source_deleted_target_network_empty_string = self._create_mapping(NETS['deleted_network_to_no_profile'], '')
 
-        not_on_engine = self._create_mapping(
-            OVF['not_on_engine'], OVF['not_on_engine']
-        )
+        not_on_engine = self._create_mapping(OVF['not_on_engine'], OVF['not_on_engine'])
 
         no_source = self._create_mapping_no_source(OVF['no_source'])
 
@@ -151,41 +131,27 @@ class VnicSetup(object):
 
     def create_registration_configuration(self):
         vnic_profile_mappings = self._create_mappings()
-        self._registration_configuration = self._create_registration_config(
-            vnic_profile_mappings
-        )
+        self._registration_configuration = self._create_registration_config(vnic_profile_mappings)
 
     def _create_registration_config(self, vnic_profile_mappings):
-        return RegistrationConfiguration(
-            vnic_profile_mappings=vnic_profile_mappings
-        )
+        return RegistrationConfiguration(vnic_profile_mappings=vnic_profile_mappings)
 
     def assert_results(self, vm_name, cluster_name):
         # get under test entities
         self._nics = nu.get_nics_on(self.engine, vm_name)
-        ovirtmgmt_profile = nu.get_profile(
-            self.engine, cluster_name, 'ovirtmgmt'
-        )
+        ovirtmgmt_profile = nu.get_profile(self.engine, cluster_name, 'ovirtmgmt')
 
         # assert
         self._assert_profile_on_nic(NETS['n5'], NETS['n4'])
         self._assert_profile_on_nic(NETS['n4'], NETS['n5'])
         self._assert_profile_on_nic(NETS['no_target'], NETS['no_target'])
 
-        self._assert_profile_on_nic(
-            NETS['target_same_as_source'], NETS['target_same_as_source']
-        )
-        self._assert_profile_on_nic(
-            NETS['not_in_mapping'], NETS['not_in_mapping']
-        )
+        self._assert_profile_on_nic(NETS['target_same_as_source'], NETS['target_same_as_source'])
+        self._assert_profile_on_nic(NETS['not_in_mapping'], NETS['not_in_mapping'])
 
         self._assert_a_profile_on_nic(NETS['to_ovirtmgmt'], ovirtmgmt_profile)
-        self._assert_a_profile_on_nic(
-            NETS['deleted_network_with_target'], ovirtmgmt_profile
-        )
-        self._assert_a_profile_on_nic(
-            NETS['deleted_profile_with_target'], ovirtmgmt_profile
-        )
+        self._assert_a_profile_on_nic(NETS['deleted_network_with_target'], ovirtmgmt_profile)
+        self._assert_a_profile_on_nic(NETS['deleted_profile_with_target'], ovirtmgmt_profile)
 
         self._assert_no_profile_on_nic(NETS['deleted_profile_to_no_profile'])
         self._assert_no_profile_on_nic(NETS['deleted_network_to_no_profile'])

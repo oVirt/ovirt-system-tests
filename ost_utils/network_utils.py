@@ -47,16 +47,10 @@ def ip_to_url(ip):
 
 
 def _get_attachment_by_id(host, network_id):
-    return next(
-        att
-        for att in host.network_attachments_service().list()
-        if att.network.id == network_id
-    )
+    return next(att for att in host.network_attachments_service().list() if att.network.id == network_id)
 
 
-def attach_network_to_host(
-    host, nic_name, network_name, ip_configuration, bonds=[]
-):
+def attach_network_to_host(host, nic_name, network_name, ip_configuration, bonds=[]):
     attachment = NetworkAttachment(
         network=Network(name=network_name),
         host_nic=HostNic(name=nic_name),
@@ -77,9 +71,7 @@ def detach_network_from_host(engine, host, network_name, bond_name=None):
 
     attachment = _get_attachment_by_id(host, network_id)
     bonds = [
-        nic
-        for nic in host.nics_service().list()
-        if bond_name and nic.name == bond_name
+        nic for nic in host.nics_service().list() if bond_name and nic.name == bond_name
     ]  # there is no more than one bond
 
     return host.setup_networks(
@@ -97,23 +89,17 @@ def modify_ip_config(engine, host, network_name, ip_configuration):
     attachment = _get_attachment_by_id(host, network_id)
     attachment.ip_address_assignments = ip_configuration
 
-    return host.setup_networks(
-        modified_network_attachments=[attachment], check_connectivity=True
-    )
+    return host.setup_networks(modified_network_attachments=[attachment], check_connectivity=True)
 
 
 def create_dhcp_ip_configuration():
     return [
         IpAddressAssignment(assignment_method=BootProtocol.DHCP),
-        IpAddressAssignment(
-            assignment_method=BootProtocol.DHCP, ip=Ip(version=IpVersion.V6)
-        ),
+        IpAddressAssignment(assignment_method=BootProtocol.DHCP, ip=Ip(version=IpVersion.V6)),
     ]
 
 
-def create_static_ip_configuration(
-    ipv4_addr=None, ipv4_mask=None, ipv6_addr=None, ipv6_mask=None
-):
+def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None, ipv6_addr=None, ipv6_mask=None):
     assignments = []
     if ipv4_addr:
         assignments.append(
@@ -126,9 +112,7 @@ def create_static_ip_configuration(
         assignments.append(
             IpAddressAssignment(
                 assignment_method=BootProtocol.STATIC,
-                ip=Ip(
-                    address=ipv6_addr, netmask=ipv6_mask, version=IpVersion.V6
-                ),
+                ip=Ip(address=ipv6_addr, netmask=ipv6_mask, version=IpVersion.V6),
             )
         )
 
@@ -140,9 +124,7 @@ def get_network_attachment(engine, host, network_name, dc_name):
 
     # CAVEAT: .list(search='name=Migration_Network') is ignored, and the first
     #         network returned happened to be VM_Network in my case
-    network = next(
-        net for net in dc.networks_service().list() if net.name == network_name
-    )
+    network = next(net for net in dc.networks_service().list() if net.name == network_name)
 
     return _get_attachment_by_id(host, network.id)
 
@@ -152,25 +134,19 @@ def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
     query = u'name={}'.format(test_utils.quote_search_string(network_name))
 
     network = engine.networks_service().list(search=query)[0]
-    network_service = cluster_service.networks_service().network_service(
-        id=network.id
-    )
+    network_service = cluster_service.networks_service().network_service(id=network.id)
 
     network.usages = usages
 
     return network_service.update(network)
 
 
-def set_network_required_in_cluster(
-    engine, network_name, cluster_name, required
-):
+def set_network_required_in_cluster(engine, network_name, cluster_name, required):
     cluster_service = test_utils.get_cluster_service(engine, cluster_name)
     query = u'name={}'.format(test_utils.quote_search_string(network_name))
 
     network = engine.networks_service().list(search=query)[0]
-    network_service = cluster_service.networks_service().network_service(
-        id=network.id
-    )
+    network_service = cluster_service.networks_service().network_service(id=network.id)
 
     network.required = required
 
@@ -180,9 +156,7 @@ def set_network_required_in_cluster(
 def set_network_mtu(engine, network_name, dc_name, mtu):
     dc = test_utils.data_center_service(engine, dc_name)
 
-    network = next(
-        net for net in dc.networks_service().list() if net.name == network_name
-    )
+    network = next(net for net in dc.networks_service().list() if net.name == network_name)
     network_service = dc.networks_service().network_service(id=network.id)
 
     network.mtu = mtu
@@ -205,9 +179,7 @@ def get_default_ovn_provider_id(engine):
     for provider in service.list():
         if provider.name == constants.DEFAULT_OVN_PROVIDER_NAME:
             return provider.id
-    raise Exception(
-        '%s not present in oVirt' % constants.DEFAULT_OVN_PROVIDER_NAME
-    )
+    raise Exception('%s not present in oVirt' % constants.DEFAULT_OVN_PROVIDER_NAME)
 
 
 def add_networks(engine, dc_name, cluster_name, network_names):
@@ -271,9 +243,7 @@ def create_nics_on_vm(engine, vm_name, profiles):
 def _add_nics(vm_service, profiles):
     nics_service = vm_service.nics_service()
     for profile in profiles:
-        nics_service.add(
-            Nic(name=profile.name, vnic_profile=VnicProfile(id=profile.id))
-        )
+        nics_service.add(Nic(name=profile.name, vnic_profile=VnicProfile(id=profile.id)))
 
 
 def get_nics_on(engine, vm_name):

@@ -144,11 +144,7 @@ class BaseBackend(abc.ABC):
 
     @cache
     def network_names(self):
-        return {
-            network_name
-            for mapping in self.ip_mapping().values()
-            for network_name in mapping.keys()
-        }
+        return {network_name for mapping in self.ip_mapping().values() for network_name in mapping.keys()}
 
     @cache
     def management_network_name(self):

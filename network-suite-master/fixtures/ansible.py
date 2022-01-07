@@ -96,7 +96,5 @@ class MachineFacts6(MachineFacts):
 
     def _get_ip_for_iface(self, iface_name):
         return next(
-            ipv6['address']
-            for ipv6 in self._facts[f'ansible_{iface_name}']['ipv6']
-            if ipv6['scope'] == 'global'
+            ipv6['address'] for ipv6 in self._facts[f'ansible_{iface_name}']['ipv6'] if ipv6['scope'] == 'global'
         )

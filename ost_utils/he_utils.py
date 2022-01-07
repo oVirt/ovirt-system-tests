@@ -16,9 +16,7 @@ def he_status(ansible_host):
 
     def get_value():
         nonlocal ret
-        ansible_res = ansible_host.shell('hosted-engine --vm-status --json')[
-            'stdout'
-        ]
+        ansible_res = ansible_host.shell('hosted-engine --vm-status --json')['stdout']
         try:
             status = json.loads(ansible_res)
         except ValueError:
@@ -41,9 +39,7 @@ def he_status(ansible_host):
                 hostname = data['hostname'].split('.')[0]
                 result['hosts'][hostname] = data
                 result['hosts'][hostname]['extra'] = dict(
-                    item.split('=')
-                    for item in data['extra'].split('\n')
-                    if item
+                    item.split('=') for item in data['extra'].split('\n') if item
                 )
         ret = result
         logging.debug(f'he_status: {ret}')
@@ -108,25 +104,17 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
 
     def _set_and_test_global_maintenance_mode():
         logging.debug('_set_and_test_global_maintenance_mode: Start')
-        ansible_host.shell(
-            'hosted-engine '
-            '--set-maintenance '
-            '--mode={}'.format('global' if mode else 'none')
-        )
+        ansible_host.shell('hosted-engine ' '--set-maintenance ' '--mode={}'.format('global' if mode else 'none'))
         logging.debug('_set_and_test_global_maintenance_mode: After setting')
         return is_global_maintenance_mode(ansible_host) == mode
 
     logging.info(f'set_and_test_global_maintenance_mode: Start, mode={mode}')
-    assert assert_utils.true_within_short(
-        _set_and_test_global_maintenance_mode
-    )
+    assert assert_utils.true_within_short(_set_and_test_global_maintenance_mode)
 
 
 def _get_hosts_states(ansible_host):
     status = he_status(ansible_host)
-    return set(
-        host_data['extra']['state'] for host_data in status['hosts'].values()
-    )
+    return set(host_data['extra']['state'] for host_data in status['hosts'].values())
 
 
 def all_hosts_state_global_maintenance(ansible_host):
@@ -139,29 +127,18 @@ def no_hosts_state_global_maintenance(ansible_host):
 
 def engine_vm_is_migrating(ansible_host):
     status = he_status(ansible_host)
-    return any(
-        'migration' in host_data['engine-status']['detail'].lower()
-        for host_data in status['hosts'].values()
-    )
+    return any('migration' in host_data['engine-status']['detail'].lower() for host_data in status['hosts'].values())
 
 
 def engine_vm_is_up(ansible_host):
     status = he_status(ansible_host)
-    return any(
-        host_data['engine-status']['vm'].lower() == 'up'
-        for host_data in status['hosts'].values()
-    )
+    return any(host_data['engine-status']['vm'].lower() == 'up' for host_data in status['hosts'].values())
 
 
 def engine_vm_is_down(ansible_host):
     status = he_status(ansible_host)
-    return all(
-        'down' in host_data['engine-status']['vm'].lower()
-        for host_data in status['hosts'].values()
-    )
+    return all('down' in host_data['engine-status']['vm'].lower() for host_data in status['hosts'].values())
 
 
 def wait_until_engine_vm_is_not_migrating(ansible_host):
-    assert assert_utils.true_within_long(
-        lambda: not engine_vm_is_migrating(ansible_host)
-    )
+    assert assert_utils.true_within_long(lambda: not engine_vm_is_migrating(ansible_host))

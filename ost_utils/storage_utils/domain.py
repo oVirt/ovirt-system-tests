@@ -13,9 +13,7 @@ from ost_utils import engine_utils
 def add(api, domain, dc_name):
     system_service = api.system_service()
     sds_service = system_service.storage_domains_service()
-    with engine_utils.wait_for_event(
-        system_service, 956
-    ):  # USER_ADD_STORAGE_DOMAIN(956)
+    with engine_utils.wait_for_event(system_service, 956):  # USER_ADD_STORAGE_DOMAIN(956)
         sd = sds_service.add(domain)
 
         sd_service = sds_service.storage_domain_service(sd.id)
@@ -37,9 +35,7 @@ def add(api, domain, dc_name):
                 id=sd.id,
             ),
         )
-        attached_sd_service = attached_sds_service.storage_domain_service(
-            sd.id
-        )
+        attached_sd_service = attached_sds_service.storage_domain_service(sd.id)
         assert assert_utils.equals_within_long(
             lambda: attached_sd_service.get().status,
             sdk4.types.StorageDomainStatus.ACTIVE,

@@ -69,21 +69,13 @@ def disable_noisy_logging():
 @pytest.fixture(scope="module", autouse=True)
 def disable_notifications_for_admin_user(engine_admin_service):
     targetName = "webAdmin.showNotifications"
-    existingProps = [
-        option
-        for option in engine_admin_service.options_service().list()
-        if option.name == targetName
-    ]
+    existingProps = [option for option in engine_admin_service.options_service().list() if option.name == targetName]
     if not existingProps:
-        option = types.UserOption(
-            name=targetName, content="false", user=engine_admin_service.get()
-        )
+        option = types.UserOption(name=targetName, content="false", user=engine_admin_service.get())
         assert engine_admin_service.options_service().add(option, wait=True)
 
 
-def test_secure_connection_should_fail_without_root_ca(
-    engine_fqdn, engine_ip_url, engine_webadmin_url
-):
+def test_secure_connection_should_fail_without_root_ca(engine_fqdn, engine_ip_url, engine_webadmin_url):
     with pytest.raises(ShellError) as e:
         shell(
             [
@@ -102,9 +94,7 @@ def test_secure_connection_should_fail_without_root_ca(
     )
 
 
-def test_secure_connection_should_succeed_with_root_ca(
-    engine_fqdn, engine_ip_url, engine_cert, engine_webadmin_url
-):
+def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip_url, engine_cert, engine_webadmin_url):
     shell(
         [
             "curl",
@@ -118,9 +108,7 @@ def test_secure_connection_should_succeed_with_root_ca(
     )
 
 
-def test_add_grafana_user(
-    engine_username, engine_password, engine_ip_url, engine_email
-):
+def test_add_grafana_user(engine_username, engine_password, engine_ip_url, engine_email):
     url = f"http://{engine_username}:{engine_password}@{engine_ip_url}/ovirt-engine-grafana/api/admin/users"
     data = '''{{
         "name":"ost",
@@ -150,9 +138,7 @@ def firefox_options():
     options.set_preference('devtools.console.stdout.content', True)
     options.set_preference("browser.download.folderList", 2)
     options.set_preference("browser.download.dir", "/export")
-    options.set_preference(
-        "browser.helperApps.neverAsk.saveToDisk", "application/x-virt-viewer"
-    )
+    options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/x-virt-viewer")
     return options
 
 
@@ -173,9 +159,7 @@ def chrome_options():
     prefs = {'download.default_directory': '/export'}
     options.add_experimental_option('prefs', prefs)
     # note: response body is not logged
-    options.add_experimental_option(
-        'perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True}
-    )
+    options.add_experimental_option('perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True})
     return options
 
 
@@ -197,9 +181,7 @@ def browser_name(browser_options):
 
 @pytest.fixture(scope="session")
 def ovirt_driver(browser_options, hub_url, engine_webadmin_url):
-    driver = webdriver.Remote(
-        command_executor=hub_url, options=browser_options
-    )
+    driver = webdriver.Remote(command_executor=hub_url, options=browser_options)
 
     ovirt_driver = Driver(driver)
     driver.set_window_size(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -230,9 +212,7 @@ def selenium_artifact_filename(browser_name):
 
 
 @pytest.fixture(scope="session")
-def selenium_artifact_full_path(
-    selenium_artifacts_dir, selenium_artifact_filename
-):
+def selenium_artifact_full_path(selenium_artifacts_dir, selenium_artifact_filename):
     def _selenium_artifact_full_path(description, extension):
         return os.path.join(
             selenium_artifacts_dir,
@@ -250,9 +230,7 @@ def console_file_full_path(selenium_artifacts_dir):
 @pytest.fixture(scope="session")
 def save_screenshot(ovirt_driver, selenium_artifact_full_path):
     def save(description):
-        ovirt_driver.save_screenshot(
-            selenium_artifact_full_path(description, 'png')
-        )
+        ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'))
 
     return save
 
@@ -260,9 +238,7 @@ def save_screenshot(ovirt_driver, selenium_artifact_full_path):
 @pytest.fixture(scope="session")
 def save_page_source(ovirt_driver, selenium_artifact_full_path):
     def save(description):
-        ovirt_driver.save_page_source(
-            selenium_artifact_full_path(description, 'html')
-        )
+        ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'))
 
     return save
 
@@ -271,20 +247,14 @@ def save_page_source(ovirt_driver, selenium_artifact_full_path):
 def save_logs_from_browser(ovirt_driver, selenium_artifact_full_path):
     def save(description):
         if ovirt_driver.driver.capabilities['browserName'] == 'chrome':
-            ovirt_driver.save_console_log(
-                selenium_artifact_full_path(description, 'txt')
-            )
-            ovirt_driver.save_performance_log(
-                selenium_artifact_full_path(description, 'perf.txt')
-            )
+            ovirt_driver.save_console_log(selenium_artifact_full_path(description, 'txt'))
+            ovirt_driver.save_performance_log(selenium_artifact_full_path(description, 'perf.txt'))
 
     return save
 
 
 @pytest.fixture(scope="function", autouse=True)
-def after_test(
-    request, save_screenshot, save_page_source, save_logs_from_browser
-):
+def after_test(request, save_screenshot, save_page_source, save_logs_from_browser):
     yield
     status = "failed" if request.session.testsfailed else "success"
     file_name = f'{request.node.originalname}_{status}'
@@ -435,9 +405,7 @@ def setup_virtual_machines(engine_api):
     vm_service = test_utils.get_vm_service(engine_api.system_service(), 'vm0')
     if vm_service.get().status == types.VmStatus.DOWN:
         vm_service.start()
-        assert assert_utils.equals_within_long(
-            lambda: vm_service.get().status, types.VmStatus.POWERING_UP
-        )
+        assert assert_utils.equals_within_long(lambda: vm_service.get().status, types.VmStatus.POWERING_UP)
 
 
 @pytest.fixture
@@ -673,15 +641,11 @@ def test_grafana(
     grafana.wait_for_displayed()
     save_screenshot('grafana')
 
-    grafana.open_dashboard(
-        'oVirt Executive Dashboards', '02 Data Center Dashboard'
-    )
+    grafana.open_dashboard('oVirt Executive Dashboards', '02 Data Center Dashboard')
     assert not grafana.is_error_visible()
     save_screenshot('grafana-dashboard-1')
 
-    grafana.open_dashboard(
-        'oVirt Inventory Dashboards', '02 Hosts Inventory Dashboard'
-    )
+    grafana.open_dashboard('oVirt Inventory Dashboards', '02 Hosts Inventory Dashboard')
     assert not grafana.is_error_visible()
 
     save_screenshot('grafana-dashboard-2')

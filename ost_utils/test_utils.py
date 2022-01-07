@@ -20,9 +20,7 @@ def get_nics_service(engine, vm_name):
 def get_network_fiter_parameters_service(engine, vm_name):
     nics_service = get_nics_service(engine, vm_name)
     nic = nics_service.list()[0]
-    return nics_service.nic_service(
-        id=nic.id
-    ).network_filter_parameters_service()
+    return nics_service.nic_service(id=nic.id).network_filter_parameters_service()
 
 
 @cache
@@ -101,9 +99,7 @@ def get_storage_domain_disk_service_by_name(sd_service, disk_name):
     disks_service = sd_service.disks_service()
     # StorageDomainDisksService.list has no 'search' parameter and ignores
     # query={'name': 'spam'} so we have to do the filtering ourselves
-    disk = next(
-        (disk for disk in disks_service.list() if disk.name == disk_name), None
-    )
+    disk = next((disk for disk in disks_service.list() if disk.name == disk_name), None)
     if disk is None:
         return None
     else:
@@ -140,11 +136,7 @@ def get_vm_snapshots_service(engine, vm_name):
 def get_snapshot(engine, vm_name, description):
     snapshots_service = get_vm_snapshots_service(engine, vm_name)
     return next(
-        (
-            snap
-            for snap in snapshots_service.list()
-            if snap.description == description
-        ),
+        (snap for snap in snapshots_service.list() if snap.description == description),
         None,
     )
 
@@ -156,9 +148,7 @@ def quote_search_string(s):
     # Escaped characters are currently broken, but strings containing spaces
     # are able to be passed with enclosing quotation marks.
     if '"' in s:
-        raise ValueError(
-            'Quotation marks currently can not be appear in search phrases'
-        )
+        raise ValueError('Quotation marks currently can not be appear in search phrases')
     return '"' + s + '"'
 
 
@@ -171,9 +161,7 @@ def get_vnic_profiles_service(engine, network_name):
 
 def all_jobs_finished(engine, correlation_id):
     try:
-        jobs = engine.jobs_service().list(
-            search='correlation_id=%s' % correlation_id
-        )
+        jobs = engine.jobs_service().list(search='correlation_id=%s' % correlation_id)
     except ovirtsdk4.Error:
         jobs = engine.jobs_service().list()
     return all(job.status != types.JobStatus.STARTED for job in jobs)
@@ -189,18 +177,10 @@ def get_attached_storage_domain(data_center, name, service=False):
     # AttachedStorageDomainsService.list doesn't have the 'search' parameter
     # (StorageDomainsService.list does but this helper is overloaded)
     sd = next(sd for sd in storage_domains_service.list() if sd.name == name)
-    return (
-        storage_domains_service.storage_domain_service(sd.id)
-        if service
-        else sd
-    )
+    return storage_domains_service.storage_domain_service(sd.id) if service else sd
 
 
-def get_attached_storage_domain_disk_service(
-    attached_storage, name, query=None
-):
+def get_attached_storage_domain_disk_service(attached_storage, name, query=None):
     disks_service = attached_storage.disks_service()
-    disk = next(
-        disk for disk in disks_service.list(query=query) if disk.name == name
-    )
+    disk = next(disk for disk in disks_service.list(query=query) if disk.name == name)
     return disks_service.disk_service(disk.id)

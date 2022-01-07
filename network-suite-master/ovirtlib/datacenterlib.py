@@ -59,9 +59,7 @@ class DataCenter(SDKRootEntity):
         self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.ACTIVE)
 
     def wait_for_sd_maintenance_status(self, sd):
-        self._wait_for_sd_status(
-            sd, storagelib.StorageDomainStatus.MAINTENANCE
-        )
+        self._wait_for_sd_status(sd, storagelib.StorageDomainStatus.MAINTENANCE)
 
     def create(self, dc_name):
         sdk_type = types.DataCenter(name=dc_name)
@@ -109,12 +107,7 @@ class DataCenter(SDKRootEntity):
 
     def __repr__(self):
         return self._execute_without_raising(
-            lambda: (
-                f'<{self.__class__.__name__}| '
-                f'name:{self.name} '
-                f'status:{self.status}, '
-                f'id:{self.id}>'
-            )
+            lambda: (f'<{self.__class__.__name__}| ' f'name:{self.name} ' f'status:{self.status}, ' f'id:{self.id}>')
         )
 
 

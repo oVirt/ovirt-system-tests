@@ -40,33 +40,23 @@ class IpAssignment(object):
 
 class StaticIpv4Assignment(IpAssignment):
     def __init__(self, addr, mask, gateway=None, version=IpVersion.V4):
-        super(StaticIpv4Assignment, self).__init__(
-            version, addr, mask, gateway, types.BootProtocol.STATIC
-        )
+        super(StaticIpv4Assignment, self).__init__(version, addr, mask, gateway, types.BootProtocol.STATIC)
 
 
 class StaticIpv6Assignment(IpAssignment):
     def __init__(self, addr, prefix, gateway=None, version=IpVersion.V6):
-        super(StaticIpv6Assignment, self).__init__(
-            version, addr, prefix, gateway, types.BootProtocol.STATIC
-        )
+        super(StaticIpv6Assignment, self).__init__(version, addr, prefix, gateway, types.BootProtocol.STATIC)
 
 
 NO_V4 = IpAssignment(IpVersion.V4, None, None, None, types.BootProtocol.NONE)
 NO_V6 = IpAssignment(IpVersion.V6, None, None, None, types.BootProtocol.NONE)
-IPV4_DHCP = IpAssignment(
-    IpVersion.V4, None, None, None, types.BootProtocol.DHCP
-)
-IPV6_POLY_DHCP_AUTOCONF = IpAssignment(
-    IpVersion.V6, None, None, None, types.BootProtocol.POLY_DHCP_AUTOCONF
-)
+IPV4_DHCP = IpAssignment(IpVersion.V4, None, None, None, types.BootProtocol.DHCP)
+IPV6_POLY_DHCP_AUTOCONF = IpAssignment(IpVersion.V6, None, None, None, types.BootProtocol.POLY_DHCP_AUTOCONF)
 DYNAMIC_IP_ASSIGN = {'inet': IPV4_DHCP, 'inet6': IPV6_POLY_DHCP_AUTOCONF}
 
 
 class NetworkAttachmentData(object):
-    def __init__(
-        self, network, nic_name, ip_assignments=(), id=None, in_sync=True
-    ):
+    def __init__(self, network, nic_name, ip_assignments=(), id=None, in_sync=True):
         self._network = network
         self._nic_name = nic_name
         self._ip_assignments = ip_assignments
@@ -95,11 +85,7 @@ class NetworkAttachmentData(object):
 
     def get_gw6(self):
         return next(
-            (
-                a.gateway
-                for a in self._ip_assignments
-                if a.version == types.IpVersion.V6
-            ),
+            (a.gateway for a in self._ip_assignments if a.version == types.IpVersion.V6),
             None,
         )
 
@@ -112,9 +98,7 @@ class NetworkAttachmentData(object):
             network=self.network.get_sdk_type(),
             host_nic=types.HostNic(name=self.nic_name),
         )
-        attachment.ip_address_assignments = self._to_ip_address_assignments(
-            self.ip_assignments
-        )
+        attachment.ip_address_assignments = self._to_ip_address_assignments(self.ip_assignments)
         attachment.id = self.id
         attachment.in_sync = self.in_sync
         return attachment
@@ -124,10 +108,7 @@ class NetworkAttachmentData(object):
         :param ip_assignments: list(netattachlib.IpAssignment)
         :return: list(types.IpAddressAssignment)
         """
-        return [
-            self._to_ip_address_assignment(ip_assignment)
-            for ip_assignment in ip_assignments
-        ]
+        return [self._to_ip_address_assignment(ip_assignment) for ip_assignment in ip_assignments]
 
     def _to_ip_address_assignment(self, ip_assignment):
         """
@@ -149,19 +130,14 @@ class NetworkAttachmentData(object):
         """
         :param network_attachment: types.NetworkAttachment
         """
-        self._ip_assignments = self._to_ip_assignments(
-            network_attachment.ip_address_assignments
-        )
+        self._ip_assignments = self._to_ip_assignments(network_attachment.ip_address_assignments)
 
     def _to_ip_assignments(self, ip_address_assignments):
         """
         :param ip_address_assignments: list(types.IpAddressAssignment)
         :return: list(netattachlib.IpAssignment)
         """
-        return [
-            self._to_ip_assignment(ip_address_assignment)
-            for ip_address_assignment in ip_address_assignments
-        ]
+        return [self._to_ip_assignment(ip_address_assignment) for ip_address_assignment in ip_address_assignments]
 
     def _to_ip_assignment(self, ip_address_assignment):
         """
@@ -182,10 +158,7 @@ class NetworkAttachmentData(object):
         :param network_attachments_data: []netattachlib.NetworkAttachmentData
         :return: []types.NetworkAttachment
         """
-        return [
-            attachment.to_network_attachment()
-            for attachment in network_attachments_data
-        ]
+        return [attachment.to_network_attachment() for attachment in network_attachments_data]
 
 
 class BondingData(object):
@@ -201,19 +174,14 @@ class BondingData(object):
     def to_bond(self):
         return types.HostNic(
             name=self._name,
-            bonding=types.Bonding(
-                options=self._sdk_options(), slaves=self._sdk_slaves()
-            ),
+            bonding=types.Bonding(options=self._sdk_options(), slaves=self._sdk_slaves()),
         )
 
     def _sdk_slaves(self):
         return [types.HostNic(name=name) for name in self._slave_names]
 
     def _sdk_options(self):
-        return [
-            types.Option(name=key, value=value)
-            for key, value in self._options.items()
-        ]
+        return [types.Option(name=key, value=value) for key, value in self._options.items()]
 
     @staticmethod
     def get_bonds_names(bonds):
@@ -226,6 +194,4 @@ class BondingData(object):
 
 class ActiveSlaveBonding(BondingData):
     def __init__(self, name, slave_names):
-        super(ActiveSlaveBonding, self).__init__(
-            name, slave_names, {'mode': '1'}
-        )
+        super(ActiveSlaveBonding, self).__init__(name, slave_names, {'mode': '1'})

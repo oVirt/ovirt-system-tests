@@ -14,15 +14,11 @@ class WithNotifications(WithOvirtDriver):
         xpath = '//div[contains(@class, "alert-danger")]'
         return self.ovirt_driver.retry_if_stale(
             self.ovirt_driver.is_xpath_present, xpath
-        ) and self.ovirt_driver.retry_if_stale(
-            self.ovirt_driver.is_xpath_displayed, xpath
-        )
+        ) and self.ovirt_driver.retry_if_stale(self.ovirt_driver.is_xpath_displayed, xpath)
 
     def _is_notification_displayed(self):
         xpath = '//a[@class="notif_dismissButton"]'
-        result = self.ovirt_driver.is_xpath_present(
-            xpath
-        ) and self.ovirt_driver.is_xpath_displayed(xpath)
+        result = self.ovirt_driver.is_xpath_present(xpath) and self.ovirt_driver.is_xpath_displayed(xpath)
         return result
 
     def close_notification_safely(self):

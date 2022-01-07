@@ -85,15 +85,11 @@ class Network(SDKSubEntity):
         if vlan is not None:
             sdk_type.vlan = types.Vlan(id=vlan)
         if external_provider is not None:
-            sdk_type.external_provider = types.OpenStackNetworkProvider(
-                id=external_provider.id
-            )
+            sdk_type.external_provider = types.OpenStackNetworkProvider(id=external_provider.id)
         if external_provider_physical_network is not None:
             if external_provider is None:
                 raise ExternalProviderRequired
-            sdk_type.external_provider_physical_network = types.Network(
-                id=external_provider_physical_network.id
-            )
+            sdk_type.external_provider_physical_network = types.Network(id=external_provider_physical_network.id)
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, dc):
@@ -103,9 +99,7 @@ class Network(SDKSubEntity):
         return self._system_network_service().network_labels_service().list()
 
     def vnic_profiles(self):
-        profiles = (
-            self._system_network_service().vnic_profiles_service().list()
-        )
+        profiles = self._system_network_service().vnic_profiles_service().list()
         vnic_profiles = []
         for profile in profiles:
             vnic_profile = VnicProfile(self.system)
@@ -119,11 +113,7 @@ class Network(SDKSubEntity):
         profile is assumed, which is the network name
         """
         profile_name = self.name if name is None else name
-        return next(
-            vnic_profile
-            for vnic_profile in self.vnic_profiles()
-            if vnic_profile.name == profile_name
-        )
+        return next(vnic_profile for vnic_profile in self.vnic_profiles() if vnic_profile.name == profile_name)
 
     def _system_network_service(self):
         return self.system.networks_service.network_service(self.id)
@@ -157,9 +147,7 @@ class VnicProfile(SDKRootEntity):
 
     def create(self, name, network, qos=None):
         qos_type = None if qos is None else qos.get_sdk_type()
-        sdk_type = types.VnicProfile(
-            name=name, network=network.get_sdk_type(), qos=qos_type
-        )
+        sdk_type = types.VnicProfile(name=name, network=network.get_sdk_type(), qos=qos_type)
         self._create_sdk_entity(sdk_type)
 
     def _get_parent_service(self, system):
@@ -196,10 +184,7 @@ class VnicProfile(SDKRootEntity):
     @custom_properties.setter
     def custom_properties(self, properties):
         service = self.service.get()
-        service.custom_properties = [
-            types.CustomProperty(name=p.name, value=p.value)
-            for p in properties
-        ]
+        service.custom_properties = [types.CustomProperty(name=p.name, value=p.value) for p in properties]
         self.service.update(service)
 
 

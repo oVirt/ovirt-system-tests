@@ -17,9 +17,7 @@ from ost_utils.storage_utils import lun
 
 @pytest.fixture(scope="session")
 def he_mac_address():
-    return '54:52:{}'.format(
-        ':'.join(('{:02x}'.format(random.randrange(255)) for i in range(4)))
-    )
+    return '54:52:{}'.format(':'.join(('{:02x}'.format(random.randrange(255)) for i in range(4))))
 
 
 # FIXME this is not a good idea when there are multiple networks currently, as
@@ -57,9 +55,7 @@ def he_ipv6_address(ansible_host0_facts):
 
 @pytest.fixture(scope="session")
 def he_host_name(backend):
-    return '{}-engine'.format(
-        '-'.join(backend.storage_hostname().split('-')[:-1])
-    )
+    return '{}-engine'.format('-'.join(backend.storage_hostname().split('-')[:-1]))
 
 
 @pytest.fixture(scope="session")
@@ -153,9 +149,7 @@ def he_engine_answer_file_storage_snippet(
             f'{he_lun_id}\n'
         )
     else:
-        raise RuntimeError(
-            f'Unknown ost_he_storage_domain_type {ost_he_storage_domain_type}'
-        )
+        raise RuntimeError(f'Unknown ost_he_storage_domain_type {ost_he_storage_domain_type}')
 
 
 @pytest.fixture(scope="session")

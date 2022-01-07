@@ -24,8 +24,6 @@ class EngineEvents(SDKRootEntity):
                 custom_id=random.randrange(1, 2 ** 31),
                 description=description,
                 origin=origin,
-                severity=ovirtsdk4.types.LogSeverity(
-                    ovirtsdk4.types.LogSeverity.NORMAL
-                ),
+                severity=ovirtsdk4.types.LogSeverity(ovirtsdk4.types.LogSeverity.NORMAL),
             )
         )

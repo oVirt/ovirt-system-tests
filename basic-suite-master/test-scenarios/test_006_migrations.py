@@ -69,9 +69,7 @@ def prepare_migration_vlan(system_service):
     )
 
     # Set Migration_Network's MTU to match the other VLAN's on the NIC.
-    assert network_utils.set_network_mtu(
-        system_service, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU
-    )
+    assert network_utils.set_network_mtu(system_service, MIGRATION_NETWORK, DC_NAME, DEFAULT_MTU)
 
 
 def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
@@ -91,12 +89,8 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
     LOGGER.debug('destination host: {}'.format(dst_host))
 
     correlation_id = uuid.uuid4()
-    vm_service.migrate(
-        host=Host(name=dst_host), query={'correlation_id': correlation_id}
-    )
-    assert assert_utils.true_within_long(
-        lambda: test_utils.all_jobs_finished(system_service, correlation_id)
-    )
+    vm_service.migrate(host=Host(name=dst_host), query={'correlation_id': correlation_id})
+    assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(system_service, correlation_id))
 
     # Verify that VDSM cleaned the vm in the source host
     def vm_is_not_on_host():
@@ -107,9 +101,7 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
 
     assert assert_utils.true_within_short(vm_is_not_on_host)
 
-    assert assert_utils.equals_within_short(
-        lambda: vm_service.get().status, VmStatus.UP
-    )
+    assert assert_utils.equals_within_short(lambda: vm_service.get().status, VmStatus.UP)
 
     assert _current_running_host() == dst_host
 
@@ -117,9 +109,7 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
 def prepare_migration_attachments_ipv4(system_service):
     hosts_service = system_service.hosts_service()
 
-    for index, host in enumerate(
-        test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME), start=1
-    ):
+    for index, host in enumerate(test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME), start=1):
         host_service = hosts_service.host_service(id=host.id)
 
         ip_address = MIGRATION_NETWORK_IPv4_ADDR.format(index)
@@ -128,26 +118,18 @@ def prepare_migration_attachments_ipv4(system_service):
             ipv4_addr=ip_address, ipv4_mask=MIGRATION_NETWORK_IPv4_MASK
         )
 
-        network_utils.attach_network_to_host(
-            host_service, NIC_NAME, MIGRATION_NETWORK, ip_configuration
-        )
+        network_utils.attach_network_to_host(host_service, NIC_NAME, MIGRATION_NETWORK, ip_configuration)
 
         actual_address = next(
-            nic
-            for nic in host_service.nics_service().list()
-            if nic.name == VLAN200_IF_NAME
+            nic for nic in host_service.nics_service().list() if nic.name == VLAN200_IF_NAME
         ).ip.address
-        assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(
-            ip_address
-        )
+        assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(ip_address)
 
 
 def prepare_migration_attachments_ipv6(system_service):
     hosts_service = system_service.hosts_service()
 
-    for index, host in enumerate(
-        test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME), start=1
-    ):
+    for index, host in enumerate(test_utils.hosts_in_cluster_v4(system_service, CLUSTER_NAME), start=1):
         host_service = hosts_service.host_service(id=host.id)
 
         ip_address = MIGRATION_NETWORK_IPv6_ADDR.format(index)
@@ -156,30 +138,18 @@ def prepare_migration_attachments_ipv6(system_service):
             ipv6_addr=ip_address, ipv6_mask=MIGRATION_NETWORK_IPv6_MASK
         )
 
-        network_utils.modify_ip_config(
-            system_service, host_service, MIGRATION_NETWORK, ip_configuration
-        )
+        network_utils.modify_ip_config(system_service, host_service, MIGRATION_NETWORK, ip_configuration)
 
         actual_address = next(
-            nic
-            for nic in host_service.nics_service().list()
-            if nic.name == VLAN200_IF_NAME
+            nic for nic in host_service.nics_service().list() if nic.name == VLAN200_IF_NAME
         ).ipv6.address
-        assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(
-            ip_address
-        )
+        assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(ip_address)
 
 
 def set_postcopy_migration_policy(system_service):
-    cluster_service = test_utils.get_cluster_service(
-        system_service, CLUSTER_NAME
-    )
+    cluster_service = test_utils.get_cluster_service(system_service, CLUSTER_NAME)
     cluster_service.update(
-        cluster=Cluster(
-            migration=MigrationOptions(
-                policy=MigrationPolicy(id=MIGRATION_POLICY_POSTCOPY)
-            )
-        )
+        cluster=Cluster(migration=MigrationOptions(policy=MigrationPolicy(id=MIGRATION_POLICY_POSTCOPY)))
     )
 
 

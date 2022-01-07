@@ -55,9 +55,7 @@ def rsa_pair():
 
 @pytest.fixture(scope='session')
 def cirros_serial_console(engine_ip, engine_admin_service, rsa_pair):
-    engine_admin_service.ssh_public_keys_service().add(
-        key=sdk4.types.SshPublicKey(content=rsa_pair[0])
-    )
+    engine_admin_service.ssh_public_keys_service().add(key=sdk4.types.SshPublicKey(content=rsa_pair[0]))
     serial = vmconsole.CirrosSerialConsole(
         rsa_pair[1],
         engine_ip,

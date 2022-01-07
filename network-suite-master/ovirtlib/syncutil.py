@@ -122,9 +122,7 @@ def _audit(exec_func, sdk_entity, i):
             repr = sdk_entity.__repr__()
         except Exception:
             repr = f'{sdk_entity.__class__.__name__}.__repr__() call failed'
-        eventlib.EngineEvents(sdk_entity.system).add(
-            f'{DELIM} OST - retry[{i}] {exec_func.__name__}: {repr}'
-        )
+        eventlib.EngineEvents(sdk_entity.system).add(f'{DELIM} OST - retry[{i}] {exec_func.__name__}: {repr}')
 
 
 def re_run(exec_func, exec_func_args, count, interval):
@@ -171,6 +169,4 @@ class SyncLogger:
         self._debug(f'iteration {iteration} output: {output}')
 
     def _debug(self, phase):
-        self._logger.debug(
-            f'sync {phase} for: {self._func}, {self._args}, {self._kwargs}'
-        )
+        self._logger.debug(f'sync {phase} for: {self._func}, {self._args}, {self._kwargs}')

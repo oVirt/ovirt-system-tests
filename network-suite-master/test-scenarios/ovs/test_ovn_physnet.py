@@ -27,10 +27,7 @@ VNIC0_NAME = 'vnic0'
 VNIC_INTERNAL = 'vnic-internal'
 VM0_NAME = 'test_ovn_physnet_vm_0'
 OVN_PHYSNET_NAME = 'ovn_ovirtmgmt'
-EXTERNAL_NETWORK = (
-    r'.*Only an external network may be attached to VM'
-    r' in a cluster with OVS switch type'
-)
+EXTERNAL_NETWORK = r'.*Only an external network may be attached to VM in a cluster with OVS switch type'
 
 
 @pytest.fixture(scope='module')
@@ -58,9 +55,7 @@ def ovn_physnet_small_mtu(
     try:
         cluster_network = clusterlib.ClusterNetwork(ovs_cluster)
         cluster_network.assign(network)
-        provider_network = _get_network_by_name(
-            default_ovn_provider_client, OVN_PHYSNET_NAME
-        )
+        provider_network = _get_network_by_name(default_ovn_provider_client, OVN_PHYSNET_NAME)
         _disable_network_port_security(
             ovirtmgmt_network.name,
             provider_network.id,
@@ -81,17 +76,13 @@ def vm_in_ovs_cluster_down(
     cirros_template,
 ):
     with virtlib.vm_pool(system, size=1) as (vm,):
-        vm.create(
-            vm_name=VM0_NAME, cluster=ovs_cluster, template=cirros_template
-        )
+        vm.create(vm_name=VM0_NAME, cluster=ovs_cluster, template=cirros_template)
         vm.wait_for_down_status()
         yield vm
 
 
 @pytest.fixture(scope='module')
-def vnic_attached_to_ovn_network(
-    system, vm_in_ovs_cluster_down, ovn_physnet_small_mtu
-):
+def vnic_attached_to_ovn_network(system, vm_in_ovs_cluster_down, ovn_physnet_small_mtu):
     vnic_profile = ovn_physnet_small_mtu.vnic_profile()
     vm_vnic = netlib.Vnic(vm_in_ovs_cluster_down)
     vm_vnic.create(name=VNIC0_NAME, vnic_profile=vnic_profile)
@@ -110,43 +101,29 @@ def vm_in_ovn_network_up(
     vm_in_ovs_cluster_down.wait_for_up_status()
     joblib.AllJobs(system).wait_for_done()
     if suite.af().is6:
-        cirros_serial_console.add_static_ip(
-            vm_in_ovs_cluster_down.id, f'{target}/64', 'eth0'
-        )
+        cirros_serial_console.add_static_ip(vm_in_ovs_cluster_down.id, f'{target}/64', 'eth0')
     yield vm_in_ovs_cluster_down
 
 
 @pytest.fixture(scope='module')
 def ssh_host_not_in_ovs_cluster(host_not_in_ovs_cluster):
-    return sshlib.Node(
-        host_not_in_ovs_cluster.address, host_not_in_ovs_cluster.root_password
-    )
+    return sshlib.Node(host_not_in_ovs_cluster.address, host_not_in_ovs_cluster.root_password)
 
 
 @pytest.fixture(scope='module')
 def host_not_in_ovs_cluster(host_in_ovs_cluster, host_0, host_1):
-    return next(
-        candidate
-        for candidate in [host_0, host_1]
-        if candidate.id != host_in_ovs_cluster.id
-    )
+    return next(candidate for candidate in [host_0, host_1] if candidate.id != host_in_ovs_cluster.id)
 
 
 @pytest.fixture(scope='module')
 def target(host_in_ovs_cluster):
     if suite.af().is6:
-        return (
-            f'fd8f:1391:3a82:'
-            f'{host_in_ovs_cluster.address.split(":")[3]}'
-            f'::cafe:cafe'
-        )
+        return f'fd8f:1391:3a82:' f'{host_in_ovs_cluster.address.split(":")[3]}' f'::cafe:cafe'
     else:
         return VM0_NAME
 
 
-def test_vnic_cannot_connect_physical_network(
-    vm_in_ovs_cluster_down, ovirtmgmt_vnic_profile
-):
+def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down, ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(vm_in_ovs_cluster_down)
     with pytest.raises(sdkentity.EntityCreationError, match=EXTERNAL_NETWORK):
         vnic.create(name=VNIC_INTERNAL, vnic_profile=ovirtmgmt_vnic_profile)
@@ -192,9 +169,7 @@ def test_over_max_mtu_size(
     vm_in_ovn_network_up,
     target,
 ):
-    ssh_host_not_in_ovs_cluster.assert_no_ping(
-        target, _max_icmp_data_size() + 1
-    )
+    ssh_host_not_in_ovs_cluster.assert_no_ping(target, _max_icmp_data_size() + 1)
 
 
 @suite.skip_suites_below('4.3')
@@ -216,13 +191,9 @@ def test_security_groups_allow_icmp(
         success_criteria=lambda success: success,
     )
 
-    with _enable_port_security(
-        vnic_attached_to_ovn_network, default_ovn_provider_client
-    ):
+    with _enable_port_security(vnic_attached_to_ovn_network, default_ovn_provider_client):
         time.sleep(10)
-        ssh_host_not_in_ovs_cluster.assert_no_ping(
-            target, _max_icmp_data_size()
-        )
+        ssh_host_not_in_ovs_cluster.assert_no_ping(target, _max_icmp_data_size())
 
         with _allow_icmp_from_host(host_not_in_ovs_cluster):
             syncutil.sync(
@@ -257,9 +228,7 @@ def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):
 
 def _update_port_security(ovn_provider, port_uuid, enabled):
     port_path = '/ports/' + str(port_uuid)
-    shade_hack.hack_os_put_request(
-        ovn_provider, port_path, _build_update_port_security_payload(enabled)
-    )
+    shade_hack.hack_os_put_request(ovn_provider, port_path, _build_update_port_security_payload(enabled))
 
 
 def _build_update_port_security_payload(port_security_value):
@@ -280,9 +249,7 @@ def _forbid_icmp_from_host(host):
 
 
 def _provision_icmp_rule(source_ip, action):
-    playbook_path = os.path.join(
-        suite.playbook_dir(), action + '_icmp_rule_on_default_sec_group.yml'
-    )
+    playbook_path = os.path.join(suite.playbook_dir(), action + '_icmp_rule_on_default_sec_group.yml')
     playbook = Playbook(
         playbook_path,
         extra_vars={
@@ -295,30 +262,20 @@ def _provision_icmp_rule(source_ip, action):
 
 
 def _disable_network_port_security(physnet_name, network_uuid, ovn_provider):
-    _update_network_port_security(
-        ovn_provider, physnet_name, network_uuid, enabled=False
-    )
+    _update_network_port_security(ovn_provider, physnet_name, network_uuid, enabled=False)
 
 
-def _update_network_port_security(
-    ovn_provider, physical_network_name, network_uuid, enabled
-):
+def _update_network_port_security(ovn_provider, physical_network_name, network_uuid, enabled):
     network_path = '/networks/' + str(network_uuid)
-    update_network_payload = _build_update_physnet_port_security_payload(
-        physical_network_name, enabled
-    )
-    shade_hack.hack_os_put_request(
-        ovn_provider, network_path, update_network_payload
-    )
+    update_network_payload = _build_update_physnet_port_security_payload(physical_network_name, enabled)
+    shade_hack.hack_os_put_request(ovn_provider, network_path, update_network_payload)
 
 
 def _get_network_by_name(ovn_provider, network_name):
     return ovn_provider.get_network(network_name)
 
 
-def _build_update_physnet_port_security_payload(
-    physical_network_name, port_security
-):
+def _build_update_physnet_port_security_payload(physical_network_name, port_security):
     return {
         'network': {
             'port_security_enabled': port_security,

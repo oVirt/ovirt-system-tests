@@ -95,9 +95,7 @@ def _grid(
 ):
 
     with _pod(nodes_dict, hub_port, podman_cmd) as pod_name:
-        with _hub(
-            hub_image, hub_port, pod_name, podman_cmd, ui_artifacts_dir
-        ) as hub_name:
+        with _hub(hub_image, hub_port, pod_name, podman_cmd, ui_artifacts_dir) as hub_name:
             engine_dns_entry = f"{engine_fqdn}:{engine_ip}"
             with _nodes(
                 nodes_dict,
@@ -107,9 +105,7 @@ def _grid(
                 podman_cmd,
                 ui_artifacts_dir,
             ):
-                with _video_recorders(
-                    pod_name, podman_cmd, nodes_dict, ui_artifacts_dir
-                ) as videos_names:
+                with _video_recorders(pod_name, podman_cmd, nodes_dict, ui_artifacts_dir) as videos_names:
                     url = f"http://{HUB_IP}:{hub_port}"
                     try:
                         grid_health_check(url, len(nodes_dict))
@@ -131,9 +127,7 @@ def _pod(nodes_dict, hub_port, podman_cmd):
     if network_backend is None:
         network_backend_options = ["--network=slirp4netns:enable_ipv6=true"]
     else:
-        network_backend_options = [
-            f"--network={network_backend}:enable_ipv6=true"
-        ]
+        network_backend_options = [f"--network={network_backend}:enable_ipv6=true"]
     command = [
         podman_cmd,
         "pod",
@@ -235,9 +229,7 @@ def _nodes(
         yield
     finally:
         for node_dict in nodes_dict.values():
-            save_container_logs(
-                ui_artifacts_dir, node_dict.name, podman_cmd, "worker_"
-            )
+            save_container_logs(ui_artifacts_dir, node_dict.name, podman_cmd, "worker_")
             shell([podman_cmd, "rm", "-f", node_dict.name])
 
 
@@ -290,14 +282,10 @@ def _create_nodes_dict(node_images):
         display = next(node_display_addr_gen)
 
         vnc = next(node_vnc_port_gen)
-        vnc_published = network_utils.find_free_port(
-            vnc_range_start, VNC_PORT + 100
-        )
+        vnc_published = network_utils.find_free_port(vnc_range_start, VNC_PORT + 100)
 
         no_vnc = next(node_no_vnc_port_gen)
-        no_vnc_published = network_utils.find_free_port(
-            no_vnc_range_start, NO_VNC_PORT + 100
-        )
+        no_vnc_published = network_utils.find_free_port(no_vnc_range_start, NO_VNC_PORT + 100)
 
         nodes_dict[image] = NodeInfo(
             display=display,
@@ -361,36 +349,22 @@ def _log_start_attempt(attempt, hub_port, nodes_dict):
     LOGGER.debug(f"Attempt no {attempt} to run the grid on {hub_port} port")
 
     for image, node_info in nodes_dict.items():
-        LOGGER.debug(
-            f"Image for browser {_parse_browser(image)} "
-            f"with config {node_info}"
-        )
+        LOGGER.debug(f"Image for browser {_parse_browser(image)} " f"with config {node_info}")
 
 
 def _log_issues(pod_name, hub_name, nodes_dict, podman_cmd, videos_names):
-    LOGGER.error(
-        "Pod inspection: \n%s"
-        % shell([podman_cmd, "pod", "inspect", pod_name])
-    )
+    LOGGER.error("Pod inspection: \n%s" % shell([podman_cmd, "pod", "inspect", pod_name]))
     LOGGER.error("Hub logs: \n%s" % shell([podman_cmd, "logs", hub_name]))
     node_names = [node_info.name for node_info in nodes_dict.values()]
     for name in node_names:
-        LOGGER.error(
-            "Node %s logs: \n%s" % (name, shell([podman_cmd, "logs", name]))
-        )
+        LOGGER.error("Node %s logs: \n%s" % (name, shell([podman_cmd, "logs", name])))
     for video in videos_names:
-        LOGGER.error(
-            "Video %s logs: \n%s" % (video, shell([podman_cmd, "logs", video]))
-        )
+        LOGGER.error("Video %s logs: \n%s" % (video, shell([podman_cmd, "logs", video])))
 
 
-def save_container_logs(
-    ui_artifacts_dir, container_name, podman_cmd, name_prefix=""
-):
+def save_container_logs(ui_artifacts_dir, container_name, podman_cmd, name_prefix=""):
     log_dir_path = os.path.join(ui_artifacts_dir, 'selenium_grid_nodes')
     os.makedirs(log_dir_path, exist_ok=True)
-    file_path = os.path.join(
-        log_dir_path, name_prefix + container_name + '.log'
-    )
+    file_path = os.path.join(log_dir_path, name_prefix + container_name + '.log')
     with open(file_path, "w", encoding='UTF8') as log_file:
         log_file.write(shell([podman_cmd, "logs", container_name]))

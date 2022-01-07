@@ -15,9 +15,7 @@ class EngineNotResorvableError(Exception):
 
 
 @pytest.fixture(scope='session')
-def ovirt_provider_ovn_with_ip_fqdn(
-    ovirt_engine_service_up, engine_facts, engine_answer_file_path
-):
+def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts, engine_answer_file_path):
     provider_ip = f'provider-host={engine_facts.default_ip(urlize=True)}'
     provider_fqdn = f'provider-host={_fetch_fqdn(engine_answer_file_path)}'
     engine = sshlib.Node(engine_facts.default_ip())
@@ -110,21 +108,13 @@ def _assign_ipv6(ssh_node, nic_name):
     :param nic_name: the name of the NIC to assign an ipv6 address to
     :raise: exception if an error occurred during the assignment
     """
-    res = ssh_node.exec_command(
-        ' '.join(['nmcli', 'con', 'modify', nic_name, 'ipv6.method', 'auto'])
-    )
+    res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'modify', nic_name, 'ipv6.method', 'auto']))
 
     if res.code:
-        raise Exception(
-            'nmcli con modify failed: exit code %s, error "%s"'
-            % (res.code, res.err)
-        )
+        raise Exception('nmcli con modify failed: exit code %s, error "%s"' % (res.code, res.err))
     res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'up', nic_name]))
     if res.code:
-        raise Exception(
-            'nmcli con up failed: exit code %s, error "%s"'
-            % (res.code, res.err)
-        )
+        raise Exception('nmcli con up failed: exit code %s, error "%s"' % (res.code, res.err))
 
 
 def _get_ipv6(ssh_node, nic_name):

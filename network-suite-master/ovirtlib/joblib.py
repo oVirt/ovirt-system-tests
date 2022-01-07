@@ -22,8 +22,7 @@ class EngineJobs(SDKRootEntity):
         return [
             job
             for job in self._parent_service.list()
-            if self._job_description_predicate(job.description)
-            and 'Adding an External Event' not in job.description
+            if self._job_description_predicate(job.description) and 'Adding an External Event' not in job.description
         ]
 
     def describe_started(self):
@@ -31,15 +30,11 @@ class EngineJobs(SDKRootEntity):
         return [job.description for job in started]
 
     def describe_ill_fated(self):
-        ill_fated = self._list_for_status(
-            (JobStatus.ABORTED, JobStatus.UNKNOWN, JobStatus.FAILED)
-        )
+        ill_fated = self._list_for_status((JobStatus.ABORTED, JobStatus.UNKNOWN, JobStatus.FAILED))
         return [f'{job.description}:{job.status}' for job in ill_fated]
 
     def done(self):
-        return not self._list_for_status(
-            (JobStatus.STARTED, JobStatus.UNKNOWN)
-        )
+        return not self._list_for_status((JobStatus.STARTED, JobStatus.UNKNOWN))
 
     def wait_for_done(self):
         self._report_started()
@@ -55,14 +50,11 @@ class EngineJobs(SDKRootEntity):
 
     def _report_started(self):
         eventlib.EngineEvents(self.system).add(
-            f'OST - jobs: on wait for done - started jobs: '
-            f'{self.describe_started()} '
+            f'OST - jobs: on wait for done - started jobs: ' f'{self.describe_started()} '
         )
 
     def _report_ill_fated(self):
-        eventlib.EngineEvents(self.system).add(
-            f'OST - jobs: on wait for done:' f'{self.describe_ill_fated()}'
-        )
+        eventlib.EngineEvents(self.system).add(f'OST - jobs: on wait for done:' f'{self.describe_ill_fated()}')
 
     def _list_for_status(self, job_statuses):
         return [job for job in self.list() if job.status in job_statuses]
@@ -83,9 +75,7 @@ class ActivateHostJobs(EngineJobs):
 
 class RemoveVmJobs(EngineJobs):
     def __init__(self, parent_sdk_system):
-        super(RemoveVmJobs, self).__init__(
-            parent_sdk_system, lambda description: 'Removing VM' in description
-        )
+        super(RemoveVmJobs, self).__init__(parent_sdk_system, lambda description: 'Removing VM' in description)
 
 
 class LaunchVmJobs(EngineJobs):

@@ -43,8 +43,7 @@ class PrivateDir:
     @classmethod
     def event_data_files(cls):
         return itertools.chain.from_iterable(
-            glob.iglob(os.path.join(dir, "artifacts/*/job_events/*.json"))
-            for dir in cls.all_dirs
+            glob.iglob(os.path.join(dir, "artifacts/*/job_events/*.json")) for dir in cls.all_dirs
         )
 
     @classmethod

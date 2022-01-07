@@ -45,10 +45,7 @@ def sd_destroy_error_not_due_to_busy(error):
 
 
 def is_not_ovirt_or_unlisted(error, error_list):
-    return not (
-        isinstance(error, ovirtsdk4.Error)
-        and [err for err in error_list if err in str(error)]
-    )
+    return not (isinstance(error, ovirtsdk4.Error) and [err for err in error_list if err in str(error)])
 
 
 def is_not_http_conflict(error):
@@ -68,19 +65,14 @@ def report_status(func):
         events.add(description=description)
 
     def _create_description(when, self):
-        description = (
-            f'{DELIM} OST - {when}: '
-            f'{self.__class__.__name__} {func.__name__}, '
-        )
+        description = f'{DELIM} OST - {when}: ' f'{self.__class__.__name__} {func.__name__}, '
         try:
             description += f'status: {self.status}, '
         except AttributeError:
             pass
         except ovirtsdk4.NotFoundError:
             description += 'entity not found, '
-        description += (
-            f'jobs: ' f'{joblib.AllJobs(self.system).describe_ill_fated()}'
-        )
+        description += f'jobs: ' f'{joblib.AllJobs(self.system).describe_ill_fated()}'
         return description
 
     return inner

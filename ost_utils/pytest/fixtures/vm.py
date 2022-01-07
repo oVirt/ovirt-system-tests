@@ -18,9 +18,7 @@ def get_hosts_hostname_for_vm(hosts_service, get_vm_service_for_vm):
         host_id = vm_service.get().host.id
         hosts = hosts_service.list(search='id={}'.format(host_id))
         if len(hosts) != 1:
-            raise RuntimeError(
-                "Could not find host for vm: {}".format(vm_name)
-            )
+            raise RuntimeError("Could not find host for vm: {}".format(vm_name))
         return hosts[0].name
 
     return hostname_for

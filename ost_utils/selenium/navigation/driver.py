@@ -80,73 +80,50 @@ class Driver:
 
     def is_xpath_displayed(self, xpath):
         return self.retry_if_stale(
-            lambda: self.is_xpath_present(xpath)
-            and self.driver.find_element(By.XPATH, xpath).is_displayed()
+            lambda: self.is_xpath_present(xpath) and self.driver.find_element(By.XPATH, xpath).is_displayed()
         )
 
     def is_button_enabled(self, text):
         return self.is_xpath_enabled(f'//button[text()="{text}"]')
 
     def is_xpath_enabled(self, xpath):
-        return self.retry_if_stale(
-            lambda: self.driver.find_element(By.XPATH, xpath).is_enabled()
-        )
+        return self.retry_if_stale(lambda: self.driver.find_element(By.XPATH, xpath).is_enabled())
 
     def xpath_click(self, xpath):
-        return self.retry_if_stale(
-            lambda: self.driver.find_element(By.XPATH, xpath).click()
-        )
+        return self.retry_if_stale(lambda: self.driver.find_element(By.XPATH, xpath).click())
 
     def id_wait_and_click(self, message, element_id, wait_long=False):
-        self.xpath_wait_and_click(
-            message, f'//*[@id="{element_id}"]', wait_long
-        )
+        self.xpath_wait_and_click(message, f'//*[@id="{element_id}"]', wait_long)
 
     def button_wait_and_click(self, text):
-        return self.xpath_wait_and_click(
-            f'Button {text}', f'//button[text()="{text}"]'
-        )
+        return self.xpath_wait_and_click(f'Button {text}', f'//button[text()="{text}"]')
 
     def xpath_wait_and_click(self, message, xpath, wait_long=False):
         wait_until = self.wait_until
         if wait_long:
             wait_until = self.wait_long_until
 
-        wait_until(
-            f'{message} is not displayed', self.is_xpath_displayed, xpath
-        )
+        wait_until(f'{message} is not displayed', self.is_xpath_displayed, xpath)
         wait_until(f'{message} is not enabled', self.is_xpath_enabled, xpath)
         self.xpath_click(xpath)
 
     def wait_until(self, message, condition_method, *args):
-        self._wait_until(
-            message, assert_utils.SHORT_TIMEOUT, condition_method, *args
-        )
+        self._wait_until(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)
 
     def wait_long_until(self, message, condition_method, *args):
-        self._wait_until(
-            message, assert_utils.LONG_TIMEOUT, condition_method, *args
-        )
+        self._wait_until(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_until(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout).until(
-            ConditionClass(condition_method, *args), message
-        )
+        WebDriverWait(self.driver, timeout).until(ConditionClass(condition_method, *args), message)
 
     def wait_while(self, message, condition_method, *args):
-        self._wait_while(
-            message, assert_utils.SHORT_TIMEOUT, condition_method, *args
-        )
+        self._wait_while(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)
 
     def wait_long_while(self, message, condition_method, *args):
-        self._wait_while(
-            message, assert_utils.LONG_TIMEOUT, condition_method, *args
-        )
+        self._wait_while(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_while(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout).until_not(
-            ConditionClass(condition_method, *args), message
-        )
+        WebDriverWait(self.driver, timeout).until_not(ConditionClass(condition_method, *args), message)
 
     def retry_if_stale(self, method_to_retry, *args):
         condition = StaleExceptionOccurredCondition(method_to_retry, *args)

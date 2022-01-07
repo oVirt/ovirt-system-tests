@@ -20,9 +20,7 @@ def test_set_global_maintenance(ansible_host0):
 
     he_utils.set_and_test_global_maintenance_mode(ansible_host0, True)
 
-    assert assert_utils.true_within_short(
-        lambda: he_utils.all_hosts_state_global_maintenance(ansible_host0)
-    )
+    assert assert_utils.true_within_short(lambda: he_utils.all_hosts_state_global_maintenance(ansible_host0))
     logging.info('Global maintenance state set on all hosts')
 
 
@@ -43,35 +41,25 @@ def test_clear_global_maintenance(ansible_host0):
 
     he_utils.set_and_test_global_maintenance_mode(ansible_host0, False)
 
-    assert assert_utils.true_within_long(
-        lambda: he_utils.no_hosts_state_global_maintenance(ansible_host0)
-    )
+    assert assert_utils.true_within_long(lambda: he_utils.no_hosts_state_global_maintenance(ansible_host0))
     logging.info('Global maintenance state cleared on all hosts')
 
 
 def _shutdown_he_vm(ansible_host):
     ansible_host.shell('hosted-engine --vm-shutdown')
     logging.info('Waiting for the engine VM to be down...')
-    assert assert_utils.true_within_short(
-        lambda: he_utils.engine_vm_is_down(ansible_host)
-    )
+    assert assert_utils.true_within_short(lambda: he_utils.engine_vm_is_down(ansible_host))
 
 
 def _restart_services(ansible_host):
     logging.info('Stopping services...')
-    ansible_host.shell(
-        'systemctl stop vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent'
-    )
+    ansible_host.shell('systemctl stop vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent')
 
     logging.info('Starting services...')
-    ansible_host.shell(
-        'systemctl start vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent'
-    )
+    ansible_host.shell('systemctl start vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent')
 
     logging.info('Waiting for agent to be ready...')
-    assert assert_utils.true_within_long(
-        lambda: _ha_agent_is_ready(ansible_host)
-    )
+    assert assert_utils.true_within_long(lambda: _ha_agent_is_ready(ansible_host))
     logging.info('Agent is ready.')
 
 
@@ -87,9 +75,7 @@ def _start_he_vm(ansible_host):
     logging.info('Starting the engine VM...')
     ansible_host.shell('hosted-engine --vm-start')
     logging.info('Waiting for the engine VM to be UP...')
-    assert assert_utils.true_within_short(
-        lambda: he_utils.engine_vm_is_up(ansible_host)
-    )
+    assert assert_utils.true_within_short(lambda: he_utils.engine_vm_is_up(ansible_host))
     logging.info('Engine VM is UP.')
 
 

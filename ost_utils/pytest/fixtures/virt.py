@@ -43,6 +43,11 @@ def cirros_image_template_name():
     return 'cirros_template'
 
 
+@pytest.fixture(scope="session")
+def cirros_image_template_version_name():
+    return 'cirros_template_v2'
+
+
 @pytest.fixture(scope='session')
 def rsa_pair():
     with tempfile.TemporaryDirectory(prefix='/tmp/') as tmpdir:

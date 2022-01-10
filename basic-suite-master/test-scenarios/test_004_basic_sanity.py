@@ -1113,11 +1113,12 @@ def test_add_vm_pool(engine_api, cirros_image_template_name, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
-def test_update_template_version(engine_api, cirros_image_template_name):
+def test_update_template_version(engine_api, cirros_image_template_name, cirros_image_template_version_name):
     engine = engine_api.system_service()
-    stateless_vm = engine.vms_service().list(search='name={}'.format(VM1_NAME))[0]
+    stateless_vm = test_utils.get_vm_service(engine, VM1_NAME).get()
     templates_service = engine.templates_service()
-    template = templates_service.list(search='name={}'.format(cirros_image_template_name))[0]
+    template_service = test_utils.get_template_service(engine, cirros_image_template_name)
+    template = template_service.get()
 
     assert stateless_vm.memory != template.memory
 
@@ -1125,7 +1126,10 @@ def test_update_template_version(engine_api, cirros_image_template_name):
         template=types.Template(
             name=cirros_image_template_name,
             vm=stateless_vm,
-            version=types.TemplateVersion(base_template=template, version_number=2),
+            version=types.TemplateVersion(
+                base_template=template,
+                version_name=cirros_image_template_version_name,
+            ),
         )
     )
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)

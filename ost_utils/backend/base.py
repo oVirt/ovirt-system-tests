@@ -117,6 +117,14 @@ class BaseBackend(abc.ABC):
         :return: Int
         """
 
+    @abc.abstractmethod
+    def get_gw_ip_for_management_network(self, ip_version):
+        """Function that finds gw ip of management network corresponding to
+        the specified ip version
+        :param ip_version: Int
+        :return: ipaddress.IPv4Address or ipaddress.IPv6Address
+        """
+
     # DEPRECATED
     def ifaces_for(self, hostname, network_name):
         return self.iface_mapping()[hostname][network_name]

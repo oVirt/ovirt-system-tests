@@ -1499,7 +1499,7 @@ def test_add_filter_parameter(engine_api, management_gw_ip):
 
     with engine_utils.wait_for_event(engine, 10912):
         assert network_filter_parameters_service.add(
-            sdk4.types.NetworkFilterParameter(name='GW_IP', value=management_gw_ip)
+            sdk4.types.NetworkFilterParameter(name='GW_IP', value=str(management_gw_ip))
         )
 
 

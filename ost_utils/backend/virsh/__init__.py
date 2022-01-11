@@ -83,3 +83,8 @@ class VirshBackend(base.BaseBackend):
         if ip_version == 6:
             return mgmt_network.ip6_prefix
         return mgmt_network.ip4_prefix
+
+    def get_gw_ip_for_management_network(self, ip_version):
+        mgmt_net_name = self.management_network_name()
+        mgmt_network = self._networks.get_network_for_ost_name(mgmt_net_name)
+        return mgmt_network.ip6_gw if ip_version == 6 else mgmt_network.ip4_gw

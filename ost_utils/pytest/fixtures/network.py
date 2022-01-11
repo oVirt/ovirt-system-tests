@@ -4,8 +4,6 @@
 #
 #
 
-import ipaddress
-
 import pytest
 
 
@@ -40,7 +38,5 @@ def bonding_subnet(backend, tested_ip_version):
 
 
 @pytest.fixture(scope="session")
-def management_gw_ip(engine_ip):
-    # TODO: retrieve gateway addresses from the backend directly
-    prefix_len = 64 if ipaddress.ip_address(engine_ip).version == 6 else 24
-    return str(ipaddress.ip_interface(f"{engine_ip}/{prefix_len}").network[1])
+def management_gw_ip(backend, tested_ip_version):
+    return backend.get_gw_ip_for_management_network(tested_ip_version)

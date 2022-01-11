@@ -249,6 +249,14 @@ class VirshNetwork:
         return ipaddress.ip_network(f'{self._ip6_gw}/{self._ip6_prefix}', False)
 
     @property
+    def ip4_gw(self):
+        return self._ip4_gw
+
+    @property
+    def ip6_gw(self):
+        return self._ip6_gw
+
+    @property
     def ost_name(self):
         return self._ost_name
 

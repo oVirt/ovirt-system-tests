@@ -967,7 +967,7 @@ def test_run_vms(
     vm_params.initialization.host_name = VM0_NAME  # hostname seems to work, the others not
     vm_params.initialization.dns_search = 'lago.local'
     vm_params.initialization.domain = 'lago.local'
-    vm_params.initialization.dns_servers = management_gw_ip
+    vm_params.initialization.dns_servers = str(management_gw_ip)
     vm0_service = test_utils.get_vm_service(engine, VM0_NAME)
     vm0_service.start(use_cloud_init=True, vm=vm_params)
 

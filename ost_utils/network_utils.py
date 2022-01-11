@@ -218,9 +218,10 @@ def get_profiles_for(engine, networks):
     return profiles
 
 
-def get_profile(engine, cluster_name, network_name):
+def get_profile_by_name(engine, cluster_name, network_name, profile_name):
     network = _get_network(engine, cluster_name, network_name)
-    return get_profiles_for(engine, [network])[0]
+    profiles = get_profiles_for(engine, [network])
+    return next((p for p in profiles if p.name == profile_name), None)
 
 
 def get_profile_for_id(engine, profile_id):

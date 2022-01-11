@@ -139,7 +139,7 @@ class VnicSetup(object):
     def assert_results(self, vm_name, cluster_name):
         # get under test entities
         self._nics = nu.get_nics_on(self.engine, vm_name)
-        ovirtmgmt_profile = nu.get_profile(self.engine, cluster_name, 'ovirtmgmt')
+        ovirtmgmt_profile = nu.get_profile_by_name(self.engine, cluster_name, 'ovirtmgmt', 'ovirtmgmt')
 
         # assert
         self._assert_profile_on_nic(NETS['n5'], NETS['n4'])

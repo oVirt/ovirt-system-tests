@@ -140,14 +140,16 @@ _TEST_LIST = [
     "test_hotunplug_disk",
     "test_make_snapshot_with_memory",
     "test_add_vm_pool",
+    "test_ovf_import",
     "test_verify_template_import",
     "test_preview_snapshot_with_memory",
+    "test_verify_ovf_import",
     "test_update_template_version",
-    "test_update_vm_pool",
-    "test_remove_vm_pool",
     "test_check_snapshot_with_memory",
     "test_vmconsole",
-    "test_ovf_import",
+    "test_verify_update_template_version",
+    "test_update_vm_pool",
+    "test_remove_vm_pool",
     "test_vdsm_recovery",
 ]
 
@@ -1113,19 +1115,26 @@ def test_add_vm_pool(engine_api, cirros_image_template_name, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
+def test_verify_ovf_import(engine_api):
+    engine = engine_api.system_service()
+    _verify_vm_state(engine, OVF_VM_NAME, types.VmStatus.DOWN)
+    _verify_vm_disks_state(engine, OVF_VM_NAME, types.DiskStatus.OK)
+
+
+@order_by(_TEST_LIST)
 def test_update_template_version(engine_api, cirros_image_template_name, cirros_image_template_version_name):
     engine = engine_api.system_service()
-    stateless_vm = test_utils.get_vm_service(engine, VM1_NAME).get()
+    ovf_vm = test_utils.get_vm_service(engine, OVF_VM_NAME).get()
     templates_service = engine.templates_service()
     template_service = test_utils.get_template_service(engine, cirros_image_template_name)
     template = template_service.get()
 
-    assert stateless_vm.memory != template.memory
+    assert ovf_vm.memory != template.memory
 
     templates_service.add(
         template=types.Template(
             name=cirros_image_template_name,
-            vm=stateless_vm,
+            vm=ovf_vm,
             version=types.TemplateVersion(
                 base_template=template,
                 version_name=cirros_image_template_version_name,
@@ -1133,7 +1142,24 @@ def test_update_template_version(engine_api, cirros_image_template_name, cirros_
         )
     )
     pool_service = test_utils.get_pool_service(engine, VMPOOL_NAME)
-    assert assert_utils.equals_within_long(lambda: pool_service.get().vm.memory, stateless_vm.memory)
+    assert assert_utils.equals_within_long(lambda: pool_service.get().vm.memory, ovf_vm.memory)
+
+
+@order_by(_TEST_LIST)
+def test_verify_update_template_version(engine_api, cirros_image_template_name, cirros_image_template_version_name):
+    engine = engine_api.system_service()
+    templates_service = engine.templates_service()
+    template_version = templates_service.list(
+        search='name={} and version_name={}'.format(
+            cirros_image_template_name,
+            cirros_image_template_version_name,
+        )
+    )[0]
+    vm_name = VMPOOL_NAME + '-1'
+    vm_service = test_utils.get_vm_service(engine, vm_name)
+    assert assert_utils.equals_within_long(lambda: vm_service.get().template.id, template_version.id)
+    _verify_vm_state(engine, vm_name, types.VmStatus.DOWN)
+    _verify_vm_disks_state(engine, vm_name, types.DiskStatus.OK)
 
 
 @order_by(_TEST_LIST)

@@ -4,7 +4,7 @@ ovirt-engine-sdk-python>=4.5.0
 # as the default 'pexpect' is unreliable
 # TODO: Revert once it's fixed:
 # https://github.com/ansible/ansible-navigator/issues/606
-git+git://github.com/didib/ansible-navigator@671bd6c9#egg=ansible-navigator
+git+https://github.com/didib/ansible-navigator.git@671bd6c9#egg=ansible-navigator
 ansible-runner
 pytest==6.2.2
 # basic suite deps

@@ -9,6 +9,9 @@ _get_uuid() {
     for i in $(virsh net-list --name | grep ^ost); do
         [[ "$PREFIX" = "$(virsh net-dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:3:8}; return 0; }
     done
+    for i in $(virsh list --name | grep "\-ost-"); do
+        [[ "$PREFIX" = "$(virsh dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:0:8}; return 0; }
+    done
     return 1
 }
 

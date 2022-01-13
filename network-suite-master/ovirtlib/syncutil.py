@@ -82,12 +82,12 @@ def sync(
     except Exception as e:
         logger.log_iteration(0, e)
         if error_criteria(e):
-            logger.log_end()
+            logger.log_end(e)
             raise
         result = e
     else:
         if success_criteria(result):
-            logger.log_end()
+            logger.log_end(result)
             return result
 
     i = 0
@@ -101,18 +101,18 @@ def sync(
         except Exception as e:
             logger.log_iteration(i, e)
             if success_criteria(e):
-                logger.log_end()
+                logger.log_end(e)
                 return e
             if error_criteria(e):
-                logger.log_end()
+                logger.log_end(e)
                 raise
             result = e
         else:
             if success_criteria(result):
-                logger.log_end()
+                logger.log_end(result)
                 return result
 
-    logger.log_end()
+    logger.log_end(result)
     raise Timeout(result)
 
 
@@ -162,8 +162,8 @@ class SyncLogger:
     def log_start(self):
         self._debug('start')
 
-    def log_end(self):
-        self._debug('end')
+    def log_end(self, output):
+        self._debug(f'end output: {output}')
 
     def log_iteration(self, iteration, output):
         self._debug(f'iteration {iteration} output: {output}')

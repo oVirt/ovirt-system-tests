@@ -1,0 +1,21 @@
+#
+# install github's agent first. You may need to disable selinux
+#
+dnf install -y jq nginx
+cat << EOF > /etc/nginx/conf.d/gh.conf
+server {
+        listen   2222;
+        root   /var/lib/nginx/gh;
+        location / {
+                index index.htm;
+                autoindex off;    #enable listing of directory index
+        client_max_body_size 256;
+        }
+}
+EOF
+
+mkdir -p /var/lib/nginx/gh
+chown nginx:nginx /var/lib/nginx/gh
+semanage port -a -t http_port_t -p tcp 2222
+
+systemctl enable --now nginx

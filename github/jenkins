@@ -1,0 +1,84 @@
+set -e
+#IP=<IP of the runner>
+#RHEL_OST_IMAGE=<OST job name for rhel8 distro>
+#
+# Part 1
+# ScriptTrigger and the step before actual OST
+#
+
+rm -f queue vars token
+curl --max-filesize 256 -O http://${IP}:2222/queue
+PR_URL="$(sed -n 1p queue)"
+SUITE="$(sed -n 2p queue)"
+DISTRO="$(sed -n 3p queue)"
+echo "$PR_URL" | egrep '^https://(api.|www.)?github.com(/repos)?/oVirt/'
+echo "$SUITE"  | egrep '^(basic-suite-master|he-basic-suite-master|ansible-suite-master|tr-suite-master|network-suite-master)$'
+echo "$DISTRO" | egrep '^(el8stream|el9stream|rhel8)$'
+
+#
+# Part 2
+# only the steps before and after actual OST job
+#
+# app access token
+if [[ -z "$EXPIRE_AT" || ! -f token || $(date +%s) -gt "$EXPIRE_AT" ]]; then
+    # access token URL, id of an installation doesn't change, so let's hardcode it
+    # curl -sS -H "Authorization: Bearer $JWT" https://api.github.com/app/installations | jq .[0].access_tokens_url
+    AT_URL="https://api.github.com/app/installations/22187590/access_tokens"
+    # private key for JWT
+    # OST_APP_PRIVATE_KEY_FILENAME= <passed from jenkins>
+    # OST application ID
+    APP_ID=164117
+    EXPIRE_AT=$(($(date +%s)+520)) # use within 9 minutes, 10 minutes max expiration
+    HEADER='{"alg":"RS256","typ":"JWT"}'
+    PAYLOAD="{\"iat\":$(($(date +%s)-60)),\"exp\":$((${EXPIRE_AT}+60)),\"iss\":${APP_ID}}"
+    JWT_CONTENT=$(echo -n $HEADER | openssl enc -base64 -A | tr '+/' '-_' | tr -d '='; echo -n .; echo $PAYLOAD | openssl enc -base64 -A | tr '+/' '-_' | tr -d '=')
+    JWT=$(echo -n "${JWT_CONTENT}.$(echo -n ${JWT_CONTENT} | openssl dgst -binary -sha256 -sign ${OST_APP_PRIVATE_KEY_FILENAME} | openssl enc -base64 -A | tr '+/' '-_' | tr -d '=')")
+    curl -sS -o token -X POST -H "Authorization: Bearer $JWT" ${AT_URL}
+    cat token
+fi
+OST_APP_TOKEN=$(jq -r .token token)
+
+[[ -z "$SHA" ]] && SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
+[[ "$DISTRO" = "el8stream" ]] && OST_IMAGE="el8stream+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-8-x86_64"
+[[ "$DISTRO" = "el9stream" ]] && OST_IMAGE="el9stream+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-9-x86_64"
+[[ "$DISTRO" = "rhel8" ]] && OST_IMAGE=${RHEL_OST_IMAGE}
+ost_app_response() { # ost_app_response status conclusion summary
+        echo "response $1 $2 $3"
+        [[ -n "$2" ]] && local CONCLUSION=", \"conclusion\":\"${2}\""
+        curl -sS -H "Authorization: token $OST_APP_TOKEN" -X POST -d "{\"name\":\"OST\", \"head_sha\":\"${SHA}\", \"status\":\"${1}\"${CONCLUSION}, \"output\":{\"title\":\"OST ${SUITE}(${DISTRO})\", \"summary\":\"${3}\"}}" https://api.github.com/repos/oVirt/test-ost/check-runs
+}
+
+if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
+    curl -sS -o reviews "${PR_URL}/reviews"
+    APPROVED=$(jq -r ".[] | select(.author_association==\"MEMBER\" and .state==\"APPROVED\" and .commit_id==\"${SHA}\") | .user.login" reviews)
+    if [[ -z "$APPROVED" ]]; then
+        ost_app_response completed cancelled "not approved"
+        exit 1
+    fi
+    ost_app_response in_progress "" "Job https://redir.apps.ovirt.org/dj/$(echo $BUILD_URL| cut -d/ -f4-) is starting OST on ${SHA}, approved by ${APPROVED}."
+
+    cat << EOF > vars
+PR_URL=$PR_URL
+SUITE=$SUITE
+DISTRO=$DISTRO
+OST_IMAGE=$OST_IMAGE
+SHA=$SHA
+EXPIRE_AT=$EXPIRE_AT
+EOF
+    cat vars
+else # after actual OST, with injected vars
+    echo processing results
+
+    BR="TRIGGERED_BUILD_RESULT_${TRIGGERED_JOB_NAMES}"
+    BN="TRIGGERED_BUILD_NUMBERS_${TRIGGERED_JOB_NAMES}"
+    RESULT="${!BR}"
+    OST_JOB_NUMBER="${!BN}"
+    echo "result $RESULT"
+    if [[ "$RESULT" == "SUCCESS" ]]; then
+        ost_app_response completed success "job https://redir.apps.ovirt.org/dj/job/${TRIGGERED_JOB_NAMES}/${OST_JOB_NUMBER} succeeded"
+    elif [[ "${!BR}" == "FAILURE" ]]; then
+        ost_app_response completed failure "job https://redir.apps.ovirt.org/dj/job/${TRIGGERED_JOB_NAMES}/${OST_JOB_NUMBER} failed"
+    else
+        ost_app_response completed cancelled "job https://redir.apps.ovirt.org/dj/job/${TRIGGERED_JOB_NAMES}/${OST_JOB_NUMBER} aborted"
+    fi
+fi

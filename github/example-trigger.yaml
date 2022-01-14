@@ -1,0 +1,12 @@
+name: OST example trigger
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger-ost:
+    if: ${{ github.event.issue.pull_request && github.event.review.state == 'approved' && github.event.comment.body == '/ost'}}
+    uses: oVirt/ovirt-system-tests/github/ost.yaml@master
+    with:
+      pr_url: ${{ github.event.issue.pull_request.url }}

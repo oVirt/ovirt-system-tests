@@ -52,7 +52,7 @@ def expand_github_repo(repo_url, working_dir):
     """
     match = re.search(
         r"^https://(www\.|api\.)?github.com/(repos/)?oVirt/([^/]+)/"
-        r"(pull/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+)(/artifacts)?)$",
+        r"(pulls?/([0-9]+)|commit/([a-z0-9]+)|actions/runs/([0-9]+)(/artifacts)?)$",
         repo_url,
     )
     if not match:

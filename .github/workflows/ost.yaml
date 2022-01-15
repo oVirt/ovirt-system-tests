@@ -1,4 +1,7 @@
-name: ost
+#
+# This is a reusable worflow to be triggered from other projects or manually
+#
+name: OST trigger
 
 on:
   workflow_call:

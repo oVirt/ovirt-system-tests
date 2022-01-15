@@ -49,7 +49,7 @@ jobs:
           SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
           CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"
           BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-          [[ -z "$BASE_TIME" ]] && echo "no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq -r \".check_suites[].app.name\")"; 
+          [[ -z "$BASE_TIME" ]] && echo "no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq -r .check_suites[].app.name)";
           echo "last update: $BASE_TIME"
           echo "trigger content:"
           { echo "${PR_URL}"; echo "${SUITE}"; echo "${DISTRO}"; } | runuser -u nginx tee queue
@@ -62,4 +62,4 @@ jobs:
             [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
           done
           rm -f queue
-          [[ "$BASE_TIME" != "$UPDATE_TIME" ]]
+          [[ "$BASE_TIME" = "$UPDATE_TIME" ]] && { echo "Jenkins didn't pick it up"; exit 1; }

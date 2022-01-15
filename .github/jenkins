@@ -45,7 +45,7 @@ OST_APP_TOKEN=$(jq -r .token token)
 ost_app_response() { # ost_app_response status conclusion summary
         echo "response $1 $2 $3"
         [[ -n "$2" ]] && local CONCLUSION=", \"conclusion\":\"${2}\""
-        curl -sS -H "Authorization: token $OST_APP_TOKEN" -X POST -d "{\"name\":\"OST\", \"head_sha\":\"${SHA}\", \"status\":\"${1}\"${CONCLUSION}, \"output\":{\"title\":\"OST ${SUITE}(${DISTRO})\", \"summary\":\"${3}\"}}" https://api.github.com/repos/oVirt/test-ost/check-runs
+        curl -sS -H "Authorization: token $OST_APP_TOKEN" -X POST -d "{\"name\":\"OST\", \"head_sha\":\"${SHA}\", \"status\":\"${1}\"${CONCLUSION}, \"output\":{\"title\":\"${SUITE}(${DISTRO}) ${2}\", \"summary\":\"${3}\"}}" $(echo ${PR_URL} | cut -d / -f 1-6)/check-runs
 }
 
 if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run

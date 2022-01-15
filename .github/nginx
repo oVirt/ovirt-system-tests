@@ -17,5 +17,6 @@ EOF
 mkdir -p /var/lib/nginx/gh
 chown nginx:nginx /var/lib/nginx/gh
 semanage port -a -t http_port_t -p tcp 2222
+[[ -f /usr/bin/firewall-cmd ]] && firewall-cmd --zone=public --permanent --add-port=2222/tcp
 
 systemctl enable --now nginx

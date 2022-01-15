@@ -38,11 +38,12 @@ jobs:
       - name: trigger
         env:
           OST_APP_ID: 164117
-          PR_URL: "${{ github.event.inputs.pr_url }}"
-          SUITE: "${{ github.event.inputs.suite }}"
-          DISTRO: "${{ github.event.inputs.distro }}"
+          PR_URL: "${{ github.event.inputs.pr_url }}${{ inputs.pr_url }}"
+          SUITE: "${{ github.event.inputs.suite }}${{ inputs.suite }}"
+          DISTRO: "${{ github.event.inputs.distro }}${{ inputs.distro }}"
         working-directory: /var/lib/nginx/gh
         run: |
+          echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'
           SUITE=${SUITE:-basic-suite-master}
           DISTRO=${DISTRO:-el8stream}
           SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)

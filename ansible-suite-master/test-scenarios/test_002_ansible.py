@@ -9,7 +9,6 @@ from ost_utils.storage_utils import lun
 
 
 def test_ansible_run(
-    ansible_inventory,
     ansible_engine,
     hostnames_to_add,
     engine_ip_url,
@@ -17,15 +16,9 @@ def test_ansible_run(
     engine_storage_ips,
     engine_full_username,
     engine_password,
-    working_dir,
-    artifacts_dir,
-    ansible_execution_environment,
 ):
     infra(
-        working_dir,
-        ansible_inventory,
-        artifacts_dir,
-        execution_environment_tag=ansible_execution_environment,
+        ansible_engine,
         engine_fqdn=engine_ip_url,
         engine_user=engine_full_username,
         engine_password=engine_password,
@@ -144,11 +137,7 @@ def test_ansible_run(
         ],
     )
 
-    collection = CollectionMapper(
-        working_dir,
-        artifacts_dir,
-        ansible_execution_environment,
-    )
+    collection = CollectionMapper(ansible_engine)
 
     ovirt_auth = collection.ovirt_auth(
         hostname=engine_ip_url,

@@ -1643,25 +1643,13 @@ def test_add_vm_permissions_to_user(engine_api, ansible_engine, nonadmin_usernam
 
 @order_by(_TEST_LIST)
 def test_upload_cirros_image(
-    working_dir,
-    artifacts_dir,
-    ansible_execution_environment,
+    ansible_engine,
     engine_fqdn,
     engine_full_username,
     engine_password,
     cirros_image_disk_name,
-    ansible_inventory,
-    engine_hostname,
-    ssh_key_file,
 ):
-    collection = CollectionMapper(
-        working_dir,
-        artifacts_dir,
-        ansible_execution_environment,
-        ansible_host=engine_hostname,
-        ansible_inventory=ansible_inventory,
-        ssh_key_path=ssh_key_file,
-    )
+    collection = CollectionMapper(ansible_engine)
 
     ovirt_auth = collection.ovirt_auth(hostname=engine_fqdn, username=engine_full_username, password=engine_password,)[
         "ansible_facts"
@@ -1680,22 +1668,19 @@ def test_upload_cirros_image(
 
 @order_by(_TEST_LIST)
 def test_create_cirros_template(
+    ansible_engine,
+    ansible_inventory,
     working_dir,
-    artifacts_dir,
-    ansible_execution_environment,
     engine_fqdn,
     engine_full_username,
     engine_password,
     ost_cluster_name,
     cirros_image_template_name,
-    ansible_inventory,
     engine_hostname,
     ssh_key_file,
 ):
     image_template(
-        working_dir,
-        artifacts_dir,
-        ansible_execution_environment,
+        ansible_engine,
         ansible_inventory,
         ssh_key_file,
         engine_hostname,

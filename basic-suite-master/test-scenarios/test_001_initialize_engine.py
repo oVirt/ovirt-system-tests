@@ -11,16 +11,12 @@ from ost_utils.ansible.collection import engine_setup
 
 
 def test_initialize_engine(
-    working_dir,
     ansible_engine,
     ansible_inventory,
     engine_ip,
-    root_dir,
-    ssh_key_file,
     engine_hostname,
+    ssh_key_file,
     engine_answer_file_path,
-    artifacts_dir,
-    ansible_execution_environment,
 ):
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
         ansible_engine.shell(
@@ -32,14 +28,11 @@ def test_initialize_engine(
         )
 
     engine_setup(
-        working_dir,
         ansible_engine,
         ansible_inventory,
         engine_ip,
+        engine_hostname,
         ssh_key_path=ssh_key_file,
-        artifacts_dir=artifacts_dir,
-        execution_environment_tag=ansible_execution_environment,
-        engine_hostname=engine_hostname,
         answer_file_path=engine_answer_file_path,
         ovirt_engine_setup_offline='true',
         ovirt_engine_setup_engine_configs=[

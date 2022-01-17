@@ -21,13 +21,11 @@ def cirros_template(
     system,
     default_cluster,
     default_storage_domain,
-    working_dir,
-    artifacts_dir,
-    ansible_execution_environment,
+    ansible_engine,
+    ansible_inventory,
     engine_full_username,
     engine_password,
     cirros_image_template_name,
-    ansible_inventory,
     engine_facts,
     ssh_key_file,
 ):
@@ -35,10 +33,8 @@ def cirros_template(
         templatelib.get_template(system, cirros_image_template_name)
     except EntityNotFoundError:
         collection.image_template(
-            working_dir=working_dir,
-            artifacts_dir=artifacts_dir,
-            execution_environment_tag=ansible_execution_environment,
-            ansible_inventory=ansible_inventory,
+            ansible_engine,
+            ansible_inventory,
             ssh_key_path=ssh_key_file,
             engine_hostname=engine_facts.hostname,
             engine_fqdn=engine_facts.fqdn,

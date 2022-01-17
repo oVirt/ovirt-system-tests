@@ -88,7 +88,6 @@ from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.engine import engine_ip_url
 from ost_utils.pytest.fixtures.engine import engine_ips_for_network
 from ost_utils.pytest.fixtures.engine import engine_username
-from ost_utils.pytest.fixtures.env import ansible_execution_environment
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file

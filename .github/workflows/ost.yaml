@@ -62,4 +62,4 @@ jobs:
             [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
           done
           rm -f queue
-          [[ "$BASE_TIME" = "$UPDATE_TIME" ]] && { echo "Jenkins didn't pick it up"; exit 1; }
+          [[ "$BASE_TIME" != "$UPDATE_TIME" ]] || { echo "Jenkins didn't pick it up"; exit 1; }

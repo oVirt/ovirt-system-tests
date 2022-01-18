@@ -49,8 +49,7 @@ jobs:
           SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
           CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"
           BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-          [[ -z "$BASE_TIME" ]] && echo "no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq -r .check_suites[].app.name)";
-          echo "last update: $BASE_TIME"
+          echo "last update: ${BASE_TIME:-no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq .check_suites[].app.name)}"
           echo "trigger content:"
           { echo "${PR_URL}"; echo "${SUITE}"; echo "${DISTRO}"; } | runuser -u nginx tee queue
           i=0

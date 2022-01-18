@@ -13,6 +13,6 @@ jobs:
             github.event.comment.author_association == 'MEMBER' ||
             github.event.comment.author_association == 'COLLABORATOR' )
       }}
-    uses: oVirt/ovirt-system-tests/github/ost.yaml@master
+    uses: oVirt/ovirt-system-tests/.github/workflows/ost.yaml@master
     with:
       pr_url: ${{ github.event.issue.pull_request.url }}

@@ -64,6 +64,15 @@ if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
     fi
     ost_app_response in_progress "" "Job https://redir.apps.ovirt.org/dj/$(echo $BUILD_URL| cut -d/ -f4-) is starting OST on ${SHA}, approved by ${APPROVED}."
 
+    # figure out if this is an OST or non-OST PR
+    echo "${PR_URL}" | grep /ovirt-system-tests/ && {
+        PR_NO="$(echo ${PR_URL} | egrep -o '[0-9]+$')"
+        OST_REFSPEC="pull/${PR_NO}/head"
+        CUSTOM_REPOS=
+    } || {
+        OST_REFSPEC=
+        CUSTOM_REPOS="${PR_URL}"
+    }
     cat << EOF > vars
 PR_URL=$PR_URL
 SUITE=$SUITE
@@ -72,6 +81,8 @@ OST_IMAGE=$OST_IMAGE
 SHA=$SHA
 EXPIRE_AT=$EXPIRE_AT
 CHECK_RUN_ID=$CHECK_RUN_ID
+OST_REFSPEC=$OST_REFSPEC
+CUSTOM_REPOS=$CUSTOM_REPOS
 EOF
     cat vars
 else # after actual OST, with injected vars

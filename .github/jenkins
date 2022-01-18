@@ -74,11 +74,12 @@ else # after actual OST, with injected vars
     RESULT="${!BR}"
     OST_JOB_NUMBER="${!BN}"
     echo "result $RESULT"
+    ACTUAL_JOB="https://redir.apps.ovirt.org/dj/job/${JOB_NAME%-*}_manual/${OST_JOB_NUMBER}"
     if [[ "$RESULT" == "SUCCESS" ]]; then
-        ost_app_response completed success "job https://redir.apps.ovirt.org/dj/job/${TRIGGERED_JOB_NAMES}/${OST_JOB_NUMBER} succeeded"
+        ost_app_response completed success "job ${ACTUAL_JOB} succeeded"
     elif [[ "${!BR}" == "FAILURE" ]]; then
-        ost_app_response completed failure "job https://redir.apps.ovirt.org/dj/job/${TRIGGERED_JOB_NAMES}/${OST_JOB_NUMBER} failed"
+        ost_app_response completed failure "job ${ACTUAL_JOB} failed"
     else
-        ost_app_response completed cancelled "job https://redir.apps.ovirt.org/dj/job/${TRIGGERED_JOB_NAMES}/${OST_JOB_NUMBER} aborted"
+        ost_app_response completed cancelled "job ${ACTUAL_JOB} aborted"
     fi
 fi

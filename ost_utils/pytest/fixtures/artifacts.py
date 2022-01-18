@@ -50,6 +50,7 @@ def artifact_list():
         '/var/cache/ovirt-engine',
         '/var/lib/ovirt-engine/setup/answers',
         '/var/lib/pgsql/initdb_postgresql.log',
+        '/var/lib/pgsql/data/log',
         '/var/log',
     ]
 

@@ -44,6 +44,10 @@ ost_status() {
         done
         echo -ne "\n\n"
     done
+    if ! grep -qi 'engine' $PREFIX/hosts && [ -r $PREFIX/ansible_inventory/*engine* ]; then
+	echo "Hosted Engine:"
+	cat $PREFIX/ansible_inventory/*engine* | sed -n 's/^\([^ ]*\) ansible_host=\([^ ]*\).*/  \1\n   IP: \2/p'
+    fi
 }
 
 ost_destroy() {

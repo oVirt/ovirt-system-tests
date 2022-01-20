@@ -19,6 +19,8 @@ echo "$DISTRO" | egrep '^(el8stream|el9stream|rhel8)$'
 # Part 2
 # only the steps before and after actual OST job
 #
+# OST application ID
+APP_ID=164117
 # app access token
 if [[ -z "$EXPIRE_AT" || ! -f token || $(date +%s) -gt "$EXPIRE_AT" ]]; then
     # access token URL, id of an installation doesn't change, so let's hardcode it
@@ -26,8 +28,6 @@ if [[ -z "$EXPIRE_AT" || ! -f token || $(date +%s) -gt "$EXPIRE_AT" ]]; then
     AT_URL="https://api.github.com/app/installations/22187590/access_tokens"
     # private key for JWT
     # OST_APP_PRIVATE_KEY_FILENAME= <passed from jenkins>
-    # OST application ID
-    APP_ID=164117
     EXPIRE_AT=$(($(date +%s)+520)) # use within 9 minutes, 10 minutes max expiration
     HEADER='{"alg":"RS256","typ":"JWT"}'
     PAYLOAD="{\"iat\":$(($(date +%s)-60)),\"exp\":$((${EXPIRE_AT}+60)),\"iss\":${APP_ID}}"
@@ -39,6 +39,7 @@ fi
 OST_APP_TOKEN=$(jq -r .token token)
 
 [[ -z "$SHA" ]] && SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
+API_URL_BASE=$(echo ${PR_URL} | cut -d / -f 1-6)
 [[ "$DISTRO" = "el8stream" ]] && OST_IMAGE="el8stream+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-8-x86_64"
 [[ "$DISTRO" = "el9stream" ]] && OST_IMAGE="el9stream+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-9-x86_64"
 [[ "$DISTRO" = "rhel8" ]] && OST_IMAGE=${RHEL_OST_IMAGE}
@@ -48,10 +49,13 @@ ost_app_response() { # ost_app_response status conclusion summary
         local HTTP_METHOD=POST
         # create a new check run with POST on the first call, PATCH existing for follow-up calls
         [[ -n "$CHECK_RUN_ID" ]] && { HTTP_METHOD=PATCH; }
-        CHECK_RUN_ID=$(curl -sS -H "Authorization: token $OST_APP_TOKEN" -X ${HTTP_METHOD} -d "{\"name\":\"OST\", \"head_sha\":\"${SHA}\", \"status\":\"${1}\"${CONCLUSION}, \"output\":{\"title\":\"${SUITE}(${DISTRO}) ${2}\", \"summary\":\"${3}\"}}" $(echo ${PR_URL} | cut -d / -f 1-6)/check-runs${CHECK_RUN_ID:+/$CHECK_RUN_ID} | jq -r .id)
+        CHECK_RUN_ID=$(curl -sS -H "Authorization: token $OST_APP_TOKEN" -X ${HTTP_METHOD} -d "{\"name\":\"OST\", \"head_sha\":\"${SHA}\", \"status\":\"${1}\"${CONCLUSION}, \"output\":{\"title\":\"${SUITE}(${DISTRO}) ${2}\", \"summary\":\"${3}\"}}" "${API_URL_BASE}/check-runs${CHECK_RUN_ID:+/$CHECK_RUN_ID}" | jq -r .id)
 }
 
 if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
+    # do we already have a check suite? creating a check-run will create a suite too, but it doesn't always update it.
+    CHECK_SUITE_ID=$(curl -sS "${API_URL_BASE}/commits/${SHA}/check-suites" | jq ".check_suites[] | select(.app.id==$APP_ID) | .id")
+    [[ -n "$CHECK_SUITE_ID" ]] && curl -sS -H "Authorization: token $OST_APP_TOKEN" -X POST "${API_URL_BASE}/check-suites/${CHECK_SUITE_ID}/rerequest"
     curl -sS -o reviews "${PR_URL}/reviews"
     APPROVED=$(jq -r ".[] | select(.author_association==\"MEMBER\" and .state==\"APPROVED\" and .commit_id==\"${SHA}\") | .user.login" reviews)
     if [[ -z "$APPROVED" ]]; then

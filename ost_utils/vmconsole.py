@@ -63,6 +63,8 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 '-t',
                 '-o',
                 'StrictHostKeyChecking=no',
+                '-o',
+                'UserKnownHostsFile=/dev/null',
                 '-i',
                 f'{self._private_key_path}',
                 '-p',

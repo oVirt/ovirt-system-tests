@@ -196,7 +196,7 @@ def _nodes(
                 f"{ui_artifacts_dir}:/export:Z",
                 f"--add-host={engine_dns_entry}",
                 "-e",
-                f"SE_EVENT_BUS_HOST={hub_name}",
+                "SE_EVENT_BUS_HOST=localhost",
                 "-e",
                 "SE_EVENT_BUS_PUBLISH_PORT=4442",
                 "-e",

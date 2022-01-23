@@ -23,18 +23,20 @@ OVIRT_PACKAGES_PATTERNS = (
     re.compile('vdsm-[0-9]'),
 )
 
+OST_TO_GITHUB_DISTRO_NAME = {'el8stream': 'el8', 'el9stream': 'el9'}
+
 
 def expand_repos(custom_repos, working_dir, ost_images_distro):
     repo_urls = []
     for repo_url in custom_repos:
         if re.match(r"https://(www\.|api\.)?github.com/(repos/)?oVirt", repo_url):
-            repo_urls.append(expand_github_repo(repo_url, working_dir))
+            repo_urls.append(expand_github_repo(repo_url, working_dir, ost_images_distro))
         else:
             repo_urls.extend(expand_jenkins_repo(repo_url, ost_images_distro))
     return repo_urls
 
 
-def expand_github_repo(repo_url, working_dir):
+def expand_github_repo(repo_url, working_dir, ost_images_distro):
     """
     This function converts custom repo links pointing to GitHub pull requests
     into local directories containing the unpacked RPMs from the artifacts ZIP
@@ -65,18 +67,21 @@ def expand_github_repo(repo_url, working_dir):
 
     artifacts: list[_GitHubArtifact] = _github_list_artifacts(repo, workflow_run)
     for artifact in artifacts:
-        target_path = os.path.join(working_dir, 'github_artifacts', f'{commit}-{artifact.name}')
-        os.makedirs(target_path, exist_ok=True)
-        # Download the artifact
-        target_file = _github_download_artifact(artifact, target_path)
-        # Unpack the artifact
-        _github_unpack_artifact(target_file)
-        if _github_has_rpm(target_path):
-            # TODO check metada presence and change repo local path
-            # _github_generate_repomd(target_path)
-            # Add to repos list.
-            return target_path
-    raise RuntimeError(f"GH pr/commit/run {repo_url} had no artifacts with RPM files.")
+        if OST_TO_GITHUB_DISTRO_NAME[ost_images_distro] in artifact.name:
+            target_path = os.path.join(working_dir, 'github_artifacts', f'{commit}-{artifact.name}')
+            os.makedirs(target_path, exist_ok=True)
+            # Download the artifact
+            target_file = _github_download_artifact(artifact, target_path)
+            # Unpack the artifact
+            _github_unpack_artifact(target_file)
+            if _github_has_rpm(target_path):
+                # TODO check metada presence and change repo local path
+                # _github_generate_repomd(target_path)
+                # Add to repos list.
+                return target_path
+    if not artifacts:
+        raise RuntimeError(f"GH pr/commit/run {repo_url} had no artifacts with RPM files.")
+    raise RuntimeError(f"GH pr/commit/run {repo_url} didn't match any of the artifacts names to distro name.")
 
 
 def _github_has_rpm(path: str) -> bool:

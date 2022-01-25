@@ -123,11 +123,11 @@ _TEST_LIST = [
     "test_verify_vm2_exported",
     "test_live_incremental_backup_vm2",
     "test_remove_vm2_backup_checkpoints",
-    "test_import_vm1",
+    "test_import_vm_preallocated",
     "test_ha_recovery",
     "test_check_coredump_generated",
     "test_verify_suspend_resume_vm0",
-    "test_verify_vm_import",
+    "test_verify_vm_import_preallocated",
     "test_verify_template_exported",
     "test_hotunplug_memory",
     "test_hotplug_disk",
@@ -262,7 +262,7 @@ def test_add_disks(engine_api, cirros_image_disk_name):
             'name': DISK2_NAME,
             'provisioned_size': 1 * GB,
             'format': types.DiskFormat.COW,
-            'sparse': True,
+            'sparse': False,
             'backup': types.DiskBackup.INCREMENTAL,
             'active': True,
             'bootable': True,
@@ -775,7 +775,7 @@ def test_verify_template_exported(engine_api, cirros_image_template_name):
 
 
 @order_by(_TEST_LIST)
-def test_import_vm1(engine_api, ost_cluster_name):
+def test_import_vm_preallocated(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
     sd = engine.storage_domains_service().list(search='name={}'.format(SD_ISCSI_NAME))[0]
     cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
@@ -792,7 +792,6 @@ def test_import_vm1(engine_api, ost_cluster_name):
                 cluster=types.Cluster(id=cluster.id),
                 storage_domain=types.StorageDomain(id=sd.id),
                 host=types.Host(id=host.id),
-                sparse=True,
             ),
             async_=True,
             query={'correlation_id': correlation_id},
@@ -800,12 +799,23 @@ def test_import_vm1(engine_api, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_vm_import(engine_api):
+def test_verify_vm_import_preallocated(engine_api, get_vm_service_for_vm, get_disk_services_for_vm_or_template):
     engine = engine_api.system_service()
     correlation_id = "test_validate_ova_import_vm"
 
     assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
     assert assert_utils.true_within_short(lambda: test_utils.get_vm_service(engine, IMPORTED_VM_NAME) is not None)
+
+    vm_service = get_vm_service_for_vm(IMPORTED_VM_NAME)
+    disks_service = get_disk_services_for_vm_or_template(vm_service)
+
+    assert assert_utils.true_within_short(
+        lambda: all(
+            disk_service.get().sparse == False
+            # pylint: disable=not-an-iterable
+            for disk_service in disks_service
+        )
+    )
 
 
 @order_by(_TEST_LIST)
@@ -833,13 +843,24 @@ def test_import_template(engine_api, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_template_import(engine_api):
+def test_verify_template_import(engine_api, get_template_service_for_template, get_disk_services_for_vm_or_template):
     engine = engine_api.system_service()
     correlation_id = "test_validate_ova_import_temp"
 
     assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
     assert assert_utils.true_within_short(
         lambda: test_utils.get_template_service(engine, IMPORTED_TEMP_NAME) is not None
+    )
+
+    template_service = get_template_service_for_template(IMPORTED_TEMP_NAME)
+    disks_service = get_disk_services_for_vm_or_template(template_service)
+
+    assert assert_utils.true_within_short(
+        lambda: all(
+            disk_service.get().sparse == True
+            # pylint: disable=not-an-iterable
+            for disk_service in disks_service
+        )
     )
 
 

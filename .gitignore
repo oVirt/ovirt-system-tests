@@ -2,10 +2,11 @@
 .*.swp
 .bash_history
 coverage/
-!ost_utils/ost_utils/coverage/
+!ost_utils/coverage/
 /deployment
 /deployment-*
 /exported-artifacts
+/docs/_build
 *.egg-info
 *-venv
 
@@ -21,6 +22,7 @@ coverage/
 .idea
 .pydevproject
 .tox
+.vscode
 
 # Ansible files
 ###############

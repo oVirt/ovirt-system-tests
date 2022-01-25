@@ -40,20 +40,14 @@ def setup(ansible_hosts):
         replace='sha1',
     )
 
-    ansible_hosts.copy(
-        dest=VDSM_COVERAGE_CONF_PATH, content=VDSM_COVERAGE_CONF
-    )
+    ansible_hosts.copy(dest=VDSM_COVERAGE_CONF_PATH, content=VDSM_COVERAGE_CONF)
 
     ansible_hosts.file(path=COVERAGE_DIR, state='directory', mode='0777')
     ansible_hosts.copy(dest=COVERAGE_RC, content=COVERAGE_CONF)
 
     added_line = f'COVERAGE_PROCESS_START="{COVERAGE_RC}"'
-    ansible_hosts.lineinfile(
-        path='/etc/sysconfig/vdsm', line=added_line, create=True
-    )
-    ansible_hosts.lineinfile(
-        path='/etc/sysconfig/supervdsmd', line=added_line, create=True
-    )
+    ansible_hosts.lineinfile(path='/etc/sysconfig/vdsm', line=added_line, create=True)
+    ansible_hosts.lineinfile(path='/etc/sysconfig/supervdsmd', line=added_line, create=True)
 
 
 def collect(ansible_host0, ansible_hosts, output_path):
@@ -106,10 +100,7 @@ def _generate_coverage_report_on_host(host):
     host.shell(f'coverage-3 combine -a --rcfile={COVERAGE_RC}')
     # Using the "--ignore-errors" flag because we generate the coverage report
     # on host-0 but do not have 'vdsm-gluster' installed there.
-    host.shell(
-        f'coverage-3 html --ignore-errors --directory={COVERAGE_HTML} '
-        f'--rcfile={COVERAGE_RC}'
-    )
+    host.shell(f'coverage-3 html --ignore-errors --directory={COVERAGE_HTML} --rcfile={COVERAGE_RC}')
 
 
 def _copy_coverage_report_from_host(host, output_path):

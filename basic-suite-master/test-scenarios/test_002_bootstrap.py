@@ -101,7 +101,6 @@ _TEST_LIST = [
     "test_add_dc",
     "test_add_cluster",
     "test_add_hosts",
-    "test_sync_time",
     "test_get_version",
     "test_get_domains",
     "test_get_operating_systems",
@@ -317,12 +316,6 @@ def test_add_cluster(engine_api, ost_cluster_name, ost_dc_name):
                 ],
             ),
         )
-
-
-@order_by(_TEST_LIST)
-def test_sync_time(ansible_hosts, engine_hostname):
-    ansible_hosts.shell('chronyc add server {}'.format(engine_hostname))
-    ansible_hosts.shell('chronyc makestep')
 
 
 @order_by(_TEST_LIST)

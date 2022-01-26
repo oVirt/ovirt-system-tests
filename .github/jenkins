@@ -56,13 +56,17 @@ if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
     # do we already have a check suite? creating a check-run will create a suite too, but it doesn't always update it.
     CHECK_SUITE_ID=$(curl -sS "${API_URL_BASE}/commits/${SHA}/check-suites" | jq ".check_suites[] | select(.app.id==$APP_ID) | .id")
     [[ -n "$CHECK_SUITE_ID" ]] && curl -sS -H "Authorization: token $OST_APP_TOKEN" -X POST "${API_URL_BASE}/check-suites/${CHECK_SUITE_ID}/rerequest"
-    curl -sS -o reviews "${PR_URL}/reviews"
-    APPROVED=$(jq -r ".[] | select(.author_association==\"MEMBER\" and .state==\"APPROVED\" and .commit_id==\"${SHA}\") | .user.login" reviews)
+    # PR by a member or approved by a member
+    [[ $(curl -sS -H "Authorization: token $OST_APP_TOKEN" ${PR_URL} | jq -r .author_association) = "MEMBER" ]] && APPROVED=author
     if [[ -z "$APPROVED" ]]; then
-        ost_app_response completed cancelled "not approved"
+        curl -sS -o reviews "${PR_URL}/reviews"
+        APPROVED=$(jq -r ".[] | select(.author_association==\"MEMBER\" and .state==\"APPROVED\" and .commit_id==\"${SHA}\") | .user.login" reviews)
+    fi
+    if [[ -z "$APPROVED" ]]; then
+        ost_app_response completed cancelled "non approved user"
         exit 1
     fi
-    ost_app_response in_progress "" "Job https://redir.apps.ovirt.org/dj/$(echo $BUILD_URL| cut -d/ -f4-) is starting OST on ${SHA}, approved by ${APPROVED}."
+    ost_app_response in_progress "" "Job https://redir.apps.ovirt.org/dj/$(echo $BUILD_URL| cut -d/ -f4-) is starting OST on ${SHA}, ${APPROVED} approved."
 
     # figure out if this is an OST or non-OST PR
     echo "${PR_URL}" | grep /ovirt-system-tests/ && {

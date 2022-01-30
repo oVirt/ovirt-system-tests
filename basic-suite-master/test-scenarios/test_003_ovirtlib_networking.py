@@ -158,19 +158,17 @@ def test_verify_interhost_connectivity_ipv6(ansible_host0):
     ansible_host0.shell('ping -c 1 -6 {}'.format(MIGRATION_NETWORK_IPv6_ADDR.format(2)))
 
 
-def test_remove_bonding(engine_api):
+def test_remove_bonding(engine_api, host0, host1, migration_network, migration_cluster_network):
     engine = engine_api.system_service()
 
     def _remove_bonding(host):
         host_service = engine.hosts_service().host_service(id=host.id)
         network_utils.detach_network_from_host(engine, host_service, MIGRATION_NETWORK, BOND_NAME)
 
-    network_utils.set_network_required_in_cluster(engine, MIGRATION_NETWORK, CLUSTER_NAME, False)
+    migration_cluster_network.update(required=False)
     utils.invoke_in_parallel(_remove_bonding, test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME))
-
-    for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
-        host_service = engine.hosts_service().host_service(id=host.id)
-        assert not _host_is_attached_to_network(engine, host_service, MIGRATION_NETWORK)
+    for host in host0, host1:
+        assert not host.are_networks_attached((migration_network,))
 
 
 def test_attach_vm_network_to_both_hosts_static_config(host0, host1, vm_network):
@@ -223,7 +221,21 @@ def vm_network(data_center):
 
 
 @pytest.fixture(scope='module')
+def migration_network(data_center):
+    migration_network = netlib.Network(data_center)
+    migration_network.import_by_name(MIGRATION_NETWORK)
+    return migration_network
+
+
+@pytest.fixture(scope='module')
 def vm_cluster_network(test_cluster):
     vm_cluster_network = clusterlib.ClusterNetwork(test_cluster)
     vm_cluster_network.import_by_name(VM_NETWORK)
     return vm_cluster_network
+
+
+@pytest.fixture(scope='module')
+def migration_cluster_network(test_cluster):
+    migration_cluster_network = clusterlib.ClusterNetwork(test_cluster)
+    migration_cluster_network.import_by_name(MIGRATION_NETWORK)
+    return migration_cluster_network

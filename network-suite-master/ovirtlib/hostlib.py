@@ -322,6 +322,10 @@ class Host(SDKRootEntity):
         attachments = self._get_attachments_for_networks(networks)
         return all(not att.in_sync for att in attachments)
 
+    def are_networks_attached(self, networks):
+        attachments = self._get_attachments_for_networks(networks)
+        return bool(attachments)
+
     def _get_attachments_for_networks(self, networks):
         if networks is None:
             attachments = self._get_existing_attachments()
@@ -432,13 +436,13 @@ class Host(SDKRootEntity):
         ]
 
     def get_mgmt_net_attachment_data(self):
-        return self._get_attachment_data_for_networks((self.get_mgmt_network(),))[0]
+        return self.get_attachment_data_for_networks((self.get_mgmt_network(),))[0]
 
     def get_mgmt_network(self):
         mgmt_net_id = self._get_mgmt_cluster_network().id
         return self._get_network_by_id(mgmt_net_id)
 
-    def _get_attachment_data_for_networks(self, networks):
+    def get_attachment_data_for_networks(self, networks):
         network_attachments = self._get_attachments_for_networks(networks)
         network_attachments_data = []
         for attachment in network_attachments:
@@ -447,6 +451,7 @@ class Host(SDKRootEntity):
                 self._get_nic_name(attachment.host_nic.id),
                 id=attachment.id,
                 in_sync=attachment.in_sync,
+                nic_id=attachment.host_nic.id,
             )
             datum.set_ip_assignments(attachment)
             network_attachments_data.append(datum)
@@ -493,6 +498,9 @@ class Host(SDKRootEntity):
         mgmt_net_id = self.get_mgmt_network().id
         nics = filter(lambda nic: nic.get_network_id() != mgmt_net_id, self.nics())
         return sorted(nics, key=lambda x: (x.name, x.get_network_id()))
+
+    def get_nic_for_mac_address(self, mac_address):
+        return next(filter(lambda nic: nic.mac_address == mac_address, self.nics()))
 
     def nics(self):
         nics = []
@@ -552,12 +560,24 @@ class HostNic(SDKSubEntity):
         return self.get_sdk_type().status
 
     @property
+    def mac_address(self):
+        return self.get_sdk_type().mac.address
+
+    @property
     def boot_protocol(self):
         return self.get_sdk_type().boot_protocol
 
     @property
     def ipv6_boot_protocol(self):
         return self.get_sdk_type().ipv6_boot_protocol
+
+    @property
+    def ip4_address(self):
+        return self.get_sdk_type().ip.address
+
+    @property
+    def ip6_address(self):
+        return self.get_sdk_type().ipv6.address
 
     def boot_protocol_equals(self, other):
         return self.boot_protocol == other.boot_protocol
@@ -598,6 +618,21 @@ class HostNic(SDKSubEntity):
             timeout=timeout,
         )
 
+    def __repr__(self):
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'status:{self.status}, '
+                f'ip4_addr:{self.ip4_address}, '
+                f'ip6_addr:{self.ip6_address}, '
+                f'boot_proto:{self.boot_protocol}, '
+                f'ip6_boot_proto:{self.ipv6_boot_protocol}, '
+                f'net_attached?{self.is_network_attached()}, '
+                f'id:{self.id}>'
+            )
+        )
+
 
 class Bond(HostNic):
     @property
@@ -611,6 +646,14 @@ class Bond(HostNic):
         inactive_slaves = [inactive for inactive in bonding.slaves if inactive.id != bonding.active_slave.id]
         return [self._to_nic(nic) for nic in inactive_slaves]
 
+    @property
+    def all_slaves(self):
+        return self.inactive_slaves + [self.active_slave]
+
+    @property
+    def bonding_data(self):
+        return netattachlib.BondingData(self.name, [nic.name for nic in self.all_slaves])
+
     def _to_nic(self, sdk_nic):
         nic = HostNic(self._parent_sdk_entity)
         nic.import_by_id(sdk_nic.id)
@@ -618,3 +661,13 @@ class Bond(HostNic):
 
     def _updated_bonding(self):
         return self.get_sdk_type().bonding
+
+    def __repr__(self):
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'{super().__repr__()}, '
+                f'slaves:{self.all_slaves}, '
+                f'id:{self.id}>'
+            )
+        )

@@ -60,40 +60,39 @@ def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
     return attachment
 
 
-def _attach_vm_network_to_host_static_config(host, network):
-    attach_data = netattachlib.NetworkAttachmentData(
+def _attachment_data(network, nic_name, seed):
+    return netattachlib.NetworkAttachmentData(
         network,
-        ETH0,
+        nic_name,
         (
             netattachlib.StaticIpv4Assignment(
-                VM_NETWORK_IPv4_ADDR.format(int(host.name[-1]) + 1),
+                VM_NETWORK_IPv4_ADDR.format(int(seed) + 1),
                 VM_NETWORK_IPv4_MASK,
             ),
             netattachlib.StaticIpv6Assignment(
-                VM_NETWORK_IPv6_ADDR.format(int(host.name[-1]) + 1),
+                VM_NETWORK_IPv6_ADDR.format(int(seed) + 1),
                 VM_NETWORK_IPv6_MASK,
             ),
         ),
     )
 
-    host.setup_networks((attach_data,))
 
-
-def _assert_expected_ips(host):
+def _assert_expected_ips(host, nic_name, seed):
     host_nic = hostlib.HostNic(host)
-    host_nic.import_by_name(f'{ETH0}.{VM_NETWORK_VLAN_ID}')
+    host_nic.import_by_name(f'{nic_name}.{VM_NETWORK_VLAN_ID}')
     assert ipaddress.ip_address(host_nic.ip4_address) == ipaddress.ip_address(
-        VM_NETWORK_IPv4_ADDR.format(int(host.name[-1]) + 1)
+        VM_NETWORK_IPv4_ADDR.format(int(seed) + 1)
     )
 
     assert ipaddress.ip_address(host_nic.ip6_address) == ipaddress.ip_address(
-        VM_NETWORK_IPv6_ADDR.format(int(host.name[-1]) + 1)
+        VM_NETWORK_IPv6_ADDR.format(int(seed) + 1)
     )
 
 
 def test_attach_vm_network_to_host_0_static_config(host0, vm_network):
-    _attach_vm_network_to_host_static_config(host0, vm_network)
-    _assert_expected_ips(host0)
+    attach_data = _attachment_data(vm_network, ETH0, host0.name[-1])
+    host0.setup_networks((attach_data,))
+    _assert_expected_ips(host0, ETH0, host0.name[-1])
 
 
 def test_modify_host_0_ip_to_dhcp(host0, vm_network):
@@ -174,8 +173,9 @@ def test_remove_bonding(engine_api, host0, host1, migration_network, migration_c
 def test_attach_vm_network_to_both_hosts_static_config(host0, host1, vm_network):
     # preparation for 004 and 006
     for host in (host0, host1):
-        _attach_vm_network_to_host_static_config(host, vm_network)
-        _assert_expected_ips(host)
+        attach_data = _attachment_data(vm_network, ETH0, host.name[-1])
+        host.setup_networks((attach_data,))
+        _assert_expected_ips(host, ETH0, host.name[-1])
 
 
 @pytest.fixture(scope='module')

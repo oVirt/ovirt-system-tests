@@ -10,8 +10,6 @@ import ipaddress
 
 import pytest
 
-from ovirtsdk4.types import Bonding, HostNic, Option
-
 from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import utils
@@ -63,6 +61,23 @@ def _attachment_data(network, nic_name, seed):
     )
 
 
+def _migration_attachment_data(network, nic_name, seed):
+    return netattachlib.NetworkAttachmentData(
+        network,
+        nic_name,
+        (
+            netattachlib.StaticIpv4Assignment(
+                MIGRATION_NETWORK_IPv4_ADDR.format(int(seed) + 1),
+                MIGRATION_NETWORK_IPv4_MASK,
+            ),
+            netattachlib.StaticIpv6Assignment(
+                MIGRATION_NETWORK_IPv6_ADDR.format(int(seed) + 1),
+                MIGRATION_NETWORK_IPv6_MASK,
+            ),
+        ),
+    )
+
+
 def _assert_expected_ips(host, nic_name, seed):
     host_nic = hostlib.HostNic(host)
     host_nic.import_by_name(f'{nic_name}.{VM_NETWORK_VLAN_ID}')
@@ -98,38 +113,15 @@ def test_detach_vm_network_from_host(host0, vm_network, vm_cluster_network):
     assert not host0.are_networks_attached((vm_network,))
 
 
-def test_bond_nics(host0, host1, engine_api, bonding_network_name, backend, migration_network):
-    engine = engine_api.system_service()
-
+def test_bond_nics(host0, host1, bonding_network_name, backend, migration_network):
     def _bond_nics(number, host):
-        slaves = [HostNic(name=nic) for nic in backend.ifaces_for(host.name, bonding_network_name)]
-
-        options = [
-            Option(name='mode', value='active-backup'),
-            Option(name='miimon', value='200'),
-        ]
-
-        bond = HostNic(name=BOND_NAME, bonding=Bonding(slaves=slaves, options=options))
-
-        ip_configuration = network_utils.create_static_ip_configuration(
-            MIGRATION_NETWORK_IPv4_ADDR.format(number),
-            MIGRATION_NETWORK_IPv4_MASK,
-            MIGRATION_NETWORK_IPv6_ADDR.format(number),
-            MIGRATION_NETWORK_IPv6_MASK,
+        bonding_data = netattachlib.ActiveSlaveBonding(
+            BOND_NAME, backend.ifaces_for(host.name, bonding_network_name), {'miimon': '200'}
         )
+        attachment_data = _migration_attachment_data(migration_network, BOND_NAME, number)
+        host.setup_networks(attachments_data=(attachment_data,), bonding_data=(bonding_data,))
 
-        host_service = engine.hosts_service().host_service(id=host.id)
-        network_utils.attach_network_to_host(
-            host_service,
-            BOND_NAME,
-            MIGRATION_NETWORK,
-            ip_configuration,
-            [bond],
-        )
-
-    hosts = test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME)
-    utils.invoke_in_parallel(_bond_nics, list(range(1, len(hosts) + 1)), hosts)
-
+    utils.invoke_in_parallel(_bond_nics, [1, 2], (host0, host1))
     for host in host0, host1:
         attachment_data = host.get_attachment_data_for_networks((migration_network,))
         assert attachment_data

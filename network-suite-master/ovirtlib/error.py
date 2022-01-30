@@ -7,8 +7,8 @@ import http
 
 import ovirtsdk4
 
-from ovirtlib import eventlib
-from ovirtlib import joblib
+from . import eventlib
+from . import joblib
 
 DELIM = '--------------------------------------'
 

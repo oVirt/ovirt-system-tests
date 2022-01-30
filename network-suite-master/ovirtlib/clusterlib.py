@@ -9,13 +9,13 @@ import contextlib
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from ovirtlib import datacenterlib
-from ovirtlib import eventlib
-from ovirtlib import netlib
-from ovirtlib import syncutil
+from . import datacenterlib
+from . import eventlib
+from . import netlib
+from . import syncutil
 
-from ovirtlib.sdkentity import SDKRootEntity
-from ovirtlib.sdkentity import SDKSubEntity
+from .sdkentity import SDKRootEntity
+from .sdkentity import SDKSubEntity
 
 
 MacPoolRange = collections.namedtuple("MacPoolRange", "start end")

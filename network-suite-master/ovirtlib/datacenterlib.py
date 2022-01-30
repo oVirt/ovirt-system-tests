@@ -7,12 +7,12 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from ovirtlib import error
-from ovirtlib import netlib
-from ovirtlib import storagelib
-from ovirtlib import syncutil
-from ovirtlib.error import report_status
-from ovirtlib.sdkentity import SDKRootEntity
+from . import error
+from . import netlib
+from . import storagelib
+from . import syncutil
+from .error import report_status
+from .sdkentity import SDKRootEntity
 
 
 class DataCenter(SDKRootEntity):

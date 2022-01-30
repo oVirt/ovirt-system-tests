@@ -7,7 +7,7 @@ import random
 
 import ovirtsdk4
 
-from ovirtlib.sdkentity import SDKRootEntity
+from .sdkentity import SDKRootEntity
 
 
 class EngineEvents(SDKRootEntity):

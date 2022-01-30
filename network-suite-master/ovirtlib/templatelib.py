@@ -5,8 +5,8 @@
 #
 from ovirtsdk4 import types
 
-from ovirtlib import syncutil
-from ovirtlib.sdkentity import EntityNotFoundError
+from . import syncutil
+from .sdkentity import EntityNotFoundError
 
 
 TEMPLATE_BLANK = 'Blank'

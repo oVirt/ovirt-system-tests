@@ -9,9 +9,9 @@ import time
 
 from ovirtsdk4 import types
 
-from ovirtlib.sdkentity import EntityCreationError
-from ovirtlib.sdkentity import SDKSubEntity
-from ovirtlib.sdkentity import SDKRootEntity
+from .sdkentity import EntityCreationError
+from .sdkentity import SDKSubEntity
+from .sdkentity import SDKRootEntity
 
 
 OVIRTMGMT = 'ovirtmgmt'

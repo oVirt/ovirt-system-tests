@@ -9,7 +9,7 @@ import logging
 
 from ovirtsdk4 import types
 
-from ovirtlib.sdkentity import SDKRootEntity
+from .sdkentity import SDKRootEntity
 
 LOGGER = logging.getLogger(__name__)
 

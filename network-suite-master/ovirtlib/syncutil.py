@@ -8,7 +8,7 @@ import logging
 import os
 import time
 
-from ovirtlib import eventlib
+from . import eventlib
 
 DEFAULT_DELAY_START = 0
 DEFAULT_INTERVAL = 3

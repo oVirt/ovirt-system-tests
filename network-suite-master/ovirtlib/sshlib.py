@@ -7,7 +7,7 @@ import logging
 import paramiko
 import pytest
 
-from ovirtlib import syncutil
+from . import syncutil
 
 DEFAULT_USER = 'root'
 ROOT_PASSWORD = '123456'

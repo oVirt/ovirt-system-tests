@@ -5,9 +5,9 @@
 #
 from ovirtsdk4.types import JobStatus
 
-from ovirtlib import eventlib
-from ovirtlib import syncutil
-from ovirtlib.sdkentity import SDKRootEntity
+from . import eventlib
+from . import syncutil
+from .sdkentity import SDKRootEntity
 
 
 class EngineJobs(SDKRootEntity):

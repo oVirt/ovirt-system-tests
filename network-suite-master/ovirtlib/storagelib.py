@@ -7,9 +7,9 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from ovirtlib import error
-from ovirtlib import syncutil
-from ovirtlib.sdkentity import SDKRootEntity
+from . import error
+from . import syncutil
+from .sdkentity import SDKRootEntity
 
 
 MiB = 2 ** 20

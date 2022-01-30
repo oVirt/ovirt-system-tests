@@ -3,24 +3,20 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 import contextlib
-import functools
-from types import MethodType
 
 from ovirtsdk4 import types
 
-from ovirtlib import clusterlib
-from ovirtlib import error
-from ovirtlib import eventlib
-from ovirtlib import joblib
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import syncutil
-from ovirtlib.netattachlib import BondingData
-from ovirtlib.netattachlib import NetworkAttachmentData
-from ovirtlib.sdkentity import SDKRootEntity
-from ovirtlib.sdkentity import SDKSubEntity
-
-from testlib import suite
+from . import clusterlib
+from . import error
+from . import eventlib
+from . import joblib
+from . import netattachlib
+from . import netlib
+from . import syncutil
+from .netattachlib import BondingData
+from .netattachlib import NetworkAttachmentData
+from .sdkentity import SDKRootEntity
+from .sdkentity import SDKSubEntity
 
 HOST_TIMEOUT_SHORT = 5 * 60
 HOST_TIMEOUT_LONG = 20 * 60
@@ -49,25 +45,6 @@ class HostStatus(object):
 
 class HostStatusError(Exception):
     pass
-
-
-def retry_below_version(version):
-    def decorate_if_required(func):
-        @functools.wraps(func)
-        def func_with_retry(self, *args, **kwargs):
-            exec_func = MethodType(func, self)
-            return syncutil.sync(
-                exec_func=exec_func,
-                exec_func_args=(args if args else kwargs),
-                error_criteria=error.is_not_http_conflict,
-                timeout=SETUP_NETWORKS_TIMEOUT,
-            )
-
-        if suite.is_suite_below(version):
-            return func_with_retry
-        return func
-
-    return decorate_if_required
 
 
 class Host(SDKRootEntity):
@@ -241,7 +218,6 @@ class Host(SDKRootEntity):
         cluster.import_by_id(self.get_sdk_type().cluster.id)
         return cluster
 
-    @retry_below_version('4.4')
     def setup_networks(
         self,
         attachments_data=(),
@@ -302,7 +278,6 @@ class Host(SDKRootEntity):
         net_attachments = NetworkAttachmentData.to_network_attachments(removed_attachments_data)
         return self._remove_setup_networks(net_attachments, removed_bonds)
 
-    @retry_below_version('4.4')
     def _remove_setup_networks(self, net_attachments, removed_bonds=None):
         """
         :param net_attachments: []types.NetworkAttachment
@@ -341,13 +316,11 @@ class Host(SDKRootEntity):
         self.clean_networks()
         self.clean_bonds()
 
-    @retry_below_version('4.4')
     def clean_networks(self):
         mgmt_net_id = self._get_mgmt_net_attachment().network.id
         removed_attachments = [att for att in self._get_existing_attachments() if att.network.id != mgmt_net_id]
         self.service.setup_networks(removed_network_attachments=removed_attachments)
 
-    @retry_below_version('4.4')
     def clean_bonds(self):
         removed_bonds = [bond.get_sdk_type() for bond in self.bonds]
         self.service.setup_networks(removed_bonds=removed_bonds)

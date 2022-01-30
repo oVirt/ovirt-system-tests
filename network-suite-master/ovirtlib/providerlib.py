@@ -7,10 +7,10 @@ from contextlib import contextmanager
 
 from ovirtsdk4 import types
 
-from ovirtlib import syncutil
-from ovirtlib.sdkentity import SDKRootEntity
-from ovirtlib.sdkentity import SDKSubEntity
-from ovirtlib.netlib import Network
+from . import syncutil
+from .sdkentity import SDKRootEntity
+from .sdkentity import SDKSubEntity
+from .netlib import Network
 
 
 class OpenStackImageProviders(SDKRootEntity):

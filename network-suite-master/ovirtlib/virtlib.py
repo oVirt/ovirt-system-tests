@@ -11,14 +11,14 @@ from contextlib import contextmanager
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from ovirtlib import hostlib
-from ovirtlib import joblib
-from ovirtlib import netlib
-from ovirtlib import clusterlib
-from ovirtlib import syncutil
-from ovirtlib.sdkentity import EntityNotFoundError
-from ovirtlib.sdkentity import SDKRootEntity
-from ovirtlib.sdkentity import SDKSubEntity
+from . import hostlib
+from . import joblib
+from . import netlib
+from . import clusterlib
+from . import syncutil
+from .sdkentity import EntityNotFoundError
+from .sdkentity import SDKRootEntity
+from .sdkentity import SDKSubEntity
 
 
 @contextmanager

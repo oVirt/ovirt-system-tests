@@ -37,6 +37,16 @@ class IpAssignment(object):
     def boot_protocol(self):
         return self._boot_protocol
 
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__}| '
+            f'addr:{self.address}, '
+            f'mask:{self.netmask}, '
+            f'gw:{self.gateway}, '
+            f'version:{self.version}, '
+            f'boot_proto:{self._boot_protocol}>'
+        )
+
 
 class StaticIpv4Assignment(IpAssignment):
     def __init__(self, addr, mask, gateway=None, version=IpVersion.V4):
@@ -56,9 +66,10 @@ DYNAMIC_IP_ASSIGN = {'inet': IPV4_DHCP, 'inet6': IPV6_POLY_DHCP_AUTOCONF}
 
 
 class NetworkAttachmentData(object):
-    def __init__(self, network, nic_name, ip_assignments=(), id=None, in_sync=True):
+    def __init__(self, network, nic_name, ip_assignments=(), id=None, in_sync=True, nic_id=None):
         self._network = network
         self._nic_name = nic_name
+        self._nic_id = nic_id
         self._ip_assignments = ip_assignments
         self._id = id
         self._in_sync = in_sync
@@ -70,6 +81,10 @@ class NetworkAttachmentData(object):
     @property
     def nic_name(self):
         return self._nic_name
+
+    @property
+    def nic_id(self):
+        return self._nic_id
 
     @property
     def ip_assignments(self):
@@ -152,6 +167,16 @@ class NetworkAttachmentData(object):
             ip_address_assignment.assignment_method,
         )
 
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__}| '
+            f'network:{self.network}, '
+            f'nic_name:{self.nic_name}, '
+            f'nic_id:{self.nic_id}, '
+            f'in_sync:{self.in_sync}, '
+            f'ip_assign:{self.ip_assignments}'
+        )
+
     @staticmethod
     def to_network_attachments(network_attachments_data):
         """
@@ -183,6 +208,14 @@ class BondingData(object):
     def _sdk_options(self):
         return [types.Option(name=key, value=value) for key, value in self._options.items()]
 
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__}| '
+            f'name:{self.name}, '
+            f'options:{self._options}, '
+            f'slaves:{self._slave_names}'
+        )
+
     @staticmethod
     def get_bonds_names(bonds):
         """
@@ -193,5 +226,7 @@ class BondingData(object):
 
 
 class ActiveSlaveBonding(BondingData):
-    def __init__(self, name, slave_names):
-        super(ActiveSlaveBonding, self).__init__(name, slave_names, {'mode': '1'})
+    def __init__(self, name, slave_names, options=None):
+        options = options if options else {}
+        options['mode'] = '1'
+        super(ActiveSlaveBonding, self).__init__(name, slave_names, options)

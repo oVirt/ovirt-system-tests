@@ -187,6 +187,17 @@ class VnicProfile(SDKRootEntity):
         service.custom_properties = [types.CustomProperty(name=p.name, value=p.value) for p in properties]
         self.service.update(service)
 
+    def __repr__(self):
+        return self._execute_without_raising(
+            lambda: (
+                f'<{self.__class__.__name__}| '
+                f'name:{self.name}, '
+                f'filter:{self.filter}, '
+                f'custom_props:{[(p.name, p.value) for p in self.custom_properties]}'
+                f'id:{self.id}>'
+            )
+        )
+
 
 class Vnic(SDKSubEntity):
     @property
@@ -323,6 +334,9 @@ class NetworkFilter(SDKRootEntity):
             network_filter = NetworkFilter(system)
             network_filter.import_by_id(sdk_obj.id)
             yield network_filter
+
+    def __repr__(self):
+        return self._execute_without_raising(lambda: f'<{self.__class__.__name__}| name:{self.name}, id:{self.id}>')
 
 
 class QoS(SDKSubEntity):

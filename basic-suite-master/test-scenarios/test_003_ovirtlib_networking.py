@@ -48,16 +48,16 @@ MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
 
 
-def _host_is_attached_to_network(engine, host, network_name, nic_name=None):
+def _get_attachement_for_network(engine, host, network_name):
     try:
-        attachment = network_utils.get_network_attachment(engine, host, network_name, DC_NAME)
+        return network_utils.get_network_attachment(engine, host, network_name, DC_NAME)
     except StopIteration:  # there is no attachment of the network to the host
-        return False
+        return None
 
-    if nic_name:
-        host_nic = next(nic for nic in host.nics_service().list() if nic.id == attachment.host_nic.id)
-        assert nic_name == host_nic.name
-    return attachment
+
+def _assert_attachment_on_nic(host, attachment, nic_name):
+    host_nic = next(nic for nic in host.nics_service().list() if nic.id == attachment.host_nic.id)
+    assert nic_name == host_nic.name
 
 
 def _attachment_data(network, nic_name, seed):
@@ -146,7 +146,9 @@ def test_bond_nics(engine_api, bonding_network_name, backend):
 
     for host in test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME):
         host_service = engine.hosts_service().host_service(id=host.id)
-        assert _host_is_attached_to_network(engine, host_service, MIGRATION_NETWORK, nic_name=BOND_NAME)
+        attachment = _get_attachement_for_network(engine, host_service, MIGRATION_NETWORK)
+        assert attachment
+        _assert_attachment_on_nic(host_service, attachment, BOND_NAME)
 
 
 def test_verify_interhost_connectivity_ipv4(ansible_host0):

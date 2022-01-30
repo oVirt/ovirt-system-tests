@@ -53,7 +53,9 @@ from ost_utils.pytest.fixtures.env import ssh_key_file
 from ost_utils.pytest.fixtures.env import suite_dir
 from ost_utils.pytest.fixtures.env import working_dir
 
+from ost_utils.pytest.fixtures.network import bonding_network_name
 from ost_utils.pytest.fixtures.network import management_gw_ip
+from ost_utils.pytest.fixtures.network import management_network_name
 
 from ost_utils.pytest.fixtures.node import *
 

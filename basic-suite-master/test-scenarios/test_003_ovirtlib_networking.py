@@ -48,11 +48,6 @@ MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
 MIGRATION_NETWORK_IPv6_MASK = '64'
 
 
-def _assert_attachment_on_nic(host, attachment_data, nic_name):
-    host_nic = next(nic for nic in host.nics() if nic.id == attachment_data.nic_id)
-    assert nic_name == host_nic.name
-
-
 def _attachment_data(network, nic_name, seed):
     return netattachlib.NetworkAttachmentData(
         network,
@@ -140,7 +135,9 @@ def test_bond_nics(host0, host1, engine_api, bonding_network_name, backend, migr
     for host in host0, host1:
         attachment_data = host.get_attachment_data_for_networks((migration_network,))
         assert attachment_data
-        _assert_attachment_on_nic(host, next(iter(attachment_data)), BOND_NAME)
+        host_nic = hostlib.HostNic(host)
+        host_nic.import_by_id(next(iter(attachment_data)).nic_id)
+        assert host_nic.name == BOND_NAME
 
 
 def test_verify_interhost_connectivity_ipv4(ansible_host0):

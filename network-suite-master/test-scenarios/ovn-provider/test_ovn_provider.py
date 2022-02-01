@@ -50,6 +50,8 @@ def test_ovn_provider_create_scenario(openstack_client_config, af):
 
 
 def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks, af):
+    if af.is6:
+        pytest.xfail(reason='fails with ansible runner on executor gerrit 118275')
     net10, net11, net14 = ovn_networks
     ssh0 = sshlib.Node(host_0.address, host_0.root_password)
     ssh1 = sshlib.Node(host_1.address, host_1.root_password)

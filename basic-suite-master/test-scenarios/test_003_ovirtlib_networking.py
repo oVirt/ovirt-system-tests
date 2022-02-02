@@ -10,8 +10,6 @@ import ipaddress
 
 import pytest
 
-from ost_utils import network_utils
-from ost_utils import test_utils
 from ost_utils import utils
 
 from ost_utils.ovirtlib import clusterlib
@@ -138,16 +136,15 @@ def test_verify_interhost_connectivity_ipv6(ansible_host0):
     ansible_host0.shell('ping -c 1 -6 {}'.format(MIGRATION_NETWORK_IPv6_ADDR.format(2)))
 
 
-def test_remove_bonding(engine_api, host0, host1, migration_network, migration_cluster_network):
-    engine = engine_api.system_service()
-
-    def _remove_bonding(host):
-        host_service = engine.hosts_service().host_service(id=host.id)
-        network_utils.detach_network_from_host(engine, host_service, MIGRATION_NETWORK, BOND_NAME)
-
+def test_remove_bonding(host0, host1, migration_network, migration_cluster_network):
     migration_cluster_network.update(required=False)
-    utils.invoke_in_parallel(_remove_bonding, test_utils.hosts_in_cluster_v4(engine, CLUSTER_NAME))
     for host in host0, host1:
+        bond = hostlib.Bond(host)
+        bond.import_by_name(BOND_NAME)
+        host.remove_attachments(
+            removed_attachments_data=host.get_attachment_data_for_networks((migration_network,)),
+            removed_bonding_data=(bond.bonding_data,),
+        )
         assert not host.are_networks_attached((migration_network,))
 
 

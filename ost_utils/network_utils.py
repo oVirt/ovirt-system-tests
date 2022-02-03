@@ -64,23 +64,6 @@ def attach_network_to_host(host, nic_name, network_name, ip_configuration, bonds
     )
 
 
-def detach_network_from_host(engine, host, network_name, bond_name=None):
-    query = f'name={test_utils.quote_search_string(network_name)}'
-
-    network_id = engine.networks_service().list(search=query)[0].id
-
-    attachment = _get_attachment_by_id(host, network_id)
-    bonds = [
-        nic for nic in host.nics_service().list() if bond_name and nic.name == bond_name
-    ]  # there is no more than one bond
-
-    return host.setup_networks(
-        removed_bonds=bonds,
-        removed_network_attachments=[attachment],
-        check_connectivity=True,
-    )
-
-
 def modify_ip_config(engine, host, network_name, ip_configuration):
     query = u'name={}'.format(test_utils.quote_search_string(network_name))
 
@@ -90,13 +73,6 @@ def modify_ip_config(engine, host, network_name, ip_configuration):
     attachment.ip_address_assignments = ip_configuration
 
     return host.setup_networks(modified_network_attachments=[attachment], check_connectivity=True)
-
-
-def create_dhcp_ip_configuration():
-    return [
-        IpAddressAssignment(assignment_method=BootProtocol.DHCP),
-        IpAddressAssignment(assignment_method=BootProtocol.DHCP, ip=Ip(version=IpVersion.V6)),
-    ]
 
 
 def create_static_ip_configuration(ipv4_addr=None, ipv4_mask=None, ipv6_addr=None, ipv6_mask=None):
@@ -137,18 +113,6 @@ def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
     network_service = cluster_service.networks_service().network_service(id=network.id)
 
     network.usages = usages
-
-    return network_service.update(network)
-
-
-def set_network_required_in_cluster(engine, network_name, cluster_name, required):
-    cluster_service = test_utils.get_cluster_service(engine, cluster_name)
-    query = u'name={}'.format(test_utils.quote_search_string(network_name))
-
-    network = engine.networks_service().list(search=query)[0]
-    network_service = cluster_service.networks_service().network_service(id=network.id)
-
-    network.required = required
 
     return network_service.update(network)
 

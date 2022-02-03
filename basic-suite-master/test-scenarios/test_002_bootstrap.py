@@ -1722,6 +1722,7 @@ def test_verify_uploaded_image_and_template(
 
 
 @order_by(_TEST_LIST)
+@pytest.mark.xfail(reason='https://bugzilla.redhat.com/2050071', strict=True)
 def test_generate_openscap_report(
     ansible_by_hostname,
     hosts_hostnames,

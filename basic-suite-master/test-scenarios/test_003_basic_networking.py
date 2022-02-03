@@ -32,18 +32,13 @@ BOND_NAME = 'bond_fancy0'
 ETH0 = 'eth0'
 
 
-def _assert_expected_ips(host, nic_name, static_ips):
-    host_nic = hostlib.HostNic(host)
-    host_nic.import_by_name(f'{nic_name}.{VM_NETWORK_VLAN_ID}')
-    assert ipaddress.ip_address(host_nic.ip4_address) == ipaddress.ip_address(static_ips['inet'].address)
-    assert ipaddress.ip_address(host_nic.ip6_address) == ipaddress.ip_address(static_ips['inet6'].address)
-
-
 def test_attach_vm_network_to_host_0_static_config(host0, vm_network, static_ips):
     static_ip = static_ips['vm_net_0']
     attach_data = netattachlib.NetworkAttachmentData(vm_network, ETH0, (static_ip['inet'], static_ip['inet6']))
     host0.setup_networks((attach_data,))
-    _assert_expected_ips(host0, ETH0, static_ip)
+    host_nic = hostlib.HostNic(host0)
+    host_nic.import_by_name(f'{ETH0}.{VM_NETWORK_VLAN_ID}')
+    _assert_expected_ips(host_nic, static_ip)
 
 
 def test_modify_host_0_ip_to_dhcp(host0, vm_network):
@@ -112,7 +107,9 @@ def test_attach_vm_network_to_both_hosts_static_config(host0, host1, vm_network,
         static_ip = static_ips[f'vm_net_{i}']
         attach_data = netattachlib.NetworkAttachmentData(vm_network, ETH0, (static_ip['inet'], static_ip['inet6']))
         host.setup_networks((attach_data,))
-        _assert_expected_ips(host, ETH0, static_ip)
+        host_nic = hostlib.HostNic(host)
+        host_nic.import_by_name(f'{ETH0}.{VM_NETWORK_VLAN_ID}')
+        _assert_expected_ips(host_nic, static_ip)
 
 
 @pytest.fixture(scope='module')
@@ -199,3 +196,8 @@ def _static_ip_assignment(net_seed, host_seed):
         'inet': netattachlib.StaticIpv4Assignment(f'192.0.{net_seed}.{host_seed}', '255.255.255.0'),
         'inet6': netattachlib.StaticIpv6Assignment(f'2001:0db8:85a3:{net_seed}::{host_seed}', '64'),
     }
+
+
+def _assert_expected_ips(host_nic, static_ips):
+    assert ipaddress.ip_address(host_nic.ip4_address) == ipaddress.ip_address(static_ips['inet'].address)
+    assert ipaddress.ip_address(host_nic.ip6_address) == ipaddress.ip_address(static_ips['inet6'].address)

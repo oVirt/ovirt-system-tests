@@ -7,6 +7,7 @@
 from __future__ import absolute_import
 
 import ipaddress
+import random
 
 import pytest
 
@@ -25,73 +26,24 @@ CLUSTER_NAME = 'test-cluster'
 
 # Networks
 VM_NETWORK = u'VM Network with a very long name and עברית'
-VM_NETWORK_IPv4_ADDR = '192.0.2.{}'
-VM_NETWORK_IPv4_MASK = '255.255.255.0'
-VM_NETWORK_IPv6_ADDR = '2001:0db8:85a3:0000:0000:8a2e:0370:733{}'
-VM_NETWORK_IPv6_MASK = '64'
 VM_NETWORK_VLAN_ID = 100
-
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
-
 BOND_NAME = 'bond_fancy0'
 ETH0 = 'eth0'
 
-MIGRATION_NETWORK_IPv4_ADDR = '192.0.3.{}'
-MIGRATION_NETWORK_IPv4_MASK = '255.255.255.0'
-MIGRATION_NETWORK_IPv6_ADDR = '1001:0db8:85a3:0000:0000:574c:14ea:0a0{}'
-MIGRATION_NETWORK_IPv6_MASK = '64'
 
-
-def _attachment_data(network, nic_name, seed):
-    return netattachlib.NetworkAttachmentData(
-        network,
-        nic_name,
-        (
-            netattachlib.StaticIpv4Assignment(
-                VM_NETWORK_IPv4_ADDR.format(int(seed) + 1),
-                VM_NETWORK_IPv4_MASK,
-            ),
-            netattachlib.StaticIpv6Assignment(
-                VM_NETWORK_IPv6_ADDR.format(int(seed) + 1),
-                VM_NETWORK_IPv6_MASK,
-            ),
-        ),
-    )
-
-
-def _migration_attachment_data(network, nic_name, seed):
-    return netattachlib.NetworkAttachmentData(
-        network,
-        nic_name,
-        (
-            netattachlib.StaticIpv4Assignment(
-                MIGRATION_NETWORK_IPv4_ADDR.format(int(seed) + 1),
-                MIGRATION_NETWORK_IPv4_MASK,
-            ),
-            netattachlib.StaticIpv6Assignment(
-                MIGRATION_NETWORK_IPv6_ADDR.format(int(seed) + 1),
-                MIGRATION_NETWORK_IPv6_MASK,
-            ),
-        ),
-    )
-
-
-def _assert_expected_ips(host, nic_name, seed):
+def _assert_expected_ips(host, nic_name, static_ips):
     host_nic = hostlib.HostNic(host)
     host_nic.import_by_name(f'{nic_name}.{VM_NETWORK_VLAN_ID}')
-    assert ipaddress.ip_address(host_nic.ip4_address) == ipaddress.ip_address(
-        VM_NETWORK_IPv4_ADDR.format(int(seed) + 1)
-    )
-
-    assert ipaddress.ip_address(host_nic.ip6_address) == ipaddress.ip_address(
-        VM_NETWORK_IPv6_ADDR.format(int(seed) + 1)
-    )
+    assert ipaddress.ip_address(host_nic.ip4_address) == ipaddress.ip_address(static_ips['inet'].address)
+    assert ipaddress.ip_address(host_nic.ip6_address) == ipaddress.ip_address(static_ips['inet6'].address)
 
 
-def test_attach_vm_network_to_host_0_static_config(host0, vm_network):
-    attach_data = _attachment_data(vm_network, ETH0, host0.name[-1])
+def test_attach_vm_network_to_host_0_static_config(host0, vm_network, static_ips):
+    static_ip = static_ips['vm_net_0']
+    attach_data = netattachlib.NetworkAttachmentData(vm_network, ETH0, (static_ip['inet'], static_ip['inet6']))
     host0.setup_networks((attach_data,))
-    _assert_expected_ips(host0, ETH0, host0.name[-1])
+    _assert_expected_ips(host0, ETH0, static_ip)
 
 
 def test_modify_host_0_ip_to_dhcp(host0, vm_network):
@@ -111,15 +63,19 @@ def test_detach_vm_network_from_host(host0, vm_network, vm_cluster_network):
     assert not host0.are_networks_attached((vm_network,))
 
 
-def test_bond_nics(host0, host1, bonding_network_name, backend, migration_network):
-    def _bond_nics(number, host):
+def test_bond_nics(host0, host1, bonding_network_name, backend, migration_network, static_ips):
+    def _bond_nics(static_ip, host):
         bonding_data = netattachlib.ActiveSlaveBonding(
             BOND_NAME, backend.ifaces_for(host.name, bonding_network_name), {'miimon': '200'}
         )
-        attachment_data = _migration_attachment_data(migration_network, BOND_NAME, number)
-        host.setup_networks(attachments_data=(attachment_data,), bonding_data=(bonding_data,))
+        attach_data = netattachlib.NetworkAttachmentData(
+            migration_network, BOND_NAME, (static_ip['inet'], static_ip['inet6'])
+        )
+        host.setup_networks(attachments_data=(attach_data,), bonding_data=(bonding_data,))
 
-    utils.invoke_in_parallel(_bond_nics, [1, 2], (host0, host1))
+    utils.invoke_in_parallel(
+        _bond_nics, (static_ips['migration_net_0'], static_ips['migration_net_1']), (host0, host1)
+    )
     for host in host0, host1:
         attachment_data = host.get_attachment_data_for_networks((migration_network,))
         assert attachment_data
@@ -128,12 +84,14 @@ def test_bond_nics(host0, host1, bonding_network_name, backend, migration_networ
         assert host_nic.name == BOND_NAME
 
 
-def test_verify_interhost_connectivity_ipv4(ansible_host0):
-    ansible_host0.shell('ping -c 1 {}'.format(MIGRATION_NETWORK_IPv4_ADDR.format(2)))
+def test_verify_interhost_connectivity_ipv4(ansible_host0, static_ips):
+    host_1_ip_addr = static_ips['migration_net_1']['inet'].address
+    ansible_host0.shell('ping -c 1 {}'.format(host_1_ip_addr))
 
 
-def test_verify_interhost_connectivity_ipv6(ansible_host0):
-    ansible_host0.shell('ping -c 1 -6 {}'.format(MIGRATION_NETWORK_IPv6_ADDR.format(2)))
+def test_verify_interhost_connectivity_ipv6(ansible_host0, static_ips):
+    host_1_ip_addr = static_ips['migration_net_1']['inet6'].address
+    ansible_host0.shell('ping -c 1 -6 {}'.format(host_1_ip_addr))
 
 
 def test_remove_bonding(host0, host1, migration_network, migration_cluster_network):
@@ -148,12 +106,13 @@ def test_remove_bonding(host0, host1, migration_network, migration_cluster_netwo
         assert not host.are_networks_attached((migration_network,))
 
 
-def test_attach_vm_network_to_both_hosts_static_config(host0, host1, vm_network):
+def test_attach_vm_network_to_both_hosts_static_config(host0, host1, vm_network, static_ips):
     # preparation for 004 and 006
-    for host in (host0, host1):
-        attach_data = _attachment_data(vm_network, ETH0, host.name[-1])
+    for i, host in enumerate((host0, host1)):
+        static_ip = static_ips[f'vm_net_{i}']
+        attach_data = netattachlib.NetworkAttachmentData(vm_network, ETH0, (static_ip['inet'], static_ip['inet6']))
         host.setup_networks((attach_data,))
-        _assert_expected_ips(host, ETH0, host.name[-1])
+        _assert_expected_ips(host, ETH0, static_ip)
 
 
 @pytest.fixture(scope='module')
@@ -217,3 +176,26 @@ def migration_cluster_network(test_cluster):
     migration_cluster_network = clusterlib.ClusterNetwork(test_cluster)
     migration_cluster_network.import_by_name(MIGRATION_NETWORK)
     return migration_cluster_network
+
+
+@pytest.fixture(scope='module')
+def seed():
+    random.seed()
+    return random.choice(range(2, 250))
+
+
+@pytest.fixture(scope='module')
+def static_ips(seed):
+    return {
+        'vm_net_0': _static_ip_assignment(seed, seed),  # vm_network on host_0
+        'vm_net_1': _static_ip_assignment(seed, seed + 1),  # vm_network on host_1
+        'migration_net_0': _static_ip_assignment(seed + 1, seed),  # migration_network on host_0
+        'migration_net_1': _static_ip_assignment(seed + 1, seed + 1),  # migration_network on host_1
+    }
+
+
+def _static_ip_assignment(net_seed, host_seed):
+    return {
+        'inet': netattachlib.StaticIpv4Assignment(f'192.0.{net_seed}.{host_seed}', '255.255.255.0'),
+        'inet6': netattachlib.StaticIpv6Assignment(f'2001:0db8:85a3:{net_seed}::{host_seed}', '64'),
+    }

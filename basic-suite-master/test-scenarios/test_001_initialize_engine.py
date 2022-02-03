@@ -38,7 +38,7 @@ def test_initialize_engine(
         ovirt_engine_setup_engine_configs=[
             {'key': 'VdsLocalDisksLowFreeSpace', 'value': '400'},
             {'key': 'OvfUpdateIntervalInMinutes', 'value': '10'},
-            {'key': 'ServerRebootTimeout', 'value': '120'},
+            {'key': 'ServerRebootTimeout', 'value': '150'},
         ],
     )
     # Work around https://gitlab.com/qemu-project/qemu/-/issues/641.

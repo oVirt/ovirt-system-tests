@@ -75,6 +75,7 @@ def test_ansible_run(
                 "nfs": {
                     "address": engine_fqdn,
                     "path": "/exports/nfs/share1",
+                    "version": "v4_2",
                 },
             },
             "second-nfs": {
@@ -82,6 +83,7 @@ def test_ansible_run(
                 "nfs": {
                     "address": engine_fqdn,
                     "path": "/exports/nfs/share2",
+                    "version": "v4_2",
                 },
             },
             "templates": {
@@ -89,6 +91,7 @@ def test_ansible_run(
                 "nfs": {
                     "address": engine_fqdn,
                     "path": "/exports/nfs/exported",
+                    "version": "v4_2",
                 },
             },
             "iso": {
@@ -96,6 +99,7 @@ def test_ansible_run(
                 "nfs": {
                     "address": engine_fqdn,
                     "path": "/exports/nfs/iso",
+                    "version": "v4_2",
                 },
             },
             "iscsi": {

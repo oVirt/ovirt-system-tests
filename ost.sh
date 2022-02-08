@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo Hello, fail!
+exit 1
+
 help() {
 echo "
 $0 command [arguments]

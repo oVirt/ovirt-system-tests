@@ -102,10 +102,10 @@ class BaseBackend(abc.ABC):
         """
 
     @abc.abstractmethod
-    def libvirt_net_name(self, ost_net_name):
+    def libvirt_net_name(self, network_role):
         """Function that finds the libvirt network name corresponding to the
-         specified ost network name
-        :param ost_net_name: String
+         specified ost network role
+        :param network_role: String
         :return: String
         """
 

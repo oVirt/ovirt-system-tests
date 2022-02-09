@@ -28,7 +28,7 @@ class VirshBackend(base.BaseBackend):
         return {vm_info.name: vm_info.nics.get_nics_for_all_networks() for vm_info in self._vms.values()}
 
     def ip_mapping(self):
-        return {vm_info.name: vm_info.nics.get_ips_for_all_networks() for vm_info in self._vms.values()}
+        return {vm_info.name: vm_info.nics.ips_by_network_role() for vm_info in self._vms.values()}
 
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
@@ -39,17 +39,17 @@ class VirshBackend(base.BaseBackend):
     def deploy_scripts(self):
         return {vm.name: vm.deploy_scripts for vm in self._vms.values()}
 
-    def libvirt_net_name(self, ost_net_name):
-        return self._networks.get_network_for_ost_name(ost_net_name).libvirt_name
+    def libvirt_net_name(self, network_role):
+        return self._networks.get_network_for_network_role(network_role).libvirt_name
 
     def management_subnet(self, ip_version):
-        return self._networks.get_subnet_for_ost_name(self.management_network_name(), ip_version)
+        return self._networks.get_subnet_for_network_role(self.management_network_name(), ip_version)
 
     def bonding_subnet(self, ip_version):
-        return self._networks.get_subnet_for_ost_name(self.bonding_network_name(), ip_version)
+        return self._networks.get_subnet_for_network_role(self.bonding_network_name(), ip_version)
 
     def storage_subnet(self, ip_version):
-        return self._networks.get_subnet_for_ost_name(self.storage_network_name(), ip_version)
+        return self._networks.get_subnet_for_network_role(self.storage_network_name(), ip_version)
 
     def _get_vms(self, deployment_path):
         vm_names = [name for name in shell("virsh list --name".split()).splitlines() if name[8:13] == "-ost-"]
@@ -78,13 +78,13 @@ class VirshBackend(base.BaseBackend):
         return vms
 
     def get_ip_prefix_for_management_network(self, ip_version):
-        mgmt_net_name = self.management_network_name()
-        mgmt_network = self._networks.get_network_for_ost_name(mgmt_net_name)
+        management_role = self.management_network_name()
+        mgmt_network = self._networks.get_network_for_network_role(management_role)
         if ip_version == 6:
             return mgmt_network.ip6_prefix
         return mgmt_network.ip4_prefix
 
     def get_gw_ip_for_management_network(self, ip_version):
-        mgmt_net_name = self.management_network_name()
-        mgmt_network = self._networks.get_network_for_ost_name(mgmt_net_name)
+        management_role = self.management_network_name()
+        mgmt_network = self._networks.get_network_for_network_role(management_role)
         return mgmt_network.ip6_gw if ip_version == 6 else mgmt_network.ip4_gw

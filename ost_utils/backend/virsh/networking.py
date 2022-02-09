@@ -61,14 +61,14 @@ class HostDhcp:
 
 class VirshNetworks:
     def __init__(self, deployment_path):
-        self._networks_by_ost_name = {}
+        self._networks_by_role = {}
         self._networks_by_libvirt_name = {}
         self._load(deployment_path)
 
     def __repr__(self):
         return (
             f"< {self.__class__.__name__} | "
-            f"networks_by_ost_name: {self._networks_by_ost_name}, "
+            f"networks_by_role: {self._networks_by_role}, "
             f"networks_by_libvirt_name: {self._networks_by_libvirt_name} >"
         )
 
@@ -82,7 +82,7 @@ class VirshNetworks:
                 self._push_item(net)
 
     def _push_item(self, net):
-        self._networks_by_ost_name[net.ost_name] = net
+        self._networks_by_role[net.network_role] = net
         self._networks_by_libvirt_name[net.libvirt_name] = net
 
     def _get_libvirt_names_for_ost_nets_on_machine(self):
@@ -91,16 +91,16 @@ class VirshNetworks:
         ]
         return libvirt_net_names
 
-    def get_network_for_ost_name(self, ost_net_name):
-        return self._networks_by_ost_name[ost_net_name]
+    def get_network_for_network_role(self, network_role):
+        return self._networks_by_role[network_role]
 
     def get_network_for_libvirt_name(self, libvirt_name):
         return self._networks_by_libvirt_name[libvirt_name]
 
-    def get_subnet_for_ost_name(self, ost_net_name, ip_version):
+    def get_subnet_for_network_role(self, network_role, ip_version):
         if ip_version == 6:
-            return self._networks_by_ost_name[ost_net_name].ip6_subnet
-        return self._networks_by_ost_name[ost_net_name].ip4_subnet
+            return self._networks_by_role[network_role].ip6_subnet
+        return self._networks_by_role[network_role].ip4_subnet
 
     def find_host_dhcp_for_mac(self, mac):
         host_dhcp4 = self.find_host_dhcp4_for_mac(mac)
@@ -108,14 +108,14 @@ class VirshNetworks:
         return host_dhcp4, host_dhcp6
 
     def find_host_dhcp4_for_mac(self, mac):
-        for network in self._networks_by_ost_name.values():
+        for network in self._networks_by_role.values():
             host_dhcp4 = network.get_dhcp4_entries_for_mac(mac)
             if host_dhcp4 is not None:
                 return host_dhcp4
         return None
 
     def find_host_dhcp6_for_mac(self, mac):
-        for network in self._networks_by_ost_name.values():
+        for network in self._networks_by_role.values():
             host_dhcp6 = network.get_dhcp6_entries_for_mac(mac)
             if host_dhcp6 is not None:
                 return host_dhcp6
@@ -183,7 +183,7 @@ class VirshNetwork:
         self._ip6_gw = None
         self._ip6_prefix = None
         self._host_dhcps6 = HostDhcps()
-        self._ost_name = None
+        self._network_role = None
         self._libvirt_name = name
         self._xml = None
 
@@ -198,13 +198,13 @@ class VirshNetwork:
             f"ip6_prefix: {self._ip6_prefix}, "
             f"ip6_subnet: {self.ip6_subnet}, "
             f"host_dhcps6: {self._host_dhcps6}, "
-            f"ost_name: {self._ost_name}, "
+            f"network_role: {self._network_role}, "
             f"libvirt_name: {self._libvirt_name}, "
             f"xml: {self._xml} >"
         )
 
     def parse(self):
-        self._find_ost_name()
+        self._find_network_role()
         for ip_node in self._xml.findall("./ip"):
             if ip_node.get("family", None) == "ipv6":
                 self._ip6_gw = ipaddress.ip_address(ip_node.get("address"))
@@ -222,8 +222,8 @@ class VirshNetwork:
         except AttributeError:
             return False
 
-    def _find_ost_name(self):
-        self._ost_name = self._xml.find("./metadata/{OST:metadata}ost/ost-network-type[@comment]").get("comment")
+    def _find_network_role(self):
+        self._network_role = self._xml.find("./metadata/{OST:metadata}ost/ost-network-type[@comment]").get("comment")
 
     def _find_working_dir(self):
         return self._xml.find("./metadata/{OST:metadata}ost/ost-working-dir[@comment]").get("comment")
@@ -257,8 +257,8 @@ class VirshNetwork:
         return self._ip6_gw
 
     @property
-    def ost_name(self):
-        return self._ost_name
+    def network_role(self):
+        return self._network_role
 
     @property
     def libvirt_name(self):
@@ -285,22 +285,22 @@ class VMNics:
             nic.parse(nic_xml, networks)
             self._nics[nic.name] = nic
 
-    def get_ips_for_all_networks(self):
-        networks = {}
+    def ips_by_network_role(self):
+        ips_by_network_role = {}
         for nic in self._nics.values():
-            network_name = nic.get_ost_net_name()
-            ip_list = networks.setdefault(network_name, [])
+            network_role = nic.get_network_role()
+            ip_list = ips_by_network_role.setdefault(network_role, [])
             if nic.has_ipv6():
                 ip_list.append(nic.ipv6)
             if nic.has_ipv4():
                 ip_list.append(nic.ipv4)
-        return networks
+        return ips_by_network_role
 
     def get_nics_for_all_networks(self):
         networks = {}
         for nic in self._nics.values():
-            network_name = nic.get_ost_net_name()
-            networks.setdefault(network_name, []).append(nic.name)
+            network_role = nic.get_network_role()
+            networks.setdefault(network_role, []).append(nic.name)
         return networks
 
 
@@ -339,22 +339,22 @@ class Nic:
         )
 
     def parse(self, xml_nic, networks):
-        libvirt_name = xml_nic.find("./alias[@name]").get("name")
+        alias_name = xml_nic.find("./alias[@name]").get("name")
         # FIXME: The logic below is wrong - there's nothing tying
         # up the libvirt alias with the nic name visible on the vm side.
         # It just so happens it works for our use cases. In the long term
         # we need to refactor backend interface not to rely on nic names.
-        self._name = libvirt_name.replace("net", "eth")
+        self._name = alias_name.replace("net", "eth")
         self._mac = xml_nic.find("./mac[@address]").get("address")
-        libvirt_network = xml_nic.find("./source[@network]").get("network")
-        self._network = networks.get_network_for_libvirt_name(libvirt_network)
+        source_network = xml_nic.find("./source[@network]").get("network")
+        self._network = networks.get_network_for_libvirt_name(source_network)
         (
             self._host_dhcp4,
             self._host_dhcp6,
         ) = networks.find_host_dhcp_for_mac(self._mac)
 
-    def get_ost_net_name(self):
-        return self._network.ost_name
+    def get_network_role(self):
+        return self._network.network_role
 
     def has_ipv4(self):
         return self._host_dhcp4 is not None

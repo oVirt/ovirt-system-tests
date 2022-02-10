@@ -296,6 +296,13 @@ class VMNics:
                 ip_list.append(nic.ipv4)
         return ips_by_network_role
 
+    def macs_by_network_role(self):
+        macs_by_network_role = {}
+        for nic in self._nics.values():
+            macs = macs_by_network_role.setdefault(nic.get_network_role(), [])
+            macs.append(nic.mac)
+        return macs_by_network_role
+
     def get_nics_for_all_networks(self):
         networks = {}
         for nic in self._nics.values():
@@ -369,6 +376,10 @@ class Nic:
     @property
     def network(self):
         return self._network
+
+    @property
+    def mac(self):
+        return self._mac
 
     @property
     def ipv4(self):

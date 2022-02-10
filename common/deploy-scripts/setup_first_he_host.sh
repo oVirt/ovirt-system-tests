@@ -93,9 +93,9 @@ copy_dependencies() {
     dest: /var/tmp/lm_sensors.rpm
   with_fileglob:
     - "/var/tmp/lm_sensors-*"
-- name: TODO create empty OpenSCAP profile for now
+- name: Copy OpenSCAP profile name
   copy:
-    content: ""
+    src: /root/ost_images_openscap_profile
     dest: /root/ost_images_openscap_profile
 - name: Stat ost_images_openscap_profile
   stat:

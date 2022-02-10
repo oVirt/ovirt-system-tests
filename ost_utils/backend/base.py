@@ -67,6 +67,35 @@ class BaseBackend(abc.ABC):
         """
 
     @abc.abstractmethod
+    def mac_mapping(self):
+        """
+        Get the MAC address of NIC by host and by network role. Source networks for host NICs
+        are the networks of the underlying virtualization layer and have designated roles e.g.
+        'management', 'storage' or 'bonding'.
+
+        Returns:
+            dict: Hostname --> network_role --> macs.
+
+            Example value:
+
+            {
+                'ost-basic-suite-master-engine': {
+                    'management': [
+                        '54:52:c0:a8:ca:02',
+                    ],
+                    'bonding': [
+                        '54:52:c0:a8:ca:03',
+                        '54:52:c0:a8:ca:04',
+                    ]
+                },
+                'ost-basic-suite-master-host-0': {
+                    ...
+                }
+            }
+
+        """
+
+    @abc.abstractmethod
     def ansible_inventory_str(self):
         """Returns a string with the contents of an ansible inventory for the VMs.
 
@@ -125,9 +154,8 @@ class BaseBackend(abc.ABC):
         :return: ipaddress.IPv4Address or ipaddress.IPv6Address
         """
 
-    # DEPRECATED
-    def ifaces_for(self, hostname, network_name):
-        return self.iface_mapping()[hostname][network_name]
+    def macs_for(self, hostname, network_name):
+        return self.mac_mapping()[hostname][network_name]
 
     def ips_for(self, hostname, network_name):
         return self.ip_mapping()[hostname][network_name]

@@ -30,6 +30,9 @@ class VirshBackend(base.BaseBackend):
     def ip_mapping(self):
         return {vm_info.name: vm_info.nics.ips_by_network_role() for vm_info in self._vms.values()}
 
+    def mac_mapping(self):
+        return {vm_info.name: vm_info.nics.macs_by_network_role() for vm_info in self._vms.values()}
+
     def ansible_inventory_str(self):
         if self._ansible_inventory_str is None:
             contents = shell(["cat", "hosts"], bytes_output=True, cwd=self._deployment_path)

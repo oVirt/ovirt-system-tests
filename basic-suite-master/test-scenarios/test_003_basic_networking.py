@@ -58,25 +58,14 @@ def test_detach_vm_network_from_host(host0, vm_network, vm_cluster_network):
     assert not host0.are_networks_attached((vm_network,))
 
 
-def test_bond_nics(host0, host1, bonding_network_name, backend, migration_network, static_ips):
-    def _bond_nics(static_ip, host):
-        bonding_data = netattachlib.ActiveSlaveBonding(
-            BOND_NAME, backend.ifaces_for(host.name, bonding_network_name), {'miimon': '200'}
-        )
-        attach_data = netattachlib.NetworkAttachmentData(
-            migration_network, BOND_NAME, (static_ip['inet'], static_ip['inet6'])
-        )
-        host.setup_networks(attachments_data=(attach_data,), bonding_data=(bonding_data,))
-
-    utils.invoke_in_parallel(
-        _bond_nics, (static_ips['migration_net_0'], static_ips['migration_net_1']), (host0, host1)
-    )
-    for host in host0, host1:
+def test_bond_nics(host0, host1, migration_network, bonding_data, bond_attachment_data):
+    for i, host in enumerate((host0, host1)):
+        host.setup_networks(attachments_data=(bond_attachment_data[i],), bonding_data=(bonding_data[i],))
         attachment_data = host.get_attachment_data_for_networks((migration_network,))
         assert attachment_data
-        host_nic = hostlib.HostNic(host)
-        host_nic.import_by_id(next(iter(attachment_data)).nic_id)
-        assert host_nic.name == BOND_NAME
+        bond = hostlib.Bond(host)
+        bond.import_by_id(next(iter(attachment_data)).nic_id)
+        assert bond.name == BOND_NAME
 
 
 def test_verify_interhost_connectivity_ipv4(ansible_host0, static_ips):
@@ -189,6 +178,31 @@ def static_ips(seed):
         'migration_net_0': _static_ip_assignment(seed + 1, seed),  # migration_network on host_0
         'migration_net_1': _static_ip_assignment(seed + 1, seed + 1),  # migration_network on host_1
     }
+
+
+@pytest.fixture(scope='module')
+def bonding_data(host0, host1, backend, bonding_network_name):
+    bonding_data = []
+    for host in host0, host1:
+        bonded_nic_names = [
+            host.get_nic_for_mac_address(mac_address).name
+            for mac_address in backend.macs_for(host.name, bonding_network_name)
+        ]
+        bonding_data.append(netattachlib.ActiveSlaveBonding(BOND_NAME, bonded_nic_names, {'miimon': '200'}))
+    return bonding_data
+
+
+@pytest.fixture(scope='module')
+def bond_attachment_data(host0, host1, static_ips, migration_network):
+    attachment_data = []
+    for i, host in enumerate((host0, host1)):
+        static_ip_assignment = static_ips[f'migration_net_{i}']
+        attachment_data.append(
+            netattachlib.NetworkAttachmentData(
+                migration_network, BOND_NAME, (static_ip_assignment['inet'], static_ip_assignment['inet6'])
+            )
+        )
+    return attachment_data
 
 
 def _static_ip_assignment(net_seed, host_seed):

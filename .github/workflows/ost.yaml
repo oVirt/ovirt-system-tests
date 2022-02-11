@@ -44,21 +44,22 @@ jobs:
         working-directory: /var/lib/nginx/gh
         run: |
           echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'
-          SUITE=${SUITE:-basic-suite-master}
-          DISTRO=${DISTRO:-el8stream}
-          SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
-          CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"
-          BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-          echo "last update: ${BASE_TIME:-no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq .check_suites[].app.name)}"
-          echo "trigger content:"
-          { echo "${PR_URL}"; echo "${SUITE}"; echo "${DISTRO}"; } | runuser -u nginx tee queue
-          i=0
-          while [ $i -lt 12 ]; do # 2 minutes
-            sleep 10
-            UPDATE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-            [[ -z "$UPDATE_TIME" ]] && { echo "error getting update, skip"; UPDATE_TIME="$BASE_TIME"; }
-            echo "try #$((i++)): $UPDATE_TIME"
-            [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
-          done
-          rm -f queue
-          [[ "$BASE_TIME" != "$UPDATE_TIME" ]] || { echo "Jenkins didn't pick it up"; exit 1; }
+          exit 123
+          #SUITE=${SUITE:-basic-suite-master}
+          #DISTRO=${DISTRO:-el8stream}
+          #SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
+          #CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"
+          #BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
+          #echo "last update: ${BASE_TIME:-no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq .check_suites[].app.name)}"
+          #echo "trigger content:"
+          #{ echo "${PR_URL}"; echo "${SUITE}"; echo "${DISTRO}"; } | runuser -u nginx tee queue
+          #i=0
+          #while [ $i -lt 12 ]; do # 2 minutes
+          #  sleep 10
+          #  UPDATE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
+          #  [[ -z "$UPDATE_TIME" ]] && { echo "error getting update, skip"; UPDATE_TIME="$BASE_TIME"; }
+          #  echo "try #$((i++)): $UPDATE_TIME"
+          #  [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
+          #done
+          #rm -f queue
+          #[[ "$BASE_TIME" != "$UPDATE_TIME" ]] || { echo "Jenkins didn't pick it up"; exit 1; }

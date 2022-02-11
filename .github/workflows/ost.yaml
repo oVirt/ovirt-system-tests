@@ -44,6 +44,7 @@ jobs:
         working-directory: /var/lib/nginx/gh
         run: |
           echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'
+          exit 123
           SUITE=${SUITE:-basic-suite-master}
           DISTRO=${DISTRO:-el8stream}
           SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)

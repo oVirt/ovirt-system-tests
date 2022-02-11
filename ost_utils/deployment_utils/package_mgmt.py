@@ -23,7 +23,7 @@ OVIRT_PACKAGES_PATTERNS = (
     re.compile('vdsm-[0-9]'),
 )
 
-OST_TO_GITHUB_DISTRO_NAME = {'el8stream': 'el8', 'el9stream': 'el9'}
+OST_TO_GITHUB_DISTRO_NAME = {'el8stream': 'el8', 'el9stream': 'el9', 'rhel8': 'el8'}
 
 
 def expand_repos(custom_repos, working_dir, ost_images_distro):

@@ -170,7 +170,7 @@ ost_init() {
     mkdir "$PREFIX"
     mkdir "$PREFIX/logs"
     mkdir "$PREFIX/images"
-    chcon -t svirt_image_t "$PREFIX/images"
+    chcon -t svirt_image_t "$PREFIX/images" && { echo "SELinux is disabled on the machine"; getenforce; return 1;}
 
     # generate 8 char UUID common to all resources
     # VMs with name <uuid>-ost-<suite>-<vmname>

@@ -21,7 +21,7 @@ ost_status() {
 
     declare -A nets
     for i in $(virsh net-list --name | grep ^ost${uuid}); do
-	nets[$i]=$(virsh net-dumpxml $i | if [[ "$1" = "--dump" ]]; then tee -a ${OST_REPO_ROOT}/exported-artifacts/libvirt-nets; else cat; fi | grep "ost-network-type comment" | cut -d \" -f 2)
+	nets[$i]=$(virsh net-dumpxml $i | if [[ "$1" = "--dump" ]]; then tee -a ${OST_REPO_ROOT}/exported-artifacts/libvirt-nets; else cat; fi | grep "ost-network-role comment" | cut -d \" -f 2)
     done
 
     echo "Networks:"
@@ -80,7 +80,7 @@ ost_init() {
         for name in $1; do
             IDXHEX=$(printf "%.2d" ${HOSTIDX})
             nicidx_map[$name]="${HOSTIDX}"
-            eth_map[$name]="$NET_TYPE"
+            eth_map[$name]="$NET_ROLE"
             hostname="ost-${SUITE}-${name}"
             ipv4_ip="192.168.${SUBNET}.${HOSTIDX}"
             ipv4_mac="54:52:c0:a8:${SUBNETHEX}:${IDXHEX}"
@@ -94,7 +94,7 @@ ost_init() {
             IPV6+="<host id='${ipv6_mac}' name='${hostname}' ip='${ipv6_ip}'/>"
             (( HOSTIDX++ ))
         done
-        if [[ "$NET_TYPE" = "$management_net" ]]; then
+        if [[ "$NET_ROLE" = "$management_net" ]]; then
             # adds all acumulated DNS entries so far, i.e. management network needs to be the last one generated
             DNS="<dns forwardPlainNames='no'>${dns_entries}</dns>"
         else
@@ -128,7 +128,7 @@ ost_init() {
             s|@DISK_FILE@|${DISK_FILE}|g;
             s|@NICS@|${NICS}|g;
             s|@NET_NAME@|${NET_NAME}|g;
-            s|@NET_TYPE@|${NET_TYPE}|g;
+            s|@NET_ROLE@|${NET_ROLE}|g;
             s|@SUBNET@|${SUBNET}|g;
             s|@SUBNETHEX@|${SUBNETHEX}|g;
             s|@IDXHEX@|${IDXHEX}|g;
@@ -187,17 +187,17 @@ ost_init() {
 
         # parse networks and create them on unused subnets (sorted so that  management is the last one to include all DNS entries)
         dns_entries=
-        for NET_TYPE in $(jqr ".networks | to_entries | map ({\"net\":.key} + {\"mgmt\":.value.is_management}) | sort_by(.mgmt==true) | .[].net"); do
-            net_template=$(jqr ".networks[\"${NET_TYPE}\"].template")
+        for NET_ROLE in $(jqr ".networks | to_entries | map ({\"net\":.key} + {\"mgmt\":.value.is_management}) | sort_by(.mgmt==true) | .[].net"); do
+            net_template=$(jqr ".networks[\"${NET_ROLE}\"].template")
             [[ "$ipv4_only" ]] && net_template+=".ipv4"
             [[ "$ipv6_only" ]] && net_template+=".ipv6"
-            host_nics=$(jqr ".networks[\"${NET_TYPE}\"].nics[]" | tr '\n' ' ')
-            [[ -n "$(jqr ".networks[\"${NET_TYPE}\"].is_management // empty")" ]] && management_net=$NET_TYPE
-            [[ -r "$net_template" ]] || { echo "net $NET_TYPE: template $net_template does not exist"; return 1; }
-            echo -n "Creating network $NET_TYPE, subnet "
+            host_nics=$(jqr ".networks[\"${NET_ROLE}\"].nics[]" | tr '\n' ' ')
+            [[ -n "$(jqr ".networks[\"${NET_ROLE}\"].is_management // empty")" ]] && management_net=$NET_ROLE
+            [[ -r "$net_template" ]] || { echo "net $NET_ROLE: template $net_template does not exist"; return 1; }
+            echo -n "Creating network $NET_ROLE, subnet "
             _find_free_subnet || return 1
             echo $SUBNET
-            net_map[$NET_TYPE]="$SUBNET"
+            net_map[$NET_ROLE]="$SUBNET"
             _generate_network "$host_nics"
             _render ${net_template} | virsh net-create /dev/stdin || { echo "Network creation failed:"; _render ${net_template}; return 1; }
         done

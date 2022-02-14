@@ -133,7 +133,7 @@ class VirshNetwork:
       <uuid>b15b4c4c-3c9d-4b39-9408-03282bea1a4b</uuid>
       <metadata>
         <ost:ost xmlns:ost="OST:metadata">
-          <ost-network-type comment="storage"/>
+          <ost-network-role comment="storage"/>
           <ost-working-dir comment="/home/hbraha/testing/ovirt-system-tests/
           deployment"/>
         </ost:ost>
@@ -223,7 +223,7 @@ class VirshNetwork:
             return False
 
     def _find_network_role(self):
-        self._network_role = self._xml.find("./metadata/{OST:metadata}ost/ost-network-type[@comment]").get("comment")
+        self._network_role = self._xml.find("./metadata/{OST:metadata}ost/ost-network-role[@comment]").get("comment")
 
     def _find_working_dir(self):
         return self._xml.find("./metadata/{OST:metadata}ost/ost-working-dir[@comment]").get("comment")

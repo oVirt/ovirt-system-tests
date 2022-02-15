@@ -18,7 +18,6 @@ from ovirtlib import syncutil
 from ovirtlib import sshlib
 from ovirtlib import virtlib
 from ovirtlib.ansiblelib import Playbook
-from testlib import shade_hack
 from testlib import suite
 
 
@@ -56,11 +55,7 @@ def ovn_physnet_small_mtu(
         cluster_network = clusterlib.ClusterNetwork(ovs_cluster)
         cluster_network.assign(network)
         provider_network = _get_network_by_name(default_ovn_provider_client, OVN_PHYSNET_NAME)
-        _disable_network_port_security(
-            ovirtmgmt_network.name,
-            provider_network.id,
-            default_ovn_provider_client,
-        )
+        _update_network_security(default_ovn_provider_client, provider_network.id, ovirtmgmt_network.name, False)
         yield network
     finally:
         network.remove()
@@ -189,16 +184,11 @@ def test_security_groups_allow_icmp(
 @contextmanager
 def _enable_port_security(vnic, ovn_provider):
     ovn_port = _lookup_port_by_device_id(vnic.id, ovn_provider)
-    _update_port_security(ovn_provider, ovn_port.id, enabled=True)
+    ovn_provider.update_port(ovn_port.id, port_security_enabled=True)
     try:
         yield
     finally:
-        _disable_port_security(vnic, ovn_provider)
-
-
-def _disable_port_security(vnic, ovn_provider):
-    ovn_port = _lookup_port_by_device_id(vnic.id, ovn_provider)
-    _update_port_security(ovn_provider, ovn_port.id, enabled=False)
+        ovn_provider.update_port(ovn_port.id, port_security_enabled=False)
 
 
 def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):
@@ -207,15 +197,6 @@ def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):
         if device_id and device_id == vnic_id:
             return port
     return None
-
-
-def _update_port_security(ovn_provider, port_uuid, enabled):
-    port_path = '/ports/' + str(port_uuid)
-    shade_hack.hack_os_put_request(ovn_provider, port_path, _build_update_port_security_payload(enabled))
-
-
-def _build_update_port_security_payload(port_security_value):
-    return {'port': {'port_security_enabled': port_security_value}}
 
 
 @contextmanager
@@ -244,31 +225,34 @@ def _provision_icmp_rule(source_ip, ip_version, action):
     playbook.run()
 
 
-def _disable_network_port_security(physnet_name, network_uuid, ovn_provider):
-    _update_network_port_security(ovn_provider, physnet_name, network_uuid, enabled=False)
-
-
-def _update_network_port_security(ovn_provider, physical_network_name, network_uuid, enabled):
-    network_path = '/networks/' + str(network_uuid)
-    update_network_payload = _build_update_physnet_port_security_payload(physical_network_name, enabled)
-    shade_hack.hack_os_put_request(ovn_provider, network_path, update_network_payload)
-
-
 def _get_network_by_name(ovn_provider, network_name):
     return ovn_provider.get_network(network_name)
-
-
-def _build_update_physnet_port_security_payload(physical_network_name, port_security):
-    return {
-        'network': {
-            'port_security_enabled': port_security,
-            'provider:physical_network': physical_network_name,
-            'provider:network_type': 'flat',
-        }
-    }
 
 
 def _max_icmp_data_size(address_family):
     icmp_header_size = 8
     ip_header_size = {'inet': 20, 'inet6': 40}
     return MTU - icmp_header_size - ip_header_size[address_family]
+
+
+def _update_network_security(ovn_provider, ovn_net_id, physical_network, enabled):
+    # openstacksdk does diff for every update, it works as follows:
+    # 1) User request update
+    # 2) openstacksdk gets the entity that is configured on ovirt-provider-ovn
+    # 3) openstacksdk makes diff of the update and the entity
+    # 4) openstacksdk sends the diff as update
+    # This unfortunately causes the "provider" to be lost when we send it in single update.
+    # As the "provider" is already configured the diff will contain only "port_security_enabled",
+    # empty "provider" means that ovirt-provider-ovn removes this attribute.
+    # To get it back we need to send second update with the "provider" being specified again.
+    # As for "why" is the "provider" removed when it is empty, it is design choice of ovirt-provider-ovn,
+    # it is the only parameter that gets removed when empty on network update.
+    # https://github.com/oVirt/ovirt-provider-ovn/blob/1.2.35/provider/neutron/neutron_api.py#L258
+    ovn_provider.update_network(
+        ovn_net_id,
+        port_security_enabled=enabled,
+    )
+    ovn_provider.update_network(
+        ovn_net_id,
+        provider={'physical_network': physical_network, 'network_type': 'flat'},
+    )

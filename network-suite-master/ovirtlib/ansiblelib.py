@@ -14,11 +14,11 @@ class AnsibleExecutionFailure(Exception):
 
 
 class Playbook(object):
-    def __init__(self, playbook, extra_vars={}):
+    def __init__(self, playbook, extra_vars=None):
         self._execution_stats = None
         self._idempotency_check_stats = None
         self._playbook = playbook
-        self._extra_vars = extra_vars
+        self._extra_vars = extra_vars if extra_vars else {}
         self._extra_vars['ansible_python_interpreter'] = 'python3'
 
     @property

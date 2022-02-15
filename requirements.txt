@@ -11,7 +11,8 @@ pytest==6.2.2
 requests
 selenium
 # network suite deps
-openstacksdk
+# TODO Use pip version once released openstacksdk>=0.62.0
+git+https://github.com/openstack/openstacksdk.git@master
 # ost_utils
 paramiko
 PyYAML

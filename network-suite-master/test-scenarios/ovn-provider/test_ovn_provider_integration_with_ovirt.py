@@ -73,7 +73,7 @@ def test_modify_vnic_sec_groups_on_ext_networks(
 
                 ovn_port = _lookup_port_by_device_id(vnic.id, default_ovn_provider_client)
                 assert ovn_port
-                assert [sec_group.id] == ovn_port.security_groups
+                assert [sec_group.id] == ovn_port.security_group_ids
 
 
 def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):

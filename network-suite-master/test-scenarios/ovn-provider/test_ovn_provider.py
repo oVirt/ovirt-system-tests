@@ -10,7 +10,6 @@ import pytest
 
 from ovirtlib.ansiblelib import Playbook
 from ovirtlib import sshlib
-from testlib import shade_hack
 from testlib import suite
 
 
@@ -98,34 +97,18 @@ def ovn_networks(default_ovn_provider_client):
     return net10, net11, net14
 
 
-# HACK: this is a workaround until BZ 1593643 and BZ 1593648 are fixed
-# once the bugs are fixed, this should be moved over to ansible
 def _update_routes(default_ovn_provider_client, net10_subnet1, net11_subnet1):
     router0 = default_ovn_provider_client.get_router(ROUTER0_NAME)
     router1 = default_ovn_provider_client.get_router(ROUTER1_NAME)
 
-    router0_external_ip = router0.external_gateway_info['external_fixed_ips'][0]['ip_address']
-
-    router1_path = '/routers/{router_id}'.format(router_id=router1.id)
-    routes_put_data = _static_routes_request_data(router1.name, router0_external_ip, net10_subnet1, net11_subnet1)
-
-    shade_hack.hack_os_put_request(default_ovn_provider_client, router1_path, routes_put_data)
+    nexthop = router0.external_gateway_info['external_fixed_ips'][0]['ip_address']
+    default_ovn_provider_client.update_router(
+        router1.id, routes=[_define_static_route(nexthop, net10_subnet1), _define_static_route(nexthop, net11_subnet1)]
+    )
 
 
 def _define_static_route(nexthop, subnet):
     return {'nexthop': nexthop, 'destination': subnet.cidr}
-
-
-def _static_routes_request_data(router_name, nexthop, net10_subnet1, net11_subnet1):
-    return {
-        'router': {
-            'name': router_name,
-            'routes': [
-                _define_static_route(nexthop, net10_subnet1),
-                _define_static_route(nexthop, net11_subnet1),
-            ],
-        }
-    }
 
 
 def test_ovn_provider_cleanup_scenario(openstack_client_config):

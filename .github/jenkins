@@ -68,15 +68,22 @@ if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
     fi
     ost_app_response in_progress "" "Job https://redir.apps.ovirt.org/dj/$(echo $BUILD_URL| cut -d/ -f4-) is starting OST on ${SHA}, ${APPROVED} approved."
 
-    # figure out if this is an OST or non-OST PR
-    echo "${PR_URL}" | grep /ovirt-system-tests/ && {
+    # figure out if this is an OST, ost-images or non-OST PR
+    if [[ "$PR_URL" =~ /ovirt-system-tests/ ]]; then
         PR_NO="$(echo ${PR_URL} | egrep -o '[0-9]+$')"
         OST_REFSPEC="pull/${PR_NO}/head"
         CUSTOM_REPOS=
-    } || {
+        CUSTOM_OST_IMAGES_REPO=
+    elif [[ "$PR_URL" =~ /ost-images/ ]]; then
+        PR_NO="$(echo ${PR_URL} | egrep -o '[0-9]+$')"
+        OST_REFSPEC="pull/${PR_NO}/head"
+        CUSTOM_REPOS=
+        CUSTOM_OST_IMAGES_REPO="build-me-some"
+    else
         OST_REFSPEC=
         CUSTOM_REPOS="${PR_URL}"
-    }
+        CUSTOM_OST_IMAGES_REPO=
+    fi
     cat << EOF > vars
 PR_URL=$PR_URL
 SUITE=$SUITE
@@ -87,13 +94,15 @@ EXPIRE_AT=$EXPIRE_AT
 CHECK_RUN_ID=$CHECK_RUN_ID
 OST_REFSPEC=$OST_REFSPEC
 CUSTOM_REPOS=$CUSTOM_REPOS
+CUSTOM_OST_IMAGES_REPO=$CUSTOM_OST_IMAGES_REPO
 EOF
     cat vars
 else # after actual OST, with injected vars
     echo processing results
 
-    BR="TRIGGERED_BUILD_RESULT_${TRIGGERED_JOB_NAMES}"
-    BN="TRIGGERED_BUILD_NUMBERS_${TRIGGERED_JOB_NAMES}"
+    JUST_THE_LAST_JOB=$(echo $TRIGGERED_JOB_NAMES | cut -d, -f2-)
+    BR="TRIGGERED_BUILD_RESULT_${JUST_THE_LAST_JOB}"
+    BN="TRIGGERED_BUILD_NUMBERS_${JUST_THE_LAST_JOB}"
     RESULT="${!BR}"
     OST_JOB_NUMBER="${!BN}"
     echo "result $RESULT"

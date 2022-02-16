@@ -1,1 +1,1 @@
-../../basic-suite-master/test-scenarios/conftest.py
+../../ansible-suite-master/test-scenarios/conftest.py

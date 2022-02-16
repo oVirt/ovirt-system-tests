@@ -1,1 +1,1 @@
-../../basic-suite-master/test-scenarios/__init__.py
+../../ansible-suite-master/test-scenarios/__init__.py

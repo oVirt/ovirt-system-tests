@@ -1,1 +1,1 @@
-../../basic-suite-master/test-scenarios/test_001_initialize_engine.py
+../../ansible-suite-master/test-scenarios/test_001_initialize_engine.py

@@ -2,7 +2,7 @@
 
 usage() {
         cat << __EOF__
-Usage: $0 -a ovirt-api-url -u ovirt-user -p ovirt-password -c ovirt-cluster-id -s ovirt-storage-domain-id -w working-directory -k ssh_key_file -r prefix -n network-name -t terraform-pull-request-number -d domain
+Usage: $0 -a ovirt-api-url -u ovirt-user -p ovirt-password -c ovirt-cluster-id -s ovirt-storage-domain-id -w working-directory -o openshift-dir -k ssh_key_file -r prefix -n network-name -v vnic-profile-id -d domain
 
     -h                         - This help text.
     -a OVIRT_API_URL           - <fqdn>/ovirt-engine/api (def. ${OVIRT_API_URL})
@@ -11,11 +11,11 @@ Usage: $0 -a ovirt-api-url -u ovirt-user -p ovirt-password -c ovirt-cluster-id -
     -c OVIRT_CLUSTER_ID        - The oVirt cluster id used by the installer (def. ${OVIRT_CLUSTER_ID})
     -s OVIRT_STORAGE_DOMAIN_ID - The active storage domain used by the installer (def. ${OVIRT_STORAGE_DOMAIN_ID})
     -w WORKING_DIR             - working directory for the scripts (def. ${WORKING_DIR})
+    -o OPENSHIFT_DIR           - Openshift-install binary directory (def. ${OPENSHIFT_DIR})
     -k SSH_KEY_FILE            - The SSH key file needed by the installer config (def. ${SSH_KEY_FILE})
     -r PREFIX                  - The prefix that will be used for created master VMs (def. ${PREFIX})
     -n OVIRT_NETWORK_NAME      - The oVirt network name that should be used for the installation (def. ${OVIRT_NETWORK_NAME})
-    -v OVIRT_VNIC_PROFILE_ID   - The vNic profile id of OVIRT_NETWORK_NAME
-    -t TPR_OR_CH_OR_MB         - Teraform PR id or commit hash or master branch to check (def. ${TPR_OR_CH_OR_MB})
+    -v OVIRT_VNIC_PROFILE_ID   - The vNic profile id of OVIRT_NETWORK_NAME (def. ${OVIRT_VNIC_PROFILE_ID})
     -d OVIRT_BASE_DOMAIN       - The oVirt domain address (def. ${OVIRT_BASE_DOMAIN})
 __EOF__
 }
@@ -38,16 +38,16 @@ os_installer() {
     local obj=${2}
     local run_in_background=${3}
     if [[ $run_in_background -eq 0 ]]; then
-        TF_LOG=debug OVIRT_CONFIG=${OVIRT_CONFIG} ${INSTALLER_DIR}/bin/openshift-install \
-            --dir=${ARTIFACTS_DIR} --log-level=debug ${op} ${obj}
+        TF_LOG=debug OVIRT_CONFIG=${OVIRT_CONFIG} ${OPENSHIFT_DIR}/openshift-install \
+            --dir=${CONFIG_DIR} --log-level=debug ${op} ${obj}
     else
-        TF_LOG=debug OVIRT_CONFIG=${OVIRT_CONFIG} ${INSTALLER_DIR}/bin/openshift-install \
-            --dir=${ARTIFACTS_DIR} --log-level=debug ${op} ${obj} &
+        TF_LOG=debug OVIRT_CONFIG=${OVIRT_CONFIG} ${OPENSHIFT_DIR}/openshift-install \
+            --dir=${CONFIG_DIR} --log-level=debug ${op} ${obj} &
     fi
 }
 
 #get parameters
-while getopts ha:u:p:c:s:w:k:r:n:v:t:d: option; do
+while getopts ha:u:p:c:s:w:o:k:r:n:v:d: option; do
     case $option in
             h) usage; exit 0;;
             a) OVIRT_API_URL="${OPTARG}";;
@@ -56,11 +56,11 @@ while getopts ha:u:p:c:s:w:k:r:n:v:t:d: option; do
             c) OVIRT_CLUSTER_ID="${OPTARG}";;
             s) OVIRT_STORAGE_DOMAIN_ID="${OPTARG}";;
             w) WORKING_DIR="${OPTARG}";;
+            o) OPENSHIFT_DIR="${OPTARG}";;
             k) SSH_KEY_FILE="${OPTARG}";;
             r) PREFIX="${OPTARG}";;
             n) OVIRT_NETWORK_NAME="${OPTARG}";;
             v) OVIRT_VNIC_PROFILE_ID="${OPTARG}";;
-            t) TPR_OR_CH_OR_MB="${OPTARG}";;
             d) OVIRT_BASE_DOMAIN="${OPTARG}";;
     esac
 done
@@ -97,7 +97,9 @@ validate_uuid "OVIRT_VNIC_PROFILE_ID" "${OVIRT_VNIC_PROFILE_ID}"
 # create ovirt-config.yaml
 info "creating ovirt-config.yaml"
 
-OVIRT_CONFIG="${ARTIFACTS_DIR}/ovirt-config.yaml"
+mkdir -p ${CONFIG_DIR}
+
+OVIRT_CONFIG="${CONFIG_DIR}/ovirt-config.yaml"
 
 cp -f ${WORKING_DIR}/ovirt-config.yaml.in ${OVIRT_CONFIG}
 export OVIRT_CONFIG
@@ -113,38 +115,37 @@ sed -i -e 's;OVIRT_API_URL;'"$OVIRT_API_URL"';' \
        ${OVIRT_CONFIG}
 
 if [[ $? -ne 0 ]]; then
-    git_cleanup_and_error "Failed to set values on ${OVIRT_CONFIG} file"
+    error "Failed to set values on ${OVIRT_CONFIG} file"
 fi
 
 # check if OVIRT_CONFIG file exists
 info "checking if ${OVIRT_CONFIG}/ file exists"
 
 if [ ! -e "${OVIRT_CONFIG}" ]; then
-    git_cleanup_and_error "file ${OVIRT_CONFIG} does not exist"
+    error "file ${OVIRT_CONFIG} does not exist"
 fi
 
 # create install-config.yaml
 info "creating install-config.yaml"
 
 if [ ! -e "${WORKING_DIR}/install-config.yaml.in" ]; then
-    git_cleanup_and_error "can not find ${WORKING_DIR}/install-config.yaml.in file"
+    error "can not find ${WORKING_DIR}/install-config.yaml.in file"
 fi
 
-cp -f ${WORKING_DIR}/install-config.yaml.in ${ARTIFACTS_DIR}/install-config.yaml
+cp -f ${WORKING_DIR}/install-config.yaml.in ${CONFIG_DIR}/install-config.yaml
 
 # set SSH key
 info "set SSH key, prefix, oVirt cluster id, oVirt SD id , oVirt network name"
 
 if [ ! -e ${SSH_KEY_FILE} ]; then
-    git_cleanup_and_error "ssh key file ${SSH_KEY_FILE} does not esists"
+    error "ssh key file ${SSH_KEY_FILE} does not exists"
 fi
 
 # generate a unique PREFIX for that run to be used in VM creation and API search
 
 prefix_for_search="${PREFIX}$(( ( RANDOM % 1000 )  + 1 ))"
-PREFIX="${prefix_for_search}-${TPR_OR_CH_OR_MB}"
 #limit PREFIX to first 14 chars
-PREFIX=${PREFIX:0:14}
+PREFIX=${prefix_for_search:0:14}
 ssh_key=$( cat ${SSH_KEY_FILE} | cut -f1-2 -d " " )
 sed -i  -e 's;SSH_KEY;'"${ssh_key}"';' \
     -e 's;PREFIX;'"${PREFIX}"';' \
@@ -153,13 +154,11 @@ sed -i  -e 's;SSH_KEY;'"${ssh_key}"';' \
     -e 's;OVIRT_NETWORK_NAME;'"${OVIRT_NETWORK_NAME}"';' \
     -e 's;OVIRT_VNIC_PROFILE_ID;'"${OVIRT_VNIC_PROFILE_ID}"';' \
     -e 's;OVIRT_BASE_DOMAIN;'"${OVIRT_BASE_DOMAIN}"';' \
-    ${ARTIFACTS_DIR}/install-config.yaml
+    ${CONFIG_DIR}/install-config.yaml
 
 if [[ $? -ne 0 ]]; then
-    git_cleanup_and_error "Failed to set values on ${INSTALLER_DIR}/install-config.yaml file"
+    error "Failed to set values on ${CONFIG_DIR}/install-config.yaml file"
 fi
-
-cd ${INSTALLER_DIR}
 
 # create cluster
 info "creating cluster"
@@ -192,7 +191,7 @@ while [[ ${vms} -ne ${max_vms} ]]; do
     sleep ${sleep_in_sec}
     # checking that background invocation of os installer is still alive
     if [ $(ps -ef | grep "openshift-install" | wc -l) -eq 1 ]; then
-        git_cleanup_and_error "Openshift installer exited abnormally, please check logs"
+        error "Openshift installer exited abnormally, please check logs"
     fi
 done
 
@@ -221,6 +220,4 @@ os_installer destroy cluster 0
 if [[ $? -ne 0 ]]; then
     warn "failed to destroy cluster"
 fi
-
-git_cleanup
 

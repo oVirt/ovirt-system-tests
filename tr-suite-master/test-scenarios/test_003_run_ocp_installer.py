@@ -17,7 +17,9 @@ from ost_utils import shell
 def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_url,
                            engine_full_username, engine_password, suite_dir):
 
-    working_dir = '/tmp'
+    working_dir = '/usr/local/bin'
+    openshift_dir = '/usr/bin'
+    dc_name = 'test-dc'
     cluster_name = 'test-cluster'
     sd_name = 'nfs'
     network_name = 'ovirtmgmt'
@@ -25,27 +27,18 @@ def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_u
     install_config = 'install-config.yaml.in'
     script = 'test-run-ocp-installer.sh'
     ovirt_vnic_profile_id = ''
+    sd_id = ''
     engine = engine_api.system_service()
     clusters_service = engine.clusters_service()
     cluster = clusters_service.list(search=f'name={cluster_name}')[0]
     cluster_id = cluster.id
     sds_service = engine.storage_domains_service()
-    sd = sds_service.list(search=f'name={sd_name}')[0]
-    sd_id = sd.id
-    vnic_profiles_service = engine.vnic_profiles_service()
-    vnic_profiles = vnic_profiles_service.list(search=f'name={network_name}')
-    # Get vNic id by its name using a loop since search is not supported and returns all
-    for vnic_profile in vnic_profiles:
-        if vnic_profile.name == network_name:
-            ovirt_vnic_profile_id = vnic_profile.id
-            break
-
-
-    # get PR number from the env if not found then use master branch
-    pr = os.environ.get('STD_CI_REFSPEC')
-    if pr == None or not pr:
-        pr = "master"
-
+    sds = sds_service.list(search=f'name={sd_name}')
+    sd_id = next(iter([sd.id for sd in sds if sd.name == sd_name]))
+    dc_id = next(iter(engine.data_centers_service().list(search=f'name={dc_name}'))).id
+    networks = engine.networks_service().list(search=f'name={network_name}')
+    network_id = next(iter([network.id for network in networks if network.data_center.id == dc_id]))
+    ovirt_vnic_profile_id = engine.networks_service().network_service(network_id).vnic_profiles_service().list()[0].id
     src_script_file=os.path.join(
         suite_dir, ovirt_config
     )
@@ -83,7 +76,8 @@ def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_u
         f'{dst_script_file} '
         f'-c {cluster_id} '
         f'-s {sd_id} '
-        '-w /tmp '
+        f'-w {working_dir} '
+        f'-o {openshift_dir} '
         f'-a {engine_api_url} '
         f'-u {engine_full_username} '
         f'-p {engine_password} '
@@ -91,6 +85,5 @@ def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_u
         '-r tr '
         f'-n {network_name} '
         f'-v {ovirt_vnic_profile_id} '
-        f'-t {pr} '
         f'-d {engine_fqdn}'
     )

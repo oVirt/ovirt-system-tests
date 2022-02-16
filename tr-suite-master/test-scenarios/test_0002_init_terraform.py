@@ -12,29 +12,14 @@ from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import suite_dir
 
 def test_init_terraform(ansible_engine, suite_dir):
-    working_dir = '/tmp'
-    func = 'func.sh'
+    plugin_dir = '/usr/local/bin'
     script = 'test-init-terraform.sh'
-    pr = os.environ.get('STD_CI_REFSPEC')
-    if pr == None or not pr:
-        pr = "master"
 
-    src_script_file=os.path.join(
-        suite_dir, func
-    )
-    dst_script_file=os.path.join(
-        working_dir, func
-    )
-    ansible_engine.copy(
-        src=src_script_file,
-        dest=dst_script_file,
-        mode='0755'
-    )
     src_script_file=os.path.join(
         suite_dir, script
     )
     dst_script_file=os.path.join(
-        working_dir, script
+        plugin_dir, script
     )
     ansible_engine.copy(
         src=src_script_file,
@@ -43,6 +28,5 @@ def test_init_terraform(ansible_engine, suite_dir):
     )
     ansible_engine.shell(
         f'{dst_script_file} '
-        '-w /tmp '
-        f'-t {pr}'
+        f'-l {plugin_dir} '
     )

@@ -60,6 +60,7 @@ ost_destroy() {
         ) 9>/tmp/ost.lock
     fi
     [[ -s "$PREFIX/sshd_pid" ]] && { echo "killing IPv6 sshd proxy"; kill $(cat "$PREFIX/sshd_pid"); }
+    [[ -d "$OST_REPO_ROOT/custom-ost-images" ]] && { echo "remove custom ost images"; rm -rf "$OST_REPO_ROOT/custom-ost-images"; }
     _deployment_exists && rm -rf "$PREFIX" && echo "removed $PREFIX"
     unset OST_INITIALIZED $(env | grep ^OST_IMAGES_ | cut -d= -f1)
 }

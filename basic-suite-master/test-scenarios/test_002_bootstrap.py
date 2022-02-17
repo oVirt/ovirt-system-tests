@@ -147,6 +147,7 @@ _TEST_LIST = [
     "test_add_event",
     "test_verify_add_all_hosts",
     "test_generate_openscap_report",
+    "test_verify_engine_backup",
     "test_upload_cirros_image",
     "test_create_cirros_template",
     "test_complete_hosts_setup",
@@ -160,7 +161,6 @@ _TEST_LIST = [
     "test_add_non_vm_network",
     "test_add_vm_network",
     "test_verify_uploaded_image_and_template",
-    "test_verify_engine_backup",
     "test_add_nonadmin_user",
     "test_add_vm_permissions_to_user",
 ]
@@ -1642,6 +1642,7 @@ def test_upload_cirros_image(
     engine_password,
     cirros_image_disk_name,
 ):
+    time.sleep(10)
     collection = CollectionMapper(ansible_engine)
 
     ovirt_auth = collection.ovirt_auth(hostname=engine_fqdn, username=engine_full_username, password=engine_password,)[

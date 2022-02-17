@@ -162,9 +162,6 @@ ost_init() {
     echo "Suite: $SUITE, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
     . common/helpers/ost-images.sh
 
-    # TODO: Revert back once rhvh has 8.6 packages
-    [[ "$OST_IMAGES_DISTRO" = "rhel8" ]] && OST_IMAGES_NODE="$OST_IMAGES_HOST_INSTALLED"
-
     [[ -e "$PREFIX" ]] && { echo "deployment already exists"; ost_status; return 1; }
     _get_uuid && { echo "no deployment dir but there is a running environment"; ost_status; return 1; }
 

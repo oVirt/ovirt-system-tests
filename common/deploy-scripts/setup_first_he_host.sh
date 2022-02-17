@@ -114,10 +114,6 @@ copy_dependencies() {
         src: /root/ssg-rhel8-ds.xml
         dest: /root
   when: profile_stat.stat.exists and profile_stat.stat.size > 0
-- name: Copy imageio-client to HE VM
-  copy:
-    src: /usr/lib64/python3.6/site-packages/ovirt_imageio/client
-    dest: /usr/lib64/python3.6/site-packages/ovirt_imageio/
 EOF
 
 }

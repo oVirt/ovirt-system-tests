@@ -9,7 +9,10 @@ systemctl start crond
 rm -rf /dev/shm/yum /dev/shm/*.rpm
 fstrim -va
 
+systemctl enable chronyd
+systemctl start chronyd
 firewall-cmd --permanent --zone=public --add-interface=eth0
+firewall-cmd --permanent --zone=public --add-service=ntp
 firewall-cmd --reload
 
 # rotate logs quicker, because of the debug logs they tend to flood the root partition if they run > 15 minutes

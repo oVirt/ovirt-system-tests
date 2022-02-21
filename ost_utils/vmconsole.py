@@ -9,6 +9,7 @@ import ipaddress
 import logging
 import os
 import pty
+import signal
 import subprocess
 import time
 
@@ -38,6 +39,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         self._prompt = bash_prompt
         self._connected = False
         self._logged_in = False
+        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 15)
 
     @contextlib.contextmanager
     def connect(self, vm_id):
@@ -98,6 +100,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
     @contextlib.contextmanager
     def _login(self):
         try:
+            signal.signal(signal.SIGALRM, self._read_alarm.handle)
             time.sleep(15)
             self._pre_login()
             self._read_until_prompt('login: ')
@@ -109,6 +112,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             yield
         finally:
             self._logout()
+            signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
     def _pre_login(self):
         # a single `write('\n')` might be enough but it might prove flaky
@@ -170,7 +174,10 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         return recv
 
     def _read(self):
-        return self._reader.stdout.read(1)
+        signal.alarm(self._read_alarm.seconds)
+        c = self._reader.stdout.read(1)
+        signal.alarm(0)  # cancel
+        return c
 
     def _write(self, entry):
         time.sleep(2)
@@ -211,3 +218,16 @@ class Shell(object):
             (ip for ip in ips if ipaddress.ip_address(ip).version == int(ip_version)),
             None,
         )
+
+
+class BlockingIOAlarm:
+    def __init__(self, msg, seconds):
+        self._error = BlockingIOError(msg)
+        self._seconds = seconds
+
+    def handle(self, sig, frame):
+        raise self._error
+
+    @property
+    def seconds(self):
+        return self._seconds

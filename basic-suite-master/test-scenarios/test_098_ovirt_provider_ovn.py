@@ -16,6 +16,7 @@ import requests
 from ovirtsdk4 import types
 
 from ost_utils import assert_utils
+from ost_utils import engine_utils
 from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import versioning
@@ -24,6 +25,7 @@ from ost_utils import versioning
 VM0_NAME = 'vm0'
 CLUSTER_NAME = 'test-cluster'
 IFACE_NAME = 'eth2'
+PROVIDER_SYNCHRONIZED_PERFORMED_EVENT_ID = 217
 
 OVN_PROVIDER_TOKEN_URL = 'https://{hostname}:35357/v2.0/tokens/'
 OVN_PROVIDER_NETWORKS_URL = 'https://{hostname}:9696/v2.0/networks/'
@@ -373,6 +375,7 @@ def test_use_ovn_provider(engine_api, engine_ip_url, engine_full_username, engin
     _validate_db_empty(token_id, engine_ip_url)
 
     with _disable_auto_sync(engine_api, provider_id):
+        engine_utils.wait_for_event_or_expire(engine, PROVIDER_SYNCHRONIZED_PERFORMED_EVENT_ID, 10)
         network1_id = _add_network(
             token_id,
             engine_ip_url,

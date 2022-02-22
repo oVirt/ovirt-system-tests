@@ -30,6 +30,14 @@ def wait_for_event(engine, event_id, timeout=assert_utils.LONG_TIMEOUT):
             )
 
 
+def wait_for_event_or_expire(engine, event_id, timeout=assert_utils.LONG_TIMEOUT):
+    try:
+        with wait_for_event(engine, event_id, timeout):
+            pass
+    except AssertionError:
+        pass
+
+
 def get_jobs_statuses(engine, correlation_id):
     # Gets a list of jobs statuses by the specified correlation id.
     jobs = engine.jobs_service().list(search=f'correlation_id={correlation_id}')

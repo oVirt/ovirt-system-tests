@@ -158,5 +158,9 @@ def deploy(
     # setup sar stat utility
     set_sar_interval()
 
+    # setup chrony
+    ansible_vms_to_deploy.replace(path='/etc/chrony.conf', regexp='^pool', replace='server')
+    ansible_vms_to_deploy.service(name='chronyd', state='restarted')
+
     # mark env as deployed
     deployment_utils.mark_as_deployed(working_dir)

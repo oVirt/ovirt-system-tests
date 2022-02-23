@@ -2,6 +2,8 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+import time
+
 import pytest
 from ovirtsdk4 import Connection
 
@@ -50,22 +52,19 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
     engine = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
     engine.sftp_put(engine_answer_file_path, ANSWER_FILE_TMP)
 
-    command = [
-        'engine-setup',
-        '--offline',
-        '--config-append={}'.format(ANSWER_FILE_TMP),
-        '--accept-defaults',
+    commands = [
+        f'engine-setup --offline --accept-defaults --config-append={ANSWER_FILE_TMP}',
+        (
+            # Work around https://gitlab.com/qemu-project/qemu/-/issues/641.
+            # TODO: Remove when fixed.
+            '/usr/share/ovirt-engine/dbscripts/engine-psql.sh -c '
+            "\"select fn_db_update_config_value('NumOfPciExpressPorts','12','general');\""
+        ),
+        'systemctl restart ovirt-engine',
     ]
-    engine.exec_command(' '.join(command))
-    # Work around https://gitlab.com/qemu-project/qemu/-/issues/641.
-    # TODO: Remove when fixed.
-    engine.exec_command(
-        '/usr/share/ovirt-engine/dbscripts/engine-psql.sh '
-        '-c '
-        "\"select fn_db_update_config_value"
-        "('NumOfPciExpressPorts','12','general');\""
-    )
-    engine.exec_command('systemctl restart ovirt-engine')
+    for command in commands:
+        engine.exec_command(command)
+        time.sleep(1)
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -95,18 +94,6 @@ def _create_engine_connection(ip, engine_username, engine_password):
     if conn.test():
         return conn
     return None
-
-
-def _exec_engine_config(engine_facts, key, value):
-    command = [
-        'engine-config',
-        '--set',
-        '{0}={1}'.format(key, value),
-    ]
-    node = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
-    result = node.exec_command(' '.join(command))
-
-    assert result.code == 0, 'setting {0}:{1} via engine-config failed with {2}'.format(key, value, result.code)
 
 
 @pytest.fixture(scope='function', autouse=True)

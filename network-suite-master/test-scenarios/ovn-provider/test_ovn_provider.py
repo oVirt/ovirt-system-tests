@@ -49,28 +49,14 @@ def test_ovn_provider_create_scenario(openstack_client_config, af):
 
 
 def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks, af):
-    if af.is6:
-        pytest.xfail(reason='fails with ansible runner on executor gerrit 118275')
     net10, net11, net14 = ovn_networks
     ssh0 = sshlib.Node(host_0.address, host_0.root_password)
     ssh1 = sshlib.Node(host_1.address, host_1.root_password)
 
     connections = (
-        (
-            ssh0,
-            net10.port,
-            net10.subnet,
-        ),
-        (
-            ssh1,
-            net11.port,
-            net11.subnet,
-        ),
-        (
-            ssh1,
-            net14.port,
-            net14.subnet,
-        ),
+        (ssh0, net10),
+        (ssh1, net11),
+        (ssh1, net14),
     )
     with _create_namespaces(connections):
         with _create_ovs_ports(connections, af):
@@ -128,66 +114,48 @@ def _test_ovn_provider(playbook_name):
 
 @contextmanager
 def _create_namespaces(connections):
-    namespaces = list()
     try:
-        for ssh_host, port, _ in connections:
-            ssh_host.exec_command(' && '.join(_add_namespace_command(port.name)))
-            namespaces.append((ssh_host, port.name))
+        for ssh_host, net in connections:
+            ssh_host.exec_command(_add_namespace_command(net.port.name))
         yield
     finally:
-        for ssh_host, name in namespaces:
-            ssh_host.exec_command(' && '.join(_delete_namespace_command(name)))
+        for ssh_host, net in connections:
+            ssh_host.exec_command(_delete_namespace_command(net.port.name))
 
 
 @contextmanager
 def _create_ovs_ports(connections, af):
-    ports = list()
     try:
-        for ssh_host, port, _ in connections:
-            ssh_host.exec_command(' && '.join(_add_ovs_port_command(port.name)))
-            ports.append((ssh_host, port.name))
-        for ssh_host, port, subnet in connections:
-            ssh_host.exec_command(
-                ' && '.join(_configure_ovs_port_command(port, subnet, af) + _bind_port_to_logical_network(port))
-            )
+        for ssh_host, net in connections:
+            ssh_host.exec_command(_configure_ovs_port_command(net.port, net.subnet, af))
         yield
     finally:
-        for ssh_host, name in ports:
-            ssh_host.exec_command(' && '.join(_delete_ovs_port_command(name)))
+        for ssh_host, net in connections:
+            ssh_host.exec_command(_delete_ovs_port_command(net.port.name))
 
 
 def _add_namespace_command(name):
-    return ['ip netns add ' + name]
-
-
-def _add_ovs_port_command(name):
-    commands = ['ovs-vsctl add-port br-int ' + name + ' -- set interface ' + name + ' type=internal']
-    return commands
-
-
-def _configure_ovs_port_command(port, subnet, af):
-    name = port.name
-    ip = port.fixed_ips[0]['ip_address']
-    mac = port.mac_address
-    gw = subnet.gateway_ip
-    prefix = '64' if af.is6 else '24'
-    commands = [
-        'ip link set ' + name + ' netns ' + name,
-        'ip netns exec ' + name + ' ip link set ' + name + ' address ' + mac,
-        'ip netns exec ' + name + ' ip a add ' + ip + f'/{prefix} dev ' + name,
-        'ip netns exec ' + name + ' ip link set ' + name + ' up',
-        'ip netns exec ' + name + ' ip route add default via ' + gw,
-    ]
-    return commands
-
-
-def _bind_port_to_logical_network(port):
-    return ['ovs-vsctl set Interface ' + port.name + ' external_ids:iface-id=' + port.id]
+    return f'ip netns add {name}'
 
 
 def _delete_namespace_command(name):
-    return ['ip netns delete ' + name]
+    return f'ip netns delete {name}'
+
+
+def _configure_ovs_port_command(port, subnet, af):
+    ip = port.fixed_ips[0]['ip_address']
+    prefix = '64' if af.is6 else '24'
+    commands = [
+        f'ovs-vsctl add-port br-int {port.name} -- set interface {port.name} type=internal',
+        f'ip link set {port.name} netns {port.name}',
+        f'ip netns exec {port.name} ip link set {port.name} address {port.mac_address}',
+        f'ip netns exec {port.name} ip a add {ip}/{prefix} dev {port.name}',
+        f'ip netns exec {port.name} ip link set {port.name} up',
+        f'ip netns exec {port.name} ip route add default via {subnet.gateway_ip}',
+        f'ovs-vsctl set Interface {port.name} external_ids:iface-id={port.id}',
+    ]
+    return ' && '.join(commands)
 
 
 def _delete_ovs_port_command(name):
-    return ['ovs-vsctl del-port ' + name]
+    return f'ovs-vsctl del-port {name}'

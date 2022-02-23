@@ -3,8 +3,9 @@ site_description: oVirt system tests documentation
 site_author: oVirt system tests team
 site_dir: docs-out
 theme: readthedocs
-repo_url: https://gerrit.ovirt.org/ovirt-system-tests
-repo_name: Gerrit
+repo_url: https://github.com/oVirt/ovirt-system-tests
+repo_name: GitHub
 nav:
+  - HOME: 'README.md'
   - README: 'README.md'
   - FAQ: 'FAQ.md'

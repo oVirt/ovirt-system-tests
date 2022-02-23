@@ -142,15 +142,6 @@ EOF
 
 }
 
-workaround_qemu_610() {
-    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_after_engine_setup/fix_qemu.yml
----
-- name: Lower max PCIE slots
-  shell: /usr/share/ovirt-engine/dbscripts/engine-psql.sh -c "select fn_db_update_config_value('NumOfPciExpressPorts','12','general');"
-EOF
-
-}
-
 copy_ssh_key
 
 dnf_update
@@ -158,9 +149,6 @@ dnf_update
 copy_dependencies
 
 add_he_to_hosts
-
-# Work around https://gitlab.com/qemu-project/qemu/-/issues/641. TODO: Remove when fixed.
-workaround_qemu_610
 
 ip -6 -o addr show dev eth0 scope global | grep -q eth0 && fix_ipv6
 

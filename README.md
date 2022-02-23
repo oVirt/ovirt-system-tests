@@ -2,8 +2,7 @@
 
 Welcome to the oVirt System Tests source repository.
 
-This repository is hosted on [gerrit.ovirt.org:ovirt-system-tests](https://gerrit.ovirt.org/#/admin/projects/ovirt-system-tests)
-and a **backup** of it is hosted on [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests)
+This repository is hosted on [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests)
 
 # System requirements
 
@@ -26,11 +25,9 @@ least 16GB of RAM, though basic suite still runs with 8GB.
 
 Patches are welcome!
 
-Please submit patches to [gerrit.ovirt.org:ovirt-system-tests](https://gerrit.ovirt.org/#/admin/projects/ovirt-system-tests).
-If you are not familiar with the review process for Gerrit patches you can read about [Working with oVirt Gerrit](https://ovirt.org/develop/dev-process/working-with-gerrit.html)
+Please submit patches to [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests.
+If you are not familiar with the review process for GitHub patches you can read about [Working with oVirt GitHub](https://ovirt.org/develop/dev-process/working-with-github.html)
 on the [oVirt](https://ovirt.org/) website.
-
-**NOTE**: We might not notice pull requests that you create on Github, because we only use Github as a read-only backup.
 
 
 ### Found a bug or documentation issue?

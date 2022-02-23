@@ -25,7 +25,7 @@ least 16GB of RAM, though basic suite still runs with 8GB.
 
 Patches are welcome!
 
-Please submit patches to [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests.
+Please submit patches to [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests).
 If you are not familiar with the review process for GitHub patches you can read about [Working with oVirt GitHub](https://ovirt.org/develop/dev-process/working-with-github.html)
 on the [oVirt](https://ovirt.org/) website.
 

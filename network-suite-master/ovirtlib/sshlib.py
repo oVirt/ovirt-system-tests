@@ -111,6 +111,23 @@ class Node(object):
         with pytest.raises(SshException, match='100% packet loss'):
             self.ping_from_netns(target=target, from_netns=from_netns)
 
+    def retry_ping_from_netns(self, target, from_netns):
+        syncutil.sync(
+            exec_func=self.ping_from_netns_successful,
+            exec_func_args=(target, from_netns),
+            success_criteria=lambda s: s,
+            delay_start=1,
+            timeout=15,
+        )
+
+    def ping_from_netns_successful(self, target, from_netns):
+        try:
+            self.ping_from_netns(target=target, from_netns=from_netns)
+            return True
+        except SshException as e:
+            LOGGER.debug(e)
+            return False
+
     def assert_ping_from_netns(self, target, from_netns):
         self.ping_from_netns(target=target, from_netns=from_netns)
 
@@ -125,7 +142,7 @@ class Node(object):
         """
         netns_prefix = f'ip netns exec {from_netns} ' if from_netns else ''
         version = ipaddress.ip_address(target).version
-        cmd = netns_prefix + (f'ping -{version} -c 1 -M do -s {data_size} ' f'{target}')
+        cmd = netns_prefix + f'ping -{version} -c 1 -M do -W 1 -s {data_size} {target}'
         self.exec_command(cmd)
 
     def assert_no_ping(self, target, ip_version, data_size=56, pmtudisc='do'):

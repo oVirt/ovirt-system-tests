@@ -60,6 +60,7 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
             '/usr/share/ovirt-engine/dbscripts/engine-psql.sh -c '
             "\"select fn_db_update_config_value('NumOfPciExpressPorts','12','general');\""
         ),
+        'engine-config --set ServerRebootTimeout=150',
         'systemctl restart ovirt-engine',
     ]
     for command in commands:

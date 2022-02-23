@@ -60,18 +60,18 @@ def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0,
     )
     with _create_namespaces(connections):
         with _create_ovs_ports(connections, af):
-            ssh0.assert_ping_from_netns(net11.ip, net10.port.name)
-            ssh1.assert_ping_from_netns(net10.ip, net11.port.name)
+            ssh0.retry_ping_from_netns(net11.ip, net10.port.name)
+            ssh1.retry_ping_from_netns(net10.ip, net11.port.name)
 
             ssh0.assert_no_ping_from_netns(net14.ip, net10.port.name)
             ssh1.assert_no_ping_from_netns(net10.ip, net14.port.name)
 
             _update_routes(default_ovn_provider_client, net10.subnet, net11.subnet)
 
-            ssh1.assert_ping_from_netns(net10.ip, net14.port.name)
-            ssh0.assert_ping_from_netns(net14.ip, net10.port.name)
-            ssh1.assert_ping_from_netns(net11.ip, net14.port.name)
-            ssh1.assert_ping_from_netns(net14.ip, net11.port.name)
+            ssh1.retry_ping_from_netns(net10.ip, net14.port.name)
+            ssh0.retry_ping_from_netns(net14.ip, net10.port.name)
+            ssh1.retry_ping_from_netns(net11.ip, net14.port.name)
+            ssh1.retry_ping_from_netns(net14.ip, net11.port.name)
 
 
 @pytest.fixture(scope='function')

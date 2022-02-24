@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
+import abc
 import contextlib
 
 from ovirtsdk4 import types
@@ -55,25 +56,26 @@ class NfsVersion(object):
     V4_2 = types.NfsVersion.V4_2
 
 
-class HostStorageData(object):
-    def __init__(self, storage_type, address, path, nfs_version=None, logical_units=()):
+class HostStorageData(metaclass=abc.ABCMeta):
+    def __init__(self, storage_type, domain_type, address=None, path=None):
         """
-        :param storage_type: string indicates the storage type.
-        :param address: string indicates the NFS storage address.
-        :param path: string indicates the NFS storage path.
-        :param nfs_version: string indicates the NFS storage version.
-        :param logical_units: tuple of LogicalUnits.
-        Represent logical units (luns) in case of an iSCSI storage domain.
+        :param storage_type: storagelib.StorageType
+        :param domain_type: storagelib.StorageDomainType
+        :param address: string indicates the storage address.
+        :param path: string indicates the storage path.
         """
-        self._type = storage_type
+        self._storage_type = storage_type
+        self._domain_type = domain_type
         self._address = address
         self._path = path
-        self._nfs_version = nfs_version
-        self._logical_units = logical_units
 
     @property
-    def type(self):
-        return self._type
+    def storage_type(self):
+        return self._storage_type
+
+    @property
+    def domain_type(self):
+        return self._domain_type
 
     @property
     def address(self):
@@ -83,13 +85,61 @@ class HostStorageData(object):
     def path(self):
         return self._path
 
+    @abc.abstractmethod
+    def as_sdk_type(self):
+        """
+        :return: representation of this object as the equivalent ovirtsdk4.types object.
+        ovirtlib is a wrapper and encapsulator of ovirtsdk4.types and ovirtsdk4.services,
+        so this method should not be used outside ovirtlib
+        """
+
+
+class NfsStorageData(HostStorageData):
+    def __init__(self, address, path, domain_type=StorageDomainType.DATA, version=NfsVersion.V4_2):
+        super(NfsStorageData, self).__init__(StorageType.NFS, domain_type, address, path)
+        self._version = version
+
     @property
-    def nfs_version(self):
-        return self._nfs_version
+    def version(self):
+        return self._version
+
+    def as_sdk_type(self):
+        return types.HostStorage(
+            type=self.storage_type,
+            address=self.address,
+            path=self.path,
+            nfs_version=self.version,
+        )
+
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__}| '
+            f'address:{self.address}, '
+            f'path:{self.path}, '
+            f'version:{self.version}>'
+            f'domain_type:{self.domain_type}, '
+        )
+
+
+class IscsiStorageData(HostStorageData):
+    def __init__(self, domain_type=StorageDomainType.DATA, logical_units=()):
+        super(IscsiStorageData, self).__init__(StorageType.ISCSI, domain_type)
+        self._logical_units = logical_units
 
     @property
     def logical_units(self):
         return self._logical_units
+
+    def as_sdk_type(self):
+        return types.HostStorage(
+            type=self.storage_type,
+            address=self.address,
+            path=self.path,
+            logical_units=[lun.as_sdk_type() for lun in self.logical_units],
+        )
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}| logical_units:{self.logical_units}, domain_type:{self.domain_type}>'
 
 
 class StorageDomainStatus(object):
@@ -111,24 +161,17 @@ class StorageDomain(SDKRootEntity):
     def wait_for_unattached_status(self):
         self._wait_for_status(StorageDomainStatus.UNATTACHED)
 
-    def create(self, name, host, domain_type, host_storage_data):
+    def create(self, name, host, host_storage_data):
         """
         :param name: string
         :param host: hostlib.Host
-        :param domain_type: StorageDomainType
         :param host_storage_data: HostStorageData
         """
         sdk_type = types.StorageDomain(
             name=name,
             host=host.get_sdk_type(),
-            type=domain_type,
-            storage=types.HostStorage(
-                type=host_storage_data.type,
-                address=host_storage_data.address,
-                path=host_storage_data.path,
-                nfs_version=host_storage_data.nfs_version,
-                logical_units=self._get_sdk_type_logical_units(host_storage_data.logical_units),
-            ),
+            type=host_storage_data.domain_type,
+            storage=host_storage_data.as_sdk_type(),
         )
         self._create_sdk_entity(sdk_type)
 
@@ -180,20 +223,9 @@ class StorageDomain(SDKRootEntity):
         disk.wait_for_up_status()
         return disk
 
-    def _get_sdk_type_logical_units(self, logical_units):
-        return [
-            types.LogicalUnit(
-                id=lundata.id,
-                address=lundata.address,
-                port=lundata.port,
-                target=lundata.target,
-            )
-            for lundata in logical_units
-        ]
-
     def __repr__(self):
         return self._execute_without_raising(
-            lambda: (f'<{self.__class__.__name__}| ' f'name:{self.name}, ' f'status:{self.status}, ' f'id:{self.id}>')
+            lambda: f'<{self.__class__.__name__}| name:{self.name}, status:{self.status}, id:{self.id}>'
         )
 
 
@@ -233,8 +265,8 @@ class Disk(SDKRootEntity):
 
 
 class LogicalUnit(object):
-    def __init__(self, id, address, port, target):
-        self._id = id
+    def __init__(self, lun_id, address, port, target):
+        self._id = lun_id
         self._address = address
         self._port = port
         self._target = target
@@ -255,13 +287,24 @@ class LogicalUnit(object):
     def target(self):
         return self._target
 
+    def as_sdk_type(self):
+        return types.LogicalUnit(id=self.id, address=self.address, port=self.port, target=self.target)
+
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__}| '
+            f'address:{self.address}, '
+            f'port:{self.port}, '
+            f'target:{self.target}, '
+            f'lun_id:{self.id}>'
+        )
+
 
 @contextlib.contextmanager
-def storage_domain(system, name, domain_type, host, host_storage_data):
+def storage_domain(system, name, host, host_storage_data):
     sd = StorageDomain(system)
     sd.create(
         name=name,
-        domain_type=domain_type,
         host=host,
         host_storage_data=host_storage_data,
     )

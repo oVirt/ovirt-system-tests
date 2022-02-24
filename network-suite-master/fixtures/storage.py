@@ -22,16 +22,11 @@ def default_storage_domain(system, engine_facts, host_0_up, default_data_center)
     try:
         storage_domain.import_by_name(DEFAULT_DOMAIN_NAME)
     except EntityNotFoundError:
+        nfs_storage_data = storagelib.NfsStorageData(engine_facts.default_ip(urlize=True), DEFAULT_DOMAIN_PATH)
         storage_domain.create(
             name=DEFAULT_DOMAIN_NAME,
-            domain_type=storagelib.StorageDomainType.DATA,
             host=host_0_up,
-            host_storage_data=storagelib.HostStorageData(
-                storage_type=storagelib.StorageType.NFS,
-                address=engine_facts.default_ip(urlize=True),
-                path=DEFAULT_DOMAIN_PATH,
-                nfs_version=storagelib.NfsVersion.V4_2,
-            ),
+            host_storage_data=nfs_storage_data,
         )
         storage_domain.wait_for_unattached_status()
         default_data_center.attach_storage_domain(storage_domain)

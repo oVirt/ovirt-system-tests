@@ -1,6 +1,7 @@
 name: OST of OST
 
 on:
+  push:
   issue_comment:
     types: [created]
 

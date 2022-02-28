@@ -16,3 +16,4 @@ git+https://github.com/openstack/openstacksdk.git@master
 # ost_utils
 paramiko
 PyYAML
+packaging

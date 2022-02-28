@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from distutils.version import LooseVersion
 import os
 
 import logging
+from packaging.version import Version
+
 import ovirtsdk4
 import pytest
 
@@ -72,6 +73,6 @@ def _compare_versions(runtime_version, candidate_version):
         return 1
     if candidate_version == 'master':
         return -1
-    if LooseVersion(runtime_version) < LooseVersion(candidate_version):
+    if Version(runtime_version) < Version(candidate_version):
         return -1
     return 1

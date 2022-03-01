@@ -68,12 +68,10 @@ def _stop_vdsm_services(hosts):
     try:
         logging.debug('Stopping VDSM services...')
         hosts.systemd(name='vdsmd', state='stopped')
-        hosts.systemd(name='supervdsmd', state='stopped')
         yield
     finally:
         logging.debug('Restarting VDSM services...')
         hosts.systemd(name='vdsmd', state='started')
-        hosts.systemd(name='supervdsmd', state='started')
 
 
 def _combine_coverage_data_on_hosts(hosts):

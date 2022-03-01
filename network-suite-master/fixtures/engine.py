@@ -54,7 +54,7 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path):
 
     commands = [
         f'engine-setup --offline --accept-defaults --config-append={ANSWER_FILE_TMP}',
-        'engine-config --set ServerRebootTimeout=150',
+        'engine-config --set ServerRebootTimeout=180',
         'systemctl restart ovirt-engine',
     ]
     for command in commands:

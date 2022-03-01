@@ -5,7 +5,7 @@ site_dir: docs-out
 theme: readthedocs
 repo_url: https://github.com/oVirt/ovirt-system-tests
 repo_name: GitHub
-nav:
+pages:
   - HOME: 'README.md'
   - README: 'README.md'
   - FAQ: 'FAQ.md'

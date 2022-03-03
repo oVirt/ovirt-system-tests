@@ -39,7 +39,7 @@ jobs:
       - name: trigger
         env:
           OST_APP_ID: 164117
-          PR_URL: "${{ github.event.issue.pull_request.url }}${{ github.event.inputs.pr_url }}"
+          PR_URL: "${{ github.event.issue.pull_request.url }}${{ inputs.pr_url }}"
           COMMENT: "${{ github.event.comment.body }}${{ inputs.comment }}${{ github.event.inputs.comment }}"
         working-directory: /var/lib/nginx/gh
         run: |

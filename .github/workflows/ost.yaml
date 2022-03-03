@@ -12,6 +12,7 @@ on:
       comment:
         required: false
         type: string
+        default: "/ost basic-suite-master el8stream"
       pr_url:
         required: false
         type: string
@@ -40,7 +41,7 @@ jobs:
         env:
           OST_APP_ID: 164117
           PR_URL: "${{ github.event.issue.pull_request.url }}${{ github.event.inputs.pr_url }}"
-          COMMENT: "${{ github.event.comment.body }}${{ inputs.comment }}${{ github.event.inputs.comment }}${{ inputs.pr_url }}"
+          COMMENT: "${{ github.event.comment.body }}${{ inputs.comment }}${{ github.event.inputs.comment }}"
         working-directory: /var/lib/nginx/gh
         run: |
           echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'

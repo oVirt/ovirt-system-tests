@@ -12,6 +12,9 @@ on:
       comment:
         required: false
         type: string
+      pr_url:
+        required: false
+        type: string
 
   workflow_dispatch:
     inputs:

@@ -1,0 +1,24 @@
+# See github docs for more info on the syntax:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default if nothing more specific matches
+*                                       @tinez @acernek @emesika @erav @galitf @hbraha @michalskrivanek @sleviim
+
+# Suites
+ansible-suite-master                    @michalskrivanek @mnecas @tinez
+# basic-suite-master is owned by everyone
+hc-basic-suite-master                   @didib @michalskrivanek @tinez
+he-basic-suite-master                   @didib @michalskrivanek @tinez
+he-node-ng-suite-master                 @didib @michalskrivanek @tinez
+network-suite-master                    @almusil @erav @michalskrivanek @tinez
+node-upgrade-suite-master               @didib @michalskrivanek @tinez
+tr-suite-master                         @emesika @michalskrivanek @tinez
+
+# docs
+docs                                    @galitf @tinez
+
+# ost-utils is owned by everyone
+
+# UI stuff
+basic-suite-master/test-scenarios/test_100_basic_ui_sanity.py     @ljelinkova @rszwajko @tinez @michalskrivanek
+ost_utils/selenium                                                @acernek @hbraha @ljelinkova @tinez @michalskrivanek

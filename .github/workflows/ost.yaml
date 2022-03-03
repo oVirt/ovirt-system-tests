@@ -1,18 +1,15 @@
 #
-# This is a reusable worflow to be triggered from other projects or manually
+# This is a reusable worflow to be triggered from other projects or manually.
+# See example-trigger.yaml for how to use it in other projects.
+# If you call this via a different trigger than on: issue_comment you can use the optional parameter:
+#  comment - full comment body, e.g. "/ost he-basic-suite-master el9stream"
 #
 name: OST trigger
 
 on:
   workflow_call:
     inputs:
-      pr_url:
-        required: true
-        type: string
-      suite:
-        required: false
-        type: string
-      distro:
+      comment:
         required: false
         type: string
 
@@ -21,29 +18,32 @@ on:
       pr_url:
         required: true
         type: string
-      suite:
+      comment:
         required: true
-        default: basic-suite-master
-        type: string
-      distro:
-        required: true
-        default: el8stream
+        default: "/ost basic-suite-master el8stream"
         type: string
 
 jobs:
   trigger-ost:
     runs-on: ost-trigger
     timeout-minutes: 4
+    if: github.event_name == 'workflow_dispatch' ||
+      ( github.event.issue.pull_request && (
+          github.event.comment.author_association == 'MEMBER' ||
+          github.event.comment.author_association == 'COLLABORATOR')
+      )
     steps:
       - name: trigger
         env:
           OST_APP_ID: 164117
-          PR_URL: "${{ github.event.inputs.pr_url }}${{ inputs.pr_url }}"
-          SUITE: "${{ github.event.inputs.suite }}${{ inputs.suite }}"
-          DISTRO: "${{ github.event.inputs.distro }}${{ inputs.distro }}"
+          PR_URL: "${{ github.event.issue.pull_request.url }}${{ github.event.inputs.pr_url }}"
+          COMMENT: "${{ github.event.comment.body }}${{ inputs.comment }}${{ github.event.inputs.comment }}"
         working-directory: /var/lib/nginx/gh
         run: |
           echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'
+          echo "$COMMENT" | egrep '^/ost( [a-z\-]+( [a-z0-9]+)?)?$'
+          SUITE=$(echo "$COMMENT" | cut -d " " -f2)
+          DISTRO=$(echo "$COMMENT" | cut -d " " -f3)
           SUITE=${SUITE:-basic-suite-master}
           DISTRO=${DISTRO:-el8stream}
           SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)

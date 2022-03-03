@@ -12,7 +12,6 @@ on:
       comment:
         required: false
         type: string
-        default: "/ost basic-suite-master el8stream"
       pr_url:
         required: false
         type: string
@@ -45,7 +44,7 @@ jobs:
         working-directory: /var/lib/nginx/gh
         run: |
           echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'
-          echo "$COMMENT" | egrep '^/ost( [a-z\-]+( [a-z0-9]+)?)?$'
+          echo "$COMMENT" | egrep '^/ost(/ost)?( [a-z\-]+( [a-z0-9]+)?)?$'
           SUITE=$(echo "$COMMENT" | cut -d " " -f2)
           DISTRO=$(echo "$COMMENT" | cut -d " " -f3)
           SUITE=${SUITE:-basic-suite-master}

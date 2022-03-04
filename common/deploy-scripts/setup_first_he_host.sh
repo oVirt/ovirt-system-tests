@@ -66,10 +66,11 @@ dnf_update() {
   copy:
     src: /etc/yum.repos.d
     dest: /etc
-- name: DNF update the system
+- name: DNF update the system. TODO remove baseos&appstream once appliance is up to date
   dnf:
     name:  "*"
     state: latest
+    enablerepo: "*-baseos,*-appstream"
     exclude:
       - ovirt-release-master
       - ovirt-release-master-tested

@@ -354,8 +354,7 @@ ost_check_dependencies() {
 ost_linters() {
     echo "Running linters..."
     [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
-    ${PYTHON} -m tox -e docs &>> "${OST_REPO_ROOT}/exported-artifacts/tox-deps.log"
-    ${PYTHON} -m tox -q -e flake8,pylint,black,broken-symlinks,copyright-notices
+    ${PYTHON} -m tox -q -e flake8,pylint,black,broken-symlinks,copyright-notices,docs
 }
 
 # $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py

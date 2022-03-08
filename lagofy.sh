@@ -367,8 +367,9 @@ _ost_run_tc () {
     local res=0
     local testcase=${@/#/$PWD/}
     local junitxml_file="${OST_REPO_ROOT}/exported-artifacts/junit.xml"
+    local coverage_file="${OST_REPO_ROOT}/exported-artifacts/ost_coverage/${SUITE}.$(git rev-parse --short HEAD).coverage"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m pytest \
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage run --source=ost_utils,network-suite-master/ovirtlib --data-file=${coverage_file} -m pytest \
         -s \
         -v \
         -x \
@@ -382,6 +383,7 @@ _ost_run_tc () {
         xmllint --format ${junitxml_file}
         ./common/scripts/parse_junitxml.py ${junitxml_file} "${OST_REPO_ROOT}/exported-artifacts/result.txt"
     }
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage html -q -d "${coverage_file}-html" --data-file=${coverage_file}
     which deactivate &> /dev/null && deactivate
     return "$res"
 }

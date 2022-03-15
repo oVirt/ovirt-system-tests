@@ -4,7 +4,9 @@
 #
 #
 
+
 from ost_utils.ansible.collection import CollectionMapper, infra
+
 from ost_utils.storage_utils import lun
 
 
@@ -13,9 +15,11 @@ def test_ansible_run(
     hostnames_to_add,
     engine_ip_url,
     engine_fqdn,
-    engine_storage_ips,
+    storage_hostname,
+    sd_iscsi_host_ip,
     engine_full_username,
     engine_password,
+    sd_iscsi_ansible_host,
 ):
     infra(
         ansible_engine,
@@ -73,7 +77,7 @@ def test_ansible_run(
                 "master": "true",
                 "state": "present",
                 "nfs": {
-                    "address": engine_fqdn,
+                    "address": storage_hostname,
                     "path": "/exports/nfs/share1",
                     "version": "v4_2",
                 },
@@ -81,7 +85,7 @@ def test_ansible_run(
             "second-nfs": {
                 "state": "present",
                 "nfs": {
-                    "address": engine_fqdn,
+                    "address": storage_hostname,
                     "path": "/exports/nfs/share2",
                     "version": "v4_2",
                 },
@@ -89,7 +93,7 @@ def test_ansible_run(
             "templates": {
                 "domain_function": "export",
                 "nfs": {
-                    "address": engine_fqdn,
+                    "address": storage_hostname,
                     "path": "/exports/nfs/exported",
                     "version": "v4_2",
                 },
@@ -97,7 +101,7 @@ def test_ansible_run(
             "iso": {
                 "domain_function": "iso",
                 "nfs": {
-                    "address": engine_fqdn,
+                    "address": storage_hostname,
                     "path": "/exports/nfs/iso",
                     "version": "v4_2",
                 },
@@ -106,10 +110,10 @@ def test_ansible_run(
                 "iscsi": {
                     "target": "iqn.2014-07.org.ovirt:storage",
                     "port": 3260,
-                    "address": engine_storage_ips[0],
+                    "address": storage_hostname,
                     "username": "username",
                     "password": "password",
-                    "lun_id": lun.get_uuids(ansible_engine)[:2],
+                    "lun_id": lun.get_uuids(sd_iscsi_ansible_host)[:2],
                 }
             },
         },

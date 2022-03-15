@@ -441,21 +441,18 @@ def test_virtual_machines(
     assert vm_list_view.is_new_button_enabled() is True
     assert vm_list_view.is_edit_button_enabled() is False
     assert vm_list_view.is_shutdown_button_enabled() is False
-    assert vm_list_view.is_export_button_enabled() is False
     assert vm_list_view.is_migrate_button_enabled() is False
 
     vm_list_view.select_entity('vm0')
     assert vm_list_view.is_new_button_enabled() is True
     assert vm_list_view.is_edit_button_enabled() is True
     assert vm_list_view.is_shutdown_button_enabled() is True
-    assert vm_list_view.is_export_button_enabled() is False
     assert vm_list_view.is_migrate_button_enabled() is True
 
     vm_list_view.poweroff()
     assert vm_list_view.is_new_button_enabled() is True
     assert vm_list_view.is_edit_button_enabled() is True
     assert vm_list_view.is_shutdown_button_enabled() is False
-    assert vm_list_view.is_export_button_enabled() is True
     assert vm_list_view.is_migrate_button_enabled() is False
 
     save_screenshot('vms-list-success')

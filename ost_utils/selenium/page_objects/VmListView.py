@@ -36,9 +36,6 @@ class VmListView(EntityListView):
     def is_shutdown_button_enabled(self):
         return self.ovirt_driver.is_button_enabled('Shutdown')
 
-    def is_export_button_enabled(self):
-        return self.ovirt_driver.is_button_enabled('Export')
-
     def is_migrate_button_enabled(self):
         return self.ovirt_driver.is_button_enabled('Migrate')
 

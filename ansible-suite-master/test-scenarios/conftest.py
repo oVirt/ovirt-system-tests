@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
+import pytest
 
 from ost_utils.pytest.fixtures.ansible import *
 
@@ -23,6 +24,7 @@ from ost_utils.pytest.fixtures.backend import host0_hostname
 from ost_utils.pytest.fixtures.backend import host1_hostname
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
 from ost_utils.pytest.fixtures.backend import management_network_supports_ipv4
+from ost_utils.pytest.fixtures.backend import storage_hostname
 
 from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
 from ost_utils.pytest.fixtures.defaults import hostnames_to_add
@@ -38,3 +40,17 @@ from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file
 from ost_utils.pytest.fixtures.env import suite_dir
 from ost_utils.pytest.fixtures.env import working_dir
+
+from ost_utils.pytest.fixtures.storage import *
+
+
+@pytest.fixture(scope="session")
+def sd_iscsi_host_ip(storage_ips_for_network, storage_network_name):  # pylint: disable=function-redefined
+    return storage_ips_for_network(storage_network_name)[0]
+
+
+@pytest.fixture(scope="session")
+def sd_iscsi_ansible_host(
+    ansible_storage,  # noqa: F811
+):  # pylint: disable=function-redefined
+    return ansible_storage

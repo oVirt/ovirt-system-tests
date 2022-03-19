@@ -21,6 +21,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_host1
 from ost_utils.pytest.fixtures.ansible import ansible_hosts
 from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.ansible import ansible_storage
+from ost_utils.pytest.fixtures.ansible import ansible_storage_facts
 
 from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
@@ -38,6 +39,7 @@ from ost_utils.pytest.fixtures.backend import host0_hostname
 from ost_utils.pytest.fixtures.backend import host1_hostname
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
 from ost_utils.pytest.fixtures.backend import management_network_supports_ipv4
+from ost_utils.pytest.fixtures.backend import storage_hostname
 
 from ost_utils.pytest.fixtures.defaults import *
 
@@ -67,21 +69,19 @@ from ost_utils.pytest.running_time import *
 
 
 @pytest.fixture(scope="session")
-def sd_iscsi_host_ip(
-    engine_storage_ips,
-):  # pylint: disable=function-redefined
-    return engine_storage_ips[0]
+def sd_iscsi_host_ip(storage_ips_for_network, storage_network_name):  # pylint: disable=function-redefined
+    return storage_ips_for_network(storage_network_name)[0]
 
 
 @pytest.fixture(scope="session")
 def sd_nfs_host_storage_name(
-    engine_hostname,
+    storage_hostname,
 ):  # pylint: disable=function-redefined
-    return engine_hostname
+    return storage_hostname
 
 
 @pytest.fixture(scope="session")
 def sd_iscsi_ansible_host(
-    ansible_engine,
+    ansible_storage,
 ):  # pylint: disable=function-redefined
-    return ansible_engine
+    return ansible_storage

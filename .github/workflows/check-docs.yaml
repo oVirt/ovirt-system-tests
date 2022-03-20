@@ -1,0 +1,28 @@
+name: check-docs
+on:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'FAQ.md'
+      - '.readthedocs.yaml'
+      - 'docs/*'
+  push:
+    paths:
+      - 'README.md'
+      - 'FAQ.md'
+      - '.readthedocs.yaml'
+      - 'docs/*'
+jobs:
+  build:
+    name: check-readthedocs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt update
+      - run: sudo apt install software-properties-common
+      - run: sudo apt install python3.9 
+      - run: python3.9 -m pip install --user tox 
+      - run: tox -e docs 

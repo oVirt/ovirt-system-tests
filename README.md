@@ -53,7 +53,10 @@ You can use `--custom-repo` for verifying an oVirt patch:
 You can pass this option multiple times to test more than 1 build at once.
 
 The environment is left running after it finishes so that you can examine or further use the created environment.
-Do not forget to clean up with `./ost.sh destroy`
+It is necessary to clean the environment up aftery every run with `./ost.sh destroy`.
+The environment contains inventory, VMs, live VM logs and is normally stored
+in `deployment` subdirectory of the repository. The location can be changed
+through `OST_DEPLOYMENT` environment variable.
 
 When the environment is up you can use `./ost.sh shell` to connect to the VMs.
 `./ost.sh status` shows a little overview of how the OST environment is laid out on the host system.

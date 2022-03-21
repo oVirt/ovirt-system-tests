@@ -37,6 +37,7 @@ dnf_update() {
   lineinfile:
     path: /etc/systemd/system/socks-proxy.service
     create: yes
+    mode: 0644
     line: |
       [Unit]
       Description=socks proxy
@@ -131,11 +132,13 @@ fix_ipv6() {
   lineinfile:
     path: /etc/ovirt-engine/engine.conf.d/99-ipv6-pref.conf
     create: yes
+    mode: 0644
     line: ENGINE_PROPERTIES="\${ENGINE_PROPERTIES} java.net.preferIPv6Addresses=true"
 - name: Resolve IPv6 in imageio
   lineinfile:
     path: /etc/ovirt-imageio/conf.d/01-ipv6-pref.conf
     create: yes
+    mode: 0644
     line: |
       [control]
       prefer_ipv4 = False

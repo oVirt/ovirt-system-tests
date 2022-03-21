@@ -8,6 +8,7 @@
       - ost-images-el8stream-engine-installed
       - ost-images-el8stream-host-installed
       - ost-images-node-base
+      - ost-images-storage-base
 
   tasks:
     - name: enable nested virtualization on intel
@@ -87,7 +88,6 @@
               - libxml2-devel
               - openssl
               - openssl-devel
-              - podman
               - "{{ python_pkg }}"
               - "{{ python_pkg }}-devel"
               - qemu-kvm

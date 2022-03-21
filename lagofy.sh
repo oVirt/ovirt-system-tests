@@ -340,9 +340,6 @@ ost_check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    podman info |grep -A5 '^  search' | grep -q 'docker.io' || {
-        sed -i "/^registries.*registry.access.redhat.com/ c registries = ['registry.access.redhat.com', 'registry.redhat.io', 'docker.io', 'quay.io']" /etc/containers/registries.conf
-    }
     (source /etc/os-release; [[ $VERSION == 9* ]]) && { ansible-galaxy collection install community.general openstack.cloud >/dev/null || {
         echo "ansible collection failed"
         return 9

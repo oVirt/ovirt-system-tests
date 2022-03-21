@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 import logging
+import os
+
+from ost_utils.ansible.module_mappers import AnsibleExecutionError
 
 from .Displayable import Displayable
 from .EntityListView import EntityListView
@@ -64,20 +67,24 @@ class VmListView(EntityListView):
         LOGGER.debug('Click console')
         self.click_menu_dropdown_top_button('ActionPanelView_ConsoleConnectCommand')
 
-    def download_console_file(self, console_file_full_path):
+    def download_console_file(self, console_file_full_path, ansible_selenium, remote_artifacts_dir):
         LOGGER.debug(f'Download console.vv file as {console_file_full_path}')
         self.click_console()
         self.ovirt_driver.wait_until(
             'The console.vv file has not been downloaded',
             self._console_file_downloaded,
             console_file_full_path,
+            ansible_selenium,
+            remote_artifacts_dir,
         )
 
-    def _console_file_downloaded(self, console_file_full_path):
+    def _console_file_downloaded(self, console_file_full_path, ansible_selenium, remote_artifacts_dir):
         try:
+            remote_path = os.path.join(remote_artifacts_dir, os.path.basename(console_file_full_path))
+            ansible_selenium.fetch(src=remote_path, dest=console_file_full_path, flat=True)
             with open(console_file_full_path) as console_file:
                 return '-----END CERTIFICATE-----' in console_file.read()
-        except FileNotFoundError:
+        except (FileNotFoundError, AnsibleExecutionError):
             return False
 
 

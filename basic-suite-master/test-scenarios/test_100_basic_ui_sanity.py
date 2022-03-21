@@ -27,9 +27,11 @@ from ost_utils import test_utils
 from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
+from ost_utils.pytest.fixtures.selenium import fetch_videos
 from ost_utils.pytest.fixtures.selenium import hub_url
+from ost_utils.pytest.fixtures.selenium import remote_selenium_artifacts_dir
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
-from ost_utils.selenium.navigation.driver import *
+from ost_utils.selenium.navigation.driver import Driver
 from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
 from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
 from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
@@ -39,15 +41,17 @@ from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
     GrafanaLoginScreen,
 )
 from ost_utils.selenium.page_objects.Grafana import Grafana
-from ost_utils.selenium.grid import CHROME_VERSION
-from ost_utils.selenium.grid import FIREFOX_VERSION
-from ost_utils.selenium.grid import BROWSER_PLATFORM
-from ost_utils.selenium.grid import SCREEN_WIDTH
-from ost_utils.selenium.grid import SCREEN_HEIGHT
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 
 LOGGER = logging.getLogger(__name__)
+
+
+CHROME_VERSION = '94.0.4606.81'
+FIREFOX_VERSION = '93.0'
+BROWSER_PLATFORM = 'LINUX'
+SCREEN_WIDTH = 1600
+SCREEN_HEIGHT = 900
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -180,7 +184,7 @@ def browser_name(browser_options):
 
 
 @pytest.fixture(scope="session")
-def ovirt_driver(browser_options, hub_url, engine_webadmin_url):
+def ovirt_driver(browser_options, hub_url, fetch_videos, engine_webadmin_url):
     driver = webdriver.Remote(command_executor=hub_url, options=browser_options)
 
     ovirt_driver = Driver(driver)
@@ -428,11 +432,13 @@ def console_file_helper(console_file_full_path, selenium_artifact_full_path):
 
 
 def test_virtual_machines(
+    ansible_storage,
     ovirt_driver,
     setup_virtual_machines,
     save_screenshot,
     console_file_full_path,
     console_file_helper,
+    remote_selenium_artifacts_dir,
 ):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     vm_list_view = webadmin_menu.open_vm_list_view()
@@ -492,7 +498,7 @@ def test_virtual_machines(
 
     vm_vgpu_dialog.cancel()
 
-    vm_list_view.download_console_file(console_file_full_path)
+    vm_list_view.download_console_file(console_file_full_path, ansible_storage, remote_selenium_artifacts_dir)
 
     with open(console_file_full_path) as f:
         console_file_text = f.read()

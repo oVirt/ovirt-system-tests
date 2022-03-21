@@ -16,7 +16,7 @@ DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 
 
 @pytest.fixture(scope='session')
-def default_storage_domain(system, engine_facts, host_0_up, default_data_center):
+def default_storage_domain(system, storage_facts, host_0_up, default_data_center):
     host_0_up.workaround_bz_1779280()
     storage_domain = storagelib.StorageDomain(system)
     try:
@@ -28,7 +28,7 @@ def default_storage_domain(system, engine_facts, host_0_up, default_data_center)
             host=host_0_up,
             host_storage_data=storagelib.HostStorageData(
                 storage_type=storagelib.StorageType.NFS,
-                address=engine_facts.default_ip(urlize=True),
+                address=storage_facts.default_ip(urlize=True),
                 path=DEFAULT_DOMAIN_PATH,
                 nfs_version=storagelib.NfsVersion.V4_2,
             ),
@@ -40,9 +40,9 @@ def default_storage_domain(system, engine_facts, host_0_up, default_data_center)
 
 
 @pytest.fixture(scope='session')
-def lun_id(engine_facts):
+def lun_id(storage_facts):
     # Reads a lun id value from the file
-    node = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
+    node = sshlib.Node(storage_facts.default_ip(), storage_facts.ssh_password)
     ret = node.exec_command(' '.join(['cat', '/root/multipath.txt']))
     assert ret.code == 0
     return ret.out.splitlines()[0]

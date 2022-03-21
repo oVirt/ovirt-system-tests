@@ -7,6 +7,7 @@ from fixtures.ansible import af
 from fixtures.ansible import host0_facts
 from fixtures.ansible import host1_facts
 from fixtures.ansible import engine_facts
+from fixtures.ansible import storage_facts
 from fixtures.ansible import ansible_clean_private_dirs
 
 from fixtures.ansible import ansible_collect_logs
@@ -56,6 +57,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host1
 from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
 from ost_utils.pytest.fixtures.ansible import ansible_hosts
+from ost_utils.pytest.fixtures.ansible import ansible_storage_facts
 from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.ansible import ansible_storage
 from ost_utils.pytest.fixtures.artifacts import artifacts
@@ -71,6 +73,7 @@ from ost_utils.pytest.fixtures.backend import deploy_scripts
 from ost_utils.pytest.fixtures.backend import host0_hostname
 from ost_utils.pytest.fixtures.backend import host1_hostname
 from ost_utils.pytest.fixtures.backend import hosts_hostnames
+from ost_utils.pytest.fixtures.backend import storage_hostname
 from ost_utils.pytest.fixtures.backend import management_network_supports_ipv4
 from ost_utils.pytest.fixtures.backend import tested_ip_version
 from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy

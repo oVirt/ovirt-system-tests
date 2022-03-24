@@ -1,0 +1,1 @@
+../../ansible-suite-master/test-scenarios/test_002_ansible.py

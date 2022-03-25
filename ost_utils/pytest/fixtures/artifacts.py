@@ -68,7 +68,7 @@ def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
         archive_name = "artifacts.tar.gz"
         local_archive_dir = os.path.join(target_dir, "test_logs", hostname)
         local_archive_path = os.path.join(local_archive_dir, archive_name)
-        remote_archive_path = os.path.join("/tmp", archive_name)
+        remote_archive_path = os.path.join("/var/tmp", archive_name)
         os.makedirs(local_archive_dir, exist_ok=True)
         # Get the journal right before collecting, so that we get all
         # records we can. Does not make that much sense here, but doing
@@ -100,14 +100,14 @@ def generate_sar_stat_plots(collect_artifacts, ansible_all, ansible_by_hostname,
             ansible_handle.shell(
                 'sadf -g -- -bBdFHqSuvwWy -I SUM -I ALL -m ALL -n NFS,NFSD,'
                 'SOCK,IP,EIP,ICMP,EICMP,TCP,ETCP,UDP,SOCK6,IP6,EIP6,ICMP6,'
-                'EICMP6,UDP6 -r ALL -u ALL -P ALL > /tmp/sarstat.svg'
+                'EICMP6,UDP6 -r ALL -u ALL -P ALL > /var/tmp/sarstat.svg'
             )
         except AnsibleExecutionError as err:
             # sar error should not fail the run
             LOGGER.error(f"Failed generating sar report on '{hostname}': {err}")
         else:
             ansible_handle.fetch(
-                src='/tmp/sarstat.svg',
+                src='/var/tmp/sarstat.svg',
                 dest=f'{artifacts_dir}/{hostname}.sarstat.svg',
                 flat=True,
             )

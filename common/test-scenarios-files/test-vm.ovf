@@ -26,7 +26,7 @@
     <TimeZone/>
     <IsStateless>False</IsStateless>
     <VmType>1</VmType>
-    <DefaultDisplayType>1</DefaultDisplayType>
+    <DefaultDisplayType>2</DefaultDisplayType>
     <Origin>1</Origin>
     <OperatingSystemSection ovf:id='59f5dd98-212f-4324-9081-44c198c6653a' ovf:required='false' ovirt:id='24'>
       <Info>CentOS Linux release 7.5.1804 (Core) </Info>

@@ -3,7 +3,7 @@
 HOST=ost-${SUITE}-host-
 VMPASS=123456
 IDENENTITY_KEY="/etc/ssh/ssh_host_rsa_key"
-cd $PREFIX
+cd $OST_DEPLOYMENT
 
 lago shell \
     ${HOST}0 \

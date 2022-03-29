@@ -13,7 +13,7 @@ Usage: $0 -a ovirt-api-url -u ovirt-user -p ovirt-password -c ovirt-cluster-id -
     -w WORKING_DIR             - working directory for the scripts (def. ${WORKING_DIR})
     -o OPENSHIFT_DIR           - Openshift-install binary directory (def. ${OPENSHIFT_DIR})
     -k SSH_KEY_FILE            - The SSH key file needed by the installer config (def. ${SSH_KEY_FILE})
-    -r PREFIX                  - The prefix that will be used for created master VMs (def. ${PREFIX})
+    -r PREFIX                  - The prefix that will be used for created master VMs (def. ${OST_DEPLOYMENT})
     -n OVIRT_NETWORK_NAME      - The oVirt network name that should be used for the installation (def. ${OVIRT_NETWORK_NAME})
     -v OVIRT_VNIC_PROFILE_ID   - The vNic profile id of OVIRT_NETWORK_NAME (def. ${OVIRT_VNIC_PROFILE_ID})
     -d OVIRT_BASE_DOMAIN       - The oVirt domain address (def. ${OVIRT_BASE_DOMAIN})
@@ -45,6 +45,9 @@ os_installer() {
             --dir=${CONFIG_DIR} --log-level=debug ${op} ${obj} &
     fi
 }
+
+# Default to OST deployment path
+PREFIX=${OST_DEPLOYMENT}
 
 #get parameters
 while getopts ha:u:p:c:s:w:o:k:r:n:v:d: option; do

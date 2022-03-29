@@ -1167,6 +1167,9 @@ def test_update_template_version(engine_api, cirros_image_template_name, cirros_
         template=types.Template(
             name=cirros_image_template_name,
             vm=ovf_vm,
+            display=types.Display(
+                type=types.DisplayType.VNC,
+            ),
             version=types.TemplateVersion(
                 base_template=template,
                 version_name=cirros_image_template_version_name,

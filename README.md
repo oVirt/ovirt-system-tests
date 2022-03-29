@@ -4,18 +4,18 @@ Welcome to the oVirt System Tests source repository.
 
 This repository is hosted on [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests)
 
-# System requirements
+## System requirements
 
-#### Operating System
+### Operating System
 Currently OST can run on RHEL or CentOS Stream at least roughly matching the version used by oVirt or RHV.
 Latest CentOS Stream or RHEL 8 should work.
 
-#### Disk Space
+### Disk Space
 ost-images packages that contain the preinstalled images are fairly large, make sure you have enough disk space,
 15 GB per each distro variant in /usr/share. Additional space is needed for actual suite run,
 another 5GB at least in the directory where you run tests from.
 
-#### Memory
+### Memory
 The memory requirements are derived from the VM specs you'll have in the test suite, it is recommended that the host you're using will have at
 least 16GB of RAM, though basic suite still runs with 8GB.
 

@@ -168,8 +168,11 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         LOGGER.debug(f'vmconsole: reading until {prompt}...')
         time.sleep(2)
         recv = ''
-        while not recv.endswith(prompt):
-            recv = ''.join([recv, (self._read())])
+        try:
+            while not recv.endswith(prompt):
+                recv = ''.join([recv, (self._read())])
+        finally:
+            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{recv}]')
         LOGGER.debug(f'vmconsole: read until prompt returned: {recv}')
         return recv
 

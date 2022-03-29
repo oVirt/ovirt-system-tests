@@ -918,7 +918,9 @@ def test_get_host_hook(hosts_service, ost_dc_name, ansible_hosts, root_dir):
     ansible_hosts.copy(
         src=hook_full_path,
         dest='/usr/libexec/vdsm/hooks/after_hostdev_list_by_caps',
-        mode='preserve',
+        owner='root',
+        group='root',
+        mode='0755',
     )
 
     # refresh host capabilities

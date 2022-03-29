@@ -24,7 +24,7 @@ OST_IMAGES_HE_INSTALLED=${OST_IMAGES_HE_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGE
 OST_IMAGES_SSH_KEY=${OST_IMAGES_SSH_KEY:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}_id_rsa}
 for i in OST_IMAGES_BASE OST_IMAGES_NODE OST_IMAGES_ENGINE_INSTALLED OST_IMAGES_HOST_INSTALLED OST_IMAGES_HE_INSTALLED OST_IMAGES_SSH_KEY; do
   [[ -r "${!i}" ]] || declare $i=/usr/share/ost-images/$(basename ${!i})
-  echo "${i} ${!i}"
+  echo "${i} ${!i} $(rpm -qf ${!i} 2>/dev/null)"
 done
 
 export $(set | grep ^OST_IMAGES_ | cut -d= -f1)

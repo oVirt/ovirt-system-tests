@@ -52,8 +52,9 @@ set_selinux_on_nfs() {
 }
 
 setup_iscsi() {
-    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master).
-    if [[ $(hostname) == *"-storage"* ]]; then
+    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network only on HE suite, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master).
+    echo $SUITE
+    if [[ $(hostname) == *"-storage"* ]] && [[ $(hostname) == *"he-"*  ]]; then
         NIC=eth0
     else
         NIC=eth1

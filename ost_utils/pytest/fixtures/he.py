@@ -201,6 +201,8 @@ def he_engine_answer_file_contents(
         'OVEHOSTED_VDSM/cpu=str:model_SandyBridge\n'
         f'{he_engine_answer_file_storage_snippet}'
         'OVEHOSTED_CORE/ansibleUserExtraVars=str:he_offline_deployment=true\n'
+        'OVEHOSTED_ENGINE/datacenterName=str:dc1\n'
+        'OVEHOSTED_ENGINE/clusterName=str:cl1\n'
     )
 
 

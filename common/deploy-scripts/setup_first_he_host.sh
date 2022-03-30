@@ -147,6 +147,24 @@ EOF
 
 }
 
+disable_dwh_grafana() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/disable_dwh_grafana.yml
+---
+- name: Disable DWH in the answer file
+  lineinfile:
+    path: /root/ovirt-engine-answers
+    mode: 0644
+    regexp: '^OVESETUP_DWH_CORE/enable'
+    line: OVESETUP_DWH_CORE/enable=bool:False
+- name: Disable Grafana in the answer file
+  lineinfile:
+    path: /root/ovirt-engine-answers
+    mode: 0644
+    regexp: '^OVESETUP_GRAFANA_CORE/enable'
+    line: OVESETUP_GRAFANA_CORE/enable=bool:False
+EOF
+}
+
 copy_ssh_key
 
 dnf_update
@@ -154,6 +172,8 @@ dnf_update
 copy_dependencies
 
 add_he_to_hosts
+
+disable_dwh_grafana
 
 ip -6 -o addr show dev eth0 scope global | grep -q eth0 && fix_ipv6
 
@@ -163,7 +183,7 @@ dnf config-manager --setopt=best=False --save
 
 fstrim -va
 rm -rf /var/cache/yum/*
-hosted-engine --deploy --config-append=/root/hosted-engine-deploy-answers-file.conf
+hosted-engine --deploy --restore-from-file=/root/he-engine-dc1-cl1.bck --config-append=/root/hosted-engine-deploy-answers-file.conf
 RET_CODE=$?
 if [ ${RET_CODE} -ne 0 ]; then
     echo "hosted-engine deploy on ${HOSTNAME} failed with status ${RET_CODE}."

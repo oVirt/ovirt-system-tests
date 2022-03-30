@@ -71,6 +71,9 @@ def test_he_deploy(
     setup_file_src = os.path.join(root_dir, 'common/deploy-scripts/setup_first_he_host.sh')
     ansible_host0.copy(src=setup_file_src, dest='/root/', mode='preserve')
 
+    bck_file = os.path.join(root_dir, 'common/he-engine-dc1-cl1.bck')
+    ansible_host0.copy(src=bck_file, dest='/root/', mode='preserve')
+
     ansible_host0.shell('/root/setup_first_he_host.sh ' f'{he_host_name} ' f'{he_mac_address} ' f'{engine_ip}')
 
     ansible_storage.shell('fstrim -va')

@@ -72,6 +72,7 @@ dnf_update() {
     name:  "*"
     state: latest
     enablerepo: "rhel*-baseos,rhel*-appstream"
+    nobest: yes
     exclude:
       - ovirt-release-master
       - ovirt-release-master-tested

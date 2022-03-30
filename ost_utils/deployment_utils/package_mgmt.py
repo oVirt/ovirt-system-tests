@@ -60,28 +60,44 @@ def expand_github_repo(repo_url, working_dir, ost_images_distro):
     if not match:
         raise RuntimeError(f"Not a valid GitHub link {repo_url}")
     _, _, repo, _, pr, commit, workflow_run, _ = match.groups()
-    if not workflow_run:
+
+    LOGGER.debug("GitHub link: repo=%s pr=%s commit=%s workflow_run=%s", repo, pr, commit, workflow_run)
+
+    if workflow_run:
+        workflow_runs = [workflow_run]
+    else:
         if not commit:
             commit = _github_resolve_pr_to_commit(repo, pr)
-        workflow_run = _github_resolve_commit_to_workflow_run(repo, commit)
+            LOGGER.debug("Commit %s in %s repo found for pr %s", commit, repo, pr)
+        workflow_runs = _github_resolve_commit_to_workflow_runs(repo, commit)
+        LOGGER.debug("Number of workflow runs found for commit %s: %d", commit, len(workflow_runs))
 
-    artifacts: list[_GitHubArtifact] = _github_list_artifacts(repo, workflow_run)
-    for artifact in artifacts:
-        if OST_TO_GITHUB_DISTRO_NAME[ost_images_distro] in artifact.name:
-            target_path = os.path.join(working_dir, 'github_artifacts', f'{commit}-{artifact.name}')
-            os.makedirs(target_path, exist_ok=True)
-            # Download the artifact
-            target_file = _github_download_artifact(artifact, target_path)
-            # Unpack the artifact
-            _github_unpack_artifact(target_file)
-            if _github_has_rpm(target_path):
-                # TODO check metada presence and change repo local path
-                # _github_generate_repomd(target_path)
-                # Add to repos list.
-                return target_path
-    if not artifacts:
-        raise RuntimeError(f"GH pr/commit/run {repo_url} had no artifacts with RPM files.")
-    raise RuntimeError(f"GH pr/commit/run {repo_url} didn't match any of the artifacts names to distro name.")
+    for run_id in workflow_runs:
+        artifacts: list[_GitHubArtifact] = _github_list_artifacts(repo, run_id)
+        LOGGER.debug("Workflow run %s: %d artifacts", run_id, len(artifacts))
+        for artifact in artifacts:
+            LOGGER.debug("Artifact: %s", artifact.name)
+            if "rpm" in artifact.name and OST_TO_GITHUB_DISTRO_NAME[ost_images_distro] in artifact.name:
+                target_path = os.path.join(working_dir, 'github_artifacts', f'{commit}-{artifact.name}')
+                os.makedirs(target_path, exist_ok=True)
+                # Download the artifact
+                LOGGER.debug("Downloading %s into %s", artifact.name, target_path)
+                target_file = _github_download_artifact(artifact, target_path)
+                # Unpack the artifact
+                LOGGER.debug("Unpacking the %s", target_file)
+                _github_unpack_artifact(target_file)
+                if _github_has_rpm(target_path):
+                    LOGGER.debug("RPMs were found in %s", artifact.name)
+                    # TODO check metada presence and change repo local path
+                    # _github_generate_repomd(target_path)
+                    # Add to repos list.
+                    return target_path
+                LOGGER.debug("No RPMs were found in %s", artifact.name)
+
+    raise RuntimeError(
+        f"GH pr/commit/run {repo_url} had no artifacts with RPM files or didn't match any of the "
+        "artifacts names to distro name."
+    )
 
 
 def _github_has_rpm(path: str) -> bool:
@@ -137,7 +153,7 @@ def _github_resolve_pr_to_commit(repo: str, pr: str) -> str:
     return commit["sha"]
 
 
-def _github_resolve_commit_to_workflow_run(repo, commit) -> str:
+def _github_resolve_commit_to_workflow_runs(repo, commit) -> list[str]:
     """
     This function uses the GitHub API to look up the last run for a commit.
     This run ID can then be used to obtain the artifacts.
@@ -151,17 +167,14 @@ def _github_resolve_commit_to_workflow_run(repo, commit) -> str:
         f"https://api.github.com/repos/oVirt/{repo}/actions/runs",
         {"per_page": 100},
     )
+    commit_runs = []
     for run in runs_response.json()["workflow_runs"]:
         if run["head_sha"] == commit:
-            run_id = run["id"]
-            artifacts_response = _github_get(
-                f"https://api.github.com/repos/oVirt/{repo}/actions/runs/{run_id}/artifacts"
-            ).json()
-            for artifact in artifacts_response["artifacts"]:
-                if not artifact["expired"] and artifact["name"].startswith("rpm"):
-                    return run_id
+            commit_runs.append(run["id"])
 
-    raise RuntimeError(f"No workflow runs found for commit {commit}")
+    if not commit_runs:
+        raise RuntimeError(f"No workflow runs found for commit {commit} in the last 100 runs")
+    return commit_runs
 
 
 def _github_get(url: str, params: Optional[dict] = None) -> requests.Response:
@@ -187,12 +200,13 @@ def _github_list_artifacts(repo: str, workflow_run: str) -> list[_GitHubArtifact
     )
     artifacts: _GitHubArtifactResponse
     artifacts = _GitHubArtifactResponse(artifacts_response.json())
+    non_expired_artifacts: list[_GitHubArtifact] = []
     for artifact in artifacts.artifacts:
         if artifact.expired:
-            raise RuntimeError(
-                f"Artifact {artifact.name} for run {workflow_run} in repo" f" oVirt/{repo} has expired."
-            )
-    return artifacts.artifacts
+            LOGGER.debug(f"Artifact {artifact.name} for run {workflow_run} in repo oVirt/{repo} has expired.")
+            continue
+        non_expired_artifacts.append(artifact)
+    return non_expired_artifacts
 
 
 def _github_download_artifact(artifact: _GitHubArtifact, target_dir: str) -> str:

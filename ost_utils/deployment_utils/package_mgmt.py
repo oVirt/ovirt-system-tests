@@ -153,13 +153,7 @@ def _github_resolve_commit_to_workflow_run(repo, commit) -> str:
     )
     for run in runs_response.json()["workflow_runs"]:
         if run["head_sha"] == commit:
-            run_id = run["id"]
-            artifacts_response = _github_get(
-                f"https://api.github.com/repos/oVirt/{repo}/actions/runs/{run_id}/artifacts"
-            ).json()
-            for artifact in artifacts_response["artifacts"]:
-                if not artifact["expired"] and artifact["name"].startswith("rpm"):
-                    return run_id
+            return run["id"]
 
     raise RuntimeError(f"No workflow runs found for commit {commit}")
 

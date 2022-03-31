@@ -138,7 +138,7 @@ def he_engine_answer_file_storage_snippet(
         return (
             'OVEHOSTED_STORAGE/domainType=str:nfs3\n'
             'OVEHOSTED_STORAGE/storageDomainConnection=str:'
-            f'{storage_hostname}:/exports/nfs_he\n'
+            f'{storage_hostname}:/exports/nfs_he2\n'
         )
     elif ost_he_storage_domain_type == 'iscsi':
         return (

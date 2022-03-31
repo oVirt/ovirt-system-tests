@@ -56,7 +56,7 @@ setup_he_lun() {
 }
 
 setup_he() {
-    setup_device "${HE_DEV}" /exports/nfs_he /exports/nfs_he
+    setup_device "${HE_DEV}" /exports/nfs_he2 /exports/nfs_he2
     setup_he_lun
 }
 

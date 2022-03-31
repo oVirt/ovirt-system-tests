@@ -57,13 +57,28 @@ def engine_webadmin_url(engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def engine_username():
+def keycloak_enabled(ost_images_distro):
+    # internally bundled Keycloak authentication is by default (via engine-setup) enabled only for upstream (el8stream)
+    # downstream (rhel) still depends on legacy AAA. Keycloak authentication can still be enabled manually
+    return ost_images_distro != 'rhel8'
+
+
+@pytest.fixture(scope="session")
+def engine_username(keycloak_enabled):
+    if keycloak_enabled:
+        return "admin@ovirt"
+
+    # use legacy AAA authentication for rhel
     return "admin"
 
 
 @pytest.fixture(scope="session")
-def engine_full_username():
-    return "admin@internal"
+def engine_full_username(keycloak_enabled):
+    if keycloak_enabled:
+        return "admin@ovirt@internalsso"
+
+    # use legacy AAA authentication for rhel
+    return 'admin@internal'
 
 
 @pytest.fixture(scope="session")

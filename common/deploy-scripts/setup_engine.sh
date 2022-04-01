@@ -48,3 +48,7 @@ EOF
   systemctl daemon-reload
   systemctl restart fapolicyd
 fi
+
+# Install imageio for Python 3.8 from pip until we have proper RPM package
+pip3.8 install ovirt-imageio
+

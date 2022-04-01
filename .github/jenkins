@@ -96,6 +96,7 @@ OST_REFSPEC=$OST_REFSPEC
 CUSTOM_REPOS=$CUSTOM_REPOS
 CUSTOM_OST_IMAGES_REPO=$CUSTOM_OST_IMAGES_REPO
 EOF
+    [[ "$SUITE" = "tr-suite-master" ]] && echo "DONT_CHECK_IF_REPOSITORIES_WERE_USED=true" >> vars
     cat vars
 else # after actual OST, with injected vars
     echo processing results

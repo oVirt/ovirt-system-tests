@@ -33,18 +33,3 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 
 systemctl start snmptrapd
 systemctl enable snmptrapd
-
-# Fapolicyd with debug output
-if [ "$(systemctl is-active fapolicyd)" = "active" ]; then
-  mkdir -p /etc/systemd/system/fapolicyd.service.d
-  cat > /etc/systemd/system/fapolicyd.service.d/10-debug-deny.conf << EOF
-[Service]
-Type=simple
-Restart=no
-ExecStart=
-ExecStart=/usr/sbin/fapolicyd --debug-deny
-EOF
-  restorecon -vR /etc/systemd/system/fapolicyd.service.d
-  systemctl daemon-reload
-  systemctl restart fapolicyd
-fi

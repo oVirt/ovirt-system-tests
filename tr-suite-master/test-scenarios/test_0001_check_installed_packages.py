@@ -12,6 +12,7 @@ from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import suite_dir
 
 def test_check_installed_packages(ansible_engine, suite_dir):
+    pytest.skip('Skip terraform')
     working_dir = '/usr/local/bin'
     func = "func.sh"
     script = 'test-check-installed-packages.sh'

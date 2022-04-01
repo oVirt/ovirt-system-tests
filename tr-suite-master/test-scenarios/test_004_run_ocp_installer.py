@@ -17,6 +17,7 @@ from ost_utils import shell
 def test_run_ocp_installer(ansible_engine, engine_api, engine_fqdn, engine_api_url,
                            engine_full_username, engine_password, suite_dir):
 
+    pytest.skip('Skip terraform')
     working_dir = '/usr/local/bin'
     openshift_dir = '/usr/bin'
     dc_name = 'test-dc'

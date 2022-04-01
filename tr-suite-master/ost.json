@@ -34,7 +34,8 @@
     "memory": "3584",
     "deploy-scripts": [
       "common/deploy-scripts/setup_storage.sh",
-      "common/deploy-scripts/setup_engine.sh"
+      "common/deploy-scripts/setup_engine.sh",
+      "common/deploy-scripts/setup_tr_suite.sh"
     ],
     "nics": {
       "engine": { "template": "common/libvirt-templates/nic_template" },

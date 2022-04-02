@@ -265,9 +265,9 @@ def after_test(request, save_screenshot, save_page_source, save_logs_from_browse
 
 
 @pytest.fixture(scope="session")
-def user_login(ovirt_driver):
+def user_login(ovirt_driver, keycloak_enabled):
     def login(username, password):
-        login_screen = LoginScreen(ovirt_driver)
+        login_screen = LoginScreen(ovirt_driver, keycloak_enabled)
         login_screen.wait_for_displayed()
         login_screen.set_user_name(username)
         login_screen.set_user_password(password)
@@ -301,6 +301,7 @@ def test_login(
     engine_username,
     engine_password,
     engine_cert,
+    keycloak_enabled,
 ):
 
     save_screenshot('welcome-screen')
@@ -309,7 +310,7 @@ def test_login(
     welcome_screen.wait_for_displayed()
     welcome_screen.open_administration_portal()
 
-    login_screen = LoginScreen(ovirt_driver)
+    login_screen = LoginScreen(ovirt_driver, keycloak_enabled)
     login_screen.wait_for_displayed()
     login_screen.set_user_name(engine_username)
     login_screen.set_user_password(engine_password)

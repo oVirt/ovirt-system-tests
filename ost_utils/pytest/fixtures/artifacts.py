@@ -49,6 +49,7 @@ def artifact_list():
         '/tmp/dnf_yum.conf',
         '/var/cache/ovirt-engine',
         '/var/lib/ovirt-engine/setup/answers',
+        '/var/lib/ovirt-engine/ansible-runner',
         '/var/lib/pgsql/initdb_postgresql.log',
         '/var/lib/pgsql/data/log',
         '/var/log',

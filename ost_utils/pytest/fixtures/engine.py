@@ -10,6 +10,7 @@ import tempfile
 import time
 
 import ovirtsdk4 as sdk4
+import ovirtsdk4.types as types
 import pytest
 
 from ost_utils import assert_utils
@@ -79,6 +80,15 @@ def engine_full_username(keycloak_enabled):
 
     # use legacy AAA authentication for rhel
     return 'admin@internal'
+
+
+@pytest.fixture(scope="session")
+def engine_user_domain(keycloak_enabled):
+    if keycloak_enabled:
+        return types.Domain(name='internalkeycloak-authz')
+
+    # use legacy AAA authentication for rhel
+    return types.Domain(name='internal-authz')
 
 
 @pytest.fixture(scope="session")

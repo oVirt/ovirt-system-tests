@@ -82,7 +82,7 @@ def get_user_service_for_user(users_service):
         for u in users:
             if u.principal == principal:
                 user_id = u.id
-        if not user_id:
+        if user_id is None:
             raise RuntimeError(f"Could not find user: {principal} [principal]")
         return users_service.user_service(user_id)
 

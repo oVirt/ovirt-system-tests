@@ -163,7 +163,6 @@ _TEST_LIST = [
     "test_add_vm_network",
     "test_verify_uploaded_image_and_template",
     "test_add_nonadmin_user",
-    "test_add_nonadmin_keycloak_user",
     "test_add_vm_permissions_to_user",
 ]
 
@@ -1115,7 +1114,7 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_suite, keycloak_enabled):
+def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_suite):
     ansible_engine.file(path='/var/log/ost-engine-backup', state='directory', mode='0755')
 
     engine = engine_api.system_service()
@@ -1602,30 +1601,10 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
 
 
 @order_by(_TEST_LIST)
-def test_add_nonadmin_user(engine_api, ansible_engine, nonadmin_username, nonadmin_password, keycloak_enabled):
-    if keycloak_enabled:
-        pytest.skip(' [2022-04-04] Internal Keycloak authentication enabled. Skipping AAA tests')
-
-    ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
-    ansible_engine.shell(
-        f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
-            --password-valid-to='2125-08-15 10:30:00Z' \
-            --password=pass:{nonadmin_password}"
-    )
-    domain = types.Domain(name='internal-authz')
-    users_service = engine_api.system_service().users_service()
-    with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
-        users_service.add(
-            types.User(user_name=f'{nonadmin_username}@internal-authz', domain=domain),
-        )
-
-
-@order_by(_TEST_LIST)
-def test_add_nonadmin_keycloak_user(
+def test_add_nonadmin_user(
     engine_api,
     engine_api_url,
     ansible_engine,
-    ost_images_distro,
     keycloak_auth_url,
     keycloak_admin_username,
     keycloak_admin_password,
@@ -1634,55 +1613,58 @@ def test_add_nonadmin_keycloak_user(
     keycloak_profile,
     nonadmin_username,
     nonadmin_password,
+    engine_user_domain,
     keycloak_enabled,
 ):
-    if not keycloak_enabled:
-        pytest.skip(' [2022-04-04] Internal Keycloak authentication disabled. Skipping Keycloak tests')
-
-    keycloak.setup_truststore(ansible_engine)
-
-    keycloak.authenticate(
-        ansible_engine=ansible_engine,
-        auth_server_url=keycloak_auth_url,
-        realm=keycloak_master_realm,
-        user=keycloak_admin_username,
-        passwd=nonadmin_password,
-    )
-
-    keycloak.create_user(
-        ansible_engine=ansible_engine,
-        realm=keycloak_ovirt_realm,
-        username=nonadmin_username,
-        password=nonadmin_password,
-    )
-
-    # for externally handled users (ie. via Keycloak) it is required to attempt to login or access rest api
-    # so that internal representation of the user be created in engine db
-    keycloak.activate_user(
-        engine_api_url=engine_api_url, username=nonadmin_username, password=nonadmin_password, profile=keycloak_profile
-    )
-
-    # TODO extract that user id resolving to utils
-    # duplication in 'test_add_nonadmin_keycloak_user'
-    user_id = None
-    users = engine_api.system_service().users_service().list()
-    for u in users:
-        if u.principal == nonadmin_username:
-            user_id = u.id
-    assert user_id is not None
-
-
-@order_by(_TEST_LIST)
-def test_add_vm_permissions_to_user(engine_api, ansible_engine, nonadmin_username, keycloak_enabled):
     if keycloak_enabled:
-        users = engine_api.system_service().users_service().list()
-        user_id = None
-        for u in users:
-            if u.principal == nonadmin_username:
-                user_id = u.id
+        keycloak.setup_truststore(ansible_engine)
+
+        keycloak.authenticate(
+            ansible_engine=ansible_engine,
+            auth_server_url=keycloak_auth_url,
+            realm=keycloak_master_realm,
+            user=keycloak_admin_username,
+            password=nonadmin_password,
+        )
+
+        keycloak.create_user(
+            ansible_engine=ansible_engine,
+            realm=keycloak_ovirt_realm,
+            username=nonadmin_username,
+            password=nonadmin_password,
+        )
+
+        # for externally handled users (ie. via Keycloak) it is required to attempt to login or access rest api
+        # so that internal representation of the user be created in engine db
+        keycloak.activate_user(
+            engine_api_url=engine_api_url,
+            username=nonadmin_username,
+            password=nonadmin_password,
+            profile=keycloak_profile,
+        )
+
+        assert keycloak.resolve_user_id(engine_api=engine_api, username=nonadmin_username) is not None
+    else:
+        ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
+        ansible_engine.shell(
+            f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
+                --password-valid-to='2125-08-15 10:30:00Z' \
+                --password=pass:{nonadmin_password}"
+        )
+        users_service = engine_api.system_service().users_service()
+        with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
+            users_service.add(
+                types.User(user_name=f'{nonadmin_username}@internal-authz', domain=engine_user_domain),
+            )
+
+
+@pytest.fixture(scope="module")
+def nonadmin_user(keycloak_enabled, engine_api, ansible_engine, nonadmin_username, engine_user_domain):
+    if keycloak_enabled:
+        user_id = keycloak.resolve_user_id(engine_api, nonadmin_username)
         nonadmin_user = types.User(
             id=user_id,
-            domain=types.Domain(name='internalkeycloak-authz'),
+            domain=engine_user_domain,
             principal=nonadmin_username,
         )
     else:
@@ -1691,10 +1673,13 @@ def test_add_vm_permissions_to_user(engine_api, ansible_engine, nonadmin_usernam
         ][0]
         nonadmin_user = types.User(
             id=user_id,
-            domain=types.Domain(name='internal-authz'),
-            principal=nonadmin_username,
+            domain=engine_user_domain,
         )
+    return nonadmin_user
 
+
+@order_by(_TEST_LIST)
+def test_add_vm_permissions_to_user(engine_api, nonadmin_user):
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=vm0')[0]
     permissions_service = vms_service.vm_service(vm.id).permissions_service()

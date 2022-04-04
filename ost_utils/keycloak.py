@@ -15,13 +15,13 @@ def setup_truststore(ansible_engine):
     ansible_engine.shell(f'{KCADM} config truststore --trustpass mypass /etc/pki/ovirt-engine/.truststore')
 
 
-def authenticate(ansible_engine, auth_server_url, realm, user, passwd):
+def authenticate(ansible_engine, auth_server_url, realm, user, password):
     ansible_engine.shell(
         f'{KCADM} config credentials '
         f'--server {auth_server_url} '
         f'--realm {realm} '
         f'--user {user} '
-        f'--password {passwd}'
+        f'--password {password}'
     )
 
 
@@ -41,3 +41,11 @@ def activate_user(engine_api_url, username, password, profile):
         debug=True,
     )
     api.test(raise_exception=False)
+
+
+def resolve_user_id(engine_api, username):
+    users = engine_api.system_service().users_service().list()
+    for u in users:
+        if u.principal == username:
+            return u.id
+    return None

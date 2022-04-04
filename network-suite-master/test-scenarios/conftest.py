@@ -30,9 +30,6 @@ from fixtures.engine import ovirt_engine_service_up
 from fixtures.engine import api
 from fixtures.engine import test_invocation_logger
 
-from fixtures.fqdn import engine_storage_ipv6
-from fixtures.fqdn import host0_eth1_ipv6
-from fixtures.fqdn import host0_eth2_ipv6
 from fixtures.fqdn import ovirt_provider_ovn_with_ip_fqdn
 
 from fixtures.storage import default_storage_domain
@@ -87,6 +84,7 @@ from ost_utils.pytest.fixtures.engine import engine_fqdn
 from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.engine import engine_ip_url
 from ost_utils.pytest.fixtures.engine import engine_ips_for_network
+from ost_utils.pytest.fixtures.engine import engine_storage_ips
 from ost_utils.pytest.fixtures.engine import engine_username
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
@@ -95,6 +93,7 @@ from ost_utils.pytest.fixtures.env import suite
 from ost_utils.pytest.fixtures.env import working_dir
 from ost_utils.pytest.fixtures.network import management_network_name
 from ost_utils.pytest.fixtures.network import management_subnet
+from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.pytest.fixtures.network import storage_subnet
 from ost_utils.pytest.fixtures.sdk import get_user_service_for_user
 from ost_utils.pytest.fixtures.sdk import system_service

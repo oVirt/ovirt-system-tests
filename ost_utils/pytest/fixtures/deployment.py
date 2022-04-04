@@ -114,6 +114,9 @@ def deploy(
     LOGGER.info("Waiting for SSH on the VMs")
     ansible_vms_to_deploy.wait_for_connection(timeout=120)
 
+    # FIXME: remove once implemented in ost-images
+    ansible_vms_to_deploy.shell("rm -f /etc/profile.d/nodectl-motd.sh /etc/profile.d/nodectl-run-banner.sh")
+
     # set static hostname to match the one assigned by DNS
     ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
 

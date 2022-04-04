@@ -35,7 +35,7 @@ def _run_playbook(ansible_engine, playbook_yaml, ansible_inventory=None, ssh_key
         dest=os.path.join(tmp_path, 'project/playbook.yml'),
     )
 
-    ansible_engine.shell(f'ansible-runner -i {run_uuid} -vvv run {tmp_path} -p playbook.yml')
+    ansible_engine.shell(f'ansible-runner run -i {run_uuid} -vvv -p playbook.yml {tmp_path}')
 
     return (tmp_path, run_uuid)
 

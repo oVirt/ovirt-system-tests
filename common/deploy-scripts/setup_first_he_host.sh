@@ -67,6 +67,15 @@ dnf_update() {
   copy:
     src: /etc/yum.repos.d
     dest: /etc
+- name: Check fapolicyd status, remove once BZ#2070036 is fixed
+  systemd:
+    name: fapolicyd
+  register: fapolicyd_status
+- name: Stop fapolicyd, remove once BZ#2070036 is fixed
+  systemd:
+    name: fapolicyd
+    state: stopped
+  when: fapolicyd_status.status.SubState == 'running'
 - name: DNF update the system. TODO remove baseos&appstream once RHV appliance is regularly up to date.
   dnf:
     name:  "*"
@@ -75,6 +84,11 @@ dnf_update() {
     exclude:
       - ovirt-release-master
       - ovirt-release-master-tested
+- name: Start fapolicyd, remove once BZ#2070036 is fixed
+  systemd:
+    name: fapolicyd
+    state: started
+  when: fapolicyd_status.status.SubState == 'running'
 EOF
 
 }

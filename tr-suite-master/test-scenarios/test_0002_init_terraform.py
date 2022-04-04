@@ -12,6 +12,7 @@ from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import suite_dir
 
 def test_init_terraform(ansible_engine, suite_dir):
+    pytest.skip('Skip terraform')
     plugin_dir = '/usr/local/bin'
     script = 'test-init-terraform.sh'
 

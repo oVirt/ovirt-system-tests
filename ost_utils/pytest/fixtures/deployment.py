@@ -137,8 +137,11 @@ def deploy(
     if custom_repos is not None:
         repo_urls = package_mgmt.expand_repos(custom_repos, working_dir, ost_images_distro)
         package_mgmt.add_custom_repos(ansible_vms_to_deploy, repo_urls)
+        # TODO: Remove once BZ#2070036 is fixed
         ansible_vms_to_deploy.shell(
-            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
+            '[ "$(systemctl is-enabled fapolicyd)" = "enabled" ] && systemctl stop fapolicyd || true;'
+            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update;'
+            '[ "$(systemctl is-enabled fapolicyd)" = "enabled" ] && systemctl start fapolicyd || true;'
         )
         # check if packages from custom repos were used
         if not request.config.getoption('--skip-custom-repos-check'):

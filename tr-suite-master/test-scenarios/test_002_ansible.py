@@ -32,7 +32,7 @@ def test_ansible_run(
                 "description": "APIv4 Cluster",
                 "scheduling_policy": "evenly_distributed",
                 "profile": "my_cpu_profile",
-                "cpu_arch": "ppc64",
+                "cpu_arch": "x86_64",
                 "cpu_type": "",
                 "ksm": "yes",
                 "ksm_numa": "yes",
@@ -79,24 +79,6 @@ def test_ansible_run(
                 },
             },
         },
-        logical_networks=[
-            {
-                "name": "Migration_Net",
-                "description": "Non VM Network on VLAN 200, MTU 9000",
-                "mtu": 9000,
-                "vlan_tag": 200,
-                "clusters": [
-                    {
-                        "name": "test-cluster",
-                        "assigned": True,
-                        "migration": True,
-                        "required": False,
-                        "display": False,
-                        "gluster": False,
-                    }
-                ],
-            }
-        ],
         mac_pools=[
             {
                 "mac_pool_name": "mymacpool",
@@ -105,30 +87,4 @@ def test_ansible_run(
                 ],
             }
         ],
-    )
-
-    collection = CollectionMapper(ansible_engine)
-
-    ovirt_auth = collection.ovirt_auth(
-        hostname=engine_ip_url,
-        username=engine_full_username,
-        password=engine_password,
-        insecure="true",
-    )['ansible_facts']['ovirt_auth']
-
-    collection.ovirt_host_info(auth=ovirt_auth, pattern="name=*")
-
-    collection.ovirt_vm(
-        auth=ovirt_auth,
-        name="rhel",
-        cluster="test-cluster",
-        memory="1GiB",
-        cloud_init={"user_name": 'root', 'root_password': 'super_password'},
-        cloud_init_persist="true",
-    )
-
-    # Revoke the SSO token
-    collection.ovirt_auth(
-        state="absent",
-        ovirt_auth=ovirt_auth,
     )

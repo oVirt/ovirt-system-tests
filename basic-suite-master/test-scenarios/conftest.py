@@ -47,6 +47,8 @@ from ost_utils.pytest.fixtures.deployment import set_sar_interval
 
 from ost_utils.pytest.fixtures.engine import *
 
+from ost_utils.pytest.fixtures.keycloak import *
+
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file

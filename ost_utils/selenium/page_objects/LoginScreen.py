@@ -11,8 +11,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LoginScreen(Displayable):
-    def __init__(self, ovirt_driver):
+    def __init__(self, ovirt_driver, keycloak_enabled):
         super(LoginScreen, self).__init__(ovirt_driver)
+        self._keycloak_enabled = keycloak_enabled
 
     def is_displayed(self):
         is_user_name_displayed = self.ovirt_driver.driver.find_element(
@@ -42,4 +43,7 @@ class LoginScreen(Displayable):
 
     def login(self):
         LOGGER.debug('Log in')
-        self.ovirt_driver.xpath_click('//form[@id="loginForm"]//button')
+        if self._keycloak_enabled:
+            self.ovirt_driver.xpath_click('//input[@id="kc-login"]')
+        else:
+            self.ovirt_driver.xpath_click('//form[@id="loginForm"]//button')

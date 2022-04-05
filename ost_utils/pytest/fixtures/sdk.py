@@ -76,11 +76,15 @@ def users_service(system_service):
 
 @pytest.fixture(scope="session")
 def get_user_service_for_user(users_service):
-    def service_for(username):
-        users = users_service.list(search=f'name={username}')
-        if len(users) != 1:
-            raise RuntimeError("Could not find user: {}".format(username))
-        return users_service.user_service(users[0].id)
+    def service_for(principal):
+        users = users_service.list()
+        user_id = None
+        for u in users:
+            if u.principal == principal:
+                user_id = u.id
+        if user_id is None:
+            raise RuntimeError(f"Could not find user: {principal} [principal]")
+        return users_service.user_service(user_id)
 
     return service_for
 

@@ -41,6 +41,7 @@ from ost_utils import shell
 from ost_utils import test_utils
 from ost_utils import utils
 from ost_utils import versioning
+from ost_utils import keycloak
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1600,35 +1601,92 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
 
 
 @order_by(_TEST_LIST)
-def test_add_nonadmin_user(engine_api, ansible_engine, nonadmin_username, nonadmin_password):
-    ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
-    ansible_engine.shell(
-        f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
-            --password-valid-to='2125-08-15 10:30:00Z' \
-            --password=pass:{nonadmin_password}"
-    )
-    domain = types.Domain(name='internal-authz')
-    users_service = engine_api.system_service().users_service()
-    with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
-        users_service.add(
-            types.User(user_name=f'{nonadmin_username}@internal-authz', domain=domain),
+def test_add_nonadmin_user(
+    engine_api,
+    engine_api_url,
+    ansible_engine,
+    keycloak_auth_url,
+    keycloak_admin_username,
+    keycloak_admin_password,
+    keycloak_master_realm,
+    keycloak_ovirt_realm,
+    keycloak_profile,
+    nonadmin_username,
+    nonadmin_password,
+    engine_user_domain,
+    keycloak_enabled,
+):
+    if keycloak_enabled:
+        keycloak.setup_truststore(ansible_engine)
+
+        keycloak.authenticate(
+            ansible_engine=ansible_engine,
+            auth_server_url=keycloak_auth_url,
+            realm=keycloak_master_realm,
+            user=keycloak_admin_username,
+            password=nonadmin_password,
         )
+
+        keycloak.create_user(
+            ansible_engine=ansible_engine,
+            realm=keycloak_ovirt_realm,
+            username=nonadmin_username,
+            password=nonadmin_password,
+        )
+
+        # for externally handled users (ie. via Keycloak) it is required to attempt to login or access rest api
+        # so that internal representation of the user be created in engine db
+        keycloak.activate_user(
+            engine_api_url=engine_api_url,
+            username=nonadmin_username,
+            password=nonadmin_password,
+            profile=keycloak_profile,
+        )
+
+        assert keycloak.resolve_user_id(engine_api=engine_api, username=nonadmin_username) is not None
+    else:
+        ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
+        ansible_engine.shell(
+            f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
+                --password-valid-to='2125-08-15 10:30:00Z' \
+                --password=pass:{nonadmin_password}"
+        )
+        users_service = engine_api.system_service().users_service()
+        with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
+            users_service.add(
+                types.User(user_name=f'{nonadmin_username}@internal-authz', domain=engine_user_domain),
+            )
+
+
+@pytest.fixture(scope="module")
+def nonadmin_user(keycloak_enabled, engine_api, ansible_engine, nonadmin_username, engine_user_domain):
+    if keycloak_enabled:
+        user_id = keycloak.resolve_user_id(engine_api, nonadmin_username)
+        nonadmin_user = types.User(
+            id=user_id,
+            domain=engine_user_domain,
+            principal=nonadmin_username,
+        )
+    else:
+        user_id = ansible_engine.shell(f"ovirt-aaa-jdbc-tool user show {nonadmin_username} --attribute=id")[
+            'stdout_lines'
+        ][0]
+        nonadmin_user = types.User(
+            id=user_id,
+            domain=engine_user_domain,
+        )
+    return nonadmin_user
 
 
 @order_by(_TEST_LIST)
-def test_add_vm_permissions_to_user(engine_api, ansible_engine, nonadmin_username):
-    user_id = ansible_engine.shell(f"ovirt-aaa-jdbc-tool user show {nonadmin_username} --attribute=id")[
-        'stdout_lines'
-    ][0]
+def test_add_vm_permissions_to_user(engine_api, nonadmin_user):
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=vm0')[0]
     permissions_service = vms_service.vm_service(vm.id).permissions_service()
     with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
         permissions_service.add(
             types.Permission(
-                user=types.User(
-                    id=user_id,
-                ),
+                user=nonadmin_user,
                 role=types.Role(
                     name='UserRole',
                 ),

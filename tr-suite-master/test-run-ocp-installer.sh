@@ -46,6 +46,9 @@ os_installer() {
     fi
 }
 
+# Default to OST deployment path
+PREFIX=${OST_DEPLOYMENT}
+
 #get parameters
 while getopts ha:u:p:c:s:w:o:k:r:n:v:d: option; do
     case $option in

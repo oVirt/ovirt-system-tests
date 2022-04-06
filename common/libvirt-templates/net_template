@@ -2,7 +2,7 @@
   <metadata>
     <ost:ost xmlns:ost="OST:metadata">
       <ost-network-role comment="@NET_ROLE@"/>
-      <ost-working-dir comment="@PREFIX@"/>
+      <ost-working-dir comment="@OST_DEPLOYMENT@"/>
     </ost:ost>
   </metadata>
   <name>@NET_NAME@</name>

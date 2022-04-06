@@ -26,7 +26,7 @@ def suite_dir(root_dir, suite):
 
 @pytest.fixture(scope='session')
 def working_dir():
-    return os.environ.get('PREFIX')
+    return os.environ.get('OST_DEPLOYMENT')
 
 
 @pytest.fixture(scope='session')

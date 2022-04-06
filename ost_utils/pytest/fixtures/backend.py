@@ -14,7 +14,7 @@ from ost_utils.backend import virsh
 
 @pytest.fixture(scope="session")
 def backend():
-    return virsh.VirshBackend(os.environ["PREFIX"])
+    return virsh.VirshBackend(os.environ["OST_DEPLOYMENT"])
 
 
 @pytest.fixture(scope="session")

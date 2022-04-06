@@ -1,16 +1,16 @@
 #!bin/bash
 
 _deployment_exists() {
-    [[ -d "$PREFIX" ]] || { echo "no deployment"; return 1; }
+    [[ -d "$OST_DEPLOYMENT" ]] || { echo "no deployment"; return 1; }
     return 0
 }
 
 _get_uuid() {
     for i in $(virsh net-list --name | grep ^ost); do
-        [[ "$PREFIX" = "$(virsh net-dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:3:8}; return 0; }
+        [[ "$OST_DEPLOYMENT" = "$(virsh net-dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:3:8}; return 0; }
     done
     for i in $(virsh list --name | grep "\-ost-"); do
-        [[ "$PREFIX" = "$(virsh dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:0:8}; return 0; }
+        [[ "$OST_DEPLOYMENT" = "$(virsh dumpxml $i | grep 'ost-working-dir comment' | cut -d \" -f 2)" ]] && { uuid=${i:0:8}; return 0; }
     done
     return 1
 }
@@ -33,7 +33,7 @@ ost_status() {
         [[ "$1" = "--dump" ]] && virsh dumpxml $vm_full >> ${OST_REPO_ROOT}/exported-artifacts/libvirt-vms
         vm_nets=$(virsh domiflist $vm_full | grep network | tr -s " " | cut -d " " -f 4)
         echo "   state: $(virsh domstate $vm_full 2>&1)"
-        echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh_p.*/\1/p; q }" $PREFIX/hosts 2>/dev/null || echo unknown)"
+        echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh_p.*/\1/p; q }" $OST_DEPLOYMENT/hosts 2>/dev/null || echo unknown)"
         echo -n "   NICs: "
         net_comma=""
         local idx=0
@@ -44,9 +44,9 @@ ost_status() {
         done
         echo -ne "\n\n"
     done
-    if ! grep -qi 'engine' $PREFIX/hosts && [ -r $PREFIX/ansible_inventory/*engine* ]; then
+    if ! grep -qi 'engine' $OST_DEPLOYMENT/hosts && [ -r $OST_DEPLOYMENT/ansible_inventory/*engine* ]; then
 	echo "Hosted Engine:"
-	cat $PREFIX/ansible_inventory/*engine* | sed -n 's/^\([^ ]*\) ansible_host=\([^ ]*\).*/  \1\n   IP: \2/p'
+	cat $OST_DEPLOYMENT/ansible_inventory/*engine* | sed -n 's/^\([^ ]*\) ansible_host=\([^ ]*\).*/  \1\n   IP: \2/p'
     fi
 }
 
@@ -59,9 +59,9 @@ ost_destroy() {
             virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
         ) 9>/tmp/ost.lock
     fi
-    [[ -s "$PREFIX/sshd_pid" ]] && { echo "killing IPv6 sshd proxy"; kill $(cat "$PREFIX/sshd_pid"); }
+    [[ -s "$OST_DEPLOYMENT/sshd_pid" ]] && { echo "killing IPv6 sshd proxy"; kill $(cat "$OST_DEPLOYMENT/sshd_pid"); }
     [[ -d "$OST_REPO_ROOT/custom-ost-images" ]] && { echo "remove custom ost images"; rm -rf "$OST_REPO_ROOT/custom-ost-images" 2>/dev/null || sudo rm -rf "$OST_REPO_ROOT/custom-ost-images"; }
-    _deployment_exists && rm -rf "$PREFIX" && echo "removed $PREFIX"
+    _deployment_exists && rm -rf "$OST_DEPLOYMENT" && echo "removed $OST_DEPLOYMENT"
     unset OST_INITIALIZED $(env | grep ^OST_IMAGES_ | cut -d= -f1)
 }
 
@@ -113,7 +113,7 @@ ost_init() {
     _render() {
         sed "
             s|@UUID@|${UUID}|g;
-            s|@PREFIX@|${PREFIX}|g;
+            s|@OST_DEPLOYMENT@|${OST_DEPLOYMENT}|g;
             s|@VM_FULLNAME@|${VM_FULLNAME}|g;
             s|@DEPLOY_SCRIPTS@|${DEPLOY_SCRIPTS}|g;
             s|@MEMSIZE@|${MEMSIZE}|g;
@@ -159,16 +159,16 @@ ost_init() {
     [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
     [[ -d "$OST_REPO_ROOT/$SUITE" ]] || { echo "$OST_REPO_ROOT/$SUITE is not a suite directory"; return 1; }
 
-    echo "Suite: $SUITE, distro: $OST_IMAGES_DISTRO, deployment dir: $PREFIX, images:"
+    echo "Suite: $SUITE, distro: $OST_IMAGES_DISTRO, deployment dir: $OST_DEPLOYMENT, images:"
     . common/helpers/ost-images.sh
 
-    [[ -e "$PREFIX" ]] && { echo "deployment already exists"; ost_status; return 1; }
+    [[ -e "$OST_DEPLOYMENT" ]] && { echo "deployment already exists"; ost_status; return 1; }
     _get_uuid && { echo "no deployment dir but there is a running environment"; ost_status; return 1; }
 
-    mkdir "$PREFIX"
-    mkdir "$PREFIX/logs"
-    mkdir "$PREFIX/images"
-    chcon -t svirt_image_t "$PREFIX/images"
+    mkdir "$OST_DEPLOYMENT"
+    mkdir "$OST_DEPLOYMENT/logs"
+    mkdir "$OST_DEPLOYMENT/images"
+    chcon -t svirt_image_t "$OST_DEPLOYMENT/images"
 
     # generate 8 char UUID common to all resources
     # VMs with name <uuid>-ost-<suite>-<vmname>
@@ -236,7 +236,7 @@ ost_init() {
             echo -n " and disks "
             vm_rootdisk_var=$(jqr ".vms[\"${VM_NAME}\"].root_disk_var")
             [[ -r "${!vm_rootdisk_var}" ]] || { echo -e "\nroot disk ${!vm_rootdisk_var} doesn't exist"; return 1; }
-            OST_ROOTDISK="${PREFIX}/images/${VM_NAME}-root.qcow2"
+            OST_ROOTDISK="${OST_DEPLOYMENT}/images/${VM_NAME}-root.qcow2"
             qemu-img create -q -f qcow2 -b ${!vm_rootdisk_var} -F qcow2 $OST_ROOTDISK
             echo -n "root($(basename ${!vm_rootdisk_var})) "
 
@@ -247,7 +247,7 @@ ost_init() {
                 disk_template=$(jqr ".vms[\"${VM_NAME}\"].disks[\"${DISK_DEV}\"].template")
                 DISK_SIZE=$(jqr ".vms[\"${VM_NAME}\"].disks[\"${DISK_DEV}\"].size")
                 [[ -r "${!vm_rootdisk_var}" ]] || { echo -e "\nroot disk ${vm_rootdisk_var}(${!vm_rootdisk_var}) doesn't exist"; return 1; }
-                DISK_FILE="$PREFIX/images/${VM_NAME}-${DISK_DEV}.qcow2"
+                DISK_FILE="$OST_DEPLOYMENT/images/${VM_NAME}-${DISK_DEV}.qcow2"
                 qemu-img create -q -f qcow2 -o preallocation=metadata "${DISK_FILE}" "${DISK_SIZE}"
                 echo -n "${DISK_DEV}(${DISK_SIZE}) "
                 DISKS+=$(_render ${disk_template} | tr -d "\t\n")
@@ -262,7 +262,7 @@ ost_init() {
             CELL_0_VCPUS="0-$((${VCPU_NUM}/2 - 1))"
             CELL_1_VCPUS="$((${VCPU_NUM}/2))-$((${VCPU_NUM} - 1))"
 
-            SERIALLOG="$PREFIX/logs/$VM_NAME"
+            SERIALLOG="$OST_DEPLOYMENT/logs/$VM_NAME"
             echo
             _render ${vm_template} | virsh create /dev/stdin || { echo "VM creation failed:"; _render ${vm_template}; return 1; }
 
@@ -273,13 +273,13 @@ ost_init() {
         done
 
         # final ansible hosts file
-        echo -e $ansible_hosts > $PREFIX/hosts
+        echo -e $ansible_hosts > $OST_DEPLOYMENT/hosts
 
         # start IPv6 SOCKS proxy for DNF in IPv6-only networks
         [[ -n "$ipv6_only" ]] && {
             echo "Starting sshd on ${ssh_addr:=fd8f:1391:3a82:${net_map[$management_net]}::1}"
             sleep 5
-            /usr/sbin/sshd -f ${OST_REPO_ROOT}/common/helpers/sshd_config -o PidFile=${PREFIX}/sshd_pid -o AuthorizedKeysFile=${OST_IMAGES_SSH_KEY}.pub -o HostKey=${OST_IMAGES_SSH_KEY} -o AllowUsers=$(id -un) -o ListenAddress=${ssh_addr}
+            /usr/sbin/sshd -f ${OST_REPO_ROOT}/common/helpers/sshd_config -o PidFile=${OST_DEPLOYMENT}/sshd_pid -o AuthorizedKeysFile=${OST_IMAGES_SSH_KEY}.pub -o HostKey=${OST_IMAGES_SSH_KEY} -o AllowUsers=$(id -un) -o ListenAddress=${ssh_addr}
         }
 
     true ) 9>/tmp/ost.lock || return 1
@@ -290,7 +290,7 @@ ost_init() {
 ost_shell() {
     _deployment_exists || return 1
     if [[ -n "$1" ]]; then
-        local ssh=$(sed -n "/^ost/ s/ansible[a-z_]*=//g p" $PREFIX/hosts | while IFS=\  read -r host ip key; do
+        local ssh=$(sed -n "/^ost/ s/ansible[a-z_]*=//g p" $OST_DEPLOYMENT/hosts | while IFS=\  read -r host ip key; do
           [[ "$1" == "${host}" ]] && $(ping -c1 -w1 ${ip} &>/dev/null) && { shift; echo "ssh -t -i ${key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${ip} $@"; break; }
           done)
         [ -n "${ssh}" ] || { echo "$1 not running"; return 1; }
@@ -418,7 +418,7 @@ ost_run_tests() {
 
 [[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh [OST_REPO_ROOT dir]"; exit 1; }
 export OST_REPO_ROOT=$(realpath "$PWD")
-export PREFIX="${OST_REPO_ROOT}/deployment"
+export OST_DEPLOYMENT="${OST_DEPLOYMENT:-${OST_REPO_ROOT}/deployment}"
 
 export SUITE
 export OST_IMAGES_DISTRO

@@ -15,7 +15,6 @@ from testlib import suite
 
 
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'
-OPENSTACK_USERNAME = 'admin@internal'
 OVIRT_IMAGE_REPO_NAME = 'ovirt-image-repository'
 OVIRT_IMAGE_REPO_URL = 'http://glance.ovirt.org:9292/'
 OPENSTACK_CLIENT_CONFIG_FILE = 'clouds.yml'
@@ -42,13 +41,13 @@ def ovirt_image_repo(system):
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(engine_facts, engine_password, ovirt_provider_ovn_with_ip_fqdn):
+def openstack_client_config(engine_facts, engine_full_username, engine_password, ovirt_provider_ovn_with_ip_fqdn):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
                     'auth_url': OPENSTACK_AUTH_URL.format(engine_facts.default_ip(urlize=True)),
-                    'username': OPENSTACK_USERNAME,
+                    'username': engine_full_username,
                     'password': engine_password,
                 },
                 'verify': False,

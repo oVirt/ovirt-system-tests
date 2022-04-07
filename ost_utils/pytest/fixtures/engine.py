@@ -15,6 +15,7 @@ import pytest
 
 from ost_utils import assert_utils
 from ost_utils import network_utils
+from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.shell import shell
 from ost_utils.shell import ShellError
 from ost_utils.pytest.fixtures.env import suite

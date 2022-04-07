@@ -67,14 +67,9 @@ dnf_update() {
   copy:
     src: /etc/yum.repos.d
     dest: /etc
-- name: DNF update the system. TODO remove baseos&appstream once RHV appliance is regularly up to date.
-  dnf:
-    name:  "*"
-    state: latest
-    enablerepo: "rhel*-baseos,rhel*-appstream"
-    exclude:
-      - ovirt-release-master
-      - ovirt-release-master-tested
+- name: DNF update the system for RHV. TODO remove once RHV appliance is regularly up to date.
+  shell: rpm -e --nodeps ansible; dnf update -y --repo rhel*,rhv*
+  ignore_errors: yes
 EOF
 
 }

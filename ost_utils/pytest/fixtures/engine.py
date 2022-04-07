@@ -58,10 +58,13 @@ def engine_webadmin_url(engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def keycloak_enabled(ost_images_distro):
-    # internally bundled Keycloak authentication is by default (via engine-setup) enabled only for upstream (el8stream)
-    # downstream (rhel) still depends on legacy AAA. Keycloak authentication can still be enabled manually
-    return ost_images_distro != 'rhel8'
+def keycloak_enabled(ansible_engine):
+    return (
+        ansible_engine.shell(
+            'otopi-config-query query -k OVESETUP_KEYCLOAK_CORE/enable -f /etc/ovirt-engine-setup.conf'
+        )['stdout_lines'][0].lower()
+        == 'true'
+    )
 
 
 @pytest.fixture(scope="session")

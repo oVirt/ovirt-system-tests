@@ -23,11 +23,7 @@ from fixtures.host import host_1_up
 from fixtures.host import install_hosts_to_save_time
 
 from fixtures.engine import admin_user
-from fixtures.engine import engine_admin_username
-from fixtures.engine import engine_authentication_profile
-from fixtures.engine import engine_full_username
 from fixtures.engine import engine_password
-from fixtures.engine import keycloak_enabled
 from fixtures.engine import ovirt_engine_setup
 from fixtures.engine import ovirt_engine_service_up
 from fixtures.engine import api
@@ -87,10 +83,12 @@ from ost_utils.pytest.fixtures.engine import engine_admin_service
 from ost_utils.pytest.fixtures.engine import engine_answer_file_contents
 from ost_utils.pytest.fixtures.engine import engine_answer_file_path
 from ost_utils.pytest.fixtures.engine import engine_fqdn
+from ost_utils.pytest.fixtures.engine import engine_full_username
 from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.engine import engine_ip_url
 from ost_utils.pytest.fixtures.engine import engine_ips_for_network
 from ost_utils.pytest.fixtures.engine import engine_username
+from ost_utils.pytest.fixtures.engine import keycloak_enabled
 from ost_utils.pytest.fixtures.env import ost_images_distro
 from ost_utils.pytest.fixtures.env import root_dir
 from ost_utils.pytest.fixtures.env import ssh_key_file

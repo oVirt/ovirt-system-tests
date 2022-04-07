@@ -34,6 +34,9 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 systemctl start snmptrapd
 systemctl enable snmptrapd
 
-# FIXME - workaround for 
-systemctl stop fapolicyd || :
-systemctl disable fapolicyd || :
+# FIXME - workaround for fapolicyd
+if [[ -e /usr/lib/systemd/system/fapolicyd.service ]]; then
+  sed -i '9d; 11c\ExecStart=true' /usr/lib/systemd/system/fapolicyd.service;
+  systemctl daemon-reload
+  systemctl restart fapolicyd || :
+fi

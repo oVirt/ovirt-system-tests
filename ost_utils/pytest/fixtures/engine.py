@@ -59,12 +59,15 @@ def engine_webadmin_url(engine_fqdn):
 
 @pytest.fixture(scope="session")
 def keycloak_enabled(ansible_engine):
-    return (
-        ansible_engine.shell(
-            'otopi-config-query query -k OVESETUP_KEYCLOAK_CORE/enable -f /etc/ovirt-engine-setup.conf'
-        )['stdout_lines'][0].lower()
-        == 'true'
-    )
+    try:
+        return (
+            ansible_engine.shell(
+                'otopi-config-query query -k OVESETUP_KEYCLOAK_CORE/enable -f /etc/ovirt-engine-setup.conf'
+            )['stdout_lines'][0].lower()
+            == 'true'
+        )
+    except AnsibleExecutionError:
+        return False
 
 
 @pytest.fixture(scope="session")

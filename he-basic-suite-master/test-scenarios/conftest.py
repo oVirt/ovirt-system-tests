@@ -23,6 +23,7 @@ from ost_utils.pytest.fixtures.deployment import set_sar_interval
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import *
 from ost_utils.pytest.fixtures.he import *
+from ost_utils.pytest.fixtures.keycloak import *
 from ost_utils.pytest.fixtures.network import *
 from ost_utils.pytest.fixtures.node import *
 from ost_utils.pytest.fixtures.sdk import *

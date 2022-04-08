@@ -14,6 +14,9 @@ from ost_utils.ansible import facts
 from ost_utils.backend.virsh import network
 from ost_utils.storage_utils import lun
 
+PROFILE_PCI_DSS = 'pci-dss'
+PROFILE_STIG = 'stig'
+
 
 @pytest.fixture(scope="session")
 def he_mac_address():
@@ -153,6 +156,16 @@ def he_engine_answer_file_storage_snippet(
 
 
 @pytest.fixture(scope="session")
+def he_engine_answer_file_openscap_profile_snippet(ansible_host0):
+    profile = ansible_host0.shell('cat /root/ost_images_openscap_profile')['stdout']
+    if len(profile) > 0:
+        he_profile = PROFILE_PCI_DSS if PROFILE_PCI_DSS in profile else PROFILE_STIG
+        return 'OVEHOSTED_VM/applyOpenScapProfile=bool:True\n' f'OVEHOSTED_VM/OpenScapProfileName=str:{he_profile}\n'
+    else:
+        return 'OVEHOSTED_VM/applyOpenScapProfile=bool:False\n'
+
+
+@pytest.fixture(scope="session")
 def he_engine_answer_file_contents(
     he_host_name,
     he_domain_name,
@@ -166,6 +179,7 @@ def he_engine_answer_file_contents(
     engine_password,
     root_password,
     he_engine_answer_file_storage_snippet,
+    he_engine_answer_file_openscap_profile_snippet,
 ):
     return (
         '[environment:init]\n'
@@ -201,6 +215,7 @@ def he_engine_answer_file_contents(
         'OVEHOSTED_VDSM/cpu=str:model_SandyBridge\n'
         f'{he_engine_answer_file_storage_snippet}'
         'OVEHOSTED_CORE/ansibleUserExtraVars=str:he_offline_deployment=true\n'
+        f'{he_engine_answer_file_openscap_profile_snippet}'
     )
 
 

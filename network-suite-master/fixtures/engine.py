@@ -15,42 +15,14 @@ from ovirtlib import userlib
 
 
 @pytest.fixture(scope="session")
-def keycloak_enabled(ost_images_distro):
-    # internally bundled Keycloak authentication is by default (via engine-setup) enabled only for upstream (el8stream)
-    # downstream (rhel) still depends on legacy AAA. Keycloak authentication can still be enabled manually
-    return ost_images_distro != 'rhel8'
-
-
-@pytest.fixture(scope="session")
-def engine_admin_username(keycloak_enabled):
-    if keycloak_enabled:
-        return "admin@ovirt"
-
-    return "admin"
-
-
-@pytest.fixture(scope="session")
-def engine_authentication_profile(keycloak_enabled):
-    if keycloak_enabled:
-        return "internalsso"
-
-    return "internal"
-
-
-@pytest.fixture(scope="session")
-def engine_full_username(engine_admin_username, engine_authentication_profile):
-    return f"{engine_admin_username}@{engine_authentication_profile}"
-
-
-@pytest.fixture(scope="session")
 def engine_password():
     return "123"
 
 
 @pytest.fixture(scope="session")
-def admin_user(system, engine_admin_username):
+def admin_user(system, engine_username):
     admin = userlib.User(system)
-    admin.import_by_name(engine_admin_username)
+    admin.import_by_name(engine_username)
     return admin
 
 

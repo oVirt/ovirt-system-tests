@@ -62,7 +62,7 @@ ost_destroy() {
     [[ -s "$OST_DEPLOYMENT/sshd_pid" ]] && { echo "killing IPv6 sshd proxy"; kill $(cat "$OST_DEPLOYMENT/sshd_pid"); }
     [[ -d "$OST_REPO_ROOT/custom-ost-images" ]] && { echo "remove custom ost images"; rm -rf "$OST_REPO_ROOT/custom-ost-images" 2>/dev/null || sudo rm -rf "$OST_REPO_ROOT/custom-ost-images"; }
     _deployment_exists && rm -rf "$OST_DEPLOYMENT" && echo "removed $OST_DEPLOYMENT"
-    unset OST_INITIALIZED $(env | grep ^OST_IMAGES_ | cut -d= -f1)
+    unset OST_INITIALIZED OST_DEPLOYMENT $(env | grep ^OST_IMAGES_ | cut -d= -f1)
 }
 
 # ost_init [-4|-6] [suite] [distro]

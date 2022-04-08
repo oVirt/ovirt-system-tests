@@ -68,7 +68,7 @@ dnf_update() {
     src: /etc/yum.repos.d
     dest: /etc
 - name: DNF update the system for RHV. TODO remove once RHV appliance is regularly up to date.
-  shell: rpm -e --nodeps ansible; dnf update -y --repo rhel*,rhv*
+  shell: dnf update -y --disableplugin versionlock --repo rhel*,rhv*
   ignore_errors: yes
 EOF
 

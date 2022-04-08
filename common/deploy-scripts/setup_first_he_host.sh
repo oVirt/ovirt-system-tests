@@ -67,9 +67,8 @@ dnf_update() {
   copy:
     src: /etc/yum.repos.d
     dest: /etc
-- name: DNF update the system for RHV. TODO remove once RHV appliance is regularly up to date.
-  shell: dnf update -y --disableplugin versionlock --repo rhel*,rhv*
-  ignore_errors: yes
+- name: DNF update the system. TODO remove RHV's repos once RHV appliance is regularly up to date.
+  shell: dnf update -y --disableplugin versionlock --repo rhel*,rhv* || dnf update -y --disableplugin versionlock
 EOF
 
 }

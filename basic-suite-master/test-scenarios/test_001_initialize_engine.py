@@ -23,6 +23,7 @@ def test_initialize_engine(
             'sed -i '
             '-e "/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }" '
             '-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }" '  # noqa: E501
+            '-e "/.*logger category=\\"org.keycloak\\"/{ n; s/INFO/DEBUG/ }" '
             '-e "/.*<root-logger>/{ n; s/INFO/DEBUG/ }" '
             '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
         )

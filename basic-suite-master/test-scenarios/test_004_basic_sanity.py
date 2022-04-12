@@ -792,7 +792,6 @@ def test_import_vm_preallocated(engine_api, ost_cluster_name):
                 storage_domain=types.StorageDomain(id=sd.id),
                 host=types.Host(id=host.id),
             ),
-            async_=True,
             query={'correlation_id': correlation_id},
         )
 

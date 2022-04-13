@@ -37,9 +37,10 @@ from ost_utils.pytest.running_time import *
 
 @pytest.fixture(scope="session")
 def sd_iscsi_host_ip(
-    storage_management_ips,
+    storage_ips_for_network,
+    storage_network_name,
 ):  # pylint: disable=function-redefined
-    return storage_management_ips[0]
+    return storage_ips_for_network(storage_network_name)[0]
 
 
 @pytest.fixture(scope="session")

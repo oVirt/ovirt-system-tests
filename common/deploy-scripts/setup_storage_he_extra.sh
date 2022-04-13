@@ -34,13 +34,7 @@ setup_he_lun() {
 
     # The rest of this function is copied from setup_storage.sh. Keep in sync.
     # TODO: Unite or rewrite some day
-
-    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master).
-    if [[ $(hostname) == *"-storage"* ]]; then
-        NIC=eth0
-    else
-        NIC=eth1
-    fi
+    NIC=eth1
     IP=$(/sbin/ip -o addr show dev $NIC scope global | tac | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
 
     iscsiadm -m discovery -t sendtargets -p $IP

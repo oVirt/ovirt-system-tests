@@ -14,14 +14,16 @@ import pytest
 from ost_utils import engine_utils
 
 # AAA
+from ost_utils.pytest.fixtures.ansible import ansible_storage
+
 AAA_LDAP_USER = 'user1'
 AAA_LDAP_GROUP = 'mygroup'
 AAA_LDAP_AUTHZ_PROVIDER = 'lago.local-authz'
 
 
 @pytest.fixture(scope="session")
-def ansible_machine_389ds(ansible_engine):
-    return ansible_engine
+def ansible_machine_389ds(ansible_storage):
+    return ansible_storage
 
 
 @pytest.fixture(scope="session")

@@ -48,7 +48,7 @@ def test_clear_global_maintenance(ansible_host0):
 def _shutdown_he_vm(ansible_host):
     ansible_host.shell('hosted-engine --vm-shutdown')
     logging.info('Waiting for the engine VM to be down...')
-    assert assert_utils.true_within_short(lambda: he_utils.engine_vm_is_down(ansible_host))
+    assert assert_utils.true_within_long(lambda: he_utils.engine_vm_is_down(ansible_host))
 
 
 def _restart_services(ansible_host):

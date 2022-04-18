@@ -72,6 +72,7 @@ DISK1_NAME = '%s_disk1' % VM1_NAME
 DISK2_NAME = '%s_disk2' % VM2_NAME
 DISK3_NAME = '%s_disk3' % VM1_NAME
 FLOATING_DISK_NAME = 'floating_disk'
+CONVERT_DISK_NAME = 'convert_disk'
 BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
 
 SD_TEMPLATES_NAME = 'templates'
@@ -138,6 +139,7 @@ _TEST_LIST = [
     "test_offline_snapshot_restore",
     "test_import_template",
     "test_live_storage_migration",
+    "test_convert_disk",
     "test_verify_offline_snapshot_restore",
     "test_remove_vm2_lease",
     "test_hotunplug_disk",
@@ -732,6 +734,37 @@ def test_live_storage_migration(engine_api):
     vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
     assert assert_utils.equals_within_long(lambda: len(vm0_snapshots_service.list()), 1)
     assert assert_utils.equals_within_long(lambda: disk_service.get().status, types.DiskStatus.OK)
+
+
+@order_by(_TEST_LIST)
+def test_convert_disk(engine_api, disks_service):
+    correlation_id = 'convert_disk'
+
+    disks_service.add(
+        disk=types.Disk(
+            name=CONVERT_DISK_NAME,
+            format=types.DiskFormat.RAW,
+            provisioned_size=2 * MB,
+            sparse=False,
+            storage_domains=[types.StorageDomain(name=SD_ISCSI_NAME)],
+        ),
+        query={'correlation_id': correlation_id},
+    )
+
+    disk = disks_service.list(search='name={}'.format(CONVERT_DISK_NAME))[0]
+    disk_service = disks_service.disk_service(disk.id)
+    assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
+
+    disk_service.convert(
+        types.Disk(
+            format=types.DiskFormat.COW,
+            backup=types.DiskBackup.INCREMENTAL,
+        ),
+        query={'correlation_id': correlation_id},
+    )
+
+    assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
+    assert assert_utils.equals_within_short(lambda: disk_service.get().format, types.DiskFormat.COW)
 
 
 @order_by(_TEST_LIST)

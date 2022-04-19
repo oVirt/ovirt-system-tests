@@ -35,7 +35,6 @@
     "template": "common/libvirt-templates/vm_template",
     "memory": "3584",
     "deploy-scripts": [
-      "common/deploy-scripts/setup_storage.sh",
       "common/deploy-scripts/setup_engine.sh"
     ],
     "nics": {

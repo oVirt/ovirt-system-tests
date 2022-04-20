@@ -96,6 +96,7 @@ def deploy(
     ansible_vms_to_deploy,
     ansible_hosts,
     deploy_scripts,
+    deploy_hosted_engine,
     root_dir,
     working_dir,
     request,
@@ -141,7 +142,7 @@ def deploy(
             'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
         )
         # check if packages from custom repos were used
-        if not request.config.getoption('--skip-custom-repos-check'):
+        if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:
             package_mgmt.check_installed_packages(ansible_vms_to_deploy)
 
     # report package versions

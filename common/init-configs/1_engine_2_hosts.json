@@ -42,18 +42,7 @@
       "engine-storage": { "template": "common/libvirt-templates/nic_template" }
     },
     "root_disk_var": "OST_IMAGES_ENGINE_INSTALLED",
-    "disks": {
-      "sda": {
-        "comment": "Main NFS device",
-        "template": "common/libvirt-templates/disk_template",
-        "size": "101G"
-      },
-      "sdc": {
-        "comment": "Main iSCSI device",
-        "template": "common/libvirt-templates/disk_template",
-        "size": "105G"
-      }
-    }
+    "disks": {}
   },
   "storage": {
     "template": "common/libvirt-templates/vm_template",

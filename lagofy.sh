@@ -417,7 +417,7 @@ ost_run_tests() {
 
 [[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh [OST_REPO_ROOT dir]"; exit 1; }
 export OST_REPO_ROOT=$(realpath "$PWD")
-export OST_DEPLOYMENT="${OST_REPO_ROOT}/deployment}"
+export OST_DEPLOYMENT="${OST_REPO_ROOT}/deployment"
 
 export SUITE
 export OST_IMAGES_DISTRO

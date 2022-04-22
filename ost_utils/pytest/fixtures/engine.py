@@ -60,8 +60,9 @@ def engine_webadmin_url(engine_fqdn):
 
 @pytest.fixture(scope="session")
 def keycloak_enabled(ost_images_distro, suite):
-    # turn back on when engine starts using keycloak
-    return False
+    # internally bundled Keycloak authentication is by default (via engine-setup) enabled only for upstream (el8stream)
+    # downstream (rhel) still depends on legacy AAA. Keycloak authentication can still be enabled manually
+    return ost_images_distro != 'rhel8' and suite != 'he-basic-suite-master'
 
 
 @pytest.fixture(scope="session")

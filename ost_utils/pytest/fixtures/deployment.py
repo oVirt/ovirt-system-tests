@@ -94,6 +94,7 @@ def start_sshd_proxy(vms, host, root_dir, ssh_key_file):
 @pytest.fixture(scope="session", autouse=True)
 def deploy(
     ansible_vms_to_deploy,
+    ansible_engine,
     ansible_hosts,
     deploy_scripts,
     deploy_hosted_engine,
@@ -117,6 +118,8 @@ def deploy(
 
     # set static hostname to match the one assigned by DNS
     ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
+
+    ansible_engine.shell("dnf downgrade postgresql-jdbc")
 
     # start IPv6 proxy for dnf so we can update packages
     if not management_network_supports_ipv4:

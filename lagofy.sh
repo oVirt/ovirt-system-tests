@@ -406,7 +406,7 @@ EOT
 
 # ost_run_tests [pytest args ...]
 ost_run_tests() {
-    ost_linters || return 1
+#    ost_linters || return 1
 
     CUSTOM_REPOS_ARGS="$@"
     TC= _ost_run_tc "${SUITE}/test-scenarios" || { echo "\x1b[31mERROR: Failed running ${SUITE} :-(\x1b[0m"; return 1; }

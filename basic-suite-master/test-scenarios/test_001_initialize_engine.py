@@ -18,6 +18,8 @@ def test_initialize_engine(
     ssh_key_file,
     engine_answer_file_path,
 ):
+    assert 0 == 1
+
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
         ansible_engine.shell(
             'sed -i '

@@ -117,50 +117,50 @@ def deploy(
     ansible_vms_to_deploy.wait_for_connection(timeout=120)
 
     # set static hostname to match the one assigned by DNS
-    ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
-
-    ansible_engine.shell("dnf downgrade postgresql-jdbc")
-
-    # start IPv6 proxy for dnf so we can update packages
-    if not management_network_supports_ipv4:
-        LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
-        # can't use a fixture since VMs may not be up yet
-        ip = list(backend.ip_mapping().values())[0][management_network_name][0]
-        start_sshd_proxy(
-            ansible_vms_to_deploy,
-            ipaddress.ip_interface(f"{ip}/64").network[1],
-            root_dir,
-            ssh_key_file,
-        )
-
-    # disable all repos
-    package_mgmt.disable_all_repos(ansible_vms_to_deploy)
-
-    # add custom repos
-    custom_repos = request.config.getoption('--custom-repo')
-    if custom_repos is not None:
-        repo_urls = package_mgmt.expand_repos(custom_repos, working_dir, ost_images_distro)
-        package_mgmt.add_custom_repos(ansible_vms_to_deploy, repo_urls)
-        ansible_vms_to_deploy.shell(
-            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
-        )
-        # check if packages from custom repos were used
-        if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:
-            package_mgmt.check_installed_packages(ansible_vms_to_deploy)
-
-    # report package versions
-    package_mgmt.report_ovirt_packages_versions(ansible_vms_to_deploy)
-
-    # run deployment scripts
-    runs = [functools.partial(run_scripts, hostname, scripts) for hostname, scripts in deploy_scripts.items()]
-    utils.invoke_different_funcs_in_parallel(*runs)
-
-    # setup vdsm coverage on hosts if desired
-    if os.environ.get("coverage", "false") == "true":
-        coverage.vdsm.setup(ansible_hosts)
-
-    # setup sar stat utility
-    set_sar_interval()
-
-    # mark env as deployed
-    deployment_utils.mark_as_deployed(working_dir)
+#    ansible_vms_to_deploy.shell("hostnamectl set-hostname $(hostname)")
+#
+#    ansible_engine.shell("dnf downgrade postgresql-jdbc")
+#
+#    # start IPv6 proxy for dnf so we can update packages
+#    if not management_network_supports_ipv4:
+#        LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
+#        # can't use a fixture since VMs may not be up yet
+#        ip = list(backend.ip_mapping().values())[0][management_network_name][0]
+#        start_sshd_proxy(
+#            ansible_vms_to_deploy,
+#            ipaddress.ip_interface(f"{ip}/64").network[1],
+#            root_dir,
+#            ssh_key_file,
+#        )
+#
+#    # disable all repos
+#    package_mgmt.disable_all_repos(ansible_vms_to_deploy)
+#
+#    # add custom repos
+#    custom_repos = request.config.getoption('--custom-repo')
+#    if custom_repos is not None:
+#        repo_urls = package_mgmt.expand_repos(custom_repos, working_dir, ost_images_distro)
+#        package_mgmt.add_custom_repos(ansible_vms_to_deploy, repo_urls)
+#        ansible_vms_to_deploy.shell(
+#            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
+#        )
+#        # check if packages from custom repos were used
+#        if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:
+#            package_mgmt.check_installed_packages(ansible_vms_to_deploy)
+#
+#    # report package versions
+#    package_mgmt.report_ovirt_packages_versions(ansible_vms_to_deploy)
+#
+#    # run deployment scripts
+#    runs = [functools.partial(run_scripts, hostname, scripts) for hostname, scripts in deploy_scripts.items()]
+#    utils.invoke_different_funcs_in_parallel(*runs)
+#
+#    # setup vdsm coverage on hosts if desired
+#    if os.environ.get("coverage", "false") == "true":
+#        coverage.vdsm.setup(ansible_hosts)
+#
+#    # setup sar stat utility
+#    set_sar_interval()
+#
+#    # mark env as deployed
+#    deployment_utils.mark_as_deployed(working_dir)

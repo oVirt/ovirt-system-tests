@@ -47,8 +47,8 @@ from ost_utils.shell import shell
 LOGGER = logging.getLogger(__name__)
 
 
-CHROME_VERSION = '94.0.4606.81'
-FIREFOX_VERSION = '93.0'
+CHROME_VERSION = 'latest'
+FIREFOX_VERSION = 'latest'
 BROWSER_PLATFORM = 'LINUX'
 SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900

@@ -69,6 +69,8 @@ dnf_update() {
     dest: /etc
 - name: DNF update the system. TODO remove RHV's repos once RHV appliance is regularly up to date.
   shell: dnf update -y --disableplugin versionlock --repo rhel*,rhv* || dnf update -y --disableplugin versionlock
+- name: TODO workaround for BZ 2077794
+  shell: rpm -q rhvm || dnf downgrade -y --repo appstream postgresql-jdbc-42.2.3
 EOF
 
 }

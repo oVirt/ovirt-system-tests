@@ -340,7 +340,7 @@ ost_check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    (source /etc/os-release; [[ $VERSION == 9* ]]) && { ansible-galaxy collection install community.general openstack.cloud >/dev/null || {
+    rpm -q ansible-core &> /dev/null && { ansible-galaxy collection install community.general openstack.cloud >/dev/null || {
         echo "ansible collection failed"
         return 9
     }; }
@@ -417,7 +417,7 @@ ost_run_tests() {
 
 [[ "${BASH_SOURCE[0]}" -ef "$0" ]] && { echo "Hey, source me instead! Use: . lagofy.sh [OST_REPO_ROOT dir]"; exit 1; }
 export OST_REPO_ROOT=$(realpath "$PWD")
-export OST_DEPLOYMENT="${OST_REPO_ROOT}/deployment}"
+export OST_DEPLOYMENT="${OST_REPO_ROOT}/deployment"
 
 export SUITE
 export OST_IMAGES_DISTRO

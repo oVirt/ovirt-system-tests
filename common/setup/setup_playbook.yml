@@ -58,7 +58,7 @@
     - name: setup package names based on distro-related
       set_fact:
         python_pkg: "{{ 'python3' if el9 else 'python39' }}"
-        ansible_pkg: "{{ 'ansible-core' if el9 else 'ansible' }}"
+        ansible_pkg: ansible-core
 
     - name: install packages and cleanup epel if necessary
 
@@ -162,17 +162,11 @@
       become: true
 
     - name: allow virtlogd to write console logs
-      community.general.selinux_permissive:
-        name: virtlogd_t
-        permissive: true
+      shell: semanage permissive -a virtlogd_t
       become: true
 
     - name: allow port 2222 for IPv6 socks proxy
-      ansible.posix.firewalld:
-        zone: libvirt
-        port: 2222/tcp
-        permanent: yes
-        state: enabled
+      shell: firewall-cmd --state || systemctl start firewalld; firewall-cmd --permanent --add-port 2222/tcp --zone=libvirt
       become: true
 
   handlers:

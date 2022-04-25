@@ -340,7 +340,7 @@ ost_check_dependencies() {
         namei -vm `pwd`
         return 8
     }
-    (source /etc/os-release; [[ $VERSION == 9* ]]) && { ansible-galaxy collection install community.general openstack.cloud >/dev/null || {
+    rpm -q ansible-core &> /dev/null && { ansible-galaxy collection install community.general openstack.cloud >/dev/null || {
         echo "ansible collection failed"
         return 9
     }; }

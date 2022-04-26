@@ -31,13 +31,6 @@ from ost_utils.pytest.fixtures.storage import *
 from ost_utils.pytest.running_time import *
 
 
-@pytest.fixture(scope="session")
-def ansible_vms_to_deploy(
-    hosts_hostnames, storage_hostname, ansible_by_hostname
-):  # pylint: disable=function-redefined
-    return ansible_by_hostname([*hosts_hostnames, storage_hostname])
-
-
 # hosted-engine suites use a separate storage VM, but use the management
 # network for storage traffic. Override the relevant fixtures.
 

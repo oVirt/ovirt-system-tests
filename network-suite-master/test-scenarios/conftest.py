@@ -76,7 +76,6 @@ from ost_utils.pytest.fixtures.backend import hosts_hostnames
 from ost_utils.pytest.fixtures.backend import storage_hostname
 from ost_utils.pytest.fixtures.backend import management_network_supports_ipv4
 from ost_utils.pytest.fixtures.backend import tested_ip_version
-from ost_utils.pytest.fixtures.defaults import ansible_vms_to_deploy
 from ost_utils.pytest.fixtures.defaults import deploy_hosted_engine
 from ost_utils.pytest.fixtures.deployment import deploy
 from ost_utils.pytest.fixtures.deployment import run_scripts

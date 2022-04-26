@@ -35,8 +35,3 @@ def hostnames_to_reboot(hosts_hostnames):
 @pytest.fixture(scope="session")
 def deploy_hosted_engine():
     return False
-
-
-@pytest.fixture(scope="session")
-def ansible_vms_to_deploy(ansible_all):
-    return ansible_all

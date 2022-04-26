@@ -61,7 +61,7 @@ def engine_webadmin_url(engine_fqdn):
 @pytest.fixture(scope="session")
 def keycloak_enabled(ost_images_distro, suite):
     # turn back on when engine starts using keycloak
-    return False
+    return True
 
 
 @pytest.fixture(scope="session")

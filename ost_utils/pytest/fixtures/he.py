@@ -166,6 +166,11 @@ def he_engine_answer_file_openscap_profile_snippet(ansible_host0):
 
 
 @pytest.fixture(scope="session")
+def he_engine_answer_file_keycloak_snippet(keycloak_enabled):
+    return 'OVEHOSTED_CORE/enableKeycloak=bool:True\n' if keycloak_enabled else ''
+
+
+@pytest.fixture(scope="session")
 def he_engine_answer_file_contents(
     he_host_name,
     he_domain_name,
@@ -180,6 +185,7 @@ def he_engine_answer_file_contents(
     root_password,
     he_engine_answer_file_storage_snippet,
     he_engine_answer_file_openscap_profile_snippet,
+    he_engine_answer_file_keycloak_snippet,
 ):
     return (
         '[environment:init]\n'
@@ -216,6 +222,7 @@ def he_engine_answer_file_contents(
         f'{he_engine_answer_file_storage_snippet}'
         'OVEHOSTED_CORE/ansibleUserExtraVars=str:he_offline_deployment=true\n'
         f'{he_engine_answer_file_openscap_profile_snippet}'
+        f'{he_engine_answer_file_keycloak_snippet}'
     )
 
 

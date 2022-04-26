@@ -142,6 +142,15 @@ EOF
 
 }
 
+# This is needed for now, until we include it in the appliance/require it by the engine
+install_ovirt_engine_keycloak() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/install_keycloak.yml
+---
+- name: Install ovirt-engine-keycloak
+  shell: dnf install -y --enablerepo='*' --disablerepo='*media*' ovirt-engine-keycloak
+EOF
+}
+
 copy_ssh_key
 
 dnf_update
@@ -149,6 +158,8 @@ dnf_update
 copy_dependencies
 
 add_he_to_hosts
+
+install_ovirt_engine_keycloak
 
 ip -6 -o addr show dev eth0 scope global | grep -q eth0 && fix_ipv6
 

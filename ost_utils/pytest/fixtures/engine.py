@@ -76,7 +76,7 @@ def engine_username(keycloak_enabled):
 @pytest.fixture(scope="session")
 def engine_full_username(keycloak_enabled):
     if keycloak_enabled:
-        return "admin@ovirt"
+        return "admin@ovirt@internalsso"
 
     # use legacy AAA authentication for rhel
     return 'admin@internal'

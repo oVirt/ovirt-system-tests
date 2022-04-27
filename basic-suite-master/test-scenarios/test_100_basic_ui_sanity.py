@@ -27,9 +27,7 @@ from ost_utils import test_utils
 from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
-from ost_utils.pytest.fixtures.selenium import fetch_videos
-from ost_utils.pytest.fixtures.selenium import hub_url
-from ost_utils.pytest.fixtures.selenium import remote_selenium_artifacts_dir
+from ost_utils.pytest.fixtures.selenium import *
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 from ost_utils.selenium.navigation.driver import Driver
 from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
@@ -45,13 +43,6 @@ from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 
 LOGGER = logging.getLogger(__name__)
-
-
-CHROME_VERSION = 'latest'
-FIREFOX_VERSION = 'latest'
-BROWSER_PLATFORM = 'LINUX'
-SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 900
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -129,66 +120,14 @@ def test_add_grafana_user(engine_username, engine_password, engine_ip_url, engin
     LOGGER.debug(response.text)
 
 
-@cache
-def firefox_options():
-    options = webdriver.FirefoxOptions()
-    options.set_capability('platform', BROWSER_PLATFORM)
-    options.set_capability('version', FIREFOX_VERSION)
-    options.set_capability('browserName', 'firefox')
-    options.set_capability('acceptInsecureCerts', True)
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1538486
-    options.set_capability('moz:useNonSpecCompliantPointerOrigin', True)
-
-    options.set_preference('devtools.console.stdout.content', True)
-    options.set_preference("browser.download.folderList", 2)
-    options.set_preference("browser.download.dir", "/export")
-    options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/x-virt-viewer")
-    return options
-
-
-@cache
-def chrome_options():
-    options = webdriver.ChromeOptions()
-    options.set_capability('platform', BROWSER_PLATFORM)
-    options.set_capability('version', CHROME_VERSION)
-    options.set_capability('acceptInsecureCerts', True)
-    options.set_capability(
-        'goog:loggingPrefs',
-        {
-            'browser': 'ALL',
-            'performance': 'ALL',
-        },
-    )
-
-    prefs = {'download.default_directory': '/export'}
-    options.add_experimental_option('prefs', prefs)
-    # note: response body is not logged
-    options.add_experimental_option('perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True})
-    return options
-
-
-@pytest.fixture(
-    scope="session",
-    params=[
-        pytest.param(chrome_options(), id="chrome"),
-        pytest.param(firefox_options(), id="firefox"),
-    ],
-)
-def browser_options(request):
-    return request.param
-
-
 @pytest.fixture(scope="session")
-def browser_name(browser_options):
-    return browser_options.to_capabilities()['browserName']
-
-
-@pytest.fixture(scope="session")
-def ovirt_driver(browser_options, hub_url, fetch_videos, engine_webadmin_url):
-    driver = webdriver.Remote(command_executor=hub_url, options=browser_options)
+def ovirt_driver(
+    engine_webadmin_url, selenium_browser_options, selenium_grid_url, selenium_screen_width, selenium_screen_height
+):
+    driver = webdriver.Remote(command_executor=selenium_grid_url, options=selenium_browser_options)
 
     ovirt_driver = Driver(driver)
-    driver.set_window_size(SCREEN_WIDTH, SCREEN_HEIGHT)
+    driver.set_window_size(selenium_screen_width, selenium_screen_height)
     driver.get(engine_webadmin_url)
 
     try:
@@ -207,10 +146,10 @@ def selenium_artifacts_dir(artifacts_dir):
 
 
 @pytest.fixture(scope="session")
-def selenium_artifact_filename(browser_name):
+def selenium_artifact_filename(selenium_browser_name):
     def _selenium_artifact_filename(description, extension):
         date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        return "{}_{}_{}.{}".format(date, browser_name, description, extension)
+        return "{}_{}_{}.{}".format(date, selenium_browser_name, description, extension)
 
     return _selenium_artifact_filename
 
@@ -438,7 +377,7 @@ def test_virtual_machines(
     save_screenshot,
     console_file_full_path,
     console_file_helper,
-    remote_selenium_artifacts_dir,
+    selenium_remote_artifacts_dir,
 ):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     vm_list_view = webadmin_menu.open_vm_list_view()
@@ -498,7 +437,7 @@ def test_virtual_machines(
 
     vm_vgpu_dialog.cancel()
 
-    vm_list_view.download_console_file(console_file_full_path, ansible_storage, remote_selenium_artifacts_dir)
+    vm_list_view.download_console_file(console_file_full_path, ansible_storage, selenium_remote_artifacts_dir)
 
     with open(console_file_full_path) as f:
         console_file_text = f.read()
@@ -533,7 +472,7 @@ def image_local_path():
     return "/etc/hostname"
 
 
-def test_disks(ovirt_driver, browser_name, image_local_path):
+def test_disks(ovirt_driver, selenium_browser_name, image_local_path):
 
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     disks_list_view = webadmin_menu.open_disks_list_view()
@@ -555,7 +494,7 @@ def test_disks(ovirt_driver, browser_name, image_local_path):
     assert disks_list_view.is_copy_button_enabled() is True
     assert disks_list_view.is_upload_button_enabled() is True
 
-    image_name = "{}-{}".format(browser_name, int(time.time()))
+    image_name = "{}-{}".format(selenium_browser_name, int(time.time()))
     disks_list_view.upload(image_local_path, image_name)
 
 

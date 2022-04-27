@@ -10,6 +10,7 @@ import time
 import pytest
 
 from ost_utils import network_utils
+from ost_utils.selenium.grid import browser
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 
@@ -20,54 +21,143 @@ class SeleniumGridError(Exception):
     pass
 
 
-def _all_nodes_up(nodes_dict):
-    for node in nodes_dict:
-        if node["availability"] != "UP":
-            return False
-    return True
+def _node_ready(status_dict, browser_name):
+    nodes = status_dict["value"]["nodes"]
+    for node in nodes:
+        for slot in node["slots"]:
+            if slot["stereotype"]["browserName"] == browser_name and node["availability"] == "UP":
+                return True
+    return False
 
 
-def _grid_health_check(hub_url, expected_node_count=None):
+def _grid_health_check(hub_url, browser_name):
     status_url = hub_url + "/status"
 
     for i in range(GRID_STARTUP_WAIT_RETRIES):
         try:
             status_json = shell(["curl", "-sSL", status_url])
             status_dict = json.loads(status_json)
-            if (
-                status_dict["value"]["ready"] is True
-                and len(status_dict["value"]["nodes"]) == expected_node_count
-                and _all_nodes_up(status_dict["value"]["nodes"])
-            ):
-                break
+            if status_dict["value"]["ready"] and _node_ready(status_dict, browser_name):
+                return True
         except ShellError:
             pass
         time.sleep(0.1)
-    else:
-        raise SeleniumGridError("Selenium grid didn't start up properly")
+
+    raise SeleniumGridError("Selenium grid didn't start up properly")
+
+
+@pytest.fixture(
+    scope="session",
+    params=[
+        pytest.param(browser.chrome_options(), id="chrome"),
+        pytest.param(browser.firefox_options(), id="firefox"),
+    ],
+)
+def selenium_browser_options(request):
+    return request.param
 
 
 @pytest.fixture(scope="session")
-def remote_selenium_artifacts_dir():
+def selenium_browser_name(selenium_browser_options):
+    return selenium_browser_options.to_capabilities()['browserName']
+
+
+@pytest.fixture(scope="session")
+def selenium_browser_image(selenium_browser_name):
+    # synchronize changes with https://github.com/oVirt/ost-images/blob/master/configs/storage/setup_selenium_grid.sh
+    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:4.0.0"
+
+
+@pytest.fixture(scope="session")
+def selenium_port():
+    return 4444
+
+
+@pytest.fixture(scope="session")
+def selenium_screen_width():
+    return 1600
+
+
+@pytest.fixture(scope="session")
+def selenium_screen_height():
+    return 900
+
+
+@pytest.fixture(scope="session")
+def selenium_version():
+    return "4.0.0"
+
+
+@pytest.fixture(scope="session")
+def selenium_remote_artifacts_dir():
     return "/var/tmp/selenium"
 
 
 @pytest.fixture(scope="session")
-def hub_url(ansible_storage, storage_management_ips, fetch_videos):
-    ansible_storage.systemd(name="selenium-pod", state="started")
+def selenium_url(storage_management_ips, selenium_port):
     ip = network_utils.ip_to_url(storage_management_ips[0])
-    url = f"http://{ip}:4444"
-    _grid_health_check(url, 2)
+    url = f"http://{ip}:{selenium_port}"
     yield url
 
 
 @pytest.fixture(scope="session")
-def fetch_videos(ansible_storage, selenium_artifacts_dir, remote_selenium_artifacts_dir):
+def selenium_browser(
+    ansible_storage,
+    selenium_browser_image,
+    selenium_browser_name,
+    selenium_port,
+    selenium_remote_artifacts_dir,
+    selenium_url,
+    selenium_screen_height,
+    selenium_screen_width,
+    selenium_version,
+):
+    container_id = ansible_storage.shell(
+        "podman run -d"
+        f" -p {selenium_port}:{selenium_port}"
+        "  --network=slirp4netns:enable_ipv6=true"
+        "  --shm-size=1500m"
+        f" -v {selenium_remote_artifacts_dir}/:/export:z"
+        f" -e SCREEN_WIDTH={selenium_screen_width}"
+        f" -e SCREEN_HEIGHT={selenium_screen_height}"
+        "  -e SE_OPTS='--log-level FINE'"
+        f" {selenium_browser_image}"
+    )["stdout"].strip()
+    _grid_health_check(selenium_url, selenium_browser_name)
+    yield container_id
+    ansible_storage.shell(f"podman stop {container_id}")
+
+
+@pytest.fixture(scope="session")
+def selenium_video_recorder(
+    ansible_storage,
+    selenium_browser_name,
+    selenium_browser,
+    selenium_artifacts_dir,
+    selenium_remote_artifacts_dir,
+    selenium_screen_width,
+    selenium_screen_height,
+):
     yield
-    ansible_storage.shell("systemctl stop selenium-video-chrome selenium-video-firefox")
-    ansible_storage.fetch(
-        src=f"{remote_selenium_artifacts_dir}/video-chrome.mp4", dest=selenium_artifacts_dir, flat=True
-    )
-    ansible_storage.fetch(
-        src=f"{remote_selenium_artifacts_dir}/video-firefox.mp4", dest=selenium_artifacts_dir, flat=True
-    )
+    # TODO: try using a more powerful VM to record video
+    # container_id = ansible_storage.shell(
+    #     "podman run -d"
+    #     f" -v {selenium_remote_artifacts_dir}/:/videos:z"
+    #     f" -e DISPLAY_CONTAINER_NAME={selenium_browser[:12]}"
+    #     f" -e FILE_NAME=video-{selenium_browser_name}.mp4"
+    #     f" -e VIDEO_SIZE={selenium_screen_width}x{selenium_screen_height}"
+    #     f" --network=container:{selenium_browser}"
+    #     "  ovirt/video:latest"
+    # )["stdout"].strip()
+    # yield
+    # ansible_storage.shell(f"podman stop {container_id}")
+    # ansible_storage.fetch(
+    #     src=f"{selenium_remote_artifacts_dir}/video-{selenium_browser_name}.mp4",
+    #     dest=selenium_artifacts_dir,
+    #     flat=True,
+    # )
+
+
+@pytest.fixture(scope="session")
+def selenium_grid_url(selenium_url, selenium_browser, selenium_video_recorder):
+    yield selenium_url

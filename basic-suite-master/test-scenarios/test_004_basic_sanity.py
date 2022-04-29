@@ -658,7 +658,6 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
         stdin=slave,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        universal_newlines=True,
         bufsize=0,
     )
 
@@ -669,7 +668,7 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
         response = vmconsole_process.stdout.read(1)
         if len(response.strip()) != 0:
             message = response + vmconsole_process.stdout.readline()
-            if f"login as '{VM_USER_NAME}'" in message or f'{VM0_NAME} login' in message:
+            if f"login as '{VM_USER_NAME}'".encode() in message or f'{VM0_NAME} login'.encode() in message:
                 connection_success = True
                 break
         sleep(1)

@@ -34,5 +34,3 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 systemctl start snmptrapd
 systemctl enable snmptrapd
 
-# TODO workaround for https://bugzilla.redhat.com/show_bug.cgi?id=2077794
-rpm -q rhvm || dnf downgrade -y --repo appstream postgresql-jdbc-42.2.3

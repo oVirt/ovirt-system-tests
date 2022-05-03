@@ -1,5 +1,7 @@
 # oVirt System Tests
 
+[![Read the Docs]( https://readthedocs.org/projects/ovirt-system-tests/badge/?version=latest)](https://ovirt-system-tests.readthedocs.io/en/latest/)
+
 Welcome to the oVirt System Tests source repository.
 
 This repository is hosted on [GitHub:ovirt-system-tests](https://github.com/oVirt/ovirt-system-tests)

@@ -79,7 +79,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 args,
                 stdin=slave,
                 stdout=subprocess.PIPE,
-                universal_newlines=True,
                 bufsize=0,
             )
             LOGGER.debug(f'vmconsole: opened reader with args {args}')
@@ -120,15 +119,15 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         for i in range(15):
             LOGGER.debug(f'vmconsole: pre login {i}')
             self._write('\n')
-            ch = self._read()
-            if ch == '\n' or len(ch.strip()) != 0:
+            byte = self._read()
+            if byte in (b'\n', b'\r') or len(byte.strip()) != 0:
                 break
             time.sleep(2)
 
     def _logout(self):
         LOGGER.debug('vmconsole: logging out')
         self._write('exit\n')
-        self._read_until_prompt('\n\n\n')
+        self._read_until_prompt('login: ')
         self._logged_in = False
 
     def add_static_ip(self, vm_id, ip, iface):
@@ -168,20 +167,20 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
     def _read_until_prompt(self, prompt):
         LOGGER.debug(f'vmconsole: reading until [{prompt}]...')
         time.sleep(2)
-        recv = ''
+        _bytes = b''
         try:
-            while not recv.endswith(prompt):
-                recv = ''.join([recv, (self._read())])
+            encoded_prompt = prompt.encode()
+            while not _bytes.endswith(encoded_prompt):
+                _bytes += self._read()
         finally:
-            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{recv}]')
-        LOGGER.debug(f'vmconsole: read until prompt returned: {recv}')
-        return recv
+            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{repr(_bytes)}]')
+        return _bytes.decode().replace('\r', '')
 
     def _read(self):
         signal.alarm(self._read_alarm.seconds)
-        c = self._reader.stdout.read(1)
+        byte = self._reader.stdout.read(1)
         signal.alarm(0)  # cancel
-        return c
+        return byte
 
     def _write(self, entry):
         time.sleep(2)

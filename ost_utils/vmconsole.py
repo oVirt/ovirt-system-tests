@@ -39,7 +39,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         self._prompt = bash_prompt
         self._connected = False
         self._logged_in = False
-        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 15)
+        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 150)
 
     @contextlib.contextmanager
     def connect(self, vm_id):
@@ -79,7 +79,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 args,
                 stdin=slave,
                 stdout=subprocess.PIPE,
-                universal_newlines=True,
                 bufsize=0,
             )
             LOGGER.debug(f'vmconsole: opened reader with args {args}')
@@ -119,7 +118,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         for i in range(15):
             LOGGER.debug(f'vmconsole: pre login {i}')
             self._write('\n')
-            ch = self._read()
+            ch = self._read().decode()
             if ch == '\n' or len(ch.strip()) != 0:
                 break
             time.sleep(2)
@@ -167,11 +166,12 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
     def _read_until_prompt(self, prompt):
         LOGGER.debug(f'vmconsole: reading until {prompt}...')
         time.sleep(2)
-        recv = ''
+        recv = b''
         try:
-            while not recv.endswith(prompt):
-                recv = ''.join([recv, (self._read())])
+            while not recv.endswith(prompt.encode()):
+                recv = b''.join([recv, (self._read())])
         finally:
+            recv = recv.decode()
             LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{recv}]')
         LOGGER.debug(f'vmconsole: read until prompt returned: {recv}')
         return recv

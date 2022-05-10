@@ -653,6 +653,7 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
             '2222',
             f'ovirt-vmconsole@{engine_ip}',
             'connect',
+            '--debug',
             f'--vm-id={vm0_id}',
         ],
         stdin=slave,

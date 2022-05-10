@@ -73,6 +73,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 '2222',
                 f'ovirt-vmconsole@{self._proxy_ip}',
                 'connect',
+                '--debug',
                 f'--vm-id={vm_id}',
             ]
             self._reader = subprocess.Popen(

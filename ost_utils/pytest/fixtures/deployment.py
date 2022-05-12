@@ -140,7 +140,7 @@ def deploy(
         package_mgmt.add_custom_repos(ansible_all, repo_urls)
         # TODO workaround for https://bugzilla.redhat.com/show_bug.cgi?id=2077794
         ansible_all.shell(
-            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update,postgresql-jdbc'
+            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update'
         )
         # check if packages from custom repos were used
         if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:

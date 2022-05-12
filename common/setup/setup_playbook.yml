@@ -166,7 +166,7 @@
       become: true
 
     - name: allow port 2222 for IPv6 socks proxy
-      shell: grep 2222 /etc/firewalld/zones/libvirt.xml || sed '/service name.*ssh/ a <port port="2222" protocol="tcp"/>' /etc/firewalld/zones/libvirt.xml; firewall-cmd --state && firewall-cmd --reload
+      shell: sed '/service name.*ssh/ a <port port="2222" protocol="tcp"/>' /usr/lib/firewalld/zones/libvirt.xml > /etc/firewalld/zones/libvirt.xml; firewall-cmd --state && firewall-cmd --reload
       become: true
 
   handlers:

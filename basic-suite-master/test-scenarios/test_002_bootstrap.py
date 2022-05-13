@@ -1222,6 +1222,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
             keyboard_layout='en-us',
             file_transfer_enabled=True,
             copy_paste_enabled=True,
+            allow_override=True,
         ),
         usb=sdk4.types.Usb(
             enabled=True,

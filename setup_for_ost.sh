@@ -51,17 +51,6 @@ fi
 source /etc/os-release
 
 ANSIBLE_INSTALLED=$(which ansible-playbook &> /dev/null && echo 1 || echo 0)
-ANSIBLE_PACKAGE=$(if [[ $VERSION == 9* ]]; then echo "ansible-core"; else echo "ansible"; fi)
-ANSIBLE_REPO_RPM_URL=${ANSIBLE_REPO_RPM_URL:-"https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"}
-ANSIBLE_REPO_RPM_NAME=${ANSIBLE_REPO_RPM_NAME:-"epel-release-8"}
-
-cleanup() {
-    if [[ ${REMOVE_ANSIBLE_REPO_RPM} -eq 1 ]]; then
-        sudo dnf remove -y "${ANSIBLE_REPO_RPM_NAME}"
-    fi
-}
-
-trap cleanup EXIT
 
 if [[ ${ASSUME_YES} -ne 1 ]]; then
     echo "You're running this setup as \"$(whoami)\" user"
@@ -81,14 +70,10 @@ fi
 
 if [[ ${ANSIBLE_INSTALLED} -eq 0 ]]; then
     echo "This script needs ansible to work properly, will install it now..."
-    sudo dnf install -y "${ANSIBLE_PACKAGE}"
+    sudo dnf install -y "ansible-core"
     if [[ ${?} -ne 0 ]]; then
-        if [[ $VERSION == 9* ]]; then
-            echo "Ansible-core installation failed";
-            exit 1;
-        fi
-        REMOVE_ANSIBLE_REPO_RPM=1
-        sudo dnf -y install "${ANSIBLE_REPO_RPM_URL}" && sudo dnf install -y "${ANSIBLE_PACKAGE}"
+        echo "Ansible-core installation failed";
+        exit 1;
     fi
 fi
 

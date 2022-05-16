@@ -103,6 +103,7 @@ def selenium_url(storage_management_ips, selenium_port):
 @pytest.fixture(scope="session")
 def selenium_browser(
     ansible_storage,
+    selenium_artifacts_dir,
     selenium_browser_image,
     selenium_browser_name,
     selenium_port,
@@ -113,18 +114,23 @@ def selenium_browser(
     selenium_version,
 ):
     container_id = ansible_storage.shell(
-        "docker run -d"
+        "podman run -d"
         f" -p {selenium_port}:{selenium_port}"
+        "  --network=slirp4netns:enable_ipv6=true"
         "  --shm-size=1500m"
         f" -v {selenium_remote_artifacts_dir}/:/export:z"
         f" -e SCREEN_WIDTH={selenium_screen_width}"
         f" -e SCREEN_HEIGHT={selenium_screen_height}"
-        "  -e SE_OPTS='--log-level FINE --tracing false'"
+        "  -e SE_OPTS='--log-level FINE'"
         f" {selenium_browser_image}"
     )["stdout"].strip()
     _grid_health_check(selenium_url, selenium_browser_name)
     yield container_id
-    ansible_storage.shell(f"docker stop {container_id}")
+    ansible_storage.shell(f"podman stop {container_id}")
+    log_name = f"podman-{selenium_browser_name}.log"
+    remote_log_path = f"{selenium_remote_artifacts_dir}/{log_name}"
+    ansible_storage.shell(f"podman logs {container_id} > {remote_log_path}")
+    ansible_storage.fetch(src=remote_log_path, dest=f"{selenium_artifacts_dir}/{log_name}", flat=True)
 
 
 @pytest.fixture(scope="session")
@@ -138,21 +144,25 @@ def selenium_video_recorder(
     selenium_screen_height,
 ):
     container_id = ansible_storage.shell(
-        "docker run -d"
+        "podman run -d"
         f" -v {selenium_remote_artifacts_dir}/:/videos:z"
         f" -e DISPLAY_CONTAINER_NAME={selenium_browser[:12]}"
         f" -e FILE_NAME=video-{selenium_browser_name}.mp4"
         f" -e VIDEO_SIZE={selenium_screen_width}x{selenium_screen_height}"
         f" --network=container:{selenium_browser}"
-        "  selenium/video:latest"
+        "  quay.io/ovirt/selenium-video:latest"
     )["stdout"].strip()
     yield
-    ansible_storage.shell(f"docker stop {container_id}")
+    ansible_storage.shell(f"podman stop {container_id}")
     ansible_storage.fetch(
         src=f"{selenium_remote_artifacts_dir}/video-{selenium_browser_name}.mp4",
         dest=selenium_artifacts_dir,
         flat=True,
     )
+    res = ansible_storage.shell(f"podman logs {container_id}")
+
+    with open(f"{selenium_artifacts_dir}/podman-video-{selenium_browser}.log", "w") as log_file:
+        log_file.write(res["stdout"])
 
 
 @pytest.fixture(scope="session")

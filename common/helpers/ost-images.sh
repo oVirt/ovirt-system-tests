@@ -23,6 +23,11 @@ OST_IMAGES_HOST_INSTALLED=${OST_IMAGES_HOST_INSTALLED:-${OST_IMAGES_DIR}/${OST_I
 OST_IMAGES_HE_INSTALLED=${OST_IMAGES_HE_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-he-installed.qcow2}
 OST_IMAGES_STORAGE_BASE=${OST_IMAGES_STORAGE_BASE:=${OST_IMAGES_DIR}/storage-base.qcow2}
 OST_IMAGES_SSH_KEY=${OST_IMAGES_SSH_KEY:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}_id_rsa}
+# FIXME: until we will build el9stream enigne image, we can use el8 engine with el9 hosts
+if [[ "$OST_IMAGES_DISTRO" == "el9stream" ]]; then
+  OST_IMAGES_ENGINE_INSTALLED=${OST_IMAGES_ENGINE_INSTALLED/el9stream/el8stream}
+  OST_IMAGES_NODE=${OST_IMAGES_HOST_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-host-installed.qcow2}
+fi
 for i in OST_IMAGES_BASE OST_IMAGES_NODE OST_IMAGES_ENGINE_INSTALLED OST_IMAGES_HOST_INSTALLED OST_IMAGES_HE_INSTALLED OST_IMAGES_SSH_KEY; do
   [[ -r "${!i}" ]] || declare $i=/usr/share/ost-images/$(basename ${!i})
   echo "${i} ${!i} $(rpm -qf ${!i} 2>/dev/null)"

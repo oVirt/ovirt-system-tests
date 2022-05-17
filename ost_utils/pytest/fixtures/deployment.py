@@ -154,7 +154,7 @@ def deploy(
     utils.invoke_different_funcs_in_parallel(*runs)
 
     # setup vdsm coverage on hosts if desired
-    if os.environ.get("coverage", "false") == "true":
+    if request.config.getoption('--vdsm-coverage'):
         coverage.vdsm.setup(ansible_hosts)
 
     # setup sar stat utility

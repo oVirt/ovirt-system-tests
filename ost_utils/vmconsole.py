@@ -39,7 +39,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         self._prompt = bash_prompt
         self._connected = False
         self._logged_in = False
-        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 15)
+        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 120)
 
     @contextlib.contextmanager
     def connect(self, vm_id):
@@ -56,7 +56,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
     @contextlib.contextmanager
     def _connect(self, vm_id):
-        time.sleep(15)
         try:
             master, slave = pty.openpty()
             LOGGER.debug('vmconsole: opened pty')
@@ -100,7 +99,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
     def _login(self):
         try:
             signal.signal(signal.SIGALRM, self._read_alarm.handle)
-            time.sleep(15)
+            time.sleep(30)
             self._pre_login()
             LOGGER.debug('vmconsole: logging in')
             self._read_until_prompt('login: ')
@@ -122,7 +121,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             byte = self._read()
             if byte in (b'\n', b'\r') or len(byte.strip()) != 0:
                 break
-            time.sleep(2)
+            time.sleep(10)
 
     def _logout(self):
         LOGGER.debug('vmconsole: logging out')
@@ -170,7 +169,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
     def _read_until_prompt(self, prompt):
         LOGGER.debug(f'vmconsole: reading until [{prompt}]...')
-        time.sleep(2)
+        time.sleep(5)
         _bytes = b''
         try:
             encoded_prompt = prompt.encode()
@@ -187,7 +186,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         return byte
 
     def _write(self, entry):
-        time.sleep(2)
         LOGGER.debug(f'vmconsole: writing [{entry}]')
         self._writer.write(entry)
         self._writer.flush()

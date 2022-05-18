@@ -132,7 +132,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
     def add_static_ip(self, vm_id, ip, iface):
         ips = self.shell(vm_id, (Shell.ip_address_add(ip, iface), Shell.get_ips(iface)))
-        ip_version = ipaddress.ip_address(ip.split('/')[0]).version
+        ip_version = ipaddress.ip_interface(ip).version
         return Shell.next_ip(ips.splitlines(), ip_version)
 
     def get_ip(self, vm_id, iface, ip_version):

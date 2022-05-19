@@ -8,6 +8,8 @@ import logging
 from selenium.common.exceptions import (
     NoSuchElementException,
     StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
 )
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -123,7 +125,9 @@ class Driver:
         self._wait_while(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_while(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout).until_not(ConditionClass(condition_method, *args), message)
+        WebDriverWait(self.driver, timeout, ignored_exceptions=[TimeoutException]).until_not(
+            ConditionClass(condition_method, *args), message
+        )
 
     def retry_if_stale(self, method_to_retry, *args):
         condition = StaleExceptionOccurredCondition(method_to_retry, *args)
@@ -139,9 +143,21 @@ class ConditionClass:
     def __init__(self, condition_method, *args):
         self.condition_method = condition_method
         self.args = args
+        self.retry = 0
 
     def __call__(self, driver):
-        return self.condition_method(*self.args)
+        self.retry += 1
+
+        try:
+            return self.condition_method(*self.args)
+        # Stating it here to avoid logging it
+        except NoSuchElementException as e:
+            raise e
+        except Exception as e:
+            LOGGER.exception(
+                '!!!ConditionClass failed with ' + e.__class__.__name__ + ' at retry number ' + str(self.retry)
+            )
+            raise e
 
 
 class StaleExceptionOccurredCondition:
@@ -150,16 +166,52 @@ class StaleExceptionOccurredCondition:
         self.args = args
         self.result = None
         self.error = None
+        self.retry = 0
 
     def __call__(self, driver):
+        shouldRunAgain = False
         try:
+            self.retry += 1
             self.result = self.method_to_execute(*self.args)
-            return False
         # ignore StaleElementReferenceException and try again
         except StaleElementReferenceException:
-            return True
-        # throw any other exception, even NoSuchElementException ignored
-        # by WebDriverWait by default
-        except Exception as e:
+            shouldRunAgain = True
+        # ignore TimeoutException if caused by timeout in java
+        except TimeoutException as e:
+            LOGGER.exception(
+                '!!!StaleExceptionOccurredCondition failed with '
+                + e.__class__.__name__
+                + ' at retry number '
+                + str(self.retry)
+            )
+            if 'java.util.concurrent.TimeoutException' in str(e):
+                shouldRunAgain = True
+            else:
+                self.error = e
+        # stating it here just to avoid logging this expected condition or processing it as
+        # WebDriverException
+        except NoSuchElementException as e:
             self.error = e
-            return False
+        # ignore WebDriverException if caused by the following: Expected to read a START_MAP but instead have: END.
+        # Last 0 characters read:
+        except WebDriverException as e:
+            LOGGER.exception(
+                '!!!StaleExceptionOccurredCondition failed with '
+                + e.__class__.__name__
+                + ' at retry number '
+                + str(self.retry)
+            )
+            if 'START_MAP' in str(e):
+                shouldRunAgain = True
+            else:
+                self.error = e
+        except Exception as e:
+            LOGGER.exception(
+                '!!!StaleExceptionOccurredCondition failed with '
+                + e.__class__.__name__
+                + ' at retry number '
+                + str(self.retry)
+            )
+
+            self.error = e
+        return shouldRunAgain

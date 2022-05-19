@@ -119,9 +119,9 @@ def generate_sar_stat_plots(collect_artifacts, ansible_all, ansible_by_hostname,
 
 
 @pytest.fixture(scope="session", autouse=True)
-def collect_vdsm_coverage_artifacts(artifacts_dir, ansible_host0, ansible_hosts):
+def collect_vdsm_coverage_artifacts(artifacts_dir, ansible_host0, ansible_hosts, request):
     yield
-    if os.environ.get("coverage", "false") == "true":
+    if request.config.getoption('--vdsm-coverage'):
         output_path = os.path.join(artifacts_dir, "coverage/")
         os.makedirs(output_path, exist_ok=True)
         coverage.vdsm.collect(ansible_host0, ansible_hosts, output_path)

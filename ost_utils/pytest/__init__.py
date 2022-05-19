@@ -15,6 +15,7 @@ LOGGER = logging.getLogger(__name__)
 def pytest_addoption(parser):
     parser.addoption('--custom-repo', action='append')
     parser.addoption('--skip-custom-repos-check', action='store_true')
+    parser.addoption('--vdsm-coverage', action='store_true')
 
 
 def pytest_collection_modifyitems(session, config, items):

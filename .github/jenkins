@@ -12,7 +12,7 @@ PR_URL="$(sed -n 1p queue)"
 SUITE="$(sed -n 2p queue)"
 DISTRO="$(sed -n 3p queue)"
 echo "$PR_URL" | egrep '^https://(api.|www.)?github.com(/repos)?/oVirt/'
-echo "$SUITE"  | egrep '^(basic-suite-master|he-basic-suite-master|ansible-suite-master|tr-suite-master|network-suite-master|tr-suite-master)$'
+echo "$SUITE"  | egrep '^(basic-suite-master|he-basic-suite-master|ansible-suite-master|network-suite-master|go-suite-master)$'
 echo "$DISTRO" | egrep '^(el8stream|el9stream|rhel8)$'
 
 #
@@ -96,7 +96,7 @@ OST_REFSPEC=$OST_REFSPEC
 CUSTOM_REPOS=$CUSTOM_REPOS
 CUSTOM_OST_IMAGES_REPO=$CUSTOM_OST_IMAGES_REPO
 EOF
-    [[ "$SUITE" = "tr-suite-master" ]] && echo "DONT_CHECK_IF_REPOSITORIES_WERE_USED=true" >> vars
+    [[ "$SUITE" = "go-suite-master" ]] && echo "DONT_CHECK_IF_REPOSITORIES_WERE_USED=true" >> vars
     cat vars
 else # after actual OST, with injected vars
     echo processing results

@@ -1211,6 +1211,10 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
         high_availability=sdk4.types.HighAvailability(
             enabled=False,
         ),
+        bios=sdk4.types.Bios(
+            sdk4.types.BootMenu(False),
+            sdk4.types.BiosType.Q35_SEA_BIOS,
+        ),
         cluster=sdk4.types.Cluster(
             name=ost_cluster_name,
         ),
@@ -1271,6 +1275,10 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
                 name=TEMPLATE_BLANK,
             ),
             custom_emulated_machine='pc-q35-rhel8.0.0',
+            bios=sdk4.types.Bios(
+                sdk4.types.BootMenu(False),
+                sdk4.types.BiosType.Q35_SEA_BIOS,
+            ),
             cpu=sdk4.types.Cpu(
                 topology=sdk4.types.CpuTopology(
                     cores=1,

@@ -54,8 +54,8 @@ SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
 SD_ISCSI_NAME = 'iscsi'
 
-VM_USER_NAME = 'cirros'
-VM_PASSWORD = 'gocubsgo'
+VM_USER_NAME = 'tc'
+VM_PASSWORD = ''
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -485,7 +485,7 @@ def test_remove_vm2_backup_checkpoints(engine_api, get_vm_service_for_vm):
 
 @pytest.fixture(scope="session")
 def vm0_fqdn_or_ip(tested_ip_version, management_subnet):
-    vm0_address = {'ipv4': VM0_NAME, 'ipv6': str(management_subnet[250])}
+    vm0_address = {'ipv4': VM0_NAME, 'ipv6': VM0_NAME}
     return vm0_address[f'ipv{tested_ip_version}']
 
 
@@ -1005,7 +1005,7 @@ def test_run_vms(
     if tested_ip_version == 6:
         vms_service = engine_api.system_service().vms_service()
         vm = vms_service.list(search='name={}'.format(VM0_NAME))[0]
-        cirros_serial_console.add_static_ip(vm.id, f'{vm0_fqdn_or_ip}/64', 'eth0')
+        # cirros_serial_console.add_static_ip(vm.id, f'{vm0_fqdn_or_ip}/64', 'eth0')
 
     assert_vm_is_alive(vm0_fqdn_or_ip)
 

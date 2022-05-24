@@ -104,8 +104,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             LOGGER.debug('vmconsole: logging in')
             self._read_until_prompt('login: ')
             self._write(f'{self._user}\n')
-            self._read_until_prompt('Password: ')
-            self._write(f'{self._passwd}\n')
             self._read_until_bash_prompt()
             self._logged_in = True
             yield
@@ -193,7 +191,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
 class CirrosSerialConsole(VmSerialConsole):
     def __init__(self, private_key_path, vmconsole_proxy_ip):
-        super(CirrosSerialConsole, self).__init__(private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo')
+        super(CirrosSerialConsole, self).__init__(private_key_path, vmconsole_proxy_ip, 'tc', '')
 
     def assign_ip4_if_missing(self, vm_id, iface):
         ip = self.get_ip(vm_id, iface, 4)

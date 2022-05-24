@@ -54,8 +54,8 @@ SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
 SD_ISCSI_NAME = 'iscsi'
 
-VM_USER_NAME = 'cirros'
-VM_PASSWORD = 'gocubsgo'
+VM_USER_NAME = 'tc'
+VM_PASSWORD = ''
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'

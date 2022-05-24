@@ -116,7 +116,9 @@ class Driver:
         self._wait_until(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_until(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout).until(ConditionClass(condition_method, *args), message)
+        WebDriverWait(self.driver, timeout, ignored_exceptions=[TimeoutException]).until(
+            ConditionClass(condition_method, *args), message
+        )
 
     def wait_while(self, message, condition_method, *args):
         self._wait_while(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)
@@ -154,9 +156,7 @@ class ConditionClass:
         except NoSuchElementException as e:
             raise e
         except Exception as e:
-            LOGGER.exception(
-                '!!!ConditionClass failed with ' + e.__class__.__name__ + ' at retry number ' + str(self.retry)
-            )
+            LOGGER.exception(f'!!! ConditionClass failed with {e.__class__.__name__} at retry number {self.retry}')
             raise e
 
 
@@ -169,23 +169,21 @@ class StaleExceptionOccurredCondition:
         self.retry = 0
 
     def __call__(self, driver):
-        shouldRunAgain = False
+        should_run_again = False
         try:
             self.retry += 1
             self.result = self.method_to_execute(*self.args)
         # ignore StaleElementReferenceException and try again
         except StaleElementReferenceException:
-            shouldRunAgain = True
+            should_run_again = True
         # ignore TimeoutException if caused by timeout in java
         except TimeoutException as e:
             LOGGER.exception(
-                '!!!StaleExceptionOccurredCondition failed with '
-                + e.__class__.__name__
-                + ' at retry number '
-                + str(self.retry)
+                f'!!! StaleExceptionOccurredCondition failed with {e.__class__.__name__} '
+                + f'at retry number {str(self.retry)}'
             )
             if 'java.util.concurrent.TimeoutException' in str(e):
-                shouldRunAgain = True
+                should_run_again = True
             else:
                 self.error = e
         # stating it here just to avoid logging this expected condition or processing it as
@@ -196,22 +194,18 @@ class StaleExceptionOccurredCondition:
         # Last 0 characters read:
         except WebDriverException as e:
             LOGGER.exception(
-                '!!!StaleExceptionOccurredCondition failed with '
-                + e.__class__.__name__
-                + ' at retry number '
-                + str(self.retry)
+                f'!!! StaleExceptionOccurredCondition failed with {e.__class__.__name__} '
+                + f'at retry number {self.retry}'
             )
             if 'START_MAP' in str(e):
-                shouldRunAgain = True
+                should_run_again = True
             else:
                 self.error = e
         except Exception as e:
             LOGGER.exception(
-                '!!!StaleExceptionOccurredCondition failed with '
-                + e.__class__.__name__
-                + ' at retry number '
-                + str(self.retry)
+                f'!!! StaleExceptionOccurredCondition failed with {e.__class__.__name__} '
+                + f'at retry number {self.retry}'
             )
 
             self.error = e
-        return shouldRunAgain
+        return should_run_again

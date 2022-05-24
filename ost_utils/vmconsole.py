@@ -153,8 +153,12 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         return res
 
     def can_log_in(self, vm_id):
-        with self.connect(vm_id) as console:
-            logged_in = console.logged_in
+        try:
+            with self.connect(vm_id) as console:
+                logged_in = console.logged_in
+        except BlockingIOError as e:
+            LOGGER.debug(f'vmconsole: could not log in: {e.args[0]}')
+            logged_in = False
         return logged_in
 
     @property

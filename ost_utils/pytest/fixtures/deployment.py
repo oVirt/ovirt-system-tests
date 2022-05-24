@@ -146,6 +146,11 @@ def deploy(
         if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:
             package_mgmt.check_installed_packages(ansible_all)
 
+    # TEST: replace cirros with oVirt Tiny Core
+    ansible_all(
+        'curl -L -o /var/tmp/cirros.img https://github.com/lveyde/ovirt-tinycore-linux/releases/download/v13.8/oVirtTinyCore64-13.8.qcow2'
+    )
+
     # report package versions
     package_mgmt.report_ovirt_packages_versions(ansible_all)
 

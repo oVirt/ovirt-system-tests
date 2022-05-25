@@ -22,16 +22,6 @@ if [[ $(which nodectl) ]]; then
     echo 3 > /proc/sys/vm/drop_caches
 fi
 
-# FIXME: work around for BZ 2084118 - Downgrading nmstate
-DISTRO=$( cat /etc/redhat-release )
-if [[ "$DISTRO" == *"9"* ]]; then
-    rpm -e --nodeps nmstate
-    dnf config-manager --set-enabled appstream
-    dnf install -y nmstate-2.0.0-0.4.alpha3.el9
-    echo exclude="nmstate nmstate-plugin-ovsdb python3-libnmstate" >> /etc/dnf/dnf.conf
-    dnf config-manager --set-disabled appstream
-fi
-
 # Set up hugepages
 HUGEPAGES=3
 for node in /sys/devices/system/node/node*; do

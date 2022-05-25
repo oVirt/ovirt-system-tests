@@ -103,6 +103,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             signal.signal(signal.SIGALRM, self._read_alarm.handle)
             time.sleep(15)
             self._pre_login()
+            LOGGER.debug('vmconsole: logging in')
             self._read_until_prompt('login: ')
             self._write(f'{self._user}\n')
             self._read_until_prompt('Password: ')
@@ -149,7 +150,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 self._write(entry)
                 res = self._read_until_bash_prompt()
                 res = res.replace(entry, '').rsplit(self._prompt)[0]
-                LOGGER.debug(f'vmconsole: shell {cmd} returned: {res}')
+                LOGGER.debug(f'vmconsole: command: [{cmd}] returned: [{res}]')
         return res
 
     def can_log_in(self, vm_id):
@@ -165,7 +166,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         return self._read_until_prompt(self._prompt)
 
     def _read_until_prompt(self, prompt):
-        LOGGER.debug(f'vmconsole: reading until {prompt}...')
+        LOGGER.debug(f'vmconsole: reading until [{prompt}]...')
         time.sleep(2)
         recv = ''
         try:

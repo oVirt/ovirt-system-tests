@@ -43,7 +43,7 @@ class Grafana(Displayable):
                     return True
         else:
             raise Exception(
-                """Tag app-notifications-list is not present. This may mean that the Graphana
+                """Tag app-notifications-list is not present. This may mean that the Grafana
                    UI has changed and we will no longer be able to detect error notifications"""
             )
         return False

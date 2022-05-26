@@ -32,7 +32,7 @@ def expand_repos(custom_repos, working_dir, ost_images_distro):
         if re.match(r"https://(www\.|api\.)?github.com/(repos/)?oVirt", repo_url):
             repo_urls.append(expand_github_repo(repo_url, working_dir, ost_images_distro))
         else:
-            repo_urls.extend(expand_jenkins_repo(repo_url, ost_images_distro))
+            repo_urls.append(repo_url)
     return repo_urls
 
 
@@ -229,35 +229,6 @@ def _github_unpack_artifact(path: str):
     with zipfile.ZipFile(path, 'r') as zip_handle:
         zip_handle.extractall(os.path.dirname(path))
     os.unlink(path)
-
-
-def expand_jenkins_repo(repo_url, ost_images_distro):
-    expanded_repos = set()
-    if requests.get(repo_url + '/repodata/repomd.xml').ok:
-        return [repo_url]
-
-    lvl1_page = requests.get(repo_url + '/api/json?depth=3')
-    lvl1_page.raise_for_status()
-    lvl1_page = lvl1_page.json()
-
-    url = lvl1_page['url']
-    if url.endswith('/'):
-        url = url[:-1]
-
-    repo_list = set()
-    for artifact in lvl1_page.get('artifacts', []):
-        if not artifact['relativePath'].endswith('rpm'):
-            continue
-        relative_path = artifact['relativePath'].split('/')[0]
-        new_url = f'{url}/artifact/{relative_path}'
-        repo_list.add(new_url)
-
-    if len(repo_list) == 0:
-        raise RuntimeError(f"Couldn't find any repos at {repo_url}")
-
-    expanded_repos.update(repo for repo in repo_list if ost_images_distro in repo)
-
-    return list(r for r in expanded_repos if 'ppc64le' not in r)
 
 
 def add_custom_repos(ansible_vm, repo_urls):

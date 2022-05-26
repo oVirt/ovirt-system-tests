@@ -28,8 +28,11 @@ def hostnames_to_add(hosts_hostnames):
 
 
 @pytest.fixture(scope="session")
-def hostnames_to_reboot(hosts_hostnames):
-    return hosts_hostnames[:1]
+def hostnames_to_reboot(hosts_hostnames, ost_images_distro):
+    # for el8stream we reboot only one of the hosts to make the run faster,
+    # but on el9stream we need to reboot all of them to apply the monolithic
+    # libvirt preset
+    return hosts_hostnames if ost_images_distro == "el9stream" else hosts_hostnames[:1]
 
 
 @pytest.fixture(scope="session")

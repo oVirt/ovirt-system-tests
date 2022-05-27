@@ -737,7 +737,7 @@ def test_live_storage_migration(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_convert_disk(engine_api, disks_service):
+def test_convert_disk(disks_service):
     correlation_id = 'convert_disk'
 
     disks_service.add(

@@ -590,5 +590,4 @@ def test_grafana(
 
     grafana.open_dashboard('oVirt Inventory Dashboards', '02 Hosts Inventory Dashboard')
     assert not grafana.is_error_visible()
-
     save_screenshot('grafana-dashboard-2')

@@ -76,7 +76,7 @@ Once you've located the engine VM's IP, add it to `/etc/hosts`. You have to use 
 Now, log in to the web-UI at:
 
 * URL: `https://engine/ovirt-engine/webadmin/`
-* Username: `admin`
+* Username: `admin` or `admin@ovirt` if keycloak is enabled
 * Password: `123456`
 * Profile: `internal`
 

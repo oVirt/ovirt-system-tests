@@ -4,6 +4,7 @@
 #
 import logging
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from .Displayable import Displayable
 
@@ -22,6 +23,24 @@ class Grafana(Displayable):
 
     def get_displayable_name(self):
         return 'Grafana'
+
+    def db_connection(self):
+        self.ovirt_driver.xpath_wait_and_click('Open oVirt DWH Datasource', '//*[text()="oVirt DWH"]')
+        self.ovirt_driver.xpath_wait_and_click('Save & Test button', '//*[text()="Save & Test"]')
+        # make sure that after clicking Save & Test button, "Database Connection OK" is popping up
+        try:
+            self.ovirt_driver.wait_until(
+                '"Database Connection OK" string is present',
+                self.ovirt_driver.is_xpath_present,
+                '//*[contains(@aria-label, "Data source settings page Alert")]//*[text()="Database Connection OK"]',
+            )
+            return True
+        except TimeoutException:
+            raise Exception(
+                """"Database Connection OK" string is not present. This may mean that the Grafana
+                   UI has changed, and we can't be sure if the connection is ok"""
+            )
+        return False
 
     def open_dashboard(self, menu, submenu):
         LOGGER.debug('Open dashboard ' + menu + '/' + submenu)

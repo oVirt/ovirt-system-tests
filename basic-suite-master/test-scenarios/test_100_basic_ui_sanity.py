@@ -567,6 +567,7 @@ def test_grafana(
     engine_password,
     engine_webadmin_url,
     user_login,
+    engine_fqdn,
 ):
 
     ovirt_driver.driver.get(engine_webadmin_url)
@@ -584,6 +585,11 @@ def test_grafana(
     grafana = Grafana(ovirt_driver)
     grafana.wait_for_displayed()
     save_screenshot('grafana')
+
+    # navigate directly to Grafana Configuration/Data Sources page
+    ovirt_driver.driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
+    assert grafana.db_connection()
+    save_screenshot('grafana-datasource-connection')
 
     grafana.open_dashboard('oVirt Executive Dashboards', '02 Data Center Dashboard')
     assert not grafana.is_error_visible()

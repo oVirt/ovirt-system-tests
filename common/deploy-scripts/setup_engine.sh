@@ -44,5 +44,5 @@ gpgcheck=0
 enabled=1
 EOF
   dnf downgrade -y --repo fast-datapath ovn-2021-central-21.12.0-46.el8fdp
-}
+} || true
 

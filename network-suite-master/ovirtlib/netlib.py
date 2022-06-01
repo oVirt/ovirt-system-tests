@@ -205,6 +205,10 @@ class Vnic(SDKSubEntity):
         return self.get_sdk_type().name
 
     @property
+    def plugged(self):
+        return self.get_sdk_type().plugged
+
+    @property
     def linked(self):
         return self.get_sdk_type().linked
 

@@ -35,7 +35,7 @@ systemctl start snmptrapd
 systemctl enable snmptrapd
 
 # TODO: work around for https://bugzilla.redhat.com/2091565 - Downgrade OVN to 21.12.0-46 to match version on RHEVH
-rpm -q rhvm && {
+if [[ $(rpm -q rhvm &> /dev/null; echo $?) == 0 ]]; then
   cat << EOF > /etc/yum.repos.d/fast_datapath.repo
 [fast-datapath]
 name=fast-datapath
@@ -44,5 +44,5 @@ gpgcheck=0
 enabled=1
 EOF
   dnf downgrade -y --repo fast-datapath ovn-2021-central-21.12.0-46.el8fdp
-}
+fi
 

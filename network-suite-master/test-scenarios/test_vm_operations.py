@@ -4,9 +4,11 @@
 #
 #
 import ipaddress
+import logging
+
 import pytest
 
-from fixtures.host import ETH1
+from fixtures.host import ETH1, ETH2
 
 from ovirtlib import virtlib
 from ovirtlib import netattachlib
@@ -15,17 +17,21 @@ from ovirtlib import clusterlib
 from ovirtlib import hostlib
 from ovirtlib import joblib
 from ovirtlib import datacenterlib
+from ovirtlib import syncutil
 from ovirtlib import templatelib
 from testlib import suite
 
+LOGGER = logging.getLogger(__name__)
 VM_BLANK = 'test_vm_operations_blank_vm'
 VM_CIRROS = 'test_vm_operations_cirros_vm'
 MIG_NET = 'mig-net'
 NIC_NAMES = {
+    0: 'nic0',
     1: 'nic1',
     2: 'nic2',
 }
-SERIAL_NET = 'test_serial_vmconsole_net'
+NET1 = 'test_vm_operations_net_1'
+NET2 = 'test_vm_operations_net_2'
 CIRROS_NIC = 'eth1'
 IPV6 = 'fd8f:1391:3a82::cafe:cafe'
 PREFIX = '64'
@@ -57,25 +63,30 @@ def running_cirros_vm(
     default_cluster,
     default_storage_domain,
     ovirtmgmt_vnic_profile,
+    host_0_up,
     host_1_up,
     cirros_template,
 ):
-    with clusterlib.new_assigned_network(SERIAL_NET, default_data_center, default_cluster) as net:
-        attach_data = netattachlib.NetworkAttachmentData(net, ETH1)
-        with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
-            with virtlib.vm_pool(system, size=1) as (vm,):
-                vm.create(
-                    vm_name=VM_CIRROS,
-                    cluster=default_cluster,
-                    template=cirros_template,
-                )
-                vm.create_vnic(NIC_NAMES[1], ovirtmgmt_vnic_profile)
-                vm.create_vnic(NIC_NAMES[2], net.vnic_profile())
-                vm.wait_for_down_status()
-                vm.run()
-                vm.wait_for_up_status()
-                joblib.AllJobs(system).wait_for_done()
-                yield vm
+    with clusterlib.new_assigned_network(NET1, default_data_center, default_cluster) as net_1:
+        attach_data_1 = netattachlib.NetworkAttachmentData(net_1, ETH1)
+        with clusterlib.new_assigned_network(NET2, default_data_center, default_cluster) as net_2:
+            attach_data_2 = netattachlib.NetworkAttachmentData(net_2, ETH2)
+            with hostlib.setup_networks(host_0_up, attach_data=(attach_data_1, attach_data_2)):
+                with hostlib.setup_networks(host_1_up, attach_data=(attach_data_1, attach_data_2)):
+                    with virtlib.vm_pool(system, size=1) as (vm,):
+                        vm.create(
+                            vm_name=VM_CIRROS,
+                            cluster=default_cluster,
+                            template=cirros_template,
+                        )
+                        vm.create_vnic(NIC_NAMES[0], ovirtmgmt_vnic_profile)
+                        vm.create_vnic(NIC_NAMES[1], net_1.vnic_profile())
+                        vm.create_vnic(NIC_NAMES[2], net_2.vnic_profile())
+                        vm.wait_for_down_status()
+                        vm.run()
+                        vm.wait_for_up_status()
+                        joblib.AllJobs(system).wait_for_done()
+                        yield vm
 
 
 @pytest.fixture(scope='module')
@@ -110,6 +121,27 @@ def host_1_with_mig_net(migration_network, host_1_up, af):
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up
     host_1_up.remove_networks((migration_network,))
+
+
+@pytest.mark.xfail(reason='waiting for fix for https://bugzilla.redhat.com/2084530')
+def test_hotplug_multiple_vnics(running_cirros_vm):
+    for i in range(10):
+        for name in NIC_NAMES.values():
+            vnic = running_cirros_vm.get_vnic(name)
+            plugged = vnic.plugged
+            LOGGER.debug(f'test hot {"unplug" if plugged else "plug"} multiple rounds: vnic {vnic.name}, round {i}')
+            if plugged:
+                vnic.hotunplug()
+            else:
+                vnic.hotplug()
+            syncutil.sync(
+                exec_func=lambda: vnic.plugged,
+                exec_func_args=(),
+                success_criteria=lambda p: p is not plugged,
+                delay_start=1,
+                retry_interval=1,
+                timeout=10,
+            )
 
 
 def test_serial_vmconsole(cirros_serial_console, running_cirros_vm, af):

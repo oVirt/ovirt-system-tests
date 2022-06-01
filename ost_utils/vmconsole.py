@@ -177,7 +177,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 _bytes += self._read()
         finally:
             LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{repr(_bytes)}]')
-        return _bytes.decode().replace('\r', '')
+        return _bytes.decode(errors='ignore').replace('\r', '')
 
     def _read(self):
         signal.alarm(self._read_alarm.seconds)

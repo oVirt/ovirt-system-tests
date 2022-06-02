@@ -34,6 +34,3 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 systemctl start snmptrapd
 systemctl enable snmptrapd
 
-# TODO: work around for https://bugzilla.redhat.com/2091565 - Downgrade OVN to 21.12.0-46 to match version on RHVH
-rpm -q rhvm && dnf downgrade -y --repofrompath fdp,http://rhsm-pulp.corp.redhat.com/content/dist/layered/rhel8/x86_64/fast-datapath/os --repo fdp ovn-2021-central-21.12.0-46.el8fdp || true
-

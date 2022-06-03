@@ -26,7 +26,7 @@ OST_IMAGES_SSH_KEY=${OST_IMAGES_SSH_KEY:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}_
 # FIXME: until we will build el9stream enigne image, we can use el8 engine with el9 hosts
 if [[ "$OST_IMAGES_DISTRO" == "el9stream" ]]; then
   OST_IMAGES_ENGINE_INSTALLED=${OST_IMAGES_ENGINE_INSTALLED/el9stream/el8stream}
-  OST_IMAGES_NODE=${OST_IMAGES_HOST_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-host-installed.qcow2}
+  OST_IMAGES_NODE=${OST_IMAGES_NODE/node/el9node}
 fi
 for i in OST_IMAGES_BASE OST_IMAGES_NODE OST_IMAGES_ENGINE_INSTALLED OST_IMAGES_HOST_INSTALLED OST_IMAGES_HE_INSTALLED OST_IMAGES_SSH_KEY; do
   [[ -r "${!i}" ]] || declare $i=/usr/share/ost-images/$(basename ${!i})

@@ -167,7 +167,8 @@ def he_engine_answer_file_openscap_profile_snippet(ansible_host0):
 
 @pytest.fixture(scope="session")
 def he_engine_answer_file_keycloak_snippet(keycloak_enabled):
-    return 'OVEHOSTED_CORE/enableKeycloak=bool:True\n' if keycloak_enabled else ''
+    val = 'True' if keycloak_enabled else 'False'
+    return f'OVEHOSTED_CORE/enableKeycloak=bool:{val}\n'
 
 
 @pytest.fixture(scope="session")

@@ -21,6 +21,9 @@ another 5GB at least in the directory where you run tests from.
 The memory requirements are derived from the VM specs you'll have in the test suite, it is recommended that the host you're using will have at
 least 16GB of RAM, though basic suite still runs with 8GB.
 
+### Permissions
+The user account used to run OST should belong to the groups qemu and libvirt.
+
 ## How to contribute
 
 ### Submitting patches

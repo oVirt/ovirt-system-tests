@@ -165,6 +165,13 @@
       shell: semanage permissive -a virtlogd_t
       become: true
 
+    - name: Start and enable firewalld
+      systemd:
+        name: firewalld.service
+        state: started
+        enabled: yes
+      become: true
+
     - name: allow port 2222 for IPv6 socks proxy
       shell: sed '/service name.*ssh/ a <port port="2222" protocol="tcp"/>' /usr/lib/firewalld/zones/libvirt.xml > /etc/firewalld/zones/libvirt.xml; firewall-cmd --state && firewall-cmd --reload
       become: true

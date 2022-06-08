@@ -1108,9 +1108,7 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
         # - Perhaps change the condition to make it more relevant
         # - Fix :-)
         pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
-    ansible_engine.shell('grep USER_VDC_LOGIN /var/log/messages')
-    ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
-    ansible_engine.systemd(name='snmptrapd', state='stopped')
+    ansible_engine.shell('grep USER_VDC_LOGIN /var/log/snmptrapd.log')
 
 
 @order_by(_TEST_LIST)

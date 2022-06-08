@@ -535,6 +535,7 @@ def test_userportal(
     nonadmin_password,
     user_login,
     engine_webadmin_url,
+    save_screenshot,
 ):
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
@@ -549,7 +550,10 @@ def test_userportal(
     assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
     vm0_status = vm_portal.get_vm_status('vm0')
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
+    save_screenshot('userportal')
+
     vm_portal.logout()
+    save_screenshot('userportal-logout')
 
     # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
     ovirt_driver.driver.get(engine_webadmin_url)

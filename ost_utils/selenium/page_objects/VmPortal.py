@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from .Displayable import Displayable
 
 
@@ -28,4 +29,9 @@ class VmPortal(Displayable):
 
     def logout(self):
         self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="usermenu-user"]')
-        self.ovirt_driver.xpath_wait_and_click('Logout menu', '//*[@id="usermenu-logout"]')
+        self.ovirt_driver.wait_until('Logout menu is present', self.ovirt_driver.is_id_present, 'usermenu-logout')
+
+        logout_menu = self.ovirt_driver.driver.find_element(By.XPATH, '//*[@id="usermenu-logout"]')
+        ActionChains(self.ovirt_driver.driver).move_to_element(logout_menu).click(logout_menu).perform()
+
+        self.ovirt_driver.wait_while('Vm portal still displayed', self.is_displayed)

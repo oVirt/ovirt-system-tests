@@ -193,6 +193,7 @@ def he_engine_answer_file_contents(
         'DIALOG/autoAcceptDefault=bool:True\n'
         '[environment:default]\n'
         'OVEHOSTED_CORE/screenProceed=bool:True\n'
+        'OVEHOSTED_CORE/forceIpProceed=bool:True\n'
         'OVEHOSTED_CORE/deployProceed=bool:True\n'
         'OVEHOSTED_CORE/confirmSettings=bool:True\n'
         'OVEHOSTED_CORE/skipTTYCheck=bool:True\n'

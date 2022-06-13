@@ -243,7 +243,8 @@ main() {
     activate_nfs
     setup_lvm_filter
     setup_iscsi
-    setup_389ds
+    # TODO el9 doesn't have 389-ds (LDAP) configuration yet
+    [ "$(. /etc/os-release; echo ${VERSION_ID})" != "9" ] && setup_389ds
     coredump_kill
 
     fstrim -va

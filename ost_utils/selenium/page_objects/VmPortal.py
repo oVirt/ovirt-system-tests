@@ -11,9 +11,7 @@ class VmPortal(Displayable):
         super(VmPortal, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.is_id_present(
-            'page-router-render-component'
-        ) and not self.ovirt_driver.is_class_name_present('spinner')
+        return self.ovirt_driver.is_id_present('pageheader-refresh')
 
     def get_displayable_name(self):
         return 'VM Portal'

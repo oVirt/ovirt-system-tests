@@ -50,30 +50,35 @@ def func_vector(target, args_sequence):
 class VectorThread:
     def __init__(self, targets):
         self.targets = targets
-        self.results = None
+        self.queues = [queue.Queue] * len(targets)
+        self.thread_handles = []
+        self.results = []
 
     def start_all(self):
-        self.thread_handles = []
-        for target in self.targets:
-            q = queue.Queue()
+        for target, q in zip(self.targets, self.queues):
             t = threading.Thread(target=_ret_via_queue, args=(target, q))
-            self.thread_handles.append((t, q))
+            self.thread_handles.append(t)
             t.start()
 
     def join_all(self, raise_exceptions=True):
         if self.results:
             return self.results
 
-        for t, q in self.thread_handles:
+        for t in self.thread_handles:
             t.join()
 
-        self.results = [q.get() for _, q in self.thread_handles]
-        if raise_exceptions:
-            for result in self.results:
-                if 'exception' in result:
-                    exc_info = result['exception']
-                    raise exc_info[1].with_traceback(exc_info[2])
-        return [x.get('return', None) for x in self.results]
+        self.results = [q.get() for q in self.queues]
+        exceptions = [result['exception'] for result in self.results if 'exception' in result]
+
+        if exceptions:
+            LOGGER.debug(f"{len(exceptions)} out of {len(self.targets)} threads raised exceptions:")
+            for exc in exceptions:
+                LOGGER.debug(f"{exc}")
+            if raise_exceptions:
+                exc_info = exceptions[0]
+                raise exc_info[1].with_traceback(exc_info[2])
+
+        return [result.get('return', None) for result in self.results]
 
 
 def invoke_in_parallel(func, *args_sequences):

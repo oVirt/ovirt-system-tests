@@ -6,13 +6,16 @@
 from __future__ import absolute_import
 
 import functools
+import logging
 import os
 
 import pytest
 
+from ost_utils import assert_utils
 from ost_utils import utils
 from ost_utils.ansible import AnsibleExecutionError
 
+LOGGER = logging.getLogger(__name__)
 
 LOG_COLLECTOR = """\
 '[LogCollector]
@@ -89,11 +92,19 @@ def run_log_collector(ansible_engine):
 
 
 def test_metrics_and_log_collector(setup_log_collector, suite_dir, ansible_engine, ansible_hosts):
-    vt = utils.VectorThread(
-        [
-            functools.partial(configure_metrics, suite_dir, ansible_engine, ansible_hosts),
-            functools.partial(run_log_collector, ansible_engine),
-        ],
-    )
-    vt.start_all()
-    vt.join_all()
+    def configure():
+        try:
+            vt = utils.VectorThread(
+                [
+                    functools.partial(configure_metrics, suite_dir, ansible_engine, ansible_hosts),
+                    functools.partial(run_log_collector, ansible_engine),
+                ],
+            )
+            vt.start_all()
+            vt.join_all(timeout=120)
+        except utils.TimeoutException:
+            LOGGER.debug("Metrics configuration timed out")
+            return False
+        return True
+
+    assert assert_utils.true_within_short(configure)

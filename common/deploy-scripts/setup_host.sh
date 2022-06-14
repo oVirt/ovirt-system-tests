@@ -58,4 +58,7 @@ EOF
     sed -i "s/^#vnc_sasl =.*/vnc_sasl = 1/" /etc/libvirt/qemu.conf
 fi
 
+# Configure vdsm-hook-log-console to log the console of the hosted-engine VM
+echo 'log_console_vm_regexp=HostedEngine' > /etc/sysconfig/vdsm
+
 coredump_kill

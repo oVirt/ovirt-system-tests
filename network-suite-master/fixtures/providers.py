@@ -8,15 +8,12 @@ import pytest
 import openstack
 import yaml
 
-from ovirtlib.providerlib import OpenStackImageProviders
 from ovirtlib.providerlib import OpenStackNetwork
 from ovirtlib.providerlib import OpenStackNetworkProvider
 from testlib import suite
 
 
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'
-OVIRT_IMAGE_REPO_NAME = 'ovirt-image-repository'
-OVIRT_IMAGE_REPO_URL = 'http://glance.ovirt.org:9292/'
 OPENSTACK_CLIENT_CONFIG_FILE = 'clouds.yml'
 DEFAULT_CLOUD = 'ovirt'
 DEFAULT_OVN_PROVIDER_NAME = 'ovirt-provider-ovn'
@@ -24,20 +21,6 @@ DEFAULT_OVN_NETWORK_NAME = 'default_network_name'
 DEFAULT_OVN_SUBNET_CIDR = '10.0.0.0/24'
 DEFAULT_OVN_SUBNET_NAME = 'default_subnet_name'
 DEFAULT_OVN_SUBNET_GW = '10.0.0.3'
-
-
-@pytest.fixture(scope='session')
-def ovirt_image_repo(system):
-    openstack_image_providers = OpenStackImageProviders(system)
-    if openstack_image_providers.is_provider_available(OVIRT_IMAGE_REPO_NAME):
-        openstack_image_providers.import_by_name(OVIRT_IMAGE_REPO_NAME)
-    else:
-        openstack_image_providers.create(
-            name=OVIRT_IMAGE_REPO_NAME,
-            url=OVIRT_IMAGE_REPO_URL,
-            requires_authentication=False,
-        )
-        openstack_image_providers.wait_until_available()
 
 
 @pytest.fixture(scope='session')

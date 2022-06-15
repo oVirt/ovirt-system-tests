@@ -7,35 +7,9 @@ from contextlib import contextmanager
 
 from ovirtsdk4 import types
 
-from . import syncutil
 from .sdkentity import SDKRootEntity
 from .sdkentity import SDKSubEntity
 from .netlib import Network
-
-
-class OpenStackImageProviders(SDKRootEntity):
-    def create(self, name, url, requires_authentication):
-        sdk_type = types.OpenStackImageProvider(name=name, url=url, requires_authentication=requires_authentication)
-        self._create_sdk_entity(sdk_type)
-
-    def is_provider_available(self, provider_name):
-        providers_service = self.system.openstack_image_providers_service
-        try:
-            provider = next(provider for provider in providers_service.list() if provider.name == provider_name)
-        except StopIteration:
-            return False
-        provider_service = providers_service.service(provider.id)
-        return provider_service is not None
-
-    def wait_until_available(self):
-        syncutil.sync(
-            exec_func=lambda: self.is_provider_available(self.get_sdk_type().name),
-            exec_func_args=(),
-            success_criteria=lambda s: s,
-        )
-
-    def _get_parent_service(self, system):
-        return system.openstack_image_providers_service
 
 
 class OpenStackNetworkProvider(SDKRootEntity):

@@ -98,12 +98,6 @@ class NetworkAttachmentData(object):
     def in_sync(self):
         return self._in_sync
 
-    def get_gw6(self):
-        return next(
-            (a.gateway for a in self._ip_assignments if a.version == types.IpVersion.V6),
-            None,
-        )
-
     def to_network_attachment(self):
         """
         :param attachment_data: netattachlib.NetworkAttachmentData

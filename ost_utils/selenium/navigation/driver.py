@@ -123,9 +123,6 @@ class Driver:
     def wait_while(self, message, condition_method, *args):
         self._wait_while(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)
 
-    def wait_long_while(self, message, condition_method, *args):
-        self._wait_while(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
-
     def _wait_while(self, message, timeout, condition_method, *args):
         WebDriverWait(self.driver, timeout, ignored_exceptions=[TimeoutException]).until_not(
             ConditionClass(condition_method, *args), message

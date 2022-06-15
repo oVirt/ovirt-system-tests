@@ -5,7 +5,6 @@
 #
 
 import ipaddress
-import socket
 
 from ovirtsdk4.types import (
     BootProtocol,
@@ -23,17 +22,6 @@ from ovirtsdk4.types import (
 
 from ost_utils import constants
 from ost_utils import test_utils
-
-
-def find_free_port(start, stop, host="127.0.0.1", timeout=0.1):
-    for port in range(start, stop):
-        try:
-            s = socket.create_connection((host, port), timeout)
-        except ConnectionRefusedError:
-            return port
-        else:
-            s.close()
-    raise RuntimeError("No free port could be found")
 
 
 def get_ips(backend, ansible_facts, network_name):

@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-import http
-
 import ovirtsdk4
 
 from . import eventlib
@@ -46,12 +44,6 @@ def sd_destroy_error_not_due_to_busy(error):
 
 def is_not_ovirt_or_unlisted(error, error_list):
     return not (isinstance(error, ovirtsdk4.Error) and [err for err in error_list if err in str(error)])
-
-
-def is_not_http_conflict(error):
-    if not isinstance(error, ovirtsdk4.Error):
-        return True
-    return error.code != http.HTTPStatus.CONFLICT
 
 
 def report_status(func):

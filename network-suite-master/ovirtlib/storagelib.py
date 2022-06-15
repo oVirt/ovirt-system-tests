@@ -12,12 +12,7 @@ from . import syncutil
 from .sdkentity import SDKRootEntity
 
 
-MiB = 2 ** 20
 GiB = 2 ** 30
-
-
-class ImageNotFoundError(Exception):
-    pass
 
 
 class DiskFormat(object):
@@ -150,28 +145,6 @@ class StorageDomain(SDKRootEntity):
             exec_func=lambda: self.status,
             exec_func_args=(),
             success_criteria=lambda s: s == status,
-        )
-
-    def import_image(self, cluster, repo, image_name, template_name=None):
-        """
-        :type cluster: clusterlib.Cluster
-        :type repo: storagelib.StorageDomain
-        :type image_name: string
-        :type template_name: string
-        """
-        images_service = repo.service.images_service()
-        images = images_service.list()
-        try:
-            image = next(image for image in images if image.name == image_name)
-        except StopIteration:
-            raise ImageNotFoundError
-        image_service = images_service.service(image.id)
-
-        image_service.import_(
-            import_as_template=template_name is not None,
-            template=(types.Template(name=template_name) if template_name is not None else None),
-            cluster=cluster.get_sdk_type(),
-            storage_domain=self.get_sdk_type(),
         )
 
     def create_disk(self, name):

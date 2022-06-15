@@ -12,19 +12,11 @@ from ovirtlib import eventlib
 from ovirtlib import joblib
 from ovirtlib import sshlib
 from ovirtlib import syncutil
-from ovirtlib import userlib
 
 
 @pytest.fixture(scope="session")
 def engine_password():
     return "123"
-
-
-@pytest.fixture(scope="session")
-def admin_user(system, engine_username):
-    admin = userlib.User(system)
-    admin.import_by_name(engine_username)
-    return admin
 
 
 @pytest.fixture(scope='session')

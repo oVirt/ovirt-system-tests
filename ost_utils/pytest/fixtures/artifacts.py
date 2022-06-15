@@ -28,6 +28,7 @@ def artifact_list():
     return [
         '/etc/dnf',
         '/etc/firewalld',
+        '/etc/grafana',
         '/etc/httpd/conf',
         '/etc/httpd/conf.d',
         '/etc/httpd/conf.modules.d',

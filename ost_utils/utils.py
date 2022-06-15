@@ -125,12 +125,6 @@ class VectorThread:
                 raise exc_info[1].with_traceback(exc_info[2])
 
 
-def invoke_in_parallel(func, *args_sequences):
-    vt = VectorThread(func_vector(func, list(zip(*args_sequences))))
-    vt.start_all()
-    return vt.join_all()
-
-
 def invoke_different_funcs_in_parallel(*funcs):
     vt = VectorThread(funcs)
     vt.start_all()

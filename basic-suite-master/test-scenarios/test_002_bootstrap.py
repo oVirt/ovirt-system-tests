@@ -1443,10 +1443,6 @@ def test_add_nic(engine_api):
 
 @order_by(_TEST_LIST)
 def test_add_graphics_console(engine_api, ansible_host0_facts):
-    if ansible_host0_facts.get('ansible_distribution_major_version') == "9":
-        # trying to delete and re add VNC will add it back with QXL which doesnt supported on el9
-        # BZ 1976607
-        pytest.skip('skip test on el9')
     # remove VNC
     engine = engine_api.system_service()
     vm = test_utils.get_vm_service(engine, VM0_NAME)

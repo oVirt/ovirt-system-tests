@@ -52,13 +52,7 @@ set_selinux_on_nfs() {
 }
 
 setup_iscsi() {
-    # this is ugly, assumes that dedicated storage VMs (ost-[suite]-storage) use their primary network as storage network only on HE suite, and VMs with co-located engine have a dedicated storage network on eth1 (like basic-suite-master).
-    echo $SUITE
-    if [[ $(hostname) == *"-storage"* ]] && [[ $(hostname) == *"he-"*  ]]; then
-        NIC=eth0
-    else
-        NIC=eth1
-    fi
+    NIC=eth1
     IP=$(/sbin/ip -o addr show dev $NIC scope global | tac | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
 
     pvcreate --zero n /dev/${ISCSI_DEV}
@@ -249,7 +243,8 @@ main() {
     activate_nfs
     setup_lvm_filter
     setup_iscsi
-    setup_389ds
+    # TODO el9 doesn't have 389-ds (LDAP) configuration yet
+    [ "$(. /etc/os-release; echo ${VERSION_ID})" != "9" ] && setup_389ds
     coredump_kill
 
     fstrim -va

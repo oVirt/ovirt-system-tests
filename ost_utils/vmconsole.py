@@ -39,7 +39,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         self._prompt = bash_prompt
         self._connected = False
         self._logged_in = False
-        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 15)
+        self._read_alarm = BlockingIOAlarm('timed out waiting for read', 120)
 
     @contextlib.contextmanager
     def connect(self, vm_id):
@@ -56,7 +56,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
     @contextlib.contextmanager
     def _connect(self, vm_id):
-        time.sleep(15)
         try:
             master, slave = pty.openpty()
             LOGGER.debug('vmconsole: opened pty')
@@ -79,7 +78,6 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 args,
                 stdin=slave,
                 stdout=subprocess.PIPE,
-                universal_newlines=True,
                 bufsize=0,
             )
             LOGGER.debug(f'vmconsole: opened reader with args {args}')
@@ -101,8 +99,9 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
     def _login(self):
         try:
             signal.signal(signal.SIGALRM, self._read_alarm.handle)
-            time.sleep(15)
+            time.sleep(30)
             self._pre_login()
+            LOGGER.debug('vmconsole: logging in')
             self._read_until_prompt('login: ')
             self._write(f'{self._user}\n')
             self._read_until_prompt('Password: ')
@@ -119,20 +118,20 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         for i in range(15):
             LOGGER.debug(f'vmconsole: pre login {i}')
             self._write('\n')
-            ch = self._read()
-            if ch == '\n' or len(ch.strip()) != 0:
+            byte = self._read()
+            if byte in (b'\n', b'\r') or len(byte.strip()) != 0:
                 break
-            time.sleep(2)
+            time.sleep(10)
 
     def _logout(self):
         LOGGER.debug('vmconsole: logging out')
         self._write('exit\n')
-        self._read_until_prompt('\n\n\n')
+        self._read_until_prompt('login: ')
         self._logged_in = False
 
     def add_static_ip(self, vm_id, ip, iface):
         ips = self.shell(vm_id, (Shell.ip_address_add(ip, iface), Shell.get_ips(iface)))
-        ip_version = ipaddress.ip_address(ip.split('/')[0]).version
+        ip_version = ipaddress.ip_interface(ip).version
         return Shell.next_ip(ips.splitlines(), ip_version)
 
     def get_ip(self, vm_id, iface, ip_version):
@@ -149,12 +148,16 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 self._write(entry)
                 res = self._read_until_bash_prompt()
                 res = res.replace(entry, '').rsplit(self._prompt)[0]
-                LOGGER.debug(f'vmconsole: shell {cmd} returned: {res}')
+                LOGGER.debug(f'vmconsole: command: [{cmd}] returned: [{res}]')
         return res
 
     def can_log_in(self, vm_id):
-        with self.connect(vm_id) as console:
-            logged_in = console.logged_in
+        try:
+            with self.connect(vm_id) as console:
+                logged_in = console.logged_in
+        except BlockingIOError as e:
+            LOGGER.debug(f'vmconsole: could not log in: {e.args[0]}')
+            logged_in = False
         return logged_in
 
     @property
@@ -165,25 +168,24 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
         return self._read_until_prompt(self._prompt)
 
     def _read_until_prompt(self, prompt):
-        LOGGER.debug(f'vmconsole: reading until {prompt}...')
-        time.sleep(2)
-        recv = ''
+        LOGGER.debug(f'vmconsole: reading until [{prompt}]...')
+        time.sleep(5)
+        _bytes = b''
         try:
-            while not recv.endswith(prompt):
-                recv = ''.join([recv, (self._read())])
+            encoded_prompt = prompt.encode()
+            while not _bytes.endswith(encoded_prompt):
+                _bytes += self._read()
         finally:
-            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{recv}]')
-        LOGGER.debug(f'vmconsole: read until prompt returned: {recv}')
-        return recv
+            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{repr(_bytes)}]')
+        return _bytes.decode(errors='ignore').replace('\r', '')
 
     def _read(self):
         signal.alarm(self._read_alarm.seconds)
-        c = self._reader.stdout.read(1)
+        byte = self._reader.stdout.read(1)
         signal.alarm(0)  # cancel
-        return c
+        return byte
 
     def _write(self, entry):
-        time.sleep(2)
         LOGGER.debug(f'vmconsole: writing [{entry}]')
         self._writer.write(entry)
         self._writer.flush()

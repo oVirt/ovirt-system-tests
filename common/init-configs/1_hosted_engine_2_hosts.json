@@ -8,6 +8,14 @@
       "host-0",
       "host-1"
     ]
+  },
+    "storage": {
+    "template": "common/libvirt-templates/net_template",
+    "nics": [
+      "host-0-storage",
+      "host-1-storage",
+      "storage-storage"
+    ]
   }
 },
 "vms" : {
@@ -19,7 +27,8 @@
       "common/deploy-scripts/setup_storage_he_extra.sh"
     ],
     "nics": {
-      "storage": { "template": "common/libvirt-templates/nic_template" }
+      "storage": { "template": "common/libvirt-templates/nic_template" },
+      "storage-storage": { "template": "common/libvirt-templates/nic_template" }
     },
     "root_disk_var": "OST_IMAGES_BASE",
     "disks": {
@@ -47,7 +56,8 @@
       "common/deploy-scripts/setup_host.sh"
     ],
     "nics": {
-      "host-0": { "template": "common/libvirt-templates/nic_template" }
+      "host-0": { "template": "common/libvirt-templates/nic_template" },
+      "host-0-storage": { "template": "common/libvirt-templates/nic_template" }
     },
     "root_disk_var": "OST_IMAGES_HE_INSTALLED",
     "disks": {}
@@ -59,7 +69,8 @@
       "common/deploy-scripts/setup_host.sh"
     ],
     "nics": {
-      "host-1": { "template": "common/libvirt-templates/nic_template" }
+      "host-1": { "template": "common/libvirt-templates/nic_template" },
+      "host-1-storage": { "template": "common/libvirt-templates/nic_template" }
     },
     "root_disk_var": "OST_IMAGES_NODE",
     "disks": {}

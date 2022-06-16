@@ -40,8 +40,7 @@ OST_APP_TOKEN=$(jq -r .token token)
 
 [[ -z "$SHA" ]] && SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
 API_URL_BASE=$(echo ${PR_URL} | cut -d / -f 1-6)
-[[ "$DISTRO" = "el8stream" ]] && OST_IMAGE="el8stream+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-8-x86_64"
-[[ "$DISTRO" = "el9stream" ]] && OST_IMAGE="el9stream+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-9-x86_64"
+[[ "$DISTRO" =~ el[89]stream ]] && OST_IMAGE="${DISTRO}+https://download.copr.fedorainfracloud.org/results/ovirt/ovirt-master-snapshot/centos-stream-\$releasever-x86_64"
 [[ "$DISTRO" = "rhel8" ]] && OST_IMAGE=${RHEL_OST_IMAGE}
 ost_app_response() { # ost_app_response status conclusion summary
         echo "response $1 $2 $3"

@@ -36,10 +36,17 @@ class Grafana(Displayable):
         self.ovirt_driver.wait_until('Breadcrumbs visible', self._is_breadcrumbs_visible, menu, submenu)
 
     def is_error_visible(self):
-        return (
-            self.ovirt_driver.is_class_name_present('alert-error')
-            and self.ovirt_driver.driver.find_element(By.CLASS_NAME, 'alert-error').is_displayed()
-        )
+        if self.ovirt_driver.is_xpath_present('//app-notifications-list'):
+            notifications = self.ovirt_driver.driver.find_elements(By.XPATH, '//app-notifications-list/*')
+            for notification in notifications:
+                if "Error" in notification.text:
+                    return True
+        else:
+            raise Exception(
+                """Tag app-notifications-list is not present. This may mean that the Grafana
+                   UI has changed and we will no longer be able to detect error notifications"""
+            )
+        return False
 
     def _is_breadcrumbs_visible(self, menu, submenu):
         find_element = self.ovirt_driver.driver.find_element

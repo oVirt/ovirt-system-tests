@@ -1108,9 +1108,7 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
         # - Perhaps change the condition to make it more relevant
         # - Fix :-)
         pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
-    ansible_engine.shell('grep USER_VDC_LOGIN /var/log/messages')
-    ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
-    ansible_engine.systemd(name='snmptrapd', state='stopped')
+    ansible_engine.shell('grep USER_VDC_LOGIN /var/log/snmptrapd.log')
 
 
 @order_by(_TEST_LIST)
@@ -1218,13 +1216,13 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
             name=TEMPLATE_BLANK,
         ),
         display=sdk4.types.Display(
-            smartcard_enabled=True,
             keyboard_layout='en-us',
             file_transfer_enabled=True,
             copy_paste_enabled=True,
+            type=sdk4.types.DisplayType.VNC,
         ),
         usb=sdk4.types.Usb(
-            enabled=True,
+            enabled=False,
             type=sdk4.types.UsbType.NATIVE,
         ),
         memory_policy=sdk4.types.MemoryPolicy(
@@ -1444,23 +1442,23 @@ def test_add_nic(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_graphics_console(engine_api):
+def test_add_graphics_console(engine_api, ansible_host0_facts):
     # remove VNC
     engine = engine_api.system_service()
     vm = test_utils.get_vm_service(engine, VM0_NAME)
     consoles_service = vm.graphics_consoles_service()
-    if len(consoles_service.list()) == 2:
+    consoles = consoles_service.list()
+    console = next((c for c in consoles if c.protocol == types.GraphicsType.VNC), None)
+    if console is not None:
         console = consoles_service.console_service('766e63')
         console.remove()
-        assert assert_utils.equals_within_short(lambda: len(consoles_service.list()), 1)
-
-    # and add it back
-    consoles_service.add(
-        sdk4.types.GraphicsConsole(
-            protocol=sdk4.types.GraphicsType.VNC,
+        assert assert_utils.equals_within_short(
+            lambda: types.GraphicsType.VNC in [t.protocol for t in consoles_service.list()], False
         )
+    consoles_service.add(console=types.GraphicsConsole(protocol=types.GraphicsType.VNC))
+    assert assert_utils.equals_within_short(
+        lambda: types.GraphicsType.VNC in [t.protocol for t in consoles_service.list()], True
     )
-    assert assert_utils.equals_within_short(lambda: len(consoles_service.list()), 2)
 
 
 @order_by(_TEST_LIST)

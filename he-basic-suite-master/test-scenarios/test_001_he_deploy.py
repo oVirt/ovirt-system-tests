@@ -4,10 +4,12 @@
 #
 #
 
+import logging
 import os
 
 import pytest
 
+from ost_utils import assert_utils
 from ost_utils import he_utils
 from ost_utils.deployment_utils import package_mgmt
 

@@ -4,10 +4,13 @@
 #
 #
 
+import logging
 import os
 
 import pytest
 
+from ost_utils import assert_utils
+from ost_utils import he_utils
 from ost_utils.deployment_utils import package_mgmt
 
 
@@ -78,6 +81,16 @@ def test_he_deploy(
     ansible_host0.shell('/root/setup_first_he_host.sh ' f'{he_host_name} ' f'{he_mac_address} ' f'{engine_ip}')
 
     ansible_storage.shell('fstrim -va')
+
+
+def test_set_global_maintenance(ansible_host0):
+    logging.info('Waiting For System Stability...')
+    he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
+
+    he_utils.set_and_test_global_maintenance_mode(ansible_host0, True)
+
+    assert assert_utils.true_within_short(lambda: he_utils.all_hosts_state_global_maintenance(ansible_host0))
+    logging.info('Global maintenance state set on all hosts')
 
 
 def test_install_sar_collection(root_dir, ansible_engine):

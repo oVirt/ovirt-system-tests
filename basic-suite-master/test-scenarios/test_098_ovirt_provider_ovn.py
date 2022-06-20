@@ -366,10 +366,7 @@ def test_provider_configured(hosts_service, ost_dc_name):
 
 
 @versioning.require_version(4, 2)
-def test_use_ovn_provider(engine_api, engine_ip_url, engine_full_username, engine_password, ost_images_distro):
-    # https://bugzilla.redhat.com/2092856
-    if ost_images_distro == "el9stream":
-        pytest.xfail("regression in libvirt, waiting for a fix")
+def test_use_ovn_provider(engine_api, engine_ip_url, engine_full_username, engine_password):
     engine = engine_api.system_service()
     provider_id = network_utils.get_default_ovn_provider_id(engine)
 

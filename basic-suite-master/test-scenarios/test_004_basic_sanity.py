@@ -1411,9 +1411,7 @@ def test_next_run_unplug_cpu(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_hotplug_nic(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip, ost_images_distro):
-    if ost_images_distro == "el9stream":
-        pytest.xfail("regression in libvirt, waiting for a fix")
+def test_hotplug_nic(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip):
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
     nics_service = vms_service.vm_service(vm.id).nics_service()

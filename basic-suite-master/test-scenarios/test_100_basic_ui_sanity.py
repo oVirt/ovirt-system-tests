@@ -555,9 +555,6 @@ def test_userportal(
     vm_portal.logout()
     save_screenshot('userportal-logout')
 
-    # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
-    ovirt_driver.driver.get(engine_webadmin_url)
-
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
     assert welcome_screen.is_user_logged_out()

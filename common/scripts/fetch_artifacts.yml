@@ -1,0 +1,58 @@
+#!/usr/bin/ansible-playbook
+
+- hosts: all
+
+  vars:
+    archive_name: artifacts.tar.gz
+    remote_archive_path: "/var/tmp/{{ archive_name }}"
+    artifact_list:
+      - /etc/dnf
+      - /etc/firewalld
+      - /etc/grafana
+      - /etc/httpd/conf
+      - /etc/httpd/conf.d
+      - /etc/httpd/conf.modules.d
+      - /etc/ovirt-engine
+      - /etc/ovirt-engine-dwh
+      - /etc/ovirt-engine-metrics
+      - /etc/ovirt-engine-setup.conf.d
+      - /etc/ovirt-engine-setup.env.d
+      - /etc/ovirt-host-deploy.conf.d
+      - /etc/ovirt-imageio-proxy
+      - /etc/ovirt-provider-ovn
+      - /etc/ovirt-vmconsole
+      - /etc/ovirt-web-ui
+      - /etc/resolv.conf
+      - /etc/sysconfig
+      - /etc/yum
+      - /etc/yum.repos.d
+      - /root
+      - /tmp/dnf_yum.conf
+      - /var/cache/ovirt-engine
+      - /var/lib/ovirt-engine/setup/answers
+      - /var/lib/ovirt-engine/ansible-runner
+      - /var/lib/pgsql/initdb_postgresql.log
+      - /var/lib/pgsql/data/log
+      - /var/log
+    ost_repo_root: "{{ lookup('env', 'OST_REPO_ROOT') }}"
+
+  tasks:
+    - name: Get the journal right before collecting
+      ansible.builtin.shell: journalctl -a --no-pager -o short-iso-precise > /var/log/journalctl.log
+
+    - name: Archive artifacts
+      community.general.archive:
+        path: "{{ artifact_list }}"
+        dest: "{{ remote_archive_path }}"
+
+    - name: Fetch archived artifacts
+      ansible.builtin.fetch:
+        src: "{{ remote_archive_path }}"
+        dest: "{{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }}"
+        flat: yes
+
+    - name: Extract the artifacts
+      local_action: ansible.builtin.command tar -xf {{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }} -C {{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}
+
+    - name: Clean up the archives
+      local_action: ansible.builtin.command rm {{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }}

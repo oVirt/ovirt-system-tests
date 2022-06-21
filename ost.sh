@@ -14,6 +14,8 @@ shell <host> [command ...]
     opens ssh connection
 console <host>
     opens virsh console
+fetch-artifacts
+    fetches artifacts from all hosts
 destroy
     stop and remove the running environment
 "
@@ -40,6 +42,9 @@ case "$cmd" in
   console)
     host=$1; shift;
     ost_console $host $@
+    ;;
+  fetch-artifacts)
+    ost_fetch_artifacts
     ;;
   shell)
     host=$1; shift;

@@ -312,6 +312,14 @@ ost_console() {
     fi
 }
 
+ost_fetch_artifacts() {
+    _deployment_exists
+    ansible-playbook -i deployment/ansible_inventory -u root --ssh-common-args '-o StrictHostKeyChecking=no' common/scripts/fetch_artifacts.yml >/dev/null || {
+        echo "ansible playbook failed"
+        return 9
+    };
+}
+
 # check dependencies
 ost_check_dependencies() {
     ${PYTHON} -V 2>/dev/null | grep -q ^Python || { echo "$PYTHON is not installed"; return 2; }

@@ -51,7 +51,7 @@
   },
   "host-0": {
     "template": "common/libvirt-templates/vm_template",
-    "memory": "5744",
+    "memory": "6768",
     "deploy-scripts": [
       "common/deploy-scripts/setup_host.sh"
     ],

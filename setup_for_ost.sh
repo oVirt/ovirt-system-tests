@@ -77,13 +77,6 @@ if [[ ${ANSIBLE_INSTALLED} -eq 0 ]]; then
     fi
 fi
 
-echo "This script needs some ansible collections to work properly, will install them now..."
-ansible-galaxy collection install ansible.posix community.general
-if [[ ${?} -ne 0 ]]; then
-    echo "Ansible collection installation failed"
-    exit 1
-fi
-
 echo "Running the setup playbook..."
 
 if [[ ${ASSUME_YES} -eq 1 ]]; then

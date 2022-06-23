@@ -5,7 +5,6 @@
 #
 
 import os
-import re
 
 
 _DC_VERSION = '4.7'
@@ -31,19 +30,3 @@ def require_version(major, minor):
             return lambda *args, **kwargs: True
 
         return skipped
-
-
-def guest_os_image_name():
-    return 'CirrOS 0.5.1 Custom for x86_64'
-
-
-def transformed_guest_os_image_name():
-    return re.sub('[ ()]', '_', guest_os_image_name())
-
-
-def guest_os_glance_disk_name():
-    return transformed_guest_os_image_name()[:12] + '_glance_disk'
-
-
-def guest_os_template_name():
-    return transformed_guest_os_image_name()[:12] + '_glance_template'

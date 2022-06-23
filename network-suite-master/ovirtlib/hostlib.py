@@ -20,7 +20,6 @@ from .sdkentity import SDKSubEntity
 
 HOST_TIMEOUT_SHORT = 5 * 60
 HOST_TIMEOUT_LONG = 20 * 60
-SETUP_NETWORKS_TIMEOUT = 3 * 60
 
 
 class HostStatus(object):
@@ -347,13 +346,6 @@ class Host(SDKRootEntity):
             success_criteria=lambda s: s == NONOP,
         )
 
-    def wait_for_maintenance_status(self):
-        syncutil.sync(
-            exec_func=lambda: self.status,
-            exec_func_args=(),
-            success_criteria=lambda s: s == HostStatus.MAINTENANCE,
-        )
-
     def wait_for_networks_in_sync(self, networks=None):
         syncutil.sync(
             exec_func=self.networks_in_sync,
@@ -366,13 +358,6 @@ class Host(SDKRootEntity):
             exec_func=self.networks_out_of_sync,
             exec_func_args=(networks,),
             success_criteria=lambda s: s,
-        )
-
-    def wait_for_spm_status(self):
-        syncutil.sync(
-            exec_func=lambda: self.is_spm,
-            exec_func_args=(),
-            success_criteria=lambda spm: spm,
         )
 
     def workaround_bz_1779280(self):

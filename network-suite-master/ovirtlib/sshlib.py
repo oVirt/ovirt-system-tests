@@ -11,7 +11,6 @@ from . import syncutil
 
 DEFAULT_USER = 'root'
 ROOT_PASSWORD = '123456'
-TIMEOUT = 60 * 5
 LOGGER = logging.getLogger(__name__)
 logging.getLogger('paramiko.transport').setLevel(logging.WARNING)
 
@@ -86,26 +85,6 @@ class Node(object):
         :param slave_name: str
         """
         self.exec_command('ip link set {bond} type bond active_slave {slave}'.format(bond=bond_name, slave=slave_name))
-
-    def assert_default_route(self, expected_v6_route_address):
-        assert expected_v6_route_address == self.get_default_route_v6()
-
-    def get_default_route_v6(self):
-        """
-        :return: the v6 default route as string or None
-        """
-        return self._get_default_route('inet6')
-
-    def _get_default_route(self, family):
-        """
-        :param family: inet for ipv4 or inet6 for ipv6
-        :return: the default route address as string or None
-        """
-        command = 'ip -o -f ' + family + ' r show default'
-        res = self.exec_command(command)
-        if res is not None:
-            res = res[(res.find('via ') + len('via ')) : res.find(' dev')]
-        return res
 
     def assert_no_ping_from_netns(self, target, from_netns):
         with pytest.raises(SshException, match='100% packet loss'):
@@ -188,40 +167,6 @@ class Node(object):
         LOGGER.debug(cmd)
         self.exec_command(cmd)
 
-    def get_global_ip(self, iface_name, ip_version):
-        """
-        :param str iface_name: interface name
-        :param str ip_version: '4' or '6'
-        :return: ipv4 or global ipv6 address as string
-        """
-        cmd = f"ip -{ip_version} -o addr show {iface_name}" f" |awk '{{print $4}}' |cut -d '/' -f 1"
-        if ip_version == 6:
-            cmd += ' |grep -v fe80'
-        return self.exec_command(cmd).decode('utf-8').strip()
-
-    def lookup_ip_address_with_dns_query(self, hostname, ip_version):
-        """
-        Wait for the ip address to update in the dns lookup
-        :param hostname: str
-        :param ip_version: int 4 or 6
-        :return: ipv4 address as a string
-        """
-        return syncutil.sync(
-            exec_func=self._lookup_ip_address_with_dns_query,
-            exec_func_args=(hostname, ip_version),
-            success_criteria=lambda ip: ip != '',
-            timeout=TIMEOUT,
-        )
-
-    def _lookup_ip_address_with_dns_query(self, hostname, ip_version):
-        """
-        :param hostname: str
-        :return: ipv4 address as a string
-        """
-        record_type = 'AAAA' if ip_version == 6 else 'A'
-        cmd = f'dig +short {hostname} {record_type}'
-        return self.exec_command(cmd).decode('utf-8').strip()
-
     def global_replace_str_in_file(self, old, new, filename):
         return self.exec_command(f'sed -i -r "s/{old}/{new}/g" "{filename}"')
 
@@ -235,17 +180,3 @@ class Node(object):
             f'username:{self._username},'
             f'password:{self._password}>'
         )
-
-
-class CirrosNode(Node):
-    """
-    A class to collect operations that need to be carried out via ssh
-    on a Cirros machine
-    """
-
-    def assign_ip_with_dhcp_client(self, iface_name):
-        """
-        run dhcp client to assign an ip addresses for the specified interface
-        :param str iface_name: interface name
-        """
-        self.exec_command(f'sudo /sbin/cirros-dhcpc up {iface_name}')

@@ -24,9 +24,6 @@ class VirshBackend(base.BaseBackend):
         self._networks = VirshNetworks(self._deployment_path)
         self._vms = self._get_vms(self._deployment_path)
 
-    def iface_mapping(self):
-        return {vm_info.name: vm_info.nics.get_nics_for_all_networks() for vm_info in self._vms.values()}
-
     def ip_mapping(self):
         return {vm_info.name: vm_info.nics.ips_by_network_role() for vm_info in self._vms.values()}
 
@@ -47,9 +44,6 @@ class VirshBackend(base.BaseBackend):
 
     def management_subnet(self, ip_version):
         return self._networks.get_subnet_for_network_role(self.management_network_name(), ip_version)
-
-    def bonding_subnet(self, ip_version):
-        return self._networks.get_subnet_for_network_role(self.bonding_network_name(), ip_version)
 
     def storage_subnet(self, ip_version):
         return self._networks.get_subnet_for_network_role(self.storage_network_name(), ip_version)

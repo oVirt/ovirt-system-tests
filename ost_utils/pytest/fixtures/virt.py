@@ -8,29 +8,8 @@ import tempfile
 import ovirtsdk4 as sdk4
 import pytest
 
-from ost_utils import versioning
 from ost_utils import vmconsole
 from ost_utils.shell import shell
-
-
-@pytest.fixture(scope="session")
-def cirros_image():
-    return versioning.guest_os_image_name()
-
-
-@pytest.fixture(scope="session")
-def transformed_cirros_image():
-    return versioning.transformed_guest_os_image_name()
-
-
-@pytest.fixture(scope="session")
-def cirros_image_glance_disk_name():
-    return versioning.guest_os_glance_disk_name()
-
-
-@pytest.fixture(scope="session")
-def cirros_image_glance_template_name():
-    return versioning.guest_os_template_name()
 
 
 @pytest.fixture(scope="session")

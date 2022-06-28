@@ -113,10 +113,6 @@ def test_install_sar_collection(root_dir, ansible_engine):
     )
 
 
-def test_add_engine_to_artifacts(artifacts, he_host_name, artifact_list):
-    artifacts[he_host_name] = artifact_list
-
-
 def test_check_installed_packages(request, ansible_all):
     if request.config.getoption('--skip-custom-repos-check'):
         pytest.skip('the check was disabled by the run argument')

@@ -9,7 +9,6 @@ import logging
 import os
 
 import pytest
-import yaml
 
 from ost_utils import coverage
 from ost_utils import utils
@@ -24,44 +23,11 @@ def artifacts_dir():
     return os.path.join(os.environ["OST_REPO_ROOT"], "exported-artifacts")
 
 
-@pytest.fixture(scope="session")
-def artifact_list():
-    with open(os.path.join(os.environ["OST_REPO_ROOT"], "common", "scripts", "fetch_artifacts.yml"), "r") as f:
-        playbook = yaml.safe_load(f)
-    return playbook[0]['vars']['artifact_list']
-
-
-@pytest.fixture(scope="session")
-def artifacts(all_hostnames, artifact_list):
-    return {hostname: artifact_list for hostname in all_hostnames}
-
-
 @pytest.fixture(scope="session", autouse=True)
-def collect_artifacts(artifacts_dir, artifacts, ansible_by_hostname):
-    def collect(hostname, artifacts_list, target_dir):
-        artifacts_list_string = ','.join(artifacts_list)
-        ansible_handle = ansible_by_hostname(hostname)
-        archive_name = "artifacts.tar.gz"
-        local_archive_dir = os.path.join(target_dir, "test_logs", hostname)
-        local_archive_path = os.path.join(local_archive_dir, archive_name)
-        remote_archive_path = os.path.join("/var/tmp", archive_name)
-        os.makedirs(local_archive_dir, exist_ok=True)
-        # Get the journal right before collecting, so that we get all
-        # records we can. Does not make that much sense here, but doing
-        # this in its own fixture, including making the effort to schedule
-        # it right before current, would needlessly complicate the code.
-        ansible_handle.shell('journalctl -a --no-pager -o short-iso-precise > ' '/var/log/journalctl.log')
-        ansible_handle.archive(path=artifacts_list_string, dest=remote_archive_path)
-        ansible_handle.fetch(src=remote_archive_path, dest=local_archive_path, flat='yes')
-        shell.shell(["tar", "-xf", local_archive_path, "-C", local_archive_dir])
-        shell.shell(["rm", local_archive_path])
-
+def collect_artifacts(root_dir):
     yield
-    calls = [
-        functools.partial(collect, hostname, artifact_list, artifacts_dir)
-        for hostname, artifact_list in artifacts.items()
-    ]
-    utils.invoke_different_funcs_in_parallel(*calls)
+    ost_script = os.path.join(root_dir, "ost.sh")
+    shell.shell(f"{ost_script} fetch-artifacts", shell=True)
 
 
 @pytest.fixture(scope="session", autouse=True)

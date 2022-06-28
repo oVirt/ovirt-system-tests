@@ -7,9 +7,7 @@ import pytest
 
 from ost_utils.pytest.fixtures.ansible import *
 
-from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
-from ost_utils.pytest.fixtures.artifacts import artifact_list
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 from ost_utils.pytest.fixtures.artifacts import dump_dhcp_leases
 from ost_utils.pytest.fixtures.artifacts import generate_sar_stat_plots

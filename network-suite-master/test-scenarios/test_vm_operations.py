@@ -21,8 +21,10 @@ from testlib import suite
 VM_BLANK = 'test_vm_operations_blank_vm'
 VM_CIRROS = 'test_vm_operations_cirros_vm'
 MIG_NET = 'mig-net'
-NIC1_NAME = 'nic1'
-NIC2_NAME = 'nic2'
+NIC_NAMES = {
+    1: 'nic1',
+    2: 'nic2',
+}
 SERIAL_NET = 'test_serial_vmconsole_net'
 CIRROS_NIC = 'eth1'
 IPV6 = 'fd8f:1391:3a82::cafe:cafe'
@@ -67,8 +69,8 @@ def running_cirros_vm(
                     cluster=default_cluster,
                     template=cirros_template,
                 )
-                vm.create_vnic(NIC1_NAME, ovirtmgmt_vnic_profile)
-                vm.create_vnic(NIC2_NAME, net.vnic_profile())
+                vm.create_vnic(NIC_NAMES[1], ovirtmgmt_vnic_profile)
+                vm.create_vnic(NIC_NAMES[2], net.vnic_profile())
                 vm.wait_for_down_status()
                 vm.run()
                 vm.wait_for_up_status()
@@ -85,7 +87,7 @@ def running_blank_vm(system, default_cluster, default_storage_domain, ovirtmgmt_
             cluster=default_cluster,
             template=templatelib.TEMPLATE_BLANK,
         )
-        vm.create_vnic(NIC1_NAME, ovirtmgmt_vnic_profile)
+        vm.create_vnic(NIC_NAMES[1], ovirtmgmt_vnic_profile)
         disk_att_id = vm.attach_disk(disk=disk)
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.run()
@@ -130,15 +132,15 @@ def test_live_vm_migration_using_dedicated_network(running_blank_vm, host_0_with
 
 
 def test_hot_linking_vnic(running_blank_vm):
-    vnic = running_blank_vm.get_vnic(NIC1_NAME)
+    vnic = running_blank_vm.get_vnic(NIC_NAMES[1])
     assert vnic.linked is True
 
     vnic.linked = False
-    vnic = running_blank_vm.get_vnic(NIC1_NAME)
+    vnic = running_blank_vm.get_vnic(NIC_NAMES[1])
     assert not vnic.linked
 
     vnic.linked = True
-    vnic = running_blank_vm.get_vnic(NIC1_NAME)
+    vnic = running_blank_vm.get_vnic(NIC_NAMES[1])
     assert vnic.linked is True
 
 
@@ -150,7 +152,7 @@ def test_iterators(running_blank_vm, system):
     assert running_blank_vm.cluster.name in cluster_names
 
     vnic_names = (vnic.name for vnic in running_blank_vm.vnics())
-    assert NIC1_NAME in vnic_names
+    assert NIC_NAMES[1] in vnic_names
 
     vnic_profile_names = (profile.name for profile in netlib.VnicProfile.iterate(system))
     assert next(running_blank_vm.vnics()).vnic_profile.name in vnic_profile_names
@@ -181,7 +183,7 @@ def test_assign_network_filter(running_blank_vm, system, ovirtmgmt_network):
 @suite.skip_suites_below('4.3')
 def test_hot_update_vm_interface(running_blank_vm, ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(running_blank_vm)
-    vnic.create(name=NIC2_NAME, vnic_profile=netlib.EmptyVnicProfile())
+    vnic.create(name=NIC_NAMES[2], vnic_profile=netlib.EmptyVnicProfile())
     assert not vnic.vnic_profile.id
 
     vnic.vnic_profile = ovirtmgmt_vnic_profile

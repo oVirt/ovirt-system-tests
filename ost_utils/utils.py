@@ -63,15 +63,16 @@ class TimeoutException(Exception):
 
 
 class VectorThread:
-    def __init__(self, targets):
+    def __init__(self, targets, daemon=False):
         self.targets = targets
         self.queues = [queue.Queue()] * len(targets)
         self.thread_handles = []
         self.results = []
+        self.daemon = daemon
 
     def start_all(self):
         for target, q in zip(self.targets, self.queues):
-            t = threading.Thread(target=_ret_via_queue, args=(target, q))
+            t = threading.Thread(target=_ret_via_queue, args=(target, q), daemon=self.daemon)
             self.thread_handles.append(t)
             t.start()
 

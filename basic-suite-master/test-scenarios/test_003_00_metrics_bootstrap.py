@@ -99,6 +99,7 @@ def test_metrics_and_log_collector(setup_log_collector, suite_dir, ansible_engin
                     functools.partial(configure_metrics, suite_dir, ansible_engine, ansible_hosts),
                     functools.partial(run_log_collector, ansible_engine),
                 ],
+                daemon=True,
             )
             vt.start_all()
             vt.join_all(timeout=120)

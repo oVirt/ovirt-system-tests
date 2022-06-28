@@ -140,6 +140,29 @@ EOF
 
 }
 
+# prioritize IPv6 resolving in java and imageio since IPv4 routes are missing in dual and ipv6-only modes
+debug_grub() {
+    cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/debug_grub.yml
+---
+- name: Add grub2-mkconfig conf file for debugging
+  lineinfile:
+    path: /etc/grub.d/00_ost
+    create: yes
+    mode: 0755
+    line: |
+      #!/bin/sh
+      echo "insmod progress"
+      echo "set pager=0"
+      # echo "set debug=all"
+      # echo "set debug=linux,file,disk,partition,fs,xfs,relocator"
+      echo "set debug=linux"
+
+- name: Run grub2-mkconfig
+  shell: grub2-mkconfig -o /boot/grub2/grub.cfg
+EOF
+
+}
+
 copy_ssh_key
 
 dnf_update
@@ -149,6 +172,8 @@ copy_dependencies
 add_he_to_hosts
 
 ip -6 -o addr show dev eth0 scope global | grep -q eth0 && fix_ipv6
+
+debug_grub
 
 # need to block updating appliance. excludepkgs doesn't help since HE code does "dnf install ovirt-engine-appliance"
 # and if the package is excluded it fails, we need to convince DNF that current version is good enough.

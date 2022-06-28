@@ -61,4 +61,15 @@ fi
 # Configure vdsm-hook-log-console to log the console of the hosted-engine VM
 echo 'log_console_vm_regexp=HostedEngine' > /etc/sysconfig/vdsm
 
+# Downgrade seabios because the newer version is slow. See also:
+# https://bugzilla.redhat.com/show_bug.cgi?id=2101787
+# TODO: Remove this once not needed.
+(
+    . /etc/os-release
+    if [ "${PRETTY_NAME}" = "CentOS Stream 8" ]; then
+        dnf downgrade -y --repo=appstream seabios-bin-1.15.0-1.module_el8.6.0+1087+b42c8331.noarch
+    fi
+)
+
+
 coredump_kill

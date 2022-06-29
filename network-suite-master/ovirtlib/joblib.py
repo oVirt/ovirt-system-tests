@@ -63,24 +63,3 @@ class EngineJobs(SDKRootEntity):
 class AllJobs(EngineJobs):
     def __init__(self, parent_sdk_system):
         super(AllJobs, self).__init__(parent_sdk_system, lambda d: True)
-
-
-class ActivateHostJobs(EngineJobs):
-    def __init__(self, parent_sdk_system):
-        super(ActivateHostJobs, self).__init__(
-            parent_sdk_system,
-            lambda description: 'Activating Host' in description,
-        )
-
-
-class RemoveVmJobs(EngineJobs):
-    def __init__(self, parent_sdk_system):
-        super(RemoveVmJobs, self).__init__(parent_sdk_system, lambda description: 'Removing VM' in description)
-
-
-class LaunchVmJobs(EngineJobs):
-    def __init__(self, parent_sdk_system):
-        super(LaunchVmJobs, self).__init__(
-            parent_sdk_system,
-            lambda description: 'Launching VM' in description,
-        )

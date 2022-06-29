@@ -303,13 +303,6 @@ class VMNics:
             macs.append(nic.mac)
         return macs_by_network_role
 
-    def get_nics_for_all_networks(self):
-        networks = {}
-        for nic in self._nics.values():
-            network_role = nic.get_network_role()
-            networks.setdefault(network_role, []).append(nic.name)
-        return networks
-
 
 class Nic:
     """

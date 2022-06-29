@@ -328,13 +328,6 @@ class NetworkFilter(SDKRootEntity):
     def create(self):
         raise NotImplementedError('oVirt connot create NetworkFilters')
 
-    @staticmethod
-    def iterate(system):
-        for sdk_obj in system.network_filters_service.list():
-            network_filter = NetworkFilter(system)
-            network_filter.import_by_id(sdk_obj.id)
-            yield network_filter
-
     def __repr__(self):
         return self._execute_without_raising(lambda: f'<{self.__class__.__name__}| name:{self.name}, id:{self.id}>')
 

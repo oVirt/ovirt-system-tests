@@ -14,16 +14,6 @@ from ost_utils import constants
 from ost_utils.ansible import AnsibleExecutionError
 
 
-def test_set_global_maintenance(ansible_host0):
-    logging.info('Waiting For System Stability...')
-    he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
-
-    he_utils.set_and_test_global_maintenance_mode(ansible_host0, True)
-
-    assert assert_utils.true_within_short(lambda: he_utils.all_hosts_state_global_maintenance(ansible_host0))
-    logging.info('Global maintenance state set on all hosts')
-
-
 def test_restart_he_vm(ansible_by_hostname, ansible_host0):
     host_name = he_utils.host_name_running_he_vm(ansible_host0)
     ansible_host = ansible_by_hostname(host_name)

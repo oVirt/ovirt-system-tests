@@ -78,6 +78,9 @@
             state: present
           become: true
 
+        - name: install galaxy collections
+          command: ansible-galaxy collection install community.general openstack.cloud
+
         - name: install required packages for OST
           dnf:
             name:

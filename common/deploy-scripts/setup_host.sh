@@ -59,6 +59,12 @@ EOF
 fi
 
 # Configure vdsm-hook-log-console to log the console of the hosted-engine VM
-echo 'log_console_vm_regexp=HostedEngine' > /etc/sysconfig/vdsm
+echo 'log_console_vm_regexp=HostedEngine' >> /etc/sysconfig/vdsm
+
+# Requires https://github.com/oVirt/vdsm/pull/271
+echo 'log_firmware_vm_regexp=HostedEngine' >> /etc/sysconfig/vdsm
+# TODO: I am using this right now with a custom repo, so already enabled. Fix if we eventually want to merge.
+# Probably by adding to ost-images.
+dnf install -y vdsm-hook-log-firmware || :
 
 coredump_kill

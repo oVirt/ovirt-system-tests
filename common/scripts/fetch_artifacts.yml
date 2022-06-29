@@ -44,6 +44,7 @@
       community.general.archive:
         path: "{{ artifact_list }}"
         dest: "{{ remote_archive_path }}"
+        mode: 0644
 
     - name: Fetch archived artifacts
       ansible.builtin.fetch:
@@ -52,7 +53,13 @@
         flat: yes
 
     - name: Extract the artifacts
-      local_action: ansible.builtin.command tar -xf {{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }} -C {{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}
+      ansible.builtin.unarchive:
+        src: "{{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }}"
+        dest: "{{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}"
+      delegate_to: localhost
 
     - name: Clean up the archives
-      local_action: ansible.builtin.command rm {{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }}
+      ansible.builtin.file:
+        path: "{{ ost_repo_root }}/exported-artifacts/test_logs/{{ inventory_hostname }}/{{ archive_name }}"
+        state: absent
+      delegate_to: localhost

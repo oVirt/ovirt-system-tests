@@ -93,7 +93,11 @@ def test_set_global_maintenance(ansible_host0):
     logging.info('Global maintenance state set on all hosts')
 
 
-def test_install_sar_collection(root_dir, ansible_engine):
+def test_install_sar_collection(root_dir, ansible_engine, ost_images_distro):
+    # TODO: Remove when we have an el9stream-based HE available
+    if ost_images_distro == "el9stream":
+        pytest.skip("el9stream packages are not installable on el8stream HE")
+
     ansible_engine.dnf(name='/var/tmp/lm_sensors.rpm', disable_gpg_check='yes')
     ansible_engine.dnf(name='/var/tmp/sysstat.rpm', disable_gpg_check='yes')
     ansible_engine.file(

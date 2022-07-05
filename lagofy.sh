@@ -373,8 +373,9 @@ _ost_run_tc () {
     local testcase=${@/#/$PWD/}
     local junitxml_file="${OST_REPO_ROOT}/exported-artifacts/junit.xml"
     local coverage_file="${OST_REPO_ROOT}/exported-artifacts/ost_coverage/${SUITE}.$(git rev-parse --short HEAD).coverage"
+    [[ ${OST_COVERAGE_FLAG} == "--ost-coverage" ]] && local ost_coverage_args="-m coverage run --source=ost_utils,network-suite-master/ovirtlib --data-file=${coverage_file}"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage run --source=ost_utils,network-suite-master/ovirtlib --data-file=${coverage_file} -m pytest \
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B ${ost_coverage_args} -m pytest \
         -s \
         -v \
         -x \
@@ -388,7 +389,8 @@ _ost_run_tc () {
         xmllint --format ${junitxml_file}
         ./common/scripts/parse_junitxml.py ${junitxml_file} "${OST_REPO_ROOT}/exported-artifacts/result.txt"
     }
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage html -q -d "${coverage_file}-html" --data-file=${coverage_file}
+    [[ ${OST_COVERAGE_FLAG} == "--ost-coverage" ]] && \
+        PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage html -q -d "${coverage_file}-html" --data-file=${coverage_file}
     which deactivate &> /dev/null && deactivate
     return "$res"
 }
@@ -416,6 +418,7 @@ EOT
 ost_run_tests() {
     ost_linters || return 1
 
+    [[ "$1" == "--ost-coverage" ]] && { OST_COVERAGE_FLAG=$1; shift; }
     CUSTOM_REPOS_ARGS="$@"
     TC= _ost_run_tc "${SUITE}/test-scenarios" || { echo "\x1b[31mERROR: Failed running ${SUITE} :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m ${SUITE} - All tests passed :-) \x1b[0m"

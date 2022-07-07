@@ -13,13 +13,14 @@ class AnsibleExecutionFailure(Exception):
     pass
 
 
-class Playbook(object):
-    def __init__(self, playbook, extra_vars=None):
+class Playbook:
+    def __init__(self, playbook, private_dir, extra_vars=None):
         self._execution_stats = None
         self._idempotency_check_stats = None
         self._playbook = playbook
         self._extra_vars = extra_vars if extra_vars else {}
         self._extra_vars['ansible_python_interpreter'] = 'python3'
+        self._private_dir = private_dir
 
     @property
     def execution_stats(self):
@@ -38,6 +39,7 @@ class Playbook(object):
             playbook=self._playbook,
             extravars=self._extra_vars,
             inventory='localhost ansible_connection=local',
+            private_data_dir=self._private_dir,
         )
         if runner.status != 'successful':
             LOGGER.error(

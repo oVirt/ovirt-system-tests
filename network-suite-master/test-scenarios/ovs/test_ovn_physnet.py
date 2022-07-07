@@ -162,6 +162,7 @@ def test_security_groups_allow_icmp(
     vnic_attached_to_ovn_network,
     target,
     af,
+    ansible_private_dir,
 ):
     syncutil.sync(
         exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
@@ -173,7 +174,7 @@ def test_security_groups_allow_icmp(
         time.sleep(10)
         ssh_host_not_in_ovs_cluster.assert_no_ping(target, af.version, _max_icmp_data_size(af.family))
 
-        with _allow_icmp_from_host(host_not_in_ovs_cluster, af.version):
+        with _allow_icmp_from_host(host_not_in_ovs_cluster, af.version, ansible_private_dir):
             syncutil.sync(
                 exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
                 exec_func_args=(target, af.version, _max_icmp_data_size(af.family)),
@@ -200,19 +201,19 @@ def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):
 
 
 @contextmanager
-def _allow_icmp_from_host(host, ip_version):
-    _provision_icmp_rule(host.address, ip_version, action='apply')
+def _allow_icmp_from_host(host, ip_version, private_dir):
+    _provision_icmp_rule(host.address, ip_version, action='apply', private_dir=private_dir)
     try:
         yield
     finally:
-        _forbid_icmp_from_host(host, ip_version)
+        _forbid_icmp_from_host(host, ip_version, private_dir)
 
 
-def _forbid_icmp_from_host(host, ip_version):
-    _provision_icmp_rule(host.address, ip_version, action='remove')
+def _forbid_icmp_from_host(host, ip_version, private_dir):
+    _provision_icmp_rule(host.address, ip_version, action='remove', private_dir=private_dir)
 
 
-def _provision_icmp_rule(source_ip, ip_version, action):
+def _provision_icmp_rule(source_ip, ip_version, action, private_dir):
     playbook_path = os.path.join(suite.playbook_dir(), action + '_icmp_rule_on_default_sec_group.yml')
     playbook = Playbook(
         playbook_path,
@@ -221,6 +222,7 @@ def _provision_icmp_rule(source_ip, ip_version, action):
             'cloud_name': 'ovirt',
             'ether_type': f'IPv{ip_version}',
         },
+        private_dir=private_dir,
     )
     playbook.run()
 

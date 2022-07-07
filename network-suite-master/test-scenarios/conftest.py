@@ -8,6 +8,7 @@ from fixtures.ansible import host0_facts
 from fixtures.ansible import host1_facts
 from fixtures.ansible import engine_facts
 from fixtures.ansible import storage_facts
+from fixtures.ansible import ansible_private_dir
 from fixtures.ansible import ansible_clean_private_dirs
 
 from fixtures.ansible import ansible_collect_logs

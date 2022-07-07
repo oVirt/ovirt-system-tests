@@ -103,23 +103,6 @@ def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip_ur
     )
 
 
-def test_add_grafana_user(engine_username, engine_password, engine_ip_url, engine_email):
-    url = f"http://{engine_username}:{engine_password}@{engine_ip_url}/ovirt-engine-grafana/api/admin/users"
-    data = '''{{
-        "name":"ost",
-        "email":"{}",
-        "login":"ost",
-        "password":"ost12345"
-    }}'''.format(
-        engine_email
-    )
-    headers = {"Content-Type": 'application/json'}
-
-    response = requests.post(url, data=data, headers=headers)
-
-    LOGGER.debug(response.text)
-
-
 @pytest.fixture(scope="session")
 def ovirt_driver(
     engine_webadmin_url, selenium_browser_options, selenium_grid_url, selenium_screen_width, selenium_screen_height

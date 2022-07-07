@@ -1113,7 +1113,7 @@ def test_verify_notifier(ansible_engine, ost_dc_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_suite):
+def test_verify_engine_backup(ansible_engine, engine_api, engine_fqdn, engine_download, ost_dc_name, is_node_suite):
     ansible_engine.file(path='/var/log/ost-engine-backup', state='directory', mode='0755')
 
     engine = engine_api.system_service()
@@ -1159,6 +1159,13 @@ def test_verify_engine_backup(ansible_engine, engine_api, ost_dc_name, is_node_s
         '--accept-defaults '
         '--offline '
         '--otopi-environment=OVESETUP_SYSTEM/memCheckEnabled=bool:False'
+    )
+
+    # verify engine health after backup
+    url = f'https://{engine_fqdn}/ovirt-engine/services/health'
+    allowed_exceptions = [shell.ShellError]
+    assert assert_utils.equals_within_short(
+        lambda: engine_download(url), b"DB Up!Welcome to Health Status!", allowed_exceptions
     )
 
 
@@ -1701,7 +1708,6 @@ def test_upload_cirros_image(
     engine_password,
     cirros_image_disk_name,
 ):
-    time.sleep(10)
     collection = CollectionMapper(ansible_engine)
 
     ovirt_auth = collection.ovirt_auth(hostname=engine_fqdn, username=engine_full_username, password=engine_password,)[

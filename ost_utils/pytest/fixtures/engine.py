@@ -99,11 +99,6 @@ def engine_admin_service(get_user_service_for_user, engine_username):
 
 
 @pytest.fixture(scope="session")
-def engine_email():
-    return "root@localhost"
-
-
-@pytest.fixture(scope="session")
 def engine_password():
     return "123456"
 

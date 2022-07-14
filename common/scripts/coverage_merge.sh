@@ -34,7 +34,7 @@ merge_dir="${OST_REPO_ROOT}/exported-artifacts/coverage-merge"
 mkdir -p "$merge_dir"
 
 echo "Getting the build URLs..."
-build_urls=($(wget -q -O - "$1/lastSuccessfulBuild/api/json" | jq -r '.number as $build_id | .runs[] | if (.number == $build_id) then ( .url ) else ( empty ) end'))
+build_urls=($(wget -q -O - "$1/api/json" | jq -r '.number as $build_id | .runs[] | if (.number == $build_id) then ( .url ) else ( empty ) end'))
 echo "---"
 
 for build_url in ${build_urls[@]}; do

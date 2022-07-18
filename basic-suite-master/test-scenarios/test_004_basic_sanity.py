@@ -743,9 +743,9 @@ def test_convert_disk(disks_service):
     disks_service.add(
         disk=types.Disk(
             name=CONVERT_DISK_NAME,
-            format=types.DiskFormat.RAW,
+            format=types.DiskFormat.COW,
             provisioned_size=2 * MB,
-            sparse=False,
+            sparse=True,
             storage_domains=[types.StorageDomain(name=SD_ISCSI_NAME)],
         ),
         query={'correlation_id': correlation_id},
@@ -757,7 +757,7 @@ def test_convert_disk(disks_service):
 
     disk_service.convert(
         types.Disk(
-            format=types.DiskFormat.COW,
+            sparse=False,
             backup=types.DiskBackup.INCREMENTAL,
         ),
         query={'correlation_id': correlation_id},

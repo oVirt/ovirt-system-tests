@@ -12,39 +12,43 @@
 
   tasks:
     - name: enable nested virtualization on intel
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/modprobe.d/kvm.conf
         create: yes
         line: options kvm_intel nested=1
+        mode: 0644
       become: true
       notify: reboot
       when: ansible_facts['processor'][1] == 'GenuineIntel'
 
     - name: enable nested virtualization on amd
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/modprobe.d/kvm.conf
         create: yes
         line: options kvm_amd nested=1
+        mode: 0644
       become: true
       notify: reboot
       when: ansible_facts['processor'][1] == 'AuthenticAMD'
 
     - name: set accept_ra on ipv6
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sysctl.d/90-ost-ipv6-ra.conf
         create: yes
         line: net.ipv6.conf.all.accept_ra=2
+        mode: 0644
       become: true
 
     - name: increase per-user FD limit
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/security/limits.d/ost.conf
         create: yes
         line: "*    soft    nofile    65535"
+        mode: 0644
       become: true
 
     - name: set up ost-images repo
-      yum_repository:
+      ansible.builtin.yum_repository:
         name: ost-images
         description: ost-images
         baseurl: "{{ ost_images_repo_url | default(default_ost_images_repo_url) }}"
@@ -52,11 +56,11 @@
       become: true
 
     - name: setup distro-related vars
-      set_fact:
-        el9: "{{ ansible_facts['distribution_major_version']|int == 9 }}"
+      ansible.builtin.set_fact:
+        el9: "{{ ansible_facts['distribution_major_version'] | int == 9 }}"
 
     - name: setup package names based on distro-related
-      set_fact:
+      ansible.builtin.set_fact:
         python_pkg: "{{ 'python3' if el9 else 'python39' }}"
         ansible_pkg: ansible-core
 
@@ -64,7 +68,7 @@
 
       block:
         - name: install epel
-          dnf:
+          ansible.builtin.dnf:
             name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
             disable_gpg_check: yes
           when: not el9
@@ -72,14 +76,17 @@
           register: epel
 
         - name: make sure any version of ansible is available
-          dnf:
+          ansible.builtin.dnf:
             name:
               - "{{ ansible_pkg }}"
             state: present
           become: true
 
+        - name: install galaxy collections
+          ansible.builtin.command: ansible-galaxy collection install community.general openstack.cloud
+
         - name: install required packages for OST
-          dnf:
+          ansible.builtin.dnf:
             name:
               - gcc
               - git
@@ -95,7 +102,7 @@
           become: true
 
         - name: install required packages for building ost-images
-          dnf:
+          ansible.builtin.dnf:
             name:
               - autoconf
               - automake
@@ -113,19 +120,19 @@
 
       always:
         - name: remove epel if it was added
-          dnf:
+          ansible.builtin.dnf:
             name: epel-release-8
             state: absent
           when: epel.changed
           become: true
 
     - name: install ost images
-      dnf:
+      ansible.builtin.dnf:
         name: "{{ ost_images_rpms | default(default_ost_images_rpms) }}"
       become: true
 
     - name: add user to relevant groups
-      user:
+      ansible.builtin.user:
         name: "{{ ansible_facts['user_id'] }}"
         groups:
           - qemu
@@ -133,7 +140,7 @@
       become: true
 
     - name: add qemu to the user group
-      user:
+      ansible.builtin.user:
         name: qemu
         groups:
           - "{{ ansible_facts['user_id'] }}"
@@ -141,7 +148,7 @@
       become: true
 
     - name: allow user to manage libvirt
-      template:
+      ansible.builtin.template:
         dest: /etc/polkit-1/localauthority/50-local.d/ost-libvirt-{{ ansible_facts['user_id'] }}.pkla
         group: root
         mode: '0644'
@@ -150,26 +157,42 @@
       become: true
 
     - name: restart polkit
-      systemd:
+      ansible.builtin.systemd:
         name: polkit
         state: restarted
       become: true
 
     - name: set user home directory permissions
-      file:
+      ansible.builtin.file:
         path: "{{ ansible_facts['user_dir'] }}"
         mode: 0751
       become: true
 
     - name: allow virtlogd to write console logs
-      shell: semanage permissive -a virtlogd_t
+      ansible.builtin.command: semanage permissive -a virtlogd_t
       become: true
 
     - name: allow port 2222 for IPv6 socks proxy
-      shell: sed '/service name.*ssh/ a <port port="2222" protocol="tcp"/>' /usr/lib/firewalld/zones/libvirt.xml > /etc/firewalld/zones/libvirt.xml; firewall-cmd --state && firewall-cmd --reload
-      become: true
+      block:
+        - name: copy default libvirt config
+          ansible.builtin.copy:
+            src: /usr/lib/firewalld/zones/libvirt.xml
+            dest: /etc/firewalld/zones/libvirt.xml
+            mode: 0644
+          become: true
+
+        - name: allow port 2222
+          ansible.builtin.replace:
+            path: /etc/firewalld/zones/libvirt.xml
+            regexp: '^(.*service name.*ssh.*\n)(?!<port port="2222" protocol="tcp"/>)'
+            replace: '\1<port port="2222" protocol="tcp"/>\n'
+          become: true
+
+        - name: reload firewall
+          ansible.builtin.shell: firewall-cmd --state && firewall-cmd --reload
+          become: true
 
   handlers:
     - name: reboot
-      debug:
+      ansible.builtin.debug:
         msg: Please reboot to apply all the changes.

@@ -33,10 +33,5 @@ def bonding_network_name(backend):
 
 
 @pytest.fixture(scope="session")
-def bonding_subnet(backend, tested_ip_version):
-    return backend.bonding_subnet(tested_ip_version)
-
-
-@pytest.fixture(scope="session")
 def management_gw_ip(backend, tested_ip_version):
     return backend.get_gw_ip_for_management_network(tested_ip_version)

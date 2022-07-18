@@ -8,6 +8,7 @@ from fixtures.ansible import host0_facts
 from fixtures.ansible import host1_facts
 from fixtures.ansible import engine_facts
 from fixtures.ansible import storage_facts
+from fixtures.ansible import ansible_private_dir
 from fixtures.ansible import ansible_clean_private_dirs
 
 from fixtures.ansible import ansible_collect_logs
@@ -23,7 +24,6 @@ from fixtures.host import host_0_up
 from fixtures.host import host_1_up
 from fixtures.host import install_hosts_to_save_time
 
-from fixtures.engine import admin_user
 from fixtures.engine import engine_password
 from fixtures.engine import ovirt_engine_setup
 from fixtures.engine import ovirt_engine_service_up
@@ -37,8 +37,6 @@ from fixtures.fqdn import ovirt_provider_ovn_with_ip_fqdn
 
 from fixtures.storage import default_storage_domain
 from fixtures.storage import lun_id
-
-from fixtures.providers import ovirt_image_repo
 
 from fixtures.virt import cirros_template
 
@@ -60,9 +58,7 @@ from ost_utils.pytest.fixtures.ansible import ansible_hosts
 from ost_utils.pytest.fixtures.ansible import ansible_storage_facts
 from ost_utils.pytest.fixtures.ansible import ansible_inventory
 from ost_utils.pytest.fixtures.ansible import ansible_storage
-from ost_utils.pytest.fixtures.artifacts import artifacts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
-from ost_utils.pytest.fixtures.artifacts import artifact_list
 from ost_utils.pytest.fixtures.artifacts import collect_artifacts
 from ost_utils.pytest.fixtures.artifacts import dump_dhcp_leases
 from ost_utils.pytest.fixtures.artifacts import generate_sar_stat_plots

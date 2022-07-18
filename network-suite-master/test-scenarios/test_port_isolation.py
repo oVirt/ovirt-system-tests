@@ -66,8 +66,8 @@ def vms_conf(management_subnet, storage_subnet):
 @pytest.fixture(scope='module')
 def vm_nodes(mgmt_ifaces_up_with_ip):
     return (
-        sshlib.CirrosNode(mgmt_ifaces_up_with_ip[0], VM_PASSWORD, VM_USERNAME),
-        sshlib.CirrosNode(mgmt_ifaces_up_with_ip[1], VM_PASSWORD, VM_USERNAME),
+        sshlib.Node(mgmt_ifaces_up_with_ip[0], VM_PASSWORD, VM_USERNAME),
+        sshlib.Node(mgmt_ifaces_up_with_ip[1], VM_PASSWORD, VM_USERNAME),
     )
 
 

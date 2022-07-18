@@ -5,7 +5,6 @@
 #
 
 import ovirtsdk4 as sdk4
-import ovirtsdk4.types as types
 
 from ost_utils import assert_utils
 
@@ -57,39 +56,3 @@ def check_connectivity(system_service, sd_name):
             pass
 
     return avail
-
-
-def import_image(
-    system_service,
-    image_name,
-    template_name,
-    disk_name,
-    dest_storage_domain,
-    dest_cluster,
-    sd_name,
-    as_template=False,
-):
-    storage_domains_service = system_service.storage_domains_service()
-    glance_storage_domain = storage_domains_service.list(search='name={}'.format(sd_name))[0]
-    images = storage_domains_service.storage_domain_service(glance_storage_domain.id).images_service().list()
-    image = [x for x in images if x.name == image_name][0]
-    image_service = (
-        storage_domains_service.storage_domain_service(glance_storage_domain.id)
-        .images_service()
-        .image_service(image.id)
-    )
-    image_service.import_(
-        storage_domain=types.StorageDomain(
-            name=dest_storage_domain,
-        ),
-        template=types.Template(
-            name=template_name,
-        ),
-        cluster=types.Cluster(
-            name=dest_cluster,
-        ),
-        import_as_template=as_template,
-        disk=types.Disk(name=disk_name),
-    )
-    disk = system_service.disks_service().list(search='name={}'.format(disk_name))[0]
-    assert disk

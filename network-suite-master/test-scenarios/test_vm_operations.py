@@ -4,9 +4,11 @@
 #
 #
 import ipaddress
+import logging
+
 import pytest
 
-from fixtures.host import ETH1
+from fixtures.host import ETH1, ETH2
 
 from ovirtlib import virtlib
 from ovirtlib import netattachlib
@@ -15,15 +17,21 @@ from ovirtlib import clusterlib
 from ovirtlib import hostlib
 from ovirtlib import joblib
 from ovirtlib import datacenterlib
+from ovirtlib import syncutil
 from ovirtlib import templatelib
 from testlib import suite
 
+LOGGER = logging.getLogger(__name__)
 VM_BLANK = 'test_vm_operations_blank_vm'
 VM_CIRROS = 'test_vm_operations_cirros_vm'
 MIG_NET = 'mig-net'
-NIC1_NAME = 'nic1'
-NIC2_NAME = 'nic2'
-SERIAL_NET = 'test_serial_vmconsole_net'
+NIC_NAMES = {
+    0: 'nic0',
+    1: 'nic1',
+    2: 'nic2',
+}
+NET1 = 'test_vm_operations_net_1'
+NET2 = 'test_vm_operations_net_2'
 CIRROS_NIC = 'eth1'
 IPV6 = 'fd8f:1391:3a82::cafe:cafe'
 PREFIX = '64'
@@ -55,25 +63,30 @@ def running_cirros_vm(
     default_cluster,
     default_storage_domain,
     ovirtmgmt_vnic_profile,
+    host_0_up,
     host_1_up,
     cirros_template,
 ):
-    with clusterlib.new_assigned_network(SERIAL_NET, default_data_center, default_cluster) as net:
-        attach_data = netattachlib.NetworkAttachmentData(net, ETH1)
-        with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
-            with virtlib.vm_pool(system, size=1) as (vm,):
-                vm.create(
-                    vm_name=VM_CIRROS,
-                    cluster=default_cluster,
-                    template=cirros_template,
-                )
-                vm.create_vnic(NIC1_NAME, ovirtmgmt_vnic_profile)
-                vm.create_vnic(NIC2_NAME, net.vnic_profile())
-                vm.wait_for_down_status()
-                vm.run()
-                vm.wait_for_up_status()
-                joblib.AllJobs(system).wait_for_done()
-                yield vm
+    with clusterlib.new_assigned_network(NET1, default_data_center, default_cluster) as net_1:
+        attach_data_1 = netattachlib.NetworkAttachmentData(net_1, ETH1)
+        with clusterlib.new_assigned_network(NET2, default_data_center, default_cluster) as net_2:
+            attach_data_2 = netattachlib.NetworkAttachmentData(net_2, ETH2)
+            with hostlib.setup_networks(host_0_up, attach_data=(attach_data_1, attach_data_2)):
+                with hostlib.setup_networks(host_1_up, attach_data=(attach_data_1, attach_data_2)):
+                    with virtlib.vm_pool(system, size=1) as (vm,):
+                        vm.create(
+                            vm_name=VM_CIRROS,
+                            cluster=default_cluster,
+                            template=cirros_template,
+                        )
+                        vm.create_vnic(NIC_NAMES[0], ovirtmgmt_vnic_profile)
+                        vm.create_vnic(NIC_NAMES[1], net_1.vnic_profile())
+                        vm.create_vnic(NIC_NAMES[2], net_2.vnic_profile())
+                        vm.wait_for_down_status()
+                        vm.run()
+                        vm.wait_for_up_status()
+                        joblib.AllJobs(system).wait_for_done()
+                        yield vm
 
 
 @pytest.fixture(scope='module')
@@ -85,7 +98,7 @@ def running_blank_vm(system, default_cluster, default_storage_domain, ovirtmgmt_
             cluster=default_cluster,
             template=templatelib.TEMPLATE_BLANK,
         )
-        vm.create_vnic(NIC1_NAME, ovirtmgmt_vnic_profile)
+        vm.create_vnic(NIC_NAMES[1], ovirtmgmt_vnic_profile)
         disk_att_id = vm.attach_disk(disk=disk)
         vm.wait_for_disk_up_status(disk, disk_att_id)
         vm.run()
@@ -110,6 +123,27 @@ def host_1_with_mig_net(migration_network, host_1_up, af):
     host_1_up.remove_networks((migration_network,))
 
 
+@pytest.mark.xfail(reason='waiting for fix for https://bugzilla.redhat.com/2084530')
+def test_hotplug_multiple_vnics(running_cirros_vm):
+    for i in range(10):
+        for name in NIC_NAMES.values():
+            vnic = running_cirros_vm.get_vnic(name)
+            plugged = vnic.plugged
+            LOGGER.debug(f'test hot {"unplug" if plugged else "plug"} multiple rounds: vnic {vnic.name}, round {i}')
+            if plugged:
+                vnic.hotunplug()
+            else:
+                vnic.hotplug()
+            syncutil.sync(
+                exec_func=lambda: vnic.plugged,
+                exec_func_args=(),
+                success_criteria=lambda p: p is not plugged,
+                delay_start=1,
+                retry_interval=1,
+                timeout=10,
+            )
+
+
 def test_serial_vmconsole(cirros_serial_console, running_cirros_vm, af):
     if af.is6:
         ip = cirros_serial_console.add_static_ip(running_cirros_vm.id, f'{IPV6}/{PREFIX}', CIRROS_NIC)
@@ -130,15 +164,15 @@ def test_live_vm_migration_using_dedicated_network(running_blank_vm, host_0_with
 
 
 def test_hot_linking_vnic(running_blank_vm):
-    vnic = running_blank_vm.get_vnic(NIC1_NAME)
+    vnic = running_blank_vm.get_vnic(NIC_NAMES[1])
     assert vnic.linked is True
 
     vnic.linked = False
-    vnic = running_blank_vm.get_vnic(NIC1_NAME)
+    vnic = running_blank_vm.get_vnic(NIC_NAMES[1])
     assert not vnic.linked
 
     vnic.linked = True
-    vnic = running_blank_vm.get_vnic(NIC1_NAME)
+    vnic = running_blank_vm.get_vnic(NIC_NAMES[1])
     assert vnic.linked is True
 
 
@@ -150,7 +184,7 @@ def test_iterators(running_blank_vm, system):
     assert running_blank_vm.cluster.name in cluster_names
 
     vnic_names = (vnic.name for vnic in running_blank_vm.vnics())
-    assert NIC1_NAME in vnic_names
+    assert NIC_NAMES[1] in vnic_names
 
     vnic_profile_names = (profile.name for profile in netlib.VnicProfile.iterate(system))
     assert next(running_blank_vm.vnics()).vnic_profile.name in vnic_profile_names
@@ -181,7 +215,7 @@ def test_assign_network_filter(running_blank_vm, system, ovirtmgmt_network):
 @suite.skip_suites_below('4.3')
 def test_hot_update_vm_interface(running_blank_vm, ovirtmgmt_vnic_profile):
     vnic = netlib.Vnic(running_blank_vm)
-    vnic.create(name=NIC2_NAME, vnic_profile=netlib.EmptyVnicProfile())
+    vnic.create(name=NIC_NAMES[2], vnic_profile=netlib.EmptyVnicProfile())
     assert not vnic.vnic_profile.id
 
     vnic.vnic_profile = ovirtmgmt_vnic_profile

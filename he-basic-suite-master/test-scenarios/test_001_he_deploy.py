@@ -4,10 +4,13 @@
 #
 #
 
+import logging
 import os
 
 import pytest
 
+from ost_utils import assert_utils
+from ost_utils import he_utils
 from ost_utils.deployment_utils import package_mgmt
 
 
@@ -80,7 +83,21 @@ def test_he_deploy(
     ansible_storage.shell('fstrim -va')
 
 
-def test_install_sar_collection(root_dir, ansible_engine):
+def test_set_global_maintenance(ansible_host0):
+    logging.info('Waiting For System Stability...')
+    he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
+
+    he_utils.set_and_test_global_maintenance_mode(ansible_host0, True)
+
+    assert assert_utils.true_within_short(lambda: he_utils.all_hosts_state_global_maintenance(ansible_host0))
+    logging.info('Global maintenance state set on all hosts')
+
+
+def test_install_sar_collection(root_dir, ansible_engine, ost_images_distro):
+    # TODO: Remove when we have an el9stream-based HE available
+    if ost_images_distro == "el9stream":
+        pytest.skip("el9stream packages are not installable on el8stream HE")
+
     ansible_engine.dnf(name='/var/tmp/lm_sensors.rpm', disable_gpg_check='yes')
     ansible_engine.dnf(name='/var/tmp/sysstat.rpm', disable_gpg_check='yes')
     ansible_engine.file(
@@ -98,10 +115,6 @@ def test_install_sar_collection(root_dir, ansible_engine):
         state='started',
         enabled='yes',
     )
-
-
-def test_add_engine_to_artifacts(artifacts, he_host_name, artifact_list):
-    artifacts[he_host_name] = artifact_list
 
 
 def test_check_installed_packages(request, ansible_all):

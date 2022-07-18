@@ -42,9 +42,6 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
     def get_displayable_name(self):
         return self.entity_type.capitalize() + ' list view'
 
-    def click_menu_button(self, main_button_id):
-        self.ovirt_driver.xpath_click(f'//button[@id="{main_button_id}"]')
-
     def click_menu_dropdown_top_button(self, main_button_id):
         self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]')
 

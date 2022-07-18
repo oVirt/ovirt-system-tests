@@ -36,6 +36,11 @@ def storage_facts(ansible_storage_facts, af):
     return _machine_facts(ansible_storage_facts.get_all(), af)
 
 
+@pytest.fixture(scope="session")
+def ansible_private_dir():
+    return private_dir.PrivateDir.get()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def ansible_clean_private_dirs():
     try:

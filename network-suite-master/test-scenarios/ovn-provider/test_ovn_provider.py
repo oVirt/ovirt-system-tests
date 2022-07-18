@@ -40,12 +40,12 @@ class OvnNetwork(object):
         return self._subnet
 
 
-def test_ovn_provider_create_scenario(openstack_client_config, af):
+def test_ovn_provider_create_scenario(openstack_client_config, af, ansible_private_dir):
     scenario = {
         'inet': 'create_scenario.yml',
         'inet6': 'create_scenario_ipv6.yml',
     }
-    _test_ovn_provider(scenario[af.family])
+    _test_ovn_provider(scenario[af.family], ansible_private_dir)
 
 
 def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks, af):
@@ -97,13 +97,13 @@ def _define_static_route(nexthop, subnet):
     return {'nexthop': nexthop, 'destination': subnet.cidr}
 
 
-def test_ovn_provider_cleanup_scenario(openstack_client_config):
-    _test_ovn_provider('cleanup_scenario.yml')
+def test_ovn_provider_cleanup_scenario(openstack_client_config, ansible_private_dir):
+    _test_ovn_provider('cleanup_scenario.yml', ansible_private_dir)
 
 
-def _test_ovn_provider(playbook_name):
+def _test_ovn_provider(playbook_name, private_dir):
     playbook_path = os.path.join(suite.playbook_dir(), playbook_name)
-    playbook = Playbook(playbook_path)
+    playbook = Playbook(playbook_path, private_dir=private_dir)
     playbook.run()
 
     assert not playbook.execution_stats['failures']

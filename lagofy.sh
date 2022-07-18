@@ -312,6 +312,14 @@ ost_console() {
     fi
 }
 
+ost_fetch_artifacts() {
+    _deployment_exists
+    ansible-playbook -i $OST_DEPLOYMENT/ansible_inventory -u root --ssh-common-args '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' common/scripts/fetch_artifacts.yml >/dev/null || {
+        echo "ansible playbook failed"
+        return 9
+    };
+}
+
 # check dependencies
 ost_check_dependencies() {
     ${PYTHON} -V 2>/dev/null | grep -q ^Python || { echo "$PYTHON is not installed"; return 2; }
@@ -352,7 +360,7 @@ ost_linters() {
     echo "Running linters..."
     [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
     ${PYTHON} -m tox -e docs &>> "${OST_REPO_ROOT}/exported-artifacts/tox-deps.log"
-    ${PYTHON} -m tox -q -e flake8,pylint,black,broken-symlinks,copyright-notices
+    ${PYTHON} -m tox -q -e flake8,pylint,black,broken-symlinks,copyright-notices,ansible-lint
 }
 
 # $@ test scenarios .py files, relative to OST_REPO_ROOT e.g. basic-suite-master/test-scenarios/test_002_bootstrap.py
@@ -365,8 +373,9 @@ _ost_run_tc () {
     local testcase=${@/#/$PWD/}
     local junitxml_file="${OST_REPO_ROOT}/exported-artifacts/junit.xml"
     local coverage_file="${OST_REPO_ROOT}/exported-artifacts/ost_coverage/${SUITE}.$(git rev-parse --short HEAD).coverage"
+    [[ ${OST_COVERAGE_FLAG} == "--ost-coverage" ]] && local ost_coverage_args="-m coverage run --source=ost_utils,network-suite-master/ovirtlib --data-file=${coverage_file}"
     source "${OST_REPO_ROOT}/.tox/deps/bin/activate"
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage run --source=ost_utils,network-suite-master/ovirtlib --data-file=${coverage_file} -m pytest \
+    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B ${ost_coverage_args} -m pytest \
         -s \
         -v \
         -x \
@@ -380,7 +389,8 @@ _ost_run_tc () {
         xmllint --format ${junitxml_file}
         ./common/scripts/parse_junitxml.py ${junitxml_file} "${OST_REPO_ROOT}/exported-artifacts/result.txt"
     }
-    PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage html -q -d "${coverage_file}-html" --data-file=${coverage_file}
+    [[ ${OST_COVERAGE_FLAG} == "--ost-coverage" ]] && \
+        PYTHONPATH="${PYTHONPATH}:${OST_REPO_ROOT}:${OST_REPO_ROOT}/${SUITE}" ${PYTHON} -u -B -m coverage html -q -d "${coverage_file}-html" --data-file=${coverage_file}
     which deactivate &> /dev/null && deactivate
     return "$res"
 }
@@ -408,6 +418,7 @@ EOT
 ost_run_tests() {
     ost_linters || return 1
 
+    [[ "$1" == "--ost-coverage" ]] && { OST_COVERAGE_FLAG=$1; shift; }
     CUSTOM_REPOS_ARGS="$@"
     TC= _ost_run_tc "${SUITE}/test-scenarios" || { echo "\x1b[31mERROR: Failed running ${SUITE} :-(\x1b[0m"; return 1; }
     echo -e "\x1b[32m ${SUITE} - All tests passed :-) \x1b[0m"

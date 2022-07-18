@@ -7,6 +7,7 @@
 import logging
 import time
 
+from ost_utils import utils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class EqualsWithin:
 
         self.returned_value = '<no-result-obtained>'
         allowed_exceptions = allowed_exceptions or []
-        with _EggTimer(timeout) as timer:
+        with utils.EggTimer(timeout) as timer:
             while not timer.elapsed():
                 try:
                     self.returned_value = func()
@@ -94,18 +95,3 @@ class EqualsWithin:
 
     def __repr__(self):
         return self.success_message if bool(self) else self.error_message
-
-
-class _EggTimer:
-    def __init__(self, timeout):
-        self.timeout = timeout
-
-    def __enter__(self):
-        self.start_time = time.time()
-        return self
-
-    def __exit__(self, *_):
-        pass
-
-    def elapsed(self):
-        return (time.time() - self.start_time) > self.timeout

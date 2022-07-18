@@ -9,36 +9,6 @@ from functools import cache
 
 
 class BaseBackend(abc.ABC):
-
-    # DEPRECATED
-    @abc.abstractmethod
-    def iface_mapping(self):
-        """Function returning a mapping of hostname --> networks --> ifaces
-
-        Returns:
-            dict: Hostname --> networks --> ifaces.
-
-            Example value for basic suite:
-
-            {
-                'ost-basic-suite-master-engine': {
-                    'lago-basic-suite-master-net-management': ['eth0'],
-                    'lago-basic-suite-master-net-storage': ['eth1']
-                },
-                'ost-basic-suite-master-host-0': {
-                    'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
-                    'lago-basic-suite-master-net-management': ['eth0'],
-                    'lago-basic-suite-master-net-storage': ['eth1']
-                },
-                 'ost-basic-suite-master-host-1': {
-                    'lago-basic-suite-master-net-bonding': ['eth2', 'eth3'],
-                    'lago-basic-suite-master-net-management': ['eth0'],
-                    'lago-basic-suite-master-net-storage': ['eth1']
-                }
-            }
-
-        """
-
     @abc.abstractmethod
     def ip_mapping(self):
         """Function returning a mapping of hostname --> networks --> ips
@@ -202,13 +172,6 @@ class BaseBackend(abc.ABC):
 
     @abc.abstractmethod
     def management_subnet(self, ip_version):
-        """
-        :param ip_version: 4 or 6
-        :return: ipaddress.ip_network with the subnet address of the network
-        """
-
-    @abc.abstractmethod
-    def bonding_subnet(self, ip_version):
         """
         :param ip_version: 4 or 6
         :return: ipaddress.ip_network with the subnet address of the network

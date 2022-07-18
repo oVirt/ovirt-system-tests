@@ -555,9 +555,6 @@ def test_userportal(
     vm_portal.logout()
     save_screenshot('userportal-logout')
 
-    # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
-    ovirt_driver.driver.get(engine_webadmin_url)
-
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
     assert welcome_screen.is_user_logged_out()
@@ -570,6 +567,7 @@ def test_grafana(
     engine_password,
     engine_webadmin_url,
     user_login,
+    engine_fqdn,
 ):
 
     ovirt_driver.driver.get(engine_webadmin_url)
@@ -587,6 +585,11 @@ def test_grafana(
     grafana = Grafana(ovirt_driver)
     grafana.wait_for_displayed()
     save_screenshot('grafana')
+
+    # navigate directly to Grafana Configuration/Data Sources page
+    ovirt_driver.driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
+    assert grafana.db_connection()
+    save_screenshot('grafana-datasource-connection')
 
     grafana.open_dashboard('oVirt Executive Dashboards', '02 Data Center Dashboard')
     assert not grafana.is_error_visible()

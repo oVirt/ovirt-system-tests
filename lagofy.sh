@@ -170,6 +170,8 @@ ost_init() {
     mkdir "$OST_DEPLOYMENT/images"
     chcon -t svirt_image_t "$OST_DEPLOYMENT/images"
 
+    mkdir -p "${OST_REPO_ROOT}/exported-artifacts/package_lists"
+
     # generate 8 char UUID common to all resources
     # VMs with name <uuid>-ost-<suite>-<vmname>
     UUID=$(uuidgen | cut -c -8)
@@ -239,6 +241,10 @@ ost_init() {
             OST_ROOTDISK="${OST_DEPLOYMENT}/images/${VM_NAME}-root.qcow2"
             qemu-img create -q -f qcow2 -b ${!vm_rootdisk_var} -F qcow2 $OST_ROOTDISK
             echo -n "root($(basename ${!vm_rootdisk_var})) "
+
+            # export package list
+            pkglist="$(dirname ${!vm_rootdisk_var})/$(basename ${!vm_rootdisk_var} .qcow2)-pkglist.txt"
+            [[ -r "${pkglist}" ]] && cp "${pkglist}" "${OST_REPO_ROOT}/exported-artifacts/package_lists/"
 
             # create additional empty disks
             DISKS=

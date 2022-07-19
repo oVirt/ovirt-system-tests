@@ -385,6 +385,7 @@ def test_complete_hosts_setup(ansible_hosts):
 
     loggers = (
         ('root', 'root'),
+        ('storage', 'storage'),
         ('vds', 'vds'),
         ('virt', 'virt'),
         ('schema_inconsistency', 'schema.inconsistency'),

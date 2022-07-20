@@ -900,17 +900,19 @@ def test_get_domains(engine_api):
 @order_by(_TEST_LIST)
 def test_get_host_devices(hosts_service, ost_dc_name):
     host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
+    # See common/libvirt-templates/vm_template.
+    ost_root_disk = 'block_vda_ost_root_disk'
     for i in range(10):
         devices_service = host_service.devices_service()
         devices = sorted(devices_service.list(), key=lambda device: device.name)
         device_list = ''
         for device in devices:
-            if device.name == 'block_vda_1':  # first virtio-blk disk
+            if device.name == ost_root_disk:
                 return True
             else:
                 device_list += device.name + '; '
         time.sleep(1)
-    raise RuntimeError('Could not find block_vda_1 device in host devices: {}'.format(device_list))
+    raise RuntimeError("Could not find '{}' device in host devices: {}".format(ost_root_disk, device_list))
 
 
 @order_by(_TEST_LIST)

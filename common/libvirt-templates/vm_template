@@ -42,7 +42,7 @@
       <source file='@OST_ROOTDISK@'/>
       <target dev='vda' bus='virtio'/>
       <boot order='1'/>
-      <serial>1</serial>
+      <serial>ost-root-disk</serial>
     </disk>
     @DISKS@
     <controller type='usb' model='none'/>

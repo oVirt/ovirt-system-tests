@@ -45,6 +45,9 @@
       <serial>ost-root-disk</serial>
     </disk>
     @DISKS@
+    <controller type="scsi" index="0" model="virtio-scsi">
+      <driver iothread="1"/>
+    </controller>
     <controller type='usb' model='none'/>
     <serial type='pty'>
       <source path='@SERIALLOG@'/>

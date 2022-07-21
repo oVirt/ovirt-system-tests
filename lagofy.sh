@@ -253,8 +253,8 @@ ost_init() {
                 disk_template=$(jqr ".vms[\"${VM_NAME}\"].disks[\"${DISK_DEV}\"].template")
                 DISK_SIZE=$(jqr ".vms[\"${VM_NAME}\"].disks[\"${DISK_DEV}\"].size")
                 [[ -r "${!vm_rootdisk_var}" ]] || { echo -e "\nroot disk ${vm_rootdisk_var}(${!vm_rootdisk_var}) doesn't exist"; return 1; }
-                DISK_FILE="$OST_DEPLOYMENT/images/${VM_NAME}-${DISK_DEV}.qcow2"
-                qemu-img create -q -f qcow2 -o preallocation=metadata "${DISK_FILE}" "${DISK_SIZE}"
+                DISK_FILE="$OST_DEPLOYMENT/images/${VM_NAME}-${DISK_DEV}.raw"
+                qemu-img create -q -f raw "${DISK_FILE}" "${DISK_SIZE}"
                 echo -n "${DISK_DEV}(${DISK_SIZE}) "
                 DISKS+=$(_render ${disk_template} | tr -d "\t\n")
                 (( DISK_SERIAL++ ))

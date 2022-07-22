@@ -146,6 +146,7 @@ _TEST_LIST = [
     "test_verify_add_all_hosts",
     "test_generate_openscap_report",
     "test_verify_engine_backup",
+    "test_verify_notifier_restart",
     "test_upload_cirros_image",
     "test_create_cirros_template",
     "test_complete_hosts_setup",
@@ -161,6 +162,7 @@ _TEST_LIST = [
     "test_verify_uploaded_image_and_template",
     "test_add_nonadmin_user",
     "test_add_vm_permissions_to_user",
+    "test_verify_notifier_trap",
 ]
 
 
@@ -1173,6 +1175,31 @@ def test_verify_engine_backup(ansible_engine, engine_api, engine_fqdn, engine_do
     assert assert_utils.equals_within_short(
         lambda: engine_download(url), b"DB Up!Welcome to Health Status!", allowed_exceptions
     )
+
+
+@order_by(_TEST_LIST)
+def test_verify_notifier_restart(ansible_engine, engine_api, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
+    ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
+    ansible_engine.systemd(name='ovirt-engine-notifier', state='started')
+    # Add a new tag to get a new trap
+    engine = engine_api.system_service()
+    tags_service = engine.tags_service()
+    assert tags_service.add(
+        sdk4.types.Tag(
+            name='notifiertag',
+            description='New tag for ovirt-engine-notifier test after restart',
+        ),
+    )
+
+
+@order_by(_TEST_LIST)
+def test_verify_notifier_trap(ansible_engine, engine_api, ost_dc_name):
+    if ost_dc_name != engine_object_names.TEST_DC_NAME:
+        pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
+    # Check that traps still logged, this will execute after a while since traps are recieved after a while
+    ansible_engine.shell('grep USER_ADD_TAG /var/log/snmptrapd.log | grep notifiertag')
 
 
 @order_by(_TEST_LIST)

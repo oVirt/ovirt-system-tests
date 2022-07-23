@@ -85,7 +85,7 @@ class VmVgpuDialog(Displayable):
         dialog_displayed = self.ovirt_driver.driver.find_element(
             By.CSS_SELECTOR, '.modal-dialog,.pf-c-modal-box'
         ).is_displayed()
-        spinner_displayed = self.ovirt_driver.is_xpath_displayed('//div[contains(@class, "spinner")]')
+        spinner_displayed = self.ovirt_driver.is_css_selector_displayed('#vm-manage-gpu-modal .pf-c-spinner')
         return dialog_displayed and not spinner_displayed
 
     def get_displayable_name(self):

@@ -85,6 +85,19 @@ class Driver:
             lambda: self.is_xpath_present(xpath) and self.driver.find_element(By.XPATH, xpath).is_displayed()
         )
 
+    def is_css_selector_present(self, selector):
+        try:
+            self.retry_if_stale(self.driver.find_element, By.CSS_SELECTOR, selector)
+            return True
+        except NoSuchElementException:
+            return False
+
+    def is_css_selector_displayed(self, selector):
+        return self.retry_if_stale(
+            lambda: self.is_css_selector_present(selector)
+            and self.driver.find_element(By.CSS_SELECTOR, selector).is_displayed()
+        )
+
     def is_button_enabled(self, text):
         return self.is_xpath_enabled(f'//button[text()="{text}"]')
 

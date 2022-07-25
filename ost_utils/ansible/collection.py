@@ -79,9 +79,21 @@ def engine_setup(
     host_name = socket.gethostname()
     host_ip = socket.gethostbyname(host_name)
 
+    config = f'''\
+SSO_ALTERNATE_ENGINE_FQDNS="${{SSO_ALTERNATE_ENGINE_FQDNS}} {host_ip} {host_name} {engine_ip}"
+'''
+
+    if os.environ.get('ENABLE_DEBUG_LOGGING'):
+        config += '''\
+ORG_OVIRT_LOG_LEVEL="DEBUG"
+KEYCLOAK_LOG_LEVEL="DEBUG"
+CORE_BLL_LOG_LEVEL="DEBUG"
+ROOT_LOG_LEVEL="DEBUG"
+'''
+
     ansible_engine.copy(
-        content=f'SSO_ALTERNATE_ENGINE_FQDNS="${{SSO_ALTERNATE_ENGINE_FQDNS}} {host_ip} {host_name} {engine_ip}"\n',  # noqa: E501
-        dest='/etc/ovirt-engine/engine.conf.d/99-custom-fqdn.conf',
+        content=config.replace('\n', '\\n'),
+        dest='/etc/ovirt-engine/engine.conf.d/99-ost.conf',
         mode='0644',
     )
 

@@ -7,6 +7,7 @@
 import logging
 import os
 import re
+import time
 import zipfile
 
 from typing import Optional
@@ -63,14 +64,23 @@ def expand_github_repo(repo_url, working_dir, ost_images_distro):
 
     LOGGER.debug("GitHub link: repo=%s pr=%s commit=%s workflow_run=%s", repo, pr, commit, workflow_run)
 
+    workflow_runs = []
     if workflow_run:
         workflow_runs = [workflow_run]
     else:
         if not commit:
             commit = _github_resolve_pr_to_commit(repo, pr)
             LOGGER.debug("Commit %s in %s repo found for pr %s", commit, repo, pr)
-        workflow_runs = _github_resolve_commit_to_workflow_runs(repo, commit)
-        LOGGER.debug("Number of workflow runs found for commit %s: %d", commit, len(workflow_runs))
+        tries = int(os.environ.get("GITHUB_WORKFLOW_TRIES", 1))
+        while tries > 0:
+            workflow_runs = _github_resolve_commit_to_workflow_runs(repo, commit)
+            LOGGER.debug("Number of workflow runs found for commit %s: %d", commit, len(workflow_runs))
+            if len(workflow_runs) > 0:
+                break
+            tries -= 1
+            LOGGER.info("Worflow run in progress, remaining tries: %d", tries)
+            if tries > 0:
+                time.sleep(60)
 
     for run_id in workflow_runs:
         artifacts: list[_GitHubArtifact] = _github_list_artifacts(repo, run_id)
@@ -170,7 +180,11 @@ def _github_resolve_commit_to_workflow_runs(repo, commit) -> list[str]:
     commit_runs = []
     for run in runs_response.json()["workflow_runs"]:
         if run["head_sha"] == commit:
-            commit_runs.append(run["id"])
+            if run["status"] == "in_progress":
+                LOGGER.debug("Found in-progress workflow run")
+                return []
+            else:
+                commit_runs.append(run["id"])
 
     if not commit_runs:
         raise RuntimeError(f"No workflow runs found for commit {commit} in the last 100 runs")

@@ -36,14 +36,13 @@ def api(
 @pytest.fixture(scope='session', autouse=True)
 def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path, ansible_engine):
     if os.environ.get('ENABLE_DEBUG_LOGGING'):
-        ansible_engine.shell(
-            'sed -i '
-            '-e "/.*logger category=\\"org.ovirt\\"/{ n; s/INFO/DEBUG/ }" '
-            '-e "/.*logger category=\\"org.ovirt.engine.core.bll\\"/{ n; s/INFO/DEBUG/ }" '  # noqa: E501
-            '-e "/.*logger category=\\"org.keycloak\\"/{ n; s/INFO/DEBUG/ }" '
-            '-e "/.*<root-logger>/{ n; s/INFO/DEBUG/ }" '
-            '/usr/share/ovirt-engine/services/ovirt-engine/ovirt-engine.xml.in'
+        debug = (
+            'ORG_OVIRT_LOG_LEVEL="DEBUG"\\n'
+            'KEYCLOAK_LOG_LEVEL="DEBUG"\\n'
+            'CORE_BLL_LOG_LEVEL="DEBUG"\\n'
+            'ROOT_LOG_LEVEL="DEBUG"'
         )
+        ansible_engine.copy(content=debug, dest='/etc/ovirt-engine/engine.conf.d/98-logging.conf', mode='0644')
     ANSWER_FILE_TMP = '/root/engine-answer-file'
 
     engine = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)

@@ -320,7 +320,7 @@ ost_console() {
 
 ost_fetch_artifacts() {
     _deployment_exists
-    ansible-playbook -i $OST_DEPLOYMENT/ansible_inventory -u root --ssh-common-args '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' common/scripts/fetch_artifacts.yml >/dev/null || {
+    ansible-playbook -i $OST_DEPLOYMENT/ansible_inventory -u root --ssh-common-args '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' common/scripts/fetch_artifacts_playbook.yml >/dev/null || {
         echo "ansible playbook failed"
         return 9
     };

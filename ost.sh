@@ -12,6 +12,8 @@ status
     show environment status, VM details
 shell <host> [command ...]
     opens ssh connection
+copy [<scp args>...] <source> <target>
+    runs scp
 console <host>
     opens virsh console
 fetch-artifacts
@@ -46,6 +48,9 @@ case "$cmd" in
     ;;
   fetch-artifacts)
     ost_fetch_artifacts
+    ;;
+  copy)
+    ost_copy $@
     ;;
   shell)
     host=$1; shift;

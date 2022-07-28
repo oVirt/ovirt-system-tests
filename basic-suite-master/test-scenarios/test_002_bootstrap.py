@@ -1179,8 +1179,6 @@ def test_verify_notifier_restart(ansible_engine, engine_api, ost_dc_name):
         pytest.skip(' [2020-12-14] Do not test ovirt-engine-notifier on HE suites')
     ansible_engine.systemd(name='ovirt-engine-notifier', state='stopped')
     ansible_engine.systemd(name='ovirt-engine-notifier', state='started')
-    ansible_engine.systemd(name='snmptrapd', state='stopped')
-    ansible_engine.systemd(name='snmptrapd', state='started')
     # Add a new tag to get a new trap
     engine = engine_api.system_service()
     tags_service = engine.tags_service()

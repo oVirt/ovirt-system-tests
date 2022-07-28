@@ -326,6 +326,42 @@ ost_fetch_artifacts() {
     };
 }
 
+_expand_host_and_get_key() {
+    IFS=":" read searched_host path <<< "$1"
+    echo $(sed -n "/^ost/ s/ansible[a-z_]*=//g p" $OST_DEPLOYMENT/hosts | while IFS=\  read -r host ip key extra; do
+    [[ "${searched_host}" == "${host}" ]] && $(ping -c1 -w1 ${ip} &>/dev/null) && { echo "root@[${ip}]:${path} ${key}"; break; }
+    done)
+}
+
+ost_copy() {
+    _deployment_exists || return 1
+
+    if [[ "$#" -lt "2" ]]; then
+        _get_uuid
+        echo -e "ost_copy [<scp args>...] <source> <target>\n"
+        virsh list --name | sed -n "/^${uuid}-ost/ s/${uuid}-//p"
+        return 1;
+    fi
+
+    local argv=( "$@" )
+    dest=${argv[-1]}
+    unset 'argv[-1]'
+    src=${argv[-1]}
+    unset 'argv[-1]'
+
+    if [[ $dest == *:* ]]; then
+        [[ $src == *:* ]] && { echo "One path has to be local"; return 1; }
+        read dest key <<< $(_expand_host_and_get_key $dest)
+        [ -n "${dest}" ] || { echo "destination host not found or not running"; return 1; }
+    else
+        [[ $src != *:* ]] && { echo "One path has to be local"; return 1; }
+        read src key <<< $(_expand_host_and_get_key $src)
+        [ -n "${src}" ] || { echo "source host not found or not running"; return 1; }
+    fi
+
+    scp -i ${key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${argv[@]} $src $dest
+}
+
 # check dependencies
 ost_check_dependencies() {
     ${PYTHON} -V 2>/dev/null | grep -q ^Python || { echo "$PYTHON is not installed"; return 2; }

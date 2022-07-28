@@ -58,8 +58,13 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         else:
             raise Exception('No ' + self.entity_type + ' with the name ' + entity_name + ' found')
 
+    def edit(self, entity_name):
+        LOGGER.debug(f'Edit {self.entity_type} {entity_name}')
+        self.select_entity(entity_name)
+        self.ovirt_driver.button_wait_and_click('Edit')
+
     def select_entity(self, entity_name):
-        LOGGER.debug('Select ' + self.entity_type + ' ' + entity_name)
+        LOGGER.debug(f'Select {self.entity_type} {entity_name}')
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
 
         if entity_name in names_to_ids:

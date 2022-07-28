@@ -252,24 +252,45 @@ def test_login(
     assert webadmin_top_menu.is_displayed()
 
 
-def test_clusters(ovirt_driver):
+def test_clusters(ovirt_driver, save_screenshot, selenium_browser_name, ost_cluster_name):
+    cluster_description = f'Cluster description for {selenium_browser_name}'
+
+    # Open cluster list view
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     cluster_list_view = webadmin_menu.open_cluster_list_view()
+    save_screenshot('cluster-list-view')
 
+    # Test cluster list view
     clusters = cluster_list_view.get_entities()
-    assert 'test-cluster' in clusters
+    assert ost_cluster_name in clusters
 
-    cluster_list_view.select_entity('test-cluster')
+    cluster_list_view.select_entity(ost_cluster_name)
     assert cluster_list_view.is_new_button_enabled() is True
     assert cluster_list_view.is_edit_button_enabled() is True
     assert cluster_list_view.is_upgrade_button_enabled() is True
 
+    # Edit cluster using dialog
+    cluster_dialog = cluster_list_view.edit(ost_cluster_name)
+    cluster_dialog.setDescription(cluster_description)
+    save_screenshot('cluster-edit-dialog')
+    cluster_dialog.ok()
 
-def test_hosts(ovirt_driver, ansible_host0_facts):
+    # Test the edited value in the details view
+    cluster_detail_view = cluster_list_view.open_detail_view(ost_cluster_name)
+    assert cluster_detail_view.get_name() == ost_cluster_name
+    assert cluster_detail_view.get_description() == cluster_description
+
+
+def test_hosts(ovirt_driver, ansible_host0_facts, save_screenshot, selenium_browser_name):
+    host_name = ansible_host0_facts.get("ansible_hostname")
+    host_comment = f'Host comment for {selenium_browser_name}'
+
+    # Open host list view
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     host_list_view = webadmin_menu.open_host_list_view()
+    save_screenshot('host-list-view')
 
-    host_name = ansible_host0_facts.get("ansible_hostname")
+    # Test host list view
     hosts = host_list_view.get_entities()
     assert host_name in hosts
     assert host_list_view.is_new_button_enabled() is True
@@ -287,21 +308,44 @@ def test_hosts(ovirt_driver, ansible_host0_facts):
     assert host_list_view.is_install_button_enabled() is True
     assert host_list_view.is_host_console_button_enabled() is True
 
+    # Edit host using dialog
+    host_dialog = host_list_view.edit(host_name)
+    host_dialog.set_comment(host_comment)
+    host_dialog.ok()
 
-def test_templates(ovirt_driver, cirros_image_template_name):
+    host_dialog = host_list_view.edit(host_name)
+    save_screenshot('host-edit-dialog')
+    assert host_dialog.get_comment() == host_comment
+    host_dialog.cancel()
+
+    # Test the hostname in the details view
+    host_detail_view = host_list_view.open_detail_view(host_name)
+    assert host_detail_view.get_hostname() == host_name
+
+
+def test_templates(ovirt_driver, cirros_image_template_name, save_screenshot, selenium_browser_name):
+    blank_template_name = 'Blank'
+    blank_template_description = f'Blank template description for {selenium_browser_name}'
+    imported_template = 'imported_temp'
+    imported_template_description = f'Imported template description for {selenium_browser_name}'
+
+    # Open template list view
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     template_list_view = webadmin_menu.open_template_list_view()
+    save_screenshot('host-list-view')
 
+    # Test host list view
     templates = template_list_view.get_entities()
-    assert 'Blank' in templates
+    assert blank_template_name in templates
     assert cirros_image_template_name in templates
+    assert imported_template in templates
     assert template_list_view.is_new_vm_button_enabled() is False
     assert template_list_view.is_import_button_enabled() is True
     assert template_list_view.is_edit_button_enabled() is False
     assert template_list_view.is_remove_button_enabled() is False
     assert template_list_view.is_export_button_enabled() is False
 
-    template_list_view.select_entity('Blank')
+    template_list_view.select_entity(blank_template_name)
     assert template_list_view.is_new_vm_button_enabled() is True
     assert template_list_view.is_import_button_enabled() is True
     assert template_list_view.is_edit_button_enabled() is True
@@ -314,6 +358,28 @@ def test_templates(ovirt_driver, cirros_image_template_name):
     assert template_list_view.is_edit_button_enabled() is True
     assert template_list_view.is_remove_button_enabled() is True
     assert template_list_view.is_export_button_enabled() is True
+
+    # Edit templates using dialog
+    template_dialog = template_list_view.edit(blank_template_name)
+    template_dialog.setDescription(blank_template_description)
+    save_screenshot('blank-template-edit-dialog')
+    template_dialog.ok()
+
+    template_dialog = template_list_view.edit(imported_template)
+    template_dialog.setDescription(imported_template_description)
+    save_screenshot('imported-template-edit-dialog')
+    template_dialog.ok()
+
+    # Test the edited values in the details view
+    template_detail_view = template_list_view.open_detail_view(blank_template_name)
+    save_screenshot('blank-template-detail')
+    assert template_detail_view.get_name() == blank_template_name
+    assert template_detail_view.get_description() == blank_template_description
+
+    webadmin_menu.open_template_list_view()
+    template_detail_view = template_list_view.open_detail_view(imported_template)
+    assert template_detail_view.get_name() == imported_template
+    assert template_detail_view.get_description() == imported_template_description
 
 
 def test_pools(ovirt_driver):
@@ -362,17 +428,23 @@ def test_virtual_machines(
     console_file_helper,
     selenium_remote_artifacts_dir,
 ):
+    vm_name = 'vm0'
+    vm_description = f'VM description for {selenium_browser_name}'
+
+    # Open VM list view
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     vm_list_view = webadmin_menu.open_vm_list_view()
+    save_screenshot('vm-list-view')
 
+    # Test VM list view
     vms = vm_list_view.get_entities()
-    assert 'vm0' in vms
+    assert vm_name in vms
     assert vm_list_view.is_new_button_enabled() is True
     assert vm_list_view.is_edit_button_enabled() is False
     assert vm_list_view.is_shutdown_button_enabled() is False
     assert vm_list_view.is_migrate_button_enabled() is False
 
-    vm_list_view.select_entity('vm0')
+    vm_list_view.select_entity(vm_name)
     assert vm_list_view.is_new_button_enabled() is True
     assert vm_list_view.is_edit_button_enabled() is True
     assert vm_list_view.is_shutdown_button_enabled() is True
@@ -384,12 +456,20 @@ def test_virtual_machines(
     assert vm_list_view.is_shutdown_button_enabled() is False
     assert vm_list_view.is_migrate_button_enabled() is False
 
-    save_screenshot('vms-list-success')
+    # Edit VM using dialog
+    vm_dialog = vm_list_view.edit(vm_name)
+    vm_dialog.setDescription(vm_description)
+    save_screenshot('vm-edit-dialog')
+    vm_dialog.ok()
 
-    vm_detail_view = vm_list_view.open_detail_view('vm0')
-    assert vm_detail_view.get_name() == 'vm0'
+    # Test the VM details view
+    vm_detail_view = vm_list_view.open_detail_view(vm_name)
+    save_screenshot('vm-detail')
+    assert vm_detail_view.get_name() == vm_name
+    assert vm_detail_view.get_description() == vm_description
     assert vm_detail_view.get_status() == 'Down'
 
+    # Test Run Once
     run_once_dialog = vm_list_view.run_once()
     run_once_dialog.toggle_console_options()
     run_once_dialog.select_vnc()
@@ -398,9 +478,10 @@ def test_virtual_machines(
     # Waiting for Powering Up instead of Up to speed up the test execution
     vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
     vm_status = vm_detail_view.get_status()
-    assert vm_status == 'Powering Up' or vm_status == 'Up'
     save_screenshot('vms-after-run-once')
+    assert vm_status == 'Powering Up' or vm_status == 'Up'
 
+    # Test Manage VGPU dialog
     vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
     vm_vgpu_dialog = vm_detail_host_devices_tab.open_manage_vgpu_dialog()
 
@@ -420,6 +501,7 @@ def test_virtual_machines(
 
     vm_vgpu_dialog.cancel()
 
+    # Teste console file download
     vm_list_view.download_console_file(console_file_full_path, ansible_storage, selenium_remote_artifacts_dir)
 
     with open(console_file_full_path) as f:

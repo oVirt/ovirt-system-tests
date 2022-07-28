@@ -6,24 +6,14 @@ import logging
 
 from selenium.webdriver.common.by import By
 from .Displayable import Displayable
-from .WithBreadcrumbs import WithBreadcrumbs
+from .EntityDetailView import EntityDetailView
 
 LOGGER = logging.getLogger(__name__)
 
 
-class VmDetailView(Displayable, WithBreadcrumbs):
-    def __init__(self, ovirt_driver, vmName):
-        super(VmDetailView, self).__init__(ovirt_driver)
-        self.vmName = vmName
-
-    def is_displayed(self):
-        breadcrumbs = self.get_breadcrumbs()
-        return (
-            len(breadcrumbs) == 3
-            and breadcrumbs[0] == 'Compute'
-            and breadcrumbs[1] == 'Virtual Machines'
-            and breadcrumbs[2] == self.vmName
-        )
+class VmDetailView(EntityDetailView):
+    def __init__(self, ovirt_driver, breadcrumbs, vm_name):
+        super(VmDetailView, self).__init__(ovirt_driver, breadcrumbs, vm_name)
 
     def get_displayable_name(self):
         return 'VM detail view'
@@ -38,6 +28,9 @@ class VmDetailView(Displayable, WithBreadcrumbs):
 
     def get_name(self):
         return self.ovirt_driver.find_element(By.ID, 'SubTabVirtualMachineGeneralView_form_col0_row0_value').text
+
+    def get_description(self):
+        return self.ovirt_driver.find_element(By.ID, 'SubTabVirtualMachineGeneralView_form_col0_row1_value').text
 
     def get_status(self):
         return self.ovirt_driver.find_element(By.ID, 'SubTabVirtualMachineGeneralView_form_col0_row2_value').text

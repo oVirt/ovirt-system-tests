@@ -10,6 +10,7 @@ from ost_utils.ansible.module_mappers import AnsibleExecutionError
 from .Displayable import Displayable
 from .EntityListView import EntityListView
 from .VmDetailView import VmDetailView
+from .VmDialog import VmDialog
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,9 +27,16 @@ class VmListView(EntityListView):
     def open_detail_view(self, vm_name):
         super().open_detail_view(vm_name)
 
-        vm_detail_view = VmDetailView(self.ovirt_driver, vm_name)
+        vm_detail_view = VmDetailView(self.ovirt_driver, self.breadcrumbs, vm_name)
         vm_detail_view.wait_for_displayed()
         return vm_detail_view
+
+    def edit(self, name):
+        super().edit(name)
+
+        dialog = VmDialog(self.ovirt_driver, 'Edit')
+        dialog.wait_for_displayed()
+        return dialog
 
     def is_new_button_enabled(self):
         return self.ovirt_driver.is_button_enabled('New')

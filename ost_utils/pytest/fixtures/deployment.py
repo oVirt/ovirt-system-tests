@@ -153,12 +153,6 @@ def deploy(
         if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:
             package_mgmt.check_installed_packages(ansible_all)
 
-    # temporary hack to downgrade python on host-0 to investigate https://bugzilla.redhat.com/show_bug.cgi?id=2111187
-    if ost_images_distro == "el8stream":
-        ansible_hosts.shell(
-            '(hostname | grep 0) && dnf install -y --enablerepo baseos platform-python-3.6.8-42.el8 || :'
-        )
-
     # report package versions
     LOGGER.info('oVirt packages used on VMs:')
     package_mgmt.report_ovirt_packages_versions(ansible_all)

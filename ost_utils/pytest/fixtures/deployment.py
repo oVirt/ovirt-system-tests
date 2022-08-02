@@ -14,9 +14,11 @@ import pprint
 
 import pytest
 
+from ost_utils import assert_utils
 from ost_utils import coverage
 from ost_utils import deployment_utils
 from ost_utils import utils
+from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.deployment_utils import package_mgmt
 
 
@@ -112,8 +114,12 @@ def deploy(
         LOGGER.info("Environment already deployed")
         return
 
-    LOGGER.info("Waiting for SSH on the VMs")
-    ansible_all.wait_for_connection(timeout=120)
+    def all_vms_up():
+        result = ansible_all.shell("systemctl is-active default.target")
+        return all(v["stdout"] == "active" for v in result.values())
+
+    LOGGER.info("Waiting for VMs to fully boot")
+    assert assert_utils.true_within_short(all_vms_up, allowed_exceptions=[AnsibleExecutionError])
 
     # set static hostname to match the one assigned by DNS
     ansible_all.shell("hostnamectl set-hostname $(hostname)")

@@ -292,7 +292,6 @@ def report_ovirt_packages_versions(ansible_vms):
         pkgs,
     )
 
-    LOGGER.info('oVirt packages used on VMs:')
     for pkg in sorted(matching_pkgs):
         LOGGER.info(pkg)
 

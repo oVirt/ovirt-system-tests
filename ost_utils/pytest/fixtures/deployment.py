@@ -122,6 +122,7 @@ def deploy(
     assert assert_utils.true_within_short(all_vms_up, allowed_exceptions=[AnsibleExecutionError])
 
     # set static hostname to match the one assigned by DNS
+    LOGGER.info("Set static hostnames")
     ansible_all.shell("hostnamectl set-hostname $(hostname)")
 
     # start IPv6 proxy for dnf so we can update packages
@@ -137,6 +138,7 @@ def deploy(
         )
 
     # disable all repos
+    LOGGER.info("Disable default repositories")
     package_mgmt.disable_all_repos(ansible_all)
 
     # add custom repos
@@ -158,6 +160,7 @@ def deploy(
         )
 
     # report package versions
+    LOGGER.info('oVirt packages used on VMs:')
     package_mgmt.report_ovirt_packages_versions(ansible_all)
 
     # run deployment scripts
@@ -166,6 +169,7 @@ def deploy(
 
     # setup vdsm coverage on hosts if desired
     if request.config.getoption('--vdsm-coverage'):
+        LOGGER.info('Setup vdsm coverage')
         coverage.vdsm.setup(ansible_hosts)
 
     # setup sar stat utility
@@ -173,3 +177,4 @@ def deploy(
 
     # mark env as deployed
     deployment_utils.mark_as_deployed(working_dir)
+    LOGGER.info("Environment deployed")

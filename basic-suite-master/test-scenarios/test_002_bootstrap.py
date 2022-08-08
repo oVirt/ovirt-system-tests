@@ -56,7 +56,7 @@ TEMPLATE_BLANK = 'Blank'
 
 # Storage
 # TODO temporarily use nfs instead of iscsi. Revert back once iscsi works in vdsm 4.4!
-MASTER_SD_TYPE = 'nfs'
+MASTER_SD_TYPE = 'iscsi'
 
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
@@ -1720,7 +1720,7 @@ def test_upload_cirros_image(
         auth=ovirt_auth,
         name=cirros_image_disk_name,
         upload_image_path=CIRROS_IMAGE_PATH,
-        storage_domain=SD_NFS_NAME,
+        storage_domain=SD_ISCSI_NAME,
         format='cow',
         sparse='true',
         wait='true',
@@ -1755,7 +1755,7 @@ def test_create_cirros_template(
         template_memory='1GiB',
         template_cpu='1',
         template_disk_size='1GiB',
-        template_disk_storage=SD_NFS_NAME,
+        template_disk_storage=SD_ISCSI_NAME,
         template_seal=False,
     )
 

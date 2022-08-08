@@ -238,7 +238,7 @@ def test_add_disks(engine_api, cirros_image_disk_name):
 
     disks_params = {
         (VM0_NAME, cirros_image_disk_name): {
-            'storage_domains': [types.StorageDomain(name=SD_ISCSI_NAME)],
+            'storage_domains': [types.StorageDomain(name=SD_NFS_NAME)],
             'id': cirros_disk.get().id,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,

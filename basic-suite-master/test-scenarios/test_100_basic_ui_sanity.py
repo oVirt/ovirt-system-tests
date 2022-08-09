@@ -479,6 +479,7 @@ def test_disks(ovirt_driver, selenium_browser_name, image_local_path):
 
     image_name = "{}-{}".format(selenium_browser_name, int(time.time()))
     disks_list_view.upload(image_local_path, image_name)
+    assert assert_utils.equals_within_short(lambda: disks_list_view.get_status(image_name), 'OK')
 
 
 def test_dashboard(ovirt_driver):

@@ -30,6 +30,9 @@ class Driver:
     def get(self, url):
         self.__driver.get(url)
 
+    def refresh(self):
+        self.__driver.refresh()
+
     def quit(self):
         self.__driver.quit()
 

@@ -15,7 +15,7 @@ class WelcomeScreen(Displayable):
         super(WelcomeScreen, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.find_element(By.CLASS_NAME, 'welcome-section').is_displayed()
+        return self.ovirt_driver.is_css_selector_displayed('.welcome-section')
 
     def get_displayable_name(self):
         return 'Welcome screen'

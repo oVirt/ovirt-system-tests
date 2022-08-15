@@ -82,6 +82,15 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
             entities.append(name)
         return entities
 
+    def get_entity_row_id(self, entity_name):
+        names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
+
+        if entity_name not in names_to_ids:
+            raise Exception(f'No {self.entity_type} with the name {entity_name} found')
+
+        name_id = names_to_ids[entity_name]
+        return name_id.replace(self.entity_name_table_cell_id_selector, '')
+
     def _get_entity_names_to_ids(self):
         elements = self.ovirt_driver.find_elements(
             By.XPATH,

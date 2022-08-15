@@ -38,15 +38,7 @@ class DisksListView(EntityListView):
         return self.ovirt_driver.is_button_enabled('Upload')
 
     def get_status(self, entity_name):
-        names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
-
-        if entity_name not in names_to_ids:
-            raise Exception(f'No {self.entity_type} with the name {entity_name} found')
-
-        # find the id of the name column (column 0) and replace 1 by 10 to
-        # get the id of the status column (column 10)
-        name_id = names_to_ids[entity_name]
-        status_id = name_id.replace("0_row", "10_row")
+        status_id = f'MainDiskView_table_content_col10_row{self.get_entity_row_id(entity_name)}'
         status_text = self.ovirt_driver.retry_if_known_issue(
             lambda: self.ovirt_driver.find_element(By.ID, status_id).text
         )

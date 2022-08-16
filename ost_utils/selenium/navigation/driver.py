@@ -40,10 +40,28 @@ class Driver:
         return ActionChains(self.__driver)
 
     def find_element(self, by, value):
-        return self.__driver.find_element(by, value)
+        try:
+            # Lets try normal call first to avoid creating a condition
+            return self.__driver.find_element(by, value)
+        except NoSuchElementException as e:
+            # No need to retry this exception
+            raise e
+        except Exception as e:
+            # If failed, lets try again with waiting
+            LOGGER.exception(f'!!! find_element() failed with {e.__class__.__name__}, retrying')
+            return self.retry_if_known_issue(self.__driver.find_element, by, value)
 
     def find_elements(self, by, value):
-        return self.__driver.find_elements(by, value)
+        try:
+            # Lets try normal call first to avoid creating a condition
+            return self.__driver.find_elements(by, value)
+        except NoSuchElementException as e:
+            # No need to retry this exception
+            raise e
+        except Exception as e:
+            # If failed, lets try again with waiting
+            LOGGER.exception(f'!!! find_elements() failed with {e.__class__.__name__}, retrying')
+            return self.retry_if_known_issue(self.__driver.find_elements, by, value)
 
     def execute_script(self, script):
         return self.__driver.execute_script(script)
@@ -85,38 +103,34 @@ class Driver:
 
     def is_class_name_present(self, class_name):
         try:
-            self.retry_if_stale(
-                # better works for cases with multiple cases
-                # than //*[contains(@class, 'class_name')]
-                self.find_element,
-                By.CLASS_NAME,
-                class_name,
-            )
+            # better works for cases with multiple cases
+            # than //*[contains(@class, 'class_name')]
+            self.find_element(By.CLASS_NAME, class_name)
             return True
         except NoSuchElementException:
             return False
 
     def is_xpath_present(self, xpath):
         try:
-            self.retry_if_stale(self.find_element, By.XPATH, xpath)
+            self.find_element(By.XPATH, xpath)
             return True
         except NoSuchElementException:
             return False
 
     def is_xpath_displayed(self, xpath):
-        return self.retry_if_stale(
+        return self.retry_if_known_issue(
             lambda: self.is_xpath_present(xpath) and self.find_element(By.XPATH, xpath).is_displayed()
         )
 
     def is_css_selector_present(self, selector):
         try:
-            self.retry_if_stale(self.find_element, By.CSS_SELECTOR, selector)
+            self.find_element(By.CSS_SELECTOR, selector)
             return True
         except NoSuchElementException:
             return False
 
     def is_css_selector_displayed(self, selector):
-        return self.retry_if_stale(
+        return self.retry_if_known_issue(
             lambda: self.is_css_selector_present(selector)
             and self.find_element(By.CSS_SELECTOR, selector).is_displayed()
         )
@@ -125,10 +139,10 @@ class Driver:
         return self.is_xpath_enabled(f'//button[text()="{text}"]')
 
     def is_xpath_enabled(self, xpath):
-        return self.retry_if_stale(lambda: self.find_element(By.XPATH, xpath).is_enabled())
+        return self.retry_if_known_issue(lambda: self.find_element(By.XPATH, xpath).is_enabled())
 
     def xpath_click(self, xpath):
-        return self.retry_if_stale(lambda: self.find_element(By.XPATH, xpath).click())
+        return self.retry_if_known_issue(lambda: self.find_element(By.XPATH, xpath).click())
 
     def id_wait_and_click(self, message, element_id, wait_long=False):
         self.xpath_wait_and_click(message, f'//*[@id="{element_id}"]', wait_long)
@@ -164,10 +178,10 @@ class Driver:
             ConditionClass(condition_method, *args), message
         )
 
-    def retry_if_stale(self, method_to_retry, *args):
-        condition = StaleExceptionOccurredCondition(method_to_retry, *args)
+    def retry_if_known_issue(self, method_to_retry, *args):
+        condition = KnownIssueOccurredCondition(method_to_retry, *args)
         WebDriverWait(self.__driver, assert_utils.LONG_TIMEOUT).until_not(
-            condition, 'StaleElementReferenceException occurred'
+            condition, 'Unexpected exception occurred or known exceptions exceeded the timeout'
         )
         if condition.error is not None:
             raise condition.error
@@ -193,7 +207,7 @@ class ConditionClass:
             raise e
 
 
-class StaleExceptionOccurredCondition:
+class KnownIssueOccurredCondition:
     def __init__(self, method_to_execute, *args):
         self.method_to_execute = method_to_execute
         self.args = args
@@ -212,7 +226,7 @@ class StaleExceptionOccurredCondition:
         # ignore TimeoutException if caused by timeout in java
         except TimeoutException as e:
             LOGGER.exception(
-                f'!!! StaleExceptionOccurredCondition failed with {e.__class__.__name__} '
+                f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
                 + f'at retry number {str(self.retry)}'
             )
             if 'java.util.concurrent.TimeoutException' in str(e):
@@ -227,7 +241,7 @@ class StaleExceptionOccurredCondition:
         # Last 0 characters read:
         except WebDriverException as e:
             LOGGER.exception(
-                f'!!! StaleExceptionOccurredCondition failed with {e.__class__.__name__} '
+                f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
                 + f'at retry number {self.retry}'
             )
             if 'START_MAP' in str(e):
@@ -236,7 +250,7 @@ class StaleExceptionOccurredCondition:
                 self.error = e
         except Exception as e:
             LOGGER.exception(
-                f'!!! StaleExceptionOccurredCondition failed with {e.__class__.__name__} '
+                f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
                 + f'at retry number {self.retry}'
             )
 

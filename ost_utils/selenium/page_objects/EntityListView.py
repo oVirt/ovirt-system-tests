@@ -51,7 +51,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
 
     def open_detail_view(self, entity_name):
         LOGGER.debug('Open detail of ' + self.entity_type + ' ' + entity_name)
-        names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
+        names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
 
         if entity_name in names_to_ids:
             self.ovirt_driver.xpath_click(f'//*[@id="{names_to_ids[entity_name]}"]')
@@ -60,7 +60,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
 
     def select_entity(self, entity_name):
         LOGGER.debug('Select ' + self.entity_type + ' ' + entity_name)
-        names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
+        names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
 
         if entity_name in names_to_ids:
             # find the parent td and click the td next to it to select the row
@@ -76,7 +76,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         time.sleep(1)
 
     def get_entities(self):
-        names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
+        names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
         entities = []
         for name in names_to_ids:
             entities.append(name)

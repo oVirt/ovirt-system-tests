@@ -11,6 +11,7 @@ from selenium.common.exceptions import (
     TimeoutException,
     WebDriverException,
 )
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -22,29 +23,51 @@ LOGGER = logging.getLogger(__name__)
 class Driver:
     def __init__(self, driver):
 
-        # this is a selenium webdriver instance
-        self.driver = driver
+        # this is a selenium webdriver instance, keeping it private so
+        # that we can wrap and control it better (e.g. retry after some exceptions)
+        self.__driver = driver
+
+    def get(self, url):
+        self.__driver.get(url)
+
+    def quit(self):
+        self.__driver.quit()
+
+    def get_capability(self, capability_name):
+        return self.__driver.capabilities[capability_name]
+
+    def create_action_chains(self):
+        return ActionChains(self.__driver)
+
+    def find_element(self, by, value):
+        return self.__driver.find_element(by, value)
+
+    def find_elements(self, by, value):
+        return self.__driver.find_elements(by, value)
+
+    def execute_script(self, script):
+        return self.__driver.execute_script(script)
 
     def execute_in_frame(self, xpath, method, *args):
         result = None
         try:
-            frame = self.driver.find_element(By.XPATH, xpath)
-            self.driver.switch_to.frame(frame)
+            frame = self.find_element(By.XPATH, xpath)
+            self.__driver.switch_to.frame(frame)
             result = method(*args)
         finally:
-            self.driver.switch_to.default_content()
+            self.__driver.switch_to.default_content()
             return result
 
     def save_screenshot(self, path):
-        self.driver.save_screenshot(path)
+        self.__driver.save_screenshot(path)
 
     def save_page_source(self, path):
         with open(path, "w", encoding='utf-8') as text_file:
-            text_file.write(self.driver.page_source.encode('utf-8').decode())
+            text_file.write(self.__driver.page_source.encode('utf-8').decode())
 
     def save_log(self, path, type):
         with open(path, "w", encoding='utf-8') as text_file:
-            logs = self.driver.get_log(type)
+            logs = self.__driver.get_log(type)
             if logs:
                 for entry in logs:
                     text_file.write(f'{entry}\n\n')
@@ -65,7 +88,7 @@ class Driver:
             self.retry_if_stale(
                 # better works for cases with multiple cases
                 # than //*[contains(@class, 'class_name')]
-                self.driver.find_element,
+                self.find_element,
                 By.CLASS_NAME,
                 class_name,
             )
@@ -75,19 +98,19 @@ class Driver:
 
     def is_xpath_present(self, xpath):
         try:
-            self.retry_if_stale(self.driver.find_element, By.XPATH, xpath)
+            self.retry_if_stale(self.find_element, By.XPATH, xpath)
             return True
         except NoSuchElementException:
             return False
 
     def is_xpath_displayed(self, xpath):
         return self.retry_if_stale(
-            lambda: self.is_xpath_present(xpath) and self.driver.find_element(By.XPATH, xpath).is_displayed()
+            lambda: self.is_xpath_present(xpath) and self.find_element(By.XPATH, xpath).is_displayed()
         )
 
     def is_css_selector_present(self, selector):
         try:
-            self.retry_if_stale(self.driver.find_element, By.CSS_SELECTOR, selector)
+            self.retry_if_stale(self.find_element, By.CSS_SELECTOR, selector)
             return True
         except NoSuchElementException:
             return False
@@ -95,17 +118,17 @@ class Driver:
     def is_css_selector_displayed(self, selector):
         return self.retry_if_stale(
             lambda: self.is_css_selector_present(selector)
-            and self.driver.find_element(By.CSS_SELECTOR, selector).is_displayed()
+            and self.find_element(By.CSS_SELECTOR, selector).is_displayed()
         )
 
     def is_button_enabled(self, text):
         return self.is_xpath_enabled(f'//button[text()="{text}"]')
 
     def is_xpath_enabled(self, xpath):
-        return self.retry_if_stale(lambda: self.driver.find_element(By.XPATH, xpath).is_enabled())
+        return self.retry_if_stale(lambda: self.find_element(By.XPATH, xpath).is_enabled())
 
     def xpath_click(self, xpath):
-        return self.retry_if_stale(lambda: self.driver.find_element(By.XPATH, xpath).click())
+        return self.retry_if_stale(lambda: self.find_element(By.XPATH, xpath).click())
 
     def id_wait_and_click(self, message, element_id, wait_long=False):
         self.xpath_wait_and_click(message, f'//*[@id="{element_id}"]', wait_long)
@@ -129,7 +152,7 @@ class Driver:
         self._wait_until(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_until(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout, ignored_exceptions=[TimeoutException]).until(
+        WebDriverWait(self.__driver, timeout, ignored_exceptions=[TimeoutException]).until(
             ConditionClass(condition_method, *args), message
         )
 
@@ -137,13 +160,13 @@ class Driver:
         self._wait_while(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)
 
     def _wait_while(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.driver, timeout, ignored_exceptions=[TimeoutException]).until_not(
+        WebDriverWait(self.__driver, timeout, ignored_exceptions=[TimeoutException]).until_not(
             ConditionClass(condition_method, *args), message
         )
 
     def retry_if_stale(self, method_to_retry, *args):
         condition = StaleExceptionOccurredCondition(method_to_retry, *args)
-        WebDriverWait(self.driver, assert_utils.LONG_TIMEOUT).until_not(
+        WebDriverWait(self.__driver, assert_utils.LONG_TIMEOUT).until_not(
             condition, 'StaleElementReferenceException occurred'
         )
         if condition.error is not None:
@@ -157,7 +180,7 @@ class ConditionClass:
         self.args = args
         self.retry = 0
 
-    def __call__(self, driver):
+    def __call__(self, __driver):
         self.retry += 1
 
         try:
@@ -197,10 +220,10 @@ class StaleExceptionOccurredCondition:
             else:
                 self.error = e
         # stating it here just to avoid logging this expected condition or processing it as
-        # WebDriverException
+        # WebdriverException
         except NoSuchElementException as e:
             self.error = e
-        # ignore WebDriverException if caused by the following: Expected to read a START_MAP but instead have: END.
+        # ignore WebdriverException if caused by the following: Expected to read a START_MAP but instead have: END.
         # Last 0 characters read:
         except WebDriverException as e:
             LOGGER.exception(

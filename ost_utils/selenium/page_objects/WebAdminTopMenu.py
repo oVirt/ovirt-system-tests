@@ -15,7 +15,7 @@ class WebAdminTopMenu(Displayable):
         super(WebAdminTopMenu, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element(By.TAG_NAME, 'nav').is_displayed()
+        return self.ovirt_driver.find_element(By.TAG_NAME, 'nav').is_displayed()
 
     def get_displayable_name(self):
         return 'WebAdmin top menu'
@@ -25,7 +25,7 @@ class WebAdminTopMenu(Displayable):
         # overriding the window.onbeforeunload to prevent an intermittend
         # alert saying
         # Leave site? Changes you made may not be saved.
-        self.ovirt_driver.driver.execute_script(
+        self.ovirt_driver.execute_script(
             'window.onbeforeunload = function() ' '{console.log("overriden window.onbeforeunload called")};'
         )
         self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="HeaderView_userName"]')

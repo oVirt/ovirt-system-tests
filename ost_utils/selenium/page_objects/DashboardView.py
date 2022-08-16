@@ -43,11 +43,11 @@ class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
         return self.ovirt_driver.execute_in_frame(self.DASHBOARD_IFRAME_SELECTOR, method, *args)
 
     def _is_displayed(self):
-        return self.ovirt_driver.driver.find_element(By.XPATH, '//div[@id="global-dashboard"]').is_displayed()
+        return self.ovirt_driver.find_element(By.XPATH, '//div[@id="global-dashboard"]').is_displayed()
 
     def _get_aggregate_count(self, label):
         return int(
-            self.ovirt_driver.driver.find_element(
+            self.ovirt_driver.find_element(
                 By.XPATH,
                 '//a[span/text() = "' + label + '"]/span[@class="aggregate-status-count"]',
             ).text

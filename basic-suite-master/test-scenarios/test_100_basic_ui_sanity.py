@@ -26,10 +26,12 @@ from ost_utils import assert_utils
 from ost_utils import test_utils
 from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
+from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
 from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.selenium import *
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 from ost_utils.selenium.navigation.driver import Driver
+from ost_utils.selenium.page_objects.ClusterListView import ClusterListView
 from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
 from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
 from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
@@ -280,6 +282,56 @@ def test_clusters(ovirt_driver, save_screenshot, selenium_browser_name, ost_clus
     cluster_detail_view = cluster_list_view.open_detail_view(ost_cluster_name)
     assert cluster_detail_view.get_name() == ost_cluster_name
     assert cluster_detail_view.get_description() == cluster_description
+
+
+def test_cluster_upgrade(
+    ovirt_driver, engine_api, save_screenshot, ost_cluster_name, ansible_host0_facts, ansible_host1_facts
+):
+    host0_name = ansible_host0_facts.get("ansible_hostname")
+    host1_name = ansible_host1_facts.get("ansible_hostname")
+    cluster_service = test_utils.get_cluster_service(engine_api.system_service(), ost_cluster_name)
+    original_schedulling_policy_id = cluster_service.get().scheduling_policy.id
+    cluster_maintenance_schedulling_policy_id = '7677771e-5eab-422e-83fa-dc04080d21b7'
+
+    # cluster is not set to cluster_maintenance policy yet
+    assert original_schedulling_policy_id != cluster_maintenance_schedulling_policy_id
+
+    cluster_list_view = ClusterListView(ovirt_driver)
+    upgrade_dialog = cluster_list_view.upgrade(ost_cluster_name)
+
+    upgrade_dialog.toggle_check_all_hosts()
+    save_screenshot('cluster-upgrade-dialog-select-hosts')
+    upgrade_dialog.next()
+
+    upgrade_dialog.toggle_check_for_upgrade()
+    upgrade_dialog.toggle_reboot_hosts()
+    save_screenshot('cluster-upgrade-dialog-options')
+    upgrade_dialog.next()
+
+    save_screenshot('cluster-upgrade-dialog-review')
+    upgrade_dialog.upgrade()
+
+    save_screenshot('cluster-upgrade-dialog-progress')
+
+    events_view = upgrade_dialog.go_to_event_log()
+    assert assert_utils.true_within_short(lambda: events_view.events_contain('Cluster upgrade progress: 0%'))
+    assert assert_utils.true_within_short(lambda: events_view.events_contain('Successfully set upgrade running flag'))
+
+    # cluster is set to cluster_maintenance policy
+    assert cluster_service.get().scheduling_policy.id == cluster_maintenance_schedulling_policy_id
+
+    assert assert_utils.true_within_short(lambda: events_view.events_contain(f'Check for update of host {host0_name}'))
+    assert assert_utils.true_within_short(lambda: events_view.events_contain(f'Check for update of host {host1_name}'))
+    assert assert_utils.true_within_short(
+        lambda: events_view.events_contain(f'Upgrade of cluster {ost_cluster_name} finished successfully')
+    )
+    assert assert_utils.true_within_short(lambda: events_view.events_contain('Cluster upgrade progress: 100%'))
+    assert assert_utils.true_within_short(
+        lambda: events_view.events_contain('Successfully cleared upgrade running flag')
+    )
+
+    # cluster is set to the original policy
+    assert cluster_service.get().scheduling_policy.id == original_schedulling_policy_id
 
 
 def test_hosts(ovirt_driver, ansible_host0_facts, save_screenshot, selenium_browser_name):

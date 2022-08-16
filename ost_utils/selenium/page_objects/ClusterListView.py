@@ -2,9 +2,16 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+import logging
+
+from selenium.webdriver.common.by import By
 from .ClusterDetailView import ClusterDetailView
 from .ClusterDialog import ClusterDialog
+from .Displayable import Displayable
 from .EntityListView import EntityListView
+from .EventsView import EventsView
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ClusterListView(EntityListView):
@@ -38,3 +45,45 @@ class ClusterListView(EntityListView):
 
     def is_upgrade_button_enabled(self):
         return self.ovirt_driver.is_button_enabled('Upgrade')
+
+    def upgrade(self, cluster_name):
+        LOGGER.debug('Upgrade cluster')
+        self.ovirt_driver.xpath_click('//button[text()="Upgrade"]')
+
+        upgrade_dialog = ClusterUpgradeDialog(self.ovirt_driver)
+        upgrade_dialog.wait_for_displayed()
+        return upgrade_dialog
+
+
+class ClusterUpgradeDialog(Displayable):
+    def __init__(self, ovirt_driver):
+        super(ClusterUpgradeDialog, self).__init__(ovirt_driver)
+
+    def is_displayed(self):
+        modal_text = self.ovirt_driver.find_element(By.ID, 'cluster-upgrade-modal').text
+        return 'Loading Cluster Data' not in modal_text
+
+    def get_displayable_name(self):
+        return 'Upgrade cluster'
+
+    def toggle_check_all_hosts(self):
+        self.ovirt_driver.xpath_click('//input[@name="check-all"]')
+
+    def toggle_check_for_upgrade(self):
+        self.ovirt_driver.xpath_click('//input[@id="upgrade-options-check-upgrade"]')
+
+    def toggle_reboot_hosts(self):
+        self.ovirt_driver.xpath_click('//input[@id="upgrade-options-reboot-after"]')
+
+    def next(self):
+        self.ovirt_driver.xpath_click('//button[text()="Next"]')
+
+    def upgrade(self):
+        self.ovirt_driver.xpath_click('//footer/button[text()="Upgrade"]')
+
+    def go_to_event_log(self):
+        self.ovirt_driver.xpath_click('//button[text()="Go to Event Log"]')
+
+        events_view = EventsView(self.ovirt_driver)
+        events_view.wait_for_displayed()
+        return events_view

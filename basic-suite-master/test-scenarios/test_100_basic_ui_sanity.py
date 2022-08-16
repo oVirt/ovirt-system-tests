@@ -116,7 +116,7 @@ def ovirt_driver(
     try:
         yield ovirt_driver
     finally:
-        ovirt_driver.driver.quit()
+        ovirt_driver.quit()
 
 
 @pytest.fixture(scope="session")
@@ -172,7 +172,7 @@ def save_page_source(ovirt_driver, selenium_artifact_full_path):
 @pytest.fixture(scope="session")
 def save_logs_from_browser(ovirt_driver, selenium_artifact_full_path):
     def save(description):
-        if ovirt_driver.driver.capabilities['browserName'] == 'chrome':
+        if ovirt_driver.get_capability('browserName') == 'chrome':
             ovirt_driver.save_console_log(selenium_artifact_full_path(description, 'txt'))
             ovirt_driver.save_performance_log(selenium_artifact_full_path(description, 'perf.txt'))
 
@@ -506,7 +506,7 @@ def test_logout(ovirt_driver, engine_webadmin_url):
     webadmin_top_menu.wait_for_not_displayed()
 
     # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
-    ovirt_driver.driver.get(engine_webadmin_url)
+    ovirt_driver.get(engine_webadmin_url)
 
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
@@ -554,7 +554,7 @@ def test_grafana(
     engine_fqdn,
 ):
 
-    ovirt_driver.driver.get(engine_webadmin_url)
+    ovirt_driver.get(engine_webadmin_url)
 
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
@@ -571,7 +571,7 @@ def test_grafana(
     save_screenshot('grafana')
 
     # navigate directly to Grafana Configuration/Data Sources page
-    ovirt_driver.driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
+    ovirt_driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
     assert grafana.db_connection()
     save_screenshot('grafana-datasource-connection')
 

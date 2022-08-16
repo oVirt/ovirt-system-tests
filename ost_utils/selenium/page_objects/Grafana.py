@@ -16,7 +16,7 @@ class Grafana(Displayable):
         super(Grafana, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element(
+        return self.ovirt_driver.find_element(
             By.XPATH,
             '//h1[text()="Welcome to Grafana"] | ' '//span[text()="Welcome to Grafana"]',
         ).is_displayed()
@@ -56,7 +56,7 @@ class Grafana(Displayable):
 
     def is_error_visible(self):
         if self.ovirt_driver.is_xpath_present('//app-notifications-list'):
-            notifications = self.ovirt_driver.driver.find_elements(By.XPATH, '//app-notifications-list/*')
+            notifications = self.ovirt_driver.find_elements(By.XPATH, '//app-notifications-list/*')
             for notification in notifications:
                 if "Error" in notification.text:
                     return True
@@ -68,7 +68,7 @@ class Grafana(Displayable):
         return False
 
     def _is_breadcrumbs_visible(self, menu, submenu):
-        find_element = self.ovirt_driver.driver.find_element
+        find_element = self.ovirt_driver.find_element
         is_breadcrumb_menu_visible = find_element(
             By.XPATH,
             f'//div[@class="navbar-page-btn"]//a[text() = "{menu}"] | ' f'//button[text() = "{menu}"]',

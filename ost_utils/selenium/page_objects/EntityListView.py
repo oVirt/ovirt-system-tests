@@ -83,7 +83,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         return entities
 
     def _get_entity_names_to_ids(self):
-        elements = self.ovirt_driver.driver.find_elements(
+        elements = self.ovirt_driver.find_elements(
             By.XPATH,
             '//a[contains(@id, "' + self.entity_name_table_cell_id_selector + '")]',
         )

@@ -18,7 +18,7 @@ class GrafanaLoginScreen(Displayable):
         super(GrafanaLoginScreen, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.driver.find_element(By.XPATH, self.OAUTH_XPATH).is_displayed()
+        return self.ovirt_driver.find_element(By.XPATH, self.OAUTH_XPATH).is_displayed()
 
     def get_displayable_name(self):
         return 'Grafana login screen'

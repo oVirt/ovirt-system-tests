@@ -23,6 +23,6 @@ class Displayable(WithOvirtDriver):
     def wait_for_not_displayed(self):
         self.ovirt_driver.wait_while(
             self.get_displayable_name() + ' is still displayed',
-            self.ovirt_driver.retry_if_stale,
+            self.ovirt_driver.retry_if_known_issue,
             self.is_displayed,
         )

@@ -38,7 +38,7 @@ class DisksListView(EntityListView):
         return self.ovirt_driver.is_button_enabled('Upload')
 
     def get_status(self, entity_name):
-        names_to_ids = self.ovirt_driver.retry_if_stale(self._get_entity_names_to_ids)
+        names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
 
         if entity_name not in names_to_ids:
             raise Exception(f'No {self.entity_type} with the name {entity_name} found')
@@ -47,7 +47,9 @@ class DisksListView(EntityListView):
         # get the id of the status column (column 10)
         name_id = names_to_ids[entity_name]
         status_id = name_id.replace("0_row", "10_row")
-        status_text = self.ovirt_driver.retry_if_stale(lambda: self.ovirt_driver.find_element(By.ID, status_id).text)
+        status_text = self.ovirt_driver.retry_if_known_issue(
+            lambda: self.ovirt_driver.find_element(By.ID, status_id).text
+        )
         return status_text
 
     def upload(self, image_local_path, image_name):

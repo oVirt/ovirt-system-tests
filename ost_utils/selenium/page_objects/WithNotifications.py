@@ -11,15 +11,10 @@ LOGGER = logging.getLogger(__name__)
 
 class WithNotifications(WithOvirtDriver):
     def is_error_notification_visible(self):
-        xpath = '//div[contains(@class, "alert-danger")]'
-        return self.ovirt_driver.retry_if_stale(
-            self.ovirt_driver.is_xpath_present, xpath
-        ) and self.ovirt_driver.retry_if_stale(self.ovirt_driver.is_xpath_displayed, xpath)
+        return self.ovirt_driver.is_xpath_displayed('//div[contains(@class, "alert-danger")]')
 
     def _is_notification_displayed(self):
-        xpath = '//a[@class="notif_dismissButton"]'
-        result = self.ovirt_driver.is_xpath_present(xpath) and self.ovirt_driver.is_xpath_displayed(xpath)
-        return result
+        return self.ovirt_driver.is_xpath_displayed('//a[@class="notif_dismissButton"]')
 
     def close_notification_safely(self):
         xpath = '//a[@class="notif_dismissButton"]'

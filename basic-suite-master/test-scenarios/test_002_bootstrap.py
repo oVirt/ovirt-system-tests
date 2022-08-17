@@ -55,9 +55,6 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 TEMPLATE_BLANK = 'Blank'
 
 # Storage
-# TODO temporarily use nfs instead of iscsi. Revert back once iscsi works in vdsm 4.4!
-MASTER_SD_TYPE = 'nfs'
-
 SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
 SD_NFS_PATH = '/exports/nfs/share1'
@@ -423,14 +420,20 @@ def sd_iscsi_host_luns(sd_iscsi_host_lun_uuids, sd_iscsi_host_ip, sd_iscsi_port,
 
 
 @order_by(_TEST_LIST)
-@pytest.mark.skipif(MASTER_SD_TYPE != 'iscsi', reason='not using iscsi')
-def test_add_iscsi_master_storage_domain(engine_api, hosts_service, sd_iscsi_host_luns, ost_dc_name):
+def test_add_iscsi_master_storage_domain(
+    master_storage_domain_type, engine_api, hosts_service, sd_iscsi_host_luns, ost_dc_name
+):
+    if master_storage_domain_type != 'iscsi':
+        pytest.skip('not using iscsi')
     add_iscsi_storage_domain(engine_api, hosts_service, sd_iscsi_host_luns, ost_dc_name)
 
 
 @order_by(_TEST_LIST)
-@pytest.mark.skipif(MASTER_SD_TYPE != 'nfs', reason='not using nfs')
-def test_add_nfs_master_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name):
+def test_add_nfs_master_storage_domain(
+    master_storage_domain_type, engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name
+):
+    if master_storage_domain_type != 'nfs':
+        pytest.skip('not using iscsi')
     add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name)
 
 
@@ -466,13 +469,14 @@ def add_second_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage
 
 @order_by(_TEST_LIST)
 def test_add_secondary_storage_domains(
+    master_storage_domain_type,
     engine_api,
     hosts_service,
     sd_nfs_host_storage_name,
     sd_iscsi_host_luns,
     ost_dc_name,
 ):
-    if MASTER_SD_TYPE == 'iscsi':
+    if master_storage_domain_type == 'iscsi':
         vt = utils.VectorThread(
             [
                 functools.partial(
@@ -1709,6 +1713,7 @@ def test_upload_cirros_image(
     engine_full_username,
     engine_password,
     cirros_image_disk_name,
+    master_storage_domain_type,
 ):
     collection = CollectionMapper(ansible_engine)
 
@@ -1720,7 +1725,7 @@ def test_upload_cirros_image(
         auth=ovirt_auth,
         name=cirros_image_disk_name,
         upload_image_path=CIRROS_IMAGE_PATH,
-        storage_domain=SD_NFS_NAME,
+        storage_domain=SD_NFS_NAME if master_storage_domain_type == 'nfs' else SD_ISCSI_NAME,
         format='cow',
         sparse='true',
         wait='true',
@@ -1739,6 +1744,7 @@ def test_create_cirros_template(
     cirros_image_template_name,
     engine_hostname,
     ssh_key_file,
+    master_storage_domain_type,
 ):
     image_template(
         ansible_engine,
@@ -1755,7 +1761,7 @@ def test_create_cirros_template(
         template_memory='1GiB',
         template_cpu='1',
         template_disk_size='1GiB',
-        template_disk_storage=SD_NFS_NAME,
+        template_disk_storage=SD_NFS_NAME if master_storage_domain_type == 'nfs' else SD_ISCSI_NAME,
         template_seal=False,
     )
 

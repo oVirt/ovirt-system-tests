@@ -227,7 +227,7 @@ def _disk_attachment(**params):
 
 
 @order_by(_TEST_LIST)
-def test_add_disks(engine_api, cirros_image_disk_name):
+def test_add_disks(engine_api, cirros_image_disk_name, master_storage_domain_type):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     cirros_disk = test_utils.get_disk_service(
@@ -238,7 +238,9 @@ def test_add_disks(engine_api, cirros_image_disk_name):
 
     disks_params = {
         (VM0_NAME, cirros_image_disk_name): {
-            'storage_domains': [types.StorageDomain(name=SD_ISCSI_NAME)],
+            'storage_domains': [
+                types.StorageDomain(name=SD_ISCSI_NAME if master_storage_domain_type == 'nfs' else SD_NFS_NAME)
+            ],
             'id': cirros_disk.get().id,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,
@@ -312,10 +314,12 @@ def test_add_disks(engine_api, cirros_image_disk_name):
 
 
 @order_by(_TEST_LIST)
-def test_copy_template_disk(system_service, cirros_image_disk_name):
+def test_copy_template_disk(system_service, cirros_image_disk_name, master_storage_domain_type):
     cirros_disk = test_utils.get_disk_service(system_service, cirros_image_disk_name)
 
-    cirros_disk.copy(storage_domain=types.StorageDomain(name=SD_ISCSI_NAME))
+    cirros_disk.copy(
+        storage_domain=types.StorageDomain(name=SD_ISCSI_NAME if master_storage_domain_type == 'nfs' else SD_NFS_NAME)
+    )
 
 
 @order_by(_TEST_LIST)
@@ -435,17 +439,16 @@ def test_clone_powered_off_vm(system_service, vms_service, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_template_disk_copied_and_removed(system_service, cirros_image_disk_name):
-    iscsi_sd_service = test_utils.get_storage_domain_service(system_service, SD_ISCSI_NAME)
-    cirros_sd_disk_service = test_utils.get_storage_domain_disk_service_by_name(
-        iscsi_sd_service, cirros_image_disk_name
-    )
+def test_verify_template_disk_copied_and_removed(system_service, cirros_image_disk_name, master_storage_domain_type):
+    sd_name = SD_ISCSI_NAME if master_storage_domain_type == 'nfs' else SD_NFS_NAME
+    sd_service = test_utils.get_storage_domain_service(system_service, sd_name)
+    cirros_sd_disk_service = test_utils.get_storage_domain_disk_service_by_name(sd_service, cirros_image_disk_name)
     assert assert_utils.equals_within_short(lambda: cirros_sd_disk_service.get().status, types.DiskStatus.OK)
 
     disk_id = cirros_sd_disk_service.get().id
     cirros_sd_disk_service.remove()
     assert assert_utils.true_within_short(
-        lambda: disk_id not in [disk.id for disk in iscsi_sd_service.disks_service().list()]
+        lambda: disk_id not in [disk.id for disk in sd_service.disks_service().list()]
     )
 
 

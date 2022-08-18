@@ -880,10 +880,13 @@ def test_verify_template_import(engine_api, get_template_service_for_template, g
 
     assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
     assert assert_utils.true_within_short(
-        lambda: test_utils.get_template_service(engine, IMPORTED_TEMP_NAME) is not None
+        lambda: get_template_service_for_template(IMPORTED_TEMP_NAME) is not None,
+        allowed_exceptions=[RuntimeError],
     )
 
     template_service = get_template_service_for_template(IMPORTED_TEMP_NAME)
+    assert assert_utils.equals_within_short(lambda: template_service.get().status, types.TemplateStatus.OK)
+
     disks_service = get_disk_services_for_vm_or_template(template_service)
 
     assert assert_utils.true_within_short(

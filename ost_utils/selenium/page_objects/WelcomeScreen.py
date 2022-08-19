@@ -11,14 +11,20 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WelcomeScreen(Displayable):
-    def __init__(self, ovirt_driver):
+    def __init__(self, ovirt_driver, url=None):
         super(WelcomeScreen, self).__init__(ovirt_driver)
+        self.url = url
 
     def is_displayed(self):
         return self.ovirt_driver.is_css_selector_displayed('.welcome-section')
 
     def get_displayable_name(self):
         return 'Welcome screen'
+
+    def load(self):
+        if self.url is None:
+            raise Exception('Cannot load welcome screen, URL is not defined')
+        self.ovirt_driver.get(self.url)
 
     def open_administration_portal(self):
         LOGGER.debug('Open Administration portal')

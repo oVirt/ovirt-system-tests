@@ -5,7 +5,6 @@
 import logging
 
 from .Displayable import Displayable
-from .WelcomeScreen import WelcomeScreen
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ class WebAdminTopMenu(Displayable):
     def get_displayable_name(self):
         return 'WebAdmin top menu'
 
-    def logout(self):
+    def logout(self, welcome_screen, login_screen):
         LOGGER.debug('Log out')
         # overriding the window.onbeforeunload to prevent an intermittend
         # alert saying
@@ -32,16 +31,20 @@ class WebAdminTopMenu(Displayable):
         self.ovirt_driver.xpath_wait_and_click('Logout menu', '//*[@id="HeaderView_logoutLink"]')
 
         self.ovirt_driver.wait_until(
-            'The welcome screen is not displayed after logout', self._welcome_screen_displayed
+            'The welcome screen is not displayed after logout',
+            self._welcome_screen_displayed,
+            welcome_screen,
+            login_screen,
         )
 
-    def _welcome_screen_displayed(self):
-        top_menu_displayed = self.is_displayed()
-        welcome_screen_displayed = WelcomeScreen(self.ovirt_driver).is_displayed()
-
-        if welcome_screen_displayed:
+    def _welcome_screen_displayed(self, welcome_screen, login_screen):
+        if welcome_screen.is_displayed():
             return True
-        elif not top_menu_displayed:
+        elif login_screen.is_displayed():
+            LOGGER.debug('The login page is displayed, navigating directly to the welcome page')
+            welcome_screen.load()
+            return False
+        elif not self.is_displayed():
             # Page is not fully loaded yet
             return False
         else:

@@ -206,7 +206,6 @@ def test_non_admin_login_to_webadmin(
     ovirt_driver,
     nonadmin_username,
     nonadmin_password,
-    engine_webadmin_url,
     user_login,
 ):
     welcome_screen = WelcomeScreen(ovirt_driver)
@@ -576,21 +575,14 @@ def test_dashboard(ovirt_driver):
     assert dashboard.events_count() > 0
 
 
-def test_logout(ovirt_driver, engine_webadmin_url):
+def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
+    login_screen = LoginScreen(ovirt_driver, keycloak_enabled)
+    welcome_screen = WelcomeScreen(ovirt_driver, engine_webadmin_url)
+
     webadmin_menu = WebAdminTopMenu(ovirt_driver)
     webadmin_menu.wait_for_displayed()
-    webadmin_menu.logout()
+    webadmin_menu.logout(welcome_screen, login_screen)
 
-    webadmin_left_menu = WebAdminLeftMenu(ovirt_driver)
-    webadmin_left_menu.wait_for_not_displayed()
-
-    webadmin_top_menu = WebAdminTopMenu(ovirt_driver)
-    webadmin_top_menu.wait_for_not_displayed()
-
-    # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
-    ovirt_driver.get(engine_webadmin_url)
-
-    welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
     assert welcome_screen.is_user_logged_out()
 
@@ -600,7 +592,6 @@ def test_userportal(
     nonadmin_username,
     nonadmin_password,
     user_login,
-    engine_webadmin_url,
     save_screenshot,
 ):
     welcome_screen = WelcomeScreen(ovirt_driver)
@@ -636,9 +627,8 @@ def test_grafana(
     engine_fqdn,
 ):
 
-    ovirt_driver.get(engine_webadmin_url)
-
-    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen = WelcomeScreen(ovirt_driver, engine_webadmin_url)
+    welcome_screen.load()
     welcome_screen.wait_for_displayed()
     welcome_screen.open_monitoring_portal()
 

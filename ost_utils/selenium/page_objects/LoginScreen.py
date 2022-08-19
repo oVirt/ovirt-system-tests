@@ -16,14 +16,8 @@ class LoginScreen(Displayable):
         self._keycloak_enabled = keycloak_enabled
 
     def is_displayed(self):
-        is_user_name_displayed = self.ovirt_driver.find_element(
-            By.XPATH,
-            '//input[@id="username"]',
-        ).is_displayed()
-        is_user_password_displayed = self.ovirt_driver.find_element(
-            By.XPATH,
-            '//input[@id="password"]',
-        ).is_displayed()
+        is_user_name_displayed = self.ovirt_driver.is_xpath_displayed('//input[@id="username"]')
+        is_user_password_displayed = self.ovirt_driver.is_xpath_displayed('//input[@id="password"]')
         return is_user_name_displayed and is_user_password_displayed
 
     def get_displayable_name(self):

@@ -48,6 +48,16 @@ class WelcomeScreen(Displayable):
             == 'Not logged in'
         )
 
+    def wait_for_user_logged_out(self):
+        if self.is_user_logged_out():
+            return True
+        self.ovirt_driver.wait_until('User is still logged in', self._user_logged_out_wait_condition)
+
+    def _user_logged_out_wait_condition(self):
+        self.ovirt_driver.refresh()
+        self.wait_for_displayed()
+        return self.is_user_logged_out()
+
     def is_error_message_displayed(self):
         return self.ovirt_driver.find_element(By.CLASS_NAME, 'session-error').is_displayed()
 

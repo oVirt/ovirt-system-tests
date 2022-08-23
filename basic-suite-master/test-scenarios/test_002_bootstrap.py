@@ -1632,7 +1632,7 @@ def test_add_nonadmin_user(
             auth_server_url=keycloak_auth_url,
             realm=keycloak_master_realm,
             user=keycloak_admin_username,
-            password=nonadmin_password,
+            password=keycloak_admin_password,
         )
 
         keycloak.create_user(

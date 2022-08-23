@@ -14,6 +14,7 @@ def keycloak_auth_url(engine_fqdn):
 
 @pytest.fixture(scope="session")
 def keycloak_admin_username():
+    # This can't be changed (easily), it's hard-coded in setup code
     return "admin"
 
 

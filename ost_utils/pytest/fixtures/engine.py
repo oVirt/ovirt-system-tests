@@ -206,7 +206,7 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents(engine_password, engine_fqdn, engine_full_username):
+def engine_answer_file_contents(engine_password, keycloak_admin_password, engine_fqdn, engine_full_username):
     return (
         '# action=setup\n'
         '[environment:default]\n'

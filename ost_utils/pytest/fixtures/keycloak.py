@@ -19,9 +19,8 @@ def keycloak_admin_username():
 
 
 @pytest.fixture(scope="session")
-def keycloak_admin_password(engine_password):
-    # By default password is the same as admin administrator password
-    return engine_password
+def keycloak_admin_password():
+    return 'badpass-8'
 
 
 @pytest.fixture(scope="session")

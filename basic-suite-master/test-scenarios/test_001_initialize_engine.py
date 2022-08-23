@@ -16,6 +16,44 @@ def test_initialize_engine(
     ssh_key_file,
     engine_answer_file_path,
 ):
+    ansible_engine.shell(
+        '/usr/share/ovirt-engine/setup/bin/ovirt-engine-provisiondb '
+        '--otopi-environment="'
+        'OVESETUP_PROVISIONDB_CONFIG/provisionDb=bool:True '
+        'OVESETUP_PROVISIONDB_CONFIG/provisionUser=bool:True '
+        'OVESETUP_PROVISION_DB/database=str:engine '
+        'OVESETUP_PROVISION_DB/user=str:engine '
+        'OVESETUP_PROVISION_DB/password=str:badpass-5"'
+    )
+    ansible_engine.shell(
+        '/usr/share/ovirt-engine/setup/bin/ovirt-engine-provisiondb '
+        '--otopi-environment="'
+        'OVESETUP_PROVISIONDB_CONFIG/provisionDb=bool:True '
+        'OVESETUP_PROVISIONDB_CONFIG/provisionUser=bool:True '
+        'OVESETUP_PROVISION_DB/database=str:ovirt_engine_history '
+        'OVESETUP_PROVISION_DB/user=str:ovirt_engine_history '
+        'OVESETUP_PROVISION_DB/password=str:badpass-4"'
+    )
+    ansible_engine.shell(
+        '/usr/share/ovirt-engine/setup/bin/ovirt-engine-provisiondb '
+        '--otopi-environment="'
+        'OVESETUP_PROVISIONDB_CONFIG/provisionDb=bool:False '
+        'OVESETUP_PROVISIONDB_CONFIG/addToPGHBA=bool:True '
+        'OVESETUP_PROVISIONDB_CONFIG/grantReadOnly=bool:True '
+        'OVESETUP_PROVISIONDB_CONFIG/provisionUser=bool:True '
+        'OVESETUP_PROVISION_DB/database=str:ovirt_engine_history '
+        'OVESETUP_PROVISION_DB/user=str:ovirt_engine_history_grafana '
+        'OVESETUP_PROVISION_DB/password=str:badpass-6"'
+    )
+    ansible_engine.shell(
+        '/usr/share/ovirt-engine/setup/bin/ovirt-engine-provisiondb '
+        '--otopi-environment="'
+        'OVESETUP_PROVISIONDB_CONFIG/provisionDb=bool:True '
+        'OVESETUP_PROVISIONDB_CONFIG/provisionUser=bool:True '
+        'OVESETUP_PROVISION_DB/database=str:ovirt_engine_keycloak '
+        'OVESETUP_PROVISION_DB/user=str:ovirt_engine_keycloak '
+        'OVESETUP_PROVISION_DB/password=str:badpass-7"'
+    )
     engine_setup(
         ansible_engine,
         ansible_inventory,

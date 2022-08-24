@@ -276,6 +276,7 @@ def test_clusters(ovirt_driver, save_screenshot, selenium_browser_name, ost_clus
     cluster_dialog.ok()
 
     # Test the edited value in the details view
+    cluster_list_view.wait_for_displayed()
     cluster_detail_view = cluster_list_view.open_detail_view(ost_cluster_name)
     assert cluster_detail_view.get_name() == ost_cluster_name
     assert cluster_detail_view.get_description() == cluster_description
@@ -313,12 +314,14 @@ def test_hosts(ovirt_driver, ansible_host0_facts, save_screenshot, selenium_brow
     host_dialog.set_comment(host_comment)
     host_dialog.ok()
 
+    host_list_view.wait_for_displayed()
     host_dialog = host_list_view.edit(host_name)
     save_screenshot('host-edit-dialog')
     assert host_dialog.get_comment() == host_comment
     host_dialog.cancel()
 
     # Test the hostname in the details view
+    host_list_view.wait_for_displayed()
     host_detail_view = host_list_view.open_detail_view(host_name)
     assert host_detail_view.get_hostname() == host_name
 
@@ -365,12 +368,14 @@ def test_templates(ovirt_driver, cirros_image_template_name, save_screenshot, se
     save_screenshot('blank-template-edit-dialog')
     template_dialog.ok()
 
+    template_list_view.wait_for_displayed()
     template_dialog = template_list_view.edit(imported_template)
     template_dialog.setDescription(imported_template_description)
     save_screenshot('imported-template-edit-dialog')
     template_dialog.ok()
 
     # Test the edited values in the details view
+    template_list_view.wait_for_displayed()
     template_detail_view = template_list_view.open_detail_view(blank_template_name)
     save_screenshot('blank-template-detail')
     assert template_detail_view.get_name() == blank_template_name
@@ -463,6 +468,7 @@ def test_virtual_machines(
     vm_dialog.ok()
 
     # Test the VM details view
+    vm_list_view.wait_for_displayed()
     vm_detail_view = vm_list_view.open_detail_view(vm_name)
     save_screenshot('vm-detail')
     assert vm_detail_view.get_name() == vm_name

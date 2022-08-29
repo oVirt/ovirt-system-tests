@@ -578,7 +578,7 @@ def test_dashboard(ovirt_driver):
     assert dashboard.clusters_count() is 1
     assert dashboard.hosts_count() is 2
     assert dashboard.storage_domains_count() is 3
-    assert dashboard.vm_count() is 4
+    assert dashboard.vm_count() is 5
     assert dashboard.events_count() > 0
 
 

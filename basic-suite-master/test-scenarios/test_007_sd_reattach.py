@@ -7,8 +7,6 @@ from __future__ import absolute_import
 
 import ovirtsdk4
 
-import pytest
-
 from ost_utils import assert_utils
 from ost_utils import engine_utils
 from ost_utils import test_utils
@@ -105,7 +103,6 @@ def test_reattach_storage_domain(engine_api):
 
 
 @order_by(_TEST_LIST)
-@pytest.mark.skipif(True, reason="test disabled temporarily to investigate hanging vdsm problem")
 def test_import_lost_vm(engine_api):
     engine = engine_api.system_service()
     sd = test_utils.get_attached_storage_domain(engine, SD_SECOND_NFS_NAME, service=True)
@@ -133,7 +130,6 @@ def test_import_lost_vm(engine_api):
 
 
 @order_by(_TEST_LIST)
-@pytest.mark.skipif(True, reason="test disabled temporarily to investigate hanging vdsm problem")
 def test_import_floating_disk(engine_api):
     engine = engine_api.system_service()
     dc_service = test_utils.data_center_service(engine, DC_NAME)

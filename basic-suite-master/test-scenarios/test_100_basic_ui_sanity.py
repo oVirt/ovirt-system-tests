@@ -123,8 +123,8 @@ def ovirt_driver(
         raise exception
 
     ovirt_driver = Driver(driver)
-    driver.set_window_size(selenium_screen_width, selenium_screen_height)
-    driver.get(engine_webadmin_url)
+    ovirt_driver.set_window_size(selenium_screen_width, selenium_screen_height)
+    ovirt_driver.get(engine_webadmin_url)
 
     try:
         yield ovirt_driver

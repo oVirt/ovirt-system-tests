@@ -28,13 +28,13 @@ class Driver:
         self.__driver = driver
 
     def get(self, url):
-        self.__driver.get(url)
+        self.retry_if_known_issue(self.__driver.get, url)
 
     def refresh(self):
-        self.__driver.refresh()
+        self.retry_if_known_issue(self.__driver.refresh)
 
     def quit(self):
-        self.__driver.quit()
+        self.retry_if_known_issue(self.__driver.quit)
 
     def get_capability(self, capability_name):
         return self.__driver.capabilities[capability_name]
@@ -67,20 +67,23 @@ class Driver:
             return self.retry_if_known_issue(self.__driver.find_elements, by, value)
 
     def execute_script(self, script):
-        return self.__driver.execute_script(script)
+        self.retry_if_known_issue(self.__driver.execute_script, script)
 
     def execute_in_frame(self, xpath, method, *args):
         result = None
         try:
             frame = self.find_element(By.XPATH, xpath)
-            self.__driver.switch_to.frame(frame)
+            self.retry_if_known_issue(self.__driver.switch_to.frame, frame)
             result = method(*args)
         finally:
             self.__driver.switch_to.default_content()
             return result
 
+    def set_window_size(self, selenium_screen_width, selenium_screen_height):
+        self.retry_if_known_issue(self.__driver.set_window_size, selenium_screen_width, selenium_screen_height)
+
     def save_screenshot(self, path):
-        self.__driver.save_screenshot(path)
+        self.retry_if_known_issue(self.__driver.save_screenshot, path)
 
     def save_page_source(self, path):
         with open(path, "w", encoding='utf-8') as text_file:

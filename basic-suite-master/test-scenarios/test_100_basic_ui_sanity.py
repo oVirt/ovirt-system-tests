@@ -109,7 +109,18 @@ def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip_ur
 def ovirt_driver(
     engine_webadmin_url, selenium_browser_options, selenium_grid_url, selenium_screen_width, selenium_screen_height
 ):
-    driver = webdriver.Remote(command_executor=selenium_grid_url, options=selenium_browser_options)
+    driver = None
+    exception = None
+    for i in range(5):
+        try:
+            driver = webdriver.Remote(command_executor=selenium_grid_url, options=selenium_browser_options)
+            break
+        except Exception as e:
+            LOGGER.exception(f'Failed to create driver {i}')
+            exception = e
+    else:
+        LOGGER.error('Failed to create the selenium webdriver after 5 retries')
+        raise exception
 
     ovirt_driver = Driver(driver)
     driver.set_window_size(selenium_screen_width, selenium_screen_height)

@@ -55,12 +55,10 @@ DC_QUOTA_NAME = 'DC-QUOTA'
 TEMPLATE_BLANK = 'Blank'
 
 # Storage
-SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
 SD_NFS_PATH = '/exports/nfs/share1'
 SD_SECOND_NFS_PATH = '/exports/nfs/share2'
 
-SD_ISCSI_NAME = 'iscsi'
 SD_ISCSI_TARGET = 'iqn.2014-07.org.ovirt:storage'
 SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
@@ -435,7 +433,7 @@ def test_add_nfs_master_storage_domain(
     master_storage_domain_type, engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name
 ):
     if master_storage_domain_type != 'nfs':
-        pytest.skip('not using iscsi')
+        pytest.skip('not using nfs')
     add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name)
 
 
@@ -445,7 +443,7 @@ def add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, 
 
     nfs.add_domain(
         engine_api,
-        SD_NFS_NAME,
+        constants.SD_NFS_NAME,
         random_host,
         sd_nfs_host_storage_name,
         SD_NFS_PATH,
@@ -549,7 +547,7 @@ def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api, sd
     sd_iscsi_ansible_host.shell('lvresize --size +3000M /dev/mapper/vg1_storage-lun0_bdev')
 
     engine = engine_api.system_service()
-    storage_domain_service = test_utils.get_storage_domain_service(engine, SD_ISCSI_NAME)
+    storage_domain_service = test_utils.get_storage_domain_service(engine, constants.SD_ISCSI_NAME)
 
     with engine_utils.wait_for_event(engine, 1022):  # USER_REFRESH_LUN_STORAGE_DOMAIN(1,022)
         storage_domain_service.refresh_luns(async_=False, logical_units=sd_iscsi_host_luns)
@@ -558,7 +556,7 @@ def test_resize_and_refresh_storage_domain(sd_iscsi_ansible_host, engine_api, sd
 def add_iscsi_storage_domain(engine_api, hosts_service, luns, dc_name):
     v4_domain = versioning.cluster_version_ok(4, 1)
     p = sdk4.types.StorageDomain(
-        name=SD_ISCSI_NAME,
+        name=constants.SD_ISCSI_NAME,
         description='iSCSI Storage Domain',
         type=sdk4.types.StorageDomainType.DATA,
         discard_after_delete=v4_domain,
@@ -1740,7 +1738,7 @@ def test_upload_cirros_image(
     engine_full_username,
     engine_password,
     cirros_image_disk_name,
-    master_storage_domain_type,
+    master_storage_domain_name,
 ):
     collection = CollectionMapper(ansible_engine)
 
@@ -1752,7 +1750,7 @@ def test_upload_cirros_image(
         auth=ovirt_auth,
         name=cirros_image_disk_name,
         upload_image_path=CIRROS_IMAGE_PATH,
-        storage_domain=SD_NFS_NAME if master_storage_domain_type == 'nfs' else SD_ISCSI_NAME,
+        storage_domain=master_storage_domain_name,
         format='cow',
         sparse='true',
         wait='true',
@@ -1771,7 +1769,7 @@ def test_create_cirros_template(
     cirros_image_template_name,
     engine_hostname,
     ssh_key_file,
-    master_storage_domain_type,
+    master_storage_domain_name,
 ):
     image_template(
         ansible_engine,
@@ -1788,7 +1786,7 @@ def test_create_cirros_template(
         template_memory='1GiB',
         template_cpu='1',
         template_disk_size='1GiB',
-        template_disk_storage=SD_NFS_NAME if master_storage_domain_type == 'nfs' else SD_ISCSI_NAME,
+        template_disk_storage=master_storage_domain_name,
         template_seal=False,
     )
 

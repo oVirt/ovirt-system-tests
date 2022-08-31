@@ -12,3 +12,7 @@ DEFAULT_OVN_PROVIDER_NAME = 'ovirt-provider-ovn'
 ADD_HOST_TIMEOUT = 30 * 60
 ENGINE_VM_RESTART_TIMEOUT = 20 * 60
 FLOATING_DISK_NAME = 'floating_disk'
+
+# Storage
+SD_NFS_NAME = 'nfs'
+SD_ISCSI_NAME = 'iscsi'

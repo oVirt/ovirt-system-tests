@@ -7,6 +7,7 @@
 import functools
 import pytest
 
+from ost_utils import constants
 from ost_utils import network_utils
 
 
@@ -34,3 +35,18 @@ def sd_nfs_host_storage_name():
 @pytest.fixture(scope="session")
 def sd_iscsi_ansible_host():
     return 'Please override sd_iscsi_ansible_host'
+
+
+@pytest.fixture(scope="session")
+def master_storage_domain_name(master_storage_domain_type):
+    return constants.SD_NFS_NAME if master_storage_domain_type == "nfs" else constants.SD_ISCSI_NAME
+
+
+@pytest.fixture(scope="session")
+def secondary_storage_domain_name(master_storage_domain_type):
+    return constants.SD_ISCSI_NAME if master_storage_domain_type == "nfs" else constants.SD_NFS_NAME
+
+
+@pytest.fixture(scope="session")
+def master_storage_domain_type():
+    return "nfs"

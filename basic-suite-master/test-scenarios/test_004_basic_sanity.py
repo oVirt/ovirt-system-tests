@@ -50,9 +50,7 @@ GB = 2 ** 30
 TEMPLATE_CENTOS7 = 'centos7_template'
 TEMPLATE_BLANK = 'Blank'
 
-SD_NFS_NAME = 'nfs'
 SD_SECOND_NFS_NAME = 'second-nfs'
-SD_ISCSI_NAME = 'iscsi'
 
 VM_USER_NAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'
@@ -227,7 +225,7 @@ def _disk_attachment(**params):
 
 
 @order_by(_TEST_LIST)
-def test_add_disks(engine_api, cirros_image_disk_name, master_storage_domain_type):
+def test_add_disks(engine_api, cirros_image_disk_name, secondary_storage_domain_name):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
     cirros_disk = test_utils.get_disk_service(
@@ -238,9 +236,7 @@ def test_add_disks(engine_api, cirros_image_disk_name, master_storage_domain_typ
 
     disks_params = {
         (VM0_NAME, cirros_image_disk_name): {
-            'storage_domains': [
-                types.StorageDomain(name=SD_ISCSI_NAME if master_storage_domain_type == 'nfs' else SD_NFS_NAME)
-            ],
+            'storage_domains': [types.StorageDomain(name=secondary_storage_domain_name)],
             'id': cirros_disk.get().id,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,
@@ -249,7 +245,7 @@ def test_add_disks(engine_api, cirros_image_disk_name, master_storage_domain_typ
             },
         },
         (VM1_NAME, DISK1_NAME): {
-            'storage_domains': [types.StorageDomain(name=SD_NFS_NAME)],
+            'storage_domains': [types.StorageDomain(name=constants.SD_NFS_NAME)],
             'name': DISK1_NAME,
             'provisioned_size': 1 * GB,
             'format': types.DiskFormat.COW,
@@ -275,7 +271,7 @@ def test_add_disks(engine_api, cirros_image_disk_name, master_storage_domain_typ
             },
         },
         (BACKUP_VM_NAME, BACKUP_DISK_NAME): {
-            'storage_domains': [types.StorageDomain(name=SD_NFS_NAME)],
+            'storage_domains': [types.StorageDomain(name=constants.SD_NFS_NAME)],
             'name': BACKUP_DISK_NAME,
             'provisioned_size': 1 * GB,
             'format': types.DiskFormat.COW,
@@ -314,12 +310,10 @@ def test_add_disks(engine_api, cirros_image_disk_name, master_storage_domain_typ
 
 
 @order_by(_TEST_LIST)
-def test_copy_template_disk(system_service, cirros_image_disk_name, master_storage_domain_type):
+def test_copy_template_disk(system_service, cirros_image_disk_name, secondary_storage_domain_name):
     cirros_disk = test_utils.get_disk_service(system_service, cirros_image_disk_name)
 
-    cirros_disk.copy(
-        storage_domain=types.StorageDomain(name=SD_ISCSI_NAME if master_storage_domain_type == 'nfs' else SD_NFS_NAME)
-    )
+    cirros_disk.copy(storage_domain=types.StorageDomain(name=secondary_storage_domain_name))
 
 
 @order_by(_TEST_LIST)
@@ -439,9 +433,10 @@ def test_clone_powered_off_vm(system_service, vms_service, ost_cluster_name):
 
 
 @order_by(_TEST_LIST)
-def test_verify_template_disk_copied_and_removed(system_service, cirros_image_disk_name, master_storage_domain_type):
-    sd_name = SD_ISCSI_NAME if master_storage_domain_type == 'nfs' else SD_NFS_NAME
-    sd_service = test_utils.get_storage_domain_service(system_service, sd_name)
+def test_verify_template_disk_copied_and_removed(
+    system_service, cirros_image_disk_name, secondary_storage_domain_name
+):
+    sd_service = test_utils.get_storage_domain_service(system_service, secondary_storage_domain_name)
     cirros_sd_disk_service = test_utils.get_storage_domain_disk_service_by_name(sd_service, cirros_image_disk_name)
     assert assert_utils.equals_within_short(lambda: cirros_sd_disk_service.get().status, types.DiskStatus.OK)
 
@@ -701,7 +696,7 @@ def cold_storage_migration(engine_api):
     # Cold migrate the disk to ISCSI storage domain and then migrate it back
     # to the NFS domain because it is used by other cases that assume the
     # disk found on that specific domain
-    for domain in [SD_ISCSI_NAME, SD_SECOND_NFS_NAME]:
+    for domain in [constants.SD_ISCSI_NAME, SD_SECOND_NFS_NAME]:
         with engine_utils.wait_for_event(engine, 2008):  # USER_MOVED_DISK(2,008)
             disk_service.move(async_=False, storage_domain=types.StorageDomain(name=domain))
 
@@ -720,7 +715,7 @@ def test_live_storage_migration(engine_api):
     disk_service.move(
         async_=False,
         filter=False,
-        storage_domain=types.StorageDomain(name=SD_ISCSI_NAME),
+        storage_domain=types.StorageDomain(name=constants.SD_ISCSI_NAME),
         query={'correlation_id': correlation_id},
     )
 
@@ -731,7 +726,7 @@ def test_live_storage_migration(engine_api):
     # has been merged
     assert assert_utils.equals_within_long(
         lambda: engine_api.follow_link(disk_service.get().storage_domains[0]).name,
-        SD_ISCSI_NAME,
+        constants.SD_ISCSI_NAME,
     )
 
     vm0_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM0_NAME)
@@ -749,7 +744,7 @@ def test_convert_disk(disks_service):
             format=types.DiskFormat.COW,
             provisioned_size=2 * MB,
             sparse=True,
-            storage_domains=[types.StorageDomain(name=SD_ISCSI_NAME)],
+            storage_domains=[types.StorageDomain(name=constants.SD_ISCSI_NAME)],
         ),
         query={'correlation_id': correlation_id},
     )
@@ -812,7 +807,7 @@ def test_verify_template_exported(engine_api, cirros_image_template_name):
 @order_by(_TEST_LIST)
 def test_import_vm_preallocated(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_ISCSI_NAME))[0]
+    sd = engine.storage_domains_service().list(search='name={}'.format(constants.SD_ISCSI_NAME))[0]
     cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
     imports_service = engine.external_vm_imports_service()
     host = test_utils.get_first_active_host_by_name(engine)
@@ -855,7 +850,7 @@ def test_verify_vm_import_preallocated(engine_api, get_vm_service_for_vm, get_di
 @order_by(_TEST_LIST)
 def test_import_template(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_NFS_NAME))[0]
+    sd = engine.storage_domains_service().list(search='name={}'.format(constants.SD_NFS_NAME))[0]
     cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
     imports_service = engine.external_template_imports_service()
     host = test_utils.get_first_active_host_by_name(engine)
@@ -1441,7 +1436,7 @@ def test_hotplug_disk(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip):
                 format=types.DiskFormat.COW,
                 storage_domains=[
                     types.StorageDomain(
-                        name=SD_NFS_NAME,
+                        name=constants.SD_NFS_NAME,
                     ),
                 ],
                 status=None,

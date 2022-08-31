@@ -49,6 +49,14 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]/button[@data-toggle="dropdown"]')
         self.ovirt_driver.xpath_click(f'//div[@id="{main_button_id}"]' f'//a[text()="{dropdown_button_text}"]')
 
+    def click_kebab_menu(self, menu_id):
+        # if only there was an id...
+        kebab_menu = self.ovirt_driver.find_element(
+            By.XPATH, '//div[contains(@class, "toolbar-pf-actions")]/*[last()]/*[last()]/button'
+        )
+        menu = self.ovirt_driver.find_element(By.ID, menu_id)
+        self.ovirt_driver.create_action_chains().click(kebab_menu).click(menu).perform()
+
     def open_detail_view(self, entity_name):
         LOGGER.debug('Open detail of ' + self.entity_type + ' ' + entity_name)
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)

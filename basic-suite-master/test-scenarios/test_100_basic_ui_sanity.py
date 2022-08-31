@@ -36,6 +36,7 @@ from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
 from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
 from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
+from ost_utils.selenium.page_objects.VmListView import VmListView
 from ost_utils.selenium.page_objects.VmPortal import VmPortal
 from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
     GrafanaLoginScreen,
@@ -579,6 +580,34 @@ def test_virtual_machines(
         console_file_text = f.read()
         assert '[virt-viewer]' in console_file_text
         assert '[ovirt]' in console_file_text
+
+
+def test_make_template(
+    ansible_storage,
+    ovirt_driver,
+    selenium_browser_name,
+    save_screenshot,
+    console_file_full_path,
+    console_file_helper,
+    selenium_remote_artifacts_dir,
+):
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    vm_list_view = webadmin_menu.open_vm_list_view()
+
+    template_name = f'{selenium_browser_name}_{int(time.time())}'
+
+    vm_list_view = VmListView(ovirt_driver)
+    vm_list_view.select_entity('vm1')
+    template_dialog = vm_list_view.new_template()
+    template_dialog.set_name(template_name)
+    save_screenshot('new-template-dialog')
+    template_dialog.ok()
+
+    webadmin_menu = WebAdminLeftMenu(ovirt_driver)
+    template_list_view = webadmin_menu.open_template_list_view()
+    templates = template_list_view.get_entities()
+    assert template_name in templates
+    assert assert_utils.equals_within_short(lambda: template_list_view.get_status(template_name), 'OK')
 
 
 def test_storage_domains(ovirt_driver):

@@ -24,6 +24,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from ost_utils import assert_utils
 from ost_utils import test_utils
+from ost_utils import constants
 from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
@@ -619,13 +620,13 @@ def test_storage_domains(ovirt_driver):
     storage_domain_list_view = webadmin_menu.open_storage_domain_list_view()
 
     domains = storage_domain_list_view.get_entities()
-    assert 'nfs' in domains
+    assert constants.SD_NFS_NAME in domains
     assert storage_domain_list_view.is_new_button_enabled() is True
     assert storage_domain_list_view.is_import_button_enabled() is True
     assert storage_domain_list_view.is_manage_button_enabled() is False
     assert storage_domain_list_view.is_remove_button_enabled() is False
 
-    storage_domain_list_view.select_entity('nfs')
+    storage_domain_list_view.select_entity(constants.SD_NFS_NAME)
     assert storage_domain_list_view.is_new_button_enabled() is True
     assert storage_domain_list_view.is_import_button_enabled() is True
     assert storage_domain_list_view.is_manage_button_enabled() is True

@@ -28,7 +28,7 @@ class EventsView(Displayable, WithBreadcrumbs):
         return self.ovirt_driver.retry_if_known_issue(self._get_events)
 
     def events_contain(self, event_substring):
-        return any(event_substring in event for event in self.get_events())
+        return any(event_substring.lower() in event.lower() for event in self.get_events())
 
     def _get_events(self):
         events_entities = self.ovirt_driver.find_elements(

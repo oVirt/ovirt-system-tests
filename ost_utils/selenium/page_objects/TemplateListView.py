@@ -2,6 +2,7 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+from selenium.webdriver.common.by import By
 from .EntityListView import EntityListView
 from .TemplateDetailView import TemplateDetailView
 from .TemplateDialog import TemplateDialog
@@ -44,3 +45,10 @@ class TemplateListView(EntityListView):
 
     def is_export_button_enabled(self):
         return self.ovirt_driver.is_button_enabled('Export')
+
+    def get_status(self, entity_name):
+        status_id = f'MainTemplateView_table_content_col5_row{self.get_entity_row_id(entity_name)}'
+        status_text = self.ovirt_driver.retry_if_known_issue(
+            lambda: self.ovirt_driver.find_element(By.ID, status_id).text
+        )
+        return status_text

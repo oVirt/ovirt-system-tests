@@ -5,6 +5,7 @@
 import logging
 import os
 
+from selenium.webdriver.common.by import By
 from ost_utils.ansible.module_mappers import AnsibleExecutionError
 
 from .Displayable import Displayable
@@ -71,6 +72,14 @@ class VmListView(EntityListView):
         run_once_dialog.wait_for_displayed()
         return run_once_dialog
 
+    def new_template(self):
+        LOGGER.debug('Open New template dialog')
+        self.click_kebab_menu('ActionPanelView_NewTemplate')
+
+        new_template_dialog = NewTemplateDialog(self.ovirt_driver)
+        new_template_dialog.wait_for_displayed()
+        return new_template_dialog
+
     def click_console(self):
         LOGGER.debug('Click console')
         self.click_menu_dropdown_top_button('ActionPanelView_ConsoleConnectCommand')
@@ -131,3 +140,26 @@ class RunOnceDialog(Displayable):
             self.ovirt_driver.is_button_enabled,
             "Run",
         )
+
+
+class NewTemplateDialog(Displayable):
+    def __init__(self, ovirt_driver):
+        super(NewTemplateDialog, self).__init__(ovirt_driver)
+
+    def is_displayed(self):
+        text = self.ovirt_driver.retry_if_known_issue(self._is_cluster_loaded)
+        return text
+
+    def get_displayable_name(self):
+        return 'New template dialog'
+
+    def set_name(self, template_name):
+        name_element = self.ovirt_driver.find_element(By.ID, 'VmMakeTemplatePopupWidget_name')
+        self.ovirt_driver.create_action_chains().click(name_element).send_keys(template_name).perform()
+
+    def ok(self):
+        self.ovirt_driver.button_wait_and_click('OK')
+        self.wait_for_not_displayed()
+
+    def _is_cluster_loaded(self):
+        return self.ovirt_driver.find_element(By.ID, 'VmMakeTemplatePopupWidget_cpuProfiles').text.strip()

@@ -42,3 +42,8 @@ def ost_images_distro():
 @pytest.fixture(scope="session")
 def ost_he_storage_domain_type():
     return os.environ.get('OST_HE_STORAGE_DOMAIN_TYPE', 'nfs')
+
+
+@pytest.fixture(scope='session')
+def master_storage_domain_type():
+    return os.environ.get('OST_MASTER_SD_TYPE', 'nfs')

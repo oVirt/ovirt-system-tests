@@ -45,8 +45,3 @@ def master_storage_domain_name(master_storage_domain_type):
 @pytest.fixture(scope="session")
 def secondary_storage_domain_name(master_storage_domain_type):
     return constants.SD_ISCSI_NAME if master_storage_domain_type == "nfs" else constants.SD_NFS_NAME
-
-
-@pytest.fixture(scope="session")
-def master_storage_domain_type():
-    return "nfs"

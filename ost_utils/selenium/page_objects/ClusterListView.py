@@ -67,22 +67,26 @@ class ClusterUpgradeDialog(Displayable):
         return 'Upgrade cluster'
 
     def toggle_check_all_hosts(self):
-        self.ovirt_driver.xpath_click('//input[@name="check-all"]')
+        self.ovirt_driver.xpath_wait_and_click('Select all hosts is not clickable', '//input[@name="check-all"]')
 
     def toggle_check_for_upgrade(self):
-        self.ovirt_driver.xpath_click('//input[@id="upgrade-options-check-upgrade"]')
+        self.ovirt_driver.xpath_wait_and_click(
+            'Check for upgrade is not clickable', '//input[@id="upgrade-options-check-upgrade"]'
+        )
 
     def toggle_reboot_hosts(self):
-        self.ovirt_driver.xpath_click('//input[@id="upgrade-options-reboot-after"]')
+        self.ovirt_driver.xpath_wait_and_click(
+            'Reboot hosts is not clickable', '//input[@id="upgrade-options-reboot-after"]'
+        )
 
     def next(self):
-        self.ovirt_driver.xpath_click('//button[text()="Next"]')
+        self.ovirt_driver.xpath_wait_and_click('Next is not clickable', '//button[text()="Next"]')
 
     def upgrade(self):
-        self.ovirt_driver.xpath_click('//footer/button[text()="Upgrade"]')
+        self.ovirt_driver.xpath_wait_and_click('Upgrade is not clickable', '//footer/button[text()="Upgrade"]')
 
     def go_to_event_log(self):
-        self.ovirt_driver.xpath_click('//button[text()="Go to Event Log"]')
+        self.ovirt_driver.xpath_wait_and_click('Go to events is not clickable', '//button[text()="Go to Event Log"]')
 
         events_view = EventsView(self.ovirt_driver)
         events_view.wait_for_displayed()

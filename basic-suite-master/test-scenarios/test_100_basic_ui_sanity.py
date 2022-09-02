@@ -330,7 +330,9 @@ def test_cluster_upgrade(
     assert assert_utils.true_within_short(lambda: events_view.events_contain('Successfully set upgrade running flag'))
 
     # cluster is set to cluster_maintenance policy
-    assert cluster_service.get().scheduling_policy.id == cluster_maintenance_schedulling_policy_id
+    assert assert_utils.true_within_short(
+        lambda: cluster_service.get().scheduling_policy.id == cluster_maintenance_schedulling_policy_id
+    )
 
     # there could be two messages - "Check for update" or "Update" for the host depending on
     # whether there are updates available and if the updates have been retrieved before
@@ -345,7 +347,9 @@ def test_cluster_upgrade(
     )
 
     # cluster is set to the original policy
-    assert cluster_service.get().scheduling_policy.id == original_schedulling_policy_id
+    assert assert_utils.true_within_short(
+        lambda: cluster_service.get().scheduling_policy.id == original_schedulling_policy_id
+    )
 
 
 def test_hosts(ovirt_driver, ansible_host0_facts, save_screenshot, selenium_browser_name):

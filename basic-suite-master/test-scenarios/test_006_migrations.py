@@ -46,6 +46,7 @@ VM0_NAME = 'vm0'
 
 # Migration policy UUIDs are hard-coded
 MIGRATION_POLICY_POSTCOPY = 'a7aeedb2-8d66-4e51-bb22-32595027ce71'
+MIGRATION_POLICY_ZEROCOPY = '57237b82-b8c2-425f-b425-114b35219626'
 
 
 @pytest.fixture(scope="session")
@@ -146,11 +147,9 @@ def prepare_migration_attachments_ipv6(system_service):
         assert ipaddress.ip_address(actual_address) == ipaddress.ip_address(ip_address)
 
 
-def set_postcopy_migration_policy(system_service):
+def set_migration_policy(system_service, policy):
     cluster_service = test_utils.get_cluster_service(system_service, CLUSTER_NAME)
-    cluster_service.update(
-        cluster=Cluster(migration=MigrationOptions(policy=MigrationPolicy(id=MIGRATION_POLICY_POSTCOPY)))
-    )
+    cluster_service.update(cluster=Cluster(migration=MigrationOptions(policy=MigrationPolicy(id=policy))))
 
 
 def test_ipv4_migration(
@@ -160,6 +159,7 @@ def test_ipv4_migration(
     prepare_migration_vlan,
 ):
     prepare_migration_attachments_ipv4(system_service)
+    set_migration_policy(system_service, MIGRATION_POLICY_ZEROCOPY)
     migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service)
 
 
@@ -170,5 +170,5 @@ def test_ipv6_migration(
     prepare_migration_vlan,
 ):
     prepare_migration_attachments_ipv6(system_service)
-    set_postcopy_migration_policy(system_service)
+    set_migration_policy(system_service, MIGRATION_POLICY_POSTCOPY)
     migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service)

@@ -1209,13 +1209,13 @@ def test_remove_vnic_passthrough_profile(engine_api):
 
 
 @order_by(_TEST_LIST)
-def test_add_blank_vms(engine_api, ost_cluster_name):
+def test_add_blank_vms(engine_api, ost_cluster_name, ost_images_distro):
     engine = engine_api.system_service()
     vms_service = engine.vms_service()
 
     vm_params = sdk4.types.Vm(
         os=sdk4.types.OperatingSystem(
-            type='other_linux',
+            type='rhel_8x64',
         ),
         type=sdk4.types.VmType.SERVER,
         high_availability=sdk4.types.HighAvailability(
@@ -1246,6 +1246,8 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
     vm_params.name = BACKUP_VM_NAME
     vm_params.memory = 160 * MB
     vm_params.memory_policy.guaranteed = 106 * MB
+    if ost_images_distro != 'el8stream':
+        vm_params.tpm_enabled = True
     vms_service.add(vm_params)
     backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
 
@@ -1255,6 +1257,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
     vm_params.memory = required_memory
     vm_params.memory_policy.guaranteed = required_memory
     vm_params.memory_policy.max = required_memory + least_hotplug_increment
+    vm_params.tpm_enabled = False
 
     vms_service.add(vm_params)
     vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)

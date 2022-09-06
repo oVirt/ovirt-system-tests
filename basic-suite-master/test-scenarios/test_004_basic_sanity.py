@@ -487,6 +487,12 @@ def vm0_fqdn_or_ip(tested_ip_version, management_subnet):
     return vm0_address[f'ipv{tested_ip_version}']
 
 
+@pytest.fixture(scope="session")
+def backup_vm_fqdn_or_ip(tested_ip_version, management_subnet):
+    backup_vm_address = {'ipv4': BACKUP_VM_NAME, 'ipv6': str(management_subnet[252])}
+    return backup_vm_address[f'ipv{tested_ip_version}']
+
+
 @order_by(_TEST_LIST)
 def test_verify_transient_folder(assert_vm_is_alive, engine_api, get_ansible_host_for_vm, vm0_fqdn_or_ip):
     engine = engine_api.system_service()
@@ -979,6 +985,8 @@ def test_run_vms(
     vm0_fqdn_or_ip,
     tested_ip_version,
     cirros_serial_console,
+    vm_ssh,
+    ost_images_distro,
 ):
     engine = engine_api.system_service()
 
@@ -1007,8 +1015,12 @@ def test_run_vms(
         vms_service = engine_api.system_service().vms_service()
         vm = vms_service.list(search='name={}'.format(VM0_NAME))[0]
         cirros_serial_console.add_static_ip(vm.id, f'{vm0_fqdn_or_ip}/64', 'eth0')
+        vm = vms_service.list(search='name={}'.format(BACKUP_VM_NAME))[0]
+        cirros_serial_console.add_static_ip(vm.id, f'{backup_vm_fqdn_or_ip}/64', 'eth0')
 
     assert_vm_is_alive(vm0_fqdn_or_ip)
+    if ost_images_distro != 'el8stream':
+        assert vm_ssh(backup_vm_fqdn_or_ip, 'ls /dev/tpm0').code == EX_OK
 
 
 @order_by(_TEST_LIST)

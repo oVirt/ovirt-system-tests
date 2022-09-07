@@ -408,7 +408,7 @@ def test_templates(ovirt_driver, cirros_image_template_name, save_screenshot, se
     template_list_view = webadmin_menu.open_template_list_view()
     save_screenshot('host-list-view')
 
-    # Test host list view
+    # Test templates list view
     templates = template_list_view.get_entities()
     assert blank_template_name in templates
     assert cirros_image_template_name in templates

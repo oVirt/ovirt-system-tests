@@ -82,11 +82,19 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
             self.ovirt_driver.xpath_click(
                 '//*[@id="' + names_to_ids[entity_name] + '"]/../../following-sibling::td[1]'
             )
+
+            self.ovirt_driver.wait_until(
+                f'The entity {entity_name} is not selected',
+                self.ovirt_driver.retry_if_known_issue,
+                self._is_entity_selected,
+                names_to_ids[entity_name],
+            )
+
+            # TODO we do asserts on other button states right after throughout
+            # the code and it's too flaky. this is an ugly workaround
+            time.sleep(1)
         else:
             raise Exception('No ' + self.entity_type + ' with the name ' + entity_name + ' found')
-        # TODO we do asserts on other button states right after throughout
-        # the code and it's too flaky. this is an ugly workaround
-        time.sleep(1)
 
     def get_entities(self):
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
@@ -114,3 +122,9 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
             names_to_ids[element.text] = element.get_attribute('id')
 
         return names_to_ids
+
+    def _is_entity_selected(self, entity_id):
+        # the background color of the selected entity
+        selected_backround_color = '0, 136, 206'
+        entity_raw = self.ovirt_driver.find_element(By.XPATH, f'//*[@id="{entity_id}"]/../../..')
+        return selected_backround_color in entity_raw.value_of_css_property("background-color")

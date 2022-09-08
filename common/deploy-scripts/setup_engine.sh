@@ -69,7 +69,7 @@ cp /usr/share/doc/ovirt-engine/mibs/* /usr/share/snmp/mibs
 
 # We have to set DAYS_TO_SEND_ON_STARTUP to 1 because its default value is 0
 # it means that it will not send any old events, a race between the service start and
-# the new tag added above will cause that this event will not processed.
+# the new tag added above will cause that this event is not processed.
 echo "DAYS_TO_SEND_ON_STARTUP=1" >  /etc/ovirt-engine/notifier/notifier.conf.d/30-ovirt-engine-notifier.conf
 
 

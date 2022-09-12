@@ -57,6 +57,9 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
     @contextlib.contextmanager
     def _connect(self, vm_id):
         try:
+            alarm = BlockingIOAlarm('timed out waiting to connect', 180)
+            signal.signal(signal.SIGALRM, alarm.handle)
+            signal.alarm(alarm.seconds)
             master, slave = pty.openpty()
             LOGGER.debug('vmconsole: opened pty')
             args = [
@@ -80,6 +83,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
                 stdout=subprocess.PIPE,
                 bufsize=0,
             )
+            signal.alarm(0)  # cancel
             LOGGER.debug(f'vmconsole: opened reader with args {args}')
             self._writer = os.fdopen(master, 'w')
             LOGGER.debug('vmconsole: opened writer')
@@ -87,6 +91,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             yield
         finally:
             self._disconnect()
+            signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
     def _disconnect(self):
         LOGGER.debug('vmconsole: disconnecting...')

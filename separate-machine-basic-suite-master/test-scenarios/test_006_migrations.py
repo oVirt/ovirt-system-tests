@@ -1,0 +1,1 @@
+../../basic-suite-master/test-scenarios/test_006_migrations.py

@@ -135,15 +135,15 @@ def he_engine_answer_file_storage_snippet(
     storage_hostname,
     sd_iscsi_host_ip,
     he_lun_id,
-    ost_he_storage_domain_type,
+    master_storage_domain_type,
 ):
-    if ost_he_storage_domain_type == 'nfs':
+    if master_storage_domain_type == 'nfs':
         return (
             'OVEHOSTED_STORAGE/domainType=str:nfs3\n'
             'OVEHOSTED_STORAGE/storageDomainConnection=str:'
             f'{storage_hostname}:/exports/nfs_he\n'
         )
-    elif ost_he_storage_domain_type == 'iscsi':
+    else:
         return (
             'OVEHOSTED_STORAGE/domainType=str:iscsi\n'
             'OVEHOSTED_STORAGE/iSCSIPortalIPAddress=str:'
@@ -151,8 +151,6 @@ def he_engine_answer_file_storage_snippet(
             'OVEHOSTED_STORAGE/LunID=str:'
             f'{he_lun_id}\n'
         )
-    else:
-        raise RuntimeError(f'Unknown ost_he_storage_domain_type {ost_he_storage_domain_type}')
 
 
 @pytest.fixture(scope="session")

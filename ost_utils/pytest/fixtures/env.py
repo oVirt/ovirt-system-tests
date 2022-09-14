@@ -39,11 +39,9 @@ def ost_images_distro():
     return os.environ.get('OST_IMAGES_DISTRO')
 
 
-@pytest.fixture(scope="session")
-def ost_he_storage_domain_type():
-    return os.environ.get('OST_HE_STORAGE_DOMAIN_TYPE', 'nfs')
-
-
 @pytest.fixture(scope='session')
 def master_storage_domain_type():
-    return os.environ.get('OST_MASTER_SD_TYPE', 'nfs')
+    sd_type = os.environ.get('OST_MASTER_SD_TYPE', 'nfs')
+    if sd_type not in ['nfs', 'iscsi']:
+        raise RuntimeError(f'Unknown master_storage_domain_type {sd_type}')
+    return sd_type

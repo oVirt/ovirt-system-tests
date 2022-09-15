@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 import logging
+import time
 
 from .Displayable import Displayable
 
@@ -29,3 +30,6 @@ class WebAdminTopMenu(Displayable):
         )
         self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="HeaderView_userName"]')
         self.ovirt_driver.xpath_wait_and_click('Logout menu', '//*[@id="HeaderView_logoutLink"]')
+
+        # wait to allow all logout code to finish properly
+        time.sleep(5)

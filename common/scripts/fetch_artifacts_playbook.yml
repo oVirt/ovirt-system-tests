@@ -1,6 +1,7 @@
 #!/usr/bin/ansible-playbook
 
-- hosts: all
+- name: Collect and extract artifacts
+  hosts: all
 
   vars:
     archive_name: artifacts.tar.gz

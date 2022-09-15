@@ -1,6 +1,7 @@
 #!/usr/bin/ansible-playbook
 
-- hosts: all
+- name: Set up the environment for running OST
+  hosts: all
 
   vars:
     default_ost_images_repo_url: 'https://templates.ovirt.org/yum/'
@@ -11,7 +12,7 @@
       - ost-images-storage-base
 
   tasks:
-    - name: enable nested virtualization on intel
+    - name: Enable nested virtualization on intel
       ansible.builtin.lineinfile:
         path: /etc/modprobe.d/kvm.conf
         create: yes
@@ -21,7 +22,7 @@
       notify: reboot
       when: ansible_facts['processor'][1] == 'GenuineIntel'
 
-    - name: enable nested virtualization on amd
+    - name: Enable nested virtualization on amd
       ansible.builtin.lineinfile:
         path: /etc/modprobe.d/kvm.conf
         create: yes
@@ -31,7 +32,7 @@
       notify: reboot
       when: ansible_facts['processor'][1] == 'AuthenticAMD'
 
-    - name: set accept_ra on ipv6
+    - name: Set accept_ra on ipv6
       ansible.builtin.lineinfile:
         path: /etc/sysctl.d/90-ost-ipv6-ra.conf
         create: yes
@@ -39,7 +40,7 @@
         mode: 0644
       become: true
 
-    - name: increase per-user FD limit
+    - name: Increase per-user FD limit
       ansible.builtin.lineinfile:
         path: /etc/security/limits.d/ost.conf
         create: yes
@@ -47,7 +48,7 @@
         mode: 0644
       become: true
 
-    - name: set up ost-images repo
+    - name: Setup ost-images repo
       ansible.builtin.yum_repository:
         name: ost-images
         description: ost-images
@@ -55,19 +56,19 @@
         gpgcheck: no
       become: true
 
-    - name: setup distro-related vars
+    - name: Setup distro-related vars
       ansible.builtin.set_fact:
         el9: "{{ ansible_facts['distribution_major_version'] | int == 9 }}"
 
-    - name: setup package names based on distro-related
+    - name: Setup package names based on distro-related
       ansible.builtin.set_fact:
         python_pkg: "{{ 'python3' if el9 else 'python39' }}"
         ansible_pkg: ansible-core
 
-    - name: install packages and cleanup epel if necessary
+    - name: Install packages and cleanup epel if necessary
 
       block:
-        - name: install epel
+        - name: Install epel
           ansible.builtin.dnf:
             name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
             disable_gpg_check: yes
@@ -75,17 +76,17 @@
           become: true
           register: epel
 
-        - name: make sure any version of ansible is available
+        - name: Make sure any version of ansible is available
           ansible.builtin.dnf:
             name:
               - "{{ ansible_pkg }}"
             state: present
           become: true
 
-        - name: install galaxy collections
+        - name: Install galaxy collections
           ansible.builtin.command: ansible-galaxy collection install community.general openstack.cloud
 
-        - name: install required packages for OST
+        - name: Install required packages for OST
           ansible.builtin.dnf:
             name:
               - gcc
@@ -101,7 +102,7 @@
             state: latest
           become: true
 
-        - name: install required packages for building ost-images
+        - name: Install required packages for building ost-images
           ansible.builtin.dnf:
             name:
               - autoconf
@@ -119,19 +120,19 @@
           become: true
 
       always:
-        - name: remove epel if it was added
+        - name: Remove epel if it was added
           ansible.builtin.dnf:
             name: epel-release-8
             state: absent
           when: epel.changed
           become: true
 
-    - name: install ost images
+    - name: Install ost images
       ansible.builtin.dnf:
         name: "{{ ost_images_rpms | default(default_ost_images_rpms) }}"
       become: true
 
-    - name: add user to relevant groups
+    - name: Add user to relevant groups
       ansible.builtin.user:
         name: "{{ ansible_facts['user_id'] }}"
         groups:
@@ -139,7 +140,7 @@
         append: yes
       become: true
 
-    - name: add qemu to the user group
+    - name: Add qemu to the user group
       ansible.builtin.user:
         name: qemu
         groups:
@@ -147,7 +148,7 @@
         append: yes
       become: true
 
-    - name: allow user to manage libvirt
+    - name: Allow user to manage libvirt
       ansible.builtin.template:
         dest: /etc/polkit-1/localauthority/50-local.d/ost-libvirt-{{ ansible_facts['user_id'] }}.pkla
         group: root
@@ -156,43 +157,43 @@
         src: ost-libvirt.pkla.in
       become: true
 
-    - name: restart polkit
+    - name: Restart polkit
       ansible.builtin.systemd:
         name: polkit
         state: restarted
       become: true
 
-    - name: set user home directory permissions
+    - name: Set user home directory permissions
       ansible.builtin.file:
         path: "{{ ansible_facts['user_dir'] }}"
         mode: 0751
       become: true
 
-    - name: allow virtlogd to write console logs
+    - name: Allow virtlogd to write console logs
       ansible.builtin.command: semanage permissive -a virtlogd_t
       become: true
 
-    - name: allow port 2222 for IPv6 socks proxy
+    - name: Allow port 2222 for IPv6 socks proxy
       block:
-        - name: copy default libvirt config
+        - name: Copy default libvirt config
           ansible.builtin.copy:
             src: /usr/lib/firewalld/zones/libvirt.xml
             dest: /etc/firewalld/zones/libvirt.xml
             mode: 0644
           become: true
 
-        - name: allow port 2222
+        - name: Allow port 2222
           ansible.builtin.replace:
             path: /etc/firewalld/zones/libvirt.xml
             regexp: '^(.*service name.*ssh.*\n)(?!<port port="2222" protocol="tcp"/>)'
             replace: '\1<port port="2222" protocol="tcp"/>\n'
           become: true
 
-        - name: reload firewall
+        - name: Reload firewall
           ansible.builtin.shell: firewall-cmd --state && firewall-cmd --reload
           become: true
 
   handlers:
-    - name: reboot
+    - name: Reboot
       ansible.builtin.debug:
         msg: Please reboot to apply all the changes.

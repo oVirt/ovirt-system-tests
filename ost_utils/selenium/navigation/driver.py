@@ -33,6 +33,9 @@ class Driver:
     def refresh(self):
         self.retry_if_known_issue(self.__driver.refresh)
 
+    def delete_all_cookies(self):
+        self.retry_if_known_issue(self.__driver.delete_all_cookies)
+
     def quit(self):
         self.retry_if_known_issue(self.__driver.quit)
 

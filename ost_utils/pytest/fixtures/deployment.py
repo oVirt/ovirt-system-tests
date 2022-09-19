@@ -147,7 +147,7 @@ def deploy(
         repo_urls = package_mgmt.expand_repos(custom_repos, working_dir, ost_images_distro)
         package_mgmt.add_custom_repos(ansible_all, repo_urls)
         ansible_all.shell(
-            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update,ovirt-release-host-node'
+            'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update,ovirt-release-host-node --nobest'
         )
         # check if packages from custom repos were used
         if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:

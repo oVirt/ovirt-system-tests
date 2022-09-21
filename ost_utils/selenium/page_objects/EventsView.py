@@ -17,7 +17,7 @@ class EventsView(Displayable, WithBreadcrumbs):
 
     def is_displayed(self):
         breadcrumbs_present = self.get_breadcrumbs() == ['Events', 'Events']
-        entity_present = self.ovirt_driver.is_xpath_present('//tr[@__gwt_row = "0")]')
+        entity_present = self.ovirt_driver.is_xpath_present('//tr[@__gwt_row = "0"]')
         no_entity_present = self.ovirt_driver.is_xpath_present('//*[text() = "No items to display"]')
         return breadcrumbs_present and (entity_present or no_entity_present)
 

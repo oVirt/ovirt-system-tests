@@ -4,7 +4,7 @@ ansible-runner
 pytest==6.2.2
 # basic suite deps
 requests
-selenium==4.1.3
+selenium==4.4.3
 # network suite deps
 # TODO Use pip version once released openstacksdk>=0.62.0
 git+https://github.com/openstack/openstacksdk.git@master

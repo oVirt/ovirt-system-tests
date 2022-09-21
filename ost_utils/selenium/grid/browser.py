@@ -9,16 +9,9 @@ import functools
 from selenium import webdriver
 
 
-BROWSER_PLATFORM = 'LINUX'
-CHROME_VERSION = 'latest'
-FIREFOX_VERSION = 'latest'
-
-
 @functools.cache
 def firefox_options():
     options = webdriver.FirefoxOptions()
-    options.set_capability('platform', BROWSER_PLATFORM)
-    options.set_capability('version', FIREFOX_VERSION)
     options.set_capability('browserName', 'firefox')
     options.set_capability('acceptInsecureCerts', True)
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1538486
@@ -34,8 +27,6 @@ def firefox_options():
 @functools.cache
 def chrome_options():
     options = webdriver.ChromeOptions()
-    options.set_capability('platform', BROWSER_PLATFORM)
-    options.set_capability('version', CHROME_VERSION)
     options.set_capability('acceptInsecureCerts', True)
     options.set_capability(
         'goog:loggingPrefs',

@@ -65,7 +65,7 @@ def selenium_browser_name(selenium_browser_options):
 @pytest.fixture(scope="session")
 def selenium_browser_image(selenium_browser_name):
     # synchronize changes with https://github.com/oVirt/ost-images/blob/master/configs/storage/setup_selenium_grid.sh
-    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:4.0.0"
+    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:4.4.0"
 
 
 @pytest.fixture(scope="session")
@@ -148,7 +148,8 @@ def selenium_video_recorder(
         f" -v {selenium_remote_artifacts_dir}/:/videos:z"
         f" -e DISPLAY_CONTAINER_NAME={selenium_browser[:12]}"
         f" -e FILE_NAME=video-{selenium_browser_name}.mp4"
-        f" -e VIDEO_SIZE={selenium_screen_width}x{selenium_screen_height}"
+        f" -e SE_SCREEN_WIDTH={selenium_screen_width}"
+        f" -e SE_SCREEN_HEIGHT={selenium_screen_height}"
         f" --network=container:{selenium_browser}"
         "  quay.io/ovirt/selenium-video:latest"
     )["stdout"].strip()

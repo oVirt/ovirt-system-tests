@@ -683,19 +683,21 @@ def test_dashboard(ovirt_driver):
 def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
     webadmin_menu = WebAdminTopMenu(ovirt_driver)
     webadmin_menu.wait_for_displayed()
-    webadmin_menu.logout()
+
+    # https://github.com/oVirt/ovirt-engine/issues/665
+    if not keycloak_enabled:
+        webadmin_menu.logout()
 
     # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
     ovirt_driver.get(engine_webadmin_url)
 
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
-    welcome_screen.wait_for_user_logged_out()
-    assert welcome_screen.is_user_logged_out()
 
-    if keycloak_enabled:
-        # delete all cookies to workaround not logging out from the Keycloak properly
-        ovirt_driver.delete_all_cookies()
+    # https://github.com/oVirt/ovirt-engine/issues/665
+    if not keycloak_enabled:
+        welcome_screen.wait_for_user_logged_out()
+        assert welcome_screen.is_user_logged_out()
 
 
 def test_userportal(
@@ -703,6 +705,7 @@ def test_userportal(
     nonadmin_username,
     nonadmin_password,
     user_login,
+    keycloak_enabled,
     engine_webadmin_url,
     save_screenshot,
 ):
@@ -710,13 +713,17 @@ def test_userportal(
     welcome_screen.wait_for_displayed()
     welcome_screen.open_user_portal()
 
-    user_login(nonadmin_username, nonadmin_password)
+    # https://github.com/oVirt/ovirt-engine/issues/665
+    if not keycloak_enabled:
+        user_login(nonadmin_username, nonadmin_password)
 
     vm_portal = VmPortal(ovirt_driver)
     vm_portal.wait_for_displayed()
 
+    # https://github.com/oVirt/ovirt-engine/issues/665
+    if not keycloak_enabled:
+        assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
-    assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
     vm0_status = vm_portal.get_vm_status('vm0')
     assert vm0_status == 'Powering up' or vm0_status == 'Running'
     save_screenshot('userportal')
@@ -726,6 +733,7 @@ def test_userportal(
 
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
+
     assert welcome_screen.is_user_logged_out()
 
 

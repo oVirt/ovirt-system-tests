@@ -604,9 +604,8 @@ def test_make_template(
     vm_list_view = VmListView(ovirt_driver)
     vm_list_view.select_entity('vm1')
     template_dialog = vm_list_view.new_template()
-    template_dialog.set_name(template_name)
     save_screenshot('new-template-dialog')
-    template_dialog.ok()
+    template_dialog.set_name_and_ok(template_name)
 
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     template_list_view = webadmin_menu.open_template_list_view()

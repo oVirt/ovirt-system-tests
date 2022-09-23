@@ -153,12 +153,12 @@ class NewTemplateDialog(Displayable):
     def get_displayable_name(self):
         return 'New template dialog'
 
-    def set_name(self, template_name):
+    def set_name_and_ok(self, template_name):
         name_element = self.ovirt_driver.find_element(By.ID, 'VmMakeTemplatePopupWidget_name')
-        self.ovirt_driver.create_action_chains().click(name_element).send_keys(template_name).perform()
-
-    def ok(self):
-        self.ovirt_driver.button_wait_and_click('OK')
+        ok_element = self.ovirt_driver.find_element(By.XPATH, '//button[text()="OK"]')
+        self.ovirt_driver.create_action_chains().click(name_element).send_keys(template_name).click(
+            ok_element
+        ).perform()
         self.wait_for_not_displayed()
 
     def _is_cluster_loaded(self):

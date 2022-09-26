@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from .EntityListView import EntityListView
 
 LOGGER = logging.getLogger(__name__)
@@ -61,8 +62,8 @@ class DisksListView(EntityListView):
             '//*[@id="VmDiskPopupWidget_alias"]',
         )
         self.ovirt_driver.find_element(By.ID, 'VmDiskPopupWidget_alias').send_keys(image_name)
+        self.ovirt_driver.find_element(By.ID, 'VmDiskPopupWidget_alias').send_keys(Keys.ENTER)
 
-        self.ovirt_driver.id_wait_and_click('OK button is not displayed and enabled', 'UploadImagePopupView_Ok')
         self.ovirt_driver.wait_long_until(
             'Waiting for disk to appear in disk list',
             lambda: image_name in self.get_entities(),

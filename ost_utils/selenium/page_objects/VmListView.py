@@ -6,6 +6,7 @@ import logging
 import os
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from ost_utils.ansible.module_mappers import AnsibleExecutionError
 
 from .Displayable import Displayable
@@ -155,10 +156,10 @@ class NewTemplateDialog(Displayable):
 
     def set_name_and_ok(self, template_name):
         name_element = self.ovirt_driver.find_element(By.ID, 'VmMakeTemplatePopupWidget_name')
-        ok_element = self.ovirt_driver.find_element(By.XPATH, '//button[text()="OK"]')
-        self.ovirt_driver.create_action_chains().click(name_element).send_keys(template_name).click(
-            ok_element
+        self.ovirt_driver.create_action_chains().click(name_element).send_keys(template_name).send_keys(
+            Keys.ENTER
         ).perform()
+
         self.wait_for_not_displayed()
 
     def _is_cluster_loaded(self):

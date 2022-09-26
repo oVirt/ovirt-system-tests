@@ -46,7 +46,7 @@
   },
   "storage": {
     "template": "common/libvirt-templates/vm_template",
-    "memory": "2048",
+    "memory": "3072",
     "deploy-scripts": [
       "common/deploy-scripts/setup_storage.sh"
     ],

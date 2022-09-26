@@ -116,12 +116,14 @@ def selenium_browser(
     container_id = ansible_storage.shell(
         "podman run -d"
         f" -p {selenium_port}:{selenium_port}"
+        "  -p 7900:7900"
         "  --network=slirp4netns:enable_ipv6=true"
         "  --shm-size=1500m"
         f" -v {selenium_remote_artifacts_dir}/:/export:z"
         f" -e SCREEN_WIDTH={selenium_screen_width}"
         f" -e SCREEN_HEIGHT={selenium_screen_height}"
         "  -e SE_OPTS='--log-level FINE'"
+        "  -e SE_VNC_NO_PASSWORD=1"
         f" {selenium_browser_image}"
     )["stdout"].strip()
     _grid_health_check(selenium_url, selenium_browser_name)

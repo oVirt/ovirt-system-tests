@@ -20,6 +20,9 @@ import pytest
 import requests
 
 from selenium import webdriver
+from selenium.common.exceptions import (
+    TimeoutException,
+)
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from ost_utils import assert_utils
@@ -680,7 +683,7 @@ def test_dashboard(ovirt_driver):
     assert dashboard.events_count() > 0
 
 
-def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
+def test_logout(ovirt_driver, engine_webadmin_url):
     webadmin_menu = WebAdminTopMenu(ovirt_driver)
     webadmin_menu.wait_for_displayed()
     webadmin_menu.logout()
@@ -692,10 +695,6 @@ def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
     welcome_screen.wait_for_displayed()
     welcome_screen.wait_for_user_logged_out()
     assert welcome_screen.is_user_logged_out()
-
-    if keycloak_enabled:
-        # delete all cookies to workaround not logging out from the Keycloak properly
-        ovirt_driver.delete_all_cookies()
 
 
 def test_userportal(
@@ -710,9 +709,31 @@ def test_userportal(
     welcome_screen.wait_for_displayed()
     welcome_screen.open_user_portal()
 
-    user_login(nonadmin_username, nonadmin_password)
-
     vm_portal = VmPortal(ovirt_driver)
+
+    # workaround for https://github.com/oVirt/ovirt-engine/issues/665
+    try:
+        user_login(nonadmin_username, nonadmin_password)
+    except TimeoutException as e:
+        # check if the user portal is displayed meaning admin is still
+        # logged in (a known bug in keycloak logout)
+        if vm_portal.is_displayed():
+            save_screenshot('userportal-admin-logged-in')
+            LOGGER.exception('Admin still logged in, trying to logout again')
+            vm_portal.logout()
+            ovirt_driver.delete_all_cookies()
+            ovirt_driver.refresh()
+            save_screenshot('userportal-admin-force-logged-out')
+
+            ovirt_driver.get(engine_webadmin_url)
+            welcome_screen.wait_for_displayed()
+            save_screenshot('userportal-admin-after-force-logged-out')
+            welcome_screen.open_user_portal()
+
+            user_login(nonadmin_username, nonadmin_password)
+        else:
+            raise e
+
     vm_portal.wait_for_displayed()
 
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user

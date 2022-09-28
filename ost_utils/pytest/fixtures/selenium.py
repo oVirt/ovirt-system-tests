@@ -84,11 +84,6 @@ def selenium_screen_height():
 
 
 @pytest.fixture(scope="session")
-def selenium_version():
-    return "4.0.0"
-
-
-@pytest.fixture(scope="session")
 def selenium_remote_artifacts_dir():
     return "/var/tmp/selenium"
 
@@ -111,7 +106,6 @@ def selenium_browser(
     selenium_url,
     selenium_screen_height,
     selenium_screen_width,
-    selenium_version,
 ):
     container_id = ansible_storage.shell(
         "podman run -d"

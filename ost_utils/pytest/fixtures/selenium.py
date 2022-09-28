@@ -5,9 +5,15 @@
 #
 
 import json
+import logging
+import os
 import time
 
+from datetime import datetime
+
 import pytest
+
+import ovirtsdk4.types as types
 
 from ost_utils import network_utils
 from ost_utils.selenium.grid import browser
@@ -165,3 +171,57 @@ def selenium_video_recorder(
 @pytest.fixture(scope="session")
 def selenium_grid_url(selenium_url, selenium_browser, selenium_video_recorder):
     yield selenium_url
+
+
+@pytest.fixture(scope="module", autouse=True)
+def selenium_disable_noisy_logging():
+    selenium_logger = logging.getLogger('selenium')
+    selenium_logger_level = selenium_logger.getEffectiveLevel()
+    selenium_logger.setLevel(logging.WARNING)
+
+    urllib3_logger = logging.getLogger('urllib3')
+    urllib3_logger_level = urllib3_logger.getEffectiveLevel()
+    urllib3_logger.setLevel(logging.WARNING)
+
+    yield
+
+    selenium_logger.setLevel(selenium_logger_level)
+    urllib3_logger.setLevel(urllib3_logger_level)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def selenium_disable_notifications_for_admin_user(engine_admin_service):
+    targetName = "webAdmin.showNotifications"
+    existingProps = [option for option in engine_admin_service.options_service().list() if option.name == targetName]
+    if not existingProps:
+        option = types.UserOption(name=targetName, content="false", user=engine_admin_service.get())
+        assert engine_admin_service.options_service().add(option, wait=True)
+
+
+@pytest.fixture(scope="session")
+def selenium_artifacts_dir(artifacts_dir):
+    dc_version = os.environ.get('OST_DC_VERSION', '')
+    path = os.path.join(artifacts_dir, 'ui_tests_artifacts%s/' % dc_version)
+    os.umask(0)
+    os.makedirs(path, mode=0o777, exist_ok=True)
+    return path
+
+
+@pytest.fixture(scope="session")
+def selenium_artifact_filename(selenium_browser_name):
+    def _selenium_artifact_filename(description, extension):
+        date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        return "{}_{}_{}.{}".format(date, selenium_browser_name, description, extension)
+
+    return _selenium_artifact_filename
+
+
+@pytest.fixture(scope="session")
+def selenium_artifact_full_path(selenium_artifacts_dir, selenium_artifact_filename):
+    def _selenium_artifact_full_path(description, extension):
+        return os.path.join(
+            selenium_artifacts_dir,
+            selenium_artifact_filename(description, extension),
+        )
+
+    return _selenium_artifact_full_path

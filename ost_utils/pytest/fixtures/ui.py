@@ -17,7 +17,7 @@ from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
 LOGGER = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def ovirt_driver(
     engine_webadmin_url, selenium_browser_options, selenium_grid_url, selenium_screen_width, selenium_screen_height
 ):
@@ -44,7 +44,7 @@ def ovirt_driver(
         ovirt_driver.quit()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def save_screenshot(ovirt_driver, selenium_artifact_full_path):
     def save(description):
         ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'))
@@ -52,7 +52,7 @@ def save_screenshot(ovirt_driver, selenium_artifact_full_path):
     return save
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def save_page_source(ovirt_driver, selenium_artifact_full_path):
     def save(description):
         ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'))
@@ -60,7 +60,7 @@ def save_page_source(ovirt_driver, selenium_artifact_full_path):
     return save
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def save_logs_from_browser(ovirt_driver, selenium_artifact_full_path):
     def save(description):
         if ovirt_driver.get_capability('browserName') == 'chrome':
@@ -81,7 +81,7 @@ def after_test(request, save_screenshot, save_page_source, save_logs_from_browse
         save_page_source(file_name)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def user_login(ovirt_driver, keycloak_enabled):
     def login(username, password):
         login_screen = LoginScreen(ovirt_driver, keycloak_enabled)

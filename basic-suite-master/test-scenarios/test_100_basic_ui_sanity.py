@@ -6,25 +6,17 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from functools import cache
-import logging
 import os
-import shutil
-import subprocess
-import sys
 import time
 
 import ovirtsdk4.types as types
 import pytest
-import requests
 
 from ost_utils import assert_utils
 from ost_utils import test_utils
 from ost_utils import constants
-from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
-from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.selenium import *
 from ost_utils.pytest.fixtures.ui import *
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
@@ -33,16 +25,12 @@ from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
 from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
 from ost_utils.selenium.page_objects.VmListView import VmListView
-from ost_utils.selenium.page_objects.VmPortal import VmPortal
 from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
     GrafanaLoginScreen,
 )
 from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 def test_secure_connection_should_fail_without_root_ca(engine_fqdn, engine_ip_url, engine_webadmin_url):

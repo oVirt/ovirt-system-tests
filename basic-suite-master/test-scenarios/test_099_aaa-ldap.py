@@ -73,7 +73,7 @@ def test_add_ldap_group(engine_api):
         )
 
 
-def test_add_ldap_user(engine_api):
+def test_add_ldap_user(engine_api, engine_restart):
     engine = engine_api.system_service()
     users_service = engine.users_service()
     with engine_utils.wait_for_event(engine, 149):  # USER_ADD(149)
@@ -83,3 +83,5 @@ def test_add_ldap_user(engine_api):
                 domain=types.Domain(name=AAA_LDAP_AUTHZ_PROVIDER),
             ),
         )
+
+    engine_restart()

@@ -65,7 +65,7 @@ def selenium_browser_name(selenium_browser_options):
 @pytest.fixture(scope="session")
 def selenium_browser_image(selenium_browser_name):
     # synchronize changes with https://github.com/oVirt/ost-images/blob/master/configs/storage/setup_selenium_grid.sh
-    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:4.4.0"
+    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:4.0.0"
 
 
 @pytest.fixture(scope="session")

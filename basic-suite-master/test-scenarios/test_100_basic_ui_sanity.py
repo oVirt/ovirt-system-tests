@@ -335,10 +335,7 @@ def test_cluster_upgrade(
         lambda: cluster_service.get().scheduling_policy.id == cluster_maintenance_schedulling_policy_id
     )
 
-    # there could be two messages - "Check for update" or "Update" for the host depending on
-    # whether there are updates available and if the updates have been retrieved before
-    assert assert_utils.true_within_short(lambda: events_view.events_contain(f'update of host {host0_name}'))
-    assert assert_utils.true_within_short(lambda: events_view.events_contain(f'update of host {host1_name}'))
+    # upgrade finished on both hosts
     assert assert_utils.true_within_short(
         lambda: events_view.events_contain(f'Upgrade of cluster {ost_cluster_name} finished successfully')
     )

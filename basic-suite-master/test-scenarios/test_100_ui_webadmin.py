@@ -6,72 +6,27 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from datetime import datetime
-from functools import cache
-import logging
 import os
-import shutil
-import subprocess
-import sys
 import time
 
 import ovirtsdk4.types as types
 import pytest
-import requests
-
-from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from ost_utils import assert_utils
 from ost_utils import test_utils
 from ost_utils import constants
-from ost_utils.constants import *
 from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
 from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
-from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.selenium import *
+from ost_utils.pytest.fixtures.ui import *
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
-from ost_utils.selenium.navigation.driver import Driver
 from ost_utils.selenium.page_objects.ClusterListView import ClusterListView
 from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
-from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
 from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
 from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
 from ost_utils.selenium.page_objects.VmListView import VmListView
-from ost_utils.selenium.page_objects.VmPortal import VmPortal
-from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
-    GrafanaLoginScreen,
-)
-from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.shell import ShellError
 from ost_utils.shell import shell
-
-LOGGER = logging.getLogger(__name__)
-
-
-@pytest.fixture(scope="module", autouse=True)
-def disable_noisy_logging():
-    selenium_logger = logging.getLogger('selenium')
-    selenium_logger_level = selenium_logger.getEffectiveLevel()
-    selenium_logger.setLevel(logging.WARNING)
-
-    urllib3_logger = logging.getLogger('urllib3')
-    urllib3_logger_level = urllib3_logger.getEffectiveLevel()
-    urllib3_logger.setLevel(logging.WARNING)
-
-    yield
-
-    selenium_logger.setLevel(selenium_logger_level)
-    urllib3_logger.setLevel(urllib3_logger_level)
-
-
-@pytest.fixture(scope="module", autouse=True)
-def disable_notifications_for_admin_user(engine_admin_service):
-    targetName = "webAdmin.showNotifications"
-    existingProps = [option for option in engine_admin_service.options_service().list() if option.name == targetName]
-    if not existingProps:
-        option = types.UserOption(name=targetName, content="false", user=engine_admin_service.get())
-        assert engine_admin_service.options_service().add(option, wait=True)
 
 
 def test_secure_connection_should_fail_without_root_ca(engine_fqdn, engine_ip_url, engine_webadmin_url):
@@ -105,116 +60,6 @@ def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip_ur
             engine_webadmin_url,
         ]
     )
-
-
-@pytest.fixture(scope="session")
-def ovirt_driver(
-    engine_webadmin_url, selenium_browser_options, selenium_grid_url, selenium_screen_width, selenium_screen_height
-):
-    driver = None
-    exception = None
-    for i in range(5):
-        try:
-            driver = webdriver.Remote(command_executor=selenium_grid_url, options=selenium_browser_options)
-            break
-        except Exception as e:
-            LOGGER.exception(f'Failed to create driver {i}')
-            exception = e
-    else:
-        LOGGER.error('Failed to create the selenium webdriver after 5 retries')
-        raise exception
-
-    ovirt_driver = Driver(driver)
-    ovirt_driver.set_window_size(selenium_screen_width, selenium_screen_height)
-    ovirt_driver.get(engine_webadmin_url)
-
-    try:
-        yield ovirt_driver
-    finally:
-        ovirt_driver.quit()
-
-
-@pytest.fixture(scope="session")
-def selenium_artifacts_dir(artifacts_dir):
-    dc_version = os.environ.get('OST_DC_VERSION', '')
-    path = os.path.join(artifacts_dir, 'ui_tests_artifacts%s/' % dc_version)
-    os.umask(0)
-    os.makedirs(path, mode=0o777, exist_ok=True)
-    return path
-
-
-@pytest.fixture(scope="session")
-def selenium_artifact_filename(selenium_browser_name):
-    def _selenium_artifact_filename(description, extension):
-        date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        return "{}_{}_{}.{}".format(date, selenium_browser_name, description, extension)
-
-    return _selenium_artifact_filename
-
-
-@pytest.fixture(scope="session")
-def selenium_artifact_full_path(selenium_artifacts_dir, selenium_artifact_filename):
-    def _selenium_artifact_full_path(description, extension):
-        return os.path.join(
-            selenium_artifacts_dir,
-            selenium_artifact_filename(description, extension),
-        )
-
-    return _selenium_artifact_full_path
-
-
-@pytest.fixture(scope="session")
-def console_file_full_path(selenium_artifacts_dir):
-    return os.path.join(selenium_artifacts_dir, 'console.vv')
-
-
-@pytest.fixture(scope="session")
-def save_screenshot(ovirt_driver, selenium_artifact_full_path):
-    def save(description):
-        ovirt_driver.save_screenshot(selenium_artifact_full_path(description, 'png'))
-
-    return save
-
-
-@pytest.fixture(scope="session")
-def save_page_source(ovirt_driver, selenium_artifact_full_path):
-    def save(description):
-        ovirt_driver.save_page_source(selenium_artifact_full_path(description, 'html'))
-
-    return save
-
-
-@pytest.fixture(scope="session")
-def save_logs_from_browser(ovirt_driver, selenium_artifact_full_path):
-    def save(description):
-        if ovirt_driver.get_capability('browserName') == 'chrome':
-            ovirt_driver.save_console_log(selenium_artifact_full_path(description, 'txt'))
-            ovirt_driver.save_performance_log(selenium_artifact_full_path(description, 'perf.txt'))
-
-    return save
-
-
-@pytest.fixture(scope="function", autouse=True)
-def after_test(request, save_screenshot, save_page_source, save_logs_from_browser):
-    yield
-    status = "failed" if request.session.testsfailed else "success"
-    file_name = f'{request.node.originalname}_{status}'
-    save_screenshot(file_name)
-    if request.session.testsfailed:
-        save_logs_from_browser(file_name)
-        save_page_source(file_name)
-
-
-@pytest.fixture(scope="session")
-def user_login(ovirt_driver, keycloak_enabled):
-    def login(username, password):
-        login_screen = LoginScreen(ovirt_driver, keycloak_enabled)
-        login_screen.wait_for_displayed()
-        login_screen.set_user_name(username)
-        login_screen.set_user_password(password)
-        login_screen.login()
-
-    return login
 
 
 def test_non_admin_login_to_webadmin(
@@ -477,6 +322,11 @@ def setup_virtual_machines(engine_api):
         assert assert_utils.equals_within_long(lambda: vm_service.get().status, types.VmStatus.POWERING_UP)
 
 
+@pytest.fixture(scope="session")
+def console_file_full_path(selenium_artifacts_dir):
+    return os.path.join(selenium_artifacts_dir, 'console.vv')
+
+
 @pytest.fixture
 def console_file_helper(console_file_full_path, selenium_artifact_full_path):
     try:
@@ -688,82 +538,8 @@ def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
     # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
     ovirt_driver.get(engine_webadmin_url)
 
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
-    welcome_screen.wait_for_user_logged_out()
-    assert welcome_screen.is_user_logged_out()
-
-    if keycloak_enabled:
-        # delete all cookies to workaround not logging out from the Keycloak properly
-        ovirt_driver.delete_all_cookies()
-
-
-def test_userportal(
-    ovirt_driver,
-    nonadmin_username,
-    nonadmin_password,
-    user_login,
-    engine_webadmin_url,
-    save_screenshot,
-):
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
-    welcome_screen.open_user_portal()
-
-    user_login(nonadmin_username, nonadmin_password)
-
-    vm_portal = VmPortal(ovirt_driver)
-    vm_portal.wait_for_displayed()
-
-    # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
-    assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
-    vm0_status = vm_portal.get_vm_status('vm0')
-    assert vm0_status == 'Powering up' or vm0_status == 'Running'
-    save_screenshot('userportal')
-
-    vm_portal.logout()
-    save_screenshot('userportal-logout')
-
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
-    assert welcome_screen.is_user_logged_out()
-
-
-def test_grafana(
-    ovirt_driver,
-    save_screenshot,
-    engine_username,
-    engine_password,
-    engine_webadmin_url,
-    user_login,
-    engine_fqdn,
-):
-
-    ovirt_driver.get(engine_webadmin_url)
-
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
-    welcome_screen.open_monitoring_portal()
-
-    grafana_login = GrafanaLoginScreen(ovirt_driver)
-    grafana_login.wait_for_displayed()
-    save_screenshot('grafana-login')
-    grafana_login.use_ovirt_engine_auth()
-    user_login(engine_username, engine_password)
-
-    grafana = Grafana(ovirt_driver)
-    grafana.wait_for_displayed()
-    save_screenshot('grafana')
-
-    # navigate directly to Grafana Configuration/Data Sources page
-    ovirt_driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
-    assert grafana.db_connection()
-    save_screenshot('grafana-datasource-connection')
-
-    grafana.open_dashboard('oVirt Executive Dashboards', '02 Data Center Dashboard')
-    assert not grafana.is_error_visible()
-    save_screenshot('grafana-dashboard-1')
-
-    grafana.open_dashboard('oVirt Inventory Dashboards', '02 Hosts Inventory Dashboard')
-    assert not grafana.is_error_visible()
-    save_screenshot('grafana-dashboard-2')
+    if not keycloak_enabled:
+        welcome_screen = WelcomeScreen(ovirt_driver)
+        welcome_screen.wait_for_displayed()
+        welcome_screen.wait_for_user_logged_out()
+        assert welcome_screen.is_user_logged_out()

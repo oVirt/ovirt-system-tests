@@ -116,6 +116,8 @@ def ovirt_driver(
     for i in range(5):
         try:
             driver = webdriver.Remote(command_executor=selenium_grid_url, options=selenium_browser_options)
+            driver.implicitly_wait(5)
+            driver.set_script_timeout(5)
             break
         except Exception as e:
             LOGGER.exception(f'Failed to create driver {i}')

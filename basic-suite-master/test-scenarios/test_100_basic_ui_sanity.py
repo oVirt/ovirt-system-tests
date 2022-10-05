@@ -692,10 +692,6 @@ def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
     welcome_screen.wait_for_user_logged_out()
     assert welcome_screen.is_user_logged_out()
 
-    if keycloak_enabled:
-        # delete all cookies to workaround not logging out from the Keycloak properly
-        ovirt_driver.delete_all_cookies()
-
 
 def test_userportal(
     ovirt_driver,

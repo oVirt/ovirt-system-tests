@@ -13,6 +13,8 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from urllib3.exceptions import ReadTimeoutError
 
@@ -22,7 +24,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Driver:
-    def __init__(self, driver):
+    def __init__(self, driver: WebDriver):
 
         # this is a selenium webdriver instance, keeping it private so
         # that we can wrap and control it better (e.g. retry after some exceptions)
@@ -69,6 +71,52 @@ class Driver:
             # If failed, lets try again with waiting
             LOGGER.exception(f'!!! find_elements() failed with {e.__class__.__name__}, retrying')
             return self.retry_if_known_issue(self.__driver.find_elements, by, value)
+
+    def _access_shadow_root(self, container: WebElement) -> WebElement:
+        try:
+            return container.shadow_root
+        except AssertionError:
+            # If the WebDriver's browser in use does NOT support `shadow_root`, then we need
+            # to fallback to using JavaScript.  The div containing the component will provide
+            # a valid WebElement that can be used just like the normal `shadow_root`.
+            return self.__driver.execute_script(
+                "return arguments[0].shadowRoot.querySelector('.ui-extensions-plugin-root')", container
+            )
+
+    def _find_dialog_root(self, modal_id: str, driver: WebDriver = None) -> WebElement:
+        _driver = driver if driver else self.__driver
+        try:
+            # prefer the shadowDom version
+            shadow_host = _driver.find_element(By.ID, f'shadow-root-container-{modal_id}')
+            return self._access_shadow_root(shadow_host)
+        except NoSuchElementException:
+            # if not found, look for a normal modal
+            old_modal = _driver.find_element(By.ID, modal_id)
+            return old_modal
+
+    def find_dialog_root(self, modal_id: str, immediate: bool = False) -> WebElement:
+        if immediate:
+            return self._find_dialog_root(modal_id)
+        else:
+            dialog_root = WebDriverWait(self.__driver, timeout=5).until(lambda d: self._find_dialog_root(modal_id, d))
+            return dialog_root
+
+    def find_dialog_element(self, modal_id: str, locator, waitCondition=None, message=None) -> WebElement:
+        if waitCondition is None:
+            dialog_root = self.find_dialog_root(modal_id)
+            return dialog_root.find_element(*locator)
+        else:
+
+            def __finder(driver: WebDriver):
+                dialog_root = self._find_dialog_root(modal_id, driver)
+                el = dialog_root.find_element(*locator)
+                if el and waitCondition(el):
+                    return el
+                else:
+                    return False
+
+            el = WebDriverWait(self.__driver, timeout=5).until(__finder, message)
+            return el
 
     def execute_script(self, script):
         self.retry_if_known_issue(self.__driver.execute_script, script)

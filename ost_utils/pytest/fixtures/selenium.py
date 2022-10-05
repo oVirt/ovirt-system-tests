@@ -64,8 +64,7 @@ def selenium_browser_name(selenium_browser_options):
 
 @pytest.fixture(scope="session")
 def selenium_browser_image(selenium_browser_name):
-    # synchronize changes with https://github.com/oVirt/ost-images/blob/master/configs/storage/setup_selenium_grid.sh
-    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:4.4.0"
+    return f"quay.io/ovirt/selenium-standalone-{selenium_browser_name}:latest"
 
 
 @pytest.fixture(scope="session")
@@ -81,11 +80,6 @@ def selenium_screen_width():
 @pytest.fixture(scope="session")
 def selenium_screen_height():
     return 900
-
-
-@pytest.fixture(scope="session")
-def selenium_version():
-    return "4.0.0"
 
 
 @pytest.fixture(scope="session")
@@ -111,7 +105,6 @@ def selenium_browser(
     selenium_url,
     selenium_screen_height,
     selenium_screen_width,
-    selenium_version,
 ):
     container_id = ansible_storage.shell(
         "podman run -d"

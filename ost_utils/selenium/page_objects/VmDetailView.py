@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 from .EntityDetailView import EntityDetailView
 
@@ -71,36 +72,41 @@ class VmVgpuDialog(Displayable):
         super(VmVgpuDialog, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        dialog_displayed = self.ovirt_driver.find_element(
-            By.CSS_SELECTOR, '.modal-dialog,.pf-c-modal-box'
-        ).is_displayed()
-        spinner_displayed = self.ovirt_driver.is_css_selector_displayed('#vm-manage-gpu-modal .pf-c-spinner')
-        return dialog_displayed and not spinner_displayed
+        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal', True)
+        modal_text = dialog.find_element(By.ID, 'vm-manage-gpu-modal').text
+        return 'Select vGPU type' in modal_text
 
     def get_displayable_name(self):
         return 'Manage vGPU dialog'
 
     def get_title(self):
-        return self.ovirt_driver.find_element(
+        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal')
+        return dialog.find_element(
             By.CSS_SELECTOR,
             'h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title',
         ).text
 
     def get_row_data(self, row_index):
-        row_tds = self.ovirt_driver.find_elements(
-            By.XPATH,
-            '//table[contains(@class, "vgpu-table")]/' f'tbody[{row_index}]/tr/td',
-        )
+        """Access and extract td text for a given row in the vGPU table.
+        row_index is the 1-based indexed row to return
+        """
+
+        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal')
+        tbodys = dialog.find_elements(By.CSS_SELECTOR, 'table.vgpu-table > tbody')
+
+        # the list is 0-base but the index is 1-based so adjust
+        row = tbodys[row_index - 1]
+        row_tds = row.find_elements(By.CSS_SELECTOR, 'tr>td')
         return list(map(lambda td: td.text, row_tds))
 
     def cancel(self):
         LOGGER.debug('Cancel vGPU dialog')
-        self.ovirt_driver.find_element(
-            By.XPATH,
-            '//div[@class="modal-footer"]//button[. = "Cancel"]|'
-            '//div[@class="pf-c-modal-box__footer"]'
-            '//button[contains(@class,"pf-m-link")]|'
-            '//footer[@class="pf-c-modal-box__footer"]'
-            '//button[contains(@class,"pf-m-link")]',
-        ).click()
+        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal')
+        cancel_button = next(
+            (b for b in dialog.find_elements(By.CSS_SELECTOR, 'footer>button') if "Cancel" in b.text),
+            None,
+        )
+        assert cancel_button is not None
+        cancel_button.click()
+
         self.wait_for_not_displayed()

@@ -682,13 +682,13 @@ def test_dashboard(ovirt_driver):
 def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
     webadmin_menu = WebAdminTopMenu(ovirt_driver)
     webadmin_menu.wait_for_displayed()
-    webadmin_menu.logout()
 
     # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
     ovirt_driver.get(engine_webadmin_url)
 
     welcome_screen = WelcomeScreen(ovirt_driver)
     welcome_screen.wait_for_displayed()
+    welcome_screen.logout()
     welcome_screen.wait_for_user_logged_out()
     assert welcome_screen.is_user_logged_out()
 

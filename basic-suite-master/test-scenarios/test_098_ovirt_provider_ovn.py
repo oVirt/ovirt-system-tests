@@ -65,12 +65,12 @@ ALREADY_IMPORTED = (
 )
 
 
-def _request_auth_token(engine_name, engine_full_username, engine_password):
+def _request_auth_token(engine_name, engine_api_username, engine_password):
     auth_request_data = {
         'auth': {
             'tenantName': 'ovirt-provider-ovn',
             'passwordCredentials': {
-                'username': engine_full_username,
+                'username': engine_api_username,
                 'password': engine_password,
             },
         }
@@ -83,8 +83,8 @@ def _request_auth_token(engine_name, engine_full_username, engine_password):
     return response.json()
 
 
-def _get_auth_token(engine_name, engine_full_username, engine_password):
-    response_json = _request_auth_token(engine_name, engine_full_username, engine_password)
+def _get_auth_token(engine_name, engine_api_username, engine_password):
+    response_json = _request_auth_token(engine_name, engine_api_username, engine_password)
     token_id = response_json['access']['token']['id']
     return token_id
 
@@ -366,11 +366,11 @@ def test_provider_configured(hosts_service, ost_dc_name):
 
 
 @versioning.require_version(4, 2)
-def test_use_ovn_provider(engine_api, engine_ip_url, engine_full_username, engine_password, ost_images_distro):
+def test_use_ovn_provider(engine_api, engine_ip_url, engine_api_username, engine_password, ost_images_distro):
     engine = engine_api.system_service()
     provider_id = network_utils.get_default_ovn_provider_id(engine)
 
-    token_id = _get_auth_token(engine_ip_url, engine_full_username, engine_password)
+    token_id = _get_auth_token(engine_ip_url, engine_api_username, engine_password)
 
     _validate_db_empty(token_id, engine_ip_url)
 

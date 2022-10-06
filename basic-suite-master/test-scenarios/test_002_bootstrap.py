@@ -1734,9 +1734,7 @@ def get_user(keycloak_enabled, engine_api, ansible_engine, username, engine_user
             principal=username,
         )
     else:
-        user_id = ansible_engine.shell(f"ovirt-aaa-jdbc-tool user show {username} --attribute=id")[
-            'stdout_lines'
-        ][0]
+        user_id = ansible_engine.shell(f"ovirt-aaa-jdbc-tool user show {username} --attribute=id")['stdout_lines'][0]
         user = types.User(
             id=user_id,
             domain=engine_user_domain,
@@ -1782,14 +1780,14 @@ def test_add_permissions_to_users(
 def test_upload_cirros_image(
     ansible_engine,
     engine_fqdn,
-    engine_full_username,
+    engine_api_username,
     engine_password,
     cirros_image_disk_name,
     master_storage_domain_name,
 ):
     collection = CollectionMapper(ansible_engine)
 
-    ovirt_auth = collection.ovirt_auth(hostname=engine_fqdn, username=engine_full_username, password=engine_password,)[
+    ovirt_auth = collection.ovirt_auth(hostname=engine_fqdn, username=engine_api_username, password=engine_password,)[
         "ansible_facts"
     ]["ovirt_auth"]
 
@@ -1810,7 +1808,7 @@ def test_create_cirros_template(
     ansible_inventory,
     working_dir,
     engine_fqdn,
-    engine_full_username,
+    engine_api_username,
     engine_password,
     ost_cluster_name,
     cirros_image_template_name,
@@ -1824,7 +1822,7 @@ def test_create_cirros_template(
         ssh_key_file,
         engine_hostname,
         engine_fqdn=engine_fqdn,
-        engine_user=engine_full_username,
+        engine_user=engine_api_username,
         engine_password=engine_password,
         engine_cafile='/etc/pki/ovirt-engine/ca.pem',
         qcow_url=f"file://{CIRROS_IMAGE_PATH}",

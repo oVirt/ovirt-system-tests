@@ -24,13 +24,13 @@ DEFAULT_OVN_SUBNET_GW = '10.0.0.3'
 
 
 @pytest.fixture(scope='session')
-def openstack_client_config(engine_facts, engine_full_username, engine_password, ovirt_provider_ovn_with_ip_fqdn):
+def openstack_client_config(engine_facts, engine_api_username, engine_password, ovirt_provider_ovn_with_ip_fqdn):
     cloud_config = {
         'clouds': {
             DEFAULT_CLOUD: {
                 'auth': {
                     'auth_url': OPENSTACK_AUTH_URL.format(engine_facts.default_ip(urlize=True)),
-                    'username': engine_full_username,
+                    'username': engine_api_username,
                     'password': engine_password,
                 },
                 'verify': False,

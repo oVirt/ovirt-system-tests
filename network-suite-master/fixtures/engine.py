@@ -23,12 +23,12 @@ def engine_password():
 def api(
     ovirt_engine_service_up,
     engine_facts,
-    engine_full_username,
+    engine_api_username,
     engine_password,
 ):
     return _create_engine_connection(
         engine_facts.default_ip(urlize=True),
-        engine_full_username,
+        engine_api_username,
         engine_password,
     )
 
@@ -59,12 +59,12 @@ def ovirt_engine_setup(deploy, engine_facts, engine_answer_file_path, ansible_en
 
 
 @pytest.fixture(scope='session', autouse=True)
-def ovirt_engine_service_up(ovirt_engine_setup, engine_facts, engine_full_username, engine_password):
+def ovirt_engine_service_up(ovirt_engine_setup, engine_facts, engine_api_username, engine_password):
     syncutil.sync(
         exec_func=_create_engine_connection,
         exec_func_args=(
             engine_facts.default_ip(urlize=True),
-            engine_full_username,
+            engine_api_username,
             engine_password,
         ),
         success_criteria=lambda api: isinstance(api, Connection),

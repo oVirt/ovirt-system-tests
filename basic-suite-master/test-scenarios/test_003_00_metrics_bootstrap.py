@@ -19,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 LOG_COLLECTOR = """\
 '[LogCollector]
-user={engine_full_username}
+user={engine_api_username}
 passwd={engine_password}
 engine={engine_fqdn}:443
 local-tmp={local_tmp}
@@ -30,12 +30,12 @@ output=/dev/shm
 
 
 @pytest.fixture
-def setup_log_collector(ansible_engine, engine_password, engine_fqdn, engine_full_username):
+def setup_log_collector(ansible_engine, engine_password, engine_fqdn, engine_api_username):
     local_tmp = ansible_engine.tempfile(path='/dev/shm', state='directory')['path']
     ansible_engine.copy(
         dest='/root/ovirt-log-collector.conf',
         content=LOG_COLLECTOR.format(
-            engine_full_username=engine_full_username,
+            engine_api_username=engine_api_username,
             engine_password=engine_password,
             engine_fqdn=engine_fqdn,
             local_tmp=local_tmp,

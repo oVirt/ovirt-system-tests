@@ -82,7 +82,7 @@ from ost_utils.pytest.fixtures.engine import engine_admin_service
 from ost_utils.pytest.fixtures.engine import engine_answer_file_contents
 from ost_utils.pytest.fixtures.engine import engine_answer_file_path
 from ost_utils.pytest.fixtures.engine import engine_fqdn
-from ost_utils.pytest.fixtures.engine import engine_full_username
+from ost_utils.pytest.fixtures.engine import engine_api_username
 from ost_utils.pytest.fixtures.engine import engine_ip
 from ost_utils.pytest.fixtures.engine import engine_ip_url
 from ost_utils.pytest.fixtures.engine import engine_ips_for_network

@@ -75,7 +75,7 @@ def engine_username(keycloak_enabled):
 
 
 @pytest.fixture(scope="session")
-def engine_full_username(keycloak_enabled):
+def engine_api_username(keycloak_enabled):
     if keycloak_enabled:
         return "admin@ovirt@internalsso"
 
@@ -119,10 +119,10 @@ def nonadmin_password():
 
 
 @pytest.fixture(scope="session")
-def engine_api(engine_full_username, engine_password, engine_api_url):
+def engine_api(engine_api_username, engine_password, engine_api_url):
     api = sdk4.Connection(
         url=engine_api_url,
-        username=engine_full_username,
+        username=engine_api_username,
         password=engine_password,
         insecure=True,
         debug=True,
@@ -206,7 +206,7 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
 
 
 @pytest.fixture(scope="session")
-def engine_answer_file_contents(engine_password, engine_fqdn, engine_full_username):
+def engine_answer_file_contents(engine_password, engine_fqdn, engine_api_username):
     return (
         '# action=setup\n'
         '[environment:default]\n'
@@ -266,7 +266,7 @@ def engine_answer_file_contents(engine_password, engine_fqdn, engine_full_userna
         'OVESETUP_DWH_DB/user=str:ovirt_engine_history\n'
         'OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:True\n'
         'OVESETUP_DWH_CONFIG/scale=str:1\n'
-        f'OVESETUP_OVN/ovirtProviderOvnUser=str:{engine_full_username}\n'
+        f'OVESETUP_OVN/ovirtProviderOvnUser=str:{engine_api_username}\n'
         f'OVESETUP_OVN/ovirtProviderOvnPassword=str:{engine_password}\n'
         'OVESETUP_CONFIG/imageioProxyConfig=bool:True\n'
         'QUESTION/1/ovirt-cinderlib-enable=str:yes\n'

@@ -13,7 +13,7 @@ def test_ansible_run(
     hostnames_to_add,
     engine_ip_url,
     engine_fqdn,
-    engine_full_username,
+    engine_api_username,
     engine_password,
     storage_hostname,
     sd_iscsi_host_ip,
@@ -22,7 +22,7 @@ def test_ansible_run(
     infra(
         ansible_engine,
         engine_fqdn=engine_ip_url,
-        engine_user=engine_full_username,
+        engine_user=engine_api_username,
         engine_password=engine_password,
         engine_cafile="/etc/pki/ovirt-engine/ca.pem",
         data_center_name="test-dc",
@@ -147,7 +147,7 @@ def test_ansible_run(
 
     ovirt_auth = collection.ovirt_auth(
         hostname=engine_ip_url,
-        username=engine_full_username,
+        username=engine_api_username,
         password=engine_password,
         insecure="true",
     )['ansible_facts']['ovirt_auth']

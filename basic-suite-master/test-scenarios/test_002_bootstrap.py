@@ -1684,12 +1684,12 @@ def test_add_other_users(
 
         assert keycloak.resolve_user_id(engine_api=engine_api, username=nonadmin_username) is not None
 
-        # create another admin for selenium tests later on, without 
-        keycloak.activate_user(
-            engine_api_url=engine_api_url,
+        # create another admin for selenium tests later on
+        keycloak.create_user(
+            ansible_engine=ansible_engine,
+            realm=keycloak_ovirt_realm,
             username=engine_username,
             password=engine_password,
-            profile=keycloak_profile,
         )
 
         keycloak.activate_user(
@@ -1767,35 +1767,12 @@ def test_add_permissions_to_users(
             ),
         )
     # add second admin to DC
-    datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
-    permissions_service = datacenters_service.data_center_service(datacenter.id).permissions_service()
-    user_id = get_user(keycloak_enabled, engine_api, ansible_engine, engine_username, engine_user_domain)
     with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
-        permissions_service.add(
+        engine_api.system_service().permissions_service().add(
             types.Permission(
-                user=user_id,
+                user=get_user(keycloak_enabled, engine_api, ansible_engine, engine_username, engine_user_domain),
                 role=types.Role(
-                    name='DataCenterAdmin',
-                ),
-            ),
-        )
-    # adn two extra permissions needed for Cluster Upgrade
-    permissions_service = engine_api.system_service().permissions_service()
-    with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
-        permissions_service.add(
-            types.Permission(
-                user=user_id,
-                role=types.Role(
-                    name='ExternalEventsCreator',
-                ),
-            ),
-        )
-        permissions_service.add(
-            types.Permission(
-                user=user_id,
-                role=types.Role(
-                    name='ExternalTasksCreator',
+                    name='SuperUser',
                 ),
             ),
         )

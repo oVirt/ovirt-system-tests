@@ -158,8 +158,8 @@ _TEST_LIST = [
     "test_add_non_vm_network",
     "test_add_vm_network",
     "test_verify_uploaded_image_and_template",
-    "test_add_nonadmin_user",
-    "test_add_vm_permissions_to_user",
+    "test_add_other_users",
+    "test_add_permissions_to_users",
     "test_verify_notifier_trap",
 ]
 
@@ -1638,7 +1638,7 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
 
 
 @order_by(_TEST_LIST)
-def test_add_nonadmin_user(
+def test_add_other_users(
     engine_api,
     engine_api_url,
     ansible_engine,
@@ -1650,6 +1650,8 @@ def test_add_nonadmin_user(
     keycloak_profile,
     nonadmin_username,
     nonadmin_password,
+    engine_username,
+    engine_password,
     engine_user_domain,
     keycloak_enabled,
 ):
@@ -1681,51 +1683,119 @@ def test_add_nonadmin_user(
         )
 
         assert keycloak.resolve_user_id(engine_api=engine_api, username=nonadmin_username) is not None
+
+        # create another admin for selenium tests later on, without 
+        keycloak.activate_user(
+            engine_api_url=engine_api_url,
+            username=engine_username,
+            password=engine_password,
+            profile=keycloak_profile,
+        )
+
+        keycloak.activate_user(
+            engine_api_url=engine_api_url,
+            username=engine_username,
+            password=engine_password,
+            profile=keycloak_profile,
+        )
+
+        assert keycloak.resolve_user_id(engine_api=engine_api, username=engine_username) is not None
     else:
+        users_service = engine_api.system_service().users_service()
         ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
         ansible_engine.shell(
             f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
                 --password-valid-to='2125-08-15 10:30:00Z' \
                 --password=pass:{nonadmin_password}"
         )
-        users_service = engine_api.system_service().users_service()
         with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
             users_service.add(
                 types.User(user_name=f'{nonadmin_username}@internal-authz', domain=engine_user_domain),
             )
+        # add another admin user as well
+        ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {engine_username}")
+        ansible_engine.shell(
+            f"ovirt-aaa-jdbc-tool user password-reset {engine_username} \
+                --password-valid-to='2125-08-15 10:30:00Z' \
+                --password=pass:{engine_password}"
+        )
+        with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
+            users_service.add(
+                types.User(user_name=f'{engine_username}@internal-authz', domain=engine_user_domain),
+            )
 
 
-@pytest.fixture(scope="module")
-def nonadmin_user(keycloak_enabled, engine_api, ansible_engine, nonadmin_username, engine_user_domain):
+def get_user(keycloak_enabled, engine_api, ansible_engine, username, engine_user_domain):
     if keycloak_enabled:
-        user_id = keycloak.resolve_user_id(engine_api, nonadmin_username)
-        nonadmin_user = types.User(
+        user_id = keycloak.resolve_user_id(engine_api, username)
+        user = types.User(
             id=user_id,
             domain=engine_user_domain,
-            principal=nonadmin_username,
+            principal=username,
         )
     else:
-        user_id = ansible_engine.shell(f"ovirt-aaa-jdbc-tool user show {nonadmin_username} --attribute=id")[
+        user_id = ansible_engine.shell(f"ovirt-aaa-jdbc-tool user show {username} --attribute=id")[
             'stdout_lines'
         ][0]
-        nonadmin_user = types.User(
+        user = types.User(
             id=user_id,
             domain=engine_user_domain,
         )
-    return nonadmin_user
+    return user
 
 
 @order_by(_TEST_LIST)
-def test_add_vm_permissions_to_user(engine_api, nonadmin_user):
+def test_add_permissions_to_users(
+    keycloak_enabled,
+    engine_api,
+    ansible_engine,
+    engine_username,
+    nonadmin_username,
+    engine_user_domain,
+    ost_dc_name,
+):
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=vm0')[0]
     permissions_service = vms_service.vm_service(vm.id).permissions_service()
     with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
         permissions_service.add(
             types.Permission(
-                user=nonadmin_user,
+                user=get_user(keycloak_enabled, engine_api, ansible_engine, nonadmin_username, engine_user_domain),
                 role=types.Role(
                     name='UserRole',
+                ),
+            ),
+        )
+    # add second admin to DC
+    datacenters_service = engine_api.system_service().data_centers_service()
+    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
+    permissions_service = datacenters_service.data_center_service(datacenter.id).permissions_service()
+    user_id = get_user(keycloak_enabled, engine_api, ansible_engine, engine_username, engine_user_domain)
+    with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
+        permissions_service.add(
+            types.Permission(
+                user=user_id,
+                role=types.Role(
+                    name='DataCenterAdmin',
+                ),
+            ),
+        )
+    # adn two extra permissions needed for Cluster Upgrade
+    permissions_service = engine_api.system_service().permissions_service()
+    with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
+        permissions_service.add(
+            types.Permission(
+                user=user_id,
+                role=types.Role(
+                    name='ExternalEventsCreator',
+                ),
+            ),
+        )
+        permissions_service.add(
+            types.Permission(
+                user=user_id,
+                role=types.Role(
+                    name='ExternalTasksCreator',
                 ),
             ),
         )

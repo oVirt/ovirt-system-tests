@@ -68,10 +68,10 @@ def keycloak_enabled(ost_images_distro, suite):
 @pytest.fixture(scope="session")
 def engine_username(keycloak_enabled):
     if keycloak_enabled:
-        return "admin@ovirt"
+        return "admin2@ovirt"
 
     # use legacy AAA authentication for rhel
-    return "admin"
+    return "admin2"
 
 
 @pytest.fixture(scope="session")

@@ -1666,63 +1666,39 @@ def test_add_other_users(
             password=nonadmin_password,
         )
 
-        keycloak.create_user(
-            ansible_engine=ansible_engine,
-            realm=keycloak_ovirt_realm,
-            username=nonadmin_username,
-            password=nonadmin_password,
-        )
+        # create a non-admin user and another admin for selenium tests later on
+        for username, password in ((nonadmin_username, nonadmin_password), (engine_username, engine_password)):
+            keycloak.create_user(
+                ansible_engine=ansible_engine,
+                realm=keycloak_ovirt_realm,
+                username=username,
+                password=password,
+            )
 
-        # for externally handled users (ie. via Keycloak) it is required to attempt to login or access rest api
-        # so that internal representation of the user be created in engine db
-        keycloak.activate_user(
-            engine_api_url=engine_api_url,
-            username=nonadmin_username,
-            password=nonadmin_password,
-            profile=keycloak_profile,
-        )
+            # for externally handled users (ie. via Keycloak) it is required to attempt to login or access rest api
+            # so that internal representation of the user be created in engine db
+            keycloak.activate_user(
+                engine_api_url=engine_api_url,
+                username=username,
+                password=password,
+                profile=keycloak_profile,
+            )
 
-        assert keycloak.resolve_user_id(engine_api=engine_api, username=nonadmin_username) is not None
-
-        # create another admin for selenium tests later on
-        keycloak.create_user(
-            ansible_engine=ansible_engine,
-            realm=keycloak_ovirt_realm,
-            username=engine_username,
-            password=engine_password,
-        )
-
-        keycloak.activate_user(
-            engine_api_url=engine_api_url,
-            username=engine_username,
-            password=engine_password,
-            profile=keycloak_profile,
-        )
-
-        assert keycloak.resolve_user_id(engine_api=engine_api, username=engine_username) is not None
+            assert keycloak.resolve_user_id(engine_api=engine_api, username=username) is not None
     else:
-        users_service = engine_api.system_service().users_service()
-        ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
-        ansible_engine.shell(
-            f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
-                --password-valid-to='2125-08-15 10:30:00Z' \
-                --password=pass:{nonadmin_password}"
-        )
-        with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
-            users_service.add(
-                types.User(user_name=f'{nonadmin_username}@internal-authz', domain=engine_user_domain),
+        # create a non-admin user and another admin for selenium tests later on
+        for username, password in ((nonadmin_username, nonadmin_password), (engine_username, engine_password)):
+            users_service = engine_api.system_service().users_service()
+            ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {username}")
+            ansible_engine.shell(
+                f"ovirt-aaa-jdbc-tool user password-reset {username} \
+                    --password-valid-to='2125-08-15 10:30:00Z' \
+                    --password=pass:{password}"
             )
-        # add another admin user as well
-        ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {engine_username}")
-        ansible_engine.shell(
-            f"ovirt-aaa-jdbc-tool user password-reset {engine_username} \
-                --password-valid-to='2125-08-15 10:30:00Z' \
-                --password=pass:{engine_password}"
-        )
-        with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
-            users_service.add(
-                types.User(user_name=f'{engine_username}@internal-authz', domain=engine_user_domain),
-            )
+            with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
+                users_service.add(
+                    types.User(user_name=f'{username}@internal-authz', domain=engine_user_domain),
+                )
 
 
 def get_user(keycloak_enabled, engine_api, ansible_engine, username, engine_user_domain):
@@ -1754,26 +1730,20 @@ def test_add_permissions_to_users(
 ):
     vms_service = engine_api.system_service().vms_service()
     vm = vms_service.list(search='name=vm0')[0]
-    permissions_service = vms_service.vm_service(vm.id).permissions_service()
-    with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
-        permissions_service.add(
-            types.Permission(
-                user=get_user(keycloak_enabled, engine_api, ansible_engine, nonadmin_username, engine_user_domain),
-                role=types.Role(
-                    name='UserRole',
+
+    for username, role, permissions_service in (
+        (nonadmin_username, 'UserRole', vms_service.vm_service(vm.id).permissions_service()),
+        (engine_username, 'SuperUser', engine_api.system_service().permissions_service()),
+    ):
+        with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
+            permissions_service.add(
+                types.Permission(
+                    user=get_user(keycloak_enabled, engine_api, ansible_engine, username, engine_user_domain),
+                    role=types.Role(
+                        name=role,
+                    ),
                 ),
-            ),
-        )
-    # add second admin to DC
-    with engine_utils.wait_for_event(engine_api.system_service(), 850):  # PERMISSION_ADD(850)
-        engine_api.system_service().permissions_service().add(
-            types.Permission(
-                user=get_user(keycloak_enabled, engine_api, ansible_engine, engine_username, engine_user_domain),
-                role=types.Role(
-                    name='SuperUser',
-                ),
-            ),
-        )
+            )
 
 
 @order_by(_TEST_LIST)

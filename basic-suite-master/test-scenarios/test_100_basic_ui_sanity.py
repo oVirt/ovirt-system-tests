@@ -727,7 +727,7 @@ def test_userportal(
 def test_grafana(
     ovirt_driver,
     save_screenshot,
-    engine_username,
+    grafana_username,
     engine_password,
     engine_webadmin_url,
     user_login,
@@ -744,7 +744,7 @@ def test_grafana(
     grafana_login.wait_for_displayed()
     save_screenshot('grafana-login')
     grafana_login.use_ovirt_engine_auth()
-    user_login(engine_username, engine_password)
+    user_login(grafana_username, engine_password)
 
     grafana = Grafana(ovirt_driver)
     grafana.wait_for_displayed()

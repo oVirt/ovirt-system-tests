@@ -119,6 +119,15 @@ def nonadmin_password():
 
 
 @pytest.fixture(scope="session")
+def grafana_username(keycloak_enabled):
+    if keycloak_enabled:
+        return "admin@ovirt"
+
+    # use legacy AAA authentication for rhel
+    return "admin"
+
+
+@pytest.fixture(scope="session")
 def engine_api(engine_api_username, engine_password, engine_api_url):
     api = sdk4.Connection(
         url=engine_api_url,

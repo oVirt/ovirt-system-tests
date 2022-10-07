@@ -219,6 +219,37 @@ def user_login(ovirt_driver, keycloak_enabled):
     return login
 
 
+def test_userportal(
+    ovirt_driver,
+    nonadmin_username,
+    nonadmin_password,
+    user_login,
+    engine_webadmin_url,
+    save_screenshot,
+):
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    welcome_screen.open_user_portal()
+
+    user_login(nonadmin_username, nonadmin_password)
+
+    vm_portal = VmPortal(ovirt_driver)
+    vm_portal.wait_for_displayed()
+
+    # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
+    assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
+    vm0_status = vm_portal.get_vm_status('vm0')
+    assert vm0_status == 'Powering up' or vm0_status == 'Running'
+    save_screenshot('userportal')
+
+    vm_portal.logout()
+    save_screenshot('userportal-logout')
+
+    welcome_screen = WelcomeScreen(ovirt_driver)
+    welcome_screen.wait_for_displayed()
+    assert welcome_screen.is_user_logged_out()
+
+
 def test_non_admin_login_to_webadmin(
     ovirt_driver,
     nonadmin_username,
@@ -690,37 +721,6 @@ def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
     welcome_screen.wait_for_displayed()
     welcome_screen.logout()
     welcome_screen.wait_for_user_logged_out()
-    assert welcome_screen.is_user_logged_out()
-
-
-def test_userportal(
-    ovirt_driver,
-    nonadmin_username,
-    nonadmin_password,
-    user_login,
-    engine_webadmin_url,
-    save_screenshot,
-):
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
-    welcome_screen.open_user_portal()
-
-    user_login(nonadmin_username, nonadmin_password)
-
-    vm_portal = VmPortal(ovirt_driver)
-    vm_portal.wait_for_displayed()
-
-    # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
-    assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
-    vm0_status = vm_portal.get_vm_status('vm0')
-    assert vm0_status == 'Powering up' or vm0_status == 'Running'
-    save_screenshot('userportal')
-
-    vm_portal.logout()
-    save_screenshot('userportal-logout')
-
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
     assert welcome_screen.is_user_logged_out()
 
 

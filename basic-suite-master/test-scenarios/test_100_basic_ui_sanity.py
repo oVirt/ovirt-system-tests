@@ -710,27 +710,12 @@ def test_dashboard(ovirt_driver):
     assert dashboard.events_count() > 0
 
 
-def test_logout(ovirt_driver, engine_webadmin_url, keycloak_enabled):
-    webadmin_menu = WebAdminTopMenu(ovirt_driver)
-    webadmin_menu.wait_for_displayed()
-
-    # navigate directly to welcome page to prevent problems with redirecting to login page instead of welcome page
-    ovirt_driver.get(engine_webadmin_url)
-
-    welcome_screen = WelcomeScreen(ovirt_driver)
-    welcome_screen.wait_for_displayed()
-    welcome_screen.logout()
-    welcome_screen.wait_for_user_logged_out()
-    assert welcome_screen.is_user_logged_out()
-
-
 def test_grafana(
     ovirt_driver,
     save_screenshot,
     engine_username,
     engine_password,
     engine_webadmin_url,
-    user_login,
     engine_fqdn,
 ):
 
@@ -744,7 +729,6 @@ def test_grafana(
     grafana_login.wait_for_displayed()
     save_screenshot('grafana-login')
     grafana_login.use_ovirt_engine_auth()
-    user_login(engine_username, engine_password)
 
     grafana = Grafana(ovirt_driver)
     grafana.wait_for_displayed()

@@ -45,6 +45,9 @@ class Grafana(Displayable):
     def open_dashboard(self, menu, submenu):
         LOGGER.debug('Open dashboard ' + menu + '/' + submenu)
         self.ovirt_driver.xpath_wait_and_click('Grafana logo button', '//*[@alt="Grafana"]')
+        if self.ovirt_driver.is_xpath_displayed('//button/span[text()="Discard"]'):
+            LOGGER.debug('Confirmation dialog "Unsaved changes" displayed')
+            self.ovirt_driver.xpath_click('//button/span[text()="Discard"]')
         self.ovirt_driver.xpath_wait_and_click(
             'Home button',
             '//nav[@aria-label="Search links"]//span[text() = "Home"] | ' '//button[normalize-space()="Home"]',

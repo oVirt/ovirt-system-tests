@@ -18,6 +18,7 @@ import time
 import ovirtsdk4.types as types
 import pytest
 import requests
+import selenium.webdriver.remote.remote_connection
 
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -47,6 +48,18 @@ from ost_utils.shell import ShellError
 from ost_utils.shell import shell
 
 LOGGER = logging.getLogger(__name__)
+
+
+# This is a variable that describes how long the client code will wait for a
+# response from the server. The default timeout is 5 mins. On the server side
+# there's another timeout variable that decides when to kill an inactive client
+# session. The default for this one is 3 mins. This makes the client-side
+# default unreasonable - before it realizes it should retry a request to the
+# server, its session will already be killed. Let's use a value of 30 secs
+# instead. Unfortunately the architecture of Selenium's code doesn't allow
+# changing it in an easy way - it enforces inheritance. This hack is ugly, but
+# should work for us.
+selenium.webdriver.remote.remote_connection.RemoteConnection._timeout = 30  # seconds
 
 
 @pytest.fixture(scope="module", autouse=True)

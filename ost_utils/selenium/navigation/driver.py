@@ -14,6 +14,7 @@ from selenium.common.exceptions import (
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from urllib3.exceptions import ReadTimeoutError
 
 from ost_utils import assert_utils
 
@@ -175,7 +176,7 @@ class Driver:
         self._wait_until(message, assert_utils.LONG_TIMEOUT, condition_method, *args)
 
     def _wait_until(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.__driver, timeout, ignored_exceptions=[TimeoutException]).until(
+        WebDriverWait(self.__driver, timeout, ignored_exceptions=[TimeoutException, ReadTimeoutError]).until(
             ConditionClass(condition_method, *args), message
         )
 
@@ -183,7 +184,7 @@ class Driver:
         self._wait_while(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)
 
     def _wait_while(self, message, timeout, condition_method, *args):
-        WebDriverWait(self.__driver, timeout, ignored_exceptions=[TimeoutException]).until_not(
+        WebDriverWait(self.__driver, timeout, ignored_exceptions=[TimeoutException, ReadTimeoutError]).until_not(
             ConditionClass(condition_method, *args), message
         )
 
@@ -230,7 +231,9 @@ class KnownIssueOccurredCondition:
             self.retry += 1
             self.result = self.method_to_execute(*self.args)
         # ignore StaleElementReferenceException and try again
-        except StaleElementReferenceException:
+        # ReadTimeoutError happens from time to time when netty on server side
+        # stops responding to requests.
+        except (StaleElementReferenceException, ReadTimeoutError):
             should_run_again = True
         # ignore TimeoutException if caused by timeout in java
         except TimeoutException as e:

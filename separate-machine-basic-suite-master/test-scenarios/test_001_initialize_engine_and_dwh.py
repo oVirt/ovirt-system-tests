@@ -60,3 +60,59 @@ def test_initialize_dwh(
         '--config-append=/root/dwh-answer-file '
         '--offline '
     )
+
+
+def test_add_dwh_to_keycloak_redirect_uris_for_grafana(
+    ansible_engine,
+    engine_fqdn,
+    engine_password,
+    dwh_fqdn,
+):
+    def run_ansible_engine_kcadm(args):
+        return ansible_engine.shell(
+            'KC_OPTS=-Dcom.redhat.fips=false '
+            '/usr/share/ovirt-engine-wildfly/bin/kcadm.sh '
+            + args
+        )
+
+    # Set truststore, so that https works
+    run_ansible_engine_kcadm(
+        'config truststore '
+        '--trustpass mypass /etc/pki/ovirt-engine/.truststore '
+    )
+
+    # Login
+    run_ansible_engine_kcadm(
+        'config credentials '
+        f'--server https://{engine_fqdn}/ovirt-engine-auth '
+        '--realm master '
+        '--user admin '
+        f'--password {engine_password} '
+    )
+
+    # Get the Id of the internal client. Various hard-coded strings here
+    # must match relevant code/constants from ovirt-engine-keycloak.
+    id_res = run_ansible_engine_kcadm(
+        'get clients '
+        '-r ovirt-internal '
+        '-q clientId=ovirt-engine-internal '
+        '--fields id '
+        '--format csv'
+    )
+    id = id_res['stdout_lines'][0].strip('"')
+
+    # Get current URIs
+    current_uris_res = run_ansible_engine_kcadm(
+        f'get clients/{id} '
+        '-r ovirt-internal '
+        '--fields redirectUris '
+        '--format csv'
+    )
+    current_uris = current_uris_res['stdout_lines'][0]
+
+    # Add dwh
+    run_ansible_engine_kcadm(
+        f'update clients/{id} '
+        '-r ovirt-internal '
+        f'-s redirectUris=\'[{current_uris}, "https://{dwh_fqdn}*"]\''
+    )

@@ -95,7 +95,7 @@
       "host-1-eth2": { "template": "common/libvirt-templates/nic_template" },
       "host-1-eth3": { "template": "common/libvirt-templates/nic_template" }
     },
-    "root_disk_var": "OST_IMAGES_NODE",
+    "root_disk_var": "OST_IMAGES_HOST_INSTALLED",
     "disks": {}
   }
 }

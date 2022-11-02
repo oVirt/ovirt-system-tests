@@ -12,7 +12,7 @@ PR_URL="$(sed -n 1p queue)"
 SUITE="$(sed -n 2p queue)"
 DISTRO="$(sed -n 3p queue)"
 echo "$PR_URL" | egrep '^https://(api.|www.)?github.com(/repos)?/oVirt/'
-echo "$SUITE"  | egrep '^(basic-suite-master|he-basic-suite-master|ansible-suite-master|network-suite-master|go-suite-master)$'
+echo "$SUITE"  | egrep '^(basic-suite-master|he-basic-suite-master|ansible-suite-master|network-suite-master|go-suite-master|rhv-build)$'
 echo "$DISTRO" | egrep '^(el8stream|el9stream|rhel8)$'
 
 #
@@ -78,6 +78,10 @@ if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
         OST_REFSPEC="pull/${PR_NO}/head"
         CUSTOM_REPOS=
         CUSTOM_OST_IMAGES_REPO="build-me-some"
+    elif [[ "$SUITE" = "rhv-build" ]]; then
+        OST_REFSPEC=
+        CUSTOM_REPOS="build-me-some"
+        CUSTOM_OST_IMAGES_REPO=
     else
         OST_REFSPEC=
         CUSTOM_REPOS="${PR_URL}"

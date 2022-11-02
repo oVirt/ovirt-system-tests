@@ -104,9 +104,8 @@ EOF
 else # after actual OST, with injected vars
     echo processing results
 
-    JUST_THE_LAST_JOB=$(echo $TRIGGERED_JOB_NAMES | cut -d, -f2-)
-    BR="TRIGGERED_BUILD_RESULT_${JUST_THE_LAST_JOB}"
-    BN="TRIGGERED_BUILD_NUMBERS_${JUST_THE_LAST_JOB}"
+    BR="TRIGGERED_BUILD_RESULT_${LAST_TRIGGERED_JOB_NAME}"
+    BN="TRIGGERED_BUILD_NUMBERS_${LAST_TRIGGERED_JOB_NAME}"
     RESULT="${!BR}"
     OST_JOB_NUMBER="${!BN}"
     echo "result $RESULT"

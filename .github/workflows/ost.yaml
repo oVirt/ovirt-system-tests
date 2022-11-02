@@ -31,6 +31,7 @@ jobs:
     runs-on: ost-trigger
     timeout-minutes: 4
     if: github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
       ( github.event.issue.pull_request &&
         startsWith(github.event.comment.body, '/ost') && (
           github.event.comment.author_association == 'MEMBER' ||

@@ -72,18 +72,21 @@ class VmVgpuDialog(Displayable):
         super(VmVgpuDialog, self).__init__(ovirt_driver)
 
     def is_displayed(self):
-        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal', True)
-        modal_text = dialog.find_element(By.ID, 'vm-manage-gpu-modal').text
+        modal_text = self.ovirt_driver.find_element(
+            ui_extension_modal_id='vm-manage-gpu-modal',
+            by=By.ID,
+            value='vm-manage-gpu-modal',
+        ).text
         return 'Select vGPU type' in modal_text
 
     def get_displayable_name(self):
         return 'Manage vGPU dialog'
 
     def get_title(self):
-        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal')
-        return dialog.find_element(
-            By.CSS_SELECTOR,
-            'h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title',
+        return self.ovirt_driver.find_element(
+            ui_extension_modal_id='vm-manage-gpu-modal',
+            by=By.CSS_SELECTOR,
+            value='h4.modal-title,h1.pf-c-title,h1.pf-c-modal-box__title',
         ).text
 
     def get_row_data(self, row_index):
@@ -91,8 +94,9 @@ class VmVgpuDialog(Displayable):
         row_index is the 1-based indexed row to return
         """
 
-        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal')
-        tbodys = dialog.find_elements(By.CSS_SELECTOR, 'table.vgpu-table > tbody')
+        tbodys = self.ovirt_driver.find_elements(
+            ui_extension_modal_id='vm-manage-gpu-modal', by=By.CSS_SELECTOR, value='table.vgpu-table > tbody'
+        )
 
         # the list is 0-base but the index is 1-based so adjust
         row = tbodys[row_index - 1]
@@ -101,11 +105,13 @@ class VmVgpuDialog(Displayable):
 
     def cancel(self):
         LOGGER.debug('Cancel vGPU dialog')
-        dialog = self.ovirt_driver.find_dialog_root('vm-manage-gpu-modal')
-        cancel_button = next(
-            (b for b in dialog.find_elements(By.CSS_SELECTOR, 'footer>button') if "Cancel" in b.text),
-            None,
+
+        modal_buttons = self.ovirt_driver.find_elements(
+            ui_extension_modal_id='vm-manage-gpu-modal',
+            by=By.CSS_SELECTOR,
+            value='footer>button',
         )
+        cancel_button = next((b for b in modal_buttons if "Cancel" in b.text), None)
         assert cancel_button is not None
         cancel_button.click()
 

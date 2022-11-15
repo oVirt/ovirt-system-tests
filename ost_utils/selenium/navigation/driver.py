@@ -48,10 +48,24 @@ class Driver:
     def create_action_chains(self):
         return ActionChains(self.__driver)
 
-    def find_element(self, by, value):
+    def find_element(self, by, value, ui_extension_modal_id=None, message=None):
+        """Find an element on the page using the `by` and `value`.
+        ui_extension_modal_id Use if the element will be present within a shadow dom (ovirt-engine-ui-extensions)
+                              based modal.  If used, `By.X_PATH` will not work.
+        message optional message for exception of element isn't found
+        """
         try:
-            # Lets try normal call first to avoid creating a condition
-            return self.__driver.find_element(by, value)
+            if ui_extension_modal_id is None:
+                # Lets try normal call first to avoid creating a condition
+                return self.__driver.find_element(by, value)
+            else:
+                # Try looking for the element to be displayed and enabled in a shadow dom modal
+                return self.find_dialog_element(
+                    modal_id=ui_extension_modal_id,
+                    locator=(by, value),
+                    message=message,
+                    waitCondition=lambda el: el.is_displayed() and el.is_enabled(),
+                )
         except NoSuchElementException as e:
             # No need to retry this exception
             raise e
@@ -60,10 +74,19 @@ class Driver:
             LOGGER.exception(f'!!! find_element() failed with {e.__class__.__name__}, retrying')
             return self.retry_if_known_issue(self.__driver.find_element, by, value)
 
-    def find_elements(self, by, value):
+    def find_elements(self, by, value, ui_extension_modal_id=None):
+        """Find all elements on the page matching the `by` and `value`.
+        ui_extension_modal_id Use if the element will be present within a shadow dom (ovirt-engine-ui-extensions)
+                              based modal.  If used, `By.X_PATH` will not work.
+        """
         try:
-            # Lets try normal call first to avoid creating a condition
-            return self.__driver.find_elements(by, value)
+            if ui_extension_modal_id is None:
+                # Lets try normal call first to avoid creating a condition
+                return self.__driver.find_elements(by, value)
+            else:
+                # Try looking for the element to be displayed and enabled in a shadow dom modal
+                dialog = self.find_dialog_root(ui_extension_modal_id)
+                return dialog.find_elements(by, value)
         except NoSuchElementException as e:
             # No need to retry this exception
             raise e
@@ -98,7 +121,9 @@ class Driver:
         if immediate:
             return self._find_dialog_root(modal_id)
         else:
-            dialog_root = WebDriverWait(self.__driver, timeout=5).until(lambda d: self._find_dialog_root(modal_id, d))
+            dialog_root = WebDriverWait(self.__driver, timeout=assert_utils.SHORT_TIMEOUT).until(
+                lambda d: self._find_dialog_root(modal_id, d)
+            )
             return dialog_root
 
     def find_dialog_element(self, modal_id: str, locator, waitCondition=None, message=None) -> WebElement:
@@ -115,7 +140,7 @@ class Driver:
                 else:
                     return False
 
-            el = WebDriverWait(self.__driver, timeout=5).until(__finder, message)
+            el = WebDriverWait(self.__driver, timeout=assert_utils.SHORT_TIMEOUT).until(__finder, message)
             return el
 
     def execute_script(self, script):

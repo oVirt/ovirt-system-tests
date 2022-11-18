@@ -48,11 +48,10 @@ class Driver:
     def create_action_chains(self):
         return ActionChains(self.__driver)
 
-    def find_element(self, by, value, ui_extension_modal_id=None, message=None):
+    def find_element(self, by, value, ui_extension_modal_id=None):
         """Find an element on the page using the `by` and `value`.
         ui_extension_modal_id Use if the element will be present within a shadow dom (ovirt-engine-ui-extensions)
                               based modal.  If used, `By.X_PATH` will not work.
-        message optional message for exception of element isn't found
         """
         try:
             if ui_extension_modal_id is None:
@@ -60,12 +59,8 @@ class Driver:
                 return self.__driver.find_element(by, value)
             else:
                 # Try looking for the element to be displayed and enabled in a shadow dom modal
-                return self.find_dialog_element(
-                    modal_id=ui_extension_modal_id,
-                    locator=(by, value),
-                    message=message,
-                    waitCondition=lambda el: el.is_displayed() and el.is_enabled(),
-                )
+                dialog = self._find_dialog_root(ui_extension_modal_id)
+                return dialog.find_element(by, value)
         except NoSuchElementException as e:
             # No need to retry this exception
             raise e
@@ -85,7 +80,7 @@ class Driver:
                 return self.__driver.find_elements(by, value)
             else:
                 # Try looking for the element to be displayed and enabled in a shadow dom modal
-                dialog = self.find_dialog_root(ui_extension_modal_id)
+                dialog = self._find_dialog_root(ui_extension_modal_id)
                 return dialog.find_elements(by, value)
         except NoSuchElementException as e:
             # No need to retry this exception
@@ -106,7 +101,7 @@ class Driver:
                 "return arguments[0].shadowRoot.querySelector('.ui-extensions-plugin-root')", container
             )
 
-    def _find_dialog_root(self, modal_id: str, driver: WebDriver = None) -> WebElement:
+    def _find_dialog_root_now(self, modal_id: str, driver: WebDriver = None) -> WebElement:
         _driver = driver if driver else self.__driver
         try:
             # prefer the shadowDom version
@@ -117,31 +112,14 @@ class Driver:
             old_modal = _driver.find_element(By.ID, modal_id)
             return old_modal
 
-    def find_dialog_root(self, modal_id: str, immediate: bool = False) -> WebElement:
+    def _find_dialog_root(self, modal_id: str, immediate: bool = True) -> WebElement:
         if immediate:
-            return self._find_dialog_root(modal_id)
+            return self._find_dialog_root_now(modal_id)
         else:
             dialog_root = WebDriverWait(self.__driver, timeout=assert_utils.SHORT_TIMEOUT).until(
-                lambda d: self._find_dialog_root(modal_id, d)
+                lambda driver: self._find_dialog_root_now(modal_id, driver)
             )
             return dialog_root
-
-    def find_dialog_element(self, modal_id: str, locator, waitCondition=None, message=None) -> WebElement:
-        if waitCondition is None:
-            dialog_root = self.find_dialog_root(modal_id)
-            return dialog_root.find_element(*locator)
-        else:
-
-            def __finder(driver: WebDriver):
-                dialog_root = self._find_dialog_root(modal_id, driver)
-                el = dialog_root.find_element(*locator)
-                if el and waitCondition(el):
-                    return el
-                else:
-                    return False
-
-            el = WebDriverWait(self.__driver, timeout=assert_utils.SHORT_TIMEOUT).until(__finder, message)
-            return el
 
     def execute_script(self, script):
         self.retry_if_known_issue(self.__driver.execute_script, script)

@@ -32,7 +32,6 @@ class ClusterUpgradeDialog(Displayable):
             ui_extension_modal_id='cluster-upgrade-modal',
             by=By.CSS_SELECTOR,
             value='input[name="check-all"]',
-            message='Select all hosts is not clickable',
         )
         check_all.click()
 
@@ -41,7 +40,6 @@ class ClusterUpgradeDialog(Displayable):
             ui_extension_modal_id='cluster-upgrade-modal',
             by=By.ID,
             value='upgrade-options-check-upgrade',
-            message='Check for upgrade is not clickable',
         )
         check_upgrade.click()
 
@@ -50,7 +48,6 @@ class ClusterUpgradeDialog(Displayable):
             ui_extension_modal_id='cluster-upgrade-modal',
             by=By.ID,
             value='upgrade-options-reboot-after',
-            message='Reboot hosts is not clickable',
         )
         reboot_hosts.click()
 

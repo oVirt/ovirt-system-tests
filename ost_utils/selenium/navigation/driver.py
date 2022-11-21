@@ -101,23 +101,21 @@ class Driver:
                 "return arguments[0].shadowRoot.querySelector('.ui-extensions-plugin-root')", container
             )
 
-    def _find_dialog_root_now(self, modal_id: str, driver: WebDriver = None) -> WebElement:
-        _driver = driver if driver else self.__driver
+    def _find_dialog_root_now(self, modal_id: str) -> WebElement:
         try:
             # prefer the shadowDom version
-            shadow_host = _driver.find_element(By.ID, f'shadow-root-container-{modal_id}')
+            shadow_host = self.__driver.find_element(By.ID, f'shadow-root-container-{modal_id}')
             return self._access_shadow_root(shadow_host)
         except NoSuchElementException:
             # if not found, look for a normal modal
-            old_modal = _driver.find_element(By.ID, modal_id)
-            return old_modal
+            return self.__driver.find_element(By.ID, modal_id)
 
     def _find_dialog_root(self, modal_id: str, immediate: bool = True) -> WebElement:
         if immediate:
             return self._find_dialog_root_now(modal_id)
         else:
             dialog_root = WebDriverWait(self.__driver, timeout=assert_utils.SHORT_TIMEOUT).until(
-                lambda driver: self._find_dialog_root_now(modal_id, driver)
+                lambda driver: self._find_dialog_root_now(modal_id)
             )
             return dialog_root
 

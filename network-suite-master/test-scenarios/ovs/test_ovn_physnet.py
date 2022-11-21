@@ -122,8 +122,10 @@ def test_vnic_cannot_connect_physical_network(vm_in_ovs_cluster_down, ovirtmgmt_
 
 @suite.xfail_suite_43('BZ 1817589')
 def test_connect_vm_to_external_physnet(
-    system, ovs_cluster, ssh_host_not_in_ovs_cluster, vm_in_ovn_network_up, target, af
+    system, ovs_cluster, ssh_host_not_in_ovs_cluster, vm_in_ovn_network_up, target, af, ost_images_distro, request
 ):
+    if ost_images_distro == "el9stream":
+        request.node.add_marker(pytest.mark.xfail(reason="BZ 2144834", strict=True))
     syncutil.sync(
         exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
         exec_func_args=(target, af.version, _max_icmp_data_size(af.family)),
@@ -133,8 +135,18 @@ def test_connect_vm_to_external_physnet(
 
 @suite.xfail_suite_43('BZ 1817589')
 def test_max_mtu_size(
-    system, ovs_cluster, ssh_host_not_in_ovs_cluster, ovn_physnet_small_mtu, vm_in_ovn_network_up, target, af
+    system,
+    ovs_cluster,
+    ssh_host_not_in_ovs_cluster,
+    ovn_physnet_small_mtu,
+    vm_in_ovn_network_up,
+    target,
+    af,
+    ost_images_distro,
+    request,
 ):
+    if ost_images_distro == "el9stream":
+        request.node.add_marker(pytest.mark.xfail(reason="BZ 2144834", strict=True))
     syncutil.sync(
         exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
         exec_func_args=(target, af.version, _max_icmp_data_size(af.family)),
@@ -163,7 +175,11 @@ def test_security_groups_allow_icmp(
     target,
     af,
     ansible_private_dir,
+    ost_images_distro,
+    request,
 ):
+    if ost_images_distro == "el9stream":
+        request.node.add_marker(pytest.mark.xfail(reason="BZ 2144834", strict=True))
     syncutil.sync(
         exec_func=ssh_host_not_in_ovs_cluster.ping_successful,
         exec_func_args=(target, af.version, _max_icmp_data_size(af.family)),

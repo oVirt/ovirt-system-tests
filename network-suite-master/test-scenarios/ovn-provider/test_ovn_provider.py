@@ -48,7 +48,11 @@ def test_ovn_provider_create_scenario(openstack_client_config, af, ansible_priva
     _test_ovn_provider(scenario[af.family], ansible_private_dir)
 
 
-def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0, host_1, ovn_networks, af):
+def test_validate_ovn_provider_connectivity(
+    default_ovn_provider_client, host_0, host_1, ovn_networks, af, ost_images_distro, request
+):
+    if ost_images_distro == "el9stream":
+        request.node.add_marker(pytest.mark.xfail(reason="BZ 2144834", strict=True))
     net10, net11, net14 = ovn_networks
     ssh0 = sshlib.Node(host_0.address, host_0.root_password)
     ssh1 = sshlib.Node(host_1.address, host_1.root_password)

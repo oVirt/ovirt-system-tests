@@ -138,8 +138,8 @@ def deploy(
         )
 
     # disable all repos
-    LOGGER.info("Disable default repositories")
-    package_mgmt.disable_all_repos(ansible_all)
+    # LOGGER.info("Disable default repositories")
+    # package_mgmt.disable_all_repos(ansible_all)
 
     # add custom repos
     custom_repos = request.config.getoption('--custom-repo')

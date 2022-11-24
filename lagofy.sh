@@ -54,7 +54,7 @@ ost_destroy() {
     _get_uuid
     if [[ -n "$uuid" ]]; then
         (
-            flock -w 120 9
+            flock -w 600 9
             virsh net-list --name | grep ^ost${uuid} | xargs -rn1 virsh net-destroy
             virsh list --name | grep ^${uuid} | xargs -rn1 virsh destroy
         ) 9>/tmp/ost.lock
@@ -182,7 +182,7 @@ ost_init() {
     # run the whole creation in subshell with a lock so that we do not explode on concurrent network allocation
     [ -f /tmp/ost.lock ] || ( umask 0002; sg qemu "touch /tmp/ost.lock"; )
     (
-        flock -w 120 9
+        flock -w 600 9
         cd "${OST_REPO_ROOT}"
 
         # parse networks and create them on unused subnets (sorted so that  management is the last one to include all DNS entries)

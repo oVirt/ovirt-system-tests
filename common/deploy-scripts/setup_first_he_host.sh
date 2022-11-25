@@ -56,6 +56,8 @@ dnf_update() {
     line: |
       proxy=socks5://localhost:1234
       ip_resolve=4
+- name: Downgrade java-11-openjdk-headless to workaround keycloak setup issue
+  shell: dnf downgrade -y java-11-openjdk-headless-11.0.15.0.10-3.el8 || true
 - name: Remove all repositories
   file:
     path: /etc/yum.repos.d

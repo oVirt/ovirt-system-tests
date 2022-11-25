@@ -137,6 +137,9 @@ def deploy(
             ssh_key_file,
         )
 
+    # Downgrade openjdk to workaround keycloak setup issue
+    ansible_all.shell('dnf downgrade -y java-11-openjdk-headless-11.0.15.0.10-3.el8 || true')
+
     # disable all repos
     LOGGER.info("Disable default repositories")
     package_mgmt.disable_all_repos(ansible_all)

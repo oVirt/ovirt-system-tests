@@ -50,7 +50,7 @@
     "template": "common/libvirt-templates/vm_template",
     "memory": "3584",
     "deploy-scripts": [
-      "common/deploy-scripts/setup_engine.sh"
+      "common/deploy-scripts/setup_dwh.sh"
     ],
     "nics": {
       "dwh": { "template": "common/libvirt-templates/nic_template" },

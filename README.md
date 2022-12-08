@@ -59,6 +59,7 @@ You can pass this option multiple times to test more than 1 build at once.
 
 The environment is left running after it finishes so that you can examine or further use the created environment.
 It is necessary to clean the environment up aftery every run with `./ost.sh destroy`.
+It is possible to prevent accidental destroying with `./ost.sh lock Some reason`. If done, `destroy` fails with a message.
 The environment contains inventory, VMs, live VM logs and is normally stored
 in `deployment` subdirectory of the repository. The location can be changed
 through `OST_DEPLOYMENT` environment variable.

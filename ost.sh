@@ -56,6 +56,9 @@ case "$cmd" in
     host=$1; shift;
     ost_shell $host $@
     ;;
+  lock)
+    ost_lock $@
+    ;;
   *)
     echo unknown command \"$cmd\"
     help

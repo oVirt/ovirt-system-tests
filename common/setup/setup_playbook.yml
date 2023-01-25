@@ -19,7 +19,6 @@
         line: options kvm_intel nested=1
         mode: 0644
       become: true
-      notify: reboot
       when: ansible_facts['processor'][1] == 'GenuineIntel'
 
     - name: Enable nested virtualization on amd
@@ -29,7 +28,6 @@
         line: options kvm_amd nested=1
         mode: 0644
       become: true
-      notify: reboot
       when: ansible_facts['processor'][1] == 'AuthenticAMD'
 
     - name: Set accept_ra on ipv6
@@ -192,8 +190,3 @@
         - name: Reload firewall
           ansible.builtin.shell: firewall-cmd --state && firewall-cmd --reload
           become: true
-
-  handlers:
-    - name: Reboot
-      ansible.builtin.debug:
-        msg: Please reboot to apply all the changes.

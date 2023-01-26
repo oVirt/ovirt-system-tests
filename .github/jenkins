@@ -62,7 +62,7 @@ if [[ -z "$TRIGGERED_JOB_NAMES" ]]; then # before OST run
         APPROVED=$(jq -r ".[] | select(.author_association==\"MEMBER\" and .state==\"APPROVED\" and .commit_id==\"${SHA}\") | .user.login" reviews)
     fi
     if [[ -z "$APPROVED" ]]; then
-        ost_app_response completed cancelled "non approved user"
+        ost_app_response completed cancelled "Author is not in oVirt org. Commit $SHA needs to be approved by a member of oVirt."
         exit 1
     fi
     ost_app_response in_progress "" "Job https://redir.apps.ovirt.org/dj/$(echo $BUILD_URL| cut -d/ -f4-) is starting OST on ${SHA}, ${APPROVED} approved."

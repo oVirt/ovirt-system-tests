@@ -1271,17 +1271,15 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
     )
 
     vm_params.name = BACKUP_VM_NAME
-    vm_params.memory = 160 * MB
-    vm_params.memory_policy.guaranteed = 106 * MB
+    vm_params.memory = 256 * MB
+    vm_params.memory_policy.guaranteed = 160 * MB
     vms_service.add(vm_params)
     backup_vm_service = test_utils.get_vm_service(engine, BACKUP_VM_NAME)
 
     vm_params.name = VM0_NAME
-    least_hotplug_increment = 256 * MB
-    required_memory = 160 * MB
-    vm_params.memory = required_memory
-    vm_params.memory_policy.guaranteed = required_memory
-    vm_params.memory_policy.max = required_memory + least_hotplug_increment
+    vm_params.memory = 256 * MB
+    vm_params.memory_policy.guaranteed = 160 * MB
+    vm_params.memory_policy.max = 512 * MB  # defined mem + hotplug of 256MB in test_hotplug_memory
 
     vms_service.add(vm_params)
     vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -1347,10 +1345,10 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
             ),
             memory_policy=sdk4.types.MemoryPolicy(
                 ballooning=False,
-                guaranteed=106 * MB,
+                guaranteed=160 * MB,
                 max=256 * MB,
             ),
-            memory=160 * MB,
+            memory=256 * MB,
             high_availability=sdk4.types.HighAvailability(
                 enabled=True,
                 priority=100,

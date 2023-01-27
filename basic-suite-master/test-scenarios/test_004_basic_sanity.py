@@ -910,7 +910,7 @@ def test_add_vm1_from_template(engine_api, cirros_image_template_name, ost_clust
             )
         )
 
-    vm_memory = 128 * MB  # runs with 64 ok, but we need to do a hotplug later (64+256 is too much difference)
+    vm_memory = 512 * MB
     vms_service = engine.vms_service()
     vms_service.add(
         types.Vm(
@@ -926,8 +926,8 @@ def test_add_vm1_from_template(engine_api, cirros_image_template_name, ost_clust
             use_latest_template_version=True,
             stateless=True,
             memory_policy=types.MemoryPolicy(
-                guaranteed=vm_memory,  # with so little memory we don't want guaranteed to be any lower
-                ballooning=False,
+                guaranteed=160 * MB,
+                ballooning=True,
             ),
             os=types.OperatingSystem(
                 type='rhel_7x64',  # even though it's CirrOS we want to check a non-default OS type

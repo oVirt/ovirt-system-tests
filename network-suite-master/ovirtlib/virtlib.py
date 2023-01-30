@@ -188,15 +188,15 @@ class Vm(SDKRootEntity):
         :type template: string
         :type stateless: boolean
         """
-        MB256 = 256 * 2 ** 20
+        MB512 = 512 * 2 ** 20
 
         sdk_type = types.Vm(
             name=vm_name,
             cluster=cluster.get_sdk_type(),
             template=types.Template(name=template),
             stateless=stateless,
-            memory=MB256,
-            memory_policy=types.MemoryPolicy(guaranteed=MB256 // 2),
+            memory=MB512,
+            memory_policy=types.MemoryPolicy(guaranteed=MB512 // 2),
             console=types.Console(enabled=True),
         )
         self._create_sdk_entity(sdk_type)

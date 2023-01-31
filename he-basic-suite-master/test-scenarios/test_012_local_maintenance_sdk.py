@@ -31,7 +31,7 @@ def _hosted_engine_info(hosted_engine):
     return {p: getattr(hosted_engine, p) for p in props}
 
 
-@pytest.mark.skip('TODO. Fails too much, not trivial to fix')
+@pytest.mark.xfail(reason='TODO. Fails too much, not trivial to fix')
 def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
     logging.info('Waiting For System Stability...')
     he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)

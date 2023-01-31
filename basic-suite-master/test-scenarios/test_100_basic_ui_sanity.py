@@ -358,6 +358,12 @@ def test_cluster_upgrade(
     cluster_list_view = ClusterListView(ovirt_driver)
     upgrade_dialog = cluster_list_view.upgrade(ost_cluster_name)
 
+    # UI plugin may need more time to settle. Adding because of frequent:
+    # selenium.common.exceptions.ElementClickInterceptedException: Message: element click intercepted:
+    # Element <input aria-label="Select all rows" name="check-all" type="checkbox"> is not clickable at
+    # point (13, 755). Other element would receive the click: <div class="pf-l-bullseye">
+    time.sleep(1)
+
     upgrade_dialog.toggle_check_all_hosts()
     save_screenshot('cluster-upgrade-dialog-select-hosts')
     upgrade_dialog.next()

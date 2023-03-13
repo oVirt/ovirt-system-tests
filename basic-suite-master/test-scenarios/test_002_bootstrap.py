@@ -1765,7 +1765,6 @@ def test_create_cirros_template(
     engine_password,
     ost_cluster_name,
     cirros_image_template_name,
-    engine_hostname,
     ssh_key_file,
     master_storage_domain_name,
 ):
@@ -1773,7 +1772,6 @@ def test_create_cirros_template(
         ansible_engine,
         ansible_inventory,
         ssh_key_file,
-        engine_hostname,
         engine_fqdn=engine_fqdn,
         engine_user=engine_full_username,
         engine_password=engine_password,

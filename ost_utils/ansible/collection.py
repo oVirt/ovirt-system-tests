@@ -106,10 +106,9 @@ def image_template(
     ansible_engine,
     ansible_inventory,
     ssh_key_path,
-    engine_hostname,
     **kwargs,
 ):
-    playbook_yaml = _get_role_playbook('image_template', engine_hostname, **kwargs)
+    playbook_yaml = _get_role_playbook('image_template', 'localhost', **kwargs)
     _run_playbook(ansible_engine, playbook_yaml, ansible_inventory, ssh_key_path)
 
 

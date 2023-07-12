@@ -139,6 +139,13 @@ class BaseBackend(abc.ABC):
         return next(hn for hn in self.hostnames() if "engine" in hn)
 
     @cache
+    def dwh_hostname(self):
+        # This means I can't call the suite I added this for 'separate-dwh-basic-suite-master',
+        # because it will collide. Already gave up on making this code more robust, so not
+        # adding a "to do"...
+        return next(hn for hn in self.hostnames() if "dwh" in hn)
+
+    @cache
     def hosts_hostnames(self):
         # The output should always be sorted, so we can refer by indices
         return sorted(hn for hn in self.hostnames() if "host" in hn)

@@ -87,7 +87,7 @@ setup_iscsi() {
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
         set auth userid=username password=password
     targetcli /iscsi/iqn.2014-07.org.ovirt:storage/tpg1 \
-        set attribute demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1 default_cmdsn_depth=64
+        set attribute demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1 default_cmdsn_depth=64 authentication=1
     targetcli saveconfig
 
     systemctl enable --now target

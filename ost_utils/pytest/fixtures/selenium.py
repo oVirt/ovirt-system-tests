@@ -106,6 +106,7 @@ def selenium_browser(
     selenium_screen_height,
     selenium_screen_width,
 ):
+    ansible_storage.shell(f"mkdir -p {selenium_remote_artifacts_dir}")
     container_id = ansible_storage.shell(
         "podman run -d"
         f" -p {selenium_port}:{selenium_port}"

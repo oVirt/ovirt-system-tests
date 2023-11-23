@@ -40,4 +40,5 @@ def chrome_options():
     options.add_experimental_option('prefs', prefs)
     # note: response body is not logged
     options.add_experimental_option('perfLoggingPrefs', {'enableNetwork': True, 'enablePage': True})
+    options.add_argument('disable-features=DownloadBubble,DownloadBubbleV2')
     return options

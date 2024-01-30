@@ -83,3 +83,9 @@ systemctl restart snmptrapd
 systemctl enable snmpd
 systemctl enable snmptrapd
 
+# Allow Grafana to connect PostgreSQL data source to use ovirt_engine_history database
+# TODO Replace with proper fix in ovirt-dwh when grafana_can_tcp_connect_postgresql_port is added to grafana-selinux
+cat >> /tmp/grafana-postgresql-ds.cil << EOF
+(allow grafana_t postgresql_port_t (tcp_socket (name_connect)))
+EOF
+semodule -i /tmp/grafana-postgresql-ds.cil

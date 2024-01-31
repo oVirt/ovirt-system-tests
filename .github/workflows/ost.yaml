@@ -23,7 +23,7 @@ on:
         type: string
       comment:
         required: true
-        default: "/ost basic-suite-master el8stream"
+        default: "/ost basic-suite-master el9stream"
         type: string
 
 jobs:

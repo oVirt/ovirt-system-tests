@@ -50,7 +50,7 @@ jobs:
           SUITE=$(echo "$COMMENT" | cut -d " " -s -f2)
           DISTRO=$(echo "$COMMENT" | cut -d " " -s -f3)
           SUITE=${SUITE:-basic-suite-master}
-          DISTRO=${DISTRO:-el8stream}
+          DISTRO=${DISTRO:-el9stream}
           SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
           CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"
           BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")

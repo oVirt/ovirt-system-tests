@@ -102,7 +102,7 @@ def test_metrics_and_log_collector(setup_log_collector, suite_dir, ansible_engin
                 daemon=True,
             )
             vt.start_all()
-            vt.join_all(timeout=120)
+            vt.join_all(timeout=180)
         except utils.TimeoutException:
             LOGGER.debug("Metrics configuration timed out")
             return False

@@ -729,6 +729,7 @@ def test_dashboard(ovirt_driver):
     assert dashboard.events_count() > 0
 
 
+@pytest.mark.xfail(reason='Grafana update broke the test', strict=True)
 def test_grafana(
     ovirt_driver,
     save_screenshot,

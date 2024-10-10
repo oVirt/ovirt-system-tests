@@ -89,5 +89,3 @@ def test_downgrade_host(engine_api, ansible_by_hostname):
 
         LOGGER.info("revert yum status")
         _revert_yum_status(ansible_host)
-
-

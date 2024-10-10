@@ -37,7 +37,11 @@ def test_add_ldap_provider(
     ansible_machine_389ds,
     machine_389ds_fqdn,
     engine_restart,
+    ost_images_distro,
 ):
+    # FIXME remove once we get LDAP working on el9 storage image
+    if ost_images_distro != 'rhel8':
+        pytest.skip('Testing only on rhel8 images.')
     answer_file_src = os.path.join(root_dir, 'common/answer-files/aaa-ldap-answer-file.conf')
 
     with open(answer_file_src, 'r') as f:
@@ -61,7 +65,10 @@ def test_add_ldap_provider(
     engine_restart()
 
 
-def test_add_ldap_group(engine_api):
+def test_add_ldap_group(engine_api, ost_images_distro):
+    # FIXME remove once we get LDAP working on el9 storage image
+    if ost_images_distro != 'rhel8':
+        pytest.skip('Testing only on rhel8 images.')
     engine = engine_api.system_service()
     groups_service = engine.groups_service()
     with engine_utils.wait_for_event(engine, 149):  # USER_ADD(149)
@@ -73,7 +80,10 @@ def test_add_ldap_group(engine_api):
         )
 
 
-def test_add_ldap_user(engine_api):
+def test_add_ldap_user(engine_api, ost_images_distro):
+    # FIXME remove once we get LDAP working on el9 storage image
+    if ost_images_distro != 'rhel8':
+        pytest.skip('Testing only on rhel8 images.')
     engine = engine_api.system_service()
     users_service = engine.users_service()
     with engine_utils.wait_for_event(engine, 149):  # USER_ADD(149)

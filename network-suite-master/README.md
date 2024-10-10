@@ -21,11 +21,13 @@ some details about it to the suite to make your deployment reachable and usable
 by the suite.
 At the time of writing of this README the following are required:
 
-#### A. Supply connectivity facts for your machines
+### A. Supply connectivity facts for your machines
+
 `network-suite-master/fixtures/ansible.py`
 
 For example:
-```
+
+```python
 def engine_facts():
     return MachineFacts('127.0.0.1', 'localhost', 'my_ssh_pass')
 
@@ -37,57 +39,69 @@ def host0_facts():
 def host1_facts():
     return MachineFacts('192.168.122.11', 'my_hostname', 'my_ssh_pass')
 ```
+
 where `my_hostname` is what the host was named in ovirt-engine when it was
 added to ovirt-engine.
 
-#### B. Supply ovirt-engine access password
+### B. Supply ovirt-engine access password
+
 `network-suite-master/fixtures/engine.py`
-```
+
+```python
 @pytest.fixture(scope="session")
 def engine_password():
     return "my_ovirt_engine_password"
 ```
 
-#### C. Bypass `ovirt_engine_setup` fixture
+### C. Bypass `ovirt_engine_setup` fixture
+
 `network-suite-master/fixtures/engine.py`
 
 The setup is not needed when machine containing a running ovirt-engine exists.
+
 * Remove the `autouse=True` notation from the fixture.
 * Remove the fixture from:
   * parameter list of the fixture `ovirt_engine_service_up`
   * import list in `network-suite-master/test-scenarios/conftest.py`
 
-#### D. Modify ovirt-engine API url
+### D. Modify ovirt-engine API url
+
 `network-suite-master/fixtures/engine.py`
 
 The default url in `_create_engine_connection` assumes https with its default
 port. This might need to be modified to http and the configured port.
 
-#### E. Comment out most `ost_utils` fixtures
+### E. Comment out most `ost_utils` fixtures
+
 `ost_utils` fixtures assume the existence of the standard LagoInitFile
 deployment. Therefore they fail when run against an independent deployment.
 They can be bypassed by commenting out their imports in the file
 `network-suite-master/test-scenarios/conftest.py`
 
 Only below imports should remain uncommented:
-```
+
+```python
 from ost_utils.pytest.fixtures.virt import artifacts_dir
 from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 ```
 
-#### F. Supply suite name environment variable
+### F. Supply suite name environment variable
+
 `network-suite-master/testlib/suite.py`
 
 For example, to run the 'master' suite:
-```
+
+```python
 os.environ['SUITE'] = 'network-suite-master'
 ```
 
-#### G. Create an exported-artifacts folder for pytest.log
+### G. Create an exported-artifacts folder for pytest.log
+
 `ovirt-system-tests/pytest.ini`
 
 Create a folder named `exported-artifacts` and modify the path in `pytest.ini`
 to point at it. For example:
-```
+
+```python
 log_file = /tmp/exported-artifacts/pytest.log
 ```

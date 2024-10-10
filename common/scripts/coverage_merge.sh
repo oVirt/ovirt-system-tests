@@ -43,7 +43,7 @@ for build_url in ${build_urls[@]}; do
 
     run_url=$(get_run_url $build_url)
     echo "URL of the run: $run_url"
-    
+
     run_api="${run_url}/api/json"
 
     run_coverage=$(get_coverage_file $run_api)
@@ -60,7 +60,7 @@ for build_url in ${build_urls[@]}; do
     echo "Distribution used in the run: $run_distro"
 
     coverage_name=$(get_coverage_name $run_coverage)
-    
+
     echo "Downloading the coverage file $coverage_name..."
     wget -q -nc -O "$merge_dir/$run_distro.$coverage_name" "${run_url}/artifact/${run_coverage}"
 

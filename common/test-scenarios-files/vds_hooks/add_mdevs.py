@@ -60,4 +60,3 @@ def createParams():
 caps = hooking.read_json()
 caps['pci_0000_03_00']=createParams()
 hooking.write_json(caps)
-

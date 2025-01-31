@@ -91,6 +91,18 @@ copy_dependencies() {
     dest: /var/tmp/lm_sensors.rpm
   with_fileglob:
     - "/var/tmp/lm_sensors-*"
+- name: Copy sysstat dependencies to HE VM
+  copy:
+    src: "{{ item }}"
+    dest: /var/tmp/pcp_conf.rpm
+  with_fileglob:
+    - "/var/tmp/pcp-conf-*"
+- name: Copy sysstat dependencies to HE VM
+  copy:
+    src: "{{ item }}"
+    dest: /var/tmp/pcp_libs.rpm
+  with_fileglob:
+    - "/var/tmp/pcp-libs-*"
 - name: Copy OpenSCAP profile name
   copy:
     src: /root/ost_images_openscap_profile

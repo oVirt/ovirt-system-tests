@@ -4,46 +4,46 @@
   hosts: all
 
   vars:
-    default_ost_images_repo_url: 'https://templates.ovirt.org/yum/'
+    default_ost_images_repo_url: 'https://resources.ovirt.org/repos/ovirt/github-ci/ost-images/'
     default_ost_images_rpms:
-      - ost-images-el8stream-engine-installed
-      - ost-images-el8stream-host-installed
-      - ost-images-node-base
+      - ost-images-el9stream-engine-installed
+      - ost-images-el9stream-host-installed
+      - ost-images-el9node-base
       - ost-images-storage-base
 
   tasks:
     - name: Enable nested virtualization on intel
       ansible.builtin.lineinfile:
         path: /etc/modprobe.d/kvm.conf
-        create: yes
+        create: true
         line: options kvm_intel nested=1
-        mode: 0644
+        mode: "0644"
       become: true
       when: ansible_facts['processor'][1] == 'GenuineIntel'
 
     - name: Enable nested virtualization on amd
       ansible.builtin.lineinfile:
         path: /etc/modprobe.d/kvm.conf
-        create: yes
+        create: true
         line: options kvm_amd nested=1
-        mode: 0644
+        mode: "0644"
       become: true
       when: ansible_facts['processor'][1] == 'AuthenticAMD'
 
     - name: Set accept_ra on ipv6
       ansible.builtin.lineinfile:
         path: /etc/sysctl.d/90-ost-ipv6-ra.conf
-        create: yes
+        create: true
         line: net.ipv6.conf.all.accept_ra=2
-        mode: 0644
+        mode: "0644"
       become: true
 
     - name: Increase per-user FD limit
       ansible.builtin.lineinfile:
         path: /etc/security/limits.d/ost.conf
-        create: yes
+        create: true
         line: "*    soft    nofile    65535"
-        mode: 0644
+        mode: "0644"
       become: true
 
     - name: Setup ost-images repo
@@ -51,29 +51,17 @@
         name: ost-images
         description: ost-images
         baseurl: "{{ ost_images_repo_url | default(default_ost_images_repo_url) }}"
-        gpgcheck: no
+        gpgcheck: false
       become: true
-
-    - name: Setup distro-related vars
-      ansible.builtin.set_fact:
-        el9: "{{ ansible_facts['distribution_major_version'] | int == 9 }}"
 
     - name: Setup package names based on distro-related
       ansible.builtin.set_fact:
-        python_pkg: "{{ 'python3' if el9 else 'python39' }}"
+        python_pkg: "python3"
         ansible_pkg: ansible-core
 
     - name: Install packages and cleanup epel if necessary
 
       block:
-        - name: Install epel
-          ansible.builtin.dnf:
-            name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-            disable_gpg_check: yes
-          when: not el9
-          become: true
-          register: epel
-
         - name: Make sure any version of ansible is available
           ansible.builtin.dnf:
             name:
@@ -117,14 +105,6 @@
             state: latest
           become: true
 
-      always:
-        - name: Remove epel if it was added
-          ansible.builtin.dnf:
-            name: epel-release-8
-            state: absent
-          when: epel.changed
-          become: true
-
     - name: Install ost images
       ansible.builtin.dnf:
         name: "{{ ost_images_rpms | default(default_ost_images_rpms) }}"
@@ -135,7 +115,7 @@
         name: "{{ ansible_facts['user_id'] }}"
         groups:
           - qemu
-        append: yes
+        append: true
       become: true
 
     - name: Add qemu to the user group
@@ -143,7 +123,7 @@
         name: qemu
         groups:
           - "{{ ansible_facts['user_id'] }}"
-        append: yes
+        append: true
       become: true
 
     - name: Allow user to manage libvirt
@@ -164,7 +144,7 @@
     - name: Set user home directory permissions
       ansible.builtin.file:
         path: "{{ ansible_facts['user_dir'] }}"
-        mode: 0751
+        mode: "0751"
       become: true
 
     - name: Allow virtlogd to write console logs
@@ -177,7 +157,7 @@
           ansible.builtin.copy:
             src: /usr/lib/firewalld/zones/libvirt.xml
             dest: /etc/firewalld/zones/libvirt.xml
-            mode: 0644
+            mode: "0644"
           become: true
 
         - name: Allow port 2222

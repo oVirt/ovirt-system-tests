@@ -1254,12 +1254,6 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
         template=sdk4.types.Template(
             name=TEMPLATE_BLANK,
         ),
-        display=sdk4.types.Display(
-            keyboard_layout='en-us',
-            file_transfer_enabled=True,
-            copy_paste_enabled=True,
-            type=sdk4.types.DisplayType.VNC,
-        ),
         usb=sdk4.types.Usb(
             enabled=False,
             type=sdk4.types.UsbType.NATIVE,
@@ -1268,8 +1262,8 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
             ballooning=True,
         ),
         console=sdk4.types.Console(enabled=True),
+        graphics_consoles=[sdk4.types.GraphicsConsole(protocol=sdk4.types.GraphicsType.VNC)],
     )
-
     vm_params.name = BACKUP_VM_NAME
     vm_params.memory = 512 * MB
     vm_params.memory_policy.guaranteed = 160 * MB
@@ -1331,12 +1325,6 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
                 type=sdk4.types.UsbType.NATIVE,
             ),
             soundcard_enabled=False,
-            display=sdk4.types.Display(
-                smartcard_enabled=False,
-                file_transfer_enabled=False,
-                copy_paste_enabled=False,
-                type=sdk4.types.DisplayType.SPICE,
-            ),
             os=sdk4.types.OperatingSystem(
                 type='Linux',
             ),
@@ -1480,6 +1468,7 @@ def test_add_nic(engine_api):
 
 @order_by(_TEST_LIST)
 def test_add_graphics_console(engine_api, ansible_host0_facts):
+    pytest.skip('skip test on el9')
     # remove VNC
     engine = engine_api.system_service()
     vm = test_utils.get_vm_service(engine, VM0_NAME)

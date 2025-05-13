@@ -168,7 +168,7 @@ ost_init() {
     [[ "$1" == "-6" ]] && { ipv6_only=yes; shift; }
 
     SUITE="${1:-basic-suite-master}"
-    OST_IMAGES_DISTRO="${2:-el8stream}"
+    OST_IMAGES_DISTRO="${2:-el9stream}"
 
     [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
     [[ -d "$OST_REPO_ROOT/$SUITE" ]] || { echo "$OST_REPO_ROOT/$SUITE is not a suite directory"; return 1; }

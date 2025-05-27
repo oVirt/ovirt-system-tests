@@ -89,7 +89,7 @@ UNICAST_MAC_OUTSIDE_POOL = '0a:1a:4a:16:01:51'
 
 # cirros image is baked into engine and HE ost images, can be found in
 # the ost-images project: mk/engine-installed.mk and mk/he-installed.mk
-CIRROS_IMAGE_PATH = '/var/tmp/cirros.img'
+CIRROS_IMAGE_PATH = '/usr/share/ovirt-system-tests/cirros.img'
 
 _TEST_LIST = [
     "test_verify_engine_certs",

@@ -77,8 +77,8 @@ copy_dependencies() {
 ---
 - name: Copy cirros image to HE VM
   copy:
-    src: /var/tmp/cirros.img
-    dest: /var/tmp/cirros.img
+    src: /usr/share/ovirt-system-tests/cirros.img
+    dest: /usr/share/ovirt-system-tests/cirros.img
 - name: Copy sysstat rpm package to HE VM
   copy:
     src: "{{ item }}"

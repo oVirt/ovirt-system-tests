@@ -11,7 +11,7 @@ from ost_utils.ansible import collection
 
 # cirros image is baked into engine and HE ost images, can be found in
 # the ost-images project: mk/engine-installed.mk and mk/he-installed.mk
-CIRROS_IMAGE_PATH = '/var/tmp/cirros.img'
+CIRROS_IMAGE_PATH = '/usr/share/ovirt-system-tests/cirros.img'
 ENGINE_CA_PEM = '/etc/pki/ovirt-engine/ca.pem'
 ONE_GIG = '1GiB'
 

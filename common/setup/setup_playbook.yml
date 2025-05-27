@@ -108,6 +108,7 @@
     - name: Install ost images
       ansible.builtin.dnf:
         name: "{{ ost_images_rpms | default(default_ost_images_rpms) }}"
+        state: latest  # noqa: package-latest
       become: true
 
     - name: Add user to relevant groups

@@ -52,8 +52,8 @@ TEMPLATE_BLANK = 'Blank'
 
 SD_SECOND_NFS_NAME = 'second-nfs'
 
-VM_USER_NAME = 'cirros'
-VM_PASSWORD = 'gocubsgo'
+VM_USER_NAME = 'tc'
+VM_PASSWORD = 'oVirtRocks'
 
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
@@ -668,7 +668,11 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
         response = vmconsole_process.stdout.read(1)
         if len(response.strip()) != 0:
             message = response + vmconsole_process.stdout.readline()
-            if f"login as '{VM_USER_NAME}'".encode() in message or f'{VM0_NAME} login'.encode() in message:
+            if (
+                f"login as '{VM_USER_NAME}'".encode() in message
+                or f'{VM0_NAME} login'.encode() in message
+                or 'box login'.encode() in message
+            ):
                 connection_success = True
                 break
         sleep(1)
@@ -1384,10 +1388,9 @@ def test_hotplug_cpu(engine_api, vm_ssh, vm0_fqdn_or_ip):
     with engine_utils.wait_for_event(engine, 2033):  # HOT_SET_NUMBER_OF_CPUS(2,033)
         vm_service.update(vm=types.Vm(cpu=new_cpu))
         assert vm_service.get().cpu.topology.sockets == 2
-    ret = vm_ssh(vm0_fqdn_or_ip, 'lscpu')
+    ret = vm_ssh(vm0_fqdn_or_ip, 'cat /proc/cpuinfo | grep processor | wc -l')
     assert ret.code == 0
-    match = re.search(r'CPU\(s\):\s+(?P<cpus>[0-9]+)', ret.out.decode('utf-8'))
-    assert match.group('cpus') == '2'
+    assert ret.out.strip().decode() == '2'
 
 
 @order_by(_TEST_LIST)
@@ -1481,7 +1484,7 @@ def test_hotunplug_disk(engine_api):
 @order_by(_TEST_LIST)
 def test_suspend_resume_vm0(assert_vm_is_alive, engine_api, vm_ssh, vm0_fqdn_or_ip):
     # start a background job we are going to check if it's still running later
-    ret = vm_ssh(vm0_fqdn_or_ip, 'sleep 3600 &')
+    ret = vm_ssh(vm0_fqdn_or_ip, 'nohup sleep 3600 > out.log 2> err.log < /dev/null &')
     assert ret.code == EX_OK
 
     assert_vm_is_alive(vm0_fqdn_or_ip)

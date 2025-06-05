@@ -1149,7 +1149,10 @@ def test_verify_engine_backup(ansible_engine, engine_api, engine_fqdn, engine_do
         return True
 
     ansible_engine.shell(
-        'engine-cleanup ' '--otopi-environment="OVESETUP_CORE/remove=bool:True OVESETUP_CORE/engineStop=bool:True"'
+        'engine-cleanup '
+        '--log=/var/log/ost-engine-backup/cleanup.log '
+        '--otopi-environment="OVESETUP_CORE/remove=bool:True '
+        'OVESETUP_CORE/engineStop=bool:True"'
     )
 
     ansible_engine.shell(

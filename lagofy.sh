@@ -277,8 +277,8 @@ ost_init() {
             # create the VM
             VM_FULLNAME="${UUID}-ost-${SUITE}-${VM_NAME}"
             MEMSIZE=$(jqr ".vms[\"${VM_NAME}\"].memory")
-            # default to 2 vCPUs and distribute them between NUMA cells
-            VCPU_NUM=$(jqr ".vms[\"${VM_NAME}\"].vcpu_num // 2")
+            # default to 4 vCPUs and distribute them between NUMA cells
+            VCPU_NUM=$(jqr ".vms[\"${VM_NAME}\"].vcpu_num // 4")
             CELL_0_VCPUS="0-$((${VCPU_NUM}/2 - 1))"
             CELL_1_VCPUS="$((${VCPU_NUM}/2))-$((${VCPU_NUM} - 1))"
 

@@ -12,3 +12,4 @@ git+https://github.com/openstack/openstacksdk.git@44c5515
 paramiko
 PyYAML
 packaging
+pytest-md-report

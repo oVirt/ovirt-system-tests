@@ -3,6 +3,9 @@ name: OST example trigger
 on:
   issue_comment:
     types: [created]
+    
+permissions:
+  pull-requests: write
 
 jobs:
   trigger-ost:

@@ -25,11 +25,18 @@ on:
         required: true
         default: "/ost basic-suite-master el9stream"
         type: string
+        
+permissions:
+  pull-requests: write
 
 jobs:
   trigger-ost:
+    env:
+      GITHUB_REPORT_FILE: md_report.md
+      OST_DEPLOYMENT: /opt/actions-runner/_work/ost_deployment 
+
     runs-on: ost-trigger
-    timeout-minutes: 4
+
     if: github.event_name == 'workflow_dispatch' ||
         github.event_name == 'push' ||
       ( github.event.issue.pull_request &&
@@ -38,32 +45,103 @@ jobs:
           github.event.comment.author_association == 'COLLABORATOR')
       )
     steps:
-      - name: trigger
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: oVirt/ovirt-system-tests
+          ref: master
+
+      - name: Set environment variables
         env:
-          OST_APP_ID: 164117
           PR_URL: "${{ github.event.issue.pull_request.url }}${{ inputs.pr_url }}"
           COMMENT: "${{ github.event.comment.body }}${{ inputs.comment }}"
-        working-directory: /var/lib/nginx/gh
         run: |
-          echo "$PR_URL" | grep '^https://api.github.com/repos/oVirt/'
-          echo "$COMMENT" | egrep '^/ost( [a-z\-]+( [a-z0-9]+)?)?$'
           SUITE=$(echo "$COMMENT" | cut -d " " -s -f2)
           DISTRO=$(echo "$COMMENT" | cut -d " " -s -f3)
           SUITE=${SUITE:-basic-suite-master}
           DISTRO=${DISTRO:-el9stream}
-          SHA=$(curl -sS ${PR_URL} | jq -r .head.sha)
-          CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"
-          BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-          echo "last update: ${BASE_TIME:-no OST app report yet in list: $(curl -sS ${CHECK_SUITES} | jq .check_suites[].app.name)}"
-          echo "trigger content:"
-          { echo "${PR_URL}"; echo "${SUITE}"; echo "${DISTRO}"; } | runuser -u nginx tee queue
-          i=0
-          while [ $i -lt 12 ]; do # 2 minutes
-            sleep 10
-            UPDATE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==${OST_APP_ID}) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-            [[ -z "$UPDATE_TIME" ]] && { echo "error getting update, skip"; UPDATE_TIME="$BASE_TIME"; }
-            echo "try #$((i++)): $UPDATE_TIME"
-            [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
-          done
-          rm -f queue
-          [[ "$BASE_TIME" != "$UPDATE_TIME" ]] || { echo "Jenkins didn't pick it up"; exit 1; }
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          echo "SUITE=$SUITE" >> $GITHUB_ENV
+          echo "DISTRO=$DISTRO" >> $GITHUB_ENV
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          echo "COMMENT=$COMMENT" >> $GITHUB_ENV 
+          echo "RUN_URL=$RUN_URL" >> $GITHUB_ENV
+          
+          echo "==== RUN PARAMS ========"
+          echo "PR_URL: $PR_URL"
+          echo "COMMENT: $COMMENT"
+          echo "SUITE: $SUITE"
+          echo "DISTRO: $DISTRO"
+          echo "========================"
+          
+      - name: Setup ost 
+        run: /usr/bin/bash setup_for_ost.sh -y
+      
+      - name: Comment on PR that ost is running
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          HERE="[here]($RUN_URL)"
+          MSG=":hourglass_flowing_sand: Running ost suite **'$SUITE'** on distro **'$DISTRO'**. \n\nFollow the progress $HERE."
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            ${{ github.event.issue.url }}/comments \
+            -d "{\"body\":\"${MSG}\"}"
+
+      - name: Run ${{ env.SUITE }} on ${{ env.DISTRO }}
+        id: run-tests
+        continue-on-error: true
+        run: |
+          ./ost.sh destroy
+          cat md-report.ini >> pytest.ini
+          export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          /usr/bin/bash ost.sh run $SUITE $DISTRO --custom-repo $PR_URL
+          
+      - name: Create artifacts archive
+        run: tar -czf exported-artifacts.tar.gz exported-artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ost-artifacts
+          path: exported-artifacts.tar.gz
+
+      - name: Add report to summary
+        shell: bash
+        run: |
+          cat $GITHUB_REPORT_FILE
+          if [ -f "$GITHUB_REPORT_FILE" ]; then
+            echo "<details><summary>Test Report</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat "$GITHUB_REPORT_FILE" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          fi
+        
+      - name: Add report to PR
+        if: always() && github.event_name != 'workflow_dispatch'
+        shell: bash
+        run: |
+          MESSAGE=":sob::broken_heart: ost suite **'$SUITE'** on distro **'$DISTRO'** failed."
+          if [ "${{ steps.run-tests.outcome }}" == "success" ]; then
+            MESSAGE=":sunglasses::muscle: ost suite **'$SUITE'** on distro **'$DISTRO'** finished successfully."
+          fi 
+          MESSAGE="$MESSAGE ([details]($RUN_URL))"
+          JSON_PAYLOAD=$(jq -n --arg body "$MESSAGE" '{"body": $body}')
+          echo "JSON_PAYLOAD: $JSON_PAYLOAD"
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            ${{ github.event.issue.url }}/comments \
+            -d "$JSON_PAYLOAD"
+          
+      - name: Fail workflow if tests failed
+        if: steps.run-tests.outcome == 'failure' 
+        run: |
+          echo "Tests failed. Failing the workflow."
+          exit 1

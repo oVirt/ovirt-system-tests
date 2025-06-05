@@ -116,6 +116,7 @@
         name: "{{ ansible_facts['user_id'] }}"
         groups:
           - qemu
+          - libvirt
         append: true
       become: true
 

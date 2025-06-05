@@ -96,6 +96,7 @@ def start_sshd_proxy(vms, host, root_dir, ssh_key_file):
 @pytest.fixture(scope="session", autouse=True)
 def deploy(
     ansible_all,
+    ansible_engine,
     ansible_hosts,
     deploy_scripts,
     deploy_hosted_engine,
@@ -155,6 +156,11 @@ def deploy(
         # check if packages from custom repos were used
         if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:
             package_mgmt.check_installed_packages(ansible_all)
+
+    # TODO: build the tinycore image into ost-images
+    ansible_engine.shell(
+        "curl -L -o /usr/share/ovirt-system-tests/cirros.img https://github.com/oVirt/ovirt-tinycore-linux/releases/download/v13.13/oVirtTinyCore64-13.12.qcow2"
+    )
 
     # report package versions
     LOGGER.info('oVirt packages used on VMs:')

@@ -198,7 +198,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
 class CirrosSerialConsole(VmSerialConsole):
     def __init__(self, private_key_path, vmconsole_proxy_ip):
-        super(CirrosSerialConsole, self).__init__(private_key_path, vmconsole_proxy_ip, 'cirros', 'gocubsgo')
+        super(CirrosSerialConsole, self).__init__(private_key_path, vmconsole_proxy_ip, 'tc', 'oVirtRocks')
 
     def assign_ip4_if_missing(self, vm_id, iface):
         ip = self.get_ip(vm_id, iface, 4)

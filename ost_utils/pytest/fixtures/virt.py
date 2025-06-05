@@ -34,6 +34,10 @@ def rsa_pair(engine_admin_service):
         shell(['ssh-keygen', '-t', 'rsa', '-f', f'{key_path}', '-N', ''])
         with open(f'{key_path}.pub') as f:
             public_key_content = f.read()
+        keys = engine_admin_service.ssh_public_keys_service().list()
+        for key in keys:
+            key_service = engine_admin_service.ssh_public_keys_service().key_service(key.id)
+            key_service.remove()
         engine_admin_service.ssh_public_keys_service().add(key=sdk4.types.SshPublicKey(content=public_key_content))
         yield public_key_content, key_path
 

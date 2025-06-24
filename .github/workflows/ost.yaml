@@ -19,6 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_url:
+        description: "PR url(s - comma separated)"
         required: true
         type: string
       comment:
@@ -91,14 +92,21 @@ jobs:
             ${{ github.event.issue.url }}/comments \
             -d "{\"body\":\"${MSG}\"}"
 
-      - name: Run ${{ env.SUITE }} on ${{ env.DISTRO }}
+      - name: Run ${{ env.SUITE }} on ${{ env.DISTRO }} for [${{ env.PR_URL }}]
         id: run-tests
         continue-on-error: true
         run: |
           ./ost.sh destroy
           cat md-report.ini >> pytest.ini
           export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          /usr/bin/bash ost.sh run $SUITE $DISTRO --custom-repo $PR_URL
+
+          if [[ "$PR_URL" == *","* ]]; then
+            PR_URL=$(echo "$PR_URL" | sed 's/ //g')
+            PR_URL=$(echo "$PR_URL" | sed 's/,/ --custom-repo /g')
+          fi
+          PR_URL="--custom-repo $PR_URL"
+          
+          /usr/bin/bash ost.sh run $SUITE $DISTRO $PR_URL
           
       - name: Create artifacts archive
         run: tar -czf exported-artifacts.tar.gz exported-artifacts

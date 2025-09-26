@@ -46,12 +46,6 @@ jobs:
           github.event.comment.author_association == 'COLLABORATOR')
       )
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: oVirt/ovirt-system-tests
-          ref: master
-
       - name: Set environment variables
         env:
           PR_URL: "${{ github.event.issue.pull_request.url }}${{ inputs.pr_url }}"
@@ -62,12 +56,27 @@ jobs:
           SUITE=${SUITE:-basic-suite-master}
           DISTRO=${DISTRO:-el9stream}
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          OST_REPO="ovirt/ovirt-system-tests"
+          OST_REF="master"
+
+          IFS=',' read -ra PR_URLS <<< "$PR_URL"
+          for url in "${PR_URLS[@]}"; do
+            if [[ "$url" == *"$OST_REPO"* ]]; then
+              PR_NR=$(echo "$url" | grep -oP '(?<=/pull/)\d+')
+              OST_REF=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                  -H "Accept: application/vnd.github+json" \
+                  $GITHUB_API_URL/repos/$OST_REPO/pulls/$PR_NR \
+                  | jq -r '.head.ref')
+            fi
+          done
           
           echo "SUITE=$SUITE" >> $GITHUB_ENV
           echo "DISTRO=$DISTRO" >> $GITHUB_ENV
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "COMMENT=$COMMENT" >> $GITHUB_ENV 
           echo "RUN_URL=$RUN_URL" >> $GITHUB_ENV
+          echo "OST_REF=$OST_REF" >> $GITHUB_ENV
           
           echo "==== RUN PARAMS ========"
           echo "PR_URL: $PR_URL"
@@ -75,7 +84,13 @@ jobs:
           echo "SUITE: $SUITE"
           echo "DISTRO: $DISTRO"
           echo "========================"
-          
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: oVirt/ovirt-system-tests
+          ref: ${{ env.OST_REF }}
+
       - name: Setup ost 
         run: /usr/bin/bash setup_for_ost.sh -y
       

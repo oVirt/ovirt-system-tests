@@ -31,7 +31,13 @@ def expand_repos(custom_repos, working_dir, ost_images_distro):
     repo_urls = []
     for repo_url in custom_repos:
         if re.match(r"https://(www\.|api\.)?github.com/(repos/)?oVirt", repo_url):
-            repo_urls.append(expand_github_repo(repo_url, working_dir, ost_images_distro))
+            if 'ovirt-system-tests' in repo_url:
+                LOGGER.info(
+                    "Not expanding 'ovirt-system-tests', it is skipped",
+                    repo_url,
+                )
+            else:
+                repo_urls.append(expand_github_repo(repo_url, working_dir, ost_images_distro))
         else:
             repo_urls.append(repo_url)
     return repo_urls

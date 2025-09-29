@@ -33,7 +33,7 @@ def expand_repos(custom_repos, working_dir, ost_images_distro):
         if re.match(r"https://(www\.|api\.)?github.com/(repos/)?oVirt", repo_url):
             if 'ovirt-system-tests' in repo_url:
                 LOGGER.info(
-                    "Not expanding 'ovirt-system-tests', it is skipped",
+                    "Not expanding '%s', it is skipped",
                     repo_url,
                 )
             else:

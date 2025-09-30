@@ -63,11 +63,9 @@ jobs:
           IFS=',' read -ra PR_URLS <<< "$PR_URL"
           for url in "${PR_URLS[@]}"; do
             if [[ "$url" == *"$OST_REPO"* ]]; then
-              PR_NR=$(echo "$url" | grep -oP '(?<=/pull/)\d+')
               OST_REF=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                   -H "Accept: application/vnd.github+json" \
-                  $GITHUB_API_URL/repos/$OST_REPO/pulls/$PR_NR \
-                  | jq -r '.head.ref')
+                  $url | jq -r '.head.ref')
             fi
           done
           

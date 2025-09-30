@@ -57,7 +57,7 @@ jobs:
           DISTRO=${DISTRO:-el9stream}
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          OST_REPO="ovirt/ovirt-system-tests"
+          OST_REPO="oVirt/ovirt-system-tests"
           OST_REF="master"
 
           IFS=',' read -ra PR_URLS <<< "$PR_URL"

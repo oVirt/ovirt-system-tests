@@ -98,3 +98,9 @@ ansible-playbook \
     ${ANSIBLE_ASK_SUDO_PASS_FLAG} \
     ${ANSIBLE_EXTRA_VARS_FLAG} ${ANSIBLE_EXTRA_VARS_FILE} \
     common/setup/setup_playbook.yml
+
+# Download latest SDK
+git clone --depth=1 https://github.com/oVirt/python-ovirt-engine-sdk4.git
+cd python-ovirt-engine-sdk4
+sh .automation/generate-setup-files.sh
+cd ..

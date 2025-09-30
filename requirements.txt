@@ -1,5 +1,5 @@
 # PIP requirements for OST
-ovirt-engine-sdk-python>=4.6.2
+./python-ovirt-engine-sdk4
 ansible-runner
 pytest==6.2.2
 # basic suite deps

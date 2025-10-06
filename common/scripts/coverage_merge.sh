@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PYTHON=python3.9
+PYTHON=python3
 
 get_run_url() {
     fragment=$(wget -q -O - $1/console | grep -oP "<a href='\K[^']+(?='>ds-ost-baremetal_manual #\d+</a> started)")

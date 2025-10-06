@@ -119,7 +119,7 @@ ost_init() {
 
     # finds unused subnet in the OST range
     _find_free_subnet() {
-        SUBNET=$(seq 200 254 | egrep -vw "$(virsh net-list --name | grep ^ost | cut -d- -f2 | tr "\n" '|' | sed 's/^/(/; s/|$/)/')" | head -1)
+        SUBNET=$(seq 200 254 | grep -Evw "$(virsh net-list --name | grep ^ost | cut -d- -f2 | tr "\n" '|' | sed 's/^/(/; s/|$/)/')" | head -1)
         [[ -n "$SUBNET" ]] || { echo -e "\nno available subnet"; return 1; }
     }
 
@@ -382,7 +382,7 @@ ost_check_dependencies() {
     mkdir -p "${OST_REPO_ROOT}/exported-artifacts"
     { ${PYTHON} -m pip install --user tox &&
     ${PYTHON} -m tox -r -e deps; } > "${OST_REPO_ROOT}/exported-artifacts/tox-deps.log" || { echo "tox dependencies failed. see tox-deps.log"; return 3; }
-    sudo sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | egrep -q 'accept_ra ?= ?2' || {
+    sudo sysctl -ar net.ipv6.conf.\.\*.accept_ra\$ | grep -Eq 'accept_ra ?= ?2' || {
         echo 'Missing accept_ra on at least one interface. "sysctl -a|grep ipv6|grep accept_ra\ | sed 's/.$/2/' >> /etc/sysctl.conf", then REBOOT!'
         return 4
     }

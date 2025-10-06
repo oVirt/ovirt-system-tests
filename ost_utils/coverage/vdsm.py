@@ -113,7 +113,26 @@ def _copy_coverage_report_from_host(host, output_path):
 
     local_tar = os.path.join(output_path, os.path.basename(html_tar))
     with tarfile.open(local_tar) as tar:
-        tar.extractall(output_path)
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner) 
+            
+        
+        safe_extract(tar, output_path)
 
     host.file(path=html_tar, state='absent')
     os.remove(local_tar)

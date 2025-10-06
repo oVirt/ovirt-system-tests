@@ -1,7 +1,7 @@
 # PIP requirements for OST
 ./python-ovirt-engine-sdk4
 ansible-runner
-pytest==6.2.2
+pytest
 # basic suite deps
 requests
 selenium==4.4.3

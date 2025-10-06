@@ -20,7 +20,6 @@ on:
     inputs:
       pr_url:
         description: "PR url(s - comma separated)"
-        required: true
         type: string
       comment:
         required: true
@@ -60,14 +59,16 @@ jobs:
           OST_REPO="oVirt/ovirt-system-tests"
           OST_REF="master"
 
-          IFS=',' read -ra PR_URLS <<< "$PR_URL"
-          for url in "${PR_URLS[@]}"; do
-            if [[ "$url" == *"$OST_REPO"* ]]; then
-              OST_REF=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                  -H "Accept: application/vnd.github+json" \
-                  $url | jq -r '.head.ref')
-            fi
-          done
+          if [ -n "$PR_URL" ]; then
+            IFS=',' read -ra PR_URLS <<< "$PR_URL"
+            for url in "${PR_URLS[@]}"; do
+              if [[ "$url" == *"$OST_REPO"* ]]; then
+                OST_REF=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    -H "Accept: application/vnd.github+json" \
+                    $url | jq -r '.head.ref')
+              fi
+            done
+          fi
           
           echo "SUITE=$SUITE" >> $GITHUB_ENV
           echo "DISTRO=$DISTRO" >> $GITHUB_ENV
@@ -113,11 +114,13 @@ jobs:
           cat md-report.ini >> pytest.ini
           export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
-          if [[ "$PR_URL" == *","* ]]; then
-            PR_URL=$(echo "$PR_URL" | sed 's/ //g')
-            PR_URL=$(echo "$PR_URL" | sed 's/,/ --custom-repo /g')
+          if [ -n "$PR_URL" ]; then
+            if [[ "$PR_URL" == *","* ]]; then
+              PR_URL=$(echo "$PR_URL" | sed 's/ //g')
+              PR_URL=$(echo "$PR_URL" | sed 's/,/ --custom-repo /g')
+            fi
+            PR_URL="--custom-repo $PR_URL"
           fi
-          PR_URL="--custom-repo $PR_URL"
           
           /usr/bin/bash ost.sh run $SUITE $DISTRO $PR_URL
           

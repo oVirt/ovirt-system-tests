@@ -20,6 +20,7 @@ def add_domain(
     sd_type='data',
     nfs_version='v4_2',
 ):
+    dom_type = None
     if sd_type == 'data':
         dom_type = sdk4.types.StorageDomainType.DATA
     elif sd_type == 'iso':

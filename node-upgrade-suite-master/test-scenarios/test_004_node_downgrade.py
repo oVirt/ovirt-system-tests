@@ -9,7 +9,7 @@ import pytest
 from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils.pytest import order_by
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import logging
 import time
 
@@ -55,16 +55,16 @@ def _revert_yum_status(ansible_host):
     cmd = 'curl ' + base_url +\
           ' | grep -Po "{}-{}.[^ \'<]*"| tail -n1'.\
           format(ver_package, cur_ver)
-    ver = ansible_host.shell("{} | tail -n1".format(cmd))['stdout']
-    LOGGER.info("{} is the best suitable version".format(ver))
-    full_ver = (
-        "curl -L -O {}/{}".format(base_url, ver))
-    LOGGER.info("{} will be downloaded".format(full_ver))
-    ansible_host.shell("curl -L -O {}".format(full_ver))
+    ver = ansible_host.shell(f"{cmd} | tail -n1")['stdout']
+    LOGGER.info(f"{ver} is the best suitable version")
+    full_ver = (f"curl -L -O {base_url}/{ver}")
+    LOGGER.info(f"{full_ver} will be downloaded")
+    ansible_host.shell(f"curl -L -O {full_ver}")
     LOGGER.info("removing ovirt-node-ng-image-update-placeholder")
     ansible_host.shell(
         "yum remove -y ovirt-node-ng-image-update-placeholder")
-    ansible_host.shell("rpm -i --nodeps {}".format(ver))
+    ansible_host.shell(f"rpm -i --nodeps {ver}")
+
 
 @pytest.mark.skip(' [2021-08-08] Skip ovirt-node downgrade')
 def test_downgrade_host(engine_api, ansible_by_hostname):
@@ -77,7 +77,7 @@ def test_downgrade_host(engine_api, ansible_by_hostname):
     for host in host_list:
         ansible_host = ansible_by_hostname(host.name)
         if not _check_if_other_layer_exists(ansible_host):
-           LOGGER.info("{} does not have where to rollback".format(host.name))
+            LOGGER.info(f"{host.name} does not have where to rollback")
 
         _rollback_to_previous_layer_and_reboot(engine, ansible_host)
 

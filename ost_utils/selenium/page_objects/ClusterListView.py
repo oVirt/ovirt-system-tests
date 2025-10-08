@@ -21,15 +21,15 @@ class ClusterListView(EntityListView):
             'MainClusterView_table_content_col1_row',
         )
 
-    def open_detail_view(self, name):
-        super().open_detail_view(name)
+    def open_detail_view(self, entity_name):
+        super().open_detail_view(entity_name)
 
-        detail_view = ClusterDetailView(self.ovirt_driver, self.breadcrumbs, name)
+        detail_view = ClusterDetailView(self.ovirt_driver, self.breadcrumbs, entity_name)
         detail_view.wait_for_displayed()
         return detail_view
 
-    def edit(self, name):
-        super().edit(name)
+    def edit(self, entity_name):
+        super().edit(entity_name)
 
         dialog = ClusterDialog(self.ovirt_driver, 'Edit')
         dialog.wait_for_displayed()

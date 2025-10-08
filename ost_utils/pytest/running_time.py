@@ -25,5 +25,5 @@ def pytest_runtest_logfinish(nodeid, location):
     now = datetime.datetime.now()
     then = RUNNING_TIMES[location]
     delta = int((now - then).total_seconds())
-    print(" ({}s)".format(delta), end='')
+    print(f" ({delta}s)", end='')
     LOGGER.debug(f'Finished test: {nodeid} ({delta}s)')

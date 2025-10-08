@@ -67,7 +67,7 @@ class VirshBackend(base.BaseBackend):
             name = libvirt_name[9:]
             deploy_scripts = [
                 node.get("name")
-                for node in xml.findall("./metadata/{OST:metadata}ost/ost-deploy-scripts/" "script[@name]")
+                for node in xml.findall("./metadata/{OST:metadata}ost/ost-deploy-scripts/script[@name]")
             ]
             nics = VMNics(xml, self._networks)
             vms[name] = VMInfo(name, libvirt_name, nics, deploy_scripts)

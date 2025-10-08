@@ -95,7 +95,7 @@ class Vm(SDKRootEntity):
 
     def create_snapshot(self, snapshot_desc=None):
         snapshot = VmSnapshot(self)
-        snapshot.create('snapshot_of_{}'.format(self.name) if snapshot_desc is None else snapshot_desc)
+        snapshot.create(f'snapshot_of_{self.name}' if snapshot_desc is None else snapshot_desc)
         snapshot.wait_for_ready_status()
         return snapshot
 
@@ -188,7 +188,7 @@ class Vm(SDKRootEntity):
         :type template: string
         :type stateless: boolean
         """
-        MB512 = 512 * 2 ** 20
+        MB512 = 512 * 2**20
 
         sdk_type = types.Vm(
             name=vm_name,
@@ -201,8 +201,8 @@ class Vm(SDKRootEntity):
         )
         self._create_sdk_entity(sdk_type)
 
-    def _get_parent_service(self, system):
-        return system.vms_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.vms_service
 
     def _wait_for_status(self, statuses):
         syncutil.sync(
@@ -254,8 +254,8 @@ class Vm(SDKRootEntity):
 
 
 class VmSnapshot(SDKSubEntity):
-    def _get_parent_service(self, vm):
-        return vm.service.snapshots_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.snapshots_service()
 
     def create(self, description, persist_memorystate=False):
         sdk_type = types.Snapshot(persist_memorystate=persist_memorystate, description=description)
@@ -303,8 +303,8 @@ class VmGraphicsConsole(SDKSubEntity):
     def port(self):
         return self._config.get('port')
 
-    def _get_parent_service(self, vm):
-        return vm.service.graphics_consoles_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.graphics_consoles_service()
 
     def create(self):
         pass

@@ -16,7 +16,7 @@ import time
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import pytest
 
 from ost_utils import assert_utils
@@ -39,8 +39,8 @@ from ost_utils import versioning
 
 LOGGER = logging.getLogger(__name__)
 
-MB = 2 ** 20
-GB = 2 ** 30
+MB = 2**20
+GB = 2**30
 
 # DC/Cluster
 DC_VER_MAJ, DC_VER_MIN = versioning.cluster_version()
@@ -74,7 +74,7 @@ SD_GLANCE_NAME = 'ovirt-image-repository'
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
-VM_NETWORK = u'VM Network with a very long name and עברית'
+VM_NETWORK = 'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
 MANAGEMENT_NETWORK = 'ovirtmgmt'
@@ -114,7 +114,7 @@ def _hosts_in_dc(api, dc_name=engine_object_names.TEST_DC_NAME, random_host=Fals
             return sorted(up_hosts, key=lambda host: host.name)
     hosts_status = [host for host in all_hosts if host.status != types.HostStatus.UP]
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)
-    raise RuntimeError('Could not find hosts that are up in DC {} \nHost status: {}'.format(dc_name, dump_hosts) )
+    raise RuntimeError(f'Could not find hosts that are up in DC {dc_name} \nHost status: {dump_hosts}')
 
 def _random_host_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
@@ -125,18 +125,18 @@ def _random_host_service_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
 
 def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
     installing_hosts = hosts_service.list(
-        search='datacenter={} AND status=installing or status=initializing '
-               'or status=connecting or status=reboot'.format(dc_name)
+        search=f'datacenter={dc_name} AND status=installing or status=initializing '
+               f'or status=connecting or status=reboot'
     )
     if len(installing_hosts) == total_num_hosts: # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
+    up_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=up')
     if len(up_hosts) == total_num_hosts:
         return True
 
     # sometimes a second host is fast enough to go up without master SD, it then goes NonOperational with 5min autorecovery, let's poke it
-    nonop_hosts = hosts_service.list(search='datacenter={} AND status=nonoperational'.format(dc_name))
+    nonop_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=nonoperational')
     if len(nonop_hosts):
         for host in nonop_hosts:
             host_service = hosts_service.host_service(host.id)
@@ -147,25 +147,25 @@ def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
 
 def _single_host_up(hosts_service, total_num_hosts, dc_name):
     installing_hosts = hosts_service.list(
-        search='datacenter={} AND status=installing or status=initializing '
-               'or status=connecting or status=reboot'.format(dc_name)
+        search=f'datacenter={dc_name} AND status=installing or status=initializing '
+               f'or status=connecting or status=reboot'
     )
     if len(installing_hosts) == total_num_hosts : # All hosts still installing
         return False
 
-    up_hosts = hosts_service.list(search='datacenter={} AND status=up'.format(dc_name))
+    up_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=up')
     if len(up_hosts):
         return True
 
     _check_problematic_hosts(hosts_service, dc_name)
 
 def _check_problematic_hosts(hosts_service, dc_name):
-    problematic_hosts = hosts_service.list(search='datacenter={} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up'.format(dc_name))
+    problematic_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up')
     if len(problematic_hosts):
-        dump_hosts = '%s hosts failed installation:\n' % len(problematic_hosts)
+        dump_hosts = f'{len(problematic_hosts)} hosts failed installation:\n'
         for host in problematic_hosts:
             host_service = hosts_service.host_service(host.id)
-            dump_hosts += '%s: %s\n' % (host.name, host_service.get().status)
+            dump_hosts += f'{host.name}: {host_service.get().status}\n'
         raise RuntimeError(dump_hosts)
 
 
@@ -173,13 +173,13 @@ def _host_status_to_print(hosts_service, hosts_list):
     dump_hosts = ''
     for host in hosts_list:
             host_service_info = hosts_service.host_service(host.id)
-            dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+            dump_hosts += f'{host.name}: {host_service_info.get().status}\n'
     return dump_hosts
 
 def _wait_for_status(hosts_service, dc_name, status):
     up_status_seen = False
     for _ in general_utils.linear_retrier(attempts=12, iteration_sleeptime=10):
-        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+        all_hosts = hosts_service.list(search=f'datacenter={dc_name}')
         up_hosts = [host for host in all_hosts if host.status == status]
         LOGGER.debug(_host_status_to_print(hosts_service, all_hosts))
         # we use up_status_seen because we make sure the status is not flapping
@@ -229,7 +229,7 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
 @pytest.mark.parametrize("scheme", ["http", "https"])
 @order_by(_TEST_LIST)
 def test_engine_health_status(scheme, engine_fqdn, engine_download):
-    url = '{}://{}/ovirt-engine/services/health'.format(scheme, engine_fqdn)
+    url = f'{scheme}://{engine_fqdn}/ovirt-engine/services/health'
 
     assert engine_download(url) == b"DB Up!Welcome to Health Status!"
 
@@ -237,7 +237,7 @@ def test_engine_health_status(scheme, engine_fqdn, engine_download):
 @order_by(_TEST_LIST)
 def test_add_dc_quota(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
+    datacenter = datacenters_service.list(search=f'name={ost_dc_name}')[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     assert quotas_service.add(
@@ -252,7 +252,7 @@ def test_add_dc_quota(engine_api, ost_dc_name):
 
 @order_by(_TEST_LIST)
 def test_list_glance_images(engine_api):
-    search_query = 'name={}'.format(SD_GLANCE_NAME)
+    search_query = f'name={SD_GLANCE_NAME}'
     system_service = engine_api.system_service()
     storage_domains_service = system_service.storage_domains_service()
     glance_domain_list = storage_domains_service.list(search=search_query)
@@ -284,7 +284,7 @@ def test_list_glance_images(engine_api):
 @order_by(_TEST_LIST)
 def test_set_dc_quota_audit(engine_api, ost_dc_name):
     dcs_service = engine_api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % ost_dc_name)[0]
+    dc = dcs_service.list(search=f'name={ost_dc_name}')[0]
     dc_service = dcs_service.data_center_service(dc.id)
     assert dc_service.update(
         types.DataCenter(
@@ -298,7 +298,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
 
     # Find the data center and the service that manages it:
     dcs_service = engine_api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % ost_dc_name)[0]
+    dc = dcs_service.list(search=f'name={ost_dc_name}')[0]
     dc_service = dcs_service.data_center_service(dc.id)
 
     # Find the storage domain and the service that manages it:
@@ -350,7 +350,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
 @order_by(_TEST_LIST)
 def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
+    datacenter = datacenters_service.list(search=f'name={ost_dc_name}')[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     quotas = quotas_service.list()
@@ -444,7 +444,7 @@ def test_add_nic(engine_api):
     # Locate the virtual machines service and use it to find the virtual
     # machine:
     vms_service = engine_api.system_service().vms_service()
-    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+    vm = vms_service.list(search=f'name={VM0_NAME}')[0]
 
     # Locate the service that manages the network interface cards of the
     # virtual machine:

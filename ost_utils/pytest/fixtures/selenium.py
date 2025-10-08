@@ -158,7 +158,7 @@ def selenium_video_recorder(
     )
     res = ansible_storage.shell(f"podman logs {container_id}")
 
-    with open(f"{selenium_artifacts_dir}/podman-video-{selenium_browser}.log", "w") as log_file:
+    with open(f"{selenium_artifacts_dir}/podman-video-{selenium_browser}.log", "w", encoding="utf-8") as log_file:
         log_file.write(res["stdout"])
 
 

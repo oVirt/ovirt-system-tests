@@ -18,7 +18,7 @@ class Grafana(Displayable):
     def is_displayed(self):
         return self.ovirt_driver.find_element(
             By.XPATH,
-            '//h1[text()="Welcome to Grafana"] | ' '//span[text()="Welcome to Grafana"]',
+            '//h1[text()="Welcome to Grafana"] | //span[text()="Welcome to Grafana"]',
         ).is_displayed()
 
     def get_displayable_name(self):
@@ -50,7 +50,7 @@ class Grafana(Displayable):
             self.ovirt_driver.xpath_click('//button/span[text()="Discard"]')
         self.ovirt_driver.xpath_wait_and_click(
             'Home button',
-            '//nav[@aria-label="Search links"]//span[text() = "Home"] | ' '//button[normalize-space()="Home"]',
+            '//nav[@aria-label="Search links"]//span[text() = "Home"] | //button[normalize-space()="Home"]',
         )
         self.ovirt_driver.xpath_wait_and_click(menu, f'//*[text() = "{menu}"]')
         self.ovirt_driver.xpath_wait_and_click(submenu, f'//*[text() = "{submenu}"]')
@@ -73,7 +73,7 @@ class Grafana(Displayable):
                     return True
             return False
 
-        LOGGER.warn("Not able to detect error notifications")
+        LOGGER.warning("Not able to detect error notifications")
         return False
 
     def _is_breadcrumbs_visible(self, menu, submenu):

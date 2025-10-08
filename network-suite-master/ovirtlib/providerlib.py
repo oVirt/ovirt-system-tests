@@ -34,8 +34,8 @@ class OpenStackNetworkProvider(SDKRootEntity):
         )
         self._create_sdk_entity(sdk_type)
 
-    def _get_parent_service(self, system):
-        return system.openstack_network_providers_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.openstack_network_providers_service
 
     @contextmanager
     def disable_auto_sync(self):
@@ -53,8 +53,8 @@ class OpenStackNetwork(SDKSubEntity):
         sdk_type = types.OpenStackNetwork(name=name)
         self._create_sdk_entity(sdk_type)
 
-    def _get_parent_service(self, openstack_network_provider):
-        return openstack_network_provider.service.networks_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.networks_service()
 
     def create_external_network(self, datacenter):
         self.service.import_(

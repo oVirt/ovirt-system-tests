@@ -14,18 +14,18 @@ class ShellError(Exception):
         self.err = err
 
     def __str__(self):
-        return "Command failed with rc={}. Stdout:\n{}\nStderr:\n{}\n".format(self.code, self.out, self.err)
+        return f"Command failed with rc={self.code}. Stdout:\n{self.out}\nStderr:\n{self.err}\n"
 
 
 def shell(args, bytes_output=False, **kwargs):
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
-    out, err = process.communicate()
+    with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs) as process:
+        out, err = process.communicate()
 
-    if not bytes_output:
-        out = out.decode("utf-8")
-        err = err.decode("utf-8")
+        if not bytes_output:
+            out = out.decode("utf-8")
+            err = err.decode("utf-8")
 
-    if process.returncode:
-        raise ShellError(process.returncode, out, err)
+        if process.returncode:
+            raise ShellError(process.returncode, out, err)
 
-    return out
+        return out

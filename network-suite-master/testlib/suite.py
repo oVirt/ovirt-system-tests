@@ -39,7 +39,7 @@ def xfail_suite_43(reason):
 
 def skip_suites_below(version):
     skip = is_suite_below(version)
-    return pytest.mark.skipif(skip, reason=_skip_reason(skip, 'suite version {}'.format(version)))
+    return pytest.mark.skipif(skip, reason=_skip_reason(skip, f'suite version {version}'))
 
 
 def is_suite_below(version):
@@ -48,7 +48,7 @@ def is_suite_below(version):
 
 def skip_sdk_below(version):
     skip = _is_sdk_below(version)
-    return pytest.mark.skipif(skip, reason=_skip_reason(skip, 'SDK version {}'.format(version)))
+    return pytest.mark.skipif(skip, reason=_skip_reason(skip, f'SDK version {version}'))
 
 
 def _is_sdk_below(version):
@@ -56,7 +56,7 @@ def _is_sdk_below(version):
 
 
 def _skip_reason(skip, version):
-    return 'Only supported since {}'.format(version) if skip else ''
+    return f'Only supported since {version}' if skip else ''
 
 
 def _compare_versions(runtime_version, candidate_version):

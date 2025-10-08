@@ -31,7 +31,7 @@ def ovirt_provider_ovn_with_ip_fqdn(ovirt_engine_service_up, engine_facts, engin
 def _fetch_fqdn(answer_file):
     FQDN_ENTRY = 'OVESETUP_CONFIG/fqdn'
 
-    with open(answer_file) as f:
+    with open(answer_file, encoding='utf-8') as f:
         for line in f:
             if line.startswith(FQDN_ENTRY):
                 return line.strip().split(':', 1)[1]
@@ -111,10 +111,10 @@ def _assign_ipv6(ssh_node, nic_name):
     res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'modify', nic_name, 'ipv6.method', 'auto']))
 
     if res.code:
-        raise Exception('nmcli con modify failed: exit code %s, error "%s"' % (res.code, res.err))
+        raise Exception(f'nmcli con modify failed: exit code {res.code}, error "{res.err}"')
     res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'up', nic_name]))
     if res.code:
-        raise Exception('nmcli con up failed: exit code %s, error "%s"' % (res.code, res.err))
+        raise Exception(f'nmcli con up failed: exit code {res.code}, error "{res.err}"')
 
 
 def _get_ipv6(ssh_node, nic_name):

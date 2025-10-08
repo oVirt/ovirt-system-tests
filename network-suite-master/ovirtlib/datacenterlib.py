@@ -70,8 +70,8 @@ class DataCenter(SDKRootEntity):
         ovirtmgmt.import_by_name(netlib.OVIRTMGMT)
         return ovirtmgmt
 
-    def _get_parent_service(self, system):
-        return system.data_centers_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.data_centers_service
 
     def _wait_for_sd_status(self, sd, status):
         sd_service = self._sd_service(sd)

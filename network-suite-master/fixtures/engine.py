@@ -74,7 +74,7 @@ def ovirt_engine_service_up(ovirt_engine_setup, engine_facts, engine_full_userna
 
 
 def _create_engine_connection(ip, engine_username, engine_password):
-    url = 'https://{}/ovirt-engine/api'.format(ip)
+    url = f'https://{ip}/ovirt-engine/api'
     conn = Connection(
         url=url,
         username=engine_username,

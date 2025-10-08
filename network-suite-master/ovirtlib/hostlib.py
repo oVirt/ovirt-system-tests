@@ -106,7 +106,7 @@ class Host(SDKRootEntity):
         """
         sdk_type = types.Host(
             name=name,
-            description='host %s' % name,
+            description=f'host {name}',
             address=address,
             root_password=root_password,
             override_iptables=True,
@@ -372,8 +372,8 @@ class Host(SDKRootEntity):
         )
         return results
 
-    def _get_parent_service(self, system):
-        return system.hosts_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.hosts_service
 
     def _host_up_status_success_criteria(self, host_status):
         if host_status == HostStatus.UP:
@@ -382,7 +382,7 @@ class Host(SDKRootEntity):
             HostStatus.NON_OPERATIONAL,
             HostStatus.INSTALL_FAILED,
         ):
-            raise HostStatusError('{} is {}'.format(self.name, host_status))
+            raise HostStatusError(f'{self.name} is {host_status}')
         return False
 
     def _get_net_ids_for_attachment_data(self, attachments_data):
@@ -506,8 +506,8 @@ class HostNic(SDKSubEntity):
     def create(self):
         pass
 
-    def _get_parent_service(self, host):
-        return host.service.nics_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.nics_service()
 
     @property
     def name(self):

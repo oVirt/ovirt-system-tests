@@ -10,7 +10,7 @@ import tempfile
 import time
 
 import ovirtsdk4 as sdk4
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import pytest
 
 from ost_utils import assert_utils
@@ -55,7 +55,7 @@ def engine_fqdn(ansible_engine_facts, suite):
 
 @pytest.fixture(scope="session")
 def engine_webadmin_url(engine_fqdn):
-    return "https://%s/ovirt-engine" % engine_fqdn
+    return f"https://{engine_fqdn}/ovirt-engine"
 
 
 @pytest.fixture(scope="session")
@@ -145,12 +145,10 @@ def engine_cert(engine_fqdn, engine_ip_url):
                 "-m",
                 "10",
                 "--resolve",
-                "{}:80:{}".format(engine_fqdn, engine_ip_url),
+                f"{engine_fqdn}:80:{engine_ip_url}",
                 "-o",
                 cert_file.name,
-                "http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA".format(
-                    engine_fqdn
-                ),
+                f"http://{engine_fqdn}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA",
             ]
         )
         yield cert_file.name
@@ -165,7 +163,7 @@ def engine_download(request, engine_fqdn, engine_ip_url):
             args.extend(
                 [
                     "--resolve",
-                    "{}:443:{}".format(engine_fqdn, engine_ip_url),
+                    f"{engine_fqdn}:443:{engine_ip_url}",
                     "--cacert",
                     request.getfixturevalue("engine_cert"),
                 ]
@@ -174,7 +172,7 @@ def engine_download(request, engine_fqdn, engine_ip_url):
             args.extend(
                 [
                     "--resolve",
-                    "{}:80:{}".format(engine_fqdn, engine_ip_url),
+                    f"{engine_fqdn}:80:{engine_ip_url}",
                 ]
             )
 
@@ -194,7 +192,7 @@ def engine_restart(ansible_engine, engine_download, engine_fqdn):
         ansible_engine.systemd(name='ovirt-engine', state='stopped')
         ansible_engine.systemd(name='ovirt-engine', state='started')
 
-        health_url = 'http://{}/ovirt-engine/services/health'.format(engine_fqdn)
+        health_url = f'http://{engine_fqdn}/ovirt-engine/services/health'
 
         def engine_is_alive():
             engine_download(health_url)
@@ -276,6 +274,6 @@ def engine_answer_file_contents(engine_password, engine_fqdn, engine_full_userna
 @pytest.fixture(scope="session")
 def engine_answer_file_path(engine_answer_file_contents, working_dir):
     file_path = os.path.join(working_dir, 'engine-answer-file')
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         f.write(engine_answer_file_contents)
     return file_path

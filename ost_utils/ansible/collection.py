@@ -16,28 +16,29 @@ import yaml
 
 def _run_playbook(ansible_engine, playbook_yaml, ansible_inventory=None, ssh_key_path=None):
     run_uuid = uuid.uuid4()
-    tmp_path = tempfile.NamedTemporaryFile().name
-    for dir_name in ['inventory', 'env', 'project']:
-        ansible_engine.file(path=os.path.join(tmp_path, dir_name), state='directory', recurse='yes')
-    if ssh_key_path:
+    with tempfile.NamedTemporaryFile() as tmp:
+        tmp_path = tmp.name
+        for dir_name in ['inventory', 'env', 'project']:
+            ansible_engine.file(path=os.path.join(tmp_path, dir_name), state='directory', recurse='yes')
+        if ssh_key_path:
+            ansible_engine.copy(
+                src=ssh_key_path,
+                dest=os.path.join(tmp_path, 'env/ssh_key'),
+            )
+        if ansible_inventory:
+            ansible_engine.copy(
+                src=ansible_inventory.dir,
+                dest=os.path.join(tmp_path, 'inventory/hosts'),
+            )
+
         ansible_engine.copy(
-            src=ssh_key_path,
-            dest=os.path.join(tmp_path, 'env/ssh_key'),
-        )
-    if ansible_inventory:
-        ansible_engine.copy(
-            src=ansible_inventory.dir,
-            dest=os.path.join(tmp_path, 'inventory/hosts'),
+            content=f"'{yaml.dump(playbook_yaml)}'",
+            dest=os.path.join(tmp_path, 'project/playbook.yml'),
         )
 
-    ansible_engine.copy(
-        content=f"'{yaml.dump(playbook_yaml)}'",
-        dest=os.path.join(tmp_path, 'project/playbook.yml'),
-    )
+        ansible_engine.shell(f'ansible-runner run -i {run_uuid} -vvv -p playbook.yml {tmp_path}')
 
-    ansible_engine.shell(f'ansible-runner run -i {run_uuid} -vvv -p playbook.yml {tmp_path}')
-
-    return (tmp_path, run_uuid)
+        return (tmp_path, run_uuid)
 
 
 def _get_role_playbook(role_name, host, **kwargs):
@@ -156,7 +157,7 @@ class CollectionMapper:
 
             job_events = [os.path.join(job_events_path, job_dir) for job_dir in os.listdir(job_events_path)]
             for file in job_events:
-                with open(file) as json_file:
+                with open(file, encoding='utf-8') as json_file:
                     data = json.load(json_file)
                     if (
                         data.get('event_data', {}).get('task_action', None) == f'ovirt.ovirt.{self.name}'

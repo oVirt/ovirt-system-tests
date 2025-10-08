@@ -65,7 +65,7 @@ def configure_metrics(suite_dir, ansible_engine, ansible_hosts):
         metrics_bootstrap = os.path.join(suite_dir, '../common/test-scenarios-files/metrics_bootstrap')
         ansible_engine.copy(src=metrics_bootstrap, dest='/root/')
 
-        ansible_engine.shell('ansible-playbook ' '/root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml')
+        ansible_engine.shell('ansible-playbook /root/metrics_bootstrap/engine-fluentd-aggregator-playbook.yml')
 
     # clean /var/cache from yum leftovers. Frees up ~65M
     ansible_engine.file(path='/var/cache/dnf', state='absent')

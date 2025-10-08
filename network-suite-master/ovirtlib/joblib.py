@@ -15,8 +15,8 @@ class EngineJobs(SDKRootEntity):
         super(EngineJobs, self).__init__(parent_sdk_system)
         self._job_description_predicate = job_description_predicate
 
-    def _get_parent_service(self, system):
-        return system.jobs_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.jobs_service
 
     def list(self):
         return [

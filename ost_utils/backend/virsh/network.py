@@ -39,7 +39,7 @@ def add_name(
             # 2. Remove and then add?
             # 3. raise an exception and let caller catch/handle
             # 4. Let caller decide whether we fail
-            LOGGER.warn(f"Failed '{cmd}', ignoring", exc_info=True)
+            LOGGER.warning(f"Failed '{cmd}', ignoring", exc_info=True)
 
     def run_net_update_add_dns(name, ip):
         run_net_update_add(

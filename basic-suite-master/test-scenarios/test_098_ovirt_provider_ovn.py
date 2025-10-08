@@ -79,6 +79,7 @@ def _request_auth_token(engine_name, engine_full_username, engine_password):
         OVN_PROVIDER_TOKEN_URL.format(hostname=engine_name),
         json=auth_request_data,
         verify=False,
+        timeout=60,
     )
     return response.json()
 
@@ -94,6 +95,7 @@ def _send_get(token_id, url):
         url,
         verify=False,
         headers={'X-Auth-Token': token_id},
+        timeout=60,
     )
     return response.json()
 
@@ -104,6 +106,7 @@ def _send_post(token_id, url, data):
         verify=False,
         headers={'X-Auth-Token': token_id},
         json=data,
+        timeout=60,
     )
     return response.json()
 
@@ -113,6 +116,7 @@ def _send_delete(token_id, url, id):
         parse.urljoin(url, id),
         verify=False,
         headers={'X-Auth-Token': token_id},
+        timeout=60,
     )
 
 
@@ -310,7 +314,7 @@ def _get_ovirt_network(api, datacenter_id, network_name):
     for network in networks:
         if network.name == NETWORKS[network_name]['name']:
             return network.id
-    raise Exception('External network %s not found' % NETWORKS[network_name]['name'])
+    raise Exception(f'External network {NETWORKS[network_name]["name"]} not found')
 
 
 def _remove_network_from_ovirt(api, datacenter_id, network_id):
@@ -360,7 +364,7 @@ def _remove_iface_from_vm(api, vm_name, iface_name):
 
 
 def test_provider_configured(hosts_service, ost_dc_name):
-    hosts = hosts_service.list(search='datacenter={}'.format(ost_dc_name))
+    hosts = hosts_service.list(search=f'datacenter={ost_dc_name}')
     for host in hosts:
         assert host.ovn_configured
 

@@ -104,7 +104,7 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
 
     def _set_and_test_global_maintenance_mode():
         logging.debug('_set_and_test_global_maintenance_mode: Start')
-        ansible_host.shell('hosted-engine ' '--set-maintenance ' '--mode={}'.format('global' if mode else 'none'))
+        ansible_host.shell(f'hosted-engine --set-maintenance --mode={"global" if mode else "none"}')
         logging.debug('_set_and_test_global_maintenance_mode: After setting')
         return is_global_maintenance_mode(ansible_host) == mode
 

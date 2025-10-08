@@ -54,7 +54,7 @@ def ansible_by_hostname(ansible_inventory):
 
     def seq_to_ansible_pattern(seq):
         # https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html#using-regexes-in-patterns
-        return "~({})".format("|".join(seq))
+        return f"~({'|'.join(seq)})"
 
     def short_name(name):
         # lago inventory uses short domain names, not FQDN.

@@ -23,7 +23,7 @@ def add(api, domain, dc_name):
         )
 
     data_centers = system_service.data_centers_service()
-    dc = data_centers.list(search='name={}'.format(dc_name))[0]
+    dc = data_centers.list(search=f'name={dc_name}')[0]
     dc_service = data_centers.data_center_service(dc.id)
     attached_sds_service = dc_service.storage_domains_service()
 

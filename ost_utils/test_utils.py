@@ -7,7 +7,7 @@
 from functools import cache
 
 import ovirtsdk4
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 
 
 @cache
@@ -26,7 +26,7 @@ def get_network_fiter_parameters_service(engine, vm_name):
 @cache
 def get_vm_service(engine, vm_name):
     vms_service = engine.vms_service()
-    vm = vms_service.list(search='name={}'.format(vm_name))[0]
+    vm = vms_service.list(search=f'name={vm_name}')[0]
     if vm is None:
         return None
     return vms_service.vm_service(vm.id)
@@ -35,7 +35,7 @@ def get_vm_service(engine, vm_name):
 @cache
 def get_disk_service(engine, disk_name):
     disks_service = engine.disks_service()
-    disk = disks_service.list(search='name={}'.format(disk_name))[0]
+    disk = disks_service.list(search=f'name={disk_name}')[0]
     return disks_service.disk_service(disk.id)
 
 
@@ -59,14 +59,14 @@ def get_template_service(engine, template_name):
 @cache
 def get_pool_service(engine, pool_name):
     vm_pools_service = engine.vm_pools_service()
-    pool = vm_pools_service.list(search='name={}'.format(pool_name))[0]
+    pool = vm_pools_service.list(search=f'name={pool_name}')[0]
     return vm_pools_service.pool_service(pool.id)
 
 
 @cache
 def get_storage_domain_service(engine, sd_name):
     storage_domains_service = engine.storage_domains_service()
-    sd = storage_domains_service.list(search='name={}'.format(sd_name))[0]
+    sd = storage_domains_service.list(search=f'name={sd_name}')[0]
     return storage_domains_service.storage_domain_service(sd.id)
 
 
@@ -107,21 +107,21 @@ def get_storage_domain_disk_service_by_name(sd_service, disk_name):
 
 
 def hosts_in_cluster_v4(root, cluster_name):
-    hosts = root.hosts_service().list(search='cluster={}'.format(cluster_name))
+    hosts = root.hosts_service().list(search=f'cluster={cluster_name}')
     return sorted(hosts, key=lambda host: host.name)
 
 
 @cache
 def data_center_service(root, name):
     data_centers = root.data_centers_service()
-    dc = data_centers.list(search='name={}'.format(name))[0]
+    dc = data_centers.list(search=f'name={name}')[0]
     return data_centers.data_center_service(dc.id)
 
 
 @cache
 def get_cluster_service(engine, cluster_name):
     clusters_service = engine.clusters_service()
-    cluster = clusters_service.list(search='name={}'.format(cluster_name))[0]
+    cluster = clusters_service.list(search=f'name={cluster_name}')[0]
     return clusters_service.cluster_service(cluster.id)
 
 
@@ -155,13 +155,13 @@ def quote_search_string(s):
 @cache
 def get_vnic_profiles_service(engine, network_name):
     networks_service = engine.networks_service()
-    net = networks_service.list(search='name={}'.format(network_name))[0]
+    net = networks_service.list(search=f'name={network_name}')[0]
     return networks_service.network_service(net.id).vnic_profiles_service()
 
 
 def all_jobs_finished(engine, correlation_id):
     try:
-        jobs = engine.jobs_service().list(search='correlation_id=%s' % correlation_id)
+        jobs = engine.jobs_service().list(search=f'correlation_id={correlation_id}')
     except ovirtsdk4.Error:
         jobs = engine.jobs_service().list()
     return all(job.status != types.JobStatus.STARTED for job in jobs)

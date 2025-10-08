@@ -20,7 +20,7 @@ PROFILE_STIG = 'stig'
 
 @pytest.fixture(scope="session")
 def he_mac_address():
-    return '54:52:{}'.format(':'.join(('{:02x}'.format(random.randrange(255)) for i in range(4))))
+    return f'54:52:{"".join((f"{random.randrange(255):02x}" for i in range(4)))}'
 
 
 # FIXME this is not a good idea when there are multiple networks currently, as
@@ -32,10 +32,7 @@ def he_ipv4_address(ansible_host0_facts):
     host0_ipv4 = ansible_host0_facts.get('ansible_default_ipv4').get('address')
     res = None
     if host0_ipv4:
-        res = '{prefix}.{suffix}'.format(
-            prefix='.'.join(host0_ipv4.split('.')[:3]),
-            suffix=random.randrange(50, 100),
-        )
+        res = f"{'.'.join(host0_ipv4.split('.')[:3])}.{random.randrange(50, 100)}"
     return res
 
 
@@ -49,16 +46,13 @@ def he_ipv6_address(ansible_host0_facts):
     res = None
     if host0_ipv6:
         *prefix, lasthextet = host0_ipv6.split(':')
-        res = '{prefix}:{prelast}63'.format(
-            prefix=':'.join(prefix),
-            prelast=lasthextet[:2],
-        )
+        res = f"{':'.join(prefix)}:{lasthextet[:2]}63"
     return res
 
 
 @pytest.fixture(scope="session")
 def he_host_name(backend):
-    return '{}-engine'.format('-'.join(backend.storage_hostname().split('-')[:-1]))
+    return f"{'-'.join(backend.storage_hostname().split('-')[:-1])}-engine"
 
 
 @pytest.fixture(scope="session")

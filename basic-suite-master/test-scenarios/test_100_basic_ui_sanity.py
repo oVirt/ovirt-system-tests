@@ -15,7 +15,7 @@ import subprocess
 import sys
 import time
 
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import pytest
 import requests
 import selenium.webdriver.remote.remote_connection
@@ -94,7 +94,7 @@ def test_secure_connection_should_fail_without_root_ca(engine_fqdn, engine_ip_ur
                 "curl",
                 "-sS",
                 "--resolve",
-                "{}:443:{}".format(engine_fqdn, engine_ip_url),
+                f"{engine_fqdn}:443:{engine_ip_url}",
                 engine_webadmin_url,
             ]
         )
@@ -112,7 +112,7 @@ def test_secure_connection_should_succeed_with_root_ca(engine_fqdn, engine_ip_ur
             "curl",
             "-sS",
             "--resolve",
-            "{}:443:{}".format(engine_fqdn, engine_ip_url),
+            f"{engine_fqdn}:443:{engine_ip_url}",
             "--cacert",
             engine_cert,
             engine_webadmin_url,
@@ -152,7 +152,7 @@ def ovirt_driver(
 @pytest.fixture(scope="session")
 def selenium_artifacts_dir(artifacts_dir):
     dc_version = os.environ.get('OST_DC_VERSION', '')
-    path = os.path.join(artifacts_dir, 'ui_tests_artifacts%s/' % dc_version)
+    path = os.path.join(artifacts_dir, f'ui_tests_artifacts{dc_version}/')
     os.umask(0)
     os.makedirs(path, mode=0o777, exist_ok=True)
     return path
@@ -162,7 +162,7 @@ def selenium_artifacts_dir(artifacts_dir):
 def selenium_artifact_filename(selenium_browser_name):
     def _selenium_artifact_filename(description, extension):
         date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        return "{}_{}_{}.{}".format(date, selenium_browser_name, description, extension)
+        return f"{date}_{selenium_browser_name}_{description}.{extension}"
 
     return _selenium_artifact_filename
 
@@ -630,7 +630,7 @@ def test_virtual_machines(
     # Teste console file download
     vm_list_view.download_console_file(console_file_full_path, ansible_storage, selenium_remote_artifacts_dir)
 
-    with open(console_file_full_path) as f:
+    with open(console_file_full_path, encoding='utf-8') as f:
         console_file_text = f.read()
         assert '[virt-viewer]' in console_file_text
         assert '[ovirt]' in console_file_text
@@ -712,7 +712,7 @@ def test_disks(ovirt_driver, selenium_browser_name, image_local_path):
     assert disks_list_view.is_copy_button_enabled() is True
     assert disks_list_view.is_upload_button_enabled() is True
 
-    image_name = "{}-{}".format(selenium_browser_name, int(time.time()))
+    image_name = f"{selenium_browser_name}-{int(time.time())}"
     disks_list_view.upload(image_local_path, image_name)
     assert assert_utils.equals_within_short(lambda: disks_list_view.get_status(image_name), 'OK')
 

@@ -50,9 +50,9 @@ def vms_service(system_service):
 @pytest.fixture(scope="session")
 def get_vm_service_for_vm(vms_service):
     def service_for(vm_name):
-        vms = vms_service.list(search='name={}'.format(vm_name))
+        vms = vms_service.list(search=f'name={vm_name}')
         if len(vms) != 1:
-            raise RuntimeError("Could not find vm: {}".format(vm_name))
+            raise RuntimeError(f"Could not find vm: {vm_name}")
         return vms_service.vm_service(vms[0].id)
 
     return service_for
@@ -61,9 +61,9 @@ def get_vm_service_for_vm(vms_service):
 @pytest.fixture(scope="session")
 def get_template_service_for_template(templates_service):
     def service_for(template_name):
-        templates = templates_service.list(search='name={}'.format(template_name))
+        templates = templates_service.list(search=f'name={template_name}')
         if len(templates) != 1:
-            raise RuntimeError("Could not find template: {}".format(template_name))
+            raise RuntimeError(f"Could not find template: {template_name}")
         return templates_service.template_service(templates[0].id)
 
     return service_for

@@ -5,7 +5,7 @@
 #
 
 import ovirtsdk4 as sdk4
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 
 from ost_utils import assert_utils
 
@@ -49,7 +49,7 @@ def perform_vm_backup(
 def perform_incremental_vm_backup(engine_api, backups_service, disk_name, correlation_id):
     engine = engine_api.system_service()
     disks_service = engine.disks_service()
-    disk = disks_service.list(search='name={}'.format(disk_name))[0]
+    disk = disks_service.list(search=f'name={disk_name}')[0]
 
     # Start a full backup.
     full_checkpoint_id = perform_vm_backup(

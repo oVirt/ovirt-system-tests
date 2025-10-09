@@ -52,7 +52,7 @@ class SDKEntity(metaclass=abc.ABCMeta):
         try:
             entity_id = next(entities).id
         except StopIteration:
-            raise EntityNotFoundError('entity "{}" was not found.'.format(name))
+            raise EntityNotFoundError(f'entity "{name}" was not found.')
         service = self._parent_service.service(entity_id)
         self._set_service(service)
 

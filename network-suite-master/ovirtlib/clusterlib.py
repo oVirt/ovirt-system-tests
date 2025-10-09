@@ -85,8 +85,8 @@ class MacPool(SDKRootEntity):
                 raise MacPoolContainsDuplicatesError(message)
             raise
 
-    def _get_parent_service(self, system):
-        return system.mac_pools_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.mac_pools_service
 
 
 class Cluster(SDKRootEntity):
@@ -157,8 +157,8 @@ class Cluster(SDKRootEntity):
     def _report_is_empty(self, when):
         eventlib.EngineEvents(self.system).add(f'OST - {when} wait until empty: cluster empty({self.is_empty()})')
 
-    def _get_parent_service(self, system):
-        return system.clusters_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.clusters_service
 
     @staticmethod
     def iterate(system):
@@ -191,8 +191,8 @@ class ClusterNetwork(SDKSubEntity):
         service = self._parent_service.service(dc_network.id)
         self._set_service(service)
 
-    def _get_parent_service(self, cluster):
-        return cluster.service.networks_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.networks_service()
 
     @property
     def usages(self):

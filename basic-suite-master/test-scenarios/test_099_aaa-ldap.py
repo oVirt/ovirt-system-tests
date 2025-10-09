@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import os
 import tempfile
 
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import pytest
 
 from ost_utils import engine_utils
@@ -44,11 +44,11 @@ def test_add_ldap_provider(
         pytest.skip('Testing only on rhel8 images.')
     answer_file_src = os.path.join(root_dir, 'common/answer-files/aaa-ldap-answer-file.conf')
 
-    with open(answer_file_src, 'r') as f:
+    with open(answer_file_src, 'r', encoding='utf-8') as f:
         content = f.read()
         content = content.replace('@389DS_IP@', machine_389ds_fqdn)
 
-    with tempfile.NamedTemporaryFile(mode='w') as temp:
+    with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8') as temp:
         temp.write(content)
         temp.flush()
         os.fsync(temp.fileno())

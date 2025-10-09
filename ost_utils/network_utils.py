@@ -53,7 +53,7 @@ def attach_network_to_host(host, nic_name, network_name, ip_configuration, bonds
 
 
 def modify_ip_config(engine, host, network_name, ip_configuration):
-    query = u'name={}'.format(test_utils.quote_search_string(network_name))
+    query = f'name={test_utils.quote_search_string(network_name)}'
 
     network_id = engine.networks_service().list(search=query)[0].id
 
@@ -95,7 +95,7 @@ def get_network_attachment(engine, host, network_name, dc_name):
 
 def set_network_usages_in_cluster(engine, network_name, cluster_name, usages):
     cluster_service = test_utils.get_cluster_service(engine, cluster_name)
-    query = u'name={}'.format(test_utils.quote_search_string(network_name))
+    query = f'name={test_utils.quote_search_string(network_name)}'
 
     network = engine.networks_service().list(search=query)[0]
     network_service = cluster_service.networks_service().network_service(id=network.id)
@@ -131,12 +131,12 @@ def get_default_ovn_provider_id(engine):
     for provider in service.list():
         if provider.name == constants.DEFAULT_OVN_PROVIDER_NAME:
             return provider.id
-    raise Exception('%s not present in oVirt' % constants.DEFAULT_OVN_PROVIDER_NAME)
+    raise RuntimeError(f'{constants.DEFAULT_OVN_PROVIDER_NAME} not present in oVirt')
 
 
 def add_networks(engine, dc_name, cluster_name, network_names):
     networks_service = engine.networks_service()
-    networks = list()
+    networks = []
     for net_name in network_names:
         network = networks_service.add(
             network=Network(

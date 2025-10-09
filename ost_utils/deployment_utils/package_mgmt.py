@@ -201,11 +201,11 @@ def _github_get(url: str, params: Optional[dict] = None) -> requests.Response:
     headers = {}
     github_token = os.environ.get("GITHUB_TOKEN")
     if github_token is None:
-        raise RuntimeError("GITHUB_TOKEN env variable is not defined - artifact retrieval " "won't be possible")
+        raise RuntimeError("GITHUB_TOKEN env variable is not defined - artifact retrieval won't be possible")
     headers["authorization"] = f"token {github_token}"
     if params is None:
         params = {}
-    response = requests.get(url, headers=headers, allow_redirects=True, params=params)
+    response = requests.get(url, headers=headers, allow_redirects=True, params=params, timeout=60)
     response.raise_for_status()
     return response
 
@@ -216,7 +216,7 @@ def _github_list_artifacts(repo: str, workflow_run: str) -> list[_GitHubArtifact
     The returned list contains the GitHub API data struct
     """
     artifacts_response = _github_get(
-        f"https://api.github.com/repos/oVirt/{repo}/" f"actions/runs/{workflow_run}/artifacts"
+        f"https://api.github.com/repos/oVirt/{repo}/actions/runs/{workflow_run}/artifacts"
     )
     artifacts: _GitHubArtifactResponse
     artifacts = _GitHubArtifactResponse(artifacts_response.json())
@@ -236,7 +236,7 @@ def _github_download_artifact(artifact: _GitHubArtifact, target_dir: str) -> str
     """
     target_file_path = os.path.join(target_dir, artifact.name)
     response = _github_get(artifact.archive_download_url)
-    with open(target_file_path, "wb") as target_file:
+    with open(target_file_path, "wb", encoding="utf-8") as target_file:
         target_file.write(response.content)
     return target_file_path
 
@@ -258,7 +258,7 @@ def add_custom_repos(ansible_vm, repo_urls):
 
 def disable_all_repos(ansible_vm):
     # dnf is grumpy when it has no repos to work with, keep "dummy" enabled
-    ansible_vm.shell('dnf config-manager --disable \'*\';' 'dnf config-manager --enable dummy;' ':')
+    ansible_vm.shell('dnf config-manager --disable \'*\'; dnf config-manager --enable dummy; :')
 
 
 def check_installed_packages(ansible_vms):

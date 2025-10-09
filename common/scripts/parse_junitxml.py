@@ -29,5 +29,5 @@ if __name__ == '__main__':
     else:
         message = 'Success!'
 
-    with open(sys.argv[2], 'w') as result_file:
+    with open(sys.argv[2], 'w', encoding='utf-8') as result_file:
         result_file.write(message)

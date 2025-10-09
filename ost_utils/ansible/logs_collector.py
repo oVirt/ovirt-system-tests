@@ -35,7 +35,7 @@ class LogsCollector:
 
         for host, events in all_events.items():
             log_path = os.path.join(target_dir, host)
-            with open(log_path, 'w') as log_file:
+            with open(log_path, 'w', encoding='utf-8') as log_file:
                 for event in sorted(events, key=lambda e: e['created']):
                     log_file.write(event['stdout'])
                     log_file.write('\n')
@@ -45,7 +45,7 @@ class LogsCollector:
         events = {}
 
         for path in event_data_files:
-            with open(path) as event_file:
+            with open(path, encoding='utf-8') as event_file:
                 event = json.load(event_file)
                 if cls._should_include_event(event):
                     host = event['event_data']['host']

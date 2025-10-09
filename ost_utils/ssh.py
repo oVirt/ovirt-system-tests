@@ -52,7 +52,7 @@ def ssh(
         command_id,
         host_name,
         joined_command,
-        data is not None and (' < "%s"' % data) or '',
+        data is not None and (f' < "{data}"') or '',
     )
     channel.exec_command(joined_command)
     if data is not None:
@@ -245,7 +245,7 @@ def get_ssh_client(
         time.sleep(1)
     else:
         end_time = time.time()
-        raise OSTSSHTimeoutException('Timed out (in %d s) trying to ssh to %s' % (end_time - start_time, host_name))
+        raise OSTSSHTimeoutException(f'Timed out (in {end_time - start_time} s) trying to ssh to {host_name}')
     return client
 
 

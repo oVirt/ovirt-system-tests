@@ -38,5 +38,5 @@ def test_bond_active_slave(system, default_data_center, default_cluster, host_0_
             )
         except syncutil.Timeout:
             raise ActiveSlaveNotChangedError(
-                'active slave: {} initial active slave: {}'.format(bond.active_slave.name, initial_active_slave.name)
+                f'active slave: {bond.active_slave.name} initial active slave: {initial_active_slave.name}'
             )

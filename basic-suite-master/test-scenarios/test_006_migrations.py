@@ -30,7 +30,7 @@ DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
 NIC_NAME = 'eth0'
-VLAN200_IF_NAME = '{}.200'.format(NIC_NAME)
+VLAN200_IF_NAME = f'{NIC_NAME}.200'
 
 DEFAULT_MTU = 1500
 
@@ -80,14 +80,14 @@ def migrate_vm(all_hosts_hostnames, ansible_by_hostname, system_service):
 
     def _current_running_host():
         host_id = vm_service.get().host.id
-        host = hosts_service.list(search='id={}'.format(host_id))[0]
+        host = hosts_service.list(search=f'id={host_id}')[0]
         return host.name
 
     src_host = _current_running_host()
     dst_host = next(iter(all_hosts_hostnames - {src_host}))
 
-    LOGGER.debug('source host: {}'.format(src_host))
-    LOGGER.debug('destination host: {}'.format(dst_host))
+    LOGGER.debug(f'source host: {src_host}')
+    LOGGER.debug(f'destination host: {dst_host}')
 
     correlation_id = uuid.uuid4()
     vm_service.migrate(host=Host(name=dst_host), query={'correlation_id': correlation_id})

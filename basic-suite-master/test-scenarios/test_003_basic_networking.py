@@ -25,7 +25,7 @@ DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
 # Networks
-VM_NETWORK = u'VM Network with a very long name and עברית'
+VM_NETWORK = 'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
 BOND_NAME = 'bond_fancy0'
@@ -70,12 +70,12 @@ def test_bond_nics(host0, host1, migration_network, bonding_data, bond_attachmen
 
 def test_verify_interhost_connectivity_ipv4(ansible_host0, static_ips):
     host_1_ip_addr = static_ips['migration_net_1']['inet'].address
-    ansible_host0.shell('ping -c 1 {}'.format(host_1_ip_addr))
+    ansible_host0.shell(f'ping -c 1 {host_1_ip_addr}')
 
 
 def test_verify_interhost_connectivity_ipv6(ansible_host0, static_ips):
     host_1_ip_addr = static_ips['migration_net_1']['inet6'].address
-    ansible_host0.shell('ping -c 1 -6 {}'.format(host_1_ip_addr))
+    ansible_host0.shell(f'ping -c 1 -6 {host_1_ip_addr}')
 
 
 def test_remove_bonding(host0, host1, migration_network, migration_cluster_network):

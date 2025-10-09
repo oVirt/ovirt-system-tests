@@ -59,7 +59,7 @@ def test_add_labeled_network(networks_service, ost_dc_name):
     labeled_net = Network(
         name=LABELED_NET_NAME,
         data_center=DataCenter(name=ost_dc_name),
-        description='Labeled network on VLAN {}'.format(LABELED_NET_VLAN_ID),
+        description=f'Labeled network on VLAN {LABELED_NET_VLAN_ID}',
         usages=[],
         # because only one non-VLAN network, here 'ovirtmgmt', can be assigned
         # to each nic, this additional network has to be a VLAN network

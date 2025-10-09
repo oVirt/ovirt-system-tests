@@ -16,7 +16,7 @@ import time
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import pytest
 
 from ost_utils import assert_utils
@@ -45,8 +45,8 @@ from ost_utils import keycloak
 
 LOGGER = logging.getLogger(__name__)
 
-MB = 2 ** 20
-GB = 2 ** 30
+MB = 2**20
+GB = 2**30
 
 # DC/Cluster
 DC_VER_MAJ, DC_VER_MIN = versioning.cluster_version()
@@ -72,7 +72,7 @@ SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 
 # Network
-VM_NETWORK = u'VM Network with a very long name and עברית'
+VM_NETWORK = 'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'
 MANAGEMENT_NETWORK = 'ovirtmgmt'
@@ -196,7 +196,7 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn, engine_do
 @pytest.mark.parametrize("scheme", ["http", "https"])
 @order_by(_TEST_LIST)
 def test_engine_health_status(scheme, engine_fqdn, engine_download):
-    url = '{}://{}/ovirt-engine/services/health'.format(scheme, engine_fqdn)
+    url = f'{scheme}://{engine_fqdn}/ovirt-engine/services/health'
 
     assert engine_download(url) == b"DB Up!Welcome to Health Status!"
 
@@ -262,7 +262,7 @@ def test_remove_default_cluster(engine_api, ost_cluster_name):
 @order_by(_TEST_LIST)
 def test_add_dc_quota(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
+    datacenter = datacenters_service.list(search=f'name={ost_dc_name}')[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     assert quotas_service.add(
@@ -332,7 +332,7 @@ def test_add_hosts(
         return engine.hosts_service().add(
             sdk4.types.Host(
                 name=hostname,
-                description='host %s' % hostname,
+                description=f'host {hostname}',
                 address=hostname,
                 root_password=root_password,
                 override_iptables=True,
@@ -389,9 +389,9 @@ def test_complete_hosts_setup(ansible_hosts):
     )
 
     for name, qualified_name in loggers:
-        ansible_hosts.shell('vdsm-client Host setLogLevel level=DEBUG name={}'.format(qualified_name))
-        sed_expr = '/logger_{}/,/level=/s/level=INFO/level=DEBUG/'.format(name)
-        ansible_hosts.shell('sed -i {} /etc/vdsm/logger.conf'.format(sed_expr))
+        ansible_hosts.shell(f'vdsm-client Host setLogLevel level=DEBUG name={qualified_name}')
+        sed_expr = f'/logger_{name}/,/level=/s/level=INFO/level=DEBUG/'
+        ansible_hosts.shell(f'sed -i {sed_expr} /etc/vdsm/logger.conf')
 
 
 @pytest.fixture(scope="session")
@@ -439,7 +439,7 @@ def test_add_nfs_master_storage_domain(
 
 def add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, dc_name):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
-    LOGGER.debug('random host: {}'.format(random_host.name))
+    LOGGER.debug(f'random host: {random_host.name}')
 
     nfs.add_domain(
         engine_api,
@@ -455,7 +455,7 @@ def add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, 
 # TODO: add this over the storage network and with IPv6
 def add_second_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, dc_name):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
-    LOGGER.debug('random host: {}'.format(random_host.name))
+    LOGGER.debug(f'random host: {random_host.name}')
 
     nfs.add_domain(
         engine_api,
@@ -577,7 +577,7 @@ def add_iscsi_storage_domain(engine_api, hosts_service, luns, dc_name):
 
 def add_iso_storage_domain(engine_api, hosts_service, sd_host_storage_ip, dc_name):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
-    LOGGER.debug('random host: {}'.format(random_host.name))
+    LOGGER.debug(f'random host: {random_host.name}')
 
     nfs.add_domain(
         engine_api,
@@ -594,7 +594,7 @@ def add_iso_storage_domain(engine_api, hosts_service, sd_host_storage_ip, dc_nam
 
 def add_templates_storage_domain(engine_api, hosts_service, sd_host_storage_ip, dc_name):
     random_host = host_utils.random_up_host(hosts_service, dc_name)
-    LOGGER.debug('random host: {}'.format(random_host.name))
+    LOGGER.debug(f'random host: {random_host.name}')
 
     nfs.add_domain(
         engine_api,
@@ -612,7 +612,7 @@ def add_templates_storage_domain(engine_api, hosts_service, sd_host_storage_ip, 
 @order_by(_TEST_LIST)
 def test_set_dc_quota_audit(engine_api, ost_dc_name):
     dcs_service = engine_api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % ost_dc_name)[0]
+    dc = dcs_service.list(search=f'name={ost_dc_name}')[0]
     dc_service = dcs_service.data_center_service(dc.id)
     assert dc_service.update(
         types.DataCenter(
@@ -626,7 +626,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
 
     # Find the data center and the service that manages it:
     dcs_service = engine_api.system_service().data_centers_service()
-    dc = dcs_service.list(search='name=%s' % ost_dc_name)[0]
+    dc = dcs_service.list(search=f'name={ost_dc_name}')[0]
     dc_service = dcs_service.data_center_service(dc.id)
 
     # Find the storage domain and the service that manages it:
@@ -673,7 +673,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
 @order_by(_TEST_LIST)
 def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
-    datacenter = datacenters_service.list(search='name=%s' % ost_dc_name)[0]
+    datacenter = datacenters_service.list(search=f'name={ost_dc_name}')[0]
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     quotas = quotas_service.list()
@@ -690,7 +690,7 @@ def test_add_vm_network(engine_api, ost_dc_name, ost_cluster_name):
     network = network_utils.create_network_params(
         VM_NETWORK,
         ost_dc_name,
-        description='VM Network (originally on VLAN {})'.format(VM_NETWORK_VLAN_ID),
+        description=f'VM Network (originally on VLAN {VM_NETWORK_VLAN_ID})',
         vlan=sdk4.types.Vlan(
             id=VM_NETWORK_VLAN_ID,
         ),
@@ -871,7 +871,7 @@ def test_get_cluster_enabled_features(engine_api, ost_cluster_name):
             return True
         else:
             feature_list += feature.name + '; '
-    raise RuntimeError('Feature XYZ is not in cluster enabled features: {0}'.format(feature_list))
+    raise RuntimeError(f'Feature XYZ is not in cluster enabled features: {feature_list}')
 
 
 @order_by(_TEST_LIST)
@@ -888,7 +888,7 @@ def test_get_cluster_levels(engine_api):
             return True
         else:
             levels += level.id + '; '
-    raise RuntimeError('Could not find 4.2 in cluster_levels: {0}'.format(levels))
+    raise RuntimeError(f'Could not find 4.2 in cluster_levels: {levels}')
 
 
 @order_by(_TEST_LIST)
@@ -916,7 +916,7 @@ def test_get_host_devices(hosts_service, ost_dc_name):
             else:
                 device_list += device.name + '; '
         time.sleep(1)
-    raise RuntimeError("Could not find '{}' device in host devices: {}".format(ost_root_disk, device_list))
+    raise RuntimeError(f"Could not find '{ost_root_disk}' device in host devices: {device_list}")
 
 
 @order_by(_TEST_LIST)
@@ -954,7 +954,7 @@ def test_get_host_stats(hosts_service, ost_dc_name):
             return True
         else:
             stats_list += stat.name + '; '
-    raise RuntimeError('boot.time stat not in stats: {0}'.format(stats_list))
+    raise RuntimeError(f'boot.time stat not in stats: {stats_list}')
 
 
 @order_by(_TEST_LIST)
@@ -1034,7 +1034,7 @@ def test_get_operating_systems(engine_api):
             return True
         else:
             os_string += os.name + '; '
-    raise RuntimeError('Could not find rhel_7x64 in operating systems list: {0}'.format(os_string))
+    raise RuntimeError(f'Could not find rhel_7x64 in operating systems list: {os_string}')
 
 
 @order_by(_TEST_LIST)
@@ -1299,7 +1299,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
 def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
     engine = engine_api.system_service()
     hosts_service = engine.hosts_service()
-    hosts = hosts_service.list(search='datacenter={} AND status=up'.format(ost_dc_name))
+    hosts = hosts_service.list(search=f'datacenter={ost_dc_name} AND status=up')
 
     vms_service = engine.vms_service()
     vms_service.add(
@@ -1406,7 +1406,7 @@ def test_configure_high_perf_vm2(engine_api):
         assert vm2_numanodes_service.add(
             node=sdk4.types.VirtualNumaNode(
                 index=i,
-                name='{0} vnuma node {1}'.format(VM2_NAME, i),
+                name=f'{VM2_NAME} vnuma node {i}',
                 memory=total_memory // total_vcpus,
                 cpu=sdk4.types.Cpu(
                     cores=[
@@ -1431,7 +1431,7 @@ def test_configure_high_perf_vm2(engine_api):
 def test_add_vm2_lease(engine_api):
     engine = engine_api.system_service()
     vm2_service = test_utils.get_vm_service(engine, VM2_NAME)
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
+    sd = engine.storage_domains_service().list(search=f'name={SD_SECOND_NFS_NAME}')[0]
 
     vm2_service.update(
         vm=sdk4.types.Vm(
@@ -1461,7 +1461,7 @@ def test_add_nic(engine_api):
     # Locate the virtual machines service and use it to find the virtual
     # machine:
     vms_service = engine_api.system_service().vms_service()
-    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+    vm = vms_service.list(search=f'name={VM0_NAME}')[0]
 
     # Locate the service that manages the network interface cards of the
     # virtual machine:
@@ -1477,7 +1477,7 @@ def test_add_nic(engine_api):
         ),
     )
 
-    vm = vms_service.list(search='name=%s' % VM2_NAME)[0]
+    vm = vms_service.list(search=f'name={VM2_NAME}')[0]
     nics_service = vms_service.vm_service(vm.id).nics_service()
     nics_service.add(
         types.Nic(
@@ -1525,7 +1525,7 @@ def test_add_filter(engine_api, tested_ip_version):
 
     vnic_profile = vnic_profiles_service.add(
         sdk4.types.VnicProfile(
-            name='{}_profile'.format(network_filter.name),
+            name=f'{network_filter.name}_profile',
             network=network,
             network_filter=network_filter,
         )
@@ -1551,7 +1551,7 @@ def test_add_serial_console_vm2(engine_api):
     # Find the virtual machine. Note the use of the `all_content` parameter, it is
     # required in order to obtain additional information that isn't retrieved by
     # default, like the configuration of the serial console.
-    vm = engine.vms_service().list(search='name={}'.format(VM2_NAME), all_content=True)[0]
+    vm = engine.vms_service().list(search=f'name={VM2_NAME}', all_content=True)[0]
     if not vm.console.enabled:
         vm_service = test_utils.get_vm_service(engine, VM2_NAME)
         with engine_utils.wait_for_event(engine, 35):  # USER_UPDATE_VM event
@@ -1643,7 +1643,7 @@ def test_add_direct_lun_vm0(engine_api, sd_iscsi_host_direct_luns):
 
         disk_service = test_utils.get_disk_service(engine, DLUN_DISK_NAME)
         attachment_service = disk_attachments_service.attachment_service(disk_service.get().id)
-        assert attachment_service.get() is not None, 'Failed to attach Direct LUN disk to {}'.format(VM0_NAME)
+        assert attachment_service.get() is not None, f'Failed to attach Direct LUN disk to {VM0_NAME}'
 
 
 @order_by(_TEST_LIST)
@@ -1751,7 +1751,11 @@ def test_upload_cirros_image(
 ):
     collection = CollectionMapper(ansible_engine)
 
-    ovirt_auth = collection.ovirt_auth(hostname=engine_fqdn, username=engine_full_username, password=engine_password,)[
+    ovirt_auth = collection.ovirt_auth(
+        hostname=engine_fqdn,
+        username=engine_full_username,
+        password=engine_password,
+    )[
         "ansible_facts"
     ]["ovirt_auth"]
 

@@ -47,7 +47,7 @@ def test_lower_ha_agent_vdsm_connection_timeout(
     ansible_all,
 ):
     conspath = ansible_host0.shell(
-        "python3 -c " "'from ovirt_hosted_engine_ha.env import constants; " "print(constants.__file__)'"
+        "python3 -c 'from ovirt_hosted_engine_ha.env import constants; print(constants.__file__)'"
     )['stdout_lines'][0]
     ansible_all.lineinfile(
         path=conspath,

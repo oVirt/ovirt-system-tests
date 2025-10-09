@@ -77,14 +77,14 @@ class Node(object):
         self._client.close()
 
     def set_mtu(self, iface_name, mtu_value):
-        self.exec_command('ip link set {iface} mtu {mtu}'.format(iface=iface_name, mtu=mtu_value))
+        self.exec_command(f'ip link set {iface_name} mtu {mtu_value}')
 
     def change_active_slave(self, bond_name, slave_name):
         """ "
         :param bond_name: str
         :param slave_name: str
         """
-        self.exec_command('ip link set {bond} type bond active_slave {slave}'.format(bond=bond_name, slave=slave_name))
+        self.exec_command(f'ip link set {bond_name} type bond active_slave {slave_name}')
 
     def assert_no_ping_from_netns(self, target, from_netns):
         with pytest.raises(SshException, match='100% packet loss'):

@@ -9,11 +9,12 @@ import pytest
 from ost_utils import engine_utils
 from ost_utils import general_utils
 from ost_utils.pytest import order_by
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 import logging
 
 LOGGER = logging.getLogger(__name__)
 DC_NAME = 'test-dc'
+
 
 @pytest.fixture(scope='module')
 def updates_available():
@@ -38,7 +39,7 @@ def _host_status_to_print(hosts_service, hosts_list):
 def _wait_for_status(hosts_service, dc_name, status):
     up_status_seen = False
     for _ in general_utils.linear_retrier(attempts=12, iteration_sleeptime=10):
-        all_hosts = hosts_service.list(search='datacenter={}'.format(dc_name))
+        all_hosts = hosts_service.list(search=f'datacenter={dc_name}')
         up_hosts = [host for host in all_hosts if host.status == status]
         LOGGER.info(_host_status_to_print(hosts_service, all_hosts))
         # we use up_status_seen because we make sure the status is not flapping
@@ -51,56 +52,54 @@ def _wait_for_status(hosts_service, dc_name, status):
     return all_hosts
 
 
-"""
-1)
-can be done in a more anisble oriented way
-if fixture to be set temporarily with check_mode
-and getting all info at once
-e.g using
-- name: global
-  connection: local
-  hosts: localhost
-  check_mode: yes
-  tasks:
-    - name: yum check | Check for updates
-      yum:
-        name: "ovirt-node-ng-image-update"
-        state: latest
-      register: stat_yum_check_output
-   "results": [
-       "Installed: ovirt-node-ng-image-update-4.4.4-1.el8.noarch",
-       "Removed: ovirt-node-ng-image-update-placeholder-4.4.3-2.el8.noarch"
-   ]
-  current ansible implementation does not enable temporary setting for
-  check_mode: yes
-  and none of such is available in yum.
-
-2)
-  using host_service.upgrade_check() requires gathering and parsing of
-  engine's /var/log/ovirt-engine/ansible-runner-service.log
-  grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
-  tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-  grep -Po "(?<=version': ')(\d+\.){2}\d+"
-  and
-  grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
-  tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-  grep -Po "(?<=release': ')\d+\.\w+"
-  or
-  grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
-  tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-  grep -Po "'(?=release|version)[^,]+'" | head -n2
-"""
 def test_update_check(engine_api, ansible_hosts, ansible_host0_facts,
                       updates_available, versions_available):
+    """
+    1)
+    can be done in a more anisble oriented way
+    if fixture to be set temporarily with check_mode
+    and getting all info at once
+    e.g using
+    - name: global
+    connection: local
+    hosts: localhost
+    check_mode: yes
+    tasks:
+        - name: yum check | Check for updates
+        yum:
+            name: "ovirt-node-ng-image-update"
+            state: latest
+        register: stat_yum_check_output
+    "results": [
+        "Installed: ovirt-node-ng-image-update-4.4.4-1.el8.noarch",
+        "Removed: ovirt-node-ng-image-update-placeholder-4.4.3-2.el8.noarch"
+    ]
+    current ansible implementation does not enable temporary setting for
+    check_mode: yes
+    and none of such is available in yum.
+
+    2)
+    using host_service.upgrade_check() requires gathering and parsing of
+    engine's /var/log/ovirt-engine/ansible-runner-service.log
+    grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
+    tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
+    grep -Po "(?<=version': ')(\d+\.){2}\d+"
+    and
+    grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
+    tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
+    grep -Po "(?<=release': ')\d+\.\w+"
+    or
+    grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
+    tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
+    grep -Po "'(?=release|version)[^,]+'" | head -n2
+    """
     installed = ansible_hosts.shell(
         "rpm -q ovirt-node-ng-image-update-placeholder "
         "--queryformat '%{RPMTAG_VERSION}-%{RPMTAG_RELEASE}\n'")
     available = ansible_hosts.shell(
         "yum list available | grep ovirt-node-ng-image-update.noarch |"
         "awk '{print $2}'")
-    LOGGER.info("{} installed\n"
-          "{} available".format(installed['stdout'],
-                                available['stdout']))
+    LOGGER.info(f"{installed['stdout']} installed\n{available['stdout']} available")
     if available['stdout'] and available['stdout'] != installed['stdout']:
         versions_available['node'] = available['stdout']
         updates_available['node'] = 'yes'
@@ -111,17 +110,16 @@ def test_update_host(engine_api, ansible_by_hostname, updates_available,
     if updates_available['node'] == 'yes':
         engine = engine_api.system_service()
         hosts = engine_api.system_service().hosts_service()
-        total_hosts = len(hosts.list(search='datacenter={}'.format(DC_NAME)))
+        total_hosts = len(hosts.list(search=f'datacenter={DC_NAME}'))
         _timeout = 40*60*total_hosts
 
         def _perform_update():
             host_list = hosts.list()
-            LOGGER.info(
-                "_perform_update called with timout {}".format(host_list))
+            LOGGER.info(f"_perform_update called with timeout {host_list}")
 
             for host in host_list:
                 host_service = hosts.host_service(host.id)
-                LOGGER.info("_perform_update on host id:{}".format(host.id))
+                LOGGER.info(f"_perform_update on host id:{host.id}")
                 with engine_utils.wait_for_event(engine, [884, 885], _timeout):
                     LOGGER.info("upgrade check")
                     # HOST_AVAILABLE_UPDATES_STARTED(884)
@@ -146,9 +144,7 @@ def test_update_host(engine_api, ansible_by_hostname, updates_available,
                 new_ver = ansible_host.shell(
                     "cat /var/imgbased/.image-updated |"
                     "grep -Po '(?<=update-).*(?=.squashfs.img)'")
-                LOGGER.info(
-                    "{} upgraded to: {}".format(host.name,
-                                                new_ver['stdout_lines']))
+                LOGGER.info(f"{host.name} upgraded to: {new_ver['stdout_lines']}")
                 assert new_ver['stdout_lines'] == [versions_available['node']]
             return True
 

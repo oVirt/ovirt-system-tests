@@ -22,7 +22,7 @@ class Timeout(Exception):
         return self.args[0]
 
     def __str__(self):
-        return "Last evaluated result: {}".format(self.args[0])
+        return f"Last evaluated result: {self.args[0]}"
 
 
 def sync(
@@ -119,10 +119,10 @@ def sync(
 def _audit(exec_func, sdk_entity, i):
     if sdk_entity:
         try:
-            repr = sdk_entity.__repr__()
+            repr_str = repr(sdk_entity)
         except Exception:
-            repr = f'{sdk_entity.__class__.__name__}.__repr__() call failed'
-        eventlib.EngineEvents(sdk_entity.system).add(f'{DELIM} OST - retry[{i}] {exec_func.__name__}: {repr}')
+            repr_str = f'{sdk_entity.__class__.__name__}.__repr__() call failed'
+        eventlib.EngineEvents(sdk_entity.system).add(f'{DELIM} OST - retry[{i}] {exec_func.__name__}: {repr_str}')
 
 
 def re_run(exec_func, exec_func_args, count, interval):

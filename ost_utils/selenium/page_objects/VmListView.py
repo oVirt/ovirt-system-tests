@@ -26,15 +26,15 @@ class VmListView(EntityListView):
             'MainVirtualMachineView_table_content_col2_row',
         )
 
-    def open_detail_view(self, vm_name):
-        super().open_detail_view(vm_name)
+    def open_detail_view(self, entity_name):
+        super().open_detail_view(entity_name)
 
-        vm_detail_view = VmDetailView(self.ovirt_driver, self.breadcrumbs, vm_name)
+        vm_detail_view = VmDetailView(self.ovirt_driver, self.breadcrumbs, entity_name)
         vm_detail_view.wait_for_displayed()
         return vm_detail_view
 
-    def edit(self, name):
-        super().edit(name)
+    def edit(self, entity_name):
+        super().edit(entity_name)
 
         dialog = VmDialog(self.ovirt_driver, 'Edit')
         dialog.wait_for_displayed()
@@ -100,7 +100,7 @@ class VmListView(EntityListView):
         try:
             remote_path = os.path.join(remote_artifacts_dir, os.path.basename(console_file_full_path))
             ansible_selenium.fetch(src=remote_path, dest=console_file_full_path, flat=True)
-            with open(console_file_full_path) as console_file:
+            with open(console_file_full_path, encoding='utf-8') as console_file:
                 return '-----END CERTIFICATE-----' in console_file.read()
         except (FileNotFoundError, AnsibleExecutionError):
             return False

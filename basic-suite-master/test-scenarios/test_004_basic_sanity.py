@@ -17,7 +17,7 @@ from time import sleep
 import uuid
 
 import ovirtsdk4
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 
 import pytest
 
@@ -43,9 +43,9 @@ from ost_utils.storage_utils import backup
 LOGGER = logging.getLogger(__name__)
 
 
-KB = 2 ** 10
-MB = 2 ** 20
-GB = 2 ** 30
+KB = 2**10
+MB = 2**20
+GB = 2**30
 
 TEMPLATE_CENTOS7 = 'centos7_template'
 TEMPLATE_BLANK = 'Blank'
@@ -65,17 +65,17 @@ IMPORTED_VM_NAME = 'imported_vm'
 IMPORTED_TEMP_NAME = 'imported_temp'
 OVF_VM_NAME = 'ovf_vm'
 VMPOOL_NAME = 'test-pool'
-DISK0_NAME = '%s_disk0' % VM0_NAME
-DISK1_NAME = '%s_disk1' % VM1_NAME
-DISK2_NAME = '%s_disk2' % VM2_NAME
-DISK3_NAME = '%s_disk3' % VM1_NAME
+DISK0_NAME = f'{VM0_NAME}_disk0'
+DISK1_NAME = f'{VM1_NAME}_disk1'
+DISK2_NAME = f'{VM2_NAME}_disk2'
+DISK3_NAME = f'{VM1_NAME}_disk3'
 FLOATING_DISK_NAME = 'floating_disk'
 CONVERT_DISK_NAME = 'convert_disk'
-BACKUP_DISK_NAME = '%s_disk' % BACKUP_VM_NAME
+BACKUP_DISK_NAME = f'{BACKUP_VM_NAME}_disk'
 
 SD_TEMPLATES_NAME = 'templates'
 
-VM_NETWORK = u'VM Network with a very long name and עברית'
+VM_NETWORK = 'VM Network with a very long name and עברית'
 
 SNAPSHOT_DESC_1 = 'dead_snap1'
 SNAPSHOT_DESC_2 = 'dead_snap2'
@@ -90,7 +90,7 @@ OVA_TEMP_EXPORT_NAME = 'ova_temp.ova'
 OVA_DIR = '/var/tmp'
 IMPORTED_OVA_NAME = 'ova:///var/tmp/ova_vm.ova'
 IMPORTED_TEMP_OVA_NAME = 'ova:///var/tmp/ova_temp.ova'
-OVA_FILE_LOCATION = '%s/%s' % (OVA_DIR, OVA_VM_EXPORT_NAME)
+OVA_FILE_LOCATION = f'{OVA_DIR}/{OVA_VM_EXPORT_NAME}'
 
 _TEST_LIST = [
     "test_verify_add_all_hosts",
@@ -341,18 +341,17 @@ def test_extend_disk1(engine_api):
         disk = engine_api.follow_link(disk_attachment.disk)
         if disk.name == DISK1_NAME:
             attachment_service = disk_attachments_service.attachment_service(disk_attachment.id)
-    with engine_utils.wait_for_event(engine, 371):  # USER_EXTEND_DISK_SIZE_SUCCESS(371)
-        attachment_service.update(
-            types.DiskAttachment(
-                disk=types.Disk(
-                    provisioned_size=2 * GB,
+            with engine_utils.wait_for_event(engine, 371):  # USER_EXTEND_DISK_SIZE_SUCCESS(371)
+                attachment_service.update(
+                    types.DiskAttachment(
+                        disk=types.Disk(
+                            provisioned_size=2 * GB,
+                        )
+                    )
                 )
-            )
-        )
-
-        disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
-        assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
-        assert assert_utils.equals_within_short(lambda: disk_service.get().provisioned_size, 2 * GB)
+            disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
+            assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
+            assert assert_utils.equals_within_short(lambda: disk_service.get().provisioned_size, 2 * GB)
 
 
 @order_by(_TEST_LIST)
@@ -490,7 +489,7 @@ def vm0_fqdn_or_ip(tested_ip_version, management_subnet):
 @order_by(_TEST_LIST)
 def test_verify_transient_folder(assert_vm_is_alive, engine_api, get_ansible_host_for_vm, vm0_fqdn_or_ip):
     engine = engine_api.system_service()
-    sd = engine.storage_domains_service().list(search='name={}'.format(SD_SECOND_NFS_NAME))[0]
+    sd = engine.storage_domains_service().list(search=f'name={SD_SECOND_NFS_NAME}')[0]
     ansible_host = get_ansible_host_for_vm(BACKUP_VM_NAME)
     out = ansible_host.shell('ls /var/lib/vdsm/transient')['stdout']
 
@@ -557,7 +556,7 @@ def snapshot_cold_merge(engine_api):
     engine = engine_api.system_service()
     vm1_snapshots_service = test_utils.get_vm_snapshots_service(engine, VM1_NAME)
 
-    disk = engine.disks_service().list(search='name={} and vm_names={}'.format(DISK1_NAME, VM1_NAME))[0]
+    disk = engine.disks_service().list(search=f'name={DISK1_NAME} and vm_names={VM1_NAME}')[0]
 
     dead_snap1_params = types.Snapshot(
         description=SNAPSHOT_DESC_1,
@@ -641,7 +640,7 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
     vm0_id = vms_service.list(search=f'name={VM0_NAME}')[0].id
 
     master, slave = pty.openpty()
-    vmconsole_process = subprocess.Popen(
+    with subprocess.Popen(
         [
             'ssh',
             '-t',
@@ -659,26 +658,25 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         bufsize=0,
-    )
-
-    vmconsole_in = os.fdopen(master, 'w')
-    connection_success = False
-    for i in range(30):
-        vmconsole_in.write('\n')
-        response = vmconsole_process.stdout.read(1)
-        if len(response.strip()) != 0:
-            message = response + vmconsole_process.stdout.readline()
-            if (
-                f"login as '{VM_USER_NAME}'".encode() in message
-                or f'{VM0_NAME} login'.encode() in message
-                or 'box login'.encode() in message
-            ):
-                connection_success = True
-                break
-        sleep(1)
-    vmconsole_process.terminate()
-    # The test fails if the connection to vmconsole was unsuccessful after 30 seconds
-    assert connection_success
+    ) as vmconsole_process:
+        vmconsole_in = os.fdopen(master, 'w')
+        connection_success = False
+        for i in range(30):
+            vmconsole_in.write('\n')
+            response = vmconsole_process.stdout.read(1)
+            if len(response.strip()) != 0:
+                message = response + vmconsole_process.stdout.readline()
+                if (
+                    f"login as '{VM_USER_NAME}'".encode() in message
+                    or f'{VM0_NAME} login'.encode() in message
+                    or 'box login'.encode() in message
+                ):
+                    connection_success = True
+                    break
+            sleep(1)
+        vmconsole_process.terminate()
+        # The test fails if the connection to vmconsole was unsuccessful after 30 seconds
+        assert connection_success
 
 
 @order_by(_TEST_LIST)
@@ -753,7 +751,7 @@ def test_convert_disk(disks_service):
         query={'correlation_id': correlation_id},
     )
 
-    disk = disks_service.list(search='name={}'.format(CONVERT_DISK_NAME))[0]
+    disk = disks_service.list(search=f'name={CONVERT_DISK_NAME}')[0]
     disk_service = disks_service.disk_service(disk.id)
     assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
 
@@ -799,20 +797,15 @@ def test_verify_template_exported(engine_api, cirros_image_template_name):
     correlation_id = "test_validate_ova_export_temp"
     template_service = test_utils.get_template_service(engine, cirros_image_template_name)
     if template_service is None:
-        pytest.skip(
-            '{0}: template {1} is missing'.format(
-                test_verify_template_exported.__name__,
-                cirros_image_template_name,
-            )
-        )
+        pytest.skip(f'{test_verify_template_exported.__name__}: template {cirros_image_template_name} is missing')
     assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
 
 
 @order_by(_TEST_LIST)
 def test_import_vm_preallocated(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
-    sd = engine.storage_domains_service().list(search='name={}'.format(constants.SD_ISCSI_NAME))[0]
-    cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
+    sd = engine.storage_domains_service().list(search=f'name={constants.SD_ISCSI_NAME}')[0]
+    cluster = engine.clusters_service().list(search=f'name={ost_cluster_name}')[0]
     imports_service = engine.external_vm_imports_service()
     host = test_utils.get_first_active_host_by_name(engine)
     correlation_id = "test_validate_ova_import_vm"
@@ -854,8 +847,8 @@ def test_verify_vm_import_preallocated(engine_api, get_vm_service_for_vm, get_di
 @order_by(_TEST_LIST)
 def test_import_template(engine_api, ost_cluster_name):
     engine = engine_api.system_service()
-    sd = engine.storage_domains_service().list(search='name={}'.format(constants.SD_NFS_NAME))[0]
-    cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
+    sd = engine.storage_domains_service().list(search=f'name={constants.SD_NFS_NAME}')[0]
+    cluster = engine.clusters_service().list(search=f'name={ost_cluster_name}')[0]
     imports_service = engine.external_template_imports_service()
     host = test_utils.get_first_active_host_by_name(engine)
     correlation_id = "test_validate_ova_import_temp"
@@ -904,15 +897,9 @@ def test_verify_template_import(engine_api, get_template_service_for_template, g
 def test_add_vm1_from_template(engine_api, cirros_image_template_name, ost_cluster_name):
     engine = engine_api.system_service()
     templates_service = engine.templates_service()
-    cirros_template = templates_service.list(search='name=%s' % cirros_image_template_name)[0]
+    cirros_template = templates_service.list(search=f'name={cirros_image_template_name}')[0]
     if cirros_template is None:
-        pytest.skip(
-            '%s: template %s not available.'
-            % (
-                test_add_vm1_from_template.__name__,
-                cirros_image_template_name,
-            )
-        )
+        pytest.skip(f'{test_add_vm1_from_template.__name__}: template {cirros_image_template_name} not available.')
 
     vm_memory = 512 * MB
     vms_service = engine.vms_service()
@@ -1009,7 +996,7 @@ def test_run_vms(
 
     if tested_ip_version == 6:
         vms_service = engine_api.system_service().vms_service()
-        vm = vms_service.list(search='name={}'.format(VM0_NAME))[0]
+        vm = vms_service.list(search=f'name={VM0_NAME}')[0]
         cirros_serial_console.add_static_ip(vm.id, f'{vm0_fqdn_or_ip}/64', 'eth0')
 
     assert_vm_is_alive(vm0_fqdn_or_ip)
@@ -1135,12 +1122,7 @@ def test_template_export(engine_api, cirros_image_template_name):
 
     template_service = test_utils.get_template_service(engine, cirros_image_template_name)
     if template_service is None:
-        pytest.skip(
-            '{0}: template {1} is missing'.format(
-                test_template_export.__name__,
-                cirros_image_template_name,
-            )
-        )
+        pytest.skip(f'{test_template_export.__name__}: template {cirros_image_template_name} is missing')
     host = test_utils.get_first_active_host_by_name(engine)
     correlation_id = "test_validate_ova_export_temp"
     with engine_utils.wait_for_event(engine, 1226):
@@ -1158,8 +1140,8 @@ def test_template_export(engine_api, cirros_image_template_name):
 def test_add_vm_pool(engine_api, cirros_image_template_name, ost_cluster_name):
     engine = engine_api.system_service()
     pools_service = engine.vm_pools_service()
-    pool_cluster = engine.clusters_service().list(search='name={}'.format(ost_cluster_name))[0]
-    pool_template = engine.templates_service().list(search='name={}'.format(cirros_image_template_name))[0]
+    pool_cluster = engine.clusters_service().list(search=f'name={ost_cluster_name}')[0]
+    pool_template = engine.templates_service().list(search=f'name={cirros_image_template_name}')[0]
     with engine_utils.wait_for_event(engine, 302):
         pools_service.add(
             pool=types.VmPool(
@@ -1221,10 +1203,7 @@ def test_verify_update_template_version(
     engine = engine_api.system_service()
     templates_service = engine.templates_service()
     template_version = templates_service.list(
-        search='name={} and version_name={}'.format(
-            cirros_image_template_name,
-            cirros_image_template_version_name,
-        )
+        search=f'name={cirros_image_template_name} and version_name={cirros_image_template_version_name}'
     )[0]
     vm_name = VMPOOL_NAME + '-1'
     vm_service = test_utils.get_vm_service(engine, vm_name)
@@ -1282,12 +1261,7 @@ def test_template_update(engine_api, cirros_image_template_name):
     template_guest = test_utils.get_template_service(engine_api.system_service(), cirros_image_template_name)
 
     if template_guest is None:
-        pytest.skip(
-            '{0}: template {1} is missing'.format(
-                test_template_update.__name__,
-                cirros_image_template_name,
-            )
-        )
+        pytest.skip(f'{test_template_update.__name__}: template {cirros_image_template_name} is missing')
     new_comment = "comment by ovirt-system-tests"
     template_guest.update(template=types.Template(comment=new_comment))
     assert assert_utils.equals_within_short(lambda: template_guest.get().status, types.TemplateStatus.OK)
@@ -1417,7 +1391,7 @@ def test_next_run_unplug_cpu(engine_api):
 @order_by(_TEST_LIST)
 def test_hotplug_nic(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip, ost_images_distro):
     vms_service = engine_api.system_service().vms_service()
-    vm = vms_service.list(search='name=%s' % VM0_NAME)[0]
+    vm = vms_service.list(search=f'name={VM0_NAME}')[0]
     nics_service = vms_service.vm_service(vm.id).nics_service()
     nics_service.add(
         types.Nic(name='eth1', interface=types.NicInterface.VIRTIO),
@@ -1532,23 +1506,24 @@ def test_ovf_import(root_dir, engine_api, ost_cluster_name):
     disk_service = test_utils.get_disk_service(engine, DISK0_NAME)
     disk_id = disk_service.get().id
     ovf_file = os.path.join(root_dir, 'common/test-scenarios-files/test-vm.ovf')
-    ovf_text = open(ovf_file).read()
-    ovf_text = ovf_text.replace(
-        "ovf:diskId='52df5324-2230-40d9-9d3d-8cbb2aa33ba6'",
-        "ovf:diskId='%s'" % (disk_id,),
-    )
-    # Upload OVF
-    vms_service = engine.vms_service()
-    vms_service.add(
-        types.Vm(
-            name=OVF_VM_NAME,
-            cluster=types.Cluster(
-                name=ost_cluster_name,
-            ),
-            initialization=types.Initialization(
-                configuration=types.Configuration(type=types.ConfigurationType.OVA, data=ovf_text)
-            ),
+    with open(ovf_file, encoding='utf-8') as f:
+        ovf_text = f.read()
+        ovf_text = ovf_text.replace(
+            "ovf:diskId='52df5324-2230-40d9-9d3d-8cbb2aa33ba6'",
+            f"ovf:diskId='{disk_id}'",
         )
-    )
-    # Check the VM exists
-    assert test_utils.get_vm_service(engine, OVF_VM_NAME) is not None
+        # Upload OVF
+        vms_service = engine.vms_service()
+        vms_service.add(
+            types.Vm(
+                name=OVF_VM_NAME,
+                cluster=types.Cluster(
+                    name=ost_cluster_name,
+                ),
+                initialization=types.Initialization(
+                    configuration=types.Configuration(type=types.ConfigurationType.OVA, data=ovf_text)
+                ),
+            )
+        )
+        # Check the VM exists
+        assert test_utils.get_vm_service(engine, OVF_VM_NAME) is not None

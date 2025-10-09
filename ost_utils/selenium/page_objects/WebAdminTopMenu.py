@@ -25,7 +25,7 @@ class WebAdminTopMenu(Displayable):
         # alert saying
         # Leave site? Changes you made may not be saved.
         self.ovirt_driver.execute_script(
-            'window.onbeforeunload = function() ' '{console.log("overriden window.onbeforeunload called")};'
+            'window.onbeforeunload = function() {console.log("overriden window.onbeforeunload called")};'
         )
         self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="HeaderView_userName"]')
         self.ovirt_driver.xpath_wait_and_click('Logout menu', '//*[@id="HeaderView_logoutLink"]')

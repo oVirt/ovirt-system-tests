@@ -12,7 +12,7 @@ from . import syncutil
 from .sdkentity import SDKRootEntity
 
 
-GiB = 2 ** 30
+GiB = 2**30
 
 
 class DiskFormat(object):
@@ -137,8 +137,8 @@ class StorageDomain(SDKRootEntity):
             error_criteria=error.sd_destroy_error_not_due_to_busy,
         )
 
-    def _get_parent_service(self, system):
-        return system.storage_domains_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.storage_domains_service
 
     def _wait_for_status(self, status):
         syncutil.sync(
@@ -194,8 +194,8 @@ class Disk(SDKRootEntity):
         )
         self._create_sdk_entity(sdk_type)
 
-    def _get_parent_service(self, system):
-        return system.disks_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.disks_service
 
     def wait_for_up_status(self):
         syncutil.sync(

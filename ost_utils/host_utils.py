@@ -8,7 +8,7 @@ import logging
 import random
 
 import ovirtsdk4 as sdk
-import ovirtsdk4.types as types
+from ovirtsdk4 import types
 
 from ost_utils import general_utils
 

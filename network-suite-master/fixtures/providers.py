@@ -38,7 +38,7 @@ def openstack_client_config(engine_facts, engine_full_username, engine_password,
         }
     }
     os_client_config_file_path = os.path.join(suite.suite_dir(), OPENSTACK_CLIENT_CONFIG_FILE)
-    with open(os_client_config_file_path, 'w') as cloud_config_file:
+    with open(os_client_config_file_path, 'w', encoding='utf-8') as cloud_config_file:
         yaml.dump(cloud_config, cloud_config_file, default_flow_style=False)
 
     original_os_client_config_file = os.environ.get('OS_CLIENT_CONFIG_FILE')

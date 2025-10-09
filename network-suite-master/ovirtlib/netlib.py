@@ -92,8 +92,8 @@ class Network(SDKSubEntity):
             sdk_type.external_provider_physical_network = types.Network(id=external_provider_physical_network.id)
         self._create_sdk_entity(sdk_type)
 
-    def _get_parent_service(self, dc):
-        return dc.service.networks_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.networks_service()
 
     def labels(self):
         return self._system_network_service().network_labels_service().list()
@@ -150,8 +150,8 @@ class VnicProfile(SDKRootEntity):
         sdk_type = types.VnicProfile(name=name, network=network.get_sdk_type(), qos=qos_type)
         self._create_sdk_entity(sdk_type)
 
-    def _get_parent_service(self, system):
-        return system.vnic_profiles_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.vnic_profiles_service
 
     @property
     def filter(self):
@@ -286,8 +286,8 @@ class Vnic(SDKSubEntity):
         finally:
             self.hot_replace_profile(original_profile)
 
-    def _get_parent_service(self, vm):
-        return vm.service.nics_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.nics_service()
 
     @property
     def vnic_profile(self):
@@ -326,8 +326,8 @@ class NetworkFilter(SDKRootEntity):
     def name(self):
         return self.get_sdk_type().name
 
-    def _get_parent_service(self, system):
-        return system.network_filters_service
+    def _get_parent_service(self, sdk_system):
+        return sdk_system.network_filters_service
 
     def create(self):
         raise NotImplementedError('oVirt connot create NetworkFilters')
@@ -372,8 +372,8 @@ class QoS(SDKSubEntity):
         )
         self.get_sdk_type().id = self.id
 
-    def _get_parent_service(self, dc):
-        return dc.service.qoss_service()
+    def _get_parent_service(self, parent_entity):
+        return parent_entity.service.qoss_service()
 
 
 class EmptyVnicProfile(object):

@@ -95,7 +95,7 @@ class ModuleArgsMapper:
         self.config_builder.module_args = " ".join(
             (
                 " ".join(args),
-                " ".join("{}={}".format(k, v) for k, v in kwargs.items()),
+                " ".join(f"{k}={v}" for k, v in kwargs.items()),
             )
         ).strip()
         LOGGER.debug('ModuleArgsMapper: __call__: ' f'module_args={self.config_builder.module_args}')

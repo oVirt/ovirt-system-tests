@@ -15,5 +15,5 @@ def is_deployed(working_dir):
 
 
 def mark_as_deployed(working_dir):
-    with open(os.path.join(working_dir, DEPLOYMENT_MARKER), "w") as _:
+    with open(os.path.join(working_dir, DEPLOYMENT_MARKER), "w", encoding="utf-8") as _:
         pass

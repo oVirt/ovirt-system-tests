@@ -236,7 +236,7 @@ def _github_download_artifact(artifact: _GitHubArtifact, target_dir: str) -> str
     """
     target_file_path = os.path.join(target_dir, artifact.name)
     response = _github_get(artifact.archive_download_url)
-    with open(target_file_path, "wb", encoding="utf-8") as target_file:
+    with open(target_file_path, "wb") as target_file:
         target_file.write(response.content)
     return target_file_path
 

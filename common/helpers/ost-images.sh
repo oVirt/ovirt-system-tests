@@ -12,18 +12,26 @@ else
   OST_IMAGES_DIR=${OST_IMAGES_DIR:=/usr/share/ost-images}
 fi
 
-OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:=el8stream}
-local node=node-base.qcow2
-[[ "$OST_IMAGES_DISTRO" == "rhel8" ]] && node=rhvh-base.qcow2
-[[ "$OST_IMAGES_DISTRO" == "el9stream" ]] && node=el9node-base.qcow2
+OST_IMAGES_DISTRO=${OST_IMAGES_DISTRO:=el9stream}
+node=node-base
+[[ "$OST_IMAGES_DISTRO" == "el9stream" ]] && node=el9node-base
 
 OST_IMAGES_BASE=${OST_IMAGES_BASE:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-base.qcow2}
-OST_IMAGES_NODE=${OST_IMAGES_NODE:-${OST_IMAGES_DIR}/${node}}
+OST_IMAGES_NODE=${OST_IMAGES_NODE:-${OST_IMAGES_DIR}/${node}}.qcow2
 OST_IMAGES_ENGINE_INSTALLED=${OST_IMAGES_ENGINE_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-engine-installed.qcow2}
 OST_IMAGES_HOST_INSTALLED=${OST_IMAGES_HOST_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-host-installed.qcow2}
 OST_IMAGES_HE_INSTALLED=${OST_IMAGES_HE_INSTALLED:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}-he-installed.qcow2}
 OST_IMAGES_STORAGE_BASE=${OST_IMAGES_STORAGE_BASE:=${OST_IMAGES_DIR}/storage-base.qcow2}
 OST_IMAGES_SSH_KEY=${OST_IMAGES_SSH_KEY:-${OST_IMAGES_DIR}/${OST_IMAGES_DISTRO}_id_rsa}
+
+package_base=ost-images-
+distro_package_base=${package_base}${OST_IMAGES_DISTRO}-
+OST_IMAGES_BASE_PACKAGE=${distro_package_base}base
+OST_IMAGES_ENGINE_INSTALLED_PACKAGE=${distro_package_base}engine-installed
+OST_IMAGES_HOST_INSTALLED_PACKAGE=${distro_package_base}host-installed
+OST_IMAGES_HE_INSTALLED_PACKAGE=${distro_package_base}he-installed
+OST_IMAGES_NODE_PACKAGE=${package_base}${node}
+OST_IMAGES_STORAGE_BASE_PACKAGE=${package_base}storage-base
 
 for i in OST_IMAGES_BASE OST_IMAGES_NODE OST_IMAGES_ENGINE_INSTALLED OST_IMAGES_HOST_INSTALLED OST_IMAGES_HE_INSTALLED OST_IMAGES_SSH_KEY; do
   [[ -r "${!i}" ]] || declare $i=/usr/share/ost-images/$(basename ${!i})

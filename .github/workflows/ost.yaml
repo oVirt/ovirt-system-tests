@@ -91,7 +91,14 @@ jobs:
           ref: ${{ env.OST_REF }}
 
       - name: Setup ost 
-        run: /usr/bin/bash setup_for_ost.sh -y
+        run: |
+          /usr/bin/bash common/helpers/ost-image-packages.sh $SUITE $DISTRO
+          if [ -f ost_image_vars.json ]; then
+            jq . ost_image_vars.json
+            /usr/bin/bash setup_for_ost.sh ost_image_vars.json -y
+          else
+            /usr/bin/bash setup_for_ost.sh -y
+          fi
       
       - name: Comment on PR that ost is running
         if: github.event_name != 'workflow_dispatch'

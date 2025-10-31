@@ -20,7 +20,7 @@ PROFILE_STIG = 'stig'
 
 @pytest.fixture(scope="session")
 def he_mac_address():
-    return f'54:52:{"".join((f"{random.randrange(255):02x}" for i in range(4)))}'
+    return f'54:52:{":".join((f"{random.randrange(255):02x}" for i in range(4)))}'
 
 
 # FIXME this is not a good idea when there are multiple networks currently, as

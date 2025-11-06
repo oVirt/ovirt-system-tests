@@ -12,8 +12,20 @@ import pytest
 from ost_utils import assert_utils
 from ost_utils import he_utils
 from ost_utils.deployment_utils import package_mgmt
+from ost_utils.pytest import order_by
 
 
+_TEST_LIST = [
+    "test_he_deploy",
+    "test_run_dig_loop",
+    "test_install_sar_collection",
+    "test_check_installed_packages",
+    "test_lower_ha_agent_vdsm_connection_timeout",
+    "test_set_global_maintenance",
+]
+
+
+@order_by(_TEST_LIST)
 def test_run_dig_loop(
     suite_dir,
     ansible_hosts,
@@ -42,6 +54,7 @@ def test_run_dig_loop(
     )
 
 
+@order_by(_TEST_LIST)
 def test_lower_ha_agent_vdsm_connection_timeout(
     ansible_host0,
     ansible_all,
@@ -60,6 +73,7 @@ def test_lower_ha_agent_vdsm_connection_timeout(
     )
 
 
+@order_by(_TEST_LIST)
 def test_he_deploy(
     root_dir,
     suite,
@@ -83,6 +97,7 @@ def test_he_deploy(
     ansible_storage.shell('fstrim -va')
 
 
+@order_by(_TEST_LIST)
 def test_set_global_maintenance(ansible_host0):
     logging.info('Waiting For System Stability...')
     he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
@@ -93,6 +108,7 @@ def test_set_global_maintenance(ansible_host0):
     logging.info('Global maintenance state set on all hosts')
 
 
+@order_by(_TEST_LIST)
 def test_install_sar_collection(root_dir, ansible_engine, ost_images_distro):
     # TODO: Remove when we have an el9stream-based HE available
     if ost_images_distro == "el9stream":
@@ -117,6 +133,7 @@ def test_install_sar_collection(root_dir, ansible_engine, ost_images_distro):
     )
 
 
+@order_by(_TEST_LIST)
 def test_check_installed_packages(request, ansible_all):
     if request.config.getoption('--skip-custom-repos-check'):
         pytest.skip('the check was disabled by the run argument')

@@ -209,8 +209,8 @@ setup_lvm_filter() {
     cat > /etc/lvm/lvmlocal.conf <<EOC
 
 devices {
-        # Either sda or sdb devices can include VG, from which we slice out logical volumes
-        global_filter = [ "a|/dev/sda|", "a|/dev/sdb|", "r|.*|" ]
+        # Either sda/sdb/sdc devices can include VG, from which we slice out logical volumes
+        global_filter = [ "a|/dev/sda|", "a|/dev/sdb|", "a|/dev/sdc|", "r|.*|" ]
 }
 
 EOC

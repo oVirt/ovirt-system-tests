@@ -27,6 +27,11 @@ def ansible_engine(ansible_by_hostname, backend_engine_hostname):
 
 
 @pytest.fixture(scope="session")
+def ansible_dwh(ansible_by_hostname, backend_dwh_hostname):
+    return ansible_by_hostname(backend_dwh_hostname)
+
+
+@pytest.fixture(scope="session")
 def ansible_storage(ansible_by_hostname, storage_hostname):
     return ansible_by_hostname(storage_hostname)
 
@@ -81,6 +86,11 @@ def ansible_by_hostname(ansible_inventory):
 @pytest.fixture(scope="session")
 def ansible_engine_facts(ansible_engine):
     return Facts(ansible_engine)
+
+
+@pytest.fixture(scope="session")
+def ansible_dwh_facts(ansible_dwh):
+    return Facts(ansible_dwh)
 
 
 @pytest.fixture(scope="session")

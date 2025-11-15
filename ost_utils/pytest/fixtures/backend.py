@@ -28,6 +28,11 @@ def backend_engine_hostname(backend):
 
 
 @pytest.fixture(scope="session")
+def backend_dwh_hostname(backend):
+    return backend.dwh_hostname()
+
+
+@pytest.fixture(scope="session")
 def all_hostnames(backend):
     return backend.hostnames()
 

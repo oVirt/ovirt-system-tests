@@ -736,7 +736,7 @@ def test_grafana(
     engine_username,
     engine_password,
     engine_webadmin_url,
-    engine_fqdn,
+    grafana_fqdn,
 ):
 
     ovirt_driver.get(engine_webadmin_url)
@@ -755,7 +755,7 @@ def test_grafana(
     save_screenshot('grafana')
 
     # navigate directly to Grafana Configuration/Data Sources page
-    ovirt_driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
+    ovirt_driver.get(f'https://{grafana_fqdn}/ovirt-engine-grafana/datasources')
     assert grafana.db_connection()
     save_screenshot('grafana-datasource-connection')
 

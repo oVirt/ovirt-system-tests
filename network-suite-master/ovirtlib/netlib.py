@@ -13,7 +13,6 @@ from .sdkentity import EntityCreationError
 from .sdkentity import SDKSubEntity
 from .sdkentity import SDKRootEntity
 
-
 OVIRTMGMT = 'ovirtmgmt'
 
 

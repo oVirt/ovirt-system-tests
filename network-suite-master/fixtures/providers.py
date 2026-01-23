@@ -12,7 +12,6 @@ from ovirtlib.providerlib import OpenStackNetwork
 from ovirtlib.providerlib import OpenStackNetworkProvider
 from testlib import suite
 
-
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'
 OPENSTACK_CLIENT_CONFIG_FILE = 'clouds.yml'
 DEFAULT_CLOUD = 'ovirt'

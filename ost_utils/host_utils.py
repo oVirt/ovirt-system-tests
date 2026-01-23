@@ -12,7 +12,6 @@ from ovirtsdk4 import types
 
 from ost_utils import general_utils
 
-
 LOGGER = logging.getLogger(__name__)
 
 

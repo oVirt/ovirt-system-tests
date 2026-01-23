@@ -1692,11 +1692,9 @@ def test_add_nonadmin_user(
         assert keycloak.resolve_user_id(engine_api=engine_api, username=nonadmin_username) is not None
     else:
         ansible_engine.shell(f"ovirt-aaa-jdbc-tool user add {nonadmin_username}")
-        ansible_engine.shell(
-            f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
+        ansible_engine.shell(f"ovirt-aaa-jdbc-tool user password-reset {nonadmin_username} \
                 --password-valid-to='2125-08-15 10:30:00Z' \
-                --password=pass:{nonadmin_password}"
-        )
+                --password=pass:{nonadmin_password}")
         users_service = engine_api.system_service().users_service()
         with engine_utils.wait_for_event(engine_api.system_service(), 149):  # USER_ADD(149)
             users_service.add(

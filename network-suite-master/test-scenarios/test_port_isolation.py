@@ -16,7 +16,6 @@ from ovirtlib import netlib
 from ovirtlib import sshlib
 from ovirtlib import virtlib
 
-
 PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'
 VM_PASSWORD = 'gocubsgo'

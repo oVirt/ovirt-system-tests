@@ -8,7 +8,6 @@ import pytest
 from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
-
 ETH0 = 'eth0'
 ETH1 = 'eth1'
 ETH2 = 'eth2'

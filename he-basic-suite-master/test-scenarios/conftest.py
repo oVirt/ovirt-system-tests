@@ -30,7 +30,6 @@ from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.storage import *
 from ost_utils.pytest.running_time import *
 
-
 # hosted-engine suites use a separate storage VM, but use the management
 # network for storage traffic. Override the relevant fixtures.
 

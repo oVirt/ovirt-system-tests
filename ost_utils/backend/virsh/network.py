@@ -8,7 +8,6 @@ import logging
 
 from ost_utils import shell
 
-
 LOGGER = logging.getLogger(__name__)
 
 

@@ -21,7 +21,6 @@ from ost_utils import utils
 from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.deployment_utils import package_mgmt
 
-
 LOGGER = logging.getLogger(__name__)
 
 

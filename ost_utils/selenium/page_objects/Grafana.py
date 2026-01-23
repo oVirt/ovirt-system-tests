@@ -36,10 +36,8 @@ class Grafana(Displayable):
             )
             return True
         except TimeoutException:
-            raise Exception(
-                """"Database Connection OK" string is not present. This may mean that the Grafana
-                   UI has changed, and we can't be sure if the connection is ok"""
-            )
+            raise Exception(""""Database Connection OK" string is not present. This may mean that the Grafana
+                   UI has changed, and we can't be sure if the connection is ok""")
         return False
 
     def open_dashboard(self, menu, submenu):

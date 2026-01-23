@@ -21,7 +21,6 @@ from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import versioning
 
-
 VM0_NAME = 'vm0'
 CLUSTER_NAME = 'test-cluster'
 IFACE_NAME = 'eth2'

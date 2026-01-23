@@ -11,7 +11,6 @@ from . import error
 from . import syncutil
 from .sdkentity import SDKRootEntity
 
-
 GiB = 2**30
 
 

@@ -8,7 +8,6 @@ from ovirtsdk4 import types
 from . import syncutil
 from .sdkentity import EntityNotFoundError
 
-
 TEMPLATE_BLANK = 'Blank'
 
 

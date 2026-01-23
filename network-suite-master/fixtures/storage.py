@@ -10,7 +10,6 @@ from ovirtlib import sshlib
 from ovirtlib import storagelib
 from ovirtlib.sdkentity import EntityNotFoundError
 
-
 DEFAULT_DOMAIN_NAME = 'nfs1'
 DEFAULT_DOMAIN_PATH = '/exports/nfs/share1'
 

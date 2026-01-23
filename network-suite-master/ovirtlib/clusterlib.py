@@ -17,7 +17,6 @@ from . import syncutil
 from .sdkentity import SDKRootEntity
 from .sdkentity import SDKSubEntity
 
-
 MacPoolRange = collections.namedtuple("MacPoolRange", "start end")
 
 

@@ -6,7 +6,6 @@
 
 import os
 
-
 DEPLOYMENT_MARKER = "deployed"
 
 

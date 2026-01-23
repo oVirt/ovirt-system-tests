@@ -6,7 +6,6 @@
 
 import os
 
-
 _DC_VERSION = '4.7'
 
 

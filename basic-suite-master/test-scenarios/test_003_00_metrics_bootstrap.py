@@ -24,9 +24,7 @@ passwd={engine_password}
 engine={engine_fqdn}:443
 local-tmp={local_tmp}
 output=/dev/shm
-'""".replace(
-    '\n', '\\n'
-)
+'""".replace('\n', '\\n')
 
 
 @pytest.fixture

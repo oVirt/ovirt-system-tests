@@ -6,7 +6,6 @@
 
 import collections
 
-
 _CommandStatus = collections.namedtuple('CommandStatus', ('out', 'err', 'code'))
 
 

@@ -12,7 +12,6 @@ from ovirtlib import netlib
 from ovirtlib import hostlib
 from ovirtlib import clusterlib
 
-
 REQ_NET = 'req-net'
 
 

@@ -13,7 +13,6 @@ import signal
 import subprocess
 import time
 
-
 LOGGER = logging.getLogger(__name__)
 
 

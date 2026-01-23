@@ -13,7 +13,6 @@ from ost_utils import network_utils
 from ost_utils import test_utils
 from ost_utils import utils
 
-
 # Network
 NETWORK_LABEL = 'NETWORK_LABEL'
 LABELED_NET_NAME = 'Labeled_Network'

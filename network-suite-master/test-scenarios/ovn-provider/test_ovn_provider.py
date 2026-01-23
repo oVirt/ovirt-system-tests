@@ -12,7 +12,6 @@ from ovirtlib.ansiblelib import Playbook
 from ovirtlib import sshlib
 from testlib import suite
 
-
 NETWORK10_NAME = 'net10'
 ROUTER0_NAME = 'router0'
 ROUTER1_NAME = 'router1'

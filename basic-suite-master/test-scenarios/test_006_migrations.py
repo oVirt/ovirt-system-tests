@@ -25,7 +25,6 @@ from ost_utils import assert_utils
 from ost_utils import network_utils
 from ost_utils import test_utils
 
-
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 

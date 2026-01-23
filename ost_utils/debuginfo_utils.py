@@ -7,7 +7,6 @@
 import pprint
 import re
 
-
 _generic_object_re = re.compile(r'^<\S* object at 0x[0-9A-Fa-f]*>')
 
 

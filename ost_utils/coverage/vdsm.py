@@ -25,9 +25,7 @@ concurrency = thread multiprocessing
 parallel = True
 data_file = {COVERAGE_DATA}
 source = vdsm, yajsonrpc'
-""".replace(
-    '\n', '\\n'
-)
+""".replace('\n', '\\n')
 
 
 def setup(ansible_hosts):

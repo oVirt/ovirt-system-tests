@@ -20,7 +20,6 @@ from ovirtlib import virtlib
 from ovirtlib.ansiblelib import Playbook
 from testlib import suite
 
-
 MTU = 1500
 VNIC0_NAME = 'vnic0'
 VNIC_INTERNAL = 'vnic-internal'

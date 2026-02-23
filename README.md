@@ -10,8 +10,8 @@ This repository is hosted on [GitHub:ovirt-system-tests](https://github.com/oVir
 
 ### Operating System
 
-Currently OST can run on RHEL or CentOS Stream at least roughly matching the version used by oVirt or RHV.
-Latest CentOS Stream or RHEL 8 or 9 should work.
+Currently OST can run on RHEL or CentOS Stream at least roughly matching the version used by oVirt.
+Latest CentOS Stream 9/10 or RHEL (clones) 9/10 should work.
 
 ### Disk Space
 
@@ -51,13 +51,13 @@ If you have any other questions, please join [oVirt Development forum / mailing 
 
 Make sure your machine is set up with `setup_for_ost.sh`
 You can use `ost.sh` for running the complete suite on a concrete ost-images distro
-E.g. `./ost.sh run basic-suite-master el9stream`
+E.g. `./ost.sh run basic-suite-master centos9`
 
 You can use `--custom-repo` for verifying an oVirt patch:
 
 * On your GitHub account go to Settings/Developer settings/Personal access tokens/Generate new token, and give it the **repo** scopes.
 * On your ost machine run `export GITHUB_TOKEN=personal_access_token`
-* Run the tests, e.g `./ost.sh run basic-suite-master el9stream --custom-repo=https://github.com/oVirt/ovirt-engine/pull/pr_number`
+* Run the tests, e.g `./ost.sh run basic-suite-master centos9 --custom-repo=https://github.com/oVirt/ovirt-engine/pull/pr_number`
 You can pass this option multiple times to test more than 1 build at once.
 
 The environment is left running after it finishes so that you can examine or further use the created environment.

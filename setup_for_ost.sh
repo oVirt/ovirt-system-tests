@@ -21,8 +21,8 @@ usage() {
 	echo " {"
 	echo '     "ost_images_repo_url": "http://other.repo.org/",'
 	echo '     "ost_images_rpms": ['
-	echo '         "ost-images-rhel8-engine-installed",'
-	echo '         "ost-images-rhel8-host-installed"'
+	echo '         "ost-images-centos9-engine-installed",'
+	echo '         "ost-images-centos9-host-installed"'
 	echo "     ]"
 	echo " }"
 }

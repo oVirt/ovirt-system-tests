@@ -168,7 +168,7 @@ ost_init() {
     [[ "$1" == "-6" ]] && { ipv6_only=yes; shift; }
 
     SUITE="${1:-basic-suite-master}"
-    OST_IMAGES_DISTRO="${2:-el9stream}"
+    OST_IMAGES_DISTRO="${2:-centos9}"
 
     [[ -n "$OST_INITIALIZED" ]] || ost_check_dependencies || return $?
     [[ -d "$OST_REPO_ROOT/$SUITE" ]] || { echo "$OST_REPO_ROOT/$SUITE is not a suite directory"; return 1; }
@@ -257,7 +257,7 @@ ost_init() {
             echo -n "root($(basename ${!vm_rootdisk_var})) "
 
             # export package list
-            pkglist="$(dirname ${!vm_rootdisk_var})/$(basename ${!vm_rootdisk_var} .qcow2)-pkglist.txt"
+            pkglist="$(dirname ${!vm_rootdisk_var})/$(basename ${!vm_rootdisk_var} .qcow2).packages"
             [[ -r "${pkglist}" ]] && cp "${pkglist}" "${OST_REPO_ROOT}/exported-artifacts/package_lists/"
 
             # create additional empty disks

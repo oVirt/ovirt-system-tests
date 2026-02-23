@@ -6,10 +6,10 @@
   vars:
     default_ost_images_repo_url: 'https://resources.ovirt.org/repos/ovirt/github-ci/ost-images/'
     default_ost_images_rpms:
-      - ost-images-el9stream-engine-installed
-      - ost-images-el9stream-host-installed
-      - ost-images-el9node-base
-      - ost-images-storage-base
+      - ost-images-centos9-engine-installed
+      - ost-images-centos9-host-installed
+      - ost-images-centos9-base
+      - ost-images-centos9-storage
 
   tasks:
     - name: Enable nested virtualization on intel

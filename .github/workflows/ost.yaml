@@ -2,7 +2,7 @@
 # This is a reusable worflow to be triggered from other projects or manually.
 # See example-trigger.yaml for how to use it in other projects.
 # If you call this via a different trigger than on: issue_comment you can use the optional parameter:
-#  comment - full comment body, e.g. "/ost he-basic-suite-master el9stream"
+#  comment - full comment body, e.g. "/ost he-basic-suite-master centos9"
 #
 name: OST trigger
 
@@ -23,7 +23,7 @@ on:
         type: string
       comment:
         required: true
-        default: "/ost basic-suite-master el9stream"
+        default: "/ost basic-suite-master centos9"
         type: string
         
 permissions:
@@ -53,7 +53,7 @@ jobs:
           SUITE=$(echo "$COMMENT" | cut -d " " -s -f2)
           DISTRO=$(echo "$COMMENT" | cut -d " " -s -f3)
           SUITE=${SUITE:-basic-suite-master}
-          DISTRO=${DISTRO:-el9stream}
+          DISTRO=${DISTRO:-centos9}
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           OST_REPO="oVirt/ovirt-system-tests"

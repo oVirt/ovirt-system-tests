@@ -1312,7 +1312,7 @@ def test_add_blank_high_perf_vm2(engine_api, ost_dc_name, ost_cluster_name):
             template=sdk4.types.Template(
                 name=TEMPLATE_BLANK,
             ),
-            custom_emulated_machine='pc-q35-rhel8.0.0',
+            custom_emulated_machine='pc-q35-rhel9.6.0',
             bios=sdk4.types.Bios(
                 sdk4.types.BootMenu(False),
                 sdk4.types.BiosType.Q35_SEA_BIOS,

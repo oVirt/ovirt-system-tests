@@ -6,7 +6,7 @@
 
 import os
 
-_DC_VERSION = '4.7'
+_DC_VERSION = '4.8'
 
 
 def cluster_version():

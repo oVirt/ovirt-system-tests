@@ -9,7 +9,7 @@ systemctl start crond
 rm -rf /dev/shm/yum /dev/shm/*.rpm
 fstrim -va
 
-firewall-cmd --permanent --zone=public --add-interface=eth0
+firewall-cmd --permanent --zone=public --add-interface=enp1s0
 firewall-cmd --reload
 
 # rotate logs quicker, because of the debug logs they tend to flood the root partition if they run > 15 minutes

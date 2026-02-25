@@ -1394,7 +1394,7 @@ def test_hotplug_nic(assert_vm_is_alive, engine_api, vm0_fqdn_or_ip, ost_images_
     vm = vms_service.list(search=f'name={VM0_NAME}')[0]
     nics_service = vms_service.vm_service(vm.id).nics_service()
     nics_service.add(
-        types.Nic(name='eth1', interface=types.NicInterface.VIRTIO),
+        types.Nic(name='enp2s0', interface=types.NicInterface.VIRTIO),
     )
     assert_vm_is_alive(vm0_fqdn_or_ip)
 

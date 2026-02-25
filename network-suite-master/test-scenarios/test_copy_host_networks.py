@@ -8,9 +8,9 @@ import contextlib
 
 import pytest
 
-from fixtures.host import ETH1
-from fixtures.host import ETH2
-from fixtures.host import ETH3
+from fixtures.host import ENP2S0
+from fixtures.host import ENP3S0
+from fixtures.host import ENP4S0
 
 from ovirtlib import clusterlib
 from ovirtlib import joblib
@@ -88,31 +88,31 @@ def configured_hosts(request, host_config, host_0_up, host_1_up):
 def host_config(networks):
     return {
         'ovirtmgmt_only': Config((), ()),
-        'single_network': Config((AttachData(networks[VM_NET_NAME], ETH1),), ()),
+        'single_network': Config((AttachData(networks[VM_NET_NAME], ENP2S0),), ()),
         'vlan_and_nonvlan': Config(
             (
-                AttachData(networks[VLAN_10_NET_NAME], ETH1),
-                AttachData(networks[VM_NET_NAME], ETH2),
+                AttachData(networks[VLAN_10_NET_NAME], ENP2S0),
+                AttachData(networks[VM_NET_NAME], ENP3S0),
             ),
             (),
         ),
         'networks_and_bond_0': Config(
             (
-                AttachData(networks[VM_NET_NAME], ETH1),
-                AttachData(networks[VLAN_10_NET_NAME], ETH1),
+                AttachData(networks[VM_NET_NAME], ENP2S0),
+                AttachData(networks[VLAN_10_NET_NAME], ENP2S0),
                 AttachData(networks[VLAN_20_NET_NAME], BOND0),
                 AttachData(networks[VLAN_30_NET_NAME], BOND0),
             ),
-            (BondingData(BOND0, [ETH2, ETH3]),),
+            (BondingData(BOND0, [ENP3S0, ENP4S0]),),
         ),
         'networks_and_bond_1': Config(
             (
-                AttachData(networks[VLAN_30_NET_NAME], ETH2),
+                AttachData(networks[VLAN_30_NET_NAME], ENP2S0),
                 AttachData(networks[VM_NET_NAME], BOND0),
                 AttachData(networks[VLAN_10_NET_NAME], BOND0),
                 AttachData(networks[VLAN_30_NET_NAME_1], BOND0),
             ),
-            (BondingData(BOND0, [ETH1, ETH3]),),
+            (BondingData(BOND0, [ENP2S0, ENP4S0]),),
         ),
     }
 

@@ -34,7 +34,7 @@ setup_he_lun() {
 
     # The rest of this function is copied from setup_storage.sh. Keep in sync.
     # TODO: Unite or rewrite some day
-    NIC=eth1
+    NIC=enp2s0
     IP=$(/sbin/ip -o addr show dev $NIC scope global | tac | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
 
     iscsiadm -m discovery -t sendtargets -p $IP

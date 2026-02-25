@@ -64,7 +64,7 @@
       nic_ip_address: 192.168.200.200
       nic_netmask: 255.255.255.0
       nic_gateway: 192.168.200.1
-      nic_name: eth0
+      nic_name: enp1s0
       host_name: "{{ vm_name0 }}"
       custom_script: |
         write_files:

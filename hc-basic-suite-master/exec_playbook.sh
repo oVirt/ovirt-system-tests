@@ -21,19 +21,19 @@ sed \
 
 
 MYADDR=$(\
-    /sbin/ip -4 -o addr show dev eth0 \
+    /sbin/ip -4 -o addr show dev enp1s0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'\
     | awk -F/ '{print $1}'\
 )
 
 echo "${MYADDR} ${MYHOSTNAME}.${DOMAIN} ${MYHOSTNAME}" >> /etc/hosts
 HEGW=$(\
-    /sbin/ip -4 -o addr show dev eth0 \
+    /sbin/ip -4 -o addr show dev enp1s0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".1"}'\
     | awk -F/ '{print $1}'\
 )
 HEADDR=$(\
-    /sbin/ip -4 -o addr show dev eth0 \
+    /sbin/ip -4 -o addr show dev enp1s0 \
     | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] ".99"}'\
     | awk -F/ '{print $1}'\
 )

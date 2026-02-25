@@ -28,7 +28,7 @@ from ost_utils import test_utils
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'
 
-NIC_NAME = 'eth0'
+NIC_NAME = 'enp1s0'
 VLAN200_IF_NAME = f'{NIC_NAME}.200'
 
 DEFAULT_MTU = 1500

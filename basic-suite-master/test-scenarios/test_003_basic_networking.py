@@ -29,21 +29,21 @@ VM_NETWORK = 'VM Network with a very long name and עברית'
 VM_NETWORK_VLAN_ID = 100
 MIGRATION_NETWORK = 'Migration_Net'  # MTU 9000
 BOND_NAME = 'bond_fancy0'
-ETH0 = 'eth0'
+ENP1S0 = 'enp1s0'
 
 
 def test_attach_vm_network_to_host_0_static_config(host0, vm_network, static_ips):
     static_ip = static_ips['vm_net_0']
-    attach_data = netattachlib.NetworkAttachmentData(vm_network, ETH0, (static_ip['inet'], static_ip['inet6']))
+    attach_data = netattachlib.NetworkAttachmentData(vm_network, ENP1S0, (static_ip['inet'], static_ip['inet6']))
     host0.setup_networks((attach_data,))
     host_nic = hostlib.HostNic(host0)
-    host_nic.import_by_name(f'{ETH0}.{VM_NETWORK_VLAN_ID}')
+    host_nic.import_by_name(f'{ENP1S0}.{VM_NETWORK_VLAN_ID}')
     _assert_expected_ips(host_nic, static_ip)
 
 
 def test_modify_host_0_ip_to_dhcp(host0, vm_network):
     attach_data = netattachlib.NetworkAttachmentData(
-        vm_network, ETH0, (netattachlib.IPV4_DHCP, netattachlib.IPV6_POLY_DHCP_AUTOCONF)
+        vm_network, ENP1S0, (netattachlib.IPV4_DHCP, netattachlib.IPV6_POLY_DHCP_AUTOCONF)
     )
     host0.setup_networks((attach_data,))
 
@@ -94,10 +94,10 @@ def test_attach_vm_network_to_both_hosts_static_config(host0, host1, vm_network,
     # preparation for 004 and 006
     for i, host in enumerate((host0, host1)):
         static_ip = static_ips[f'vm_net_{i}']
-        attach_data = netattachlib.NetworkAttachmentData(vm_network, ETH0, (static_ip['inet'], static_ip['inet6']))
+        attach_data = netattachlib.NetworkAttachmentData(vm_network, ENP1S0, (static_ip['inet'], static_ip['inet6']))
         host.setup_networks((attach_data,))
         host_nic = hostlib.HostNic(host)
-        host_nic.import_by_name(f'{ETH0}.{VM_NETWORK_VLAN_ID}')
+        host_nic.import_by_name(f'{ENP1S0}.{VM_NETWORK_VLAN_ID}')
         _assert_expected_ips(host_nic, static_ip)
 
 

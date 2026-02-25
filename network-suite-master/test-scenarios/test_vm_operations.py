@@ -8,7 +8,7 @@ import logging
 
 import pytest
 
-from fixtures.host import ETH1, ETH2
+from fixtures.host import ENP2S0, ENP3S0
 
 from ovirtlib import virtlib
 from ovirtlib import netattachlib
@@ -68,9 +68,9 @@ def running_cirros_vm(
     cirros_template,
 ):
     with clusterlib.new_assigned_network(NET1, default_data_center, default_cluster) as net_1:
-        attach_data_1 = netattachlib.NetworkAttachmentData(net_1, ETH1)
+        attach_data_1 = netattachlib.NetworkAttachmentData(net_1, ENP2S0)
         with clusterlib.new_assigned_network(NET2, default_data_center, default_cluster) as net_2:
-            attach_data_2 = netattachlib.NetworkAttachmentData(net_2, ETH2)
+            attach_data_2 = netattachlib.NetworkAttachmentData(net_2, ENP3S0)
             with hostlib.setup_networks(host_0_up, attach_data=(attach_data_1, attach_data_2)):
                 with hostlib.setup_networks(host_1_up, attach_data=(attach_data_1, attach_data_2)):
                     with virtlib.vm_pool(system, size=1) as (vm,):
@@ -109,7 +109,7 @@ def running_blank_vm(system, default_cluster, default_storage_domain, ovirtmgmt_
 
 @pytest.fixture
 def host_0_with_mig_net(migration_network, host_0_up, af):
-    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_1[af.family],))
+    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ENP2S0, (STATIC_ASSIGN_1[af.family],))
     host_0_up.setup_networks([mig_att_data])
     yield host_0_up
     host_0_up.remove_networks((migration_network,))
@@ -117,7 +117,7 @@ def host_0_with_mig_net(migration_network, host_0_up, af):
 
 @pytest.fixture
 def host_1_with_mig_net(migration_network, host_1_up, af):
-    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ETH1, (STATIC_ASSIGN_2[af.family],))
+    mig_att_data = netattachlib.NetworkAttachmentData(migration_network, ENP2S0, (STATIC_ASSIGN_2[af.family],))
     host_1_up.setup_networks([mig_att_data])
     yield host_1_up
     host_1_up.remove_networks((migration_network,))

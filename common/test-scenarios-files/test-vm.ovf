@@ -87,7 +87,7 @@
         <rasd:ResourceSubType>3</rasd:ResourceSubType>
         <Type>interface</Type>
         <rasd:Connection>ovirtmgmt</rasd:Connection>
-        <rasd:Name>eth0</rasd:Name>
+        <rasd:Name>enp1s0</rasd:Name>
         <rasd:MACAddress>00:1a:4a:16:21:a2</rasd:MACAddress>
       </Item>
     </VirtualHardwareSection>

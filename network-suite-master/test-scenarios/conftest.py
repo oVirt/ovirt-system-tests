@@ -31,8 +31,8 @@ from fixtures.engine import api
 from fixtures.engine import test_invocation_logger
 
 from fixtures.fqdn import engine_storage_ipv6
-from fixtures.fqdn import host0_eth1_ipv6
-from fixtures.fqdn import host0_eth2_ipv6
+from fixtures.fqdn import host0_enp2s0_ipv6
+from fixtures.fqdn import host0_enp3s0_ipv6
 from fixtures.fqdn import ovirt_provider_ovn_with_ip_fqdn
 
 from fixtures.storage import default_storage_domain

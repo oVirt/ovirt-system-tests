@@ -82,10 +82,10 @@ class MachineFacts(object):
         return self._ssh_password
 
     def default_ip(self, urlize=False):
-        return self._urlized_ip(self._get_ip_for_iface('eth0'), urlize)
+        return self._urlized_ip(self._get_ip_for_iface('enp1s0'), urlize)
 
     def storage_ip(self, urlize=False):
-        return self._urlized_ip(self._get_ip_for_iface('eth1'), urlize)
+        return self._urlized_ip(self._get_ip_for_iface('enp2s0'), urlize)
 
     def _urlized_ip(self, ip, urlize):
         return ip

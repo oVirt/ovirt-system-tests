@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 
-from fixtures.host import ETH2
-from fixtures.host import ETH3
+from fixtures.host import ENP3S0
+from fixtures.host import ENP4S0
 
 from ovirtlib import hostlib
 from ovirtlib import netattachlib
@@ -21,7 +21,7 @@ class ActiveSlaveNotChangedError(Exception):
 
 @suite.skip_suites_below('4.4')
 def test_bond_active_slave(system, default_data_center, default_cluster, host_0_up):
-    bond_data = netattachlib.ActiveSlaveBonding(BOND_NAME, slave_names=(ETH2, ETH3))
+    bond_data = netattachlib.ActiveSlaveBonding(BOND_NAME, slave_names=(ENP3S0, ENP4S0))
     with hostlib.setup_networks(host_0_up, bonding_data=(bond_data,)):
         bond = hostlib.Bond(host_0_up)
         bond.import_by_name(BOND_NAME)

@@ -36,9 +36,9 @@ ost_status() {
         echo "   IP: $(sed -n "/^${vm}/ { s/.*ansible_host=\(.*\) ansible_ssh_p.*/\1/p; q }" $OST_DEPLOYMENT/hosts 2>/dev/null || echo unknown)"
         echo -n "   NICs: "
         net_comma=""
-        local idx=0
+        local idx=1
         for net in $vm_nets; do
-            echo -en "${net_comma}eth${idx}(${nets[$net]})"
+            echo -en "${net_comma}enp${idx}s0(${nets[$net]})"
             net_comma=", "
             (( idx++ ))
         done
@@ -82,7 +82,7 @@ ost_lock() {
 # ost_init [-4|-6] [suite] [distro]
 ost_init() {
 
-    # _generate_network "host-1-eth1 host-1-eth2 host-2-eth1..."
+    # _generate_network "host-1-enp2s0 host-1-enp3s0 host-2-enp2s0..."
     # create separate networks for each NIC entry.
     # generate IPs (IPv4, IPv6) on 192.168.$SUBNET.$HOSTIDX where HOSTIDX starts with 2
     # on management network ($management_net) generates DNS entries in form of ost-{suite}-{iface}

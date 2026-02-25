@@ -344,7 +344,7 @@ class Nic:
         # up the libvirt alias with the nic name visible on the vm side.
         # It just so happens it works for our use cases. In the long term
         # we need to refactor backend interface not to rely on nic names.
-        self._name = alias_name.replace("net", "eth")
+        self._name = alias_name.replace("net", "enp") + "s0"
         self._mac = xml_nic.find("./mac[@address]").get("address")
         source_network = xml_nic.find("./source[@network]").get("network")
         self._network = networks.get_network_for_libvirt_name(source_network)

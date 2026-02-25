@@ -24,7 +24,7 @@ class Facts:
         """
         :param str key: key in the outermost level of the facts dict.
          to get a leaf value in the facts dict use -
-         self.get('ansible_eth0').get('ipv4').get('address')
+         self.get('ansible_enp1s0').get('ipv4').get('address')
         """
         if not self._cache:
             self.refresh()

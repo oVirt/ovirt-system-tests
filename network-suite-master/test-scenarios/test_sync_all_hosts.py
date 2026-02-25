@@ -5,7 +5,7 @@
 #
 import contextlib
 
-from fixtures.host import ETH2
+from fixtures.host import ENP3S0
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
@@ -20,7 +20,7 @@ def test_sync_across_cluster(default_data_center, default_cluster, host_0_up, ho
         with contextlib.ExitStack() as stack:
             for host in cluster_hosts_up:
                 net_attachment = netattachlib.NetworkAttachmentData(
-                    sync_net, ETH2, (netattachlib.NO_V4, netattachlib.NO_V6)
+                    sync_net, ENP3S0, (netattachlib.NO_V4, netattachlib.NO_V6)
                 )
                 stack.enter_context(hostlib.setup_networks(host, (net_attachment,)))
                 stack.enter_context(unsynced_host_network(host))
@@ -35,11 +35,11 @@ def test_sync_across_cluster(default_data_center, default_cluster, host_0_up, ho
 def unsynced_host_network(host_up):
     ENGINE_DEFAULT_MTU = 1500
     node = ssh.Node(address=host_up.address, password=host_up.root_password)
-    node.set_mtu(ETH2, ENGINE_DEFAULT_MTU + 1)
+    node.set_mtu(ENP3S0, ENGINE_DEFAULT_MTU + 1)
     host_up.refresh_capabilities()
     try:
         yield
     finally:
         node = ssh.Node(address=host_up.address, password=host_up.root_password)
-        node.set_mtu(ETH2, ENGINE_DEFAULT_MTU)
+        node.set_mtu(ENP3S0, ENGINE_DEFAULT_MTU)
         host_up.refresh_capabilities()

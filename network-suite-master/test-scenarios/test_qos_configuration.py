@@ -8,7 +8,7 @@ import contextlib
 from ovirtsdk4 import types
 import pytest
 
-from fixtures.host import ETH2
+from fixtures.host import ENP3S0
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
@@ -126,5 +126,5 @@ def test_setup_net_with_qos(
 
 
 def _create_net_attachment_data(qos_net):
-    att_data = netattachlib.NetworkAttachmentData(qos_net, ETH2, (netattachlib.NO_V4, netattachlib.NO_V6))
+    att_data = netattachlib.NetworkAttachmentData(qos_net, ENP3S0, (netattachlib.NO_V4, netattachlib.NO_V6))
     return att_data

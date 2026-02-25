@@ -23,10 +23,10 @@
   "bonding": {
     "template": "common/libvirt-templates/net_template",
     "nics": [
-      "host-0-eth2",
-      "host-0-eth3",
-      "host-1-eth2",
-      "host-1-eth3"
+      "host-0-enp3s0",
+      "host-0-enp4s0",
+      "host-1-enp3s0",
+      "host-1-enp4s0"
     ]
   }
 },
@@ -77,8 +77,8 @@
     "nics": {
       "host-0": { "template": "common/libvirt-templates/nic_template" },
       "host-0-storage": { "template": "common/libvirt-templates/nic_template" },
-      "host-0-eth2": { "template": "common/libvirt-templates/nic_template" },
-      "host-0-eth3": { "template": "common/libvirt-templates/nic_template" }
+      "host-0-enp3s0": { "template": "common/libvirt-templates/nic_template" },
+      "host-0-enp4s0": { "template": "common/libvirt-templates/nic_template" }
     },
     "root_disk_var": "OST_IMAGES_HOST_INSTALLED",
     "disks": {}
@@ -92,8 +92,8 @@
     "nics": {
       "host-1": { "template": "common/libvirt-templates/nic_template" },
       "host-1-storage": { "template": "common/libvirt-templates/nic_template" },
-      "host-1-eth2": { "template": "common/libvirt-templates/nic_template" },
-      "host-1-eth3": { "template": "common/libvirt-templates/nic_template" }
+      "host-1-enp3s0": { "template": "common/libvirt-templates/nic_template" },
+      "host-1-enp4s0": { "template": "common/libvirt-templates/nic_template" }
     },
     "root_disk_var": "OST_IMAGES_HOST_INSTALLED",
     "disks": {}

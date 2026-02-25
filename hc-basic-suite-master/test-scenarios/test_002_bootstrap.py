@@ -426,7 +426,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
 
 @order_by(_TEST_LIST)
 def test_add_nic(engine_api):
-    NIC_NAME = 'eth0'
+    NIC_NAME = 'enp1s0'
     # Locate the vnic profiles service and use it to find the ovirmgmt
     # network's profile id:
     profiles_service = engine_api.system_service().vnic_profiles_service()

@@ -23,7 +23,7 @@ from ost_utils import versioning
 
 VM0_NAME = 'vm0'
 CLUSTER_NAME = 'test-cluster'
-IFACE_NAME = 'eth2'
+IFACE_NAME = 'enp3s0'
 PROVIDER_SYNCHRONIZED_PERFORMED_EVENT_ID = 217
 
 OVN_PROVIDER_TOKEN_URL = 'https://{hostname}:35357/v2.0/tokens/'

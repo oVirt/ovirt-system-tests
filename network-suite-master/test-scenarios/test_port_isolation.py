@@ -6,7 +6,7 @@ from collections import namedtuple
 import logging
 import pytest
 
-from fixtures.host import ETH1
+from fixtures.host import ENP2S0
 
 from ovirtlib import clusterlib
 from ovirtlib import hostlib
@@ -51,13 +51,13 @@ def vms_conf(management_subnet, storage_subnet):
     return [
         VmConf(
             'test_port_isolation_vm_0',
-            Iface('eth0', str(management_subnet[221])),
-            Iface('eth1', str(storage_subnet[221])),
+            Iface('enp1s0', str(management_subnet[221])),
+            Iface('enp2s0', str(storage_subnet[221])),
         ),
         VmConf(
             'test_port_isolation_vm_1',
-            Iface('eth0', str(management_subnet[222])),
-            Iface('eth1', str(storage_subnet[222])),
+            Iface('enp1s0', str(management_subnet[222])),
+            Iface('enp2s0', str(storage_subnet[222])),
         ),
     ]
 
@@ -140,6 +140,6 @@ def port_isolation_network(default_data_center, default_cluster, host_1_up, af):
         default_cluster,
         port_isolation=True,
     ) as network:
-        attach_data = netattachlib.NetworkAttachmentData(network, ETH1, (netattachlib.DYNAMIC_IP_ASSIGN[af.family],))
+        attach_data = netattachlib.NetworkAttachmentData(network, ENP2S0, (netattachlib.DYNAMIC_IP_ASSIGN[af.family],))
         with hostlib.setup_networks(host_1_up, attach_data=(attach_data,)):
             yield network

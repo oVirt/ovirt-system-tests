@@ -10,7 +10,7 @@
  "he_storage_domain_path": "/engine",
  "he_storage_domain_addr": "@HOST1-IP@",
  "he_mount_options": "backup-volfile-servers=@HOST2-IP@:@HOST3-IP@",
- "he_bridge_if": "eth0",
+ "he_bridge_if": "enp1s0",
  "he_enable_hc_gluster_service": true,
  "he_vm_ip_addr": "@ADDR@",
  "he_vm_ip_prefix": "24",

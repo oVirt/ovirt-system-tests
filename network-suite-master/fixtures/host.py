@@ -8,10 +8,10 @@ import pytest
 from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
-ETH0 = 'eth0'
-ETH1 = 'eth1'
-ETH2 = 'eth2'
-ETH3 = 'eth3'
+ENP1S0 = 'enp1s0'
+ENP2S0 = 'enp2s0'
+ENP3S0 = 'enp3s0'
+ENP4S0 = 'enp4s0'
 
 
 @pytest.fixture(scope='session')

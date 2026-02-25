@@ -38,44 +38,44 @@ def _fetch_fqdn(answer_file):
 
 
 @pytest.fixture(scope='session')
-def host0_eth2_ipv6(host0_facts):
+def host0_enp3s0_ipv6(host0_facts):
     """
     nics created by lago are managed by nmcli and have autoconf ipv6 but have
     not been assigned an address. this function requests a dynamic assignment
-    of an ipv6 to 'eth2' and retrieves it.
+    of an ipv6 to 'enp3s0' and retrieves it.
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
     host_0 = sshlib.Node(host0_facts.default_ip(), host0_facts.ssh_password)
-    return _enable_dynamic_ipv6(host_0, 'eth2')
+    return _enable_dynamic_ipv6(host_0, 'enp3s0')
 
 
 @pytest.fixture(scope='session')
-def host0_eth1_ipv6(host0_facts):
+def host0_enp2s0_ipv6(host0_facts):
     """
     nics created by lago are managed by nmcli and have autoconf ipv6 but have
     not been assigned an address. this function requests a dynamic assignment
-    of an ipv6 to 'eth1' and retrieves it.
+    of an ipv6 to 'enp2s0' and retrieves it.
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
     host_0 = sshlib.Node(host0_facts.default_ip(), host0_facts.ssh_password)
-    return _enable_dynamic_ipv6(host_0, 'eth1')
+    return _enable_dynamic_ipv6(host_0, 'enp2s0')
 
 
 @pytest.fixture(scope='session')
 def engine_storage_ipv6(engine_facts):
     """
     lago creates a network with an ipv6 subnet and connects it to NIC
-    'eth1' of the engine. It names the network 'storage' but does not assign an
+    'enp2s0' of the engine. It names the network 'storage' but does not assign an
     ipv6 address to the NIC.
-    this function requests a dynamic assignment of an ipv6 to 'eth1' of the
+    this function requests a dynamic assignment of an ipv6 to 'enp2s0' of the
     engine machine and retrieves it.
     :return: the ipv6 address as string
     :raise: timeout exception if global ipv6 address not found on NIC
     """
     engine = sshlib.Node(engine_facts.default_ip(), engine_facts.ssh_password)
-    ENGINE_STORAGE_NIC = 'eth1'
+    ENGINE_STORAGE_NIC = 'enp2s0'
     return _enable_dynamic_ipv6(engine, ENGINE_STORAGE_NIC)
 
 
@@ -121,7 +121,7 @@ def _get_ipv6(ssh_node, nic_name):
     """
     :param ssh_node: an sshlib.Node that exposes an ssh API into itself
     :param nic_name: the name of the NIC from which to get the ipv6 address
-    :return: the ipv6 address of the lago vm on eth1 as string or empty string
+    :return: the ipv6 address of the lago vm on enp2s0 as string or empty string
     """
     INET6 = 'inet6 '
     res = ssh_node.exec_command(['ip -o -6 a show', nic_name, 'scope global'])

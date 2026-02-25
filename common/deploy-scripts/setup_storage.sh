@@ -244,7 +244,7 @@ main() {
     setup_lvm_filter
     setup_iscsi
     # TODO el9 doesn't have 389-ds (LDAP) configuration yet
-    [ "$(. /etc/os-release; echo ${VERSION_ID})" != "9" ] && setup_389ds
+    # [ "$(. /etc/os-release; echo ${VERSION_ID})" != "9" ] && setup_389ds
     coredump_kill
 
     fstrim -va

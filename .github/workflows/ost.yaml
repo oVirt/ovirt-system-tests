@@ -30,13 +30,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  trigger-ost:
-    env:
-      GITHUB_REPORT_FILE: md_report.md
-      OST_DEPLOYMENT: /opt/actions-runner/_work/ost_deployment 
-
-    runs-on: ost-trigger
-
+  decode_comment:
+    runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' ||
         github.event_name == 'push' ||
       ( github.event.issue.pull_request &&
@@ -44,8 +39,17 @@ jobs:
           github.event.comment.author_association == 'MEMBER' ||
           github.event.comment.author_association == 'COLLABORATOR')
       )
+    outputs:
+      SUITE: ${{ steps.set-vars.outputs.SUITE }}
+      DISTRO: ${{ steps.set-vars.outputs.DISTRO }}
+      DISTRO_JSON: ${{ steps.set-vars.outputs.DISTRO_JSON }}
+      PR_URL: ${{ steps.set-vars.outputs.PR_URL }}
+      COMMENT: ${{ steps.set-vars.outputs.COMMENT }}
+      RUN_URL: ${{ steps.set-vars.outputs.RUN_URL }}
+      OST_REF: ${{ steps.set-vars.outputs.OST_REF }}
     steps:
       - name: Set environment variables
+        id: set-vars
         env:
           PR_URL: "${{ github.event.issue.pull_request.url }}${{ inputs.pr_url }}"
           COMMENT: "${{ github.event.comment.body }}${{ inputs.comment }}"
@@ -54,6 +58,12 @@ jobs:
           DISTRO=$(echo "$COMMENT" | cut -d " " -s -f3)
           SUITE=${SUITE:-basic-suite-master}
           DISTRO=${DISTRO:-centos9}
+
+          if [[ "$DISTRO" == "all" ]]; then
+            DISTRO="centos9,centos10,almalinux9,almalinux10"
+          fi
+
+          DISTRO_JSON=$(echo \""$DISTRO"\" |jq -c 'split(",")')
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           OST_REPO="oVirt/ovirt-system-tests"
@@ -70,12 +80,13 @@ jobs:
             done
           fi
           
-          echo "SUITE=$SUITE" >> $GITHUB_ENV
-          echo "DISTRO=$DISTRO" >> $GITHUB_ENV
-          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-          echo "COMMENT=$COMMENT" >> $GITHUB_ENV 
-          echo "RUN_URL=$RUN_URL" >> $GITHUB_ENV
-          echo "OST_REF=$OST_REF" >> $GITHUB_ENV
+          echo "SUITE=$SUITE" >> $GITHUB_OUTPUT
+          echo "DISTRO=$DISTRO" >> $GITHUB_OUTPUT
+          echo "DISTRO_JSON=$DISTRO_JSON" >> $GITHUB_OUTPUT
+          echo "PR_URL=$PR_URL" >> $GITHUB_OUTPUT
+          echo "COMMENT=$COMMENT" >> $GITHUB_OUTPUT
+          echo "RUN_URL=$RUN_URL" >> $GITHUB_OUTPUT
+          echo "OST_REF=$OST_REF" >> $GITHUB_OUTPUT
           
           echo "==== RUN PARAMS ========"
           echo "PR_URL: $PR_URL"
@@ -84,6 +95,23 @@ jobs:
           echo "DISTRO: $DISTRO"
           echo "========================"
 
+  trigger-ost:
+    needs: decode_comment
+    env:
+      GITHUB_REPORT_FILE: md_report.md
+      OST_DEPLOYMENT: /opt/actions-runner/_work/ost_deployment
+      SUITE: ${{ needs.decode_comment.outputs.SUITE }}
+      PR_URL: ${{ needs.decode_comment.outputs.PR_URL }}
+      RUN_URL: ${{ needs.decode_comment.outputs.RUN_URL }}
+      OST_REF: ${{ needs.decode_comment.outputs.OST_REF }}
+
+    runs-on: ost-trigger
+
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: ${{ fromJSON(needs.decode_comment.outputs.DISTRO_JSON) }}
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -92,7 +120,7 @@ jobs:
 
       - name: Setup ost 
         run: |
-          /usr/bin/bash common/helpers/ost-image-packages.sh $SUITE $DISTRO
+          /usr/bin/bash common/helpers/ost-image-packages.sh $SUITE ${{ matrix.distro }}
           if [ -f ost_image_vars.json ]; then
             jq . ost_image_vars.json
             /usr/bin/bash setup_for_ost.sh ost_image_vars.json -y
@@ -104,7 +132,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         run: |
           HERE="[here]($RUN_URL)"
-          MSG=":hourglass_flowing_sand: Running ost suite **'$SUITE'** on distro **'$DISTRO'**. \n\nFollow the progress $HERE."
+          MSG=":hourglass_flowing_sand: Running ost suite **'$SUITE'** on distro **'${{ matrix.distro }}'**. \n\nFollow the progress $HERE."
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
@@ -113,7 +141,7 @@ jobs:
             ${{ github.event.issue.url }}/comments \
             -d "{\"body\":\"${MSG}\"}"
 
-      - name: Run ${{ env.SUITE }} on ${{ env.DISTRO }} for [${{ env.PR_URL }}]
+      - name: Run ${{ env.SUITE }} on ${{ matrix.distro }} for [${{ env.PR_URL }}]
         id: run-tests
         continue-on-error: true
         run: |
@@ -129,23 +157,23 @@ jobs:
             PR_URL="--custom-repo $PR_URL"
           fi
           
-          /usr/bin/bash ost.sh run $SUITE $DISTRO $PR_URL
+          /usr/bin/bash ost.sh run $SUITE ${{ matrix.distro }} $PR_URL
           
       - name: Create artifacts archive
-        run: tar -czf exported-artifacts.tar.gz exported-artifacts
+        run: tar -czf exported-artifacts-${{ matrix.distro }}.tar.gz exported-artifacts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ost-artifacts
-          path: exported-artifacts.tar.gz
+          name: ost-artifacts-${{ matrix.distro }}
+          path: exported-artifacts-${{ matrix.distro }}.tar.gz
 
       - name: Add report to summary
         shell: bash
         run: |
           cat $GITHUB_REPORT_FILE
           if [ -f "$GITHUB_REPORT_FILE" ]; then
-            echo "<details><summary>Test Report</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>Test Report (${{ matrix.distro }})</summary>" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             cat "$GITHUB_REPORT_FILE" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
@@ -156,9 +184,9 @@ jobs:
         if: always() && github.event_name != 'workflow_dispatch'
         shell: bash
         run: |
-          MESSAGE=":sob::broken_heart: ost suite **'$SUITE'** on distro **'$DISTRO'** failed."
+          MESSAGE=":sob::broken_heart: ost suite **'$SUITE'** on distro **'${{ matrix.distro }}'** failed."
           if [ "${{ steps.run-tests.outcome }}" == "success" ]; then
-            MESSAGE=":sunglasses::muscle: ost suite **'$SUITE'** on distro **'$DISTRO'** finished successfully."
+            MESSAGE=":sunglasses::muscle: ost suite **'$SUITE'** on distro **'${{ matrix.distro }}'** finished successfully."
           fi 
           MESSAGE="$MESSAGE ([details]($RUN_URL))"
           JSON_PAYLOAD=$(jq -n --arg body "$MESSAGE" '{"body": $body}')

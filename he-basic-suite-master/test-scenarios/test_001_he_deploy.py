@@ -94,8 +94,7 @@ def test_set_global_maintenance(ansible_host0):
 
 
 def test_install_sar_collection(root_dir, ansible_engine, ost_images_distro):
-    ansible_engine.dnf(name='/var/tmp/lm_sensors.rpm', disable_gpg_check='yes')
-    ansible_engine.dnf(name='/var/tmp/sysstat.rpm', disable_gpg_check='yes')
+    ansible_engine.dnf(name='sysstat', enablerepo='appstream')
     ansible_engine.file(
         path='/etc/systemd/system/sysstat-collect.timer.d',
         state='directory',

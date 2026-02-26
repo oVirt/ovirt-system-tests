@@ -79,18 +79,6 @@ copy_dependencies() {
   copy:
     src: /usr/share/ovirt-system-tests/cirros.img
     dest: /usr/share/ovirt-system-tests/
-- name: Copy sysstat rpm package to HE VM
-  copy:
-    src: "{{ item }}"
-    dest: /var/tmp/sysstat.rpm
-  with_fileglob:
-    - "/var/tmp/sysstat-*"
-- name: Copy sysstat dependencies to HE VM
-  copy:
-    src: "{{ item }}"
-    dest: /var/tmp/lm_sensors.rpm
-  with_fileglob:
-    - "/var/tmp/lm_sensors-*"
 - name: Copy OpenSCAP profile name
   copy:
     src: /root/ost_images_openscap_profile

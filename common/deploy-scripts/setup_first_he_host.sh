@@ -30,6 +30,10 @@ dnf_update() {
     ip -4 -o addr show dev enp1s0 scope global | grep -q enp1s0 || FWD_PARAM="-L1234:localhost:1234" # when we need to tunnel further to the SOCKS proxy on OST executor
     cat << EOF > ${HE_SETUP_HOOKS_DIR}/enginevm_before_engine_setup/replace_repos.yml
 ---
+- name: Install sshpass for IPv6 to IPv4 proxy
+  dnf:
+    name: sshpass
+    state: present
 - name: Create systemd service for IPv6 to IPv4 proxy
   lineinfile:
     path: /etc/systemd/system/socks-proxy.service

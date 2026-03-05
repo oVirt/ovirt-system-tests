@@ -666,6 +666,7 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
             response = vmconsole_process.stdout.read(1)
             if len(response.strip()) != 0:
                 message = response + vmconsole_process.stdout.readline()
+                LOGGER.debug(f'vmconsole output: {message.decode()}')
                 if (
                     f"login as '{VM_USER_NAME}'".encode() in message
                     or f'{VM0_NAME} login'.encode() in message

@@ -119,8 +119,8 @@ class Driver:
             )
             return dialog_root
 
-    def execute_script(self, script):
-        self.retry_if_known_issue(self.__driver.execute_script, script)
+    def execute_script(self, script, *args):
+        return self.retry_if_known_issue(self.__driver.execute_script, script, *args)
 
     def execute_in_frame(self, xpath, method, *args):
         result = None
@@ -197,6 +197,9 @@ class Driver:
     def is_button_enabled(self, text):
         return self.is_xpath_enabled(f'//button[text()="{text}"]')
 
+    def is_id_enabled(self, idx):
+        return self.is_xpath_enabled(f'//*[@id="{idx}"]')
+
     def is_xpath_enabled(self, xpath):
         return self.retry_if_known_issue(lambda: self.find_element(By.XPATH, xpath).is_enabled())
 
@@ -217,6 +220,17 @@ class Driver:
         wait_until(f'{message} is not displayed', self.is_xpath_displayed, xpath)
         wait_until(f'{message} is not enabled', self.is_xpath_enabled, xpath)
         self.xpath_click(xpath)
+
+    def wait_for_modals_to_disappear(self):
+        """Wait for all modals (including overlays) to disappear from the page"""
+
+        def no_modals_displayed():
+            # Check if modal-body elements exist and are visible
+            modals = self.find_elements(By.CLASS_NAME, 'modal-body')
+            overlays = self.find_elements(By.CLASS_NAME, 'modal-backdrop')
+            return len(modals) == 0 and len(overlays) == 0
+
+        self.wait_until('Modal elements should disappear', no_modals_displayed)
 
     def wait_until(self, message, condition_method, *args):
         self._wait_until(message, assert_utils.SHORT_TIMEOUT, condition_method, *args)

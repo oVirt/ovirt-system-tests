@@ -10,6 +10,9 @@ class TemplateDetailView(EntityDetailView):
     def __init__(self, ovirt_driver, breadcrumbs, name):
         super(TemplateDetailView, self).__init__(ovirt_driver, breadcrumbs, name)
 
+    def is_displayed(self):
+        return self.ovirt_driver.is_id_present('SubTabTemplateGeneralView_form')
+
     def get_displayable_name(self):
         return 'Template detail view'
 

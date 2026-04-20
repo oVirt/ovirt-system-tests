@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from .Displayable import Displayable
 
 
@@ -13,11 +14,56 @@ class VmPortal(Displayable):
     def is_displayed(self):
         return self.ovirt_driver.is_id_present('pageheader-refresh')
 
+    def settings_menu_opens(self):
+        self.ovirt_driver.xpath_wait_and_click('Settings menu', '//*[@id="pageheader-settings"]')
+        try:
+            self.ovirt_driver.wait_until(
+                'Settings toolbar is present', self.ovirt_driver.is_id_present, 'settings-toolbar'
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def about_menu_opens(self):
+        self.ovirt_driver.xpath_wait_and_click('User dropdown menu', '//*[@id="usermenu-user"]')
+        self.ovirt_driver.wait_until('About menu is present', self.ovirt_driver.is_id_present, 'about-modal-link')
+        about_menu = self.ovirt_driver.find_element(By.XPATH, '//*[@id="about-modal-link"]')
+        try:
+            self.ovirt_driver.create_action_chains().move_to_element(about_menu).click(about_menu).perform()
+            self.ovirt_driver.wait_until('About modal is displayed', self.ovirt_driver.is_id_present, 'about-modal')
+            return True
+        except TimeoutException:
+            return False
+
+    def close_about_dialog(self):
+        close_btn_xpath = '//div[@role="dialog"]//button[@aria-label="Close"]'
+        self.ovirt_driver.wait_until('About modal is present', self.ovirt_driver.is_id_present, 'about-modal')
+        close_btn = self.ovirt_driver.find_element(By.XPATH, close_btn_xpath)
+        self.ovirt_driver.create_action_chains().move_to_element(close_btn).click(close_btn).perform()
+        self.ovirt_driver.wait_while('About modal still displayed', self.ovirt_driver.is_id_present, 'about-modal')
+
     def get_displayable_name(self):
         return 'VM Portal'
 
+    def return_to_homepage(self):
+        self.ovirt_driver.xpath_wait_and_click('Home menu', '//*[@id="pageheader-logo"]')
+
     def get_vm_status(self, vm_name):
         return self.ovirt_driver.find_element(By.ID, 'vm-' + vm_name + '-status').text.strip()
+
+    def vm_detail_present(self, vm_name):
+        vm_clickable_id = '//*[@id="vm-' + vm_name + '-name"]'
+        vm_click_element = self.ovirt_driver.find_element(By.XPATH, vm_clickable_id)
+        self.ovirt_driver.create_action_chains().move_to_element(vm_click_element).click(vm_click_element).perform()
+        try:
+            self.ovirt_driver.wait_until(
+                f'VM {vm_name} details page is displayed',
+                self.ovirt_driver.is_id_present,
+                'vmdetail-overview-name',
+            )
+            return True
+        except TimeoutException:
+            return False
 
     def get_vm_count(self):
         return int(self.ovirt_driver.find_element(By.XPATH, "//div[@class='col-sm-12']/h5").text.strip().split(' ')[0])
@@ -30,3 +76,6 @@ class VmPortal(Displayable):
         self.ovirt_driver.create_action_chains().move_to_element(logout_menu).click(logout_menu).perform()
 
         self.ovirt_driver.wait_while('Vm portal still displayed', self.is_displayed)
+
+    def is_create_virtual_machine_present(self):
+        return self.ovirt_driver.is_id_present('route-add-vm-button')

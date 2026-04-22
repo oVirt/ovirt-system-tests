@@ -112,6 +112,19 @@ jobs:
       matrix:
         distro: ${{ fromJSON(needs.decode_comment.outputs.DISTRO_JSON) }}
     steps:
+      - name: Comment on PR that ost will start soon
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          HERE="[here]($RUN_URL)"
+          MSG=":hourglass_flowing_sand: Running ost suite **'$SUITE'** on distro **'${{ matrix.distro }}'**. \n\nFollow the progress $HERE."
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            ${{ github.event.issue.url }}/comments \
+            -d "{\"body\":\"${MSG}\"}"
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -127,19 +140,6 @@ jobs:
           else
             /usr/bin/bash setup_for_ost.sh -y
           fi
-      
-      - name: Comment on PR that ost is running
-        if: github.event_name != 'workflow_dispatch'
-        run: |
-          HERE="[here]($RUN_URL)"
-          MSG=":hourglass_flowing_sand: Running ost suite **'$SUITE'** on distro **'${{ matrix.distro }}'**. \n\nFollow the progress $HERE."
-          curl -L \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            ${{ github.event.issue.url }}/comments \
-            -d "{\"body\":\"${MSG}\"}"
 
       - name: Run ${{ env.SUITE }} on ${{ matrix.distro }} for [${{ env.PR_URL }}]
         id: run-tests

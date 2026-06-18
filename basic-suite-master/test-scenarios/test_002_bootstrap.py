@@ -64,6 +64,10 @@ SD_ISCSI_PORT = 3260
 SD_ISCSI_NR_LUNS = 2
 DLUN_DISK_NAME = 'DirectLunDisk'
 
+SD_NVMEOF_TARGET = 'nqn.2014-07.org.ovirt:nvmeof-storage'
+SD_NVMEOF_PORT = 4420
+SD_NVMEOF_NR_LUNS = 1
+
 SD_ISO_NAME = 'iso'
 SD_ISO_PATH = '/exports/nfs/iso'
 
@@ -121,6 +125,7 @@ _TEST_LIST = [
     "test_verify_add_hosts",
     "test_add_nfs_master_storage_domain",
     "test_add_iscsi_master_storage_domain",
+    "test_add_nvmeof_master_storage_domain",
     "test_add_quota_storage_limits",
     "test_add_blank_vms",
     "test_add_direct_lun_vm0",
@@ -419,6 +424,26 @@ def sd_iscsi_host_luns(sd_iscsi_host_lun_uuids, sd_iscsi_host_ip, sd_iscsi_port,
     )
 
 
+@pytest.fixture
+def sd_nvmeof_connection_info(sd_nvmeof_ansible_host):
+    return lun.get_nvmeof_connection_info(sd_nvmeof_ansible_host)
+
+
+@pytest.fixture
+def sd_nvmeof_host_lun_uuids(sd_nvmeof_ansible_host):
+    return lun.get_nvmeof_uuids(sd_nvmeof_ansible_host)[:SD_NVMEOF_NR_LUNS]
+
+
+@pytest.fixture
+def sd_nvmeof_host_luns(sd_nvmeof_host_lun_uuids, sd_nvmeof_connection_info):
+    return lun.create_nvmeof_lun_sdk_entries(
+        sd_nvmeof_host_lun_uuids,
+        sd_nvmeof_connection_info['address'],
+        sd_nvmeof_connection_info['port'],
+        sd_nvmeof_connection_info['nqn'],
+    )
+
+
 @order_by(_TEST_LIST)
 def test_add_iscsi_master_storage_domain(
     master_storage_domain_type, engine_api, hosts_service, sd_iscsi_host_luns, ost_dc_name
@@ -435,6 +460,17 @@ def test_add_nfs_master_storage_domain(
     if master_storage_domain_type != 'nfs':
         pytest.skip('not using nfs')
     add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, ost_dc_name)
+
+
+@order_by(_TEST_LIST)
+def test_add_nvmeof_master_storage_domain(
+    master_storage_domain_type, engine_api, hosts_service, sd_nvmeof_host_luns, ost_dc_name
+):
+    if master_storage_domain_type != 'nvmeof':
+        pytest.skip('not using nvmeof')
+    add_nvmeof_storage_domain(
+        engine_api, hosts_service, sd_nvmeof_host_luns, ost_dc_name
+    )
 
 
 def add_nfs_storage_domain(engine_api, hosts_service, sd_nfs_host_storage_name, dc_name):
@@ -476,7 +512,7 @@ def test_add_secondary_storage_domains(
     sd_iscsi_host_luns,
     ost_dc_name,
 ):
-    if master_storage_domain_type == 'iscsi':
+    if master_storage_domain_type in ('iscsi', 'nvmeof'):
         vt = utils.VectorThread(
             [
                 functools.partial(
@@ -567,6 +603,30 @@ def add_iscsi_storage_domain(engine_api, hosts_service, luns, dc_name):
         storage_format=(sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3),
         storage=sdk4.types.HostStorage(
             type=sdk4.types.StorageType.ISCSI,
+            override_luns=True,
+            volume_group=sdk4.types.VolumeGroup(logical_units=luns),
+        ),
+    )
+
+    domain.add(engine_api, p, dc_name)
+
+
+def add_nvmeof_storage_domain(engine_api, hosts_service, luns, dc_name):
+    v4_domain = versioning.cluster_version_ok(4, 1)
+    p = sdk4.types.StorageDomain(
+        name=constants.SD_NVMEOF_NAME,
+        description='NVMe-oF Storage Domain',
+        type=sdk4.types.StorageDomainType.DATA,
+        discard_after_delete=v4_domain,
+        data_center=sdk4.types.DataCenter(
+            name=dc_name,
+        ),
+        host=host_utils.random_up_host(hosts_service, dc_name),
+        storage_format=(
+            sdk4.types.StorageFormat.V4 if v4_domain else sdk4.types.StorageFormat.V3
+        ),
+        storage=sdk4.types.HostStorage(
+            type=sdk4.types.StorageType.NVMEOF,
             override_luns=True,
             volume_group=sdk4.types.VolumeGroup(logical_units=luns),
         ),

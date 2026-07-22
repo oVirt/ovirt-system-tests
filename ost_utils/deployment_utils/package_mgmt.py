@@ -25,7 +25,7 @@ OVIRT_PACKAGES_PATTERNS = (
     re.compile('vdsm-[0-9]'),
 )
 
-OST_TO_GITHUB_DISTRO_NAME = {'centos9': 'el9', 'centos10': 'el10', 'almalinux9': 'el9', 'almalinux10': 'el10'}
+OST_TO_GITHUB_DISTRO_NAME = {'centos9': 'el9s', 'centos10': 'el10s', 'almalinux9': 'el9', 'almalinux10': 'el10'}
 
 
 def expand_repos(custom_repos, working_dir, ost_images_distro):

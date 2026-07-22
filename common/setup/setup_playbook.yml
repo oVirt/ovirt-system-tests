@@ -85,6 +85,7 @@
               - "{{ python_pkg }}"
               - "{{ python_pkg }}-devel"
               - qemu-kvm
+              - createrepo_c
             state: latest
           become: true
 

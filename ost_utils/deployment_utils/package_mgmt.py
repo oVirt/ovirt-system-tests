@@ -7,6 +7,7 @@
 import logging
 import os
 import re
+import subprocess
 import time
 import zipfile
 
@@ -104,8 +105,7 @@ def expand_github_repo(repo_url, working_dir, ost_images_distro):
                 _github_unpack_artifact(target_file)
                 if _github_has_rpm(target_path):
                     LOGGER.debug("RPMs were found in %s", artifact.name)
-                    # TODO check metada presence and change repo local path
-                    # _github_generate_repomd(target_path)
+                    _github_generate_repomd(target_path)
                     # Add to repos list.
                     return target_path
                 LOGGER.debug("No RPMs were found in %s", artifact.name)
@@ -125,6 +125,26 @@ def _github_has_rpm(path: str) -> bool:
             if file.endswith(".rpm"):
                 return True
     return False
+
+
+def _github_generate_repomd(path: str):
+    """
+    This function creates or updates repository metadata in the specified path
+    using createrepo_c.
+    """
+    LOGGER.debug("Generating repository metadata in %s", path)
+    try:
+        subprocess.run(
+            ["createrepo_c", "--update", path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except FileNotFoundError as err:
+        raise RuntimeError("createrepo_c was not found in PATH") from err
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"createrepo_c failed for {path}: {err.stderr.strip() or err.stdout.strip()}") from err
 
 
 class _GitHubArtifact:

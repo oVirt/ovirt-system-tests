@@ -39,6 +39,7 @@ sed -i 's/weekly/daily/' /etc/logrotate.d/libvirtd
 
 # Increase ISCSI timeouts and disable MD5 (FIPS), see setup_storage.sh
 rpm -q iscsi-initiator-utils || yum install -y iscsi-initiator-utils
+rpm -q nvme-cli || yum install -y nvme-cli
 sed -i 's/#node.session.auth.authmethod = CHAP/node.session.auth.authmethod = CHAP/g' /etc/iscsi/iscsid.conf
 sed -i 's/#node.session.auth.chap_algs =.*/node.session.auth.chap_algs = SHA3-256,SHA256/g' /etc/iscsi/iscsid.conf
 sed -i 's/node.conn\[0\].timeo.noop_out_timeout = .*/node.conn\[0\].timeo.noop_out_timeout = 30/g' /etc/iscsi/iscsid.conf

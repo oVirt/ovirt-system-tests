@@ -65,6 +65,11 @@
         "comment": "Main iSCSI device",
         "template": "common/libvirt-templates/disk_template",
         "size": "191G"
+      },
+      "sdc": {
+        "comment": "NVMe-oF device",
+        "template": "common/libvirt-templates/disk_template",
+        "size": "20G"
       }
     }
   },

@@ -28,6 +28,7 @@ class StorageType(object):
     ISCSI = types.StorageType.ISCSI
     LOCALFS = types.StorageType.LOCALFS
     NFS = types.StorageType.NFS
+    NVMEOF = types.StorageType.NVMEOF
     POSIXFS = types.StorageType.POSIXFS
 
 

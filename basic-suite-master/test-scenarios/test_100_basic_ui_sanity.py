@@ -793,7 +793,7 @@ def test_grafana(
     engine_username,
     engine_password,
     engine_webadmin_url,
-    engine_fqdn,
+    grafana_fqdn,
 ):
     # Instead of marking for xfail, skip the test, this to save time on CI, as the test is currently broken
     pytest.skip('Auhentication with Grafana has been changed, this test needs to be updated.')
@@ -814,7 +814,7 @@ def test_grafana(
     save_screenshot('grafana')
 
     # navigate directly to Grafana Configuration/Data Sources page
-    ovirt_driver.get(f'https://{engine_fqdn}/ovirt-engine-grafana/datasources')
+    ovirt_driver.get(f'https://{grafana_fqdn}/ovirt-engine-grafana/datasources')
     assert grafana.db_connection()
     save_screenshot('grafana-datasource-connection')
 

@@ -195,7 +195,7 @@ def _verify_vm_disks_state(vm_name, state, get_disk_services_for_vm_or_template,
     disks_service = get_disk_services_for_vm_or_template(vm_service)
 
     for disk_service in disks_service:
-        assert assert_utils.equals_within_short(lambda: disk_service.get().status, state)
+        assert assert_utils.equals_within_short(lambda disk_service=disk_service: disk_service.get().status, state)
 
 
 @pytest.fixture(scope="session")
@@ -344,8 +344,8 @@ def test_extend_disk1(engine_api):
                     )
                 )
             disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
-            assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
-            assert assert_utils.equals_within_short(lambda: disk_service.get().provisioned_size, 2 * GB)
+            assert assert_utils.equals_within_short(lambda disk_service=disk_service: disk_service.get().status, types.DiskStatus.OK)
+            assert assert_utils.equals_within_short(lambda disk_service=disk_service: disk_service.get().provisioned_size, 2 * GB)
 
 
 @order_by(_TEST_LIST)

@@ -39,9 +39,9 @@ def exponential_retrier(
     if not sleep_at_first_attempt:
         yield 0
         attempt_num += 1
-    for attempt_num in range(attempt_num, attempts):
-        actual_sleeptime = min(base_coefficient * base**attempt_num, max_iteration_sleeptime)
-        logger.debug(f"attempt {attempt_num + 1}/{attempts}, {actual_sleeptime} seconds sleeping")
+    for attempt in range(attempt_num, attempts):
+        actual_sleeptime = min(base_coefficient * base**attempt, max_iteration_sleeptime)
+        logger.debug(f"attempt {attempt + 1}/{attempts}, {actual_sleeptime} seconds sleeping")
         time.sleep(actual_sleeptime)
         yield actual_sleeptime
 

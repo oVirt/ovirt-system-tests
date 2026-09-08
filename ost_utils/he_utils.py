@@ -10,6 +10,8 @@ import logging
 from ost_utils import assert_utils
 from ost_utils.ansible import AnsibleExecutionError
 
+LOGGER = logging.getLogger(__name__)
+
 
 def he_status(ansible_host):
     ret = {}
@@ -42,7 +44,7 @@ def he_status(ansible_host):
                     item.split('=') for item in data['extra'].split('\n') if item
                 )
         ret = result
-        logging.debug(f'he_status: {ret}')
+        LOGGER.debug(f'he_status: {ret}')
         return ret
 
     assert assert_utils.true_within_short(
@@ -85,7 +87,7 @@ def host_names_not_running_he_vm(ansible_host):
 
 
 def is_global_maintenance_mode(ansible_host):
-    logging.debug('is_global_maintenance_mode: Start')
+    LOGGER.debug('is_global_maintenance_mode: Start')
     return he_status(ansible_host)['global_maintenance']
 
 
@@ -103,18 +105,18 @@ def set_and_test_global_maintenance_mode(ansible_host, mode):
     """
 
     def _set_and_test_global_maintenance_mode():
-        logging.debug('_set_and_test_global_maintenance_mode: Start')
+        LOGGER.debug('_set_and_test_global_maintenance_mode: Start')
         ansible_host.shell(f'hosted-engine --set-maintenance --mode={"global" if mode else "none"}')
-        logging.debug('_set_and_test_global_maintenance_mode: After setting')
+        LOGGER.debug('_set_and_test_global_maintenance_mode: After setting')
         return is_global_maintenance_mode(ansible_host) == mode
 
-    logging.info(f'set_and_test_global_maintenance_mode: Start, mode={mode}')
+    LOGGER.info(f'set_and_test_global_maintenance_mode: Start, mode={mode}')
     assert assert_utils.true_within_short(_set_and_test_global_maintenance_mode)
 
 
 def _get_hosts_states(ansible_host):
     status = he_status(ansible_host)
-    return set(host_data['extra']['state'] for host_data in status['hosts'].values())
+    return {host_data['extra']['state'] for host_data in status['hosts'].values()}
 
 
 def all_hosts_state_global_maintenance(ansible_host):

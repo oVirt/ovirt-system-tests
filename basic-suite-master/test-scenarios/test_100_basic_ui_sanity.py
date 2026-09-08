@@ -6,7 +6,7 @@
 import logging
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 import selenium.webdriver.remote.remote_connection
@@ -144,7 +144,7 @@ def selenium_artifacts_dir(artifacts_dir):
 @pytest.fixture(scope="session")
 def selenium_artifact_filename(selenium_browser_name):
     def _selenium_artifact_filename(description, extension):
-        date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        date = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         return f"{date}_{selenium_browser_name}_{description}.{extension}"
 
     return _selenium_artifact_filename
@@ -376,8 +376,6 @@ def test_clusters(ovirt_driver, save_screenshot, selenium_browser_name, ost_clus
 def test_cluster_upgrade(
     ovirt_driver, engine_api, save_screenshot, ost_cluster_name, ansible_host0_facts, ansible_host1_facts
 ):
-    host0_name = ansible_host0_facts.get("ansible_hostname")
-    host1_name = ansible_host1_facts.get("ansible_hostname")
     cluster_service = test_utils.get_cluster_service(engine_api.system_service(), ost_cluster_name)
     original_schedulling_policy_id = cluster_service.get().scheduling_policy.id
     cluster_maintenance_schedulling_policy_id = '7677771e-5eab-422e-83fa-dc04080d21b7'

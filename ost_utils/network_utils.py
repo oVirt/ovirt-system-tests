@@ -37,7 +37,9 @@ def _get_attachment_by_id(host, network_id):
     return next(att for att in host.network_attachments_service().list() if att.network.id == network_id)
 
 
-def attach_network_to_host(host, nic_name, network_name, ip_configuration, bonds=[]):
+def attach_network_to_host(host, nic_name, network_name, ip_configuration, bonds=None):
+    if bonds is None:
+        bonds = []
     attachment = NetworkAttachment(
         network=Network(name=network_name),
         host_nic=HostNic(name=nic_name),

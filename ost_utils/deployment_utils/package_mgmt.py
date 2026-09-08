@@ -76,7 +76,7 @@ def expand_github_repo(repo_url, working_dir, ost_images_distro):
         if not commit:
             commit = _github_resolve_pr_to_commit(repo, pr)
             LOGGER.debug("Commit %s in %s repo found for pr %s", commit, repo, pr)
-        tries = int(os.environ.get("GITHUB_WORKFLOW_TRIES", 1))
+        tries = int(os.environ.get("GITHUB_WORKFLOW_TRIES", "1"))
         while tries > 0:
             workflow_runs = _github_resolve_commit_to_workflow_runs(repo, commit)
             LOGGER.debug("Number of workflow runs found for commit %s: %d", commit, len(workflow_runs))
@@ -135,8 +135,7 @@ def _github_generate_repomd(path: str):
         subprocess.run(
             ["createrepo_c", "--update", path],
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except FileNotFoundError as err:

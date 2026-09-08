@@ -53,22 +53,24 @@ def test_connect_vm_to_external_network(running_vm_0, default_ovn_provider_clien
 def test_modify_vnic_sec_groups_on_ext_networks(
     running_vm_0, system, ovirt_external_network, default_ovn_provider_client
 ):
-    with netlib.create_vnic_profile(system, 'temporary', ovirt_external_network) as profile:
-        with _create_security_group(default_ovn_provider_client, 'temporary', 'temporary sec group') as sec_group:
-            profile.custom_properties = [netlib.CustomProperty('SecurityGroups', sec_group.id)]
-            profile.filter = None
+    with (
+        netlib.create_vnic_profile(system, 'temporary', ovirt_external_network) as profile,
+        _create_security_group(default_ovn_provider_client, 'temporary', 'temporary sec group') as sec_group,
+    ):
+        profile.custom_properties = [netlib.CustomProperty('SecurityGroups', sec_group.id)]
+        profile.filter = None
 
-            vnic = running_vm_0.get_vnic(VNIC0_NAME)
-            def_group = default_ovn_provider_client.get_security_group('Default')
-            vnic.vnic_profile.custom_properties = [netlib.CustomProperty('SecurityGroups', def_group.id)]
+        vnic = running_vm_0.get_vnic(VNIC0_NAME)
+        def_group = default_ovn_provider_client.get_security_group('Default')
+        vnic.vnic_profile.custom_properties = [netlib.CustomProperty('SecurityGroups', def_group.id)]
 
-            with vnic.toggle_profile(profile):
-                assert vnic.vnic_profile.name == 'temporary'
-                assert [sec_group.id] == [p.value for p in vnic.vnic_profile.custom_properties]
+        with vnic.toggle_profile(profile):
+            assert vnic.vnic_profile.name == 'temporary'
+            assert [sec_group.id] == [p.value for p in vnic.vnic_profile.custom_properties]
 
-                ovn_port = _lookup_port_by_device_id(vnic.id, default_ovn_provider_client)
-                assert ovn_port
-                assert [sec_group.id] == ovn_port.security_group_ids
+            ovn_port = _lookup_port_by_device_id(vnic.id, default_ovn_provider_client)
+            assert ovn_port
+            assert [sec_group.id] == ovn_port.security_group_ids
 
 
 def _lookup_port_by_device_id(vnic_id, default_ovn_provider_cloud):

@@ -29,7 +29,7 @@ def _host_status_to_print(hosts_service, hosts_list):
     dump_hosts = ''
     for host in hosts_list:
         host_service_info = hosts_service.host_service(host.id)
-        dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+        dump_hosts += f'{host.name}: {host_service_info.get().status}\n'
     return dump_hosts
 
 

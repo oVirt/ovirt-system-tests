@@ -10,7 +10,9 @@ from ost_utils.shell import shell
 
 
 class HostDhcps:
-    def __init__(self, ip_node=ET.fromstring("<ip></ip>")):
+    def __init__(self, ip_node=None):
+        if ip_node is None:
+            ip_node = ET.fromstring("<ip></ip>")
         self._host_dhcps = {}
         self._parse(ip_node)
 

@@ -6,6 +6,7 @@
 
 import datetime
 import logging
+from datetime import timezone
 
 LOGGER = logging.getLogger('')
 
@@ -14,14 +15,14 @@ RUNNING_TIMES = {}
 
 
 def pytest_runtest_logstart(nodeid, location):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(timezone.utc)
     RUNNING_TIMES[location] = now
     print(now.strftime('started at %Y-%m-%d %H:%M:%S'), end=' ')
     LOGGER.debug(f'Running test: {nodeid}')
 
 
 def pytest_runtest_logfinish(nodeid, location):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(timezone.utc)
     then = RUNNING_TIMES[location]
     delta = int((now - then).total_seconds())
     print(f" ({delta}s)", end='')

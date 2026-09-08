@@ -93,7 +93,7 @@ def test_assign_labeled_network(
     for host in test_utils.hosts_in_cluster_v4(system_service, ost_cluster_name):
         host_service = hosts_service.host_service(id=host.id)
         assert assert_utils.true_within_short(
-            lambda: _host_is_attached_to_network(
+            lambda host_service=host_service: _host_is_attached_to_network(
                 system_service,
                 host_service,
                 LABELED_NET_NAME,

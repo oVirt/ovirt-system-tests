@@ -101,7 +101,7 @@ class VmVgpuDialog(Displayable):
         # the list is 0-base but the index is 1-based so adjust
         row = tbodys[row_index - 1]
         row_tds = row.find_elements(By.CSS_SELECTOR, 'tr>td')
-        return list(map(lambda td: td.text, row_tds))
+        return [td.text for td in row_tds]
 
     def cancel(self):
         LOGGER.debug('Cancel vGPU dialog')

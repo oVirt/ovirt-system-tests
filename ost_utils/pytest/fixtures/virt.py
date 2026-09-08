@@ -8,8 +8,7 @@ import tempfile
 import ovirtsdk4 as sdk4
 import pytest
 
-from ost_utils import vmconsole
-from ost_utils.shell import shell
+from ost_utils import shell, vmconsole
 
 
 @pytest.fixture(scope="session")
@@ -31,7 +30,7 @@ def cirros_image_template_version_name():
 def rsa_pair(engine_admin_service):
     with tempfile.TemporaryDirectory(prefix='/tmp/') as tmpdir:
         key_path = f'{tmpdir}/id_rsa'
-        shell(['ssh-keygen', '-t', 'rsa', '-f', f'{key_path}', '-N', ''])
+        shell.shell(['ssh-keygen', '-t', 'rsa', '-f', f'{key_path}', '-N', ''])
         with open(f'{key_path}.pub', encoding="utf-8") as f:
             public_key_content = f.read()
         keys = engine_admin_service.ssh_public_keys_service().list()

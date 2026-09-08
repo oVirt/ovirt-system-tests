@@ -7,6 +7,7 @@ import os
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+
 from ost_utils.ansible.module_mappers import AnsibleExecutionError
 
 from .Displayable import Displayable
@@ -19,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 class VmListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(VmListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'vm',
             ['Compute', 'Virtual Machines'],
@@ -108,7 +109,7 @@ class VmListView(EntityListView):
 
 class RunOnceDialog(Displayable):
     def __init__(self, ovirt_driver):
-        super(RunOnceDialog, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.is_xpath_displayed('//*[@id="VmRunOncePopupWidget"]')
@@ -145,7 +146,7 @@ class RunOnceDialog(Displayable):
 
 class NewTemplateDialog(Displayable):
     def __init__(self, ovirt_driver):
-        super(NewTemplateDialog, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         text = self.ovirt_driver.retry_if_known_issue(self._is_cluster_loaded)

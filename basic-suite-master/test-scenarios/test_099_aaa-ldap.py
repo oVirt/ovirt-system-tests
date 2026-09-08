@@ -6,13 +6,12 @@
 import os
 import tempfile
 
-from ovirtsdk4 import types
 import pytest
+from ovirtsdk4 import types
 
 from ost_utils import engine_utils
 
 # AAA
-from ost_utils.pytest.fixtures.ansible import ansible_storage
 
 AAA_LDAP_USER = 'user1'
 AAA_LDAP_GROUP = 'mygroup'

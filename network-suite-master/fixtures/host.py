@@ -4,7 +4,6 @@
 #
 
 import pytest
-
 from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
@@ -66,7 +65,6 @@ def _wait_for_host_install(system, host):
 @pytest.fixture(scope='session', autouse=True)
 def install_hosts_to_save_time(host_0, host_1):
     """add hosts before any test starts so they can install in parallel"""
-    pass
 
 
 def _create_host(system, default_cluster, host_facts):

@@ -7,7 +7,6 @@
 import os
 import os.path
 import sys
-
 import xml.etree.ElementTree as ET
 
 if __name__ == '__main__':

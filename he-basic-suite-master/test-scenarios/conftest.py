@@ -7,19 +7,11 @@
 
 import pytest
 
-from ost_utils import engine_object_names
-from ost_utils import he_utils
-
-from ost_utils.pytest import pytest_collection_modifyitems
-
-from ost_utils.pytest.fixtures import root_password
-from ost_utils.pytest.fixtures.artifacts import *
+from ost_utils import engine_object_names, he_utils
 from ost_utils.pytest.fixtures.ansible import *
+from ost_utils.pytest.fixtures.artifacts import *
 from ost_utils.pytest.fixtures.backend import *
 from ost_utils.pytest.fixtures.defaults import *
-from ost_utils.pytest.fixtures.deployment import deploy
-from ost_utils.pytest.fixtures.deployment import run_scripts
-from ost_utils.pytest.fixtures.deployment import set_sar_interval
 from ost_utils.pytest.fixtures.engine import *
 from ost_utils.pytest.fixtures.env import *
 from ost_utils.pytest.fixtures.he import *

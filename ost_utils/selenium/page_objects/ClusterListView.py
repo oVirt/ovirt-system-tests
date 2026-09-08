@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class ClusterListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(ClusterListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'cluster',
             ['Compute', 'Clusters'],

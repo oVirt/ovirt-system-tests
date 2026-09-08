@@ -5,7 +5,6 @@
 #
 
 import datetime
-
 import logging
 
 LOGGER = logging.getLogger('')

@@ -2,19 +2,12 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-from collections import namedtuple
 import logging
+from collections import namedtuple
+
 import pytest
-
 from fixtures.host import ENP2S0
-
-from ovirtlib import clusterlib
-from ovirtlib import hostlib
-from ovirtlib import joblib
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import sshlib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, hostlib, joblib, netattachlib, netlib, sshlib, virtlib
 
 PORT_ISOLATION_NET = 'test_port_isolation_net'
 VM_USERNAME = 'cirros'

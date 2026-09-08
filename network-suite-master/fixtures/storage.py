@@ -5,9 +5,7 @@
 #
 
 import pytest
-
-from ovirtlib import sshlib
-from ovirtlib import storagelib
+from ovirtlib import sshlib, storagelib
 from ovirtlib.sdkentity import EntityNotFoundError
 
 DEFAULT_DOMAIN_NAME = 'nfs1'

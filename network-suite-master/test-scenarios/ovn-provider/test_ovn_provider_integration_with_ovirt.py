@@ -6,11 +6,7 @@
 from contextlib import contextmanager
 
 import pytest
-
-from ovirtlib import clusterlib
-from ovirtlib import joblib
-from ovirtlib import netlib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, joblib, netlib, virtlib
 from testlib import suite
 
 VNIC0_NAME = 'nic001'

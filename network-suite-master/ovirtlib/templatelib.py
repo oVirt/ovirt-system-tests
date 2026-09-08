@@ -11,7 +11,7 @@ from .sdkentity import EntityNotFoundError
 TEMPLATE_BLANK = 'Blank'
 
 
-class TemplateStatus(object):
+class TemplateStatus:
 
     OK = types.TemplateStatus.OK
     ILLEGAL = types.TemplateStatus.ILLEGAL

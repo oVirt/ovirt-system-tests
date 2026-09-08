@@ -8,8 +8,6 @@
 import pytest
 
 from ost_utils import engine_object_names
-from ost_utils.pytest.fixtures.backend import backend
-from ost_utils.pytest.fixtures.backend import hosts_hostnames
 
 
 @pytest.fixture(scope="session")

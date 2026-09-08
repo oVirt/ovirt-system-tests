@@ -9,9 +9,7 @@ import time
 
 from ovirtsdk4 import types
 
-from .sdkentity import EntityCreationError
-from .sdkentity import SDKSubEntity
-from .sdkentity import SDKRootEntity
+from .sdkentity import EntityCreationError, SDKRootEntity, SDKSubEntity
 
 OVIRTMGMT = 'ovirtmgmt'
 
@@ -28,7 +26,7 @@ class ExternalProviderRequired(Exception):
     pass
 
 
-class NetworkUsage(object):
+class NetworkUsage:
 
     DEFAULT_ROUTE = types.NetworkUsage.DEFAULT_ROUTE
     DISPLAY = types.NetworkUsage.DISPLAY
@@ -38,7 +36,7 @@ class NetworkUsage(object):
     VM = types.NetworkUsage.VM
 
 
-class VnicInterfaceType(object):
+class VnicInterfaceType:
 
     VIRTIO = types.NicInterface.VIRTIO
 
@@ -375,7 +373,7 @@ class QoS(SDKSubEntity):
         return parent_entity.service.qoss_service()
 
 
-class EmptyVnicProfile(object):
+class EmptyVnicProfile:
     """
     Class needed to mimic the API behaviour.
     Engine defines an empty vnic profile by assigning no profile

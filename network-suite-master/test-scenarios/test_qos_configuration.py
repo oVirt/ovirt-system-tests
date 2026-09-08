@@ -5,17 +5,10 @@
 #
 import contextlib
 
-from ovirtsdk4 import types
 import pytest
-
 from fixtures.host import ENP3S0
-
-from ovirtlib import clusterlib
-from ovirtlib import hostlib
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import templatelib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, hostlib, netattachlib, netlib, templatelib, virtlib
+from ovirtsdk4 import types
 
 DEFAULT_NAME = 'Default'
 HOST_QOS = 'host_qos'

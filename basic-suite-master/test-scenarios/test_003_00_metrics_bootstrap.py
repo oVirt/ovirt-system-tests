@@ -9,8 +9,7 @@ import os
 
 import pytest
 
-from ost_utils import assert_utils
-from ost_utils import utils
+from ost_utils import assert_utils, utils
 from ost_utils.ansible import AnsibleExecutionError
 
 LOGGER = logging.getLogger(__name__)

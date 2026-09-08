@@ -5,20 +5,13 @@
 #
 import configparser
 import http
-
 from contextlib import contextmanager
 
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from . import hostlib
-from . import joblib
-from . import netlib
-from . import clusterlib
-from . import syncutil
-from .sdkentity import EntityNotFoundError
-from .sdkentity import SDKRootEntity
-from .sdkentity import SDKSubEntity
+from . import clusterlib, hostlib, joblib, netlib, syncutil
+from .sdkentity import EntityNotFoundError, SDKRootEntity, SDKSubEntity
 
 
 @contextmanager
@@ -34,7 +27,7 @@ def vm_pool(system, size):
         joblib.AllJobs(system).wait_for_done()
 
 
-class SnapshotStatus(object):
+class SnapshotStatus:
 
     IN_PREVIEW = types.SnapshotStatus.IN_PREVIEW
     NOT_READY = types.SnapshotStatus.LOCKED
@@ -153,7 +146,7 @@ class Vm(SDKRootEntity):
 
     def _retry_removal_due_to_locked_status_bz_1530315(self):
         syncutil.sync(
-            exec_func=super(Vm, self).remove,
+            exec_func=super().remove,
             exec_func_args=(),
             success_criteria=lambda s: isinstance(s, ovirtsdk4.NotFoundError),
             error_criteria=lambda e: not isinstance(e, self._unspecific_sdk_error_bz_1533016()),
@@ -292,7 +285,7 @@ class VmSnapshot(SDKSubEntity):
 
 class VmGraphicsConsole(SDKSubEntity):
     def __init__(self, vm):
-        super(VmGraphicsConsole, self).__init__(vm)
+        super().__init__(vm)
         self._config = None
 
     @property

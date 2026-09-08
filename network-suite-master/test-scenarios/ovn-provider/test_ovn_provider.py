@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from contextlib import contextmanager
 import os
+from contextlib import contextmanager
 
 import pytest
-
-from ovirtlib.ansiblelib import Playbook
 from ovirtlib import sshlib
+from ovirtlib.ansiblelib import Playbook
 from testlib import suite
 
 NETWORK10_NAME = 'net10'
@@ -21,7 +20,7 @@ class HostConfigurationFailure(Exception):
     pass
 
 
-class OvnNetwork(object):
+class OvnNetwork:
     def __init__(self, port_name, subnet_name, ovn_provider_client):
         self._port = ovn_provider_client.get_port(port_name)
         self._subnet = ovn_provider_client.get_subnet(subnet_name)
@@ -57,20 +56,19 @@ def test_validate_ovn_provider_connectivity(default_ovn_provider_client, host_0,
         (ssh1, net11),
         (ssh1, net14),
     )
-    with _create_namespaces(connections):
-        with _create_ovs_ports(connections, af):
-            ssh0.retry_ping_from_netns(net11.ip, net10.port.name)
-            ssh1.retry_ping_from_netns(net10.ip, net11.port.name)
+    with _create_namespaces(connections), _create_ovs_ports(connections, af):
+        ssh0.retry_ping_from_netns(net11.ip, net10.port.name)
+        ssh1.retry_ping_from_netns(net10.ip, net11.port.name)
 
-            ssh0.assert_no_ping_from_netns(net14.ip, net10.port.name)
-            ssh1.assert_no_ping_from_netns(net10.ip, net14.port.name)
+        ssh0.assert_no_ping_from_netns(net14.ip, net10.port.name)
+        ssh1.assert_no_ping_from_netns(net10.ip, net14.port.name)
 
-            _update_routes(default_ovn_provider_client, net10.subnet, net11.subnet)
+        _update_routes(default_ovn_provider_client, net10.subnet, net11.subnet)
 
-            ssh1.retry_ping_from_netns(net10.ip, net14.port.name)
-            ssh0.retry_ping_from_netns(net14.ip, net10.port.name)
-            ssh1.retry_ping_from_netns(net11.ip, net14.port.name)
-            ssh1.retry_ping_from_netns(net14.ip, net11.port.name)
+        ssh1.retry_ping_from_netns(net10.ip, net14.port.name)
+        ssh0.retry_ping_from_netns(net14.ip, net10.port.name)
+        ssh1.retry_ping_from_netns(net11.ip, net14.port.name)
+        ssh1.retry_ping_from_netns(net14.ip, net11.port.name)
 
 
 @pytest.fixture(scope='function')

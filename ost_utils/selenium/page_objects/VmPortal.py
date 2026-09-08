@@ -2,14 +2,15 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 
 
 class VmPortal(Displayable):
     def __init__(self, ovirt_driver):
-        super(VmPortal, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.is_id_present('pageheader-refresh')

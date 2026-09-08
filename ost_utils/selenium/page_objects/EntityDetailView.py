@@ -8,7 +8,7 @@ from .WithBreadcrumbs import WithBreadcrumbs
 
 class EntityDetailView(Displayable, WithBreadcrumbs):
     def __init__(self, ovirt_driver, breadcrumbs, entity_name):
-        super(EntityDetailView, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
         self.breadcrumbs = breadcrumbs.copy()
         self.breadcrumbs.append(entity_name)
 

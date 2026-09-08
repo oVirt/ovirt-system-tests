@@ -7,12 +7,10 @@
 import logging
 
 import ovirtsdk4
+import pytest
 from ovirtsdk4 import types
 
-import pytest
-
-from ost_utils import assert_utils
-from ost_utils import he_utils
+from ost_utils import assert_utils, he_utils
 
 VM_HE_NAME = 'HostedEngine'
 

@@ -6,15 +6,16 @@
 import contextlib
 import socket
 
-from ovirtlib import clusterlib
-from ovirtlib import datacenterlib
-from ovirtlib import hostlib
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import storagelib
-from ovirtlib import templatelib
-from ovirtlib import virtlib
-
+from ovirtlib import (
+    clusterlib,
+    datacenterlib,
+    hostlib,
+    netattachlib,
+    netlib,
+    storagelib,
+    templatelib,
+    virtlib,
+)
 from ovirtlib.storagelib import storage_domain
 from testlib import suite
 

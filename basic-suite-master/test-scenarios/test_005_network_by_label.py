@@ -4,14 +4,10 @@
 #
 #
 
-import functools
 
 from ovirtsdk4.types import DataCenter, Network, NetworkLabel, Vlan
 
-from ost_utils import assert_utils
-from ost_utils import network_utils
-from ost_utils import test_utils
-from ost_utils import utils
+from ost_utils import assert_utils, network_utils, test_utils, utils
 
 # Network
 NETWORK_LABEL = 'NETWORK_LABEL'

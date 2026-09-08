@@ -7,7 +7,7 @@
 import os
 
 
-class Inventory(object):
+class Inventory:
     """A class to handle an ansible inventory directory"""
 
     def __init__(self, parent):

@@ -5,7 +5,6 @@
 # -*- coding: utf-8 -*-
 #
 
-from os import environ, path
 
 from ost_utils.pytest.fixtures.ansible import *
 from ost_utils.pytest.fixtures.engine import *

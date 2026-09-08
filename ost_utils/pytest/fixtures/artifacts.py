@@ -10,9 +10,7 @@ import os
 
 import pytest
 
-from ost_utils import coverage
-from ost_utils import utils
-from ost_utils import shell
+from ost_utils import coverage, shell, utils
 from ost_utils.ansible import AnsibleExecutionError
 
 LOGGER = logging.getLogger(__name__)

@@ -7,9 +7,8 @@ from contextlib import contextmanager
 
 from ovirtsdk4 import types
 
-from .sdkentity import SDKRootEntity
-from .sdkentity import SDKSubEntity
 from .netlib import Network
+from .sdkentity import SDKRootEntity, SDKSubEntity
 
 
 class OpenStackNetworkProvider(SDKRootEntity):

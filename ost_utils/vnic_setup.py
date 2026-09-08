@@ -5,16 +5,16 @@
 #
 
 from ovirtsdk4.types import (
-    VnicProfile,
     Network,
     RegistrationConfiguration,
     RegistrationVnicProfileMapping,
+    VnicProfile,
 )
 
 from ost_utils import network_utils as nu
 
 
-class VnicSetup(object):
+class VnicSetup:
     def __init__(self):
         self._engine = None
         self._profiles = None

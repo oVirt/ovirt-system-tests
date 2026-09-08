@@ -7,18 +7,18 @@ import ipaddress
 import logging
 
 import pytest
-
 from fixtures.host import ENP2S0, ENP3S0
-
-from ovirtlib import virtlib
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import clusterlib
-from ovirtlib import hostlib
-from ovirtlib import joblib
-from ovirtlib import datacenterlib
-from ovirtlib import syncutil
-from ovirtlib import templatelib
+from ovirtlib import (
+    clusterlib,
+    datacenterlib,
+    hostlib,
+    joblib,
+    netattachlib,
+    netlib,
+    syncutil,
+    templatelib,
+    virtlib,
+)
 from testlib import suite
 
 LOGGER = logging.getLogger(__name__)

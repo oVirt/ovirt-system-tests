@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class ClusterUpgradeDialog(Displayable):
     def __init__(self, ovirt_driver):
-        super(ClusterUpgradeDialog, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         modal_text = self.ovirt_driver.find_element(

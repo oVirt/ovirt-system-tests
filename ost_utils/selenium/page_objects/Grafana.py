@@ -6,6 +6,7 @@ import logging
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Grafana(Displayable):
     def __init__(self, ovirt_driver):
-        super(Grafana, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.find_element(

@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+
 from .EntityDetailView import EntityDetailView
 
 
 class TemplateDetailView(EntityDetailView):
     def __init__(self, ovirt_driver, breadcrumbs, name):
-        super(TemplateDetailView, self).__init__(ovirt_driver, breadcrumbs, name)
+        super().__init__(ovirt_driver, breadcrumbs, name)
 
     def is_displayed(self):
         return self.ovirt_driver.is_id_present('SubTabTemplateGeneralView_form')

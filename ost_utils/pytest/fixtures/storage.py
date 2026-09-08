@@ -5,10 +5,10 @@
 #
 
 import functools
+
 import pytest
 
-from ost_utils import constants
-from ost_utils import network_utils
+from ost_utils import constants, network_utils
 
 
 @pytest.fixture(scope="session")

@@ -5,7 +5,7 @@
 from ovirtsdk4 import Connection
 
 
-class SDKSystemRoot(object):
+class SDKSystemRoot:
     def __init__(self):
         self._system_service = None
 

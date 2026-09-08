@@ -2,16 +2,12 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-from pprint import pprint
+
+import logging
 
 import pytest
 
 from ost_utils import engine_utils
-from ost_utils import general_utils
-from ost_utils.pytest import order_by
-from ovirtsdk4 import types
-import logging
-import time
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,8 +49,7 @@ def _revert_yum_status(ansible_host):
     cur_ver = ansible_host.shell(
             cmd_for_getting_current_version)['stdout']
     cmd = 'curl ' + base_url +\
-          ' | grep -Po "{}-{}.[^ \'<]*"| tail -n1'.\
-          format(ver_package, cur_ver)
+          f' | grep -Po "{ver_package}-{cur_ver}.[^ \'<]*"| tail -n1'
     ver = ansible_host.shell(f"{cmd} | tail -n1")['stdout']
     LOGGER.info(f"{ver} is the best suitable version")
     full_ver = (f"curl -L -O {base_url}/{ver}")

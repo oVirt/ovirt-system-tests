@@ -344,8 +344,12 @@ def test_extend_disk1(engine_api):
                     )
                 )
             disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
-            assert assert_utils.equals_within_short(lambda disk_service=disk_service: disk_service.get().status, types.DiskStatus.OK)
-            assert assert_utils.equals_within_short(lambda disk_service=disk_service: disk_service.get().provisioned_size, 2 * GB)
+            assert assert_utils.equals_within_short(
+                lambda disk_service=disk_service: disk_service.get().status, types.DiskStatus.OK
+            )
+            assert assert_utils.equals_within_short(
+                lambda disk_service=disk_service: disk_service.get().provisioned_size, 2 * GB
+            )
 
 
 @order_by(_TEST_LIST)

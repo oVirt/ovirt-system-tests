@@ -50,8 +50,7 @@ def _wait_for_status(hosts_service, dc_name, status):
     return all_hosts
 
 
-def test_update_check(engine_api, ansible_hosts, ansible_host0_facts,
-                      updates_available, versions_available):
+def test_update_check(engine_api, ansible_hosts, ansible_host0_facts, updates_available, versions_available):
     """
     1)
     can be done in a more anisble oriented way
@@ -92,24 +91,21 @@ def test_update_check(engine_api, ansible_hosts, ansible_host0_facts,
     grep -Po "'(?=release|version)[^,]+'" | head -n2
     """
     installed = ansible_hosts.shell(
-        "rpm -q ovirt-node-ng-image-update-placeholder "
-        "--queryformat '%{RPMTAG_VERSION}-%{RPMTAG_RELEASE}\n'")
-    available = ansible_hosts.shell(
-        "yum list available | grep ovirt-node-ng-image-update.noarch |"
-        "awk '{print $2}'")
+        "rpm -q ovirt-node-ng-image-update-placeholder " "--queryformat '%{RPMTAG_VERSION}-%{RPMTAG_RELEASE}\n'"
+    )
+    available = ansible_hosts.shell("yum list available | grep ovirt-node-ng-image-update.noarch |" "awk '{print $2}'")
     LOGGER.info(f"{installed['stdout']} installed\n{available['stdout']} available")
     if available['stdout'] and available['stdout'] != installed['stdout']:
         versions_available['node'] = available['stdout']
         updates_available['node'] = 'yes'
 
 
-def test_update_host(engine_api, ansible_by_hostname, updates_available,
-                     versions_available):
+def test_update_host(engine_api, ansible_by_hostname, updates_available, versions_available):
     if updates_available['node'] == 'yes':
         engine = engine_api.system_service()
         hosts = engine_api.system_service().hosts_service()
         total_hosts = len(hosts.list(search=f'datacenter={DC_NAME}'))
-        _timeout = 40*60*total_hosts
+        _timeout = 40 * 60 * total_hosts
 
         def _perform_update():
             host_list = hosts.list()
@@ -125,8 +121,7 @@ def test_update_host(engine_api, ansible_by_hostname, updates_available,
                     # HOST_AVAILABLE_UPDATES_SKIPPED_UNSUPPORTED_STATUS(887)
                     host_service.upgrade_check()
 
-                with engine_utils.wait_for_event(engine,
-                                                 [15, 840, 888], _timeout):
+                with engine_utils.wait_for_event(engine, [15, 840, 888], _timeout):
                     LOGGER.info("update")
                     # HOST_UPGRADE_FINISHED_AND_WILL_BE_REBOOTED(888)
                     # HOST_UPGRADE_STARTED(840)
@@ -140,8 +135,8 @@ def test_update_host(engine_api, ansible_by_hostname, updates_available,
             for host in host_list:
                 ansible_host = ansible_by_hostname(host.name)
                 new_ver = ansible_host.shell(
-                    "cat /var/imgbased/.image-updated |"
-                    "grep -Po '(?<=update-).*(?=.squashfs.img)'")
+                    "cat /var/imgbased/.image-updated |" "grep -Po '(?<=update-).*(?=.squashfs.img)'"
+                )
                 LOGGER.info(f"{host.name} upgraded to: {new_ver['stdout_lines']}")
                 assert new_ver['stdout_lines'] == [versions_available['node']]
             return True

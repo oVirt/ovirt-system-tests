@@ -5,6 +5,3 @@
 import pytest
 
 pytest.register_assert_rewrite('ost_utils')
-
-
-

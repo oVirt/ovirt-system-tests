@@ -92,6 +92,7 @@ _TEST_LIST = [
     "test_add_nic",
 ]
 
+
 def _hosts_in_dc(api, dc_name=engine_object_names.TEST_DC_NAME, random_host=False):
     hosts_service = api.system_service().hosts_service()
     all_hosts = _wait_for_status(hosts_service, dc_name, types.HostStatus.UP)
@@ -105,19 +106,22 @@ def _hosts_in_dc(api, dc_name=engine_object_names.TEST_DC_NAME, random_host=Fals
     dump_hosts = _host_status_to_print(hosts_service, hosts_status)
     raise RuntimeError(f'Could not find hosts that are up in DC {dc_name} \nHost status: {dump_hosts}')
 
+
 def _random_host_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
     return _hosts_in_dc(api, dc_name, True)
+
 
 def _random_host_service_from_dc(api, dc_name=engine_object_names.TEST_DC_NAME):
     host = _hosts_in_dc(api, dc_name, True)
     return api.system_service().hosts_service().host_service(id=host.id)
 
+
 def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
     installing_hosts = hosts_service.list(
         search=f'datacenter={dc_name} AND status=installing or status=initializing '
-               f'or status=connecting or status=reboot'
+        f'or status=connecting or status=reboot'
     )
-    if len(installing_hosts) == total_num_hosts: # All hosts still installing
+    if len(installing_hosts) == total_num_hosts:  # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=up')
@@ -134,12 +138,13 @@ def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
 
     _check_problematic_hosts(hosts_service, dc_name)
 
+
 def _single_host_up(hosts_service, total_num_hosts, dc_name):
     installing_hosts = hosts_service.list(
         search=f'datacenter={dc_name} AND status=installing or status=initializing '
-               f'or status=connecting or status=reboot'
+        f'or status=connecting or status=reboot'
     )
-    if len(installing_hosts) == total_num_hosts : # All hosts still installing
+    if len(installing_hosts) == total_num_hosts:  # All hosts still installing
         return False
 
     up_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=up')
@@ -148,8 +153,11 @@ def _single_host_up(hosts_service, total_num_hosts, dc_name):
 
     _check_problematic_hosts(hosts_service, dc_name)
 
+
 def _check_problematic_hosts(hosts_service, dc_name):
-    problematic_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up')
+    problematic_hosts = hosts_service.list(
+        search=f'datacenter={dc_name} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up'
+    )
     if len(problematic_hosts):
         dump_hosts = f'{len(problematic_hosts)} hosts failed installation:\n'
         for host in problematic_hosts:
@@ -161,9 +169,10 @@ def _check_problematic_hosts(hosts_service, dc_name):
 def _host_status_to_print(hosts_service, hosts_list):
     dump_hosts = ''
     for host in hosts_list:
-            host_service_info = hosts_service.host_service(host.id)
-            dump_hosts += f'{host.name}: {host_service_info.get().status}\n'
+        host_service_info = hosts_service.host_service(host.id)
+        dump_hosts += f'{host.name}: {host_service_info.get().status}\n'
     return dump_hosts
+
 
 def _wait_for_status(hosts_service, dc_name, status):
     up_status_seen = False
@@ -186,22 +195,20 @@ def test_he_deploy(suite_dir):
     shell.shell([suite_dir + '/he_deploy.sh'])
 
 
-@pytest.mark.parametrize("key_format, verification_fn", [
-    pytest.param(
-        'X509-PEM-CA',
-        lambda path: shell.shell(["openssl", "x509", "-in", path, "-text", "-noout"]),
-        id="CA certificate"
-    ),
-    pytest.param(
-        'OPENSSH-PUBKEY',
-        lambda path: shell.shell(["ssh-keygen", "-l", "-f", path]),
-        id="ssh pubkey"
-    ),
-])
+@pytest.mark.parametrize(
+    "key_format, verification_fn",
+    [
+        pytest.param(
+            'X509-PEM-CA',
+            lambda path: shell.shell(["openssl", "x509", "-in", path, "-text", "-noout"]),
+            id="CA certificate",
+        ),
+        pytest.param('OPENSSH-PUBKEY', lambda path: shell.shell(["ssh-keygen", "-l", "-f", path]), id="ssh pubkey"),
+    ],
+)
 @order_by(_TEST_LIST)
-def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
-                             engine_download):
-    #engine_fqdn = "ost-hc-basic-suite-master-engine"
+def test_verify_engine_certs(key_format, verification_fn, engine_fqdn, engine_download):
+    # engine_fqdn = "ost-hc-basic-suite-master-engine"
     url = 'http://{}/ovirt-engine/services/pki-resource?resource=ca-certificate&format={}'
 
     with tempfile.NamedTemporaryFile() as tmp:
@@ -209,8 +216,7 @@ def test_verify_engine_certs(key_format, verification_fn, engine_fqdn,
         try:
             verification_fn(tmp.name)
         except shell.ShellError:
-            LOGGER.debug(
-                "Certificate verification failed. Certificate contents:\n")
+            LOGGER.debug("Certificate verification failed. Certificate contents:\n")
             LOGGER.debug(tmp.read())
             raise
 
@@ -230,11 +236,8 @@ def test_add_dc_quota(engine_api, ost_dc_name):
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     assert quotas_service.add(
-        types.Quota (
-            name=DC_QUOTA_NAME,
-            description='DC-QUOTA-DESCRIPTION',
-            data_center=datacenter,
-            cluster_soft_limit_pct=99
+        types.Quota(
+            name=DC_QUOTA_NAME, description='DC-QUOTA-DESCRIPTION', data_center=datacenter, cluster_soft_limit_pct=99
         )
     )
 
@@ -247,8 +250,7 @@ def test_list_glance_images(engine_api):
     glance_domain_list = storage_domains_service.list(search=search_query)
 
     if not glance_domain_list:
-        openstack_glance = glance.add_domain(system_service, SD_GLANCE_NAME,
-                                             GLANCE_SERVER_URL)
+        openstack_glance = glance.add_domain(system_service, SD_GLANCE_NAME, GLANCE_SERVER_URL)
         if not openstack_glance:
             raise RuntimeError('GLANCE storage domain is not available.')
         glance_domain_list = storage_domains_service.list(search=search_query)
@@ -257,9 +259,7 @@ def test_list_glance_images(engine_api):
         raise RuntimeError('GLANCE connectivity test failed')
 
     glance_domain = glance_domain_list.pop()
-    glance_domain_service = storage_domains_service.storage_domain_service(
-        glance_domain.id
-    )
+    glance_domain_service = storage_domains_service.storage_domain_service(glance_domain.id)
 
     try:
         with engine_utils.wait_for_event(system_service, 998):
@@ -299,10 +299,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
     quotas_service = dc_service.quotas_service()
     quotas = quotas_service.list()
 
-    quota = next(
-        (q for q in quotas if q.name == DC_QUOTA_NAME ),
-        None
-    )
+    quota = next((q for q in quotas if q.name == DC_QUOTA_NAME), None)
     if quota is None:
         quota = quotas_service.add(
             quota=types.Quota(
@@ -311,7 +308,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
                 cluster_hard_limit_pct=20,
                 cluster_soft_limit_pct=80,
                 storage_hard_limit_pct=20,
-                storage_soft_limit_pct=80
+                storage_soft_limit_pct=80,
             )
         )
     quota_service = quotas_service.quota_service(quota.id)
@@ -319,10 +316,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
     # Find the quota limit for the storage domain that we are interested on:
     limits_service = quota_service.quota_storage_limits_service()
     limits = limits_service.list()
-    limit = next(
-        (l for l in limits if l.id == sd.id),
-        None
-    )
+    limit = next((l for l in limits if l.id == sd.id), None)
 
     # If that limit exists we will delete it:
     if limit is not None:
@@ -336,6 +330,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
         )
     )
 
+
 @order_by(_TEST_LIST)
 def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenters_service = engine_api.system_service().data_centers_service()
@@ -343,18 +338,10 @@ def test_add_quota_cluster_limits(engine_api, ost_dc_name):
     datacenter_service = datacenters_service.data_center_service(datacenter.id)
     quotas_service = datacenter_service.quotas_service()
     quotas = quotas_service.list()
-    quota = next(
-        (q for q in quotas if q.name == DC_QUOTA_NAME),
-        None
-    )
+    quota = next((q for q in quotas if q.name == DC_QUOTA_NAME), None)
     quota_service = quotas_service.quota_service(quota.id)
     quota_cluster_limits_service = quota_service.quota_cluster_limits_service()
-    assert quota_cluster_limits_service.add(
-        types.QuotaClusterLimit(
-            vcpu_limit=20,
-            memory_limit=10000.0
-        )
-    )
+    assert quota_cluster_limits_service.add(types.QuotaClusterLimit(vcpu_limit=20, memory_limit=10000.0))
 
 
 @order_by(_TEST_LIST)
@@ -409,8 +396,7 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
 
     for vm_service in [backup_vm_service, vm0_vm_service]:
         assert assert_utils.equals_within_short(
-            lambda vm_service=vm_service: vm_service.get().status,
-            sdk4.types.VmStatus.DOWN
+            lambda vm_service=vm_service: vm_service.get().status, sdk4.types.VmStatus.DOWN
         )
 
 
@@ -420,13 +406,7 @@ def test_add_nic(engine_api):
     # Locate the vnic profiles service and use it to find the ovirmgmt
     # network's profile id:
     profiles_service = engine_api.system_service().vnic_profiles_service()
-    profile_id = next(
-        (
-            profile.id for profile in profiles_service.list()
-            if profile.name == MANAGEMENT_NETWORK
-        ),
-        None
-    )
+    profile_id = next((profile.id for profile in profiles_service.list() if profile.name == MANAGEMENT_NETWORK), None)
 
     # Empty profile id would cause fail in later tests (e.g. add_filter):
     assert profile_id is not None
@@ -446,8 +426,6 @@ def test_add_nic(engine_api):
         types.Nic(
             name=NIC_NAME,
             interface=types.NicInterface.VIRTIO,
-            vnic_profile=types.VnicProfile(
-                id=profile_id
-            ),
+            vnic_profile=types.VnicProfile(id=profile_id),
         ),
     )

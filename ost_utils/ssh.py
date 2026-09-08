@@ -4,18 +4,16 @@
 #
 import array
 import fcntl
+import logging
 import select
-import socket
 import sys
 import termios
 import time
 import uuid
-import logging
 
 import paramiko
 
-from ost_utils import command_status
-from ost_utils import utils
+from ost_utils import command_status, utils
 
 SSH_TIMEOUT_DEFAULT = 100
 SSH_TRIES_DEFAULT = 20
@@ -148,7 +146,7 @@ def drain_ssh_channel(chan, stdin=None, stdout=sys.stdout, stderr=sys.stderr):
                 if stderr:
                     err_queue.append(chunk)
                 err_all.append(chunk)
-        except socket.error:
+        except OSError:
             pass
 
         if stdout in write:
@@ -222,7 +220,7 @@ def get_ssh_client(
                 timeout=ssh_timeout,
             )
             break
-        except (socket.error, socket.timeout) as err:
+        except (TimeoutError, OSError) as err:
             LOGGER.debug(
                 'Socket error connecting to %s: %s',
                 host_name,

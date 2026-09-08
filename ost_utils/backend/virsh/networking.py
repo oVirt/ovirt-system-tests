@@ -87,7 +87,7 @@ class VirshNetworks:
 
     def _get_libvirt_names_for_ost_nets_on_machine(self):
         libvirt_net_names = [
-            name for name in shell("virsh net-list --name".split()).splitlines() if name.startswith("ost")
+            name for name in shell(["virsh", "net-list", "--name"]).splitlines() if name.startswith("ost")
         ]
         return libvirt_net_names
 

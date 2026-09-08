@@ -6,11 +6,7 @@
 
 import logging
 
-import pytest
-
-from ost_utils import he_utils
-from ost_utils import assert_utils
-from ost_utils import constants
+from ost_utils import assert_utils, constants, he_utils
 from ost_utils.ansible import AnsibleExecutionError
 
 

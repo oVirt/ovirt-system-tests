@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+
 from .WithOvirtDriver import WithOvirtDriver
 
 

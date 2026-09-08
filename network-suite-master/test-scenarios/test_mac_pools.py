@@ -4,13 +4,7 @@
 #
 #
 import pytest
-
-from ovirtlib import clusterlib
-from ovirtlib import joblib
-from ovirtlib import netlib
-from ovirtlib import syncutil
-from ovirtlib import templatelib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, joblib, netlib, syncutil, templatelib, virtlib
 from ovirtlib.sdkentity import EntityCreationError
 from ovirtlib.templatelib import TEMPLATE_BLANK as BLANK
 from testlib import suite
@@ -46,27 +40,26 @@ def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
         MAC_POOL,
         (MAC_POOL_RANGE,),
         allow_duplicates=True,
-    ) as mac_pool:
-        with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(
-                vm_name='test_set_mac_pool_duplicate_macs_vm_0',
-                cluster=default_cluster,
-                template=templatelib.TEMPLATE_BLANK,
-            )
-            vm_1.create(
-                vm_name='test_set_mac_pool_duplicate_macs_vm_1',
-                cluster=default_cluster,
-                template=templatelib.TEMPLATE_BLANK,
-            )
+    ) as mac_pool, virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+        vm_0.create(
+            vm_name='test_set_mac_pool_duplicate_macs_vm_0',
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
+        vm_1.create(
+            vm_name='test_set_mac_pool_duplicate_macs_vm_1',
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
 
-            vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
-            vm_0.wait_for_down_status()
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.wait_for_down_status()
 
-            vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
-            vm_1.wait_for_down_status()
+        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_1.wait_for_down_status()
 
-            with pytest.raises(clusterlib.MacPoolContainsDuplicatesError):
-                mac_pool.set_allow_duplicates(False)
+        with pytest.raises(clusterlib.MacPoolContainsDuplicatesError):
+            mac_pool.set_allow_duplicates(False)
 
 
 def test_assign_vnic_with_full_mac_pool_capacity_fails(system, default_cluster, ovirtmgmt_vnic_profile):

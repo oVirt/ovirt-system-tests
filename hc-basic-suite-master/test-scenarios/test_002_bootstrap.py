@@ -4,36 +4,27 @@
 #
 # -*- coding: utf-8 -*-
 #
-import functools
 import logging
-import os
 import random
-import ssl
 import tempfile
-import time
 
 # TODO: import individual SDKv4 types directly (but don't forget sdk4.Error)
 import ovirtsdk4 as sdk4
-from ovirtsdk4 import types
 import pytest
+from ovirtsdk4 import types
 
-from ost_utils import assert_utils
-from ost_utils import backend
-from ost_utils import engine_object_names
-from ost_utils import engine_utils
-from ost_utils import general_utils
+from ost_utils import (
+    assert_utils,
+    engine_object_names,
+    engine_utils,
+    general_utils,
+    shell,
+    test_utils,
+    versioning,
+)
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures import root_password
-from ost_utils.pytest.fixtures.network import storage_network_name
 from ost_utils.pytest.fixtures.virt import *
-from ost_utils.storage_utils import domain
 from ost_utils.storage_utils import glance
-from ost_utils.storage_utils import lun
-from ost_utils.storage_utils import nfs
-from ost_utils import shell
-from ost_utils import test_utils
-from ost_utils import utils
-from ost_utils import versioning
 
 LOGGER = logging.getLogger(__name__)
 

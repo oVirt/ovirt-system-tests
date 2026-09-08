@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 import pytest
-
-from ovirtlib import sshlib
-from ovirtlib import syncutil
+from ovirtlib import sshlib, syncutil
 
 OVN_CONF = '/etc/ovirt-provider-ovn/conf.d/10-setup-ovirt-provider-ovn.conf'
 

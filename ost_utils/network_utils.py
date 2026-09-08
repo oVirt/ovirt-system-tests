@@ -8,6 +8,7 @@ import ipaddress
 
 from ovirtsdk4.types import (
     BootProtocol,
+    Cluster,
     DataCenter,
     HostNic,
     Ip,
@@ -15,13 +16,11 @@ from ovirtsdk4.types import (
     IpVersion,
     Network,
     NetworkAttachment,
-    Cluster,
-    VnicProfile,
     Nic,
+    VnicProfile,
 )
 
-from ost_utils import constants
-from ost_utils import test_utils
+from ost_utils import constants, test_utils
 
 
 def get_ips(backend, ansible_facts, network_name):

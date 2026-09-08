@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from http import server
 import os
 import threading
+from http import server
 
 
 def create_repo_server(workdir, lago_env):

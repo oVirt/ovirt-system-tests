@@ -14,10 +14,7 @@ import pprint
 
 import pytest
 
-from ost_utils import assert_utils
-from ost_utils import coverage
-from ost_utils import deployment_utils
-from ost_utils import utils
+from ost_utils import assert_utils, coverage, deployment_utils, utils
 from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.deployment_utils import package_mgmt
 

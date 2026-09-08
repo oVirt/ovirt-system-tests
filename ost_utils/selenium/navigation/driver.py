@@ -146,8 +146,7 @@ class Driver:
         with open(path, "w", encoding='utf-8') as text_file:
             logs = self.__driver.get_log(type)
             if logs:
-                for entry in logs:
-                    text_file.write(f'{entry}\n\n')
+                text_file.writelines(f'{entry}\n\n' for entry in logs)
             else:
                 text_file.write('No log entries found')
 
@@ -302,7 +301,7 @@ class KnownIssueOccurredCondition:
         except TimeoutException as e:
             LOGGER.exception(
                 f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
-                + f'at retry number {str(self.retry)}'
+                + f'at retry number {self.retry!s}'
             )
             if 'java.util.concurrent.TimeoutException' in str(e):
                 should_run_again = True

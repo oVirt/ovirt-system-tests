@@ -6,10 +6,7 @@
 import contextlib
 
 from fixtures.host import ENP3S0
-
-from ovirtlib import clusterlib
-from ovirtlib import hostlib
-from ovirtlib import netattachlib
+from ovirtlib import clusterlib, hostlib, netattachlib
 from ovirtlib import sshlib as ssh
 
 

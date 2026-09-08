@@ -8,10 +8,8 @@ import xml.etree.ElementTree as ET
 from collections import namedtuple
 
 from ost_utils.backend import base
+from ost_utils.backend.virsh.networking import VirshNetworks, VMNics
 from ost_utils.shell import shell
-
-from ost_utils.backend.virsh.networking import VirshNetworks
-from ost_utils.backend.virsh.networking import VMNics
 
 VMInfo = namedtuple("VMInfo", "name libvirt_name nics deploy_scripts")
 
@@ -49,7 +47,7 @@ class VirshBackend(base.BaseBackend):
         return self._networks.get_subnet_for_network_role(self.storage_network_name(), ip_version)
 
     def _get_vms(self, deployment_path):
-        vm_names = [name for name in shell("virsh list --name".split()).splitlines() if name[8:13] == "-ost-"]
+        vm_names = [name for name in shell(["virsh", "list", "--name"]).splitlines() if name[8:13] == "-ost-"]
 
         vms = {}
 

@@ -2,15 +2,13 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-from pprint import pprint
+
+import logging
 
 import pytest
-
-from ost_utils import engine_utils
-from ost_utils import general_utils
-from ost_utils.pytest import order_by
 from ovirtsdk4 import types
-import logging
+
+from ost_utils import engine_utils, general_utils
 
 LOGGER = logging.getLogger(__name__)
 DC_NAME = 'test-dc'
@@ -83,11 +81,11 @@ def test_update_check(engine_api, ansible_hosts, ansible_host0_facts,
     engine's /var/log/ovirt-engine/ansible-runner-service.log
     grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
     tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-    grep -Po "(?<=version': ')(\d+\.){2}\d+"
+    grep -Po "(?<=version': ')(\\d+\\.){2}\\d+"
     and
     grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
     tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-    grep -Po "(?<=release': ')\d+\.\w+"
+    grep -Po "(?<=release': ')\\d+\\.\\w+"
     or
     grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
     tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \

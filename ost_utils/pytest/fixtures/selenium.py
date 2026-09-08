@@ -11,8 +11,7 @@ import pytest
 
 from ost_utils import network_utils
 from ost_utils.selenium.grid import browser
-from ost_utils.shell import ShellError
-from ost_utils.shell import shell
+from ost_utils.shell import ShellError, shell
 
 GRID_STARTUP_WAIT_RETRIES = 300
 

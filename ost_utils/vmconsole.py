@@ -16,7 +16,7 @@ import time
 LOGGER = logging.getLogger(__name__)
 
 
-class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
+class VmSerialConsole:  # pylint: disable=too-many-instance-attributes
 
     USER_PROMPT = '$ '
     ROOT_PROMPT = '# '
@@ -180,7 +180,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
             while not _bytes.endswith(encoded_prompt):
                 _bytes += self._read()
         finally:
-            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{repr(_bytes)}]')
+            LOGGER.debug(f'vmconsole: _read_until_prompt: read so far: [{_bytes!r}]')
         return _bytes.decode(errors='ignore').replace('\r', '')
 
     def _read(self):
@@ -197,7 +197,7 @@ class VmSerialConsole(object):  # pylint: disable=too-many-instance-attributes
 
 class CirrosSerialConsole(VmSerialConsole):
     def __init__(self, private_key_path, vmconsole_proxy_ip):
-        super(CirrosSerialConsole, self).__init__(private_key_path, vmconsole_proxy_ip, 'tc', 'oVirtRocks')
+        super().__init__(private_key_path, vmconsole_proxy_ip, 'tc', 'oVirtRocks')
 
     def assign_ip4_if_missing(self, vm_id, iface):
         ip = self.get_ip(vm_id, iface, 4)
@@ -208,7 +208,7 @@ class CirrosSerialConsole(VmSerialConsole):
         return Shell.next_ip(ips.splitlines(), 4)
 
 
-class Shell(object):
+class Shell:
     @classmethod
     def get_ips(cls, iface):
         return f"ip addr show {iface} | " f"awk '/inet/ {{print $2}}' | " f"awk -F/ '{{print $1}}'"

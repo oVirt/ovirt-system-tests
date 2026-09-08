@@ -4,7 +4,6 @@
 #
 
 import pytest
-
 from testlib import address_family
 
 from ost_utils import ansible
@@ -64,7 +63,7 @@ def _machine_facts(facts_dict, af):
         return MachineFacts4(facts_dict)
 
 
-class MachineFacts(object):
+class MachineFacts:
     def __init__(self, ansible_facts_dict, ssh_password='123456'):
         self._facts = ansible_facts_dict
         self._ssh_password = ssh_password
@@ -96,7 +95,7 @@ class MachineFacts(object):
 
 class MachineFacts4(MachineFacts):
     def __init__(self, ansible_facts_dict, ssh_password='123456'):
-        super(MachineFacts4, self).__init__(ansible_facts_dict, ssh_password)
+        super().__init__(ansible_facts_dict, ssh_password)
 
     def _get_ip_for_iface(self, iface_name):
         return self._facts[f'ansible_{iface_name}']['ipv4']['address']
@@ -104,7 +103,7 @@ class MachineFacts4(MachineFacts):
 
 class MachineFacts6(MachineFacts):
     def __init__(self, ansible_facts_dict, ssh_password='123456'):
-        super(MachineFacts6, self).__init__(ansible_facts_dict, ssh_password)
+        super().__init__(ansible_facts_dict, ssh_password)
 
     def _urlized_ip(self, ip, urlize=False):
         return f'[{ip}]' if urlize else ip

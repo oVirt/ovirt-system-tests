@@ -6,12 +6,8 @@ import os
 import time
 
 import pytest
+from ovirtlib import eventlib, joblib, sshlib, syncutil
 from ovirtsdk4 import Connection
-
-from ovirtlib import eventlib
-from ovirtlib import joblib
-from ovirtlib import sshlib
-from ovirtlib import syncutil
 
 
 @pytest.fixture(scope="session")

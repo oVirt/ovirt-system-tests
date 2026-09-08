@@ -6,23 +6,15 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from . import clusterlib
-from . import error
-from . import eventlib
-from . import joblib
-from . import netattachlib
-from . import netlib
-from . import syncutil
-from .netattachlib import BondingData
-from .netattachlib import NetworkAttachmentData
-from .sdkentity import SDKRootEntity
-from .sdkentity import SDKSubEntity
+from . import clusterlib, error, eventlib, joblib, netattachlib, netlib, syncutil
+from .netattachlib import BondingData, NetworkAttachmentData
+from .sdkentity import SDKRootEntity, SDKSubEntity
 
 HOST_TIMEOUT_SHORT = 5 * 60
 HOST_TIMEOUT_LONG = 20 * 60
 
 
-class HostStatus(object):
+class HostStatus:
 
     CONNECTING = types.HostStatus.CONNECTING
     DOWN = types.HostStatus.DOWN
@@ -48,7 +40,7 @@ class HostStatusError(Exception):
 
 class Host(SDKRootEntity):
     def __init__(self, parent_sdk_system):
-        super(Host, self).__init__(parent_sdk_system)
+        super().__init__(parent_sdk_system)
         self._root_password = None
 
     @property
@@ -117,7 +109,7 @@ class Host(SDKRootEntity):
 
     def update(self, **kwargs):
         return syncutil.sync(
-            exec_func=super(Host, self).update,
+            exec_func=super().update,
             exec_func_args=kwargs,
             error_criteria=lambda e: error.is_not_ovirt_or_unlisted(
                 e,

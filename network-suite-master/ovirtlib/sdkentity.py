@@ -86,12 +86,12 @@ class SDKEntity(metaclass=abc.ABCMeta):
         try:
             return func()
         except Exception as e:
-            return f'<{self.__class__.__name__}, ' f'{func.__name__} failed with: {str(e)}>'
+            return f'<{self.__class__.__name__}, ' f'{func.__name__} failed with: {e!s}>'
 
 
 class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):
     def __init__(self, parent_sdk_system):
-        super(SDKRootEntity, self).__init__()
+        super().__init__()
         self._parent_sdk_system = parent_sdk_system
         self._parent_service = self._get_parent_service(parent_sdk_system)
 
@@ -101,12 +101,11 @@ class SDKRootEntity(SDKEntity, metaclass=abc.ABCMeta):
         This method is responsible for getting the parent service given
         SDKSystem.
         """
-        pass
 
 
 class SDKSubEntity(SDKEntity, metaclass=abc.ABCMeta):
     def __init__(self, parent_sdk_entity):
-        super(SDKSubEntity, self).__init__()
+        super().__init__()
         self._parent_sdk_system = parent_sdk_entity.system
         self._parent_sdk_entity = parent_sdk_entity
         self._parent_service = self._get_parent_service(parent_sdk_entity)
@@ -117,4 +116,3 @@ class SDKSubEntity(SDKEntity, metaclass=abc.ABCMeta):
         This method is responsible for getting the parent service given
         the parent SDKEntity.
         """
-        pass

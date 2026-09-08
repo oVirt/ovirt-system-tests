@@ -7,7 +7,7 @@ from .EntityListView import EntityListView
 
 class StorageDomainListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(StorageDomainListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'storage domain',
             ['Storage', 'Storage Domains'],

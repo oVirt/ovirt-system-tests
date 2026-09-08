@@ -7,35 +7,31 @@
 import functools
 import logging
 import os
-from os import EX_OK
 import pty
 import re
 import subprocess
-from time import sleep
 import uuid
-
-import ovirtsdk4
-from ovirtsdk4 import types
+from os import EX_OK
+from time import sleep
 
 import pytest
+from ovirtsdk4 import types
 
-from ost_utils import ansible
-from ost_utils import assert_utils
-from ost_utils import constants
-from ost_utils import engine_utils
-from ost_utils import host_utils
-from ost_utils.shell import shell
-from ost_utils import ssh
-from ost_utils import test_utils
-from ost_utils import utils
-from ost_utils import versioning
+from ost_utils import (
+    ansible,
+    assert_utils,
+    constants,
+    engine_utils,
+    host_utils,
+    ssh,
+    test_utils,
+    utils,
+    versioning,
+)
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.backend import tested_ip_version
-from ost_utils.pytest.fixtures.network import management_subnet
 from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.pytest.fixtures.virt import *
 from ost_utils.pytest.fixtures.vm import *
-
 from ost_utils.storage_utils import backup
 
 LOGGER = logging.getLogger(__name__)
@@ -668,7 +664,7 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
                 if (
                     f"login as '{VM_USER_NAME}'".encode() in message
                     or f'{VM0_NAME} login'.encode() in message
-                    or 'box login'.encode() in message
+                    or b'box login' in message
                 ):
                     connection_success = True
                     break

@@ -11,8 +11,6 @@ import subprocess
 import time
 import zipfile
 
-from typing import Optional
-
 import requests
 
 LOGGER = logging.getLogger(__name__)
@@ -217,7 +215,7 @@ def _github_resolve_commit_to_workflow_runs(repo, commit) -> list[str]:
     return commit_runs
 
 
-def _github_get(url: str, params: Optional[dict] = None) -> requests.Response:
+def _github_get(url: str, params: dict | None = None) -> requests.Response:
     headers = {}
     github_token = os.environ.get("GITHUB_TOKEN")
     if github_token is None:

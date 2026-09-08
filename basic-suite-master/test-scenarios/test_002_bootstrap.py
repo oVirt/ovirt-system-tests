@@ -1809,9 +1809,9 @@ def test_verify_uploaded_image_and_template(
         cirros_image_template_name,
     ):
         assert assert_utils.equals_within_short(
-            lambda disks_service=disks_service, disk_name=disk_name: disks_service.list(
-                search=f'name={disk_name}'
-            )[0].status,
+            lambda disks_service=disks_service, disk_name=disk_name: disks_service.list(search=f'name={disk_name}')[
+                0
+            ].status,
             types.DiskStatus.OK,
         )
 

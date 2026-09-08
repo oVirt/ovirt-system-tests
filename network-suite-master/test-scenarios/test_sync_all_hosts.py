@@ -13,9 +13,10 @@ from ovirtlib import sshlib as ssh
 def test_sync_across_cluster(default_data_center, default_cluster, host_0_up, host_1_up):
 
     cluster_hosts_up = (host_0_up, host_1_up)
-    with clusterlib.new_assigned_network(
-        'sync-net', default_data_center, default_cluster
-    ) as sync_net, contextlib.ExitStack() as stack:
+    with (
+        clusterlib.new_assigned_network('sync-net', default_data_center, default_cluster) as sync_net,
+        contextlib.ExitStack() as stack,
+    ):
         for host in cluster_hosts_up:
             net_attachment = netattachlib.NetworkAttachmentData(
                 sync_net, ENP3S0, (netattachlib.NO_V4, netattachlib.NO_V6)

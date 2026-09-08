@@ -34,13 +34,16 @@ pytestmark = pytest.mark.usefixtures('default_storage_domain')
 def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
     system, default_cluster, ovirtmgmt_vnic_profile
 ):
-    with clusterlib.mac_pool(
-        system,
-        default_cluster,
-        MAC_POOL,
-        (MAC_POOL_RANGE,),
-        allow_duplicates=True,
-    ) as mac_pool, virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+    with (
+        clusterlib.mac_pool(
+            system,
+            default_cluster,
+            MAC_POOL,
+            (MAC_POOL_RANGE,),
+            allow_duplicates=True,
+        ) as mac_pool,
+        virtlib.vm_pool(system, size=2) as (vm_0, vm_1),
+    ):
         vm_0.create(
             vm_name='test_set_mac_pool_duplicate_macs_vm_0',
             cluster=default_cluster,
@@ -65,8 +68,10 @@ def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
 def test_assign_vnic_with_full_mac_pool_capacity_fails(system, default_cluster, ovirtmgmt_vnic_profile):
     NIC_NAME_3 = 'nic003'
 
-    with clusterlib.mac_pool(system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,)), \
-            virtlib.vm_pool(system, size=1) as (vm,):
+    with (
+        clusterlib.mac_pool(system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,)),
+        virtlib.vm_pool(system, size=1) as (vm,),
+    ):
         vm.create(
             vm_name='test_assign_vnic_with_full_mac_pool_vm_0',
             cluster=default_cluster,
@@ -160,9 +165,7 @@ def test_add_overlapping_mac_pool_other_cluster(system, cluster_0, default_clust
     POOL_1 = 'mac_pool_1'
     default_cluster_mac_pool = clusterlib.mac_pool(system, default_cluster, POOL_0, (MAC_POOL_RANGE,))
     cluster_0_mac_pool = clusterlib.mac_pool(system, cluster_0, POOL_1, (MAC_POOL_RANGE,))
-    with pytest.raises(
-        EntityCreationError, match=OVERLAP_REGEX
-    ), default_cluster_mac_pool, cluster_0_mac_pool:
+    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX), default_cluster_mac_pool, cluster_0_mac_pool:
         pass
 
 
@@ -320,14 +323,18 @@ def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
       pool_0
     """
     NET_NAME = 'net_bz_1760170'
-    with clusterlib.new_assigned_network(
-        NET_NAME, default_dc, cluster_0
-    ) as net, virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+    with (
+        clusterlib.new_assigned_network(NET_NAME, default_dc, cluster_0) as net,
+        virtlib.vm_pool(system, size=2) as (
+            vm_0,
+            vm_1,
+        ),
+    ):
         vm_0.create(
-                vm_name='_run_scenario_of_bz_1760170_vm_0',
-                cluster=cluster_0,
-                template=BLANK,
-            )
+            vm_name='_run_scenario_of_bz_1760170_vm_0',
+            cluster=cluster_0,
+            template=BLANK,
+        )
         vm_0.wait_for_down_status()
         vm_0.create_vnic(netlib.OVIRTMGMT, default_dc.get_mgmt_network().vnic_profile())
         vnic = vm_0.create_vnic(NET_NAME, net.vnic_profile())

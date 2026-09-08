@@ -409,7 +409,8 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
 
     for vm_service in [backup_vm_service, vm0_vm_service]:
         assert assert_utils.equals_within_short(
-            lambda: vm_service.get().status, sdk4.types.VmStatus.DOWN
+            lambda vm_service=vm_service: vm_service.get().status,
+            sdk4.types.VmStatus.DOWN
         )
 
 

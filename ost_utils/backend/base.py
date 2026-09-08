@@ -5,7 +5,7 @@
 #
 
 import abc
-from functools import cache
+from functools import cached_property
 
 
 class BaseBackend(abc.ABC):
@@ -130,45 +130,46 @@ class BaseBackend(abc.ABC):
     def ips_for(self, hostname, network_name):
         return self.ip_mapping()[hostname][network_name]
 
-    @cache
+    @cached_property
     def hostnames(self):
         return set(self.ip_mapping().keys())
 
-    @cache
+    @cached_property
     def engine_hostname(self):
-        return next(hn for hn in self.hostnames() if "engine" in hn)
+        return next(hn for hn in self.hostnames if "engine" in hn)
 
-    @cache
+    @cached_property
     def hosts_hostnames(self):
         # The output should always be sorted, so we can refer by indices
-        return sorted(hn for hn in self.hostnames() if "host" in hn)
+        return sorted(hn for hn in self.hostnames if "host" in hn)
 
-    @cache
+    @cached_property
     def storage_hostname(self):
         # Storage VM does not always exist - some suites do not define it
-        return next((hn for hn in self.hostnames() if "storage" in hn), None)
+        return next((hn for hn in self.hostnames if "storage" in hn), None)
 
-    @cache
+    @cached_property
     def network_names(self):
-        return {network_name for mapping in self.ip_mapping().values() for network_name in mapping.keys()}
+        return {network_name for mapping in self.ip_mapping().values() for network_name in mapping}
 
-    @cache
+    @cached_property
     def management_network_name(self):
-        return next(nn for nn in self.network_names() if "management" in nn)
+        return next(nn for nn in self.network_names if "management" in nn)
 
-    @cache
+    @cached_property
     def storage_network_name(self):
-        return next(nn for nn in self.network_names() if "storage" in nn)
+        return next(nn for nn in self.network_names if "storage" in nn)
 
-    @cache
+    @cached_property
     def bonding_network_name(self):
-        return next(nn for nn in self.network_names() if "bonding" in nn)
+        return next(nn for nn in self.network_names if "bonding" in nn)
 
-    @cache
+    @cached_property
+    def _management_network_ips(self):
+        return next(iter(self.ip_mapping().values()))[self.management_network_name]
+
     def management_network_supports_version(self, ip_version):
-        return any(
-            ip.version == ip_version for ip in list(self.ip_mapping().values())[0][self.management_network_name()]
-        )
+        return any(ip.version == ip_version for ip in self._management_network_ips)
 
     @abc.abstractmethod
     def management_subnet(self, ip_version):

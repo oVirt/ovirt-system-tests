@@ -874,7 +874,7 @@ def test_get_cluster_levels(engine_api):
     for level in cluster_levels:
         if level.id == '4.2':
             cluster_level_service = cluster_levels_service.level_service(level.id)
-            cl42 = cluster_level_service.get()
+            cluster_level_service.get()
             # TODO: complete testing for features in 4.2 level.
             return True
         else:
@@ -886,8 +886,8 @@ def test_get_cluster_levels(engine_api):
 def test_get_domains(engine_api):
     domains_service = engine_api.system_service().domains_service()
     domains = sorted(domains_service.list(), key=lambda domain: domain.name)
-    for domain in domains:
-        if domain.name == 'internal-authz':
+    for dom in domains:
+        if dom.name == 'internal-authz':
             return True
     raise RuntimeError('Could not find internal-authz domain in domains list')
 
@@ -971,7 +971,6 @@ def test_check_update_host(engine_api, hosts_service, ost_dc_name, is_node_suite
         pytest.skip('Skip test_check_update_host on node suites - done later')
     engine = engine_api.system_service()
     host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
-    events_service = engine.events_service()
     with engine_utils.wait_for_event(engine, [884, 885]):
         # HOST_AVAILABLE_UPDATES_STARTED(884)
         # HOST_AVAILABLE_UPDATES_FINISHED(885)
@@ -1011,7 +1010,7 @@ def test_add_scheduling_policy(engine_api):
 @order_by(_TEST_LIST)
 def test_get_system_options(engine_api):
     # TODO: get some option
-    options_service = engine_api.system_service().options_service()
+    engine_api.system_service().options_service()
 
 
 @order_by(_TEST_LIST)
@@ -1020,11 +1019,11 @@ def test_get_operating_systems(engine_api):
     os_list = sorted(operating_systems_service.list(), key=lambda os: os.name)
     assert os_list
     os_string = ''
-    for os in os_list:
-        if os.name == 'rhel_7x64':
+    for operating_system in os_list:
+        if operating_system.name == 'rhel_7x64':
             return True
         else:
-            os_string += os.name + '; '
+            os_string += operating_system.name + '; '
     raise RuntimeError(f'Could not find rhel_7x64 in operating systems list: {os_string}')
 
 
@@ -1283,7 +1282,9 @@ def test_add_blank_vms(engine_api, ost_cluster_name):
     vm0_vm_service = test_utils.get_vm_service(engine, VM0_NAME)
 
     for vm_service in [backup_vm_service, vm0_vm_service]:
-        assert assert_utils.equals_within_short(lambda: vm_service.get().status, sdk4.types.VmStatus.DOWN)
+        assert assert_utils.equals_within_short(
+            lambda vm_service=vm_service: vm_service.get().status, sdk4.types.VmStatus.DOWN
+        )
 
 
 @order_by(_TEST_LIST)
@@ -1808,7 +1809,9 @@ def test_verify_uploaded_image_and_template(
         cirros_image_template_name,
     ):
         assert assert_utils.equals_within_short(
-            lambda: disks_service.list(search=f'name={disk_name}')[0].status,
+            lambda disks_service=disks_service, disk_name=disk_name: disks_service.list(
+                search=f'name={disk_name}'
+            )[0].status,
             types.DiskStatus.OK,
         )
 

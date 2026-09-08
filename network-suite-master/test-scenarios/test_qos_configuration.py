@@ -110,12 +110,14 @@ def test_setup_net_with_qos(
 
     with clusterlib.network_assignment(default_cluster, qos_net):
         attach_data = _create_net_attachment_data(qos_net)
-        with hostlib.setup_networks(cluster_host_up, (attach_data,)):
-            with netlib.create_vnic_profile(system, QOS_VP, qos_net, vm_qos) as profile:
-                with vm_down(system, default_cluster, default_storage_domain) as vm:
-                    vm.create_vnic(NIC2, profile)
-                    vm.run()
-                    vm.wait_for_powering_up_status()
+        with hostlib.setup_networks(
+            cluster_host_up, (attach_data,)
+        ), netlib.create_vnic_profile(system, QOS_VP, qos_net, vm_qos) as profile, vm_down(
+            system, default_cluster, default_storage_domain
+        ) as vm:
+            vm.create_vnic(NIC2, profile)
+            vm.run()
+            vm.wait_for_powering_up_status()
 
 
 def _create_net_attachment_data(qos_net):

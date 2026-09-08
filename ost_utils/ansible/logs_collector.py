@@ -65,7 +65,4 @@ class LogsCollector:
             return False
 
         # logs are grouped by host, so we need this information
-        if event.get('event_data', {}).get('host', None) is None:
-            return False
-
-        return True
+        return event.get('event_data', {}).get('host', None) is not None

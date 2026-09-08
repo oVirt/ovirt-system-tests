@@ -54,7 +54,7 @@ def ost_cluster_name():  # pylint: disable=function-redefined
 def hostnames_to_add(ansible_host0, hosts_hostnames):  # pylint: disable=function-redefined
     return list(
         set(hosts_hostnames) -
-        set([he_utils.host_name_running_he_vm(ansible_host0)])
+        {he_utils.host_name_running_he_vm(ansible_host0)}
     )
 
 

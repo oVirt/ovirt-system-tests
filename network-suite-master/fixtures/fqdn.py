@@ -106,11 +106,11 @@ def _assign_ipv6(ssh_node, nic_name):
     :param nic_name: the name of the NIC to assign an ipv6 address to
     :raise: exception if an error occurred during the assignment
     """
-    res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'modify', nic_name, 'ipv6.method', 'auto']))
+    res = ssh_node.exec_command(f'nmcli con modify {nic_name} ipv6.method auto')
 
     if res.code:
         raise Exception(f'nmcli con modify failed: exit code {res.code}, error "{res.err}"')
-    res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'up', nic_name]))
+    res = ssh_node.exec_command(f'nmcli con up {nic_name}')
     if res.code:
         raise Exception(f'nmcli con up failed: exit code {res.code}, error "{res.err}"')
 

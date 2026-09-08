@@ -102,10 +102,10 @@ def drain_ssh_channel(chan, stdin=None, stdout=sys.stdout, stderr=sys.stderr):
     while not done:
         if stdout_is_tty:
             arr = array.array('h', range(4))
-            if not fcntl.ioctl(stdout.fileno(), termios.TIOCGWINSZ, arr):
-                if tty_h != arr[0] or tty_w != arr[1]:
-                    tty_h, tty_w = arr[:2]
-                    chan.resize_pty(width=tty_w, height=tty_h)
+            if not fcntl.ioctl(stdout.fileno(), termios.TIOCGWINSZ, arr) and \
+               tty_h != arr[0] or tty_w != arr[1]:
+                tty_h, tty_w = arr[:2]
+                chan.resize_pty(width=tty_w, height=tty_h)
 
         read_streams = []
         if not chan.closed:

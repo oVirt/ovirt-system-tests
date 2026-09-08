@@ -99,10 +99,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
 
     def get_entities(self):
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
-        entities = []
-        for name in names_to_ids:
-            entities.append(name)
-        return entities
+        return list(names_to_ids.copy())
 
     def get_entity_row_id(self, entity_name):
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)

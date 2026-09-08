@@ -181,7 +181,9 @@ class NetworkAttachmentData:
 
 
 class BondingData:
-    def __init__(self, name, slave_names, options={}):
+    def __init__(self, name, slave_names, options=None):
+        if options is None:
+            options = {}
         self._name = name
         self._options = options
         self._slave_names = slave_names

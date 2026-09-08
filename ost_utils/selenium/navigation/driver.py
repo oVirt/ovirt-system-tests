@@ -130,7 +130,7 @@ class Driver:
             result = method(*args)
         finally:
             self.__driver.switch_to.default_content()
-            return result
+        return result
 
     def set_window_size(self, selenium_screen_width, selenium_screen_height):
         self.retry_if_known_issue(self.__driver.set_window_size, selenium_screen_width, selenium_screen_height)
@@ -266,7 +266,7 @@ class ConditionClass:
         self.args = args
         self.retry = 0
 
-    def __call__(self, __driver):
+    def __call__(self, __driver, /):
         self.retry += 1
 
         try:

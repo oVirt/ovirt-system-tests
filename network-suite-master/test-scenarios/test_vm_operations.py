@@ -71,22 +71,24 @@ def running_cirros_vm(
         attach_data_1 = netattachlib.NetworkAttachmentData(net_1, ENP2S0)
         with clusterlib.new_assigned_network(NET2, default_data_center, default_cluster) as net_2:
             attach_data_2 = netattachlib.NetworkAttachmentData(net_2, ENP3S0)
-            with hostlib.setup_networks(host_0_up, attach_data=(attach_data_1, attach_data_2)):
-                with hostlib.setup_networks(host_1_up, attach_data=(attach_data_1, attach_data_2)):
-                    with virtlib.vm_pool(system, size=1) as (vm,):
-                        vm.create(
-                            vm_name=VM_CIRROS,
-                            cluster=default_cluster,
-                            template=cirros_template,
-                        )
-                        vm.create_vnic(NIC_NAMES[0], ovirtmgmt_vnic_profile)
-                        vm.create_vnic(NIC_NAMES[1], net_1.vnic_profile())
-                        vm.create_vnic(NIC_NAMES[2], net_2.vnic_profile())
-                        vm.wait_for_down_status()
-                        vm.run()
-                        vm.wait_for_up_status()
-                        joblib.AllJobs(system).wait_for_done()
-                        yield vm
+            with (
+                hostlib.setup_networks(host_0_up, attach_data=(attach_data_1, attach_data_2)),
+                hostlib.setup_networks(host_1_up, attach_data=(attach_data_1, attach_data_2)),
+                virtlib.vm_pool(system, size=1) as vm,
+            ):
+                vm.create(
+                    vm_name=VM_CIRROS,
+                    cluster=default_cluster,
+                    template=cirros_template,
+                )
+                vm.create_vnic(NIC_NAMES[0], ovirtmgmt_vnic_profile)
+                vm.create_vnic(NIC_NAMES[1], net_1.vnic_profile())
+                vm.create_vnic(NIC_NAMES[2], net_2.vnic_profile())
+                vm.wait_for_down_status()
+                vm.run()
+                vm.wait_for_up_status()
+                joblib.AllJobs(system).wait_for_done()
+                yield vm
 
 
 @pytest.fixture(scope='module')
@@ -135,9 +137,9 @@ def test_hotplug_multiple_vnics(running_cirros_vm):
             else:
                 vnic.hotplug()
             syncutil.sync(
-                exec_func=lambda: vnic.plugged,
+                exec_func=lambda vnic=vnic: vnic.plugged,
                 exec_func_args=(),
-                success_criteria=lambda p: p is not plugged,
+                success_criteria=lambda p, plugged=plugged: p is not plugged,
                 delay_start=1,
                 retry_interval=1,
                 timeout=10,

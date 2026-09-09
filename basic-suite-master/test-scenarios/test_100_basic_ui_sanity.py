@@ -3,49 +3,32 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from __future__ import absolute_import
-from __future__ import print_function
-
-from datetime import datetime
-from functools import cache
 import logging
 import os
-import shutil
-import subprocess
-import sys
 import time
+from datetime import datetime, timezone
 
-from ovirtsdk4 import types
 import pytest
-import requests
 import selenium.webdriver.remote.remote_connection
-
+from ovirtsdk4 import types
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-from ost_utils import assert_utils
-from ost_utils import test_utils
-from ost_utils import constants
+from ost_utils import assert_utils, constants, test_utils
 from ost_utils.constants import *
-from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
-from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
-from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 from ost_utils.pytest.fixtures.selenium import *
-from ost_utils.pytest.fixtures.virt import cirros_image_template_name
 from ost_utils.selenium.navigation.driver import Driver
 from ost_utils.selenium.page_objects.ClusterListView import ClusterListView
-from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
-from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
-from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
-from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
-from ost_utils.selenium.page_objects.VmListView import VmListView
-from ost_utils.selenium.page_objects.VmPortal import VmPortal
+from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
     GrafanaLoginScreen,
 )
-from ost_utils.selenium.page_objects.Grafana import Grafana
-from ost_utils.shell import ShellError
-from ost_utils.shell import shell
+from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
+from ost_utils.selenium.page_objects.VmListView import VmListView
+from ost_utils.selenium.page_objects.VmPortal import VmPortal
+from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
+from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
+from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
+from ost_utils.shell import ShellError, shell
 
 LOGGER = logging.getLogger(__name__)
 
@@ -161,7 +144,7 @@ def selenium_artifacts_dir(artifacts_dir):
 @pytest.fixture(scope="session")
 def selenium_artifact_filename(selenium_browser_name):
     def _selenium_artifact_filename(description, extension):
-        date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        date = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         return f"{date}_{selenium_browser_name}_{description}.{extension}"
 
     return _selenium_artifact_filename
@@ -393,8 +376,6 @@ def test_clusters(ovirt_driver, save_screenshot, selenium_browser_name, ost_clus
 def test_cluster_upgrade(
     ovirt_driver, engine_api, save_screenshot, ost_cluster_name, ansible_host0_facts, ansible_host1_facts
 ):
-    host0_name = ansible_host0_facts.get("ansible_hostname")
-    host1_name = ansible_host1_facts.get("ansible_hostname")
     cluster_service = test_utils.get_cluster_service(engine_api.system_service(), ost_cluster_name)
     original_schedulling_policy_id = cluster_service.get().scheduling_policy.id
     cluster_maintenance_schedulling_policy_id = '7677771e-5eab-422e-83fa-dc04080d21b7'
@@ -778,11 +759,11 @@ def test_dashboard(ovirt_driver):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     dashboard = webadmin_menu.open_dashboard_view()
 
-    assert dashboard.data_centers_count() is 1
-    assert dashboard.clusters_count() is 1
-    assert dashboard.hosts_count() is 2
-    assert dashboard.storage_domains_count() is 3
-    assert dashboard.vm_count() is 5
+    assert dashboard.data_centers_count() == 1
+    assert dashboard.clusters_count() == 1
+    assert dashboard.hosts_count() == 2
+    assert dashboard.storage_domains_count() == 3
+    assert dashboard.vm_count() == 5
     assert dashboard.events_count() > 0
 
 

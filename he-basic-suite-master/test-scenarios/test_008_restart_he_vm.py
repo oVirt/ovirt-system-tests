@@ -6,19 +6,17 @@
 
 import logging
 
-import pytest
-
-from ost_utils import he_utils
-from ost_utils import assert_utils
-from ost_utils import constants
+from ost_utils import assert_utils, constants, he_utils
 from ost_utils.ansible import AnsibleExecutionError
+
+LOGGER = logging.getLogger(__name__)
 
 
 def test_restart_he_vm(ansible_by_hostname, ansible_host0):
     host_name = he_utils.host_name_running_he_vm(ansible_host0)
     ansible_host = ansible_by_hostname(host_name)
 
-    logging.info(f'Engine VM is on host {host_name}, restarting the VM')
+    LOGGER.info(f'Engine VM is on host {host_name}, restarting the VM')
     _shutdown_he_vm(ansible_host)
     _restart_services(ansible_host)
     _start_he_vm(ansible_host)
@@ -26,31 +24,31 @@ def test_restart_he_vm(ansible_by_hostname, ansible_host0):
 
 
 def test_clear_global_maintenance(ansible_host0):
-    logging.info('Waiting For System Stability...')
+    LOGGER.info('Waiting For System Stability...')
     he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
 
     he_utils.set_and_test_global_maintenance_mode(ansible_host0, False)
 
     assert assert_utils.true_within_long(lambda: he_utils.no_hosts_state_global_maintenance(ansible_host0))
-    logging.info('Global maintenance state cleared on all hosts')
+    LOGGER.info('Global maintenance state cleared on all hosts')
 
 
 def _shutdown_he_vm(ansible_host):
     ansible_host.shell('hosted-engine --vm-shutdown')
-    logging.info('Waiting for the engine VM to be down...')
+    LOGGER.info('Waiting for the engine VM to be down...')
     assert assert_utils.true_within_long(lambda: he_utils.engine_vm_is_down(ansible_host))
 
 
 def _restart_services(ansible_host):
-    logging.info('Stopping services...')
+    LOGGER.info('Stopping services...')
     ansible_host.shell('systemctl stop vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent')
 
-    logging.info('Starting services...')
+    LOGGER.info('Starting services...')
     ansible_host.shell('systemctl start vdsmd supervdsmd ovirt-ha-broker ovirt-ha-agent')
 
-    logging.info('Waiting for agent to be ready...')
+    LOGGER.info('Waiting for agent to be ready...')
     assert assert_utils.true_within_long(lambda: _ha_agent_is_ready(ansible_host))
-    logging.info('Agent is ready.')
+    LOGGER.info('Agent is ready.')
 
 
 def _ha_agent_is_ready(ansible_host):
@@ -62,15 +60,15 @@ def _ha_agent_is_ready(ansible_host):
 
 
 def _start_he_vm(ansible_host):
-    logging.info('Starting the engine VM...')
+    LOGGER.info('Starting the engine VM...')
     ansible_host.shell('hosted-engine --vm-start')
-    logging.info('Waiting for the engine VM to be UP...')
+    LOGGER.info('Waiting for the engine VM to be UP...')
     assert assert_utils.true_within_short(lambda: he_utils.engine_vm_is_up(ansible_host))
-    logging.info('Engine VM is UP.')
+    LOGGER.info('Engine VM is UP.')
 
 
 def _wait_for_engine_health(ansible_host):
-    logging.info('Waiting for the engine to start...')
+    LOGGER.info('Waiting for the engine to start...')
     assert assert_utils.true_within(
         lambda: any(
             host_data['engine-status']['health'] == 'good'
@@ -78,4 +76,4 @@ def _wait_for_engine_health(ansible_host):
         ),
         constants.ENGINE_VM_RESTART_TIMEOUT,
     )
-    logging.info('Engine is running.')
+    LOGGER.info('Engine is running.')

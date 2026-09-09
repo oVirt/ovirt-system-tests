@@ -3,27 +3,22 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from __future__ import absolute_import
-from __future__ import print_function
-
 import ipaddress
 import json
 import logging
 import uuid
 
+import pytest
 from ovirtsdk4.types import (
-    Host,
-    NetworkUsage,
-    VmStatus,
     Cluster,
+    Host,
     MigrationOptions,
     MigrationPolicy,
+    NetworkUsage,
+    VmStatus,
 )
 
-import pytest
-from ost_utils import assert_utils
-from ost_utils import network_utils
-from ost_utils import test_utils
+from ost_utils import assert_utils, network_utils, test_utils
 
 DC_NAME = 'test-dc'
 CLUSTER_NAME = 'test-cluster'

@@ -3,13 +3,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from __future__ import absolute_import
-
 import ovirtsdk4
 
-from ost_utils import assert_utils
-from ost_utils import engine_utils
-from ost_utils import test_utils
+from ost_utils import assert_utils, engine_utils, test_utils
 from ost_utils.constants import FLOATING_DISK_NAME
 from ost_utils.pytest import order_by
 from ost_utils.pytest.fixtures.sdk import *

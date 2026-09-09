@@ -4,6 +4,7 @@
 #
 import ipaddress
 import logging
+
 import paramiko
 import pytest
 
@@ -19,7 +20,7 @@ class SshException(Exception):
     pass
 
 
-class Node(object):
+class Node:
     """
     A class to collect operations that need to be carried out on a node (host
     or VM) but are not supported by the corresponding oVirt objects.

@@ -4,13 +4,7 @@
 #
 #
 import pytest
-
-from ovirtlib import clusterlib
-from ovirtlib import joblib
-from ovirtlib import netlib
-from ovirtlib import syncutil
-from ovirtlib import templatelib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, joblib, netlib, syncutil, templatelib, virtlib
 from ovirtlib.sdkentity import EntityCreationError
 from ovirtlib.templatelib import TEMPLATE_BLANK as BLANK
 from testlib import suite
@@ -40,50 +34,54 @@ pytestmark = pytest.mark.usefixtures('default_storage_domain')
 def test_set_mac_pool_duplicate_macs_from_true_to_false_while_dup_exists(
     system, default_cluster, ovirtmgmt_vnic_profile
 ):
-    with clusterlib.mac_pool(
-        system,
-        default_cluster,
-        MAC_POOL,
-        (MAC_POOL_RANGE,),
-        allow_duplicates=True,
-    ) as mac_pool:
-        with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(
-                vm_name='test_set_mac_pool_duplicate_macs_vm_0',
-                cluster=default_cluster,
-                template=templatelib.TEMPLATE_BLANK,
-            )
-            vm_1.create(
-                vm_name='test_set_mac_pool_duplicate_macs_vm_1',
-                cluster=default_cluster,
-                template=templatelib.TEMPLATE_BLANK,
-            )
+    with (
+        clusterlib.mac_pool(
+            system,
+            default_cluster,
+            MAC_POOL,
+            (MAC_POOL_RANGE,),
+            allow_duplicates=True,
+        ) as mac_pool,
+        virtlib.vm_pool(system, size=2) as (vm_0, vm_1),
+    ):
+        vm_0.create(
+            vm_name='test_set_mac_pool_duplicate_macs_vm_0',
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
+        vm_1.create(
+            vm_name='test_set_mac_pool_duplicate_macs_vm_1',
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
 
-            vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
-            vm_0.wait_for_down_status()
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_0.wait_for_down_status()
 
-            vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
-            vm_1.wait_for_down_status()
+        vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_1.wait_for_down_status()
 
-            with pytest.raises(clusterlib.MacPoolContainsDuplicatesError):
-                mac_pool.set_allow_duplicates(False)
+        with pytest.raises(clusterlib.MacPoolContainsDuplicatesError):
+            mac_pool.set_allow_duplicates(False)
 
 
 def test_assign_vnic_with_full_mac_pool_capacity_fails(system, default_cluster, ovirtmgmt_vnic_profile):
     NIC_NAME_3 = 'nic003'
 
-    with clusterlib.mac_pool(system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,)):
-        with virtlib.vm_pool(system, size=1) as (vm,):
-            vm.create(
-                vm_name='test_assign_vnic_with_full_mac_pool_vm_0',
-                cluster=default_cluster,
-                template=templatelib.TEMPLATE_BLANK,
-            )
-            vm.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile)
-            vm.create_vnic(NIC_NAME_2, ovirtmgmt_vnic_profile)
+    with (
+        clusterlib.mac_pool(system, default_cluster, MAC_POOL, (MAC_POOL_RANGE,)),
+        virtlib.vm_pool(system, size=1) as (vm,),
+    ):
+        vm.create(
+            vm_name='test_assign_vnic_with_full_mac_pool_vm_0',
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
+        vm.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile)
+        vm.create_vnic(NIC_NAME_2, ovirtmgmt_vnic_profile)
 
-            with pytest.raises(netlib.MacPoolIsInFullCapacityError):
-                vm.create_vnic(NIC_NAME_3, ovirtmgmt_vnic_profile)
+        with pytest.raises(netlib.MacPoolIsInFullCapacityError):
+            vm.create_vnic(NIC_NAME_3, ovirtmgmt_vnic_profile)
 
 
 def test_undo_preview_snapshot_when_mac_used_reassigns_a_new_mac(
@@ -134,22 +132,21 @@ def test_mac_pools_in_different_clusters_dont_overlap(system, cluster_0, default
 
     default_cluster_mac_pool = clusterlib.mac_pool(system, default_cluster, MAC_POOL_0, (MAC_POOL_RANGE,))
     cluster_0_mac_pool = clusterlib.mac_pool(system, cluster_0, MAC_POOL_1, (MAC_POOL_RANGE_1,))
-    with default_cluster_mac_pool, cluster_0_mac_pool:
-        with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(
-                vm_name='test_mac_pools_in_different_clusters_vm_0',
-                cluster=default_cluster,
-                template=templatelib.TEMPLATE_BLANK,
-            )
-            vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+    with default_cluster_mac_pool, cluster_0_mac_pool, virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
+        vm_0.create(
+            vm_name='test_mac_pools_in_different_clusters_vm_0',
+            cluster=default_cluster,
+            template=templatelib.TEMPLATE_BLANK,
+        )
+        vm_0.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
-            vm_1.create(
-                vm_name='test_mac_pools_in_different_clusters_vm_1',
-                cluster=cluster_0,
-                template=templatelib.TEMPLATE_BLANK,
-            )
-            with pytest.raises(netlib.MacAddrInUseError):
-                vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
+        vm_1.create(
+            vm_name='test_mac_pools_in_different_clusters_vm_1',
+            cluster=cluster_0,
+            template=templatelib.TEMPLATE_BLANK,
+        )
+        with pytest.raises(netlib.MacAddrInUseError):
+            vm_1.create_vnic(NIC_NAME_1, ovirtmgmt_vnic_profile, MAC_ADDR_1)
 
 
 @suite.skip_suites_below('4.4')
@@ -158,9 +155,8 @@ def test_add_overlapping_mac_pool_same_cluster(system, cluster_0, default_cluste
     POOL_1 = 'mac_pool_1'
     default_cluster_mac_pool = clusterlib.mac_pool(system, default_cluster, POOL_0, (MAC_POOL_RANGE,))
     default_cluster_mac_pool_1 = clusterlib.mac_pool(system, default_cluster, POOL_1, (MAC_POOL_RANGE,))
-    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX):
-        with default_cluster_mac_pool, default_cluster_mac_pool_1:
-            pass
+    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX), default_cluster_mac_pool, default_cluster_mac_pool_1:
+        pass
 
 
 @suite.skip_suites_below('4.4')
@@ -169,9 +165,8 @@ def test_add_overlapping_mac_pool_other_cluster(system, cluster_0, default_clust
     POOL_1 = 'mac_pool_1'
     default_cluster_mac_pool = clusterlib.mac_pool(system, default_cluster, POOL_0, (MAC_POOL_RANGE,))
     cluster_0_mac_pool = clusterlib.mac_pool(system, cluster_0, POOL_1, (MAC_POOL_RANGE,))
-    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX):
-        with default_cluster_mac_pool, cluster_0_mac_pool:
-            pass
+    with pytest.raises(EntityCreationError, match=OVERLAP_REGEX), default_cluster_mac_pool, cluster_0_mac_pool:
+        pass
 
 
 def test_restore_snapshot_with_an_used_mac_implicitly_assigns_new_mac(
@@ -328,26 +323,31 @@ def _run_scenario_of_bz_1760170(system, default_dc, cluster_0, cluster_1):
       pool_0
     """
     NET_NAME = 'net_bz_1760170'
-    with clusterlib.new_assigned_network(NET_NAME, default_dc, cluster_0) as net:
-        with virtlib.vm_pool(system, size=2) as (vm_0, vm_1):
-            vm_0.create(
-                vm_name='_run_scenario_of_bz_1760170_vm_0',
-                cluster=cluster_0,
-                template=BLANK,
-            )
-            vm_0.wait_for_down_status()
-            vm_0.create_vnic(netlib.OVIRTMGMT, default_dc.get_mgmt_network().vnic_profile())
-            vnic = vm_0.create_vnic(NET_NAME, net.vnic_profile())
-            vnic.remove()
-            vm_0.move_to_cluster(cluster_1)
+    with (
+        clusterlib.new_assigned_network(NET_NAME, default_dc, cluster_0) as net,
+        virtlib.vm_pool(system, size=2) as (
+            vm_0,
+            vm_1,
+        ),
+    ):
+        vm_0.create(
+            vm_name='_run_scenario_of_bz_1760170_vm_0',
+            cluster=cluster_0,
+            template=BLANK,
+        )
+        vm_0.wait_for_down_status()
+        vm_0.create_vnic(netlib.OVIRTMGMT, default_dc.get_mgmt_network().vnic_profile())
+        vnic = vm_0.create_vnic(NET_NAME, net.vnic_profile())
+        vnic.remove()
+        vm_0.move_to_cluster(cluster_1)
 
-            vm_1.create(
-                vm_name='_run_scenario_of_bz_1760170_vm_1',
-                cluster=cluster_0,
-                template=BLANK,
-            )
-            vm_1.wait_for_down_status()
-            vm_1.create_vnic(NET_NAME, net.vnic_profile())
+        vm_1.create(
+            vm_name='_run_scenario_of_bz_1760170_vm_1',
+            cluster=cluster_0,
+            template=BLANK,
+        )
+        vm_1.wait_for_down_status()
+        vm_1.create_vnic(NET_NAME, net.vnic_profile())
 
 
 def _wait_for_running_vm(serial_vmconsole, vm_id):

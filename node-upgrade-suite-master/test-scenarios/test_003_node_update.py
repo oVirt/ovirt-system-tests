@@ -2,15 +2,13 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-from pprint import pprint
+
+import logging
 
 import pytest
-
-from ost_utils import engine_utils
-from ost_utils import general_utils
-from ost_utils.pytest import order_by
 from ovirtsdk4 import types
-import logging
+
+from ost_utils import engine_utils, general_utils
 
 LOGGER = logging.getLogger(__name__)
 DC_NAME = 'test-dc'
@@ -31,7 +29,7 @@ def _host_status_to_print(hosts_service, hosts_list):
     dump_hosts = ''
     for host in hosts_list:
         host_service_info = hosts_service.host_service(host.id)
-        dump_hosts += '%s: %s\n' % (host.name, host_service_info.get().status)
+        dump_hosts += f'{host.name}: {host_service_info.get().status}\n'
     return dump_hosts
 
 
@@ -52,8 +50,7 @@ def _wait_for_status(hosts_service, dc_name, status):
     return all_hosts
 
 
-def test_update_check(engine_api, ansible_hosts, ansible_host0_facts,
-                      updates_available, versions_available):
+def test_update_check(engine_api, ansible_hosts, ansible_host0_facts, updates_available, versions_available):
     """
     1)
     can be done in a more anisble oriented way
@@ -83,35 +80,32 @@ def test_update_check(engine_api, ansible_hosts, ansible_host0_facts,
     engine's /var/log/ovirt-engine/ansible-runner-service.log
     grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
     tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-    grep -Po "(?<=version': ')(\d+\.){2}\d+"
+    grep -Po "(?<=version': ')(\\d+\\.){2}\\d+"
     and
     grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
     tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
-    grep -Po "(?<=release': ')\d+\.\w+"
+    grep -Po "(?<=release': ')\\d+\\.\\w+"
     or
     grep placeholder  /var/log/ovirt-engine/ansible-runner-service.log  | \
     tail -n1 |  grep -Po "(?<=placeholder).*" | tail -1 | \
     grep -Po "'(?=release|version)[^,]+'" | head -n2
     """
     installed = ansible_hosts.shell(
-        "rpm -q ovirt-node-ng-image-update-placeholder "
-        "--queryformat '%{RPMTAG_VERSION}-%{RPMTAG_RELEASE}\n'")
-    available = ansible_hosts.shell(
-        "yum list available | grep ovirt-node-ng-image-update.noarch |"
-        "awk '{print $2}'")
+        "rpm -q ovirt-node-ng-image-update-placeholder " "--queryformat '%{RPMTAG_VERSION}-%{RPMTAG_RELEASE}\n'"
+    )
+    available = ansible_hosts.shell("yum list available | grep ovirt-node-ng-image-update.noarch |" "awk '{print $2}'")
     LOGGER.info(f"{installed['stdout']} installed\n{available['stdout']} available")
     if available['stdout'] and available['stdout'] != installed['stdout']:
         versions_available['node'] = available['stdout']
         updates_available['node'] = 'yes'
 
 
-def test_update_host(engine_api, ansible_by_hostname, updates_available,
-                     versions_available):
+def test_update_host(engine_api, ansible_by_hostname, updates_available, versions_available):
     if updates_available['node'] == 'yes':
         engine = engine_api.system_service()
         hosts = engine_api.system_service().hosts_service()
         total_hosts = len(hosts.list(search=f'datacenter={DC_NAME}'))
-        _timeout = 40*60*total_hosts
+        _timeout = 40 * 60 * total_hosts
 
         def _perform_update():
             host_list = hosts.list()
@@ -127,8 +121,7 @@ def test_update_host(engine_api, ansible_by_hostname, updates_available,
                     # HOST_AVAILABLE_UPDATES_SKIPPED_UNSUPPORTED_STATUS(887)
                     host_service.upgrade_check()
 
-                with engine_utils.wait_for_event(engine,
-                                                 [15, 840, 888], _timeout):
+                with engine_utils.wait_for_event(engine, [15, 840, 888], _timeout):
                     LOGGER.info("update")
                     # HOST_UPGRADE_FINISHED_AND_WILL_BE_REBOOTED(888)
                     # HOST_UPGRADE_STARTED(840)
@@ -142,8 +135,8 @@ def test_update_host(engine_api, ansible_by_hostname, updates_available,
             for host in host_list:
                 ansible_host = ansible_by_hostname(host.name)
                 new_ver = ansible_host.shell(
-                    "cat /var/imgbased/.image-updated |"
-                    "grep -Po '(?<=update-).*(?=.squashfs.img)'")
+                    "cat /var/imgbased/.image-updated |" "grep -Po '(?<=update-).*(?=.squashfs.img)'"
+                )
                 LOGGER.info(f"{host.name} upgraded to: {new_ver['stdout_lines']}")
                 assert new_ver['stdout_lines'] == [versions_available['node']]
             return True

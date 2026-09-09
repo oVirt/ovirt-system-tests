@@ -130,7 +130,7 @@ class Driver:
             result = method(*args)
         finally:
             self.__driver.switch_to.default_content()
-            return result
+        return result
 
     def set_window_size(self, selenium_screen_width, selenium_screen_height):
         self.retry_if_known_issue(self.__driver.set_window_size, selenium_screen_width, selenium_screen_height)
@@ -146,8 +146,7 @@ class Driver:
         with open(path, "w", encoding='utf-8') as text_file:
             logs = self.__driver.get_log(type)
             if logs:
-                for entry in logs:
-                    text_file.write(f'{entry}\n\n')
+                text_file.writelines(f'{entry}\n\n' for entry in logs)
             else:
                 text_file.write('No log entries found')
 
@@ -267,7 +266,7 @@ class ConditionClass:
         self.args = args
         self.retry = 0
 
-    def __call__(self, __driver):
+    def __call__(self, __driver, /):
         self.retry += 1
 
         try:
@@ -302,7 +301,7 @@ class KnownIssueOccurredCondition:
         except TimeoutException as e:
             LOGGER.exception(
                 f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
-                + f'at retry number {str(self.retry)}'
+                + f'at retry number {self.retry!s}'
             )
             if 'java.util.concurrent.TimeoutException' in str(e):
                 should_run_again = True

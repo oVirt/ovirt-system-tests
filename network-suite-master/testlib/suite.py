@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-import os
-
 import logging
-from packaging.version import Version
+import os
 
 import ovirtsdk4
 import pytest
+from packaging.version import Version
 
 SUITE = os.environ['SUITE']
 SUITE_VERSION = SUITE.split('-')[-1]

@@ -5,9 +5,7 @@
 #
 
 import pytest
-
-from ovirtlib import sshlib
-from ovirtlib import storagelib
+from ovirtlib import sshlib, storagelib
 from ovirtlib.sdkentity import EntityNotFoundError
 
 DEFAULT_DOMAIN_NAME = 'nfs1'
@@ -42,6 +40,6 @@ def default_storage_domain(system, storage_facts, host_0_up, default_data_center
 def lun_id(storage_facts):
     # Reads a lun id value from the file
     node = sshlib.Node(storage_facts.default_ip(), storage_facts.ssh_password)
-    ret = node.exec_command(' '.join(['cat', '/root/multipath.txt']))
+    ret = node.exec_command('cat /root/multipath.txt')
     assert ret.code == 0
     return ret.out.splitlines()[0]

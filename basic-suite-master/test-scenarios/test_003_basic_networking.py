@@ -4,20 +4,12 @@
 #
 # -*- coding: utf-8 -*-
 #
-from __future__ import absolute_import
-
 import ipaddress
 import random
 
 import pytest
 
-from ost_utils import utils
-
-from ost_utils.ovirtlib import clusterlib
-from ost_utils.ovirtlib import datacenterlib
-from ost_utils.ovirtlib import hostlib
-from ost_utils.ovirtlib import netattachlib
-from ost_utils.ovirtlib import netlib
+from ost_utils.ovirtlib import clusterlib, datacenterlib, hostlib, netattachlib, netlib
 from ost_utils.ovirtlib import system as systemlib
 
 # DC/Cluster

@@ -10,6 +10,7 @@ import os
 import shutil
 import tempfile
 import threading
+import typing
 
 
 class PrivateDir:
@@ -30,7 +31,7 @@ class PrivateDir:
     """
 
     thread_local = threading.local()
-    all_dirs = set()
+    all_dirs: typing.ClassVar[set] = set()
 
     @classmethod
     def get(cls):

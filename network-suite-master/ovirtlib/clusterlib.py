@@ -9,13 +9,8 @@ import contextlib
 import ovirtsdk4
 from ovirtsdk4 import types
 
-from . import datacenterlib
-from . import eventlib
-from . import netlib
-from . import syncutil
-
-from .sdkentity import SDKRootEntity
-from .sdkentity import SDKSubEntity
+from . import datacenterlib, eventlib, netlib, syncutil
+from .sdkentity import SDKRootEntity, SDKSubEntity
 
 MacPoolRange = collections.namedtuple("MacPoolRange", "start end")
 
@@ -142,7 +137,7 @@ class Cluster(SDKRootEntity):
 
     def remove(self):
         self.wait_until_empty()
-        super(Cluster, self).remove()
+        super().remove()
 
     def wait_until_empty(self):
         self._report_is_empty('before')
@@ -213,6 +208,5 @@ def network_assignment(cluster, network, required=False):
 
 @contextlib.contextmanager
 def new_assigned_network(name, data_center, cluster, vlan=None, port_isolation=None):
-    with netlib.new_network(name, data_center, vlan, port_isolation) as network:
-        with network_assignment(cluster, network):
-            yield network
+    with netlib.new_network(name, data_center, vlan, port_isolation) as network, network_assignment(cluster, network):
+        yield network

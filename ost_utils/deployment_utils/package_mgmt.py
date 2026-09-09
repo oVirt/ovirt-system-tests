@@ -11,8 +11,6 @@ import subprocess
 import time
 import zipfile
 
-from typing import Optional
-
 import requests
 
 LOGGER = logging.getLogger(__name__)
@@ -78,7 +76,7 @@ def expand_github_repo(repo_url, working_dir, ost_images_distro):
         if not commit:
             commit = _github_resolve_pr_to_commit(repo, pr)
             LOGGER.debug("Commit %s in %s repo found for pr %s", commit, repo, pr)
-        tries = int(os.environ.get("GITHUB_WORKFLOW_TRIES", 1))
+        tries = int(os.environ.get("GITHUB_WORKFLOW_TRIES", "1"))
         while tries > 0:
             workflow_runs = _github_resolve_commit_to_workflow_runs(repo, commit)
             LOGGER.debug("Number of workflow runs found for commit %s: %d", commit, len(workflow_runs))
@@ -137,8 +135,7 @@ def _github_generate_repomd(path: str):
         subprocess.run(
             ["createrepo_c", "--update", path],
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except FileNotFoundError as err:
@@ -217,7 +214,7 @@ def _github_resolve_commit_to_workflow_runs(repo, commit) -> list[str]:
     return commit_runs
 
 
-def _github_get(url: str, params: Optional[dict] = None) -> requests.Response:
+def _github_get(url: str, params: dict | None = None) -> requests.Response:
     headers = {}
     github_token = os.environ.get("GITHUB_TOKEN")
     if github_token is None:

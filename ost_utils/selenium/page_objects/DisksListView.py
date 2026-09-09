@@ -6,6 +6,7 @@ import logging
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+
 from .EntityListView import EntityListView
 
 LOGGER = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class DisksListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(DisksListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'disks',
             ['Storage', 'Disks'],

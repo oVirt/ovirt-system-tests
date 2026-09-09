@@ -8,8 +8,8 @@ import logging
 
 import ansible_runner
 
-from ost_utils.debuginfo_utils import obj_info
 from ost_utils.ansible import private_dir as pd
+from ost_utils.debuginfo_utils import obj_info
 
 LOGGER = logging.getLogger(__name__)
 

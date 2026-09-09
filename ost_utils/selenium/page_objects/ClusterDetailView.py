@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+
 from .EntityDetailView import EntityDetailView
 
 
 class ClusterDetailView(EntityDetailView):
     def __init__(self, ovirt_driver, breadcrumbs, cluster_name):
-        super(ClusterDetailView, self).__init__(ovirt_driver, breadcrumbs, cluster_name)
+        super().__init__(ovirt_driver, breadcrumbs, cluster_name)
 
     def get_displayable_name(self):
         return 'Cluster detail view'

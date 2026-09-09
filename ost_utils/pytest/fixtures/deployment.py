@@ -11,13 +11,11 @@ import ipaddress
 import logging
 import os
 import pprint
+from datetime import timezone
 
 import pytest
 
-from ost_utils import assert_utils
-from ost_utils import coverage
-from ost_utils import deployment_utils
-from ost_utils import utils
+from ost_utils import assert_utils, coverage, deployment_utils, utils
 from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.deployment_utils import package_mgmt
 
@@ -29,10 +27,10 @@ def run_scripts(ansible_by_hostname, root_dir):
     def do_run_scripts(hostname, scripts):
         ansible_handle = ansible_by_hostname(hostname)
         for script in scripts:
-            start = datetime.datetime.now()
+            start = datetime.datetime.now(timezone.utc)
             LOGGER.info(f"[{hostname}] Starting {script}")
             res = ansible_handle.script(os.path.join(root_dir, script))
-            duration = int((datetime.datetime.now() - start).total_seconds())
+            duration = int((datetime.datetime.now(timezone.utc) - start).total_seconds())
             LOGGER.info(f"[{hostname}] Finished {script} ({duration}s)")
             LOGGER.debug(
                 f"[{hostname}] Finished {script}, result:\n%s",
@@ -128,7 +126,7 @@ def deploy(
     if not management_network_supports_ipv4:
         LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
         # can't use a fixture since VMs may not be up yet
-        ip = list(backend.ip_mapping().values())[0][management_network_name][0]
+        ip = next(iter(backend.ip_mapping().values()))[management_network_name][0]
         start_sshd_proxy(
             ansible_all,
             ipaddress.ip_interface(f"{ip}/64").network[1],

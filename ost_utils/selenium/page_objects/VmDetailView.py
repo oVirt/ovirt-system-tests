@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class VmDetailView(EntityDetailView):
     def __init__(self, ovirt_driver, breadcrumbs, vm_name):
-        super(VmDetailView, self).__init__(ovirt_driver, breadcrumbs, vm_name)
+        super().__init__(ovirt_driver, breadcrumbs, vm_name)
 
     def get_displayable_name(self):
         return 'VM detail view'
@@ -46,7 +46,7 @@ class VmDetailView(EntityDetailView):
 
 class VmDetailHostDevicesTab(Displayable):
     def __init__(self, ovirt_driver):
-        super(VmDetailHostDevicesTab, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.find_element(
@@ -69,7 +69,7 @@ class VmDetailHostDevicesTab(Displayable):
 
 class VmVgpuDialog(Displayable):
     def __init__(self, ovirt_driver):
-        super(VmVgpuDialog, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         modal_text = self.ovirt_driver.find_element(
@@ -101,7 +101,7 @@ class VmVgpuDialog(Displayable):
         # the list is 0-base but the index is 1-based so adjust
         row = tbodys[row_index - 1]
         row_tds = row.find_elements(By.CSS_SELECTOR, 'tr>td')
-        return list(map(lambda td: td.text, row_tds))
+        return [td.text for td in row_tds]
 
     def cancel(self):
         LOGGER.debug('Cancel vGPU dialog')

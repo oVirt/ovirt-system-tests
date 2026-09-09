@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ class GrafanaLoginScreen(Displayable):
     OAUTH_XPATH = '//*[@href="login/generic_oauth"]'
 
     def __init__(self, ovirt_driver):
-        super(GrafanaLoginScreen, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.find_element(By.XPATH, self.OAUTH_XPATH).is_displayed()

@@ -6,8 +6,7 @@
 
 import ovirtsdk4 as sdk4
 
-from ost_utils import assert_utils
-from ost_utils import engine_utils
+from ost_utils import assert_utils, engine_utils
 
 
 def add(api, domain, dc_name):

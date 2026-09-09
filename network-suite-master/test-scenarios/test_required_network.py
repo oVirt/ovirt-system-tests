@@ -4,13 +4,8 @@
 #
 #
 import pytest
-
 from fixtures.host import ENP2S0
-
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import hostlib
-from ovirtlib import clusterlib
+from ovirtlib import clusterlib, hostlib, netattachlib, netlib
 
 REQ_NET = 'req-net'
 

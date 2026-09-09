@@ -3,16 +3,15 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from http import server
 import os
 import threading
+from http import server
 
 
 def create_repo_server(workdir, lago_env):
     REPO_SERVER_PORT = 8585
 
-    mgmt_net = next(net for net in lago_env.get_nets().values() if
-                    net.is_management())
+    mgmt_net = next(net for net in lago_env.get_nets().values() if net.is_management())
     gw = mgmt_net.gw()
 
     server = _create_http_server(
@@ -37,7 +36,7 @@ def _generate_request_handler(root_dir):
 
         def translate_path(self, path):
             t_path = server.SimpleHTTPRequestHandler.translate_path(self, path)
-            short_t_path = t_path[len(os.getcwd()):].lstrip('/')
+            short_t_path = t_path[len(os.getcwd()) :].lstrip('/')
 
             return os.path.join(self.__root_dir, short_t_path)
 

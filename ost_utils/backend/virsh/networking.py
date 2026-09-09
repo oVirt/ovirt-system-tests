@@ -10,7 +10,9 @@ from ost_utils.shell import shell
 
 
 class HostDhcps:
-    def __init__(self, ip_node=ET.fromstring("<ip></ip>")):
+    def __init__(self, ip_node=None):
+        if ip_node is None:
+            ip_node = ET.fromstring("<ip></ip>")
         self._host_dhcps = {}
         self._parse(ip_node)
 
@@ -87,7 +89,7 @@ class VirshNetworks:
 
     def _get_libvirt_names_for_ost_nets_on_machine(self):
         libvirt_net_names = [
-            name for name in shell("virsh net-list --name".split()).splitlines() if name.startswith("ost")
+            name for name in shell(["virsh", "net-list", "--name"]).splitlines() if name.startswith("ost")
         ]
         return libvirt_net_names
 

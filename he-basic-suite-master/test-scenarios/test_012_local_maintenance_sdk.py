@@ -7,12 +7,12 @@
 import logging
 
 import ovirtsdk4
+import pytest
 from ovirtsdk4 import types
 
-import pytest
+from ost_utils import assert_utils, he_utils
 
-from ost_utils import assert_utils
-from ost_utils import he_utils
+LOGGER = logging.getLogger(__name__)
 
 VM_HE_NAME = 'HostedEngine'
 
@@ -33,7 +33,7 @@ def _hosted_engine_info(hosted_engine):
 
 @pytest.mark.xfail(reason='TODO. Fails too much, not trivial to fix')
 def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
-    logging.info('Waiting For System Stability...')
+    LOGGER.info('Waiting For System Stability...')
     he_utils.wait_until_engine_vm_is_not_migrating(ansible_host0)
 
     vm_service = get_vm_service_for_vm(VM_HE_NAME)
@@ -41,10 +41,10 @@ def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
     host_service = hosts_service.host_service(id=he_host_id)
     host_name = host_service.get().name
 
-    logging.info(f'Performing Deactivation on {host_name}...')
+    LOGGER.info(f'Performing Deactivation on {host_name}...')
 
     def _do_deactivate():
-        logging.debug(f'Trying to deactivate host {host_name}')
+        LOGGER.debug(f'Trying to deactivate host {host_name}')
         try:
             host_service.deactivate()
         except ovirtsdk4.Error:
@@ -54,11 +54,11 @@ def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
     assert assert_utils.true_within_short(_do_deactivate)
 
     def _is_in_maintenance():
-        logging.debug(f'Checking if host {host_name} is in maintenance')
+        LOGGER.debug(f'Checking if host {host_name} is in maintenance')
         status = host_service.get().status
         hosted_engine = host_service.get(all_content=True).hosted_engine
-        logging.debug(f'status={status}')
-        logging.debug(f'hosted_engine={_hosted_engine_info(hosted_engine)}')
+        LOGGER.debug(f'status={status}')
+        LOGGER.debug(f'hosted_engine={_hosted_engine_info(hosted_engine)}')
         # Original test was:
         #   (
         #       status == types.HostStatus.MAINTENANCE or
@@ -75,10 +75,10 @@ def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
 
     assert assert_utils.true_within_long(_is_in_maintenance)
 
-    logging.info('Performing Activation...')
+    LOGGER.info('Performing Activation...')
 
     def _do_activate():
-        logging.debug(f'Trying to activate host {host_name}')
+        LOGGER.debug(f'Trying to activate host {host_name}')
         try:
             host_service.activate()
         except ovirtsdk4.Error:
@@ -88,20 +88,20 @@ def test_local_maintenance(hosts_service, get_vm_service_for_vm, ansible_host0):
     assert assert_utils.true_within_short(_do_activate)
 
     def _is_active():
-        logging.info(f'Checking if host {host_name} is active')
+        LOGGER.info(f'Checking if host {host_name} is active')
         status = host_service.get().status
         hosted_engine = host_service.get(all_content=True).hosted_engine
-        logging.debug(f'status={status}')
-        logging.debug(f'hosted_engine={_hosted_engine_info(hosted_engine)}')
+        LOGGER.debug(f'status={status}')
+        LOGGER.debug(f'hosted_engine={_hosted_engine_info(hosted_engine)}')
         # TODO See comment above
         return status == types.HostStatus.UP
 
     assert assert_utils.true_within_long(_is_active)
 
-    logging.info('Verifying that all hosts have score higher than 0...')
+    LOGGER.info('Verifying that all hosts have score higher than 0...')
     assert assert_utils.true_within_long(lambda: host_service.get(all_content=True).hosted_engine.score > 0)
 
-    logging.info('Validating Migration...')
+    LOGGER.info('Validating Migration...')
     prev_host_id = he_host_id
     he_host_id = vm_service.get().host.id
     assert prev_host_id != he_host_id

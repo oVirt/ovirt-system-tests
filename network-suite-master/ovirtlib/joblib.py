@@ -5,14 +5,13 @@
 #
 from ovirtsdk4.types import JobStatus
 
-from . import eventlib
-from . import syncutil
+from . import eventlib, syncutil
 from .sdkentity import SDKRootEntity
 
 
 class EngineJobs(SDKRootEntity):
     def __init__(self, parent_sdk_system, job_description_predicate):
-        super(EngineJobs, self).__init__(parent_sdk_system)
+        super().__init__(parent_sdk_system)
         self._job_description_predicate = job_description_predicate
 
     def _get_parent_service(self, sdk_system):
@@ -62,4 +61,4 @@ class EngineJobs(SDKRootEntity):
 
 class AllJobs(EngineJobs):
     def __init__(self, parent_sdk_system):
-        super(AllJobs, self).__init__(parent_sdk_system, lambda d: True)
+        super().__init__(parent_sdk_system, lambda d: True)

@@ -3,21 +3,14 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from collections import namedtuple
 import contextlib
+from collections import namedtuple
 
 import pytest
-
-from fixtures.host import ENP2S0
-from fixtures.host import ENP3S0
-from fixtures.host import ENP4S0
-
-from ovirtlib import clusterlib
-from ovirtlib import joblib
-from ovirtlib import hostlib
+from fixtures.host import ENP2S0, ENP3S0, ENP4S0
+from ovirtlib import clusterlib, hostlib, joblib
 from ovirtlib.netattachlib import BondingData
 from ovirtlib.netattachlib import NetworkAttachmentData as AttachData
-
 from testlib import suite
 
 BOND0 = 'bond0'
@@ -154,7 +147,7 @@ def networks(system, default_data_center, default_cluster):
         }
 
 
-class CopyHostComparator(object):
+class CopyHostComparator:
     """
     nic0: source nic
     nic1: destination nic

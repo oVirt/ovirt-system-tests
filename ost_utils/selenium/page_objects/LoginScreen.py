@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 class LoginScreen(Displayable):
     def __init__(self, ovirt_driver, keycloak_enabled):
-        super(LoginScreen, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
         self._keycloak_enabled = keycloak_enabled
 
     def is_displayed(self):

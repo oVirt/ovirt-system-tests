@@ -5,10 +5,6 @@
 #
 import pytest
 
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.engine import *
-from ost_utils.pytest.fixtures.storage import *
-
 
 @pytest.fixture(scope="session")
 def sd_iscsi_host_ip(storage_ips_for_network, storage_network_name):  # pylint: disable=function-redefined

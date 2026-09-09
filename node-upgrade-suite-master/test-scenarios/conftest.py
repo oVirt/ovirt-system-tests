@@ -7,19 +7,6 @@
 
 import pytest
 
-from ost_utils.pytest.fixtures.ansible import *
-from ost_utils.pytest.fixtures.artifacts import *
-from ost_utils.pytest.fixtures.backend import *
-from ost_utils.pytest.fixtures.defaults import *
-from ost_utils.pytest.fixtures.engine import *
-from ost_utils.pytest.fixtures.env import *
-from ost_utils.pytest.fixtures.he import *
-from ost_utils.pytest.fixtures.network import *
-from ost_utils.pytest.fixtures.node import *
-from ost_utils.pytest.fixtures.sdk import *
-from ost_utils.pytest.fixtures.storage import *
-from ost_utils.pytest.running_time import *
-
 
 @pytest.fixture(scope="session")
 def sd_iscsi_host_ip(engine_storage_ips):  # pylint: disable=function-redefined

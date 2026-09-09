@@ -5,14 +5,6 @@
 
 import pytest
 
-from ost_utils.pytest.fixtures.defaults import *
-from ost_utils.pytest.fixtures.engine import *
-from ost_utils.pytest.fixtures.keycloak import *
-from ost_utils.pytest.fixtures.node import *
-from ost_utils.pytest.fixtures.sdk import *
-from ost_utils.pytest.fixtures.storage import *
-from ost_utils.pytest.running_time import *
-
 
 @pytest.fixture(scope="session")
 def sd_iscsi_host_ip(storage_ips_for_network, storage_network_name):  # pylint: disable=function-redefined

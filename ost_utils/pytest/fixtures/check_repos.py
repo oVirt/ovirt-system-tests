@@ -10,5 +10,5 @@ from ost_utils.deployment_utils import package_mgmt
 
 
 @pytest.fixture(scope="session", autouse=True)
-def check_installed_packages(all_hostnames):
-    package_mgmt.check_installed_packages(all_hostnames)
+def check_installed_packages(ansible_all):
+    package_mgmt.check_installed_packages(ansible_all)

@@ -126,7 +126,7 @@ jobs:
             -d "{\"body\":\"${MSG}\"}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: oVirt/ovirt-system-tests
           ref: ${{ env.OST_REF }}
@@ -163,7 +163,7 @@ jobs:
         run: tar -czf exported-artifacts-${{ matrix.distro }}.tar.gz exported-artifacts
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ost-artifacts-${{ matrix.distro }}
           path: exported-artifacts-${{ matrix.distro }}.tar.gz

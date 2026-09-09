@@ -51,7 +51,7 @@ def he_ipv6_address(ansible_host0_facts):
 
 @pytest.fixture(scope="session")
 def he_host_name(backend):
-    return f"{'-'.join(backend.storage_hostname().split('-')[:-1])}-engine"
+    return f"{'-'.join(backend.storage_hostname.split('-')[:-1])}-engine"
 
 
 @pytest.fixture(scope="session")

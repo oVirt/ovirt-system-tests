@@ -896,7 +896,7 @@ def test_get_host_devices(hosts_service, ost_dc_name):
     host_service = host_utils.random_up_host_service(hosts_service, ost_dc_name)
     # See common/libvirt-templates/vm_template.
     ost_root_disk = 'block_vda_ost_root_disk'
-    for i in range(10):
+    for _ in range(10):
         devices_service = host_service.devices_service()
         devices = sorted(devices_service.list(), key=lambda device: device.name)
         device_list = ''
@@ -956,7 +956,7 @@ def test_get_host_numa_nodes(hosts_service, ost_dc_name):
         nodes = sorted(numa_nodes_service.list(), key=lambda node: node.index)
         # TODO: Do a better check on the result nodes struct.
         # The below is too simplistic.
-        return len(nodes) > 1 and nodes[0].index == 0
+        return len(nodes) > 1 and not nodes[0].index
 
     # We update NUMA data only once the host is Up, there's no Host status
     # reflecting this, IOW right after the host goes up there's no NUMA

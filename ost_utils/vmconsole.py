@@ -123,7 +123,7 @@ class VmSerialConsole:  # pylint: disable=too-many-instance-attributes
             LOGGER.debug(f'vmconsole: pre login {i}')
             self._write('\n')
             byte = self._read()
-            if byte in (b'\n', b'\r') or len(byte.strip()) != 0:
+            if byte in (b'\n', b'\r') or byte.strip():
                 break
             time.sleep(10)
 

@@ -58,11 +58,11 @@ def _find_result(ansible_events):
             elif len(results) > 0:
                 break
 
-    if len(results) == 0:
+    if not results:
         LOGGER.error('No result from ansible-runner')
         LOGGER.error('Event UUIDs: %s', [e.get('uuid') for e in events])
         raise RuntimeError('No result from ansible-runner')
-    elif len(results) == 1:
+    if len(results) == 1:
         return results[next(iter(results))]
 
     return results

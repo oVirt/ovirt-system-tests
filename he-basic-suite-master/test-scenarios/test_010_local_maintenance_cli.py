@@ -19,7 +19,7 @@ def test_local_maintenance(ansible_host0, ansible_by_hostname):
     non_he_host = ansible_by_hostname(non_he_host_name)
 
     ret = non_he_host.shell('hosted-engine --set-maintenance --mode=local')
-    assert ret['rc'] == 0
+    assert not ret['rc']
 
     ret = non_he_host.shell('hosted-engine --set-maintenance --mode=none')
-    assert ret['rc'] == 0
+    assert not ret['rc']

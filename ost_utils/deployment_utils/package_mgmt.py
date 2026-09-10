@@ -118,7 +118,7 @@ def _github_has_rpm(path: str) -> bool:
     """
     This function checks if the specified path contains any RPM files.
     """
-    for root, subdirs, files in os.walk(path):
+    for _, _, files in os.walk(path):
         for file in files:
             if file.endswith(".rpm"):
                 return True
@@ -289,7 +289,7 @@ def check_installed_packages(ansible_vms):
         for file in host['files']
     }
 
-    if len(used_repos) == 0:
+    if not used_repos:
         return
 
     for repo in used_repos:

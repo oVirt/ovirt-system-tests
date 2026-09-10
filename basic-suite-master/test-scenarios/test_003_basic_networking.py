@@ -187,7 +187,7 @@ def bonding_data(host0, host1, backend, bonding_network_name):
 @pytest.fixture(scope='module')
 def bond_attachment_data(host0, host1, static_ips, migration_network):
     attachment_data = []
-    for i, host in enumerate((host0, host1)):
+    for i, _host in enumerate((host0, host1)):
         static_ip_assignment = static_ips[f'migration_net_{i}']
         attachment_data.append(
             netattachlib.NetworkAttachmentData(

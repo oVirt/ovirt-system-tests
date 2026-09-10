@@ -194,7 +194,7 @@ def test_iterators(running_blank_vm, system):
     dc_names = (dc.name for dc in datacenterlib.DataCenter.iterate(system))
     assert running_blank_vm.cluster.get_data_center().name in dc_names
 
-    assert len(list(datacenterlib.DataCenter.iterate(system, search='name = missing'))) == 0
+    assert not list(datacenterlib.DataCenter.iterate(system, search='name = missing'))
 
 
 def test_assign_network_filter(running_blank_vm, system, ovirtmgmt_network):

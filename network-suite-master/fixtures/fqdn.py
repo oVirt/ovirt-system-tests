@@ -91,7 +91,7 @@ def _enable_dynamic_ipv6(ssh_node, nic_name):
     return syncutil.sync(
         exec_func=_get_ipv6,
         exec_func_args=(ssh_node, nic_name),
-        success_criteria=lambda ipv6: ipv6 != '',
+        success_criteria=bool,
         timeout=10,
     )
 

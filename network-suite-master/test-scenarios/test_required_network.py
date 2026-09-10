@@ -41,7 +41,7 @@ def cluster_hosts_up(default_cluster, system):
 @pytest.fixture(scope='module')
 def cluster_hosts_net_setup(cluster_hosts_up, req_net, cluster_net):
     try:
-        for i, host in enumerate(cluster_hosts_up):
+        for host in cluster_hosts_up:
             req_att_data = netattachlib.NetworkAttachmentData(
                 req_net, ENP2S0, (netattachlib.NO_V4, netattachlib.NO_V6)
             )

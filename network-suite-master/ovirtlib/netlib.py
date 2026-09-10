@@ -252,7 +252,7 @@ class Vnic(SDKSubEntity):
             message = err.args[0]
             if 'MAC Address' in message and 'in use' in message:
                 raise MacAddrInUseError(message)
-            elif 'Not enough MAC addresses' in message:
+            if 'Not enough MAC addresses' in message:
                 raise MacPoolIsInFullCapacityError(message)
             raise
 

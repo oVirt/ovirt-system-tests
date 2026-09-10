@@ -40,7 +40,7 @@ def test_non_mgmt_display_network_over_ipv6(
           address on enp2s0 of the host, connection with the storage server
           cannot be maintained
     """
-    assert host0_enp2s0_ipv6 != ''
+    assert host0_enp2s0_ipv6
     with (
         netlib.new_network('ipv6-disp_net', default_data_center) as net,
         clusterlib.network_assignment(default_cluster, net) as cl_net,

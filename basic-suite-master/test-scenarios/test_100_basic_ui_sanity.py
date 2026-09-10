@@ -244,7 +244,7 @@ def test_vmportal_non_admin(
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
     assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
     vm0_status = vm_portal.get_vm_status('vm0')
-    assert vm0_status == 'Powering up' or vm0_status == 'Running'
+    assert vm0_status in ('Powering up', 'Running')
     save_screenshot('vmportal')
 
     assert vm_portal.is_create_virtual_machine_present() is False, "Create VM button is not visible for non-admin user"
@@ -644,7 +644,7 @@ def test_virtual_machines(
     vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
     vm_status = vm_detail_view.get_status()
     save_screenshot('vms-after-run-once')
-    assert vm_status == 'Powering Up' or vm_status == 'Up'
+    assert vm_status in ('Powering Up', 'Up')
 
     # Test Manage VGPU dialog
     vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()

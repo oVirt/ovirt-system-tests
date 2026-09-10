@@ -656,10 +656,10 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
     ) as vmconsole_process:
         vmconsole_in = os.fdopen(master, 'w')
         connection_success = False
-        for i in range(30):
+        for _ in range(30):
             vmconsole_in.write('\n')
             response = vmconsole_process.stdout.read(1)
-            if len(response.strip()) != 0:
+            if response.strip():
                 message = response + vmconsole_process.stdout.readline()
                 LOGGER.debug(f'vmconsole output: {message.decode()}')
                 if (
@@ -1248,7 +1248,7 @@ def test_remove_vm_pool(engine_api):
         # USER_REMOVE_VM_POOL(304) event
         pool_service.remove(query={'correlation_id': correlation_id})
         vm_pools_service = engine_api.system_service().vm_pools_service()
-        assert len(vm_pools_service.list()) == 0
+        assert not vm_pools_service.list()
     assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
 
 
@@ -1359,7 +1359,7 @@ def test_hotplug_cpu(engine_api, vm_ssh, vm0_fqdn_or_ip):
         vm_service.update(vm=types.Vm(cpu=new_cpu))
         assert vm_service.get().cpu.topology.sockets == 2
     ret = vm_ssh(vm0_fqdn_or_ip, 'cat /proc/cpuinfo | grep processor | wc -l')
-    assert ret.code == 0
+    assert not ret.code
     assert ret.out.strip().decode() == '2'
 
 

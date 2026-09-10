@@ -50,7 +50,7 @@ class Node:
             _, stdout, stderr = self._client.exec_command(command)
             status = stdout.channel.recv_exit_status()
             stdout_message = stdout.read()
-            if status != 0:
+            if status:
                 stderr_message = stderr.read()
                 raise SshException(
                     f'Ssh command "{command}" exited with '

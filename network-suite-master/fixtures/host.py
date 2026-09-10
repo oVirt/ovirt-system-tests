@@ -51,7 +51,7 @@ def _non_spm_host(system, host_ids):
     for host_id in host_ids:
         host = hostlib.Host(system)
         host.import_by_id(host_id)
-        if host.is_not_spm or id == host_ids[-1]:
+        if host.is_not_spm or host_id == host_ids[-1]:
             return host
 
 

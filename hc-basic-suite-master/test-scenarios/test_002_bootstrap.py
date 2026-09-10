@@ -267,7 +267,7 @@ def test_list_glance_images(engine_api):
     try:
         with engine_utils.wait_for_event(system_service, 998):
             all_images = glance_domain_service.images_service().list()
-        if not len(all_images):
+        if not all_images:
             raise RuntimeError('No GLANCE images available')
     except sdk4.Error:
         raise RuntimeError('GLANCE is not available: client request error')

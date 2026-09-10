@@ -25,7 +25,7 @@ def wait_for_event(engine, event_id, timeout=assert_utils.LONG_TIMEOUT):
             event_id = [event_id]
         for e_id in event_id:
             assert assert_utils.true_within(
-                lambda: any(e.code == e_id for e in events.list(from_=last_event)),
+                lambda e_id=e_id: any(e.code == e_id for e in events.list(from_=last_event)),
                 timeout,
             )
 

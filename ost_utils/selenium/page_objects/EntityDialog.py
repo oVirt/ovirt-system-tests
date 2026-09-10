@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 
 LOGGER = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ class EntityDialog(Displayable):
         entity_type,
         action,
     ):
-        super(EntityDialog, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
         self.action = action
         self.entity_type = entity_type
 

@@ -10,17 +10,11 @@ import tempfile
 import time
 
 import ovirtsdk4 as sdk4
-from ovirtsdk4 import types
 import pytest
+from ovirtsdk4 import types
 
-from ost_utils import assert_utils
-from ost_utils import network_utils
-from ost_utils.ansible import AnsibleExecutionError
-from ost_utils.shell import shell
-from ost_utils.shell import ShellError
-from ost_utils.pytest.fixtures.env import suite
-from ost_utils.pytest.fixtures.network import management_network_name
-from ost_utils.pytest.fixtures.network import storage_network_name
+from ost_utils import assert_utils, network_utils
+from ost_utils.shell import ShellError, shell
 
 
 @pytest.fixture(scope="session")

@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 import pytest
-
-from ovirtlib import sshlib
-from ovirtlib import syncutil
+from ovirtlib import sshlib, syncutil
 
 OVN_CONF = '/etc/ovirt-provider-ovn/conf.d/10-setup-ovirt-provider-ovn.conf'
 
@@ -93,7 +91,7 @@ def _enable_dynamic_ipv6(ssh_node, nic_name):
     return syncutil.sync(
         exec_func=_get_ipv6,
         exec_func_args=(ssh_node, nic_name),
-        success_criteria=lambda ipv6: ipv6 != '',
+        success_criteria=bool,
         timeout=10,
     )
 
@@ -108,11 +106,11 @@ def _assign_ipv6(ssh_node, nic_name):
     :param nic_name: the name of the NIC to assign an ipv6 address to
     :raise: exception if an error occurred during the assignment
     """
-    res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'modify', nic_name, 'ipv6.method', 'auto']))
+    res = ssh_node.exec_command(f'nmcli con modify {nic_name} ipv6.method auto')
 
     if res.code:
         raise Exception(f'nmcli con modify failed: exit code {res.code}, error "{res.err}"')
-    res = ssh_node.exec_command(' '.join(['nmcli', 'con', 'up', nic_name]))
+    res = ssh_node.exec_command(f'nmcli con up {nic_name}')
     if res.code:
         raise Exception(f'nmcli con up failed: exit code {res.code}, error "{res.err}"')
 

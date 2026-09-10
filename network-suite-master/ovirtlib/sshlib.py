@@ -4,6 +4,7 @@
 #
 import ipaddress
 import logging
+
 import paramiko
 import pytest
 
@@ -19,7 +20,7 @@ class SshException(Exception):
     pass
 
 
-class Node(object):
+class Node:
     """
     A class to collect operations that need to be carried out on a node (host
     or VM) but are not supported by the corresponding oVirt objects.
@@ -49,7 +50,7 @@ class Node(object):
             _, stdout, stderr = self._client.exec_command(command)
             status = stdout.channel.recv_exit_status()
             stdout_message = stdout.read()
-            if status != 0:
+            if status:
                 stderr_message = stderr.read()
                 raise SshException(
                     f'Ssh command "{command}" exited with '

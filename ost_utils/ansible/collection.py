@@ -11,6 +11,7 @@ import socket
 import tarfile
 import tempfile
 import uuid
+
 import yaml
 
 
@@ -114,6 +115,8 @@ def image_template(
 
 
 class CollectionMapper:
+    name = None
+
     def __init__(self, ansible_engine, ansible_host='localhost'):
         self._ansible_engine = ansible_engine
         self.ansible_host = ansible_host

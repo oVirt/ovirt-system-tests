@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+
 from .EntityDialog import EntityDialog
 
 
 class TemplateDialog(EntityDialog):
     def __init__(self, ovirt_driver, action):
-        super(TemplateDialog, self).__init__(ovirt_driver, 'Template', action)
+        super().__init__(ovirt_driver, 'Template', action)
 
     def is_displayed(self):
         cluster_loaded = self.ovirt_driver.retry_if_known_issue(self._is_cluster_loaded)

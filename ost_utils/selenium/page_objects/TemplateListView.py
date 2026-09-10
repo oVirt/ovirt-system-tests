@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+
 from .EntityListView import EntityListView
 from .TemplateDetailView import TemplateDetailView
 from .TemplateDialog import TemplateDialog
@@ -10,7 +11,7 @@ from .TemplateDialog import TemplateDialog
 
 class TemplateListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(TemplateListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'template',
             ['Compute', 'Templates'],

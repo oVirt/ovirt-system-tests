@@ -5,7 +5,7 @@
 #
 
 
-class AF(object):
+class AF:
     """
     Address family class
     """

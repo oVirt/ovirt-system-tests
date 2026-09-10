@@ -10,9 +10,7 @@ import os
 
 import pytest
 
-from ost_utils import coverage
-from ost_utils import utils
-from ost_utils import shell
+from ost_utils import coverage, shell, utils
 from ost_utils.ansible import AnsibleExecutionError
 
 LOGGER = logging.getLogger(__name__)
@@ -75,6 +73,10 @@ def dump_dhcp_leases(artifacts_dir, backend, management_network_name):
         [
             'bash',
             '-c',
-            f'virsh net-dhcp-leases {backend.libvirt_net_name(management_network_name)} > {artifacts_dir}/libvirt-leases',
+            (
+                f'virsh net-dhcp-leases '
+                f'{backend.libvirt_net_name(management_network_name)} '
+                f'> {artifacts_dir}/libvirt-leases'
+            ),
         ]
     )

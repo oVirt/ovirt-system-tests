@@ -6,6 +6,7 @@ import logging
 import time
 
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 from .WithNotifications import WithNotifications
@@ -21,7 +22,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
         breadcrumbs,
         entity_name_table_cell_id_selector,
     ):
-        super(EntityListView, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
         self.entity_type = entity_type
         self.breadcrumbs = breadcrumbs
         self.entity_name_table_cell_id_selector = entity_name_table_cell_id_selector
@@ -98,10 +99,7 @@ class EntityListView(Displayable, WithBreadcrumbs, WithNotifications):
 
     def get_entities(self):
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)
-        entities = []
-        for name in names_to_ids:
-            entities.append(name)
-        return entities
+        return list(names_to_ids.copy())
 
     def get_entity_row_id(self, entity_name):
         names_to_ids = self.ovirt_driver.retry_if_known_issue(self._get_entity_names_to_ids)

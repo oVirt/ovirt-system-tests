@@ -9,7 +9,7 @@ from .HostDialog import HostDialog
 
 class HostListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(HostListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'host',
             ['Compute', 'Hosts'],

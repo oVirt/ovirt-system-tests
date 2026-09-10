@@ -4,12 +4,11 @@
 #
 #
 import os
-import pytest
-import openstack
-import yaml
 
-from ovirtlib.providerlib import OpenStackNetwork
-from ovirtlib.providerlib import OpenStackNetworkProvider
+import openstack
+import pytest
+import yaml
+from ovirtlib.providerlib import OpenStackNetwork, OpenStackNetworkProvider
 from testlib import suite
 
 OPENSTACK_AUTH_URL = 'https://{}:35357/v2.0'

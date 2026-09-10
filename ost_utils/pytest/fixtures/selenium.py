@@ -11,8 +11,7 @@ import pytest
 
 from ost_utils import network_utils
 from ost_utils.selenium.grid import browser
-from ost_utils.shell import ShellError
-from ost_utils.shell import shell
+from ost_utils.shell import ShellError, shell
 
 GRID_STARTUP_WAIT_RETRIES = 300
 
@@ -33,7 +32,7 @@ def _node_ready(status_dict, browser_name):
 def _grid_health_check(hub_url, browser_name):
     status_url = hub_url + "/status"
 
-    for i in range(GRID_STARTUP_WAIT_RETRIES):
+    for _ in range(GRID_STARTUP_WAIT_RETRIES):
         try:
             status_json = shell(["curl", "-sSL", status_url])
             status_dict = json.loads(status_json)

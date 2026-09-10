@@ -2,42 +2,31 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# -*- coding: utf-8 -*-
-#
-from __future__ import absolute_import
-
 import functools
 import logging
 import os
-from os import EX_OK
 import pty
 import re
 import subprocess
-from time import sleep
 import uuid
-
-import ovirtsdk4
-from ovirtsdk4 import types
+from os import EX_OK
+from time import sleep
 
 import pytest
+from ovirtsdk4 import types
 
-from ost_utils import ansible
-from ost_utils import assert_utils
-from ost_utils import constants
-from ost_utils import engine_utils
-from ost_utils import host_utils
-from ost_utils.shell import shell
-from ost_utils import ssh
-from ost_utils import test_utils
-from ost_utils import utils
-from ost_utils import versioning
+from ost_utils import (
+    ansible,
+    assert_utils,
+    constants,
+    engine_utils,
+    host_utils,
+    ssh,
+    test_utils,
+    utils,
+    versioning,
+)
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.backend import tested_ip_version
-from ost_utils.pytest.fixtures.network import management_subnet
-from ost_utils.pytest.fixtures.sdk import *
-from ost_utils.pytest.fixtures.virt import *
-from ost_utils.pytest.fixtures.vm import *
-
 from ost_utils.storage_utils import backup
 
 LOGGER = logging.getLogger(__name__)
@@ -201,7 +190,7 @@ def _verify_vm_disks_state(vm_name, state, get_disk_services_for_vm_or_template,
     disks_service = get_disk_services_for_vm_or_template(vm_service)
 
     for disk_service in disks_service:
-        assert assert_utils.equals_within_short(lambda: disk_service.get().status, state)
+        assert assert_utils.equals_within_short(lambda disk_service=disk_service: disk_service.get().status, state)
 
 
 @pytest.fixture(scope="session")
@@ -350,8 +339,12 @@ def test_extend_disk1(engine_api):
                     )
                 )
             disk_service = test_utils.get_disk_service(engine, DISK1_NAME)
-            assert assert_utils.equals_within_short(lambda: disk_service.get().status, types.DiskStatus.OK)
-            assert assert_utils.equals_within_short(lambda: disk_service.get().provisioned_size, 2 * GB)
+            assert assert_utils.equals_within_short(
+                lambda disk_service=disk_service: disk_service.get().status, types.DiskStatus.OK
+            )
+            assert assert_utils.equals_within_short(
+                lambda disk_service=disk_service: disk_service.get().provisioned_size, 2 * GB
+            )
 
 
 @order_by(_TEST_LIST)
@@ -661,16 +654,16 @@ def test_vmconsole(engine_api, engine_ip, working_dir, rsa_pair):
     ) as vmconsole_process:
         vmconsole_in = os.fdopen(master, 'w')
         connection_success = False
-        for i in range(30):
+        for _ in range(30):
             vmconsole_in.write('\n')
             response = vmconsole_process.stdout.read(1)
-            if len(response.strip()) != 0:
+            if response.strip():
                 message = response + vmconsole_process.stdout.readline()
                 LOGGER.debug(f'vmconsole output: {message.decode()}')
                 if (
                     f"login as '{VM_USER_NAME}'".encode() in message
                     or f'{VM0_NAME} login'.encode() in message
-                    or 'box login'.encode() in message
+                    or b'box login' in message
                 ):
                     connection_success = True
                     break
@@ -838,7 +831,7 @@ def test_verify_vm_import_preallocated(engine_api, get_vm_service_for_vm, get_di
 
     assert assert_utils.true_within_short(
         lambda: all(
-            disk_service.get().sparse == False
+            disk_service.get().sparse is False
             # pylint: disable=not-an-iterable
             for disk_service in disks_service
         )
@@ -887,7 +880,7 @@ def test_verify_template_import(engine_api, get_template_service_for_template, g
 
     assert assert_utils.true_within_short(
         lambda: all(
-            disk_service.get().sparse == True
+            disk_service.get().sparse is True
             # pylint: disable=not-an-iterable
             for disk_service in disks_service
         )
@@ -1253,7 +1246,7 @@ def test_remove_vm_pool(engine_api):
         # USER_REMOVE_VM_POOL(304) event
         pool_service.remove(query={'correlation_id': correlation_id})
         vm_pools_service = engine_api.system_service().vm_pools_service()
-        assert len(vm_pools_service.list()) == 0
+        assert not vm_pools_service.list()
     assert assert_utils.true_within_long(lambda: test_utils.all_jobs_finished(engine, correlation_id))
 
 
@@ -1364,7 +1357,7 @@ def test_hotplug_cpu(engine_api, vm_ssh, vm0_fqdn_or_ip):
         vm_service.update(vm=types.Vm(cpu=new_cpu))
         assert vm_service.get().cpu.topology.sockets == 2
     ret = vm_ssh(vm0_fqdn_or_ip, 'cat /proc/cpuinfo | grep processor | wc -l')
-    assert ret.code == 0
+    assert not ret.code
     assert ret.out.strip().decode() == '2'
 
 

@@ -50,6 +50,5 @@ class WithNotifications(WithOvirtDriver):
         isError = self.is_error_notification_visible()
         if isError:
             raise Exception("Unexpected error notification present")
-        else:
-            self.ovirt_driver.xpath_click(xpath)
-            LOGGER.debug('Notification closed')
+        self.ovirt_driver.xpath_click(xpath)
+        LOGGER.debug('Notification closed')

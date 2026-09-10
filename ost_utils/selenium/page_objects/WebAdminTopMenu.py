@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class WebAdminTopMenu(Displayable):
     def __init__(self, ovirt_driver):
-        super(WebAdminTopMenu, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.is_css_selector_displayed('nav')

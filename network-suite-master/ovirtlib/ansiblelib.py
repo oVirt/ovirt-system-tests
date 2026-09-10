@@ -4,6 +4,7 @@
 #
 #
 import logging
+
 import ansible_runner
 
 LOGGER = logging.getLogger(__name__)

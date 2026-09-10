@@ -3,16 +3,13 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from __future__ import absolute_import
-
 import functools
 import logging
 import os
 
 import pytest
 
-from ost_utils import assert_utils
-from ost_utils import utils
+from ost_utils import assert_utils, utils
 from ost_utils.ansible import AnsibleExecutionError
 
 LOGGER = logging.getLogger(__name__)

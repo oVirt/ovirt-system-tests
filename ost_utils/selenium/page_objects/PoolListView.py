@@ -7,7 +7,7 @@ from .EntityListView import EntityListView
 
 class PoolListView(EntityListView):
     def __init__(self, ovirt_driver):
-        super(PoolListView, self).__init__(
+        super().__init__(
             ovirt_driver,
             'pool',
             ['Compute', 'Pools'],

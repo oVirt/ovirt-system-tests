@@ -5,8 +5,7 @@
 #
 import ovirtsdk4
 
-from . import eventlib
-from . import joblib
+from . import eventlib, joblib
 
 DELIM = '--------------------------------------'
 

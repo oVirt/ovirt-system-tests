@@ -11,13 +11,11 @@ import ipaddress
 import logging
 import os
 import pprint
+from datetime import timezone
 
 import pytest
 
-from ost_utils import assert_utils
-from ost_utils import coverage
-from ost_utils import deployment_utils
-from ost_utils import utils
+from ost_utils import assert_utils, coverage, deployment_utils, utils
 from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.deployment_utils import package_mgmt
 
@@ -29,10 +27,10 @@ def run_scripts(ansible_by_hostname, root_dir):
     def do_run_scripts(hostname, scripts):
         ansible_handle = ansible_by_hostname(hostname)
         for script in scripts:
-            start = datetime.datetime.now()
+            start = datetime.datetime.now(timezone.utc)
             LOGGER.info(f"[{hostname}] Starting {script}")
             res = ansible_handle.script(os.path.join(root_dir, script))
-            duration = int((datetime.datetime.now() - start).total_seconds())
+            duration = int((datetime.datetime.now(timezone.utc) - start).total_seconds())
             LOGGER.info(f"[{hostname}] Finished {script} ({duration}s)")
             LOGGER.debug(
                 f"[{hostname}] Finished {script}, result:\n%s",
@@ -75,9 +73,13 @@ def start_sshd_proxy(vms, host, root_dir, ssh_key_file):
         dest='/etc/systemd/system/sshd_proxy.service',
     )
     user = getpass.getuser()
+    ssh_proxy_cmd = (
+        f'"#!/bin/bash\\nssh -D 1234 -p2222 -N -o StrictHostKeyChecking=no '
+        f'-o UserKnownHostsFile=/dev/null -i /root/.ssh/id_rsa {user}@{host}"'
+    )
     vms.copy(
         dest='/usr/local/sbin/sshd_proxy.sh',
-        content=f'"#!/bin/bash\\nssh -D 1234 -p2222 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /root/.ssh/id_rsa {user}@{host}"',
+        content=ssh_proxy_cmd,
         mode='0655',
     )
     vms.systemd(
@@ -128,7 +130,7 @@ def deploy(
     if not management_network_supports_ipv4:
         LOGGER.info("Start sshd_proxy service and configure DNF for IPv6")
         # can't use a fixture since VMs may not be up yet
-        ip = list(backend.ip_mapping().values())[0][management_network_name][0]
+        ip = next(iter(backend.ip_mapping().values()))[management_network_name][0]
         start_sshd_proxy(
             ansible_all,
             ipaddress.ip_interface(f"{ip}/64").network[1],
@@ -150,7 +152,12 @@ def deploy(
         if repo_urls is not None and len(repo_urls) > 0:
             package_mgmt.add_custom_repos(ansible_all, repo_urls)
             ansible_all.shell(
-                'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update,ovirt-release-host-node'
+                'dnf upgrade --nogpgcheck -y --disableplugin versionlock '
+                '-x ovirt-release-master,ovirt-release-master-tested,'
+                'ovirt-engine-appliance,rhvm-appliance,'
+                'ovirt-node-ng-image-update,'
+                'redhat-virtualization-host-image-update,'
+                'ovirt-release-host-node'
             )
             # check if packages from custom repos were used
             if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:

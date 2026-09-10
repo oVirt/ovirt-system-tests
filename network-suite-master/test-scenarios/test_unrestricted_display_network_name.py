@@ -2,17 +2,9 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# -*- coding: utf-8 -*-
 import pytest
-
 from fixtures.host import ENP2S0
-
-from ovirtlib import clusterlib
-from ovirtlib import joblib
-from ovirtlib import netattachlib
-from ovirtlib import netlib
-from ovirtlib import templatelib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, joblib, netattachlib, netlib, templatelib, virtlib
 
 
 @pytest.fixture(scope='module')

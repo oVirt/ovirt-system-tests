@@ -5,6 +5,7 @@
 import logging
 
 from selenium.webdriver.common.by import By
+
 from .EntityDialog import EntityDialog
 
 LOGGER = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 class HostDialog(EntityDialog):
     def __init__(self, ovirt_driver, action):
-        super(HostDialog, self).__init__(ovirt_driver, 'Host', action)
+        super().__init__(ovirt_driver, 'Host', action)
 
     def handle_ok_dialog_warnings(self):
         # Power management warning

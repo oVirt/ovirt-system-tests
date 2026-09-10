@@ -8,10 +8,8 @@ import xml.etree.ElementTree as ET
 from collections import namedtuple
 
 from ost_utils.backend import base
+from ost_utils.backend.virsh.networking import VirshNetworks, VMNics
 from ost_utils.shell import shell
-
-from ost_utils.backend.virsh.networking import VirshNetworks
-from ost_utils.backend.virsh.networking import VMNics
 
 VMInfo = namedtuple("VMInfo", "name libvirt_name nics deploy_scripts")
 
@@ -43,13 +41,13 @@ class VirshBackend(base.BaseBackend):
         return self._networks.get_network_for_network_role(network_role).libvirt_name
 
     def management_subnet(self, ip_version):
-        return self._networks.get_subnet_for_network_role(self.management_network_name(), ip_version)
+        return self._networks.get_subnet_for_network_role(self.management_network_name, ip_version)
 
     def storage_subnet(self, ip_version):
-        return self._networks.get_subnet_for_network_role(self.storage_network_name(), ip_version)
+        return self._networks.get_subnet_for_network_role(self.storage_network_name, ip_version)
 
     def _get_vms(self, deployment_path):
-        vm_names = [name for name in shell("virsh list --name".split()).splitlines() if name[8:13] == "-ost-"]
+        vm_names = [name for name in shell(["virsh", "list", "--name"]).splitlines() if name[8:13] == "-ost-"]
 
         vms = {}
 
@@ -75,13 +73,13 @@ class VirshBackend(base.BaseBackend):
         return vms
 
     def get_ip_prefix_for_management_network(self, ip_version):
-        management_role = self.management_network_name()
+        management_role = self.management_network_name
         mgmt_network = self._networks.get_network_for_network_role(management_role)
         if ip_version == 6:
             return mgmt_network.ip6_prefix
         return mgmt_network.ip4_prefix
 
     def get_gw_ip_for_management_network(self, ip_version):
-        management_role = self.management_network_name()
+        management_role = self.management_network_name
         mgmt_network = self._networks.get_network_for_network_role(management_role)
         return mgmt_network.ip6_gw if ip_version == 6 else mgmt_network.ip4_gw

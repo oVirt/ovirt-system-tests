@@ -169,7 +169,7 @@ def all_jobs_finished(engine, correlation_id):
 
 def get_first_active_host_by_name(engine):
     hosts = engine.hosts_service().list(search='status=up')
-    return sorted(hosts, key=lambda host: host.name)[0]
+    return min(hosts, key=lambda host: host.name)
 
 
 def get_attached_storage_domain(data_center, name, service=False):

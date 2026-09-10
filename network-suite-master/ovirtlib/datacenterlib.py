@@ -7,10 +7,7 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from . import error
-from . import netlib
-from . import storagelib
-from . import syncutil
+from . import error, netlib, storagelib, syncutil
 from .error import report_status
 from .sdkentity import SDKRootEntity
 

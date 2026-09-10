@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 from selenium.webdriver.common.by import By
+
 from .Displayable import Displayable
 from .WithBreadcrumbs import WithBreadcrumbs
 from .WithNotifications import WithNotifications
@@ -13,7 +14,7 @@ class DashboardView(Displayable, WithBreadcrumbs, WithNotifications):
     DASHBOARD_IFRAME_SELECTOR = '//iframe[@src="plugin/ui-extensions/dashboard.html"]'
 
     def __init__(self, ovirt_driver):
-        super(DashboardView, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self._execute_in_frame(self._is_displayed)

@@ -4,7 +4,6 @@
 #
 
 import pytest
-
 from ovirtlib import hostlib
 from ovirtlib.sdkentity import EntityNotFoundError
 
@@ -52,7 +51,7 @@ def _non_spm_host(system, host_ids):
     for host_id in host_ids:
         host = hostlib.Host(system)
         host.import_by_id(host_id)
-        if host.is_not_spm or id == host_ids[-1]:
+        if host.is_not_spm or host_id == host_ids[-1]:
             return host
 
 
@@ -66,7 +65,6 @@ def _wait_for_host_install(system, host):
 @pytest.fixture(scope='session', autouse=True)
 def install_hosts_to_save_time(host_0, host_1):
     """add hosts before any test starts so they can install in parallel"""
-    pass
 
 
 def _create_host(system, default_cluster, host_facts):

@@ -66,7 +66,7 @@ class Driver:
             raise e
         except Exception as e:
             # If failed, lets try again with waiting
-            LOGGER.exception(f'!!! find_element() failed with {e.__class__.__name__}, retrying')
+            LOGGER.exception('!!! find_element() failed with %s, retrying', e.__class__.__name__)
             return self.retry_if_known_issue(self.__driver.find_element, by, value)
 
     def find_elements(self, by, value, ui_extension_modal_id=None):
@@ -87,7 +87,7 @@ class Driver:
             raise e
         except Exception as e:
             # If failed, lets try again with waiting
-            LOGGER.exception(f'!!! find_elements() failed with {e.__class__.__name__}, retrying')
+            LOGGER.exception('!!! find_elements() failed with %s, retrying', e.__class__.__name__)
             return self.retry_if_known_issue(self.__driver.find_elements, by, value)
 
     def _access_shadow_root(self, container: WebElement) -> WebElement:
@@ -130,7 +130,7 @@ class Driver:
             result = method(*args)
         finally:
             self.__driver.switch_to.default_content()
-            return result
+        return result
 
     def set_window_size(self, selenium_screen_width, selenium_screen_height):
         self.retry_if_known_issue(self.__driver.set_window_size, selenium_screen_width, selenium_screen_height)
@@ -146,8 +146,7 @@ class Driver:
         with open(path, "w", encoding='utf-8') as text_file:
             logs = self.__driver.get_log(type)
             if logs:
-                for entry in logs:
-                    text_file.write(f'{entry}\n\n')
+                text_file.writelines(f'{entry}\n\n' for entry in logs)
             else:
                 text_file.write('No log entries found')
 
@@ -228,7 +227,7 @@ class Driver:
             # Check if modal-body elements exist and are visible
             modals = self.find_elements(By.CLASS_NAME, 'modal-body')
             overlays = self.find_elements(By.CLASS_NAME, 'modal-backdrop')
-            return len(modals) == 0 and len(overlays) == 0
+            return not modals and not overlays
 
         self.wait_until('Modal elements should disappear', no_modals_displayed)
 
@@ -267,7 +266,7 @@ class ConditionClass:
         self.args = args
         self.retry = 0
 
-    def __call__(self, __driver):
+    def __call__(self, __driver, /):
         self.retry += 1
 
         try:
@@ -276,7 +275,7 @@ class ConditionClass:
         except NoSuchElementException as e:
             raise e
         except Exception as e:
-            LOGGER.exception(f'!!! ConditionClass failed with {e.__class__.__name__} at retry number {self.retry}')
+            LOGGER.exception('!!! ConditionClass failed with %s at retry number %s', e.__class__.__name__, self.retry)
             raise e
 
 
@@ -301,8 +300,9 @@ class KnownIssueOccurredCondition:
         # ignore TimeoutException if caused by timeout in java
         except TimeoutException as e:
             LOGGER.exception(
-                f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
-                + f'at retry number {str(self.retry)}'
+                '!!! KnownIssueOccurredCondition failed with %s at retry number %s',
+                e.__class__.__name__,
+                self.retry,
             )
             if 'java.util.concurrent.TimeoutException' in str(e):
                 should_run_again = True
@@ -316,8 +316,9 @@ class KnownIssueOccurredCondition:
         # Last 0 characters read:
         except WebDriverException as e:
             LOGGER.exception(
-                f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
-                + f'at retry number {self.retry}'
+                '!!! KnownIssueOccurredCondition failed with %s at retry number %s',
+                e.__class__.__name__,
+                self.retry,
             )
             if 'START_MAP' in str(e):
                 should_run_again = True
@@ -325,8 +326,9 @@ class KnownIssueOccurredCondition:
                 self.error = e
         except Exception as e:
             LOGGER.exception(
-                f'!!! KnownIssueOccurredCondition failed with {e.__class__.__name__} '
-                + f'at retry number {self.retry}'
+                '!!! KnownIssueOccurredCondition failed with %s at retry number %s',
+                e.__class__.__name__,
+                self.retry,
             )
 
             self.error = e

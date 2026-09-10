@@ -3,13 +3,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 
-from fixtures.host import ENP3S0
-from fixtures.host import ENP4S0
-
-from ovirtlib import hostlib
-from ovirtlib import netattachlib
-from ovirtlib import sshlib
-from ovirtlib import syncutil
+from fixtures.host import ENP3S0, ENP4S0
+from ovirtlib import hostlib, netattachlib, sshlib, syncutil
 from testlib import suite
 
 BOND_NAME = 'bond0'

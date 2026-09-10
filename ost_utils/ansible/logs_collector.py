@@ -56,7 +56,7 @@ class LogsCollector:
     @classmethod
     def _should_include_event(cls, event):
         # no stdout - nothing to log
-        if len(event.get('stdout', '')) == 0:
+        if not event.get('stdout', ''):
             return False
 
         # if we can't sort an event by its creation time
@@ -65,7 +65,4 @@ class LogsCollector:
             return False
 
         # logs are grouped by host, so we need this information
-        if event.get('event_data', {}).get('host', None) is None:
-            return False
-
-        return True
+        return event.get('event_data', {}).get('host', None) is not None

@@ -2,22 +2,12 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# -*- coding: utf-8 -*-
-#
-from __future__ import absolute_import
-
 import ipaddress
 import random
 
 import pytest
 
-from ost_utils import utils
-
-from ost_utils.ovirtlib import clusterlib
-from ost_utils.ovirtlib import datacenterlib
-from ost_utils.ovirtlib import hostlib
-from ost_utils.ovirtlib import netattachlib
-from ost_utils.ovirtlib import netlib
+from ost_utils.ovirtlib import clusterlib, datacenterlib, hostlib, netattachlib, netlib
 from ost_utils.ovirtlib import system as systemlib
 
 # DC/Cluster
@@ -195,7 +185,7 @@ def bonding_data(host0, host1, backend, bonding_network_name):
 @pytest.fixture(scope='module')
 def bond_attachment_data(host0, host1, static_ips, migration_network):
     attachment_data = []
-    for i, host in enumerate((host0, host1)):
+    for i, _host in enumerate((host0, host1)):
         static_ip_assignment = static_ips[f'migration_net_{i}']
         attachment_data.append(
             netattachlib.NetworkAttachmentData(

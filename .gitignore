@@ -29,6 +29,7 @@ coverage/
 *.retry
 failure_msg.txt
 **/ovirt-deploy/library
+/.ansible/
 
 # ost-images files
 ###############

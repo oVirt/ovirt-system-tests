@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from __future__ import absolute_import
-
 import copy
 from contextlib import contextmanager
 from urllib import parse
@@ -12,14 +10,9 @@ from urllib import parse
 import ovirtsdk4
 import pytest
 import requests
-
 from ovirtsdk4 import types
 
-from ost_utils import assert_utils
-from ost_utils import engine_utils
-from ost_utils import network_utils
-from ost_utils import test_utils
-from ost_utils import versioning
+from ost_utils import assert_utils, engine_utils, network_utils, test_utils, versioning
 
 VM0_NAME = 'vm0'
 CLUSTER_NAME = 'test-cluster'

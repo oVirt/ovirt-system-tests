@@ -2,18 +2,12 @@
 # Copyright oVirt Authors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# -*- coding: utf-8 -*-
-#
 
 import pytest
 
 from ost_utils import ansible
-from ost_utils.ansible import inventory
-from ost_utils.ansible import module_mappers
-from ost_utils.ansible import private_dir
+from ost_utils.ansible import inventory, module_mappers, private_dir
 from ost_utils.ansible.facts import Facts
-
-from ost_utils.pytest.fixtures.artifacts import artifacts_dir
 
 
 @pytest.fixture(scope="session")

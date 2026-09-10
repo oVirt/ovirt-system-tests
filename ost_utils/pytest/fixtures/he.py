@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-import ipaddress
 import os
 import random
 import tempfile
@@ -20,7 +19,7 @@ PROFILE_STIG = 'stig'
 
 @pytest.fixture(scope="session")
 def he_mac_address():
-    return f'54:52:{":".join((f"{random.randrange(255):02x}" for i in range(4)))}'
+    return f'54:52:{":".join(f"{random.randrange(255):02x}" for i in range(4))}'
 
 
 # FIXME this is not a good idea when there are multiple networks currently, as
@@ -52,7 +51,7 @@ def he_ipv6_address(ansible_host0_facts):
 
 @pytest.fixture(scope="session")
 def he_host_name(backend):
-    return f"{'-'.join(backend.storage_hostname().split('-')[:-1])}-engine"
+    return f"{'-'.join(backend.storage_hostname.split('-')[:-1])}-engine"
 
 
 @pytest.fixture(scope="session")
@@ -192,7 +191,7 @@ def he_engine_answer_file_contents(
         f'OVEHOSTED_NETWORK/fqdn=str:{he_host_name}.{he_domain_name}\n'
         f'OVEHOSTED_NETWORK/bridgeIf=str:{he_interface}\n'
         'OVEHOSTED_NETWORK/firewallManager=str:iptables\n'
-        f'OVEHOSTED_NETWORK/gateway=str:{str(management_gw_ip)}\n'
+        f'OVEHOSTED_NETWORK/gateway=str:{management_gw_ip!s}\n'
         f'OVEHOSTED_ENGINE/adminPassword=str:{engine_password}\n'
         f'OVEHOSTED_ENGINE/appHostName=str:{host0_hostname}.'
         f'{he_domain_name}\n'
@@ -209,7 +208,7 @@ def he_engine_answer_file_contents(
         f'/{he_ip_prefix}\n'
         f'OVEHOSTED_VM/cloudinitRootPwd=str:{root_password}\n'
         'OVEHOSTED_VM/cloudinitVMETCHOSTS=bool:True\n'
-        f'OVEHOSTED_VM/cloudinitVMDNS=str:{str(management_gw_ip)}\n'
+        f'OVEHOSTED_VM/cloudinitVMDNS=str:{management_gw_ip!s}\n'
         'OVEHOSTED_VM/rootSshAccess=str:yes\n'
         'OVEHOSTED_VM/rootSshPubkey=str:\n'
         'OVEHOSTED_VDSM/cpu=str:model_SandyBridge\n'

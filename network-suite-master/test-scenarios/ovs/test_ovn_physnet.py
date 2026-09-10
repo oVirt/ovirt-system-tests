@@ -4,19 +4,12 @@
 #
 #
 
-from contextlib import contextmanager
 import os
 import time
+from contextlib import contextmanager
 
 import pytest
-
-from ovirtlib import clusterlib
-from ovirtlib import joblib
-from ovirtlib import netlib
-from ovirtlib import sdkentity
-from ovirtlib import syncutil
-from ovirtlib import sshlib
-from ovirtlib import virtlib
+from ovirtlib import clusterlib, joblib, netlib, sdkentity, sshlib, syncutil, virtlib
 from ovirtlib.ansiblelib import Playbook
 from testlib import suite
 

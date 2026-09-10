@@ -7,19 +7,18 @@ import contextlib
 
 from ovirtsdk4 import types
 
-from . import error
-from . import syncutil
+from . import error, syncutil
 from .sdkentity import SDKRootEntity
 
 GiB = 2**30
 
 
-class DiskFormat(object):
+class DiskFormat:
     COW = types.DiskFormat.COW
     RAW = types.DiskFormat.RAW
 
 
-class StorageType(object):
+class StorageType:
 
     CINDER = types.StorageType.CINDER
     FCP = types.StorageType.FCP
@@ -31,7 +30,7 @@ class StorageType(object):
     POSIXFS = types.StorageType.POSIXFS
 
 
-class StorageDomainType(object):
+class StorageDomainType:
 
     DATA = types.StorageDomainType.DATA
     EXPORT = types.StorageDomainType.EXPORT
@@ -40,7 +39,7 @@ class StorageDomainType(object):
     VOLUME = types.StorageDomainType.VOLUME
 
 
-class NfsVersion(object):
+class NfsVersion:
 
     AUTO = types.NfsVersion.AUTO
     V3 = types.NfsVersion.V3
@@ -49,7 +48,7 @@ class NfsVersion(object):
     V4_2 = types.NfsVersion.V4_2
 
 
-class HostStorageData(object):
+class HostStorageData:
     def __init__(self, storage_type, address, path, nfs_version=None, logical_units=()):
         """
         :param storage_type: string indicates the storage type.
@@ -86,7 +85,7 @@ class HostStorageData(object):
         return self._logical_units
 
 
-class StorageDomainStatus(object):
+class StorageDomainStatus:
 
     UNATTACHED = types.StorageDomainStatus.UNATTACHED
     ACTIVE = types.StorageDomainStatus.ACTIVE
@@ -204,7 +203,7 @@ class Disk(SDKRootEntity):
         )
 
 
-class LogicalUnit(object):
+class LogicalUnit:
     def __init__(self, id, address, port, target):
         self._id = id
         self._address = address

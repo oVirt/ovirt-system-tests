@@ -5,22 +5,23 @@
 import logging
 
 from selenium.webdriver.common.by import By
-from .Displayable import Displayable
-from .VmListView import VmListView
-from .TemplateListView import TemplateListView
-from .PoolListView import PoolListView
-from .HostListView import HostListView
+
 from .ClusterListView import ClusterListView
-from .StorageDomainListView import StorageDomainListView
-from .DisksListView import DisksListView
 from .DashboardView import DashboardView
+from .DisksListView import DisksListView
+from .Displayable import Displayable
+from .HostListView import HostListView
+from .PoolListView import PoolListView
+from .StorageDomainListView import StorageDomainListView
+from .TemplateListView import TemplateListView
+from .VmListView import VmListView
 
 LOGGER = logging.getLogger(__name__)
 
 
 class WebAdminLeftMenu(Displayable):
     def __init__(self, ovirt_driver):
-        super(WebAdminLeftMenu, self).__init__(ovirt_driver)
+        super().__init__(ovirt_driver)
 
     def is_displayed(self):
         return self.ovirt_driver.is_class_name_present('nav-pf-vertical-collapsible-menus')

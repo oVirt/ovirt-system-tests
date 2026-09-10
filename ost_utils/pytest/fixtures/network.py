@@ -9,7 +9,7 @@ import pytest
 
 @pytest.fixture(scope="session")
 def management_network_name(backend):
-    return backend.management_network_name()
+    return backend.management_network_name
 
 
 @pytest.fixture(scope="session")
@@ -19,7 +19,7 @@ def management_subnet(backend, tested_ip_version):
 
 @pytest.fixture(scope="session")
 def storage_network_name(backend):
-    return backend.storage_network_name()
+    return backend.storage_network_name
 
 
 @pytest.fixture(scope="session")
@@ -29,7 +29,7 @@ def storage_subnet(backend, tested_ip_version):
 
 @pytest.fixture(scope="session")
 def bonding_network_name(backend):
-    return backend.bonding_network_name()
+    return backend.bonding_network_name
 
 
 @pytest.fixture(scope="session")

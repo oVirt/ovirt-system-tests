@@ -27,6 +27,8 @@ data_file = {COVERAGE_DATA}
 source = vdsm, yajsonrpc'
 """.replace('\n', '\\n')
 
+LOGGER = logging.getLogger(__name__)
+
 
 def setup(ansible_hosts):
     # ugly workaround for FIPS...
@@ -47,7 +49,7 @@ def setup(ansible_hosts):
 
 
 def collect(ansible_host0, ansible_hosts, output_path):
-    logging.debug('Collecting VDSM coverage report...')
+    LOGGER.debug('Collecting VDSM coverage report...')
     with _stop_vdsm_services(ansible_hosts):
         _combine_coverage_data_on_hosts(ansible_hosts)
         _copy_coverage_data_to_first_host(ansible_host0, ansible_hosts)
@@ -62,16 +64,16 @@ def _stop_vdsm_services(hosts):
     coverage.py dump coverage data
     """
     try:
-        logging.debug('Stopping VDSM services...')
+        LOGGER.debug('Stopping VDSM services...')
         hosts.systemd(name='vdsmd', state='stopped')
         yield
     finally:
-        logging.debug('Restarting VDSM services...')
+        LOGGER.debug('Restarting VDSM services...')
         hosts.systemd(name='vdsmd', state='started')
 
 
 def _combine_coverage_data_on_hosts(hosts):
-    logging.debug('Combining coverage data on hosts...')
+    LOGGER.debug('Combining coverage data on hosts...')
     hosts.shell(f'coverage-3 combine --rcfile={COVERAGE_RC}')
 
 
@@ -80,7 +82,7 @@ def _copy_coverage_data_to_first_host(host0, hosts):
     coverage.py needs source files at the moment of report generation -
     that's why we need to do it on one of the hosts
     """
-    logging.debug('Copying coverage data to one of the hosts...')
+    LOGGER.debug('Copying coverage data to one of the hosts...')
     with tempfile.TemporaryDirectory() as tmpdir:
         hosts.fetch(src=COVERAGE_DATA, dest=tmpdir)
         for host in os.listdir(tmpdir):
@@ -90,7 +92,7 @@ def _copy_coverage_data_to_first_host(host0, hosts):
 
 
 def _generate_coverage_report_on_host(host):
-    logging.debug('Generating coverage report on one of the hosts...')
+    LOGGER.debug('Generating coverage report on one of the hosts...')
     host.shell(f'coverage-3 combine -a --rcfile={COVERAGE_RC}')
     # Using the "--ignore-errors" flag because we generate the coverage report
     # on host-0 but do not have 'vdsm-gluster' installed there.
@@ -98,7 +100,7 @@ def _generate_coverage_report_on_host(host):
 
 
 def _copy_coverage_report_from_host(host, output_path):
-    logging.debug('Copying generated coverage report from one of the hosts...')
+    LOGGER.debug('Copying generated coverage report from one of the hosts...')
     # fetch does not support recursion
     html_tar = f'{COVERAGE_HTML}.tar'
     host.shell(

@@ -3,49 +3,33 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 #
-from __future__ import absolute_import
-from __future__ import print_function
-
-from datetime import datetime
-from functools import cache
 import logging
 import os
-import shutil
-import subprocess
-import sys
 import time
+from datetime import datetime, timezone
 
-from ovirtsdk4 import types
 import pytest
-import requests
 import selenium.webdriver.remote.remote_connection
-
+from ovirtsdk4 import types
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-from ost_utils import assert_utils
-from ost_utils import test_utils
-from ost_utils import constants
-from ost_utils.constants import *
-from ost_utils.pytest.fixtures.ansible import ansible_host0_facts
-from ost_utils.pytest.fixtures.ansible import ansible_host1_facts
-from ost_utils.pytest.fixtures.artifacts import artifacts_dir
-from ost_utils.pytest.fixtures.selenium import *
-from ost_utils.pytest.fixtures.virt import cirros_image_template_name
+from ost_utils import assert_utils, constants, test_utils
+from ost_utils.pytest.fixtures.selenium import (
+    selenium_browser_name,
+)
 from ost_utils.selenium.navigation.driver import Driver
 from ost_utils.selenium.page_objects.ClusterListView import ClusterListView
-from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
-from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
-from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
-from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
-from ost_utils.selenium.page_objects.VmListView import VmListView
-from ost_utils.selenium.page_objects.VmPortal import VmPortal
+from ost_utils.selenium.page_objects.Grafana import Grafana
 from ost_utils.selenium.page_objects.GrafanaLoginScreen import (
     GrafanaLoginScreen,
 )
-from ost_utils.selenium.page_objects.Grafana import Grafana
-from ost_utils.shell import ShellError
-from ost_utils.shell import shell
+from ost_utils.selenium.page_objects.LoginScreen import LoginScreen
+from ost_utils.selenium.page_objects.VmListView import VmListView
+from ost_utils.selenium.page_objects.VmPortal import VmPortal
+from ost_utils.selenium.page_objects.WebAdminLeftMenu import WebAdminLeftMenu
+from ost_utils.selenium.page_objects.WebAdminTopMenu import WebAdminTopMenu
+from ost_utils.selenium.page_objects.WelcomeScreen import WelcomeScreen
+from ost_utils.shell import ShellError, shell
 
 LOGGER = logging.getLogger(__name__)
 
@@ -161,7 +145,7 @@ def selenium_artifacts_dir(artifacts_dir):
 @pytest.fixture(scope="session")
 def selenium_artifact_filename(selenium_browser_name):
     def _selenium_artifact_filename(description, extension):
-        date = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        date = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
         return f"{date}_{selenium_browser_name}_{description}.{extension}"
 
     return _selenium_artifact_filename
@@ -260,7 +244,7 @@ def test_vmportal_non_admin(
     # using vm0 requires logic from 002 _bootstrap::test_add_vm_permissions_to_user
     assert assert_utils.equals_within_short(vm_portal.get_vm_count, 1)
     vm0_status = vm_portal.get_vm_status('vm0')
-    assert vm0_status == 'Powering up' or vm0_status == 'Running'
+    assert vm0_status in ('Powering up', 'Running')
     save_screenshot('vmportal')
 
     assert vm_portal.is_create_virtual_machine_present() is False, "Create VM button is not visible for non-admin user"
@@ -393,8 +377,6 @@ def test_clusters(ovirt_driver, save_screenshot, selenium_browser_name, ost_clus
 def test_cluster_upgrade(
     ovirt_driver, engine_api, save_screenshot, ost_cluster_name, ansible_host0_facts, ansible_host1_facts
 ):
-    host0_name = ansible_host0_facts.get("ansible_hostname")
-    host1_name = ansible_host1_facts.get("ansible_hostname")
     cluster_service = test_utils.get_cluster_service(engine_api.system_service(), ost_cluster_name)
     original_schedulling_policy_id = cluster_service.get().scheduling_policy.id
     cluster_maintenance_schedulling_policy_id = '7677771e-5eab-422e-83fa-dc04080d21b7'
@@ -662,7 +644,7 @@ def test_virtual_machines(
     vm_detail_view.wait_for_statuses(['Powering Up', 'Up'])
     vm_status = vm_detail_view.get_status()
     save_screenshot('vms-after-run-once')
-    assert vm_status == 'Powering Up' or vm_status == 'Up'
+    assert vm_status in ('Powering Up', 'Up')
 
     # Test Manage VGPU dialog
     vm_detail_host_devices_tab = vm_detail_view.open_host_devices_tab()
@@ -778,11 +760,11 @@ def test_dashboard(ovirt_driver):
     webadmin_menu = WebAdminLeftMenu(ovirt_driver)
     dashboard = webadmin_menu.open_dashboard_view()
 
-    assert dashboard.data_centers_count() is 1
-    assert dashboard.clusters_count() is 1
-    assert dashboard.hosts_count() is 2
-    assert dashboard.storage_domains_count() is 3
-    assert dashboard.vm_count() is 5
+    assert dashboard.data_centers_count() == 1
+    assert dashboard.clusters_count() == 1
+    assert dashboard.hosts_count() == 2
+    assert dashboard.storage_domains_count() == 3
+    assert dashboard.vm_count() == 5
     assert dashboard.events_count() > 0
 
 

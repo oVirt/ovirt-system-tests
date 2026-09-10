@@ -6,13 +6,13 @@
 from ovirtsdk4 import types
 
 
-class IpVersion(object):
+class IpVersion:
 
     V4 = types.IpVersion.V4
     V6 = types.IpVersion.V6
 
 
-class IpAssignment(object):
+class IpAssignment:
     def __init__(self, version, addr, mask, gateway=None, boot_protocol=None):
         self._ip = types.Ip(addr, gateway, mask, version)
         self._boot_protocol = boot_protocol
@@ -50,12 +50,12 @@ class IpAssignment(object):
 
 class StaticIpv4Assignment(IpAssignment):
     def __init__(self, addr, mask, gateway=None, version=IpVersion.V4):
-        super(StaticIpv4Assignment, self).__init__(version, addr, mask, gateway, types.BootProtocol.STATIC)
+        super().__init__(version, addr, mask, gateway, types.BootProtocol.STATIC)
 
 
 class StaticIpv6Assignment(IpAssignment):
     def __init__(self, addr, prefix, gateway=None, version=IpVersion.V6):
-        super(StaticIpv6Assignment, self).__init__(version, addr, prefix, gateway, types.BootProtocol.STATIC)
+        super().__init__(version, addr, prefix, gateway, types.BootProtocol.STATIC)
 
 
 NO_V4 = IpAssignment(IpVersion.V4, None, None, None, types.BootProtocol.NONE)
@@ -65,7 +65,7 @@ IPV6_POLY_DHCP_AUTOCONF = IpAssignment(IpVersion.V6, None, None, None, types.Boo
 DYNAMIC_IP_ASSIGN = {'inet': IPV4_DHCP, 'inet6': IPV6_POLY_DHCP_AUTOCONF}
 
 
-class NetworkAttachmentData(object):
+class NetworkAttachmentData:
     def __init__(self, network, nic_name, ip_assignments=(), id=None, in_sync=True, nic_id=None):
         self._network = network
         self._nic_name = nic_name
@@ -180,8 +180,10 @@ class NetworkAttachmentData(object):
         return [attachment.to_network_attachment() for attachment in network_attachments_data]
 
 
-class BondingData(object):
-    def __init__(self, name, slave_names, options={}):
+class BondingData:
+    def __init__(self, name, slave_names, options=None):
+        if options is None:
+            options = {}
         self._name = name
         self._options = options
         self._slave_names = slave_names
@@ -223,4 +225,4 @@ class ActiveSlaveBonding(BondingData):
     def __init__(self, name, slave_names, options=None):
         options = options if options else {}
         options['mode'] = '1'
-        super(ActiveSlaveBonding, self).__init__(name, slave_names, options)
+        super().__init__(name, slave_names, options)

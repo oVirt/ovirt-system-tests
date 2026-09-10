@@ -31,7 +31,6 @@ from ost_utils import (
 from ost_utils.ansible import AnsibleExecutionError
 from ost_utils.ansible.collection import CollectionMapper, image_template
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.virt import *
 from ost_utils.storage_utils import domain, lun, nfs
 
 LOGGER = logging.getLogger(__name__)
@@ -646,7 +645,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
     # Find the quota limit for the storage domain that we are interested on:
     limits_service = quota_service.quota_storage_limits_service()
     limits = limits_service.list()
-    limit = next((l for l in limits if l.id == sd.id), None)
+    limit = next((lim for lim in limits if lim.id == sd.id), None)
 
     # If that limit exists we will delete it:
     if limit is not None:

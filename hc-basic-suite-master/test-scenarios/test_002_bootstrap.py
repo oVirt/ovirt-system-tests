@@ -23,7 +23,6 @@ from ost_utils import (
     versioning,
 )
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.virt import *
 from ost_utils.storage_utils import glance
 
 LOGGER = logging.getLogger(__name__)
@@ -59,7 +58,8 @@ SD_TEMPLATES_NAME = 'templates'
 SD_TEMPLATES_PATH = '/exports/nfs/exported'
 
 SD_GLANCE_NAME = 'ovirt-image-repository'
-# intentionaly use URL ending with / to test backward compatibility of <4.4 glance implementation and ability to handle // in final URL
+# intentionaly use URL ending with / to test backward compatibility of
+# <4.4 glance implementation and ability to handle // in final URL
 GLANCE_SERVER_URL = 'http://glance.ovirt.org:9292/'
 
 # Network
@@ -128,7 +128,8 @@ def _all_hosts_up(hosts_service, total_num_hosts, dc_name):
     if len(up_hosts) == total_num_hosts:
         return True
 
-    # sometimes a second host is fast enough to go up without master SD, it then goes NonOperational with 5min autorecovery, let's poke it
+    # sometimes a second host is fast enough to go up without master SD,
+    # it then goes NonOperational with 5min autorecovery, let's poke it
     nonop_hosts = hosts_service.list(search=f'datacenter={dc_name} AND status=nonoperational')
     if len(nonop_hosts):
         for host in nonop_hosts:
@@ -156,7 +157,9 @@ def _single_host_up(hosts_service, total_num_hosts, dc_name):
 
 def _check_problematic_hosts(hosts_service, dc_name):
     problematic_hosts = hosts_service.list(
-        search=f'datacenter={dc_name} AND status != installing and status != initializing and status != reboot and status != non_responsive and status != up'
+        search=f'datacenter={dc_name} AND status != installing '
+        f'and status != initializing and status != reboot '
+        f'and status != non_responsive and status != up'
     )
     if len(problematic_hosts):
         dump_hosts = f'{len(problematic_hosts)} hosts failed installation:\n'
@@ -316,7 +319,7 @@ def test_add_quota_storage_limits(engine_api, ost_dc_name):
     # Find the quota limit for the storage domain that we are interested on:
     limits_service = quota_service.quota_storage_limits_service()
     limits = limits_service.list()
-    limit = next((l for l in limits if l.id == sd.id), None)
+    limit = next((lim for lim in limits if lim.id == sd.id), None)
 
     # If that limit exists we will delete it:
     if limit is not None:

@@ -29,9 +29,6 @@ from ost_utils import (
     versioning,
 )
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.sdk import *
-from ost_utils.pytest.fixtures.virt import *
-from ost_utils.pytest.fixtures.vm import *
 from ost_utils.storage_utils import backup
 
 LOGGER = logging.getLogger(__name__)
@@ -836,7 +833,7 @@ def test_verify_vm_import_preallocated(engine_api, get_vm_service_for_vm, get_di
 
     assert assert_utils.true_within_short(
         lambda: all(
-            disk_service.get().sparse == False
+            disk_service.get().sparse is False
             # pylint: disable=not-an-iterable
             for disk_service in disks_service
         )
@@ -885,7 +882,7 @@ def test_verify_template_import(engine_api, get_template_service_for_template, g
 
     assert assert_utils.true_within_short(
         lambda: all(
-            disk_service.get().sparse == True
+            disk_service.get().sparse is True
             # pylint: disable=not-an-iterable
             for disk_service in disks_service
         )

@@ -73,9 +73,13 @@ def start_sshd_proxy(vms, host, root_dir, ssh_key_file):
         dest='/etc/systemd/system/sshd_proxy.service',
     )
     user = getpass.getuser()
+    ssh_proxy_cmd = (
+        f'"#!/bin/bash\\nssh -D 1234 -p2222 -N -o StrictHostKeyChecking=no '
+        f'-o UserKnownHostsFile=/dev/null -i /root/.ssh/id_rsa {user}@{host}"'
+    )
     vms.copy(
         dest='/usr/local/sbin/sshd_proxy.sh',
-        content=f'"#!/bin/bash\\nssh -D 1234 -p2222 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /root/.ssh/id_rsa {user}@{host}"',
+        content=ssh_proxy_cmd,
         mode='0655',
     )
     vms.systemd(
@@ -148,7 +152,12 @@ def deploy(
         if repo_urls is not None and len(repo_urls) > 0:
             package_mgmt.add_custom_repos(ansible_all, repo_urls)
             ansible_all.shell(
-                'dnf upgrade --nogpgcheck -y --disableplugin versionlock -x ovirt-release-master,ovirt-release-master-tested,ovirt-engine-appliance,rhvm-appliance,ovirt-node-ng-image-update,redhat-virtualization-host-image-update,ovirt-release-host-node'
+                'dnf upgrade --nogpgcheck -y --disableplugin versionlock '
+                '-x ovirt-release-master,ovirt-release-master-tested,'
+                'ovirt-engine-appliance,rhvm-appliance,'
+                'ovirt-node-ng-image-update,'
+                'redhat-virtualization-host-image-update,'
+                'ovirt-release-host-node'
             )
             # check if packages from custom repos were used
             if not request.config.getoption('--skip-custom-repos-check') and not deploy_hosted_engine:

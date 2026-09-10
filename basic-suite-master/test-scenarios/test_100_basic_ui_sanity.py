@@ -14,8 +14,9 @@ from ovirtsdk4 import types
 from selenium import webdriver
 
 from ost_utils import assert_utils, constants, test_utils
-from ost_utils.constants import *
-from ost_utils.pytest.fixtures.selenium import *
+from ost_utils.pytest.fixtures.selenium import (
+    selenium_browser_name,
+)
 from ost_utils.selenium.navigation.driver import Driver
 from ost_utils.selenium.page_objects.ClusterListView import ClusterListView
 from ost_utils.selenium.page_objects.Grafana import Grafana

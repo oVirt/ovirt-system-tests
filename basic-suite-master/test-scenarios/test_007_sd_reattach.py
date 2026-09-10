@@ -8,7 +8,6 @@ import ovirtsdk4
 from ost_utils import assert_utils, engine_utils, test_utils
 from ost_utils.constants import FLOATING_DISK_NAME
 from ost_utils.pytest import order_by
-from ost_utils.pytest.fixtures.sdk import *
 from ost_utils.vnic_setup import VnicSetup
 
 DC_NAME = 'test-dc'

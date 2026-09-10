@@ -8,8 +8,6 @@ import ipaddress
 
 import pytest
 
-from ost_utils.pytest.fixtures.sdk import *
-
 
 @pytest.fixture(scope="session")
 def get_hosts_hostname_for_vm(hosts_service, get_vm_service_for_vm):

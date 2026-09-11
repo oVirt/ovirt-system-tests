@@ -510,6 +510,7 @@ def test_add_secondary_storage_domains(
     hosts_service,
     sd_nfs_host_storage_name,
     sd_iscsi_host_luns,
+    sd_nvmeof_host_luns,
     ost_dc_name,
 ):
     if master_storage_domain_type in ('iscsi', 'nvmeof'):
@@ -551,6 +552,13 @@ def test_add_secondary_storage_domains(
                     engine_api,
                     hosts_service,
                     sd_iscsi_host_luns,
+                    ost_dc_name,
+                ),
+                functools.partial(
+                    add_nvmeof_storage_domain,
+                    engine_api,
+                    hosts_service,
+                    sd_nvmeof_host_luns,
                     ost_dc_name,
                 ),
                 # 12/07/2017 commenting out iso domain creation until we know why it causing random failures

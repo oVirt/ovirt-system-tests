@@ -87,3 +87,13 @@ def sd_iscsi_ansible_host(
     ansible_storage,
 ):  # pylint: disable=function-redefined
     return ansible_storage
+
+
+@pytest.fixture(scope="session")
+def sd_nvmeof_host_ip(storage_ips_for_network, storage_network_name):
+    return storage_ips_for_network(storage_network_name)[0]
+
+
+@pytest.fixture(scope="session")
+def sd_nvmeof_ansible_host(ansible_storage):
+    return ansible_storage

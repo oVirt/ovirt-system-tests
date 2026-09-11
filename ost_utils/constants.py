@@ -16,3 +16,4 @@ FLOATING_DISK_NAME = 'floating_disk'
 # Storage
 SD_NFS_NAME = 'nfs'
 SD_ISCSI_NAME = 'iscsi'
+SD_NVMEOF_NAME = 'nvmeof'

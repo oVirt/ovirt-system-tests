@@ -114,7 +114,16 @@ def test_ansible_run(
                     "lun_id": lun.get_uuids(sd_iscsi_ansible_host)[:2],
                 }
             },
+            "nvmeof": {
+                "nvmeof": {
+                    "nqn": lun.get_nvmeof_connection_info(sd_iscsi_ansible_host)["nqn"],
+                    "port": 4420,
+                    "address": sd_iscsi_host_ip,
+                    "lun_id": lun.get_nvmeof_uuids(sd_iscsi_ansible_host),
+                }
+            },
         },
+
         logical_networks=[
             {
                 "name": "Migration_Net",

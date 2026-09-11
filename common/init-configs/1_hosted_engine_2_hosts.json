@@ -46,6 +46,11 @@
         "comment": "Hosted engine storage",
         "template": "common/libvirt-templates/disk_template",
         "size": "80G"
+      },
+      "sdd": {
+        "comment": "NVMe-oF device",
+        "template": "common/libvirt-templates/disk_template",
+        "size": "20G"
       }
     }
   },

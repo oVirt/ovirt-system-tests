@@ -58,6 +58,7 @@ DISK0_NAME = f'{VM0_NAME}_disk0'
 DISK1_NAME = f'{VM1_NAME}_disk1'
 DISK2_NAME = f'{VM2_NAME}_disk2'
 DISK3_NAME = f'{VM1_NAME}_disk3'
+DISK4_NAME = f'{VM1_NAME}_disk4'
 FLOATING_DISK_NAME = 'floating_disk'
 CONVERT_DISK_NAME = 'convert_disk'
 BACKUP_DISK_NAME = f'{BACKUP_VM_NAME}_disk'
@@ -244,6 +245,7 @@ def test_add_disks(engine_api, cirros_image_disk_name, secondary_storage_domain_
             'bootable': True,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,
+                'pass_discard': True,
             },
         },
         (VM2_NAME, DISK2_NAME): {
@@ -282,6 +284,20 @@ def test_add_disks(engine_api, cirros_image_disk_name, secondary_storage_domain_
             'bootable': False,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,
+                'pass_discard': True,
+            },
+        },
+        (VM1_NAME, DISK4_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
+            'name': DISK4_NAME,
+            'provisioned_size': 1 * MB,
+            'format': types.DiskFormat.RAW,
+            'sparse': True,
+            'active': True,
+            'bootable': False,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+                'pass_discard': False,
             },
         },
     }

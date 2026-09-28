@@ -47,6 +47,7 @@ VM_PASSWORD = 'oVirtRocks'
 VM0_NAME = 'vm0'
 VM1_NAME = 'vm1'
 VM2_NAME = 'vm2'
+VM3_NAME = 'vm3'
 VM_TO_CLONE_NAME = 'vm_to_clone'
 BACKUP_VM_NAME = 'backup_vm'
 CLONED_VM_NAME = 'cloned_vm'
@@ -57,7 +58,10 @@ VMPOOL_NAME = 'test-pool'
 DISK0_NAME = f'{VM0_NAME}_disk0'
 DISK1_NAME = f'{VM1_NAME}_disk1'
 DISK2_NAME = f'{VM2_NAME}_disk2'
-DISK3_NAME = f'{VM1_NAME}_disk3'
+DISK3_NAME = f'{VM3_NAME}_disk3'
+DISK4_NAME = f'{VM3_NAME}_disk4'
+DISK5_NAME = f'{VM3_NAME}_disk5'
+DISK6_NAME = f'{VM3_NAME}_disk6'
 FLOATING_DISK_NAME = 'floating_disk'
 CONVERT_DISK_NAME = 'convert_disk'
 BACKUP_DISK_NAME = f'{BACKUP_VM_NAME}_disk'
@@ -86,6 +90,7 @@ _TEST_LIST = [
     "test_reconstruct_master_domain",
     "test_add_vm1_from_template",
     "test_verify_add_vm1_from_template",
+    "test_add_vm3",
     "test_add_disks",
     "test_copy_template_disk",
     "test_add_floating_disk",
@@ -123,6 +128,7 @@ _TEST_LIST = [
     "test_hotplug_cpu",
     "test_next_run_unplug_cpu",
     "test_disk_operations",
+    "test_run_vm3",
     "test_offline_snapshot_restore",
     "test_import_template",
     "test_live_storage_migration",
@@ -214,6 +220,24 @@ def _disk_attachment(**params):
 
 
 @order_by(_TEST_LIST)
+def test_add_vm3(engine_api, ost_cluster_name):
+    engine = engine_api.system_service()
+    engine.vms_service().add(
+        types.Vm(
+            name=VM3_NAME,
+            description='VM for disk discard tests',
+            cluster=types.Cluster(
+                name=ost_cluster_name,
+            ),
+            template=types.Template(
+                name=TEMPLATE_BLANK,
+            ),
+        )
+    )
+    _verify_vm_state(engine, VM3_NAME, types.VmStatus.DOWN)
+
+
+@order_by(_TEST_LIST)
 def test_add_disks(engine_api, cirros_image_disk_name, secondary_storage_domain_name):
     engine = engine_api.system_service()
     vm_service = test_utils.get_vm_service(engine, VM0_NAME)
@@ -244,6 +268,7 @@ def test_add_disks(engine_api, cirros_image_disk_name, secondary_storage_domain_
             'bootable': True,
             'attachment_params': {
                 'interface': types.DiskInterface.VIRTIO,
+                'pass_discard': True,
             },
         },
         (VM2_NAME, DISK2_NAME): {
@@ -272,11 +297,49 @@ def test_add_disks(engine_api, cirros_image_disk_name, secondary_storage_domain_
                 'interface': types.DiskInterface.VIRTIO,
             },
         },
-        (VM1_NAME, DISK3_NAME): {
+        (VM3_NAME, DISK3_NAME): {
             'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
             'name': DISK3_NAME,
             'provisioned_size': 1 * MB,
             'format': types.DiskFormat.RAW,
+            'sparse': True,
+            'active': True,
+            'bootable': False,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+                'pass_discard': True,
+            },
+        },
+        (VM3_NAME, DISK4_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
+            'name': DISK4_NAME,
+            'provisioned_size': 1 * MB,
+            'format': types.DiskFormat.RAW,
+            'sparse': True,
+            'active': True,
+            'bootable': False,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+            },
+        },
+        (VM3_NAME, DISK5_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
+            'name': DISK5_NAME,
+            'provisioned_size': 1 * GB,
+            'format': types.DiskFormat.COW,
+            'sparse': True,
+            'active': True,
+            'bootable': True,
+            'attachment_params': {
+                'interface': types.DiskInterface.VIRTIO,
+                'pass_discard': True,
+            },
+        },
+        (VM3_NAME, DISK6_NAME): {
+            'storage_domains': [types.StorageDomain(name=SD_SECOND_NFS_NAME)],
+            'name': DISK6_NAME,
+            'provisioned_size': 1 * GB,
+            'format': types.DiskFormat.COW,
             'sparse': True,
             'active': True,
             'bootable': False,
@@ -1272,6 +1335,46 @@ def test_disk_operations(engine_api):
     )
     vt.start_all()
     vt.join_all()
+
+
+@order_by(_TEST_LIST)
+def test_run_vm3(engine_api, get_vm_libvirt_xml):
+    """
+    Boot vm3 and verify the pass_discard settings of its disks are
+    reflected in the libvirt disk drivers.
+    """
+    engine = engine_api.system_service()
+    vm_service = test_utils.get_vm_service(engine, VM3_NAME)
+    vm_service.start()
+    _verify_vm_state(engine, VM3_NAME, types.VmStatus.UP)
+
+    xml = get_vm_libvirt_xml(VM3_NAME)
+    disks_service = engine.disks_service()
+
+    def disk_block(disk_name):
+        disk_id = disks_service.list(search=f'name={disk_name}')[0].id
+        for match in re.finditer(r'<disk .*?</disk>', xml, re.DOTALL):
+            if f"alias name='ua-{disk_id}'" in match.group(0):
+                return match.group(0)
+        raise AssertionError(f'disk {disk_name} (id {disk_id}) not found in libvirt xml')
+
+    for disk_name, expect_discard in (
+        (DISK3_NAME, True),  # RAW + pass_discard
+        (DISK4_NAME, False),  # RAW, no pass_discard
+        (DISK5_NAME, True),  # COW + pass_discard
+        (DISK6_NAME, False),  # COW, no pass_discard
+    ):
+        block = disk_block(disk_name)
+        if expect_discard:
+            assert re.search(r"<driver[^>]*discard='unmap'", block), f"discard=unmap not found for {disk_name}"
+        else:
+            assert not re.search(r"<driver[^>]*discard='unmap'", block), f"discard must not be enabled for {disk_name}"
+
+    with engine_utils.wait_for_event(engine, [33, 61]):
+        # USER_STOP_VM(33) event
+        # VM_DOWN(61) event
+        vm_service.stop()
+    _verify_vm_state(engine, VM3_NAME, types.VmStatus.DOWN)
 
 
 @pytest.fixture(scope="session")

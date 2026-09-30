@@ -2,6 +2,8 @@
 
 MAIN_NFS_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_2"
 ISCSI_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_3"
+NVMEOF_DEV="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_4"
+NVMEOF_DEV2="disk/by-id/scsi-0QEMU_QEMU_HARDDISK_5"
 NUM_LUNS=5
 
 setup_device() {
@@ -205,6 +207,50 @@ EOC
     sed -i 's/^nsslapd-cache-autosize:.*/nsslapd-cache-autosize: 0/' /etc/dirsrv/slapd-lago/dse.ldif
 }
 
+setup_nvmeof() {
+    local nvmeof_dev=$1
+    NIC=enp2s0
+    IP=$(/sbin/ip -o addr show dev $NIC scope global | tac | awk '{split($4,a,"."); print a[1] "." a[2] "." a[3] "." a[4]}'| awk -F/ '{print $1; exit}')
+    SUBSYS_NQN="nqn.2014-07.org.ovirt:nvmeof-storage"
+
+    rpm -q nvme-cli || yum install -y nvme-cli
+
+    modprobe nvmet || true
+    modprobe nvmet-tcp || true
+
+    mkdir -p /sys/kernel/config/nvmet/subsystems/${SUBSYS_NQN}
+    echo 1 > /sys/kernel/config/nvmet/subsystems/${SUBSYS_NQN}/attr/allow_any_host
+
+    mkdir -p /sys/kernel/config/nvmet/subsystems/${SUBSYS_NQN}/namespaces/1
+    echo -n /dev/${nvmeof_dev} > /sys/kernel/config/nvmet/subsystems/${SUBSYS_NQN}/namespaces/1/device_path
+    echo 1 > /sys/kernel/config/nvmet/subsystems/${SUBSYS_NQN}/namespaces/1/enable
+
+    mkdir -p /sys/kernel/config/nvmet/ports/1
+    echo 4420 > /sys/kernel/config/nvmet/ports/1/addr_trsvcid
+    echo tcp > /sys/kernel/config/nvmet/ports/1/addr_trtype
+    echo ipv4 > /sys/kernel/config/nvmet/ports/1/addr_adrfam
+    echo ${IP} > /sys/kernel/config/nvmet/ports/1/addr_traddr
+
+    ln -sf /sys/kernel/config/nvmet/subsystems/${SUBSYS_NQN} /sys/kernel/config/nvmet/ports/1/subsystems/${SUBSYS_NQN}
+
+    echo "${SUBSYS_NQN} ${IP} 4420" > /root/nvmeof_connection.txt
+
+    nvme connect -t tcp -n ${SUBSYS_NQN} -a ${IP} -s 4420
+    sleep 2
+    /usr/sbin/udevadm settle
+    for dev in /dev/nvme*n*; do
+        [ -e "$dev" ] || continue
+        uuid=$(cat /sys/block/$(basename $dev)/uuid 2>/dev/null || echo "")
+        if [ -n "$uuid" ]; then
+            echo "$uuid" > /root/nvmeof_uuids.txt
+            break
+        fi
+    done
+    [[ -s /root/nvmeof_uuids.txt ]] || { echo "Could not discover NVMe-oF namespace UUID"; exit 1; }
+    nvme disconnect -n ${SUBSYS_NQN}
+}
+
+
 setup_lvm_filter() {
     cat > /etc/lvm/lvmlocal.conf <<EOC
 
@@ -243,6 +289,11 @@ main() {
     activate_nfs
     setup_lvm_filter
     setup_iscsi
+    if [ -e /dev/${NVMEOF_DEV2} ]; then
+        setup_nvmeof ${NVMEOF_DEV2}
+    elif [ -e /dev/${NVMEOF_DEV} ]; then
+        setup_nvmeof ${NVMEOF_DEV}
+    fi
     # TODO el9 doesn't have 389-ds (LDAP) configuration yet
     # [ "$(. /etc/os-release; echo ${VERSION_ID})" != "9" ] && setup_389ds
     coredump_kill

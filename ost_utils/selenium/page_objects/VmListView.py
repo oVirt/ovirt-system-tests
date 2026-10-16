@@ -112,20 +112,21 @@ class RunOnceDialog(Displayable):
         super().__init__(ovirt_driver)
 
     def is_displayed(self):
-        return self.ovirt_driver.is_xpath_displayed('//*[@id="VmRunOncePopupWidget"]')
+        # Check if the Run Once dialog is displayed by verifying the presence of the OK button
+        return self.ovirt_driver.is_xpath_displayed('//*[@id="VmRunOncePopupView_OnRunOnce"]')
 
     def get_displayable_name(self):
         return 'Run once dialog'
 
     def toggle_console_options(self):
         LOGGER.debug('Toggle console options')
-        self.ovirt_driver.xpath_click('//td[text()="Console"]')
+        self.ovirt_driver.xpath_click('//a[normalize-space(text())="Console"]')
 
     def select_vnc(self):
         LOGGER.debug('Select VNC')
         self.ovirt_driver.xpath_wait_and_click(
             'VNC radiobutton',
-            '//*[@id="VmRunOncePopupWidget_displayConsoleVnc"]',
+            '//*[@id="VmRunOncePopupView_displayConsoleVnc"]',
         )
 
     def run(self):
